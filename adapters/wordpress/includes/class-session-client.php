@@ -53,7 +53,7 @@ final class Buildytech_Si_Chat_Session_Client {
 		}
 		$args = [
 			'method' => strtoupper($method),
-			'timeout' => 30,
+			'timeout' => 180,
 			'redirection' => 0,
 			'headers' => $headers,
 		];
