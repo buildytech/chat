@@ -31,6 +31,10 @@ npm test             # @buildytech/page-contract
 npm run check --workspace=@buildytech/chat-web
 npm run build --workspace=@buildytech/chat-web
 # SvelteKit adapter-static → apps/chat-web/build/ (+ 200.html fallback)
+
+cd services/context-serve
+go test ./...
+go build -o context-serve .
 ```
 
 Release packaging: `chat-web-spa-<git-sha>.tgz` from `apps/chat-web/build/`. Subject of attestation = этот tarball.

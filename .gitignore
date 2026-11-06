@@ -19,3 +19,7 @@ tmp/
 .vscode/
 *.tsbuildinfo
 .manual/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+services/context-serve/data/
