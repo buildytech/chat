@@ -1,0 +1,17 @@
+{* CodePort runtime layout — required by latteFromPage `{layout 'Main/page.latte'}`. *}
+<!DOCTYPE html>
+<html lang="{$page->locale}">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{$pageTitle}</title>
+	{ifset $page->seo}
+		{ifset $page->seo['description']}<meta name="description" content="{$page->seo['description']}">{/ifset}
+	{/ifset}
+</head>
+<body>
+	<main data-codeport="page" data-page-id="{$page->id}" data-slug="{$page->slug}" data-status="{$page->status}">
+		{block content}{/block}
+	</main>
+</body>
+</html>

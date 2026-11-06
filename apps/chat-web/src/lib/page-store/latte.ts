@@ -46,14 +46,16 @@ export function latteForBlock(block: PageBlock, selectedId: string | null = null
 }
 
 /**
- * CodePort stub: Latte-ish source from the same Page DTO as PreviewPort.
- * Not a Latte compiler. WP publish is out of this pass (ADR-0003).
+ * CodePort emitter: Latte source from the same Page DTO as PreviewPort.
+ * Compiles with PHP Latte 3 when the CodePort runtime pack is present
+ * (`codeport-pack/Main/page.latte`, shipped in ZIP as `Main/page.latte`).
+ * WP publish remains out of this pass (ADR-0003).
  */
 export function latteFromPage(page: CreatorPage, selectedId: string | null = null): string {
 	const roots = blocksOf(page);
 	const nodes = walkBlocks(roots);
 	const lines: string[] = [
-		`{* CodePort stub from Page DTO ${page.id} (${page.slug}). Not a Latte compiler. ADR-0003. *}`,
+		`{* CodePort page from DTO ${page.id} (${page.slug}). Requires Main/page.latte. ADR-0003. *}`,
 		`{layout 'Main/page.latte'}`,
 		``,
 		`{var $selectedId = '${selectedId ?? ""}'}`,
