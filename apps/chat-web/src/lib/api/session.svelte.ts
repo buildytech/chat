@@ -43,34 +43,38 @@ function save(sessions: ChatSession[]): void {
 	localStorage.setItem(STORE_KEY, JSON.stringify(sessions));
 }
 
-let memory = $state<ChatSession[]>([]);
-let selectedId = $state<string | null>(null);
-let hydrated = false;
+const canUseStorage = typeof localStorage !== "undefined";
+const initialSessions = canUseStorage ? load() : [];
+
+let memory = $state<ChatSession[]>(initialSessions);
+let selectedId = $state<string | null>(initialSessions[0]?.id ?? null);
+let hydrated = canUseStorage;
 
 function persist(): void {
 	save(memory);
 }
 
+/** Load from localStorage once. Safe for onMount / event handlers — not for $derived. */
 function ensureHydrated(): void {
 	if (hydrated) return;
 	hydrated = true;
 	memory = load();
-	selectedId = memory[0]?.id ?? null;
+	if (selectedId === null) selectedId = memory[0]?.id ?? null;
 }
 
 export function hydrateSessions(): void {
 	ensureHydrated();
 }
 
+/** Pure read — do not mutate. Hydrate via hydrateSessions() / module init. */
 export function listSessions(): SessionSummary[] {
-	ensureHydrated();
 	return memory
 		.map(({ id, title, updatedAt }) => ({ id, title, updatedAt }))
 		.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
+/** Pure read — do not mutate. */
 export function getSelectedSession(): ChatSession | null {
-	ensureHydrated();
 	return memory.find((s) => s.id === selectedId) ?? null;
 }
 
