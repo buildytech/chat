@@ -9,7 +9,10 @@ function readInitial(): "light" | "dark" {
 
 function apply(mode: "light" | "dark") {
 	if (typeof document === "undefined") return;
-	document.documentElement.classList.toggle("dark", mode === "dark");
+	const root = document.documentElement;
+	root.classList.toggle("dark", mode === "dark");
+	root.dataset.theme = mode;
+	root.style.colorScheme = mode;
 	localStorage.setItem(STORAGE_KEY, mode);
 }
 

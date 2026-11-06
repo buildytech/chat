@@ -1,6 +1,8 @@
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
 @import "./styles/fonts.css";
 @import "./styles/tokens.css";
+@import "./styles/editor.css";
 
 @theme {
 	--font-sans: "Istok Web", ui-sans-serif, system-ui, sans-serif;

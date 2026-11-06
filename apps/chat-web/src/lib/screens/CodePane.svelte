@@ -18,6 +18,7 @@
 		packFilesFromPage,
 		walkBlocks
 	} from "../page-store";
+	import CodeEditor from "../editor/CodeEditor.svelte";
 	import CodeFilePane, { type CodeTreeEntry } from "./CodeFilePane.svelte";
 
 	type CodeTab = { label: string; path: string; active: boolean };
@@ -162,9 +163,13 @@
 				<Text tag="span" class="text-xs text-foreground">{crumb}</Text>
 			{/each}
 		</Group>
-		<Stack class="min-h-0 flex-1 gap-2 overflow-y-auto p-4">
+		<Stack class="min-h-0 flex-1 gap-2 overflow-hidden p-4">
 			<Text tag="p" class="text-xs text-muted-foreground">{t("code.runtime")}</Text>
-			<Text tag="pre" class="overflow-x-auto whitespace-pre-wrap font-mono text-xs text-foreground">{source}</Text>
+			<CodeEditor
+				doc={source}
+				language={(activeTab?.path ?? "").endsWith(".json") ? "json" : "latte"}
+				editable={false}
+			/>
 		</Stack>
 	</Block>
 </Block>

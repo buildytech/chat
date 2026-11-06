@@ -1,0 +1,64 @@
+/* CodeMirror 6 skin. Selectors stay three classes deep so they beat CodeMirror's base theme.
+ * Token gap is word-spacing: Inter Semi Bold 11px space (2.7305px) plus 0.64px, toward an 8px gap. */
+.code-editor {
+	min-height: 0;
+	flex: 1;
+	--code-gap: 8px;
+	--code-space: 2.7305px;
+	--code-box-round: 0.64px;
+	--code-indent-space: 8px;
+	--syn-keyword: #be185d;
+	--syn-punct: #2563eb;
+	--syn-string: #15803d;
+	--syn-fn: #9333ea;
+	--syn-comment: #6b7280;
+}
+:is(.dark, [data-theme="dark"]) .code-editor {
+	--syn-keyword: #db2777;
+	--syn-punct: #3b82f6;
+	--syn-string: #16a34a;
+	--syn-fn: #a855f7;
+	--syn-comment: #9ca3af;
+}
+.code-editor .cm-editor { height: 100%; background: transparent; }
+.code-editor .cm-editor.cm-focused { outline: none; }
+.code-editor .cm-editor .cm-scroller {
+	font-family: var(--font-sans);
+	font-size: 11px;
+	font-weight: 600;
+	overflow: auto;
+	-webkit-overflow-scrolling: touch;
+}
+.code-editor .cm-editor .cm-content {
+	padding: 8px 12px 20px 0;
+	color: var(--color-foreground);
+	caret-color: var(--color-foreground);
+	word-spacing: calc(var(--code-gap) - var(--code-space) + var(--code-box-round));
+}
+.code-editor .cm-editor .cm-line { padding: 0; }
+.code-editor .cm-editor .cm-code-line {
+	padding-left: var(--hang);
+	text-indent: calc(-1 * var(--hang));
+	background-image: repeating-linear-gradient(to right, var(--color-border) 0 1px, transparent 1px 16px);
+	background-size: calc(var(--depth) * 16px) 100%;
+	background-repeat: no-repeat;
+}
+.code-editor .cm-editor .cm-indent { word-spacing: calc(var(--code-indent-space) - var(--code-space)); }
+.code-editor .cm-editor .cm-activeLine { background: var(--color-muted); }
+.code-editor .cm-editor .cm-selectionBackground,
+.code-editor .cm-editor.cm-focused .cm-selectionBackground { background: color-mix(in srgb, var(--color-primary) 10%, transparent); }
+.code-editor .cm-editor .cm-cursor { border-left-color: var(--color-foreground); }
+
+.code-editor .cm-editor .cm-syn-keyword { color: var(--syn-keyword); }
+.code-editor .cm-editor .cm-syn-punct { color: var(--syn-punct); }
+.code-editor .cm-editor .cm-syn-string { color: var(--syn-string); word-spacing: 0; }
+.code-editor .cm-editor .cm-syn-fn { color: var(--syn-fn); }
+.code-editor .cm-editor .cm-syn-comment { color: var(--syn-comment); font-weight: 500; }
+
+.code-editor .cm-editor .cm-gutters { border: 0; background: transparent; color: var(--color-muted-foreground); }
+.code-editor .cm-editor .cm-lineNumbers .cm-gutterElement { min-width: 48px; padding: 0 20px 0 4px; text-align: right; font-weight: 700; box-sizing: border-box; }
+.code-editor .cm-editor .cm-activeLineGutter { background: transparent; color: var(--color-foreground); }
+
+.code-editor .cm-editor .cm-scroller::-webkit-scrollbar { width: 20px; }
+.code-editor .cm-editor .cm-scroller::-webkit-scrollbar-track { box-shadow: inset 1px 0 0 var(--color-border); }
+.code-editor .cm-editor .cm-scroller::-webkit-scrollbar-thumb { background: var(--color-muted) padding-box; border: 8px solid transparent; border-radius: 16px; }
