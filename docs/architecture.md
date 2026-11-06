@@ -57,7 +57,7 @@ Figma "Chat Preview Site" is **layout reference only** (desktop sidebar ~248px +
 
 **Creator surfaces** (see [ADR-0003](../.project/adr/0003-creator-surfaces-preview-code.md)): ChatCore (no DOM) · ChatColumn · CreatorShell (AppNav \| chat \| Workspace). Workspace is the current page BlockTree with Preview (Svelte) and Code (Latte stub) tabs — both from one Page DTO. Hosts compose differently (SPA = full shell; WP embed = ChatColumn ± chrome).
 
-Default ChatCore talks to Session HTTP through the Vite `/v1` proxy (M4). The Go stub builder binds one page on the first successful turn and updates that page later; this is **not** a live model. Workspace still treats confirmed `save_page` artifacts as the UI acceptance path. Explicit `?mock=1` keeps localStorage + North Harbor fixture. `liveModel: false`. Live Agent Gateway adapters (`cursor-sdk`, Context Runtime, lexproto) remain [ADR-0004](../.project/adr/0004-agent-runtime-adapters.md) follow-ups.
+Default ChatCore talks to Session HTTP through the Vite `/v1` proxy (M4). Deterministic `PlanTurn` stays default. Opt-in `BUILDY_LIVE_MODEL=1` wires `POST /v1/sessions/.../messages` → `liveruntime` → `@grok/agent-sdk` (`context_pack` + `propose_page`) → Session `save_page` validation; `liveModel` flips only after `MarkLiveSuccess`. Context Runtime is probed on `CONTEXT_RUNTIME_URL` (BuildY CR `:18085`). `github.com/fastygo/lexproto` is docs-only @`3b092b8` — adapter is Unavailable (Jev≠lexproto). Explicit `?mock=1` keeps localStorage + North Harbor fixture. See [live-model-local.md](live-model-local.md) and [cr-port-provenance.md](cr-port-provenance.md).
 
 ## License
 

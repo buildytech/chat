@@ -17,11 +17,11 @@ const (
 // liveModel / contextRuntime / lexproto flip only after real probes or successful live use —
 // never claimed from env presence alone.
 func Capabilities() map[string]any {
-	live := liveModelEnabled() // env intent; truthful "liveModel" still false until MarkLiveSuccess
+	liveReq := liveModelEnabled() // env intent; truthful "liveModel" still false until MarkLiveSuccess
 	cr := contextRuntimeEnabled()
 	return map[string]any{
 		"runtime":   RuntimeName,
-		"mode":      modeLabel(live, cr),
+		"mode":      modeLabel(liveReq && liveSuccess.Load(), cr),
 		"liveModel": liveSuccess.Load(),
 		"builder":   "deterministic-test-stub",
 		"tools":     []string{ToolSavePage},
@@ -36,12 +36,14 @@ func Capabilities() map[string]any {
 			"contextRuntime": cr,
 			"lexproto":       lexprotoEnabled(),
 		},
+		"lexprotoStatus": lexprotoStatusMap(),
 		"live": map[string]any{
-			"requested": live,
+			"requested": liveReq,
 			"provider":  liveProviderName(),
 			"model":     liveModelName(),
+			"wired":     "session-postmessage→liveruntime→agent-sdk",
 		},
-		"note": "Session HTTP. Ordinary chat does not mutate pages; only explicit save_page does. Live model/CR/lexproto require env + successful real calls.",
+		"note": "Session HTTP. Ordinary chat does not mutate pages; only explicit save_page / live propose_page→save does. liveModel flips only after MarkLiveSuccess. lexproto is Unavailable until a real runtime exists (Jev≠lexproto).",
 	}
 }
 

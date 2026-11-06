@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
+	"github.com/buildytech/chat/services/context-serve/internal/agentruntime"
 	"github.com/buildytech/chat/services/context-serve/internal/httpsafe"
+	"github.com/buildytech/chat/services/context-serve/internal/liveruntime"
 	"github.com/buildytech/chat/services/context-serve/internal/pagestore"
 	"github.com/buildytech/chat/services/context-serve/internal/sessionhttp"
 	"github.com/buildytech/chat/services/context-serve/internal/sessionstore"
@@ -21,7 +24,32 @@ func main() {
 	}
 	defer store.Close()
 	sessions := sessionstore.New(store)
-	log.Printf("context-serve page+session foundation on %s (sqlite %s; live agent runtime not wired)", addr, dbPath)
+
+	// Probe CR once at boot so /v1/capabilities reflects a real adapter check.
+	crOK := agentruntime.ProbeContextRuntime()
+	log.Printf("context-runtime probe: %v (CONTEXT_RUNTIME_URL=%q)", crOK, os.Getenv("CONTEXT_RUNTIME_URL"))
+
+	if agentruntime.LiveRequested() {
+		runner := &liveruntime.Runner{}
+		sessions.LivePlanner = func(ctx context.Context, sess sessionstore.Session, req agentruntime.TurnRequest, history []sessionstore.Message) (agentruntime.TurnPlan, error) {
+			hint := liveruntime.SessionHint{
+				SessionID:  sess.ID,
+				PageID:     sess.PageID,
+				SlugIntent: sess.SlugIntent,
+				Title:      sess.Title,
+			}
+			for _, m := range history {
+				hint.History = append(hint.History, liveruntime.HistoryMessage{Role: m.Role, Content: m.Content})
+			}
+			return runner.Plan(ctx, hint, req)
+		}
+		log.Printf("live model REQUESTED (BUILDY_LIVE_MODEL); wired Session→liveruntime→agent-sdk; liveModel capability stays false until MarkLiveSuccess")
+	} else {
+		agentruntime.ClearLiveSuccess()
+		log.Printf("live model off (idle); deterministic PlanTurn only")
+	}
+
+	log.Printf("context-serve page+session on %s (sqlite %s)", addr, dbPath)
 	handler := httpsafe.Wrap(sessionhttp.NewMux(store, sessions))
 	if err := http.ListenAndServe(addr, handler); err != nil {
 		log.Fatal(err)

@@ -17,7 +17,10 @@ import (
 	"github.com/buildytech/chat/services/context-serve/internal/stubbuilder"
 )
 
-const turnTimeout = 8 * time.Second
+const (
+	turnTimeout     = 8 * time.Second
+	liveTurnTimeout = 180 * time.Second
+)
 
 var (
 	ErrNotFound               = errors.New("session not found")
@@ -32,10 +35,16 @@ var (
 
 type PageBuilder func(ctx context.Context, sess stubbuilder.SessionView, req agentruntime.TurnRequest) (map[string]any, error)
 
+// LivePlanner plans a content-only turn via the real agent runtime (history/tool loop).
+// When nil or when the client sends explicit tools, PlanTurn stays deterministic.
+type LivePlanner func(ctx context.Context, sess Session, req agentruntime.TurnRequest, history []Message) (agentruntime.TurnPlan, error)
+
 type Store struct {
 	pages *pagestore.Store
 	// Builder defaults to the labelled deterministic stub. Tests may inject a fake.
 	Builder PageBuilder
+	// LivePlanner is optional; wired from main when BUILDY_LIVE_MODEL is on.
+	LivePlanner LivePlanner
 	// AfterPendingCommit runs after a run is durably pending. Tests use it to simulate crash.
 	AfterPendingCommit func(ctx context.Context, runID string) error
 }
@@ -166,8 +175,12 @@ func (s *Store) GetRunByID(ctx context.Context, runID string) (Run, error) {
 
 func (s *Store) PostMessage(ctx context.Context, sessionID string, req agentruntime.TurnRequest) (TurnResult, error) {
 	if _, ok := ctx.Deadline(); !ok {
+		to := turnTimeout
+		if agentruntime.LiveRequested() && s.LivePlanner != nil {
+			to = liveTurnTimeout
+		}
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, turnTimeout)
+		ctx, cancel = context.WithTimeout(ctx, to)
 		defer cancel()
 	}
 	sess, err := s.Get(ctx, sessionID)
@@ -198,10 +211,11 @@ func (s *Store) PostMessage(ctx context.Context, sessionID string, req agentrunt
 		return s.materializeTurn(ctx, existing)
 	}
 
-	plan, err := agentruntime.PlanTurn(req)
+	plan, liveUsed, err := s.planTurn(ctx, sess, req)
 	if err != nil {
 		return TurnResult{}, fmt.Errorf("%w: %v", ErrInvalidTool, err)
 	}
+	_ = liveUsed
 
 	rawReq, err := json.Marshal(req)
 	if err != nil {
@@ -273,13 +287,17 @@ func (s *Store) PostMessage(ctx context.Context, sessionID string, req agentrunt
 			return TurnResult{}, err
 		}
 	}
-	return s.finishTurn(ctx, sess, runID, req, plan)
+	return s.finishTurn(ctx, sess, runID, req, plan, liveUsed)
 }
 
 func (s *Store) RecoverRun(ctx context.Context, sessionID, runID string) (TurnResult, error) {
 	if _, ok := ctx.Deadline(); !ok {
+		to := turnTimeout
+		if agentruntime.LiveRequested() && s.LivePlanner != nil {
+			to = liveTurnTimeout
+		}
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, turnTimeout)
+		ctx, cancel = context.WithTimeout(ctx, to)
 		defer cancel()
 	}
 	run, err := s.GetRun(ctx, sessionID, runID)
@@ -301,24 +319,45 @@ func (s *Store) RecoverRun(ctx context.Context, sessionID, runID string) (TurnRe
 	if err := json.Unmarshal(raw, &req); err != nil {
 		return TurnResult{}, err
 	}
-	plan, err := agentruntime.PlanTurn(req)
+	plan, liveUsed, err := s.planTurn(ctx, sess, req)
 	if err != nil {
 		_ = s.failRun(ctx, runID, fmt.Errorf("%w: %v", ErrInvalidTool, err))
 		return TurnResult{}, fmt.Errorf("%w: %v", ErrInvalidTool, err)
 	}
-	return s.finishTurn(ctx, sess, runID, req, plan)
+	return s.finishTurn(ctx, sess, runID, req, plan, liveUsed)
 }
 
-func (s *Store) finishTurn(ctx context.Context, sess Session, runID string, req agentruntime.TurnRequest, plan agentruntime.TurnPlan) (TurnResult, error) {
+func (s *Store) planTurn(ctx context.Context, sess Session, req agentruntime.TurnRequest) (agentruntime.TurnPlan, bool, error) {
+	useLive := agentruntime.LiveRequested() && s.LivePlanner != nil && len(req.Tools) == 0 && strings.TrimSpace(req.Content) != ""
+	if !useLive {
+		plan, err := agentruntime.PlanTurn(req)
+		return plan, false, err
+	}
+	history, _ := s.ListMessages(ctx, sess.ID)
+	// Cap history to keep prompt bounded
+	if len(history) > 24 {
+		history = history[len(history)-24:]
+	}
+	plan, err := s.LivePlanner(ctx, sess, req, history)
+	if err != nil {
+		return agentruntime.TurnPlan{}, true, err
+	}
+	return plan, true, nil
+}
+
+func (s *Store) finishTurn(ctx context.Context, sess Session, runID string, req agentruntime.TurnRequest, plan agentruntime.TurnPlan, liveUsed bool) (TurnResult, error) {
 	pageInput, err := s.buildPage(ctx, sess, req, plan)
 	if err != nil {
 		_ = s.failRun(ctx, runID, err)
 		return TurnResult{}, err
 	}
-	res, err := s.completeRun(ctx, sess, runID, req, plan, pageInput)
+	res, err := s.completeRun(ctx, sess, runID, req, plan, pageInput, liveUsed)
 	if err != nil {
 		_ = s.failRun(ctx, runID, err)
 		return TurnResult{}, err
+	}
+	if liveUsed {
+		agentruntime.MarkLiveSuccess()
 	}
 	return res, nil
 }
@@ -337,7 +376,7 @@ func (s *Store) buildPage(ctx context.Context, sess Session, req agentruntime.Tu
 	return asObjectMap(plan.SavePage.Page)
 }
 
-func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req agentruntime.TurnRequest, plan agentruntime.TurnPlan, pageInput map[string]any) (TurnResult, error) {
+func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req agentruntime.TurnRequest, plan agentruntime.TurnPlan, pageInput map[string]any, liveUsed bool) (TurnResult, error) {
 	tx, err := s.pages.BeginTx(ctx, nil)
 	if err != nil {
 		return TurnResult{}, err
@@ -424,7 +463,7 @@ func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req
 
 	result := map[string]any{
 		"assistantText": asstText,
-		"liveModel":     false,
+		"liveModel":     liveUsed,
 		"saved":         pageRec != nil,
 	}
 	if pageRec != nil {
