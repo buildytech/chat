@@ -1,11 +1,14 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import Block from "../compose/Block.svelte";
 	import Group from "../compose/Group.svelte";
 	import type { ChatSession, SessionSummary } from "../chat-core";
+	import { creatorLayout } from "../creator-layout.svelte";
 	import ChatColumn from "./ChatColumn.svelte";
 	import ChatDrawer from "./ChatDrawer.svelte";
 	import CreatorTabs from "./CreatorTabs.svelte";
 	import CreatorTopBar from "./CreatorTopBar.svelte";
+	import PaneSplitter from "./PaneSplitter.svelte";
 	import Workspace from "./Workspace.svelte";
 
 	let {
@@ -35,12 +38,16 @@
 	} = $props();
 
 	let mobileSurface = $state<"chat" | "workspace">("chat");
-	let sidebarCollapsed = $state(false);
-	let chatHidden = $state(false);
+	const sidebarCollapsed = $derived(creatorLayout.sidebarCollapsed);
+	const chatHidden = $derived(creatorLayout.chatHidden);
+
+	onMount(() => {
+		creatorLayout.syncCssVars();
+	});
 
 	function handleNavToggle() {
 		if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
-			sidebarCollapsed = !sidebarCollapsed;
+			creatorLayout.toggleSidebar();
 			return;
 		}
 		onToggleSidebar();
@@ -48,7 +55,7 @@
 
 	function handleToggleChat() {
 		if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
-			chatHidden = !chatHidden;
+			creatorLayout.toggleChat();
 			return;
 		}
 		mobileSurface = "chat";
@@ -56,8 +63,10 @@
 </script>
 
 <Block
+	id="creator-shell"
 	class="flex h-dvh min-h-0 flex-col bg-muted text-foreground"
 	data-pane={mobileSurface}
+	data-nav={sidebarCollapsed ? "collapsed" : "expanded"}
 	data-chat-hidden={chatHidden ? "true" : "false"}
 >
 	<Group class="relative min-h-0 flex-1 items-stretch">
@@ -72,6 +81,9 @@
 			onClose={onCloseSidebar}
 			onToggle={handleNavToggle}
 		/>
+		{#if !sidebarCollapsed}
+			<PaneSplitter pane="nav" class="max-lg:hidden" />
+		{/if}
 		<Block tag="main" id="main-content" class="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
 			<CreatorTopBar
 				{sidebarOpen}
@@ -85,6 +97,9 @@
 					visible={mobileSurface === "chat"}
 					{chatHidden}
 				/>
+				{#if !chatHidden}
+					<PaneSplitter pane="chat" class="max-lg:hidden" />
+				{/if}
 				<Workspace
 					visible={mobileSurface === "workspace"}
 					{chatHidden}

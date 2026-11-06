@@ -131,6 +131,11 @@
 		"code.closeTab": "Закрыть вкладку",
 		"code.tree": "Файлы проекта",
 		"code.emptyPane": "Выберите файл в дереве.",
-		"code.explorer": "Проводник"
+		"code.explorer": "Проводник",
+		"code.hideFiles": "Скрыть файлы",
+		"code.showFiles": "Показать файлы",
+		"splitter.nav": "Изменить ширину навигации",
+		"splitter.chat": "Изменить ширину чата",
+		"splitter.tree": "Изменить ширину дерева файлов"
 	}
 }

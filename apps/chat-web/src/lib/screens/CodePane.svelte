@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ChevronLeft from "@lucide/svelte/icons/chevron-left";
 	import FileCode from "@lucide/svelte/icons/file-code";
+	import Files from "@lucide/svelte/icons/files";
 	import X from "@lucide/svelte/icons/x";
 	import Block from "../compose/Block.svelte";
 	import Group from "../compose/Group.svelte";
@@ -19,7 +20,9 @@
 		walkBlocks
 	} from "../page-store";
 	import CodeEditor from "../editor/CodeEditor.svelte";
+	import { creatorLayout } from "../creator-layout.svelte";
 	import CodeFilePane, { type CodeTreeEntry } from "./CodeFilePane.svelte";
+	import PaneSplitter from "./PaneSplitter.svelte";
 
 	type CodeTab = { label: string; path: string; active: boolean };
 
@@ -54,6 +57,8 @@
 	const visibleTree = $derived(
 		tree.filter((entry) => entry.kind === "folder" || entry.path === "page.latte" || entry.path === "manifest.json" || (entry.path.startsWith("blocks/") && !!openFolders["blocks"]))
 	);
+
+	const treeCollapsed = $derived(creatorLayout.treeCollapsed);
 
 	let pane = $state<"files" | "search" | "apps">("files");
 	let tabs = $state<CodeTab[]>([{ label: "page.latte", path: "page.latte", active: true }]);
@@ -109,10 +114,15 @@
 		tree={visibleTree}
 		{selectedPath}
 		{openFolders}
+		collapsed={treeCollapsed}
 		onpane={(next) => (pane = next)}
 		ontoggle={(id) => (openFolders[id] = !openFolders[id])}
 		onopen={openFile}
+		oncollapse={() => creatorLayout.toggleTree()}
 	/>
+	{#if !treeCollapsed}
+		<PaneSplitter pane="tree" class="max-md:hidden" />
+	{/if}
 
 	<Block class="flex min-h-0 min-w-0 flex-1 flex-col max-md:in-data-[stage=files]:hidden">
 		<Block class="hidden border-b border-border p-4 max-md:in-data-[stage=editor]:block">
@@ -124,11 +134,22 @@
 				<Text tag="span">{t("code.backFiles")}</Text>
 			</Button>
 		</Block>
-		<Group
-			class="h-10 shrink-0 items-center overflow-x-auto border-b border-border bg-muted [scrollbar-width:none]"
-			role="tablist"
-			aria-label={t("code.openFiles")}
-		>
+		<Group class="h-10 shrink-0 items-center overflow-hidden border-b border-border bg-muted">
+			{#if treeCollapsed}
+				<Button
+					class="ml-1 hidden size-8 shrink-0 items-center justify-center rounded-default text-muted-foreground hover:bg-accent hover:text-foreground md:inline-flex"
+					aria-label={t("code.showFiles")}
+					title={t("code.showFiles")}
+					onclick={() => creatorLayout.toggleTree()}
+				>
+					<Icon size="sm"><Files /></Icon>
+				</Button>
+			{/if}
+			<Group
+				class="h-full min-w-0 flex-1 items-center overflow-x-auto [scrollbar-width:none]"
+				role="tablist"
+				aria-label={t("code.openFiles")}
+			>
 			{#each tabs as tab, i (tab.path)}
 				<Group
 					class={cn(
@@ -154,6 +175,7 @@
 					</Button>
 				</Group>
 			{/each}
+			</Group>
 		</Group>
 		<Group class="h-10 shrink-0 items-center gap-1 overflow-x-auto border-b border-border px-3" aria-label={t("code.path")}>
 			{#each crumbs as crumb, i (crumb + i)}

@@ -33,12 +33,12 @@
 <Block
 	id="chat-sidebar-drawer"
 	class={cn(
-		"absolute inset-y-0 left-0 z-20 h-full lg:static lg:z-auto",
+		"absolute inset-y-0 left-0 z-20 h-full shrink-0 lg:static lg:z-auto",
 		open ? "flex" : "hidden",
-		collapsed ? "lg:hidden" : "lg:flex"
+		"lg:flex"
 	)}
 >
-	<AppNav {sessions} {selectedId} {onNew} {onSelect} {onDelete} {onToggle} />
+	<AppNav {sessions} {selectedId} {onNew} {onSelect} {onDelete} {onToggle} {collapsed} />
 </Block>
 {#if open}
 	<Button

@@ -44,3 +44,19 @@ textarea,
 select {
 	font: inherit;
 }
+
+#creator-shell {
+	--creator-nav-w: 248px;
+	--creator-chat-w: 320px;
+	--creator-tree-w: 208px;
+}
+
+body.creator-resizing {
+	cursor: col-resize;
+	user-select: none;
+}
+
+body.creator-resizing iframe,
+body.creator-resizing .code-editor {
+	pointer-events: none;
+}

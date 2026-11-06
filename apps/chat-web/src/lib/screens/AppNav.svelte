@@ -8,7 +8,8 @@
 		onNew,
 		onSelect,
 		onDelete,
-		onToggle
+		onToggle,
+		collapsed = false
 	}: {
 		sessions: SessionSummary[];
 		selectedId: string | null;
@@ -16,7 +17,8 @@
 		onSelect: (id: string) => void;
 		onDelete: (id: string) => void;
 		onToggle?: () => void;
+		collapsed?: boolean;
 	} = $props();
 </script>
 
-<ChatSidebar {sessions} {selectedId} {onNew} {onSelect} {onDelete} {onToggle} />
+<ChatSidebar {sessions} {selectedId} {onNew} {onSelect} {onDelete} {onToggle} {collapsed} />

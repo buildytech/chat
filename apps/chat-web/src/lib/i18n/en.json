@@ -130,6 +130,11 @@
 		"code.closeTab": "Close tab",
 		"code.tree": "Project files",
 		"code.emptyPane": "Select a file in the tree.",
-		"code.explorer": "Explorer"
+		"code.explorer": "Explorer",
+		"code.hideFiles": "Hide files",
+		"code.showFiles": "Show files",
+		"splitter.nav": "Resize navigation",
+		"splitter.chat": "Resize chat",
+		"splitter.tree": "Resize file tree"
 	}
 }
