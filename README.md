@@ -23,7 +23,7 @@ npm run dev
 
 Then `npm run build` for the static SPA (`200.html` fallback). The mock session API is client-side; no live backend or keys are required.
 
-Architecture: [docs/architecture.md](docs/architecture.md). Runbook: [docs/runbook.md](docs/runbook.md).
+Architecture: [docs/architecture.md](docs/architecture.md). Runbook: [docs/runbook.md](docs/runbook.md). Operator notes (ADR / SLO / SLSA): [.project/](.project/README.md).
 
 ## Layout
 

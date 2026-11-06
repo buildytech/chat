@@ -14,7 +14,7 @@ Open the printed localhost URL. New chat, type a message, toggle dark/light. Wor
 npm run build
 ```
 
-Static SPA with `200.html` fallback for WordPress / Wails / Telegram hosts.
+Static SPA with `200.html` fallback for WordPress / Wails / Telegram hosts. CI: `.github/workflows/ci.yml`. Operator notes (ADR / SLO / SLSA): [.project/](../.project/README.md).
 
 ## Orchestrator (stub)
 
