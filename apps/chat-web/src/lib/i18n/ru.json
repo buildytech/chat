@@ -31,7 +31,10 @@
 		"workspace.code": "Код",
 		"workspace.blockTree": "Секции",
 		"workspace.empty": "На этой странице пока нет секций.",
+		"workspace.selected": "Выбрано",
 		"preview.runtime": "Svelte-превью (заглушка)",
-		"code.runtime": "Latte для WordPress (заглушка, не компилятор)"
+		"preview.selectBlock": "Выбрать секцию",
+		"code.runtime": "Latte для WordPress (заглушка, не компилятор)",
+		"code.selected": "Выбрано в исходнике"
 	}
 }

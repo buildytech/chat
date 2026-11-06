@@ -30,7 +30,10 @@
 		"workspace.code": "Code",
 		"workspace.blockTree": "Sections",
 		"workspace.empty": "No sections on this page yet.",
+		"workspace.selected": "Selected",
 		"preview.runtime": "Svelte preview (stub)",
-		"code.runtime": "Latte for WordPress (stub, not a compiler)"
+		"preview.selectBlock": "Select section",
+		"code.runtime": "Latte for WordPress (stub, not a compiler)",
+		"code.selected": "Selected in source"
 	}
 }

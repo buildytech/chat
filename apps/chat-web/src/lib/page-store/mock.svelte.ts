@@ -1,52 +1,44 @@
-import type { CreatorPage } from "./page";
+import { mockLandingPage } from "./fixture";
+import type { CreatorPage, PageBlock } from "./page";
+import { findBlock, firstBlockId, hasBlock } from "./tree";
 
-/** Current landing page fixture. Replace with PagePort when the store is live. */
-export const mockLandingPage: CreatorPage = {
-	id: "page-home",
-	slug: "home",
-	status: "draft",
-	title: "Home",
-	layout: {
-		version: 1,
-		blocks: [
-			{
-				id: "block-hero",
-				kind: "hero",
-				title: "Hero",
-				summary: "Headline and a short promise. No fabricated promo."
-			},
-			{
-				id: "block-features",
-				kind: "features",
-				title: "Features",
-				summary: "Three ordinary points. No checkout, no stock numbers."
-			},
-			{
-				id: "block-cta",
-				kind: "cta",
-				title: "Call to action",
-				summary: "A single button that does not start payment."
-			},
-			{
-				id: "block-footer",
-				kind: "footer",
-				title: "Footer",
-				summary: "Contact line and copyright."
-			}
-		]
-	},
-	seo: {
-		title: "Home",
-		description: "Ordinary landing page with a unique slug."
-	},
-	locale: "en",
-	createdAt: "2026-11-06T00:00:00.000Z",
-	updatedAt: "2026-11-06T00:00:00.000Z"
-};
+export { mockLandingPage };
 
 let currentPage = $state<CreatorPage>(mockLandingPage);
+/** Hydrated at module init — do not assign inside $derived. */
+let selectedBlockId = $state<string | null>(firstBlockId(mockLandingPage.layout.blocks));
+
+function syncSelection(page: CreatorPage): void {
+	if (!hasBlock(page.layout.blocks, selectedBlockId)) {
+		selectedBlockId = firstBlockId(page.layout.blocks);
+	}
+}
 
 /** Pure read — do not mutate inside $derived. */
 export function getCurrentPage(): CreatorPage {
 	return currentPage;
+}
+
+/** Pure read — do not mutate inside $derived. */
+export function getSelectedBlockId(): string | null {
+	return selectedBlockId;
+}
+
+/** Pure read — do not mutate inside $derived. */
+export function getSelectedBlock(): PageBlock | null {
+	return findBlock(currentPage.layout.blocks, selectedBlockId);
+}
+
+export function selectBlock(id: string): void {
+	if (!hasBlock(currentPage.layout.blocks, id)) return;
+	selectedBlockId = id;
+}
+
+/**
+ * Replace the current page. Resets selection when the id is missing from the new tree.
+ * Call from event handlers / loaders — never from $derived.
+ */
+export function setCurrentPage(page: CreatorPage): void {
+	currentPage = page;
+	syncSelection(page);
 }

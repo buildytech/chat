@@ -1,21 +1,91 @@
-import { blocksOf, type CreatorPage } from "./page";
+import { blocksOf, type CreatorPage, type PageBlock, type PageBlockCopy } from "./page";
+import { walkBlocks } from "./tree";
+
+const COPY_KEYS: (keyof PageBlockCopy)[] = [
+	"eyebrow",
+	"headline",
+	"lede",
+	"action",
+	"note",
+	"brand",
+	"contact",
+	"legal",
+	"days",
+	"address"
+];
+
+function macroName(id: string): string {
+	return id.replace(/-/g, "_");
+}
+
+function selectedMark(block: PageBlock, selectedId: string | null): string {
+	return block.id === selectedId ? " {* selected *}" : "";
+}
+
+function copyLines(block: PageBlock, indent: string): string[] {
+	const copy = block.copy;
+	if (!copy) return [];
+	const lines: string[] = [];
+	for (const key of COPY_KEYS) {
+		if (!copy[key]) continue;
+		lines.push(
+			`${indent}<p data-copy="${key}">{$page->blocks['${block.id}']['copy']['${key}']}</p>`
+		);
+	}
+	return lines;
+}
+
+function emitDefine(block: PageBlock, selectedId: string | null): string[] {
+	const name = macroName(block.id);
+	const selectedAttr = block.id === selectedId ? ` data-selected="true"` : "";
+	const lines: string[] = [
+		`{define #${name}}`,
+		`	<section data-block="${block.kind}" data-id="${block.id}"${selectedAttr}>`,
+		`		<h2>{$page->blocks['${block.id}']['title']}</h2>`
+	];
+	lines.push(...copyLines(block, "		"));
+	if (block.children?.length) {
+		lines.push(`		{foreach $page->blocks['${block.id}']['children'] as $child}`);
+		lines.push(`			{include #item, item: $child}`);
+		lines.push(`		{/foreach}`);
+	}
+	lines.push(`	</section>`);
+	lines.push(`{/define}`);
+	return lines;
+}
 
 /**
  * CodePort stub: Latte-ish source from the same Page DTO as PreviewPort.
  * Not a Latte compiler. WP publish is out of this pass (ADR-0003).
  */
-export function latteFromPage(page: CreatorPage): string {
-	const blocks = blocksOf(page);
+export function latteFromPage(page: CreatorPage, selectedId: string | null = null): string {
+	const roots = blocksOf(page);
+	const nodes = walkBlocks(roots);
 	const lines: string[] = [
 		`{* CodePort stub from Page DTO ${page.id} (${page.slug}). Not a Latte compiler. ADR-0003. *}`,
 		`{layout 'Main/page.latte'}`,
 		``,
-		`{block #content}`
+		`{var $selectedId = '${selectedId ?? ""}'}`,
+		`{var $pageTitle = $page->title}`,
+		``,
+		`{define #item, $item}`,
+		`	<article data-block="{$item['kind']}" data-id="{$item['id']}">`,
+		`		<h3>{$item['title']}</h3>`,
+		`		<p>{$item['summary']}</p>`,
+		`		{if $item['id'] === $selectedId}{* selected child *}{/if}`,
+		`	</article>`,
+		`{/define}`,
+		``
 	];
-	for (const block of blocks) {
-		lines.push(`	<section data-block="${block.kind}" data-id="${block.id}">`);
-		lines.push(`		<h2>{$page->blocks['${block.id}']['title']}</h2>`);
-		lines.push(`	</section>`);
+
+	for (const node of nodes) {
+		lines.push(...emitDefine(node, selectedId));
+		lines.push(``);
+	}
+
+	lines.push(`{block #content}`);
+	for (const block of roots) {
+		lines.push(`	{include #${macroName(block.id)}}${selectedMark(block, selectedId)}`);
 	}
 	lines.push(`{/block}`);
 	lines.push(``);

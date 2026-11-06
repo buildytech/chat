@@ -3,12 +3,12 @@
 	import Stack from "../compose/Stack.svelte";
 	import Text from "../../ui/text/Text.svelte";
 	import { t } from "../i18n/dictionary";
-	import { blocksOf, type CreatorPage } from "../page-store";
+	import { blocksOf, getCurrentPage, getSelectedBlockId } from "../page-store";
 	import PreviewBlock from "./PreviewBlock.svelte";
 
-	let { page }: { page: CreatorPage } = $props();
-
+	const page = $derived(getCurrentPage());
 	const blocks = $derived(blocksOf(page));
+	const selectedId = $derived(getSelectedBlockId());
 </script>
 
 <Block
@@ -22,7 +22,7 @@
 			<Text tag="p" class="text-sm text-muted-foreground">{t("workspace.empty")}</Text>
 		{:else}
 			{#each blocks as block (block.id)}
-				<PreviewBlock {block} />
+				<PreviewBlock {block} {selectedId} />
 			{/each}
 		{/if}
 	</Stack>

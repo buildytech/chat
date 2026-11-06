@@ -21,12 +21,25 @@ export type PageSeo = {
 };
 
 /**
- * Layout payload. Opaque to chat-web: both builders read/write the same
- * Page Store. Chat does not interpret block internals in this scaffold.
+ * One node in `layout.blocks`. Children are ordered nested sections or items.
+ * `kind` is a renderer key (hero, features, cta, …). Copy is opaque strings.
+ */
+export type PageBlock = {
+	id: string;
+	kind: string;
+	title?: string;
+	summary?: string;
+	copy?: Record<string, string>;
+	children?: PageBlock[];
+};
+
+/**
+ * Layout payload. Both builders read/write the same Page Store.
+ * PreviewPort (Svelte) and CodePort (Latte) project this tree (ADR-0003).
  */
 export type PageLayout = {
 	version: 1;
-	blocks: unknown[];
+	blocks: PageBlock[];
 };
 
 export type Page = {

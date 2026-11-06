@@ -10,7 +10,7 @@
 	import Title from "../compose/Title.svelte";
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
-	import { blocksOf, getCurrentPage } from "../page-store";
+	import { getCurrentPage, getSelectedBlock } from "../page-store";
 	import BlockTree from "./BlockTree.svelte";
 	import CodePane from "./CodePane.svelte";
 	import PreviewPane from "./PreviewPane.svelte";
@@ -20,7 +20,7 @@
 	let tab = $state<"preview" | "code">("preview");
 
 	const page = $derived(getCurrentPage());
-	const blocks = $derived(blocksOf(page));
+	const selected = $derived(getSelectedBlock());
 </script>
 
 <Block
@@ -35,7 +35,13 @@
 	<Group class="shrink-0 justify-between gap-3 border-b border-border px-4 py-3">
 		<Stack class="min-w-0 gap-1">
 			<Title as={1} class="truncate text-lg font-semibold text-foreground">{page.title}</Title>
-			<Text tag="span" class="truncate text-xs text-muted-foreground">{page.slug}</Text>
+			<Group class="min-w-0 gap-2">
+				<Text tag="span" class="truncate text-xs text-muted-foreground">{page.slug}</Text>
+				{#if selected}
+					<Text tag="span" class="text-xs text-muted-foreground">{t("workspace.selected")}</Text>
+					<Text tag="span" class="truncate text-xs text-foreground">{selected.title}</Text>
+				{/if}
+			</Group>
 		</Stack>
 		<Group class="gap-2">
 			<Button
@@ -67,11 +73,11 @@
 		</Group>
 	</Group>
 	<Stack class="min-h-0 flex-1 lg:flex-row">
-		<BlockTree {blocks} />
+		<BlockTree />
 		{#if tab === "preview"}
-			<PreviewPane {page} />
+			<PreviewPane />
 		{:else}
-			<CodePane {page} />
+			<CodePane />
 		{/if}
 	</Stack>
 </Block>
