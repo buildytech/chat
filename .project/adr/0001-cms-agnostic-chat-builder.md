@@ -45,3 +45,10 @@ P0 pages: ordinary pages only. Нет checkout/payment, fabricated discounts/sto
 - Адаптеры реализуют порты; chat-web остаётся CMS-agnostic.
 - Offline mock (`session.svelte.ts`) закрывает local path, пока orchestrator / context-serve не live.
 - Дальнейший FastyGo adapter — тот же Page Store, не форк DTO.
+
+## Related / Amend
+
+Не переписывает dual builders, Page DTO, hosts и P0 page constraints.
+
+- [ADR-0003](0003-creator-surfaces-preview-code.md) — Creator surfaces (ChatCore / ChatColumn / CreatorShell), Workspace = BlockTree текущей страницы, PreviewPort (Svelte) + CodePort (Latte), paint vs structure, host composition.
+- [ADR-0004](0004-agent-runtime-adapters.md) — Agent Gateway as sole chat channel, AdapterRegistry (`context-local` default, opt-in `cursor-sdk`), capabilities-only UI.

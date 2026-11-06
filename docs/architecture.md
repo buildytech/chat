@@ -55,7 +55,9 @@ P0 pages are ordinary pages only: unique slug, no multilanding/UTM, no checkout/
 
 Figma "Chat Preview Site" is **layout reference only** (desktop sidebar ~248px + content; 768/360 use a 64px navigate bar). Implementation uses **UI8Kit Svelte** primitives (`tag` retag, no bare HTML in composition), **Istok Web** (local), **rounded-default**, **shadcn HSL tokens**, Lucide icons, dictionary strings (ru).
 
-Offline mock: `src/lib/api/session.svelte.ts` (in-memory + localStorage). The SPA does not call a live orchestrator.
+**Creator surfaces** (see [ADR-0003](../.project/adr/0003-creator-surfaces-preview-code.md)): ChatCore (no DOM) · ChatColumn · CreatorShell (AppNav \| chat \| Workspace). Workspace is the current page BlockTree with Preview (Svelte) and Code (Latte stub) tabs — both from one Page DTO. Hosts compose differently (SPA = full shell; WP embed = ChatColumn ± chrome).
+
+Offline mock: ChatCore / `src/lib/api/session.svelte.ts` (in-memory + localStorage). The SPA does not call a live orchestrator. Agent Gateway, AdapterRegistry (`context-local` default, opt-in `cursor-sdk`) are [ADR-0004](../.project/adr/0004-agent-runtime-adapters.md) — not wired in P0.
 
 ## License
 

@@ -6,11 +6,13 @@ Operator notes for this repository. See `intent.md` when present.
 
 | Path | What |
 | --- | --- |
-| [intent.md](intent.md) | One-page product intent |
+| [intent.md](intent.md) | One-page product intent (Creator shell + optional cursor-sdk) |
 | [adr/](adr/README.md) | Architecture Decision Records |
 | [adr/0001-cms-agnostic-chat-builder.md](adr/0001-cms-agnostic-chat-builder.md) | Dual builders, Page Store ports, stack split |
 | [adr/0002-supply-chain-slsa.md](adr/0002-supply-chain-slsa.md) | SLSA Build L1 + CI provenance toward L2 |
-| [slo/chat-web.md](slo/chat-web.md) | Early-stage SLO for the runnable SPA |
+| [adr/0003-creator-surfaces-preview-code.md](adr/0003-creator-surfaces-preview-code.md) | ChatCore / ChatColumn / CreatorShell; Preview Svelte + Code Latte |
+| [adr/0004-agent-runtime-adapters.md](adr/0004-agent-runtime-adapters.md) | Agent Gateway, AdapterRegistry, opt-in `cursor-sdk` |
+| [slo/chat-web.md](slo/chat-web.md) | Early-stage SLO: build CI + Creator/ChatCore/Gateway indicators |
 | [slsa/controls.md](slsa/controls.md) | P0 supply-chain checklist + build recipe |
 | [slsa/verify.md](slsa/verify.md) | How to verify GitHub artefact provenance |
 
