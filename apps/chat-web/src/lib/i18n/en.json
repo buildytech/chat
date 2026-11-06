@@ -1,0 +1,25 @@
+{
+	"locale": "en",
+	"messages": {
+		"app.title": "SI Chat website builder",
+		"app.documentTitle": "SI Chat — BuildYtech",
+		"sidebar.chats": "Chats",
+		"sidebar.newChat": "New chat",
+		"sidebar.empty": "No chats yet",
+		"sidebar.open": "Open history",
+		"sidebar.close": "Close sidebar",
+		"sidebar.delete": "Delete chat",
+		"composer.placeholder": "Describe the page…",
+		"composer.send": "Send",
+		"composer.label": "Message",
+		"empty.title": "New chat",
+		"empty.subtitle": "Describe a site or page. The builder creates an ordinary page with a unique slug — no checkout, no fabricated promo.",
+		"message.you": "You",
+		"message.assistant": "Assistant",
+		"theme.toDark": "Dark theme",
+		"theme.toLight": "Light theme",
+		"thread.untitled": "New chat",
+		"nav.brand": "SI Chat",
+		"assistant.ack": "I will draft an ordinary page with a unique slug. Checkout, discounts, and stock numbers are out of scope."
+	}
+}

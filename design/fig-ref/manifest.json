@@ -1,0 +1,24 @@
+{
+  "schema": "fig2design/manifest@1",
+  "tool": {
+    "name": "fig2design",
+    "version": "0.1.0"
+  },
+  "generatedAt": "2026-11-06T10:31:22.792Z",
+  "counts": {
+    "pages": 1,
+    "frames": 9
+  },
+  "frames": [
+    "frames/1-29494.json",
+    "frames/1-29659.json",
+    "frames/1-29712.json",
+    "frames/1-29813.json",
+    "frames/1-29863.json",
+    "frames/1-29963.json",
+    "frames/1-30390.json",
+    "frames/1-30755.json",
+    "frames/1-30827.json"
+  ],
+  "notice": "Layout reference only. Full 21MB dump is not stored in this repo."
+}

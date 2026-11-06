@@ -1,0 +1,49 @@
+{
+  "name": "@buildytech/chat-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+  },
+  "ui8kit": {
+    "runtime": "svelte",
+    "kit": [
+      "src/ui",
+      "src/utils",
+      "src/lib/icons"
+    ],
+    "composition": [
+      "src/lib/compose",
+      "src/lib/screens",
+      "src/routes"
+    ],
+    "blockRoot": [
+      "src/lib/screens",
+      "src/routes"
+    ]
+  },
+  "dependencies": {
+    "@lucide/svelte": "^0.544.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-static": "^3.0.9",
+    "@sveltejs/kit": "^2.43.2",
+    "@sveltejs/vite-plugin-svelte": "^6.2.0",
+    "@tailwindcss/vite": "^4.1.13",
+    "svelte": "^5.39.6",
+    "svelte-check": "^4.3.1",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

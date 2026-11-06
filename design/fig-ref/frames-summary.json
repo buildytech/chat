@@ -1,0 +1,141 @@
+{
+  "note": "Slim fig2design digest. Figma is layout reference only (sidebar ~248 + content). Do not copy Inter or kit radii; map to UI8Kit tokens + Istok Web + rounded-default.",
+  "frames": [
+    {
+      "id": "1:29494",
+      "name": "Chat Preview Site (1600)",
+      "size": {
+        "w": 1600,
+        "h": 1440
+      },
+      "sectionNames": [
+        "Content",
+        "Sidebar",
+        "Content"
+      ]
+    },
+    {
+      "id": "1:29659",
+      "name": "Chat Preview Site (768)",
+      "size": {
+        "w": 768,
+        "h": 918
+      },
+      "sectionNames": [
+        "Navigate",
+        "Content",
+        "Heading",
+        "Buttons"
+      ]
+    },
+    {
+      "id": "1:29712",
+      "name": "Chat Preview Site (768)",
+      "size": {
+        "w": 768,
+        "h": 1528
+      },
+      "sectionNames": [
+        "Navigate",
+        "Content",
+        "Heading",
+        "Buttons",
+        "Switcher-Horizontal-Pilled-Group",
+        "Content"
+      ]
+    },
+    {
+      "id": "1:29813",
+      "name": "Chat Preview Site (360)",
+      "size": {
+        "w": 360,
+        "h": 1142
+      },
+      "sectionNames": [
+        "Navigate",
+        "Content",
+        "Heading",
+        "Buttons",
+        "Switcher-Horizontal-Pilled-Group",
+        "Content"
+      ]
+    },
+    {
+      "id": "1:29863",
+      "name": "Chat Preview Site (360)",
+      "size": {
+        "w": 360,
+        "h": 2204
+      },
+      "sectionNames": [
+        "Navigate",
+        "Content",
+        "Heading",
+        "Buttons",
+        "Switcher-Horizontal-Pilled-Group",
+        "Content"
+      ]
+    },
+    {
+      "id": "1:29963",
+      "name": "Chat Preview Site (1600)",
+      "size": {
+        "w": 1600,
+        "h": 1136
+      },
+      "sectionNames": [
+        "Content",
+        "Sidebar",
+        "Content"
+      ]
+    },
+    {
+      "id": "1:30390",
+      "name": "Chat Preview Site (768)",
+      "size": {
+        "w": 768,
+        "h": 1448
+      },
+      "sectionNames": [
+        "Navigate",
+        "Content",
+        "Heading",
+        "Buttons",
+        "Switcher-Horizontal-Pilled-Group",
+        "Content"
+      ]
+    },
+    {
+      "id": "1:30755",
+      "name": "Chat Preview Site (360)",
+      "size": {
+        "w": 360,
+        "h": 1492
+      },
+      "sectionNames": [
+        "Navigate",
+        "Content",
+        "Heading",
+        "Buttons",
+        "Switcher-Horizontal-Pilled-Group",
+        "Content"
+      ]
+    },
+    {
+      "id": "1:30827",
+      "name": "Chat Preview Site (360)",
+      "size": {
+        "w": 360,
+        "h": 2580
+      },
+      "sectionNames": [
+        "Navigate",
+        "Content",
+        "Heading",
+        "Buttons",
+        "Switcher-Horizontal-Pilled-Group",
+        "Content"
+      ]
+    }
+  ]
+}

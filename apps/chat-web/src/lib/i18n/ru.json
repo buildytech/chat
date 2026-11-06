@@ -1,0 +1,26 @@
+{
+	"locale": "ru",
+	"source_locale": "en",
+	"messages": {
+		"app.title": "SI чат-конструктор сайтов",
+		"app.documentTitle": "SI Чат — BuildYtech",
+		"sidebar.chats": "Чаты",
+		"sidebar.newChat": "Новый чат",
+		"sidebar.empty": "Пока нет чатов",
+		"sidebar.open": "Открыть историю",
+		"sidebar.close": "Закрыть боковую панель",
+		"sidebar.delete": "Удалить чат",
+		"composer.placeholder": "Опишите страницу…",
+		"composer.send": "Отправить",
+		"composer.label": "Сообщение",
+		"empty.title": "Новый чат",
+		"empty.subtitle": "Опишите сайт или страницу. Конструктор создаст обычную страницу с уникальным слагом — без оплаты и без выдуманных акций.",
+		"message.you": "Вы",
+		"message.assistant": "Ассистент",
+		"theme.toDark": "Тёмная тема",
+		"theme.toLight": "Светлая тема",
+		"thread.untitled": "Новый чат",
+		"nav.brand": "SI Чат",
+		"assistant.ack": "Подготовлю обычную страницу с уникальным слагом. Оплата, скидки и остатки склада в эту версию не входят."
+	}
+}

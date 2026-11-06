@@ -1,0 +1,21 @@
+{
+  "name": "@buildytech/chat",
+  "private": true,
+  "version": "0.0.0",
+  "description": "CMS-agnostic SI Chat Website Builder monorepo",
+  "license": "Apache-2.0",
+  "workspaces": [
+    "apps/chat-web",
+    "packages/page-contract",
+    "packages/ports",
+    "adapters/wordpress"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@buildytech/chat-web",
+    "build": "npm run build --workspace=@buildytech/chat-web",
+    "verify": "npm run build --workspace=@buildytech/chat-web"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

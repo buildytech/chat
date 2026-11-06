@@ -1,0 +1,18 @@
+# Local CR + Agent SDK orchestrator. Scaffold — images are placeholders.
+services:
+  context-serve:
+    build:
+      context: ../../services/context-serve
+    image: buildytech-context-serve:stub
+    ports:
+      - "8090:8090"
+  orchestrator:
+    image: node:22-bookworm
+    working_dir: /app
+    volumes:
+      - ../../apps/orchestrator:/app
+    command: ["bash", "-lc", "echo 'orchestrator stub — @grok/agent-sdk@0.6.0; no live keys required for scaffold' && sleep infinity"]
+    ports:
+      - "4400:4400"
+    depends_on:
+      - context-serve

@@ -1,0 +1,14 @@
+{
+  "name": "@buildytech/adapter-wordpress",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Thin WordPress adapter: embed chat-web + PagePort REST client.",
+  "main": "./src/client.ts",
+  "types": "./src/client.ts",
+  "dependencies": {
+    "@buildytech/page-contract": "0.0.0",
+    "@buildytech/ports": "0.0.0"
+  }
+}
