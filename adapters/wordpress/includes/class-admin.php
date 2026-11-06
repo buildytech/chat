@@ -5,6 +5,7 @@ final class Buildytech_Si_Chat_Admin {
 	public static function register(): void {
 		add_action('admin_menu', [self::class, 'menu']);
 		add_action('admin_enqueue_scripts', [self::class, 'enqueue']);
+		add_action('admin_footer', [self::class, 'print_module_boot'], 5);
 	}
 
 	public static function menu(): void {
@@ -27,66 +28,146 @@ final class Buildytech_Si_Chat_Admin {
 		);
 	}
 
+	/** @return array{appBase:string,start:string,app:string,css:string,kitGlobal:string}|null */
+	public static function resolve_spa_entries(): ?array {
+		$app_dir = BUILDYTECH_SI_CHAT_DIR . 'app/';
+		$app_url = untrailingslashit(BUILDYTECH_SI_CHAT_URL . 'app');
+		$starts = glob($app_dir . '_app/immutable/entry/start.*.js') ?: [];
+		$apps = glob($app_dir . '_app/immutable/entry/app.*.js') ?: [];
+		$css = glob($app_dir . '_app/immutable/assets/*.css') ?: [];
+		if ($starts === [] || $apps === []) {
+			return null;
+		}
+		sort($starts);
+		sort($apps);
+		sort($css);
+		$kit_global = '__sveltekit_wp';
+		$html = $app_dir . '200.html';
+		if (is_readable($html)) {
+			$raw = (string) file_get_contents($html);
+			if (preg_match('/__sveltekit_([a-z0-9]+)/', $raw, $m)) {
+				$kit_global = '__sveltekit_' . $m[1];
+			}
+		}
+		return [
+			'appBase' => $app_url,
+			'start' => basename($starts[0]),
+			'app' => basename($apps[0]),
+			'css' => $css !== [] ? basename($css[0]) : '',
+			'kitGlobal' => $kit_global,
+		];
+	}
+
 	public static function enqueue(string $hook): void {
 		if ($hook !== 'toplevel_page_buildytech-si-chat') {
 			return;
 		}
-		$app = BUILDYTECH_SI_CHAT_DIR . 'app/';
-		$base = BUILDYTECH_SI_CHAT_URL . 'app/';
-		// Prefer built SPA assets when present (release copies apps/chat-web/build).
-		$entry_js = $app . 'assets/index.js';
-		$entry_css = $app . 'assets/index.css';
-		if (is_readable($entry_js)) {
-			wp_enqueue_script(
-				'buildytech-si-chat-app',
-				$base . 'assets/index.js',
-				[],
-				BUILDYTECH_SI_CHAT_VERSION,
-				true
-			);
-		}
-		if (is_readable($entry_css)) {
-			wp_enqueue_style(
-				'buildytech-si-chat-app',
-				$base . 'assets/index.css',
-				[],
-				BUILDYTECH_SI_CHAT_VERSION
-			);
-		}
+		$spa = self::resolve_spa_entries();
+		$rest_v1 = untrailingslashit(esc_url_raw(rest_url('buildytech/v1')));
+		// apiBase + /v1/... → .../buildytech/v1/...
+		$api_base = preg_replace('#/v1$#', '', $rest_v1) ?: $rest_v1;
 		$cfg = [
-			'restBase' => esc_url_raw(rest_url('buildytech/v1')),
+			'restBase' => $rest_v1,
+			'apiBase' => $api_base,
 			'nonce' => wp_create_nonce('wp_rest'),
+			'appBase' => $spa['appBase'] ?? '',
+			'entryStart' => $spa['start'] ?? '',
+			'entryApp' => $spa['app'] ?? '',
+			'kitGlobal' => $spa['kitGlobal'] ?? '__sveltekit_wp',
+			'spaReady' => $spa !== null,
 			'binding' => [
 				'sessionId' => Buildytech_Si_Chat_Settings::get()['bound_session_id'],
 				'pageId' => Buildytech_Si_Chat_Settings::get()['bound_page_id'],
 				'slug' => Buildytech_Si_Chat_Settings::get()['agent_page_slug'],
 			],
 			'publishPolicy' => 'draft_only',
-			// Secrets intentionally omitted.
 		];
-		wp_add_inline_script(
-			'buildytech-si-chat-app',
-			'window.__BUILDYTECH_SI_CHAT__=' . wp_json_encode($cfg) . ';',
-			'before'
-		);
-		// If SPA not built yet, still expose config for shell.
-		if (!is_readable($entry_js)) {
-			wp_register_script('buildytech-si-chat-shell', false, [], BUILDYTECH_SI_CHAT_VERSION, true);
-			wp_enqueue_script('buildytech-si-chat-shell');
-			wp_add_inline_script(
-				'buildytech-si-chat-shell',
-				'window.__BUILDYTECH_SI_CHAT__=' . wp_json_encode($cfg) . ';'
+		if ($spa && $spa['css'] !== '') {
+			wp_enqueue_style(
+				'buildytech-si-chat-app',
+				$spa['appBase'] . '/_app/immutable/assets/' . $spa['css'],
+				[],
+				BUILDYTECH_SI_CHAT_VERSION
 			);
 		}
+		// Config must exist before module boot (printed in footer as type=module).
+		wp_register_script('buildytech-si-chat-cfg', false, [], BUILDYTECH_SI_CHAT_VERSION, true);
+		wp_enqueue_script('buildytech-si-chat-cfg');
+		wp_add_inline_script(
+			'buildytech-si-chat-cfg',
+			'window.__BUILDYTECH_SI_CHAT__=' . wp_json_encode($cfg, JSON_UNESCAPED_SLASHES) . ';',
+			'before'
+		);
+		$GLOBALS['buildytech_si_chat_spa'] = $spa;
+	}
+
+	public static function print_module_boot(): void {
+		$screen = function_exists('get_current_screen') ? get_current_screen() : null;
+		if (!$screen || $screen->id !== 'toplevel_page_buildytech-si-chat') {
+			return;
+		}
+		$spa = $GLOBALS['buildytech_si_chat_spa'] ?? self::resolve_spa_entries();
+		if (!$spa) {
+			echo '<script>document.getElementById("buildytech-si-chat-mount-status")&&(document.getElementById("buildytech-si-chat-mount-status").textContent=' .
+				wp_json_encode(__('Creator SPA assets missing in plugin/app. Reinstall the ZIP build.', 'buildytech-si-chat')) .
+				');</script>';
+			return;
+		}
+		$start_url = $spa['appBase'] . '/_app/immutable/entry/' . $spa['start'];
+		$app_url = $spa['appBase'] . '/_app/immutable/entry/' . $spa['app'];
+		$kit = $spa['kitGlobal'];
+		// ESM boot: set Kit base to plugin app URL, mount into #buildytech-si-chat-root.
+		// Shell must appear even when Session/backend is unconfigured.
+		?>
+<script type="module">
+(async () => {
+  const cfg = window.__BUILDYTECH_SI_CHAT__ || {};
+  const status = document.getElementById('buildytech-si-chat-mount-status');
+  const root = document.getElementById('buildytech-si-chat-root');
+  if (!root) {
+    if (status) status.textContent = 'Mount root #buildytech-si-chat-root missing.';
+    return;
+  }
+  const base = (cfg.appBase || <?php echo wp_json_encode($spa['appBase'], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>).replace(/\/$/, '');
+  const kitName = cfg.kitGlobal || <?php echo wp_json_encode($kit, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+  globalThis[kitName] = { base, assets: base };
+  try {
+    if (status) status.textContent = 'Loading Creator…';
+    const [kit, app] = await Promise.all([
+      import(<?php echo wp_json_encode($start_url, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>),
+      import(<?php echo wp_json_encode($app_url, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>)
+    ]);
+    await kit.start(app, root);
+    if (status) status.remove();
+  } catch (err) {
+    console.error('buildytech-si-chat mount failed', err);
+    if (status) {
+      status.textContent = 'Creator failed to load: ' + (err && err.message ? err.message : String(err));
+      status.hidden = false;
+    }
+    root.setAttribute('data-mount-error', '1');
+  }
+})();
+</script>
+		<?php
 	}
 
 	public static function render(): void {
 		if (!current_user_can('edit_pages')) {
 			wp_die(esc_html__('Insufficient capabilities.', 'buildytech-si-chat'));
 		}
+		$spa = self::resolve_spa_entries();
 		echo '<div class="wrap"><h1>' . esc_html__('SI Chat', 'buildytech-si-chat') . '</h1>';
 		echo '<p class="description">' . esc_html__('Creator chat — draft only. Secrets stay server-side.', 'buildytech-si-chat') . '</p>';
-		echo '<div id="buildytech-si-chat-root"></div></div>';
+		if (!$spa) {
+			echo '<div class="notice notice-error"><p>' .
+				esc_html__('Creator SPA build missing (app/_app/immutable/entry). Reinstall the release ZIP.', 'buildytech-si-chat') .
+				'</p></div>';
+		}
+		echo '<p id="buildytech-si-chat-mount-status" class="description" role="status">' .
+			esc_html($spa ? __('Loading Creator…', 'buildytech-si-chat') : __('Creator unavailable — assets missing.', 'buildytech-si-chat')) .
+			'</p>';
+		echo '<div id="buildytech-si-chat-root" data-spa-ready="' . ($spa ? '1' : '0') . '"></div></div>';
 	}
 
 	public static function render_settings(): void {

@@ -1,4 +1,4 @@
-import { apiBase } from "./mode.ts";
+import { apiBase, wpRestNonce } from "./mode.ts";
 
 export type GatewayError = {
 	status: number;
@@ -101,6 +101,10 @@ export async function gatewayFetch<T>(
 	if (init.body && !headers.has("Content-Type")) {
 		headers.set("Content-Type", "application/json");
 	}
+	const nonce = wpRestNonce();
+	if (nonce && !headers.has("X-WP-Nonce")) {
+		headers.set("X-WP-Nonce", nonce);
+	}
 	const res = await fetch(`${apiBase()}${path}`, { ...init, headers });
 	if (!res.ok) throw await parseError(res);
 	if (res.status === 204) return undefined as T;
@@ -134,9 +138,11 @@ export function listMessagesApi(id: string, signal?: AbortSignal) {
 }
 
 export function postMessageApi(id: string, body: TurnBody, signal?: AbortSignal) {
+	const requestId = body.requestId ?? newRequestId();
 	return gatewayFetch<TurnResponse>(`/v1/sessions/${encodeURIComponent(id)}/messages`, {
 		method: "POST",
-		body: JSON.stringify(body),
+		headers: { "Idempotency-Key": requestId },
+		body: JSON.stringify({ ...body, requestId }),
 		signal
 	});
 }

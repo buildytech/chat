@@ -280,6 +280,9 @@ final class Buildytech_Si_Chat_Rest_Controller {
 		$headers = [];
 		$idem = $req->get_header('idempotency-key');
 		if (!is_string($idem) || $idem === '') {
+			$idem = isset($body['requestId']) ? (string) $body['requestId'] : '';
+		}
+		if ($idem === '') {
 			return new WP_REST_Response(['error' => 'idempotency_key_required'], 400);
 		}
 		$headers['Idempotency-Key'] = preg_replace('/[^a-zA-Z0-9._:-]/', '', $idem) ?? '';
