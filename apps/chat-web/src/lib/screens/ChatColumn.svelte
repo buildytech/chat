@@ -9,12 +9,14 @@
 		session,
 		busy,
 		onSend,
-		visible = true
+		visible = true,
+		chatHidden = false
 	}: {
 		session: ChatSession | null;
 		busy: boolean;
 		onSend: (text: string) => void;
 		visible?: boolean;
+		chatHidden?: boolean;
 	} = $props();
 </script>
 
@@ -25,7 +27,7 @@
 	class={cn(
 		"min-h-0 min-w-0 flex-col border-r border-border bg-background",
 		visible ? "flex flex-1" : "hidden",
-		"lg:flex lg:w-80 lg:flex-none lg:shrink-0"
+		chatHidden ? "lg:hidden" : "lg:flex lg:w-[320px] lg:flex-none lg:shrink-0"
 	)}
 >
 	<ChatThread {session} {busy} {onSend} />

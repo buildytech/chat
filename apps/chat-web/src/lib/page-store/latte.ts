@@ -54,6 +54,10 @@ function emitDefine(block: PageBlock, selectedId: string | null): string[] {
 	return lines;
 }
 
+export function latteForBlock(block: PageBlock, selectedId: string | null = null): string {
+	return emitDefine(block, selectedId).join("\n") + "\n";
+}
+
 /**
  * CodePort stub: Latte-ish source from the same Page DTO as PreviewPort.
  * Not a Latte compiler. WP publish is out of this pass (ADR-0003).

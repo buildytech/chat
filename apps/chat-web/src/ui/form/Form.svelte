@@ -53,9 +53,9 @@
 	name={orUndef(name)}
 	action={orUndef(action)}
 	method={orUndef(methodValue)}
-	enctype={orUndef(enctype)}
+	enctype={orUndef(enctype) as "application/x-www-form-urlencoded" | "multipart/form-data" | "text/plain" | undefined}
 	novalidate={novalidate || undefined}
-	autocomplete={orUndef(autocomplete)}
+	autocomplete={orUndef(autocomplete) as HTMLFormElement["autocomplete"] | undefined}
 	target={orUndef(target)}
 	aria-label={orUndef(ariaLabel)}
 	aria-labelledby={orUndef(ariaLabelledBy)}

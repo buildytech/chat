@@ -49,7 +49,7 @@
 	required={required || undefined}
 	disabled={disabled || undefined}
 	readonly={readOnly || undefined}
-	aria-invalid={orUndef(ariaInvalid)}
+	aria-invalid={orUndef(ariaInvalid) as "true" | "false" | "grammar" | "spelling" | undefined}
 	aria-describedby={orUndef(ariaDescribedBy)}
 	{...(cls ? { class: cls } : {})}
 	bind:value

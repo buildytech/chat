@@ -14,5 +14,6 @@ export {
 	selectBlock,
 	setCurrentPage
 } from "./mock.svelte";
-export { latteFromPage } from "./latte";
+export { latteFromPage, latteForBlock } from "./latte";
+export { buildStoreZip, downloadPageZip, packFilesFromPage, type PackFile } from "./pack";
 export { findBlock, firstBlockId, hasBlock, walkBlocks } from "./tree";

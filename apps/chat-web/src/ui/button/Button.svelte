@@ -48,7 +48,7 @@
 		href={href}
 		{...(cls ? { class: cls } : {})}
 		aria-label={orUndef(ariaLabel)}
-		aria-expanded={orUndef(ariaExpanded)}
+		aria-expanded={orUndef(ariaExpanded) as "true" | "false" | undefined}
 		aria-controls={orUndef(ariaControls)}
 		aria-disabled={disabled ? "true" : undefined}
 		tabindex={disabled ? -1 : undefined}
@@ -61,8 +61,8 @@
 		disabled={disabled || undefined}
 		form={orUndef(form)}
 		aria-label={orUndef(ariaLabel)}
-		aria-pressed={orUndef(ariaPressed)}
-		aria-expanded={orUndef(ariaExpanded)}
+		aria-pressed={orUndef(ariaPressed) as "true" | "false" | "mixed" | undefined}
+		aria-expanded={orUndef(ariaExpanded) as "true" | "false" | undefined}
 		aria-controls={orUndef(ariaControls)}
 		{...rest}
 	>{@render children?.()}</button>

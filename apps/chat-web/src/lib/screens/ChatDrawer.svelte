@@ -9,20 +9,24 @@
 
 	let {
 		open,
+		collapsed = false,
 		sessions,
 		selectedId,
 		onNew,
 		onSelect,
 		onDelete,
-		onClose
+		onClose,
+		onToggle
 	}: {
 		open: boolean;
+		collapsed?: boolean;
 		sessions: SessionSummary[];
 		selectedId: string | null;
 		onNew: () => void;
 		onSelect: (id: string) => void;
 		onDelete: (id: string) => void;
 		onClose: () => void;
+		onToggle?: () => void;
 	} = $props();
 </script>
 
@@ -30,10 +34,11 @@
 	id="chat-sidebar-drawer"
 	class={cn(
 		"absolute inset-y-0 left-0 z-20 h-full lg:static lg:z-auto",
-		open ? "flex" : "hidden lg:flex"
+		open ? "flex" : "hidden",
+		collapsed ? "lg:hidden" : "lg:flex"
 	)}
 >
-	<AppNav {sessions} {selectedId} {onNew} {onSelect} {onDelete} />
+	<AppNav {sessions} {selectedId} {onNew} {onSelect} {onDelete} {onToggle} />
 </Block>
 {#if open}
 	<Button
