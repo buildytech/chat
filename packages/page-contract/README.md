@@ -1,11 +1,31 @@
 # @buildytech/page-contract
 
-TypeScript Page DTO for the SI Chat Website Builder and the visual Builder.
+Canonical **versioned Page DTO** (`layout.version` **1**) for SI Chat and the visual Builder.
 
-Both tools write **ordinary pages**: `kind` conceptually `page`, unique `slug`, `status`, `title`, `layout`, `seo`.
+This package is the structured layout document written to the Page Store. It is **not** a Codex v0.4 entry: Codex records (content kinds, manifests) and this Page layout DTO stay distinct.
 
-`layout.blocks` is an ordered tree: each node has `id`, `kind`, optional `title` / `summary` / `copy`, and optional `children`. Preview (Svelte) and Code (Latte) project this tree. No second source of truth.
+## Compatibility (v1)
 
-Out of P0: multilanding, UTM variants, checkout/payment, fabricated discounts or stock.
+| Field | Rule |
+| --- | --- |
+| Schema | `layout.version === 1`. Any other version is rejected. Unknown keys at every object are rejected. |
+| Status | `draft \| pending \| scheduled \| published \| archived \| trashed` (PagePort). Ordinary **draft creation** uses `parseDraftPage` (status must be `draft`). `parsePage` keeps published and the other statuses valid for load/save. |
+| Blocks | Closed `kind` allowlist from implemented Preview components: `nav`, `nav-link`, `hero`, `features`, `feature`, `menu`, `dish`, `hours`, `cta`, `footer`. |
+| Copy | Closed keys matching Preview + Latte (`eyebrow`, `headline`, `lede`, `action`, `note`, `brand`, `contact`, `legal`, `days`, `address`). Plain text only; no HTML/Latte/PHP markup. |
+| IDs | `^[a-z][a-z0-9-]{0,62}$`, unique in the tree. Safe to interpolate into the existing Latte emitter (`{define #id}` / `$page->blocks['id']`). |
+| Slug | Ordinary page slug `^[a-z0-9]+(?:-[a-z0-9]+)*$`, 1–48 chars. No UTM/query variants. |
+| Bounds | Max depth 4, max 64 blocks, bounded string lengths, max ~64k serialized payload. |
+| URLs | Known string fields: schemes `http`, `https`, `mailto` only. `javascript:`, `data:`, `vbscript:`, `file:` (including whitespace-obfuscated forms) are rejected. |
+
+Consumers **must** run `parsePage` / `parseDraftPage` at the external Store boundary. TypeScript casts are not validation.
+
+```ts
+import { parsePage, parseDraftPage } from "@buildytech/page-contract";
+
+const page = parsePage(unknownPayload); // any PagePort status
+const draft = parseDraftPage(unknownPayload); // status === "draft"
+```
+
+Out of this contract: multilanding, UTM, checkout, Codex equivalence, SQLite, Gateway, publish.
 
 See [docs/architecture.md](../../docs/architecture.md).

@@ -9,7 +9,7 @@ CI build: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
 | Control | P0 status |
 | --- | --- |
 | GitHub Actions pinned by **full commit SHA** (+ version tag in comment) | **in** — workflows + `pin-check` job in `ci.yml` |
-| Dependency lockfile | **gap** — нет `package-lock.json`. CI uses `npm install`. Follow-up: commit root lockfile for `npm ci` |
+| Dependency lockfile | **in** — root `package-lock.json`; CI uses `npm ci` |
 | `id-token: write` + artefact **provenance** | **in** — provenance workflow (`contents: read`, `attestations: write`) |
 | Upload build artefact | **in** — `chat-web-spa` tarball of `apps/chat-web/build/` |
 | Optional **SBOM** for release artefacts | **out (documented)** — generate later (`npm sbom` / CycloneDX) after lockfile exists |
@@ -25,9 +25,12 @@ CI build: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
 Hosted runner: `ubuntu-latest`. Node: LTS (`lts/*`).
 
 ```sh
-cd apps/chat-web
-npm install          # until package-lock.json exists; then npm ci
-npm run build        # SvelteKit adapter-static → build/ (+ 200.html fallback)
+# repo root (workspaces)
+npm ci               # requires committed package-lock.json
+npm test             # @buildytech/page-contract
+npm run check --workspace=@buildytech/chat-web
+npm run build --workspace=@buildytech/chat-web
+# SvelteKit adapter-static → apps/chat-web/build/ (+ 200.html fallback)
 ```
 
 Release packaging: `chat-web-spa-<git-sha>.tgz` from `apps/chat-web/build/`. Subject of attestation = этот tarball.

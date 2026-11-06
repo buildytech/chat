@@ -8,4 +8,9 @@ declare global {
 	}
 }
 
+declare module "@buildytech/page-contract/fixtures/north-harbor-kitchen.json" {
+	const value: unknown;
+	export default value;
+}
+
 export {};

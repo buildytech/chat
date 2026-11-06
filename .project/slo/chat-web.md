@@ -7,7 +7,7 @@
 | Indicator | Target | Window | Notes |
 | --- | --- | --- | --- |
 | Build success rate on `main` | ≥ **90%** green `chat-web` job | rolling 28 days / last 20 runs (что больше) | `npm run build` in `apps/chat-web` |
-| Time-to-green (`apps/chat-web` CI) | p90 **≤ 10 min** | same | checkout + Node LTS + `npm install` + build |
+| Time-to-green (`apps/chat-web` CI) | p90 **≤ 10 min** | same | checkout + Node LTS + `npm ci` + contract tests + `svelte-check` + build |
 
 ## Early product indicators (not production SLOs)
 

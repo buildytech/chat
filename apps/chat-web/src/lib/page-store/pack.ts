@@ -1,4 +1,4 @@
-import { blocksOf, type CreatorPage } from "./page";
+import { blocksOf, parsePage, type CreatorPage } from "./page";
 import { latteForBlock, latteFromPage } from "./latte";
 import { walkBlocks } from "./tree";
 
@@ -123,20 +123,21 @@ export function packFilesFromPage(
 	page: CreatorPage,
 	selectedId: string | null = null
 ): PackFile[] {
-	const files: PackFile[] = [{ path: "page.latte", content: latteFromPage(page, selectedId) }];
-	for (const block of walkBlocks(blocksOf(page))) {
+	const valid = parsePage(page);
+	const files: PackFile[] = [{ path: "page.latte", content: latteFromPage(valid, selectedId) }];
+	for (const block of walkBlocks(blocksOf(valid))) {
 		files.push({
 			path: `blocks/${block.id}.latte`,
 			content: latteForBlock(block, selectedId)
 		});
 	}
 	const manifest = {
-		id: page.id,
-		slug: page.slug,
-		title: page.title,
-		status: page.status,
-		locale: page.locale,
-		seo: page.seo,
+		id: valid.id,
+		slug: valid.slug,
+		title: valid.title,
+		status: valid.status,
+		locale: valid.locale,
+		seo: valid.seo,
 		files: files.map((file) => file.path).concat("manifest.json")
 	};
 	files.push({

@@ -1,6 +1,9 @@
 export {
 	blocksOf,
+	parseDraftPage,
+	parsePage,
 	type CreatorPage,
+	type Page,
 	type PageBlock,
 	type PageBlockCopy,
 	type PageBlockKind,

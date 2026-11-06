@@ -13,7 +13,9 @@
   "scripts": {
     "dev": "npm run dev --workspace=@buildytech/chat-web",
     "build": "npm run build --workspace=@buildytech/chat-web",
-    "verify": "npm run build --workspace=@buildytech/chat-web"
+    "test": "npm run test --workspace=@buildytech/page-contract",
+    "check": "npm run check --workspace=@buildytech/chat-web",
+    "verify": "npm test && npm run check && npm run build"
   },
   "engines": {
     "node": ">=20"

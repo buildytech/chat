@@ -45,7 +45,7 @@ P0 pages are ordinary pages only: unique slug, no multilanding/UTM, no checkout/
 | `apps/chat-web` | SvelteKit SPA: sidebar, thread, composer, dark/light, ru strings | **runnable** (`npm run dev` / `build`) |
 | `apps/orchestrator` | `@grok/agent-sdk@0.6.0` bot | stub (no live keys) |
 | `services/context-serve` | Go CR wrapper (`github.com/buildytech/chat/services/context-serve`) | stub |
-| `packages/page-contract` | Page DTO | types |
+| `packages/page-contract` | Page DTO | types + runtime validator (`layout.version` 1) |
 | `packages/ports` | Catalog / Page / Publish / Preview | types |
 | `adapters/wordpress` | Embed SPA + PagePort REST | stub PHP + TS client |
 | `adapters/wails3` | Desktop webview | stub |

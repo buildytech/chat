@@ -1,4 +1,4 @@
-# CI: build the runnable SPA. Pin policy: .project/slsa/controls.md
+# CI: contract tests + svelte-check + SPA build. Pin policy: .project/slsa/controls.md
 name: CI
 
 on:
@@ -40,9 +40,6 @@ jobs:
     name: chat-web
     runs-on: ubuntu-latest
     needs: pin-check
-    defaults:
-      run:
-        working-directory: apps/chat-web
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -52,11 +49,16 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
-          cache-dependency-path: apps/chat-web/package.json
+          cache-dependency-path: package-lock.json
 
-      # No package-lock.json yet — npm ci would fail. Follow-up: commit a root lockfile.
       - name: Install
-        run: npm install
+        run: npm ci
+
+      - name: Page contract tests
+        run: npm test
+
+      - name: svelte-check
+        run: npm run check --workspace=@buildytech/chat-web
 
       - name: Build
-        run: npm run build
+        run: npm run build --workspace=@buildytech/chat-web

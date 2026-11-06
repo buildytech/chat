@@ -1,18 +1,5 @@
-import { blocksOf, type CreatorPage, type PageBlock, type PageBlockCopy } from "./page";
+import { blocksOf, PAGE_COPY_KEYS, type CreatorPage, type PageBlock } from "./page";
 import { walkBlocks } from "./tree";
-
-const COPY_KEYS: (keyof PageBlockCopy)[] = [
-	"eyebrow",
-	"headline",
-	"lede",
-	"action",
-	"note",
-	"brand",
-	"contact",
-	"legal",
-	"days",
-	"address"
-];
 
 function macroName(id: string): string {
 	return id.replace(/-/g, "_");
@@ -26,7 +13,7 @@ function copyLines(block: PageBlock, indent: string): string[] {
 	const copy = block.copy;
 	if (!copy) return [];
 	const lines: string[] = [];
-	for (const key of COPY_KEYS) {
+	for (const key of PAGE_COPY_KEYS) {
 		if (!copy[key]) continue;
 		lines.push(
 			`${indent}<p data-copy="${key}">{$page->blocks['${block.id}']['copy']['${key}']}</p>`

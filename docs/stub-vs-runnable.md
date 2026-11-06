@@ -8,7 +8,8 @@ Committed in the bootstrap:
 
 **Types / docs (no runtime)**
 
-- `packages/page-contract`, `packages/ports`
+- `packages/page-contract` — Page DTO + `parsePage` (node:test in the package; not a hosted service)
+- `packages/ports`
 - `docs/*`, `design/fig-ref/*`
 
 **Stubs (not live)**

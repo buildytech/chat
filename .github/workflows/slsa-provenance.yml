@@ -36,15 +36,13 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
-          cache-dependency-path: apps/chat-web/package.json
+          cache-dependency-path: package-lock.json
 
       - name: Install
-        working-directory: apps/chat-web
-        run: npm install
+        run: npm ci
 
       - name: Build static SPA
-        working-directory: apps/chat-web
-        run: npm run build
+        run: npm run build --workspace=@buildytech/chat-web
 
       - name: Package subject tarball
         run: |
