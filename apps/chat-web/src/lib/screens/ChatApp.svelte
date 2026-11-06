@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import {
+		applySessionFromUrl,
 		createSession,
 		deleteSession,
 		getRuntimeStatus,
@@ -21,6 +22,15 @@
 		void hydrateSessions();
 		theme.init();
 	});
+
+	async function onPopState() {
+		busy = true;
+		try {
+			await applySessionFromUrl();
+		} finally {
+			busy = false;
+		}
+	}
 
 	const sessions = $derived(listSessions());
 	const selected = $derived(getSelectedSession());
@@ -62,6 +72,8 @@
 		}
 	}
 </script>
+
+<svelte:window onpopstate={onPopState} />
 
 <svelte:head>
 	<title>{t("app.documentTitle")}</title>

@@ -142,6 +142,7 @@
 		"runtime.testHarness": "Тестовый harness: {mode} · liveModel выкл.",
 		"runtime.liveModel": "Подключена живая модель",
 		"runtime.badPage": "Сохранённая страница не прошла валидацию — Workspace без изменений",
+		"runtime.sessionNotFound": "Сессия не найдена: {id}",
 		"runtime.loadFailed": "Не удалось загрузить сессию",
 		"runtime.hydrateFailed": "Session API недоступен",
 		"runtime.capabilitiesFailed": "Capabilities недоступны",

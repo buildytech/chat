@@ -7,6 +7,7 @@ export {
 	deleteSession,
 	getRuntimeStatus,
 	getSelectedSession,
+	applySessionFromUrl,
 	hydrateSessions,
 	listSessions,
 	retryLastFailed,

@@ -12,6 +12,11 @@ import {
 } from "../api/gateway";
 import { mapSession, pageFromTurn, parseServerPage } from "../api/map";
 import { isMockMode } from "../api/mode";
+import {
+	readSessionQuery,
+	resolveSessionSelection,
+	syncSessionQuery
+} from "../api/session-url";
 import { t } from "../i18n/dictionary";
 import translit from "../i18n/translit.json";
 import { clearCurrentPage, loadMockFixturePage, setCurrentPage } from "../page-store";
@@ -148,6 +153,13 @@ async function loadSessionDetail(id: string, token: number): Promise<void> {
 	} catch (err) {
 		if ((err as Error).name === "AbortError") return;
 		if (token !== epoch) return;
+		if (err instanceof GatewayRequestError && (err.status === 404 || err.code === "not_found")) {
+			memory = memory.filter((s) => s.id !== id);
+			rememberSelection(null);
+			clearCurrentPage();
+			lastError = t("runtime.sessionNotFound").replace("{id}", id);
+			return;
+		}
 		lastError = err instanceof GatewayRequestError ? err.message : t("runtime.loadFailed");
 	} finally {
 		if (inflight === ac) inflight = null;
@@ -171,11 +183,23 @@ export async function hydrateSessions(): Promise<void> {
 			};
 			const initial = loadMock();
 			memory = initial;
-			const preferred = readSelectedId();
-			rememberSelection(
-				preferred && initial.some((s) => s.id === preferred) ? preferred : (initial[0]?.id ?? null)
-			);
-			if (selectedId) loadMockFixturePage();
+			const pick = resolveSessionSelection({
+				urlSession: readSessionQuery(),
+				persistedId: readSelectedId(),
+				sessionIds: initial.map((s) => s.id)
+			});
+			if (pick.kind === "missing") {
+				rememberSelection(null);
+				clearCurrentPage();
+				lastError = t("runtime.sessionNotFound").replace("{id}", pick.requested);
+				syncSessionQuery(pick.requested, { mode: "replace" });
+				hydrated = true;
+				return;
+			}
+			const id = pick.kind === "ok" ? pick.id : null;
+			rememberSelection(id);
+			syncSessionQuery(id, { mode: "replace" });
+			if (id) loadMockFixturePage();
 			else clearCurrentPage();
 			hydrated = true;
 			return;
@@ -201,12 +225,29 @@ export async function hydrateSessions(): Promise<void> {
 			sessions = [created.session];
 		}
 		memory = sessions.map((s) => mapSession(s, []));
-		const preferred = readSelectedId();
-		const pick =
-			preferred && sessions.some((s) => s.id === preferred) ? preferred : sessions[0]?.id ?? null;
-		rememberSelection(pick);
+		const pick = resolveSessionSelection({
+			urlSession: readSessionQuery(),
+			persistedId: readSelectedId(),
+			sessionIds: sessions.map((s) => s.id)
+		});
 		hydrated = true;
-		if (pick) await loadSessionDetail(pick, token);
+		if (pick.kind === "missing") {
+			// Do not fall back to persisted/first — keep URL, try server, else blank+error.
+			rememberSelection(null);
+			clearCurrentPage();
+			syncSessionQuery(pick.requested, { mode: "replace" });
+			await loadSessionDetail(pick.requested, token);
+			if (selectedId) {
+				syncSessionQuery(selectedId, { mode: "replace" });
+			} else if (!lastError) {
+				lastError = t("runtime.sessionNotFound").replace("{id}", pick.requested);
+			}
+			return;
+		}
+		const id = pick.kind === "ok" ? pick.id : null;
+		rememberSelection(id);
+		syncSessionQuery(id, { mode: "replace" });
+		if (id) await loadSessionDetail(id, token);
 		else clearCurrentPage();
 	} catch (err) {
 		lastError = err instanceof GatewayRequestError ? err.message : t("runtime.hydrateFailed");
@@ -246,10 +287,17 @@ export function getRuntimeStatus(): {
 	};
 }
 
-export async function selectSession(id: string): Promise<void> {
+export async function selectSession(
+	id: string,
+	opts?: { history?: "push" | "replace" | "none" }
+): Promise<void> {
 	abortInflight();
 	const token = bumpEpoch();
+	const historyMode = opts?.history ?? "push";
 	rememberSelection(id);
+	if (historyMode !== "none") {
+		syncSessionQuery(id, { mode: historyMode });
+	}
 	clearCurrentPage(); // clear stale DTO immediately
 	// Clear messages visually until load completes by keeping summary-only entry
 	const existing = memory.find((s) => s.id === id);
@@ -258,8 +306,15 @@ export async function selectSession(id: string): Promise<void> {
 	}
 	if (isMockMode()) {
 		const full = loadMock().find((s) => s.id === id);
-		if (full) replaceSession(full);
-		loadMockFixturePage();
+		if (full) {
+			replaceSession(full);
+			lastError = null;
+		} else {
+			memory = memory.filter((s) => s.id !== id);
+			rememberSelection(null);
+			clearCurrentPage();
+			lastError = t("runtime.sessionNotFound").replace("{id}", id);
+		}
 		return;
 	}
 	await loadSessionDetail(id, token);
@@ -277,18 +332,33 @@ export async function createSession(): Promise<ChatSession> {
 		};
 		memory = [session, ...memory];
 		rememberSelection(session.id);
+		syncSessionQuery(session.id, { mode: "push" });
 		saveMock(memory);
-		loadMockFixturePage();
+		clearCurrentPage();
 		return session;
 	}
 	const { session: raw } = await createSessionApi({});
 	const session = mapSession(raw, []);
 	replaceSession(session);
 	rememberSelection(session.id);
+	syncSessionQuery(session.id, { mode: "push" });
 	clearCurrentPage();
 	void token;
 	lastError = null;
 	return session;
+}
+
+
+/** Apply the current URL ?session= (popstate / shared deep-link). */
+export async function applySessionFromUrl(): Promise<void> {
+	const urlSession = readSessionQuery();
+	if (!urlSession) {
+		// Bare URL without session: keep current selection, rewrite query to match.
+		syncSessionQuery(selectedId, { mode: "replace" });
+		return;
+	}
+	if (urlSession === selectedId) return;
+	await selectSession(urlSession, { history: "none" });
 }
 
 /** M4: Session HTTP has no DELETE — UI must stay disabled/truthful. */

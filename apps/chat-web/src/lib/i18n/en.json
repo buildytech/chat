@@ -141,6 +141,7 @@
 		"runtime.testHarness": "Test harness: {mode} · liveModel off",
 		"runtime.liveModel": "Live model connected",
 		"runtime.badPage": "Saved page failed validation — Workspace unchanged",
+		"runtime.sessionNotFound": "Session not found: {id}",
 		"runtime.loadFailed": "Could not load session",
 		"runtime.hydrateFailed": "Could not reach Session API",
 		"runtime.capabilitiesFailed": "Capabilities unreachable",
