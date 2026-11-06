@@ -44,7 +44,7 @@ P0 pages are ordinary pages only: unique slug, no multilanding/UTM, no checkout/
 | --- | --- | --- |
 | `apps/chat-web` | SvelteKit SPA: sidebar, thread, composer, dark/light, ru strings | **runnable** (`npm run dev` / `build`) |
 | `apps/orchestrator` | `@grok/agent-sdk@0.6.0` bot | stub (no live keys) |
-| `services/context-serve` | Go PagePort (SQLite drafts) + CR wrapper later | **Page Store M2** (loopback HTTP; CR not wired) |
+| `services/context-serve` | Go PagePort + Session foundation (SQLite) | **M3 foundation** (loopback HTTP; live agent / CR / lexproto not wired) |
 | `packages/page-contract` | Page DTO | types + runtime validator (`layout.version` 1) |
 | `packages/ports` | Catalog / Page / Publish / Preview | types |
 | `adapters/wordpress` | Embed SPA + PagePort REST | stub PHP + TS client |
@@ -57,7 +57,7 @@ Figma "Chat Preview Site" is **layout reference only** (desktop sidebar ~248px +
 
 **Creator surfaces** (see [ADR-0003](../.project/adr/0003-creator-surfaces-preview-code.md)): ChatCore (no DOM) · ChatColumn · CreatorShell (AppNav \| chat \| Workspace). Workspace is the current page BlockTree with Preview (Svelte) and Code (Latte stub) tabs — both from one Page DTO. Hosts compose differently (SPA = full shell; WP embed = ChatColumn ± chrome).
 
-Offline mock: ChatCore / `src/lib/api/session.svelte.ts` (in-memory + localStorage). The SPA does not call a live orchestrator. Agent Gateway, AdapterRegistry (`context-local` default, opt-in `cursor-sdk`) are [ADR-0004](../.project/adr/0004-agent-runtime-adapters.md) — not wired in P0.
+Offline mock: ChatCore / `src/lib/api/session.svelte.ts` (in-memory + localStorage). The SPA does not yet call context-serve Session HTTP. M3 adds durable sessions/messages/runs + explicit `save_page` on context-serve (`context-local` deterministic test runtime only). Live Agent Gateway adapters (`cursor-sdk`, Context Runtime, lexproto) remain [ADR-0004](../.project/adr/0004-agent-runtime-adapters.md) follow-ups — do not treat M3 as a finished agent.
 
 ## License
 

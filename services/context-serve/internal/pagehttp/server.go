@@ -27,14 +27,19 @@ type Server struct {
 }
 
 func NewMux(store *pagestore.Store) http.Handler {
-	s := &Server{store: store}
 	mux := http.NewServeMux()
+	Register(mux, store)
+	return mux
+}
+
+// Register mounts PagePort routes onto mux (shared with Session HTTP in M3).
+func Register(mux *http.ServeMux, store *pagestore.Store) {
+	s := &Server{store: store}
 	mux.HandleFunc("GET /healthz", s.healthz)
 	mux.HandleFunc("POST /v1/pages", s.create)
 	mux.HandleFunc("GET /v1/pages/{id}", s.getByID)
 	mux.HandleFunc("PUT /v1/pages/{id}", s.update)
 	mux.HandleFunc("GET /v1/slugs/{slug}", s.getBySlug)
-	return mux
 }
 
 type envelope struct {
@@ -53,7 +58,7 @@ func (s *Server) healthz(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusServiceUnavailable, "store_unavailable", "$", "page store is not ready")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"status": "ok", "pageStore": true, "cr": false})
+	writeJSON(w, http.StatusOK, map[string]any{"status": "ok", "pageStore": true, "sessions": true, "liveAgent": false, "cr": false})
 }
 
 func (s *Server) create(w http.ResponseWriter, r *http.Request) {

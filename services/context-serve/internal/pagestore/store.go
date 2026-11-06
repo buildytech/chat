@@ -18,14 +18,15 @@ import (
 //go:embed migrations/*.sql
 var migrationFS embed.FS
 
-const currentMigration = 1
+const currentMigration = 2
 
 var (
-	ErrNotFound         = errors.New("page not found")
-	ErrDuplicateSlug    = errors.New("duplicate slug")
-	ErrDuplicateID      = errors.New("duplicate page id")
-	ErrRevisionConflict = errors.New("revision conflict")
-	ErrIDMismatch       = errors.New("page id does not match")
+	ErrNotFound              = errors.New("page not found")
+	ErrDuplicateSlug         = errors.New("duplicate slug")
+	ErrDuplicateID           = errors.New("duplicate page id")
+	ErrRevisionConflict      = errors.New("revision conflict")
+	ErrIDMismatch            = errors.New("page id does not match")
+	ErrIdempotencyConflict   = errors.New("idempotency key reused with different payload")
 )
 
 type Record struct {
@@ -69,6 +70,15 @@ func (s *Store) Close() error {
 	return s.db.Close()
 }
 
+// DB exposes the underlying handle for sessionstore co-location on the same SQLite file.
+func (s *Store) DB() *sql.DB {
+	return s.db
+}
+
+func (s *Store) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
+	return s.db.BeginTx(ctx, opts)
+}
+
 func (s *Store) Ping(ctx context.Context) error {
 	return s.db.PingContext(ctx)
 }
@@ -88,25 +98,40 @@ func (s *Store) migrate() error {
 	if version > currentMigration {
 		return fmt.Errorf("sqlite schema version %d is newer than supported %d", version, currentMigration)
 	}
-	if version == currentMigration {
-		return nil
+	for next := version + 1; next <= currentMigration; next++ {
+		file := fmt.Sprintf("migrations/%03d_%s.sql", next, migrationName(next))
+		body, err := migrationFS.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("migration %d: %w", next, err)
+		}
+		tx, err := s.db.Begin()
+		if err != nil {
+			return err
+		}
+		if err := execScript(tx, string(body)); err != nil {
+			_ = tx.Rollback()
+			return fmt.Errorf("migration %d apply: %w", next, err)
+		}
+		if _, err := tx.Exec(`INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)`, next, time.Now().UTC().Format(time.RFC3339Nano)); err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+		if err := tx.Commit(); err != nil {
+			return err
+		}
 	}
-	tx, err := s.db.Begin()
-	if err != nil {
-		return err
+	return nil
+}
+
+func migrationName(version int) string {
+	switch version {
+	case 1:
+		return "init"
+	case 2:
+		return "sessions"
+	default:
+		return "unknown"
 	}
-	defer func() { _ = tx.Rollback() }()
-	body, err := migrationFS.ReadFile("migrations/001_init.sql")
-	if err != nil {
-		return err
-	}
-	if err := execScript(tx, string(body)); err != nil {
-		return err
-	}
-	if _, err := tx.Exec(`INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)`, currentMigration, time.Now().UTC().Format(time.RFC3339Nano)); err != nil {
-		return err
-	}
-	return tx.Commit()
 }
 
 func (s *Store) GetByID(ctx context.Context, id string) (Record, error) {
@@ -135,6 +160,26 @@ func (s *Store) get(ctx context.Context, q, arg string) (Record, error) {
 }
 
 func (s *Store) CreateDraft(ctx context.Context, input any, idempotencyKey string) (Record, error) {
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return Record{}, err
+	}
+	defer func() { _ = tx.Rollback() }()
+	if _, err := tx.ExecContext(ctx, `PRAGMA foreign_keys = ON;`); err != nil {
+		return Record{}, err
+	}
+	rec, err := s.CreateDraftTx(ctx, tx, input, idempotencyKey)
+	if err != nil {
+		return Record{}, err
+	}
+	if err := tx.Commit(); err != nil {
+		return Record{}, err
+	}
+	return rec, nil
+}
+
+// CreateDraftTx writes a draft inside an open transaction (used by session save_page commits).
+func (s *Store) CreateDraftTx(ctx context.Context, tx *sql.Tx, input any, idempotencyKey string) (Record, error) {
 	page, err := pagecontract.ParseDraftPage(input)
 	if err != nil {
 		return Record{}, err
@@ -145,21 +190,13 @@ func (s *Store) CreateDraft(ctx context.Context, input any, idempotencyKey strin
 	}
 	key := normalizeIdempotency(idempotencyKey)
 
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
-	if err != nil {
-		return Record{}, err
-	}
-	defer func() { _ = tx.Rollback() }()
-	if _, err := tx.ExecContext(ctx, `PRAGMA foreign_keys = ON;`); err != nil {
-		return Record{}, err
-	}
-
 	if key != "" {
 		if rec, ok, err := s.lookupIdempotency(ctx, tx, key); err != nil {
 			return Record{}, err
 		} else if ok {
-			if err := tx.Commit(); err != nil {
-				return Record{}, err
+			existing, _ := pagecontract.MarshalPage(rec.Page)
+			if string(existing) != string(raw) {
+				return Record{}, ErrIdempotencyConflict
 			}
 			return rec, nil
 		}
@@ -180,21 +217,40 @@ func (s *Store) CreateDraft(ctx context.Context, input any, idempotencyKey strin
 			if rec, ok, lookErr := s.lookupIdempotency(ctx, tx, key); lookErr != nil {
 				return Record{}, lookErr
 			} else if ok {
-				if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-					return Record{}, err
+				existing, _ := pagecontract.MarshalPage(rec.Page)
+				if string(existing) != string(raw) {
+					return Record{}, ErrIdempotencyConflict
 				}
 				return rec, nil
 			}
 		}
 		return Record{}, mapConstraint(err)
 	}
-	if err := tx.Commit(); err != nil {
-		return Record{}, err
-	}
 	return Record{Page: page, Revision: 1}, nil
 }
 
+
 func (s *Store) UpdateDraft(ctx context.Context, id string, expectedRev int64, input any, idempotencyKey string) (Record, error) {
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return Record{}, err
+	}
+	defer func() { _ = tx.Rollback() }()
+	if _, err := tx.ExecContext(ctx, `PRAGMA foreign_keys = ON;`); err != nil {
+		return Record{}, err
+	}
+	rec, err := s.UpdateDraftTx(ctx, tx, id, expectedRev, input, idempotencyKey)
+	if err != nil {
+		return Record{}, err
+	}
+	if err := tx.Commit(); err != nil {
+		return Record{}, err
+	}
+	return rec, nil
+}
+
+// UpdateDraftTx updates a draft inside an open transaction.
+func (s *Store) UpdateDraftTx(ctx context.Context, tx *sql.Tx, id string, expectedRev int64, input any, idempotencyKey string) (Record, error) {
 	if expectedRev < 1 {
 		return Record{}, ErrRevisionConflict
 	}
@@ -212,21 +268,13 @@ func (s *Store) UpdateDraft(ctx context.Context, id string, expectedRev int64, i
 	key := normalizeIdempotency(idempotencyKey)
 	next := expectedRev + 1
 
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
-	if err != nil {
-		return Record{}, err
-	}
-	defer func() { _ = tx.Rollback() }()
-	if _, err := tx.ExecContext(ctx, `PRAGMA foreign_keys = ON;`); err != nil {
-		return Record{}, err
-	}
-
 	if key != "" {
 		if rec, ok, err := s.lookupIdempotency(ctx, tx, key); err != nil {
 			return Record{}, err
 		} else if ok {
-			if err := tx.Commit(); err != nil {
-				return Record{}, err
+			existing, _ := pagecontract.MarshalPage(rec.Page)
+			if string(existing) != string(raw) {
+				return Record{}, ErrIdempotencyConflict
 			}
 			return rec, nil
 		}
@@ -254,10 +302,18 @@ func (s *Store) UpdateDraft(ctx context.Context, id string, expectedRev int64, i
 	}
 	if _, err := tx.ExecContext(ctx, `INSERT INTO revisions (page_id, revision, dto_json, created_at, idempotency_key) VALUES (?, ?, ?, ?, ?)`,
 		id, next, string(raw), page.UpdatedAt, nullIfEmpty(key)); err != nil {
+		if key != "" && isUnique(err) && strings.Contains(err.Error(), "idempotency") {
+			if rec, ok, lookErr := s.lookupIdempotency(ctx, tx, key); lookErr != nil {
+				return Record{}, lookErr
+			} else if ok {
+				existing, _ := pagecontract.MarshalPage(rec.Page)
+				if string(existing) != string(raw) {
+					return Record{}, ErrIdempotencyConflict
+				}
+				return rec, nil
+			}
+		}
 		return Record{}, mapConstraint(err)
-	}
-	if err := tx.Commit(); err != nil {
-		return Record{}, err
 	}
 	return Record{Page: page, Revision: next}, nil
 }

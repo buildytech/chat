@@ -1,55 +1,78 @@
 # context-serve
 
-Go service for SI Chat. **M2:** durable PagePort (SQLite) for ordinary page drafts. Context runtime / Gateway / sessions are still unwired.
+Go service for SI Chat. **M3:** durable PagePort + page-associated Session foundation (SQLite). This is **not** a finished full-agent runtime (no live model, Context Runtime, or lexproto wiring yet).
+
+## Product model
+
+- One **session** ↔ one stable **pageId** (unique mutable slug after first save).
+- New clean page workspace = new clean session (isolated messages/runs/context).
+- Ordinary conversation persists messages and **must not** create or revise a page.
+- Only an explicit **`save_page` tool** request creates/updates the draft bound to that session.
+- Deterministic `context-local` test runtime exists for infrastructure tests only — do not treat it as a live agent.
 
 ## HTTP contract (v1)
 
-Loopback by default (`127.0.0.1:8090`). No authentication; do not bind a public interface without a later auth layer.
+Loopback by default (`127.0.0.1:8090`). Host/Origin must be loopback when present. No permissive CORS. No authentication; do not bind a public interface without a later auth layer. Body cap 72KiB.
 
-| Method | Path | Role (PagePort) |
+### PagePort (M2, preserved)
+
+| Method | Path | Role |
 | --- | --- | --- |
-| `POST` | `/v1/pages` | `savePage` create draft (`parseDraftPage`) |
-| `GET` | `/v1/pages/{id}` | `getPage` |
-| `GET` | `/v1/slugs/{slug}` | `getPageBySlug` |
-| `PUT` | `/v1/pages/{id}` | `savePage` update; optimistic `revision` |
+| `POST` | `/v1/pages` | create draft |
+| `GET` | `/v1/pages/{id}` | get by id |
+| `GET` | `/v1/slugs/{slug}` | get by slug |
+| `PUT` | `/v1/pages/{id}` | update; optimistic `revision` |
 | `GET` | `/healthz` | store ping |
 
-Create body:
+### Session foundation (M3)
+
+| Method | Path | Role |
+| --- | --- | --- |
+| `GET` | `/v1/capabilities` | runtime/capabilities (`liveModel: false`) |
+| `POST` | `/v1/sessions` | create session + allocate `pageId` (no page row yet) |
+| `GET` | `/v1/sessions` | list sessions |
+| `GET` | `/v1/sessions/{id}` | session + optional bound page |
+| `POST` | `/v1/sessions/{id}/messages` | user turn (conversation and/or explicit tools) |
+| `GET` | `/v1/sessions/{id}/messages` | message history |
+| `GET` | `/v1/sessions/{id}/runs/{runId}` | run status / recovery read |
+| `POST` | `/v1/sessions/{id}/runs/{runId}/recover` | complete a durable `pending` run |
+
+Create session:
 
 ```json
-{ "page": { "...Page DTO..." }, "idempotencyKey": "optional" }
+{ "slugIntent": "home", "title": "optional" }
 ```
 
-Update body (If-Match header also accepted):
+Message turn (conversation only — no page write):
 
 ```json
-{ "page": { "...Page DTO..." }, "revision": 1, "idempotencyKey": "optional" }
+{ "content": "What should the hero say?", "requestId": "req-1" }
 ```
 
-Success:
+Message turn with explicit save:
 
 ```json
-{ "page": { "...validated Page DTO..." }, "revision": 1 }
+{
+  "content": "optional note",
+  "requestId": "req-2",
+  "tools": [{
+    "name": "save_page",
+    "arguments": {
+      "page": { "...Page DTO with session pageId..." },
+      "expectedRevision": 1
+    }
+  }]
+}
 ```
 
-Error:
-
-```json
-{ "error": { "code": "duplicate_slug", "path": "slug", "message": "..." } }
-```
-
-`page` is the canonical `layout.version` **1** DTO from `packages/page-contract`. Go does not implement the TypeScript interface; it validates the same JSON. Shared cases: `packages/page-contract/fixtures/conformance-cases.json`. Unknown envelope keys are rejected.
-
-Statuses other than `draft` are valid on `parsePage` (get/load) but **this store only writes drafts**. Publish is out of M2.
+`requestId` is durable idempotency for the turn: same key + same payload replays; same key + different payload → `409 idempotency_conflict`. First `save_page` creates revision 1 and binds the session; later saves update the same pageId. Pending runs survive crash and complete via `/recover`.
 
 ## Persistence
 
-- SQLite driver: `github.com/mattn/go-sqlite3` (CGO; gcc required). Chosen because `modernc.org/sqlite` / `proxy.golang.org` were unreachable from the implementation environment; GitHub-hosted CGO driver is widely supported.
-- Path: `PAGE_STORE_PATH` (default `data/pages.sqlite`, relative). HTTP never accepts filesystem paths.
-- Forward-only migration `internal/pagestore/migrations/001_init.sql` (`pages` + `revisions`).
-- Unique slug is **global** in this database (no tenancy column).
-- `page.id` is stable; `revision` is monotonic per page. Writes are one transaction: page row + revision row. Failures roll back (no placeholder rows).
-- Optional `Idempotency-Key` / `idempotencyKey` for M3-friendly replays. Not a Gateway.
+- SQLite (`github.com/mattn/go-sqlite3`, CGO). Path: `PAGE_STORE_PATH` (default `data/pages.sqlite`).
+- Forward-only migrations: `001_init.sql` (pages/revisions), `002_sessions.sql` (sessions/messages/runs).
+- One logical page per session (`sessions.page_id` unique). Page content rows appear only after `save_page`.
+- Writes that bind a page commit page row + revision + run + messages in one transaction after the durable pending marker.
 
 ## Run
 
@@ -61,3 +84,7 @@ CONTEXT_SERVE_ADDR=127.0.0.1:8090 PAGE_STORE_PATH=data/pages.sqlite ./context-se
 ```
 
 Bare `:8090` is rewritten to `127.0.0.1:8090`.
+
+## Not in M3
+
+Live model / Cursor SDK / Context Runtime / lexproto adapters, SSE/abort streaming, WordPress publish, five landings / hierarchy / UTM, UI wiring of Session API.

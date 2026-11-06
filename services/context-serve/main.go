@@ -6,8 +6,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/buildytech/chat/services/context-serve/internal/pagehttp"
+	"github.com/buildytech/chat/services/context-serve/internal/httpsafe"
 	"github.com/buildytech/chat/services/context-serve/internal/pagestore"
+	"github.com/buildytech/chat/services/context-serve/internal/sessionhttp"
+	"github.com/buildytech/chat/services/context-serve/internal/sessionstore"
 )
 
 func main() {
@@ -18,8 +20,10 @@ func main() {
 		log.Fatalf("page store: %v", err)
 	}
 	defer store.Close()
-	log.Printf("context-serve page store on %s (sqlite %s; CR not wired)", addr, dbPath)
-	if err := http.ListenAndServe(addr, pagehttp.NewMux(store)); err != nil {
+	sessions := sessionstore.New(store)
+	log.Printf("context-serve page+session foundation on %s (sqlite %s; live agent runtime not wired)", addr, dbPath)
+	handler := httpsafe.Wrap(sessionhttp.NewMux(store, sessions))
+	if err := http.ListenAndServe(addr, handler); err != nil {
 		log.Fatal(err)
 	}
 }
