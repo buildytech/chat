@@ -37,6 +37,7 @@
 		"composer.send": "Send",
 		"composer.label": "Message",
 		"composer.add": "Add",
+		"composer.modelServerConfigured": "Model is configured on the server; switching is unavailable",
 		"composer.model": "Model",
 		"composer.modelGpt": "GPT",
 		"composer.modelGptFull": "Chat GPT Model",

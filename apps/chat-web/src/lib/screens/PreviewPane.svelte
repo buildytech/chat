@@ -14,10 +14,11 @@
 	import Text from "../../ui/text/Text.svelte";
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
-	import { blocksOf, getCurrentPage, getSelectedBlockId } from "../page-store";
+	import { blocksOf, getCurrentPage, getPageRevision, getSelectedBlockId } from "../page-store";
 	import PreviewBlock from "./PreviewBlock.svelte";
 
 	const page = $derived(getCurrentPage());
+	const savedRevision = $derived(getPageRevision());
 	const blocks = $derived(page ? blocksOf(page) : []);
 	const selectedId = $derived(getSelectedBlockId());
 	const slugUrl = $derived(page ? `/${page.slug}` : "/");
@@ -88,6 +89,8 @@
 	tag="section"
 	class="mt-4 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-default border border-border bg-card"
 	aria-label={t("workspace.preview")}
+	data-page-id={page?.id ?? ""}
+	data-page-revision={savedRevision ?? ""}
 	data-block="preview-pane"
 >
 	<Group

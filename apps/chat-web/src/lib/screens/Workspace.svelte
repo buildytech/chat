@@ -31,7 +31,7 @@
 	aria-label="Workspace"
 	class={cn(
 		"min-h-0 min-w-0 flex-col bg-background p-4",
-		visible ? "flex flex-1" : "hidden",
+		visible ? "flex flex-1" : "max-lg:hidden",
 		"lg:flex lg:flex-1"
 	)}
 >

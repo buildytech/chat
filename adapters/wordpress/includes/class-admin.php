@@ -151,7 +151,7 @@ final class Buildytech_Si_Chat_Admin {
 
 		// Preferred: single ESM import of router-free embed (no kit.start / no history ownership).
 		if (($spa['mode'] ?? '') === 'embed') {
-			$embed_url = self::host_relative_url($spa['appBase'] . '/' . $spa['embedJs']);
+			$embed_url = self::host_relative_url($spa['appBase'] . '/' . $spa['embedJs']) . '?ver=' . rawurlencode(BUILDYTECH_SI_CHAT_VERSION);
 			$flags = JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
 			?>
 <script type="module">

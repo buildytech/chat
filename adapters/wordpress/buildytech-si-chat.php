@@ -4,7 +4,7 @@
  * Description: CMS-agnostic Creator chat adapter for WordPress. Same-origin REST proxy to Session; embeds chat-web; draft-only publish; Latte same revision.
  * Author: BuildYtech
  * License: Apache-2.0
- * Version: 0.1.1
+ * Version: 0.1.2
  * Requires at least: 6.4
  * Requires PHP: 8.2
  *
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-define('BUILDYTECH_SI_CHAT_VERSION', '0.1.1');
+define('BUILDYTECH_SI_CHAT_VERSION', '0.1.2');
 define('BUILDYTECH_SI_CHAT_FILE', __FILE__);
 define('BUILDYTECH_SI_CHAT_DIR', plugin_dir_path(__FILE__));
 define('BUILDYTECH_SI_CHAT_URL', plugin_dir_url(__FILE__));

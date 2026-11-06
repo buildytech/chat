@@ -36,7 +36,7 @@
 	id="chat-sidebar-drawer"
 	class={cn(
 		"absolute inset-y-0 left-0 z-20 h-full shrink-0 lg:static lg:z-auto",
-		open ? "flex" : "hidden",
+		open ? "flex" : "max-lg:hidden",
 		"lg:flex"
 	)}
 >

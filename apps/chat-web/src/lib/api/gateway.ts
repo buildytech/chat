@@ -58,6 +58,7 @@ export type ServerCapabilities = {
 	runtime: string;
 	mode: string;
 	liveModel: boolean;
+	live?: { requested?: boolean; provider?: string; model?: string };
 	tools: string[];
 	features?: Record<string, unknown>;
 	note?: string;

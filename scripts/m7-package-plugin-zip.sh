@@ -160,7 +160,7 @@ cat > "$STAGE/readme.txt" << 'READ'
 Contributors: buildytech
 Requires at least: 6.4
 Requires PHP: 8.2
-Stable tag: 0.1.1
+Stable tag: 0.1.2
 License: Apache-2.0
 
 CMS-agnostic Creator chat adapter for WordPress (draft-only).

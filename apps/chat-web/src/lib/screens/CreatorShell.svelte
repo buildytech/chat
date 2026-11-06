@@ -32,7 +32,7 @@
 		busy: boolean;
 		runtime: {
 			mode: "live" | "mock" | "booting";
-			capabilities: { liveModel?: boolean; mode?: string; runtime?: string; note?: string } | null;
+			capabilities: { liveModel?: boolean; live?: { requested?: boolean; model?: string }; mode?: string; runtime?: string; note?: string } | null;
 			error: string | null;
 			canDelete: boolean;
 			lastRequestId: string | null;

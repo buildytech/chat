@@ -1,13 +1,10 @@
 <script lang="ts">
 	import ArrowUp from "@lucide/svelte/icons/arrow-up";
-	import Check from "@lucide/svelte/icons/check";
-	import ChevronDown from "@lucide/svelte/icons/chevron-down";
 	import FileText from "@lucide/svelte/icons/file-text";
 	import Plus from "@lucide/svelte/icons/plus";
 	import X from "@lucide/svelte/icons/x";
 	import Block from "../compose/Block.svelte";
 	import Group from "../compose/Group.svelte";
-	import Stack from "../compose/Stack.svelte";
 	import Button from "../../ui/button/Button.svelte";
 	import Form from "../../ui/form/Form.svelte";
 	import Icon from "../../ui/icon/Icon.svelte";
@@ -15,16 +12,6 @@
 	import Text from "../../ui/text/Text.svelte";
 	import Textarea from "../../ui/textarea/Textarea.svelte";
 	import { t } from "../i18n/dictionary";
-	import { cn } from "../../utils/cn";
-
-	type ModelId = "gpt" | "claude" | "grok" | "gemini";
-
-	const models: { id: ModelId; short: string; full: string }[] = [
-		{ id: "gpt", short: t("composer.modelGpt"), full: t("composer.modelGptFull") },
-		{ id: "claude", short: t("composer.modelClaude"), full: t("composer.modelClaudeFull") },
-		{ id: "grok", short: t("composer.modelGrok"), full: t("composer.modelGrokFull") },
-		{ id: "gemini", short: t("composer.modelGemini"), full: t("composer.modelGeminiFull") }
-	];
 
 	let {
 		disabled = false,
@@ -37,7 +24,7 @@
 		draft?: string;
 		runtimeStatus?: {
 			mode: "live" | "mock" | "booting";
-			capabilities: { liveModel?: boolean; mode?: string; runtime?: string; note?: string } | null;
+			capabilities: { liveModel?: boolean; live?: { requested?: boolean; model?: string }; mode?: string; runtime?: string; note?: string } | null;
 			error: string | null;
 			canDelete: boolean;
 			lastRequestId: string | null;
@@ -53,11 +40,11 @@
 		return t("runtime.testHarness").replace("{mode}", mode);
 	});
 
-	let model = $state<ModelId>("gpt");
-	let modelOpen = $state(false);
 	let showDesign = $state(true);
-
-	const picked = $derived(models.find((item) => item.id === model) ?? models[0]);
+	// There is no per-message model switch in Session. Reflect server configuration,
+	// never imply selecting GPT/Claude/Gemini changes the running Grok agent.
+	const configuredModel = $derived(runtimeStatus?.capabilities?.live?.model || "");
+	const modelLabel = $derived(configuredModel || t("composer.modelGrok"));
 
 	function submit(event: Event) {
 		event.preventDefault();
@@ -74,17 +61,8 @@
 		}
 	}
 
-	function pickModel(id: ModelId) {
-		model = id;
-		modelOpen = false;
-	}
-
-	function closeMenus() {
-		modelOpen = false;
-	}
 </script>
 
-<svelte:window onclick={closeMenus} />
 
 <Block tag="footer" class="sticky bottom-0 z-10 mt-auto border-t border-border bg-background px-3 py-3 lg:static lg:z-auto">
 	<Form class="flex flex-col gap-2" onsubmit={submit}>
@@ -123,46 +101,14 @@
 				>
 					<Icon size="sm"><Plus /></Icon>
 				</Button>
-				<Block class="relative">
-					<Button
-						class="inline-flex items-center gap-1 rounded-default border border-border px-2 py-1.5 text-sm text-foreground hover:bg-accent"
-						aria-label={t("composer.model")}
-						aria-haspopup="menu"
-						aria-expanded={modelOpen ? "true" : "false"}
-						onclick={(event: MouseEvent) => {
-							event.stopPropagation();
-							modelOpen = !modelOpen;
-						}}
-					>
-						<Text tag="span">{picked.short}</Text>
-						<Icon size="sm" class="text-muted-foreground"><ChevronDown /></Icon>
-					</Button>
-					{#if modelOpen}
-						<Stack
-							class="absolute bottom-full left-0 z-20 mb-2 w-60 rounded-default border border-border bg-popover p-1 shadow-lg"
-							role="menu"
-							aria-label={t("composer.model")}
-							onclick={(event: MouseEvent) => event.stopPropagation()}
-						>
-							{#each models as item (item.id)}
-								<Button
-									class={cn(
-										"w-full justify-between rounded-default px-3 py-2 text-left text-sm hover:bg-accent",
-										model === item.id ? "text-foreground" : "text-foreground"
-									)}
-									role="menuitemradio"
-									aria-checked={model === item.id ? "true" : "false"}
-									onclick={() => pickModel(item.id)}
-								>
-									<Text tag="span">{item.full}</Text>
-									{#if model === item.id}
-										<Icon size="sm"><Check /></Icon>
-									{/if}
-								</Button>
-							{/each}
-						</Stack>
-					{/if}
-				</Block>
+				<Button
+					class="inline-flex items-center gap-1 rounded-default border border-border px-2 py-1.5 text-sm text-foreground"
+					aria-label={t("composer.model")}
+					title={t("composer.modelServerConfigured")}
+					disabled
+				>
+					<Text tag="span">{modelLabel}</Text>
+				</Button>
 			</Group>
 			<Button
 				type="submit"

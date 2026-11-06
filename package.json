@@ -17,7 +17,7 @@
     "check": "npm run check --workspace=@buildytech/chat-web",
     "verify": "npm test && npm run check && npm run build",
     "test:api": "node --experimental-strip-types --test scripts/m4-api-tests/*.test.ts scripts/m4-api-tests/*.integration.test.ts",
-    "test:unit": "node --experimental-strip-types --test scripts/m4-api-tests/map.test.ts scripts/m4-api-tests/gateway.retry.test.ts scripts/m4-api-tests/session-url.test.ts",
+    "test:unit": "node --experimental-strip-types --test scripts/m4-api-tests/map.test.ts scripts/m4-api-tests/gateway.retry.test.ts scripts/m4-api-tests/session-url.test.ts scripts/m4-api-tests/wp-embed.test.ts",
     "m5:codeport-latte": "tsx scripts/m5-codeport-latte-smoke.ts"
   },
   "engines": {

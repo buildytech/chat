@@ -18,7 +18,7 @@
 		onSend: (text: string) => void | Promise<void>;
 		runtimeStatus?: {
 			mode: "live" | "mock" | "booting";
-			capabilities: { liveModel?: boolean; mode?: string; runtime?: string; note?: string } | null;
+			capabilities: { liveModel?: boolean; live?: { requested?: boolean; model?: string }; mode?: string; runtime?: string; note?: string } | null;
 			error: string | null;
 			canDelete: boolean;
 			lastRequestId: string | null;
@@ -34,7 +34,7 @@
 	aria-label={t("shell.chatColumn")}
 	class={cn(
 		"min-h-0 min-w-0 flex-col border-r border-border bg-background",
-		visible ? "flex flex-1" : "hidden",
+		visible ? "flex flex-1" : "max-lg:hidden",
 		chatHidden ? "lg:hidden" : "lg:flex lg:w-[var(--creator-chat-w,320px)] lg:flex-none lg:shrink-0"
 	)}
 >

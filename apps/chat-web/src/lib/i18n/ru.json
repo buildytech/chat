@@ -38,6 +38,7 @@
 		"composer.send": "Отправить",
 		"composer.label": "Сообщение",
 		"composer.add": "Добавить",
+		"composer.modelServerConfigured": "Модель настроена на сервере; переключение недоступно",
 		"composer.model": "Модель",
 		"composer.modelGpt": "GPT",
 		"composer.modelGptFull": "Chat GPT Model",

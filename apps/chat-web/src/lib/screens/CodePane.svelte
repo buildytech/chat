@@ -13,7 +13,7 @@
 	import { cn } from "../../utils/cn";
 	import {
 		blocksOf,
-		getCurrentPage,
+		getCurrentPage, getPageRevision,
 		getSelectedBlockId,
 		latteFromPage,
 		packFilesFromPage,
@@ -27,6 +27,7 @@
 	type CodeTab = { label: string; path: string; active: boolean };
 
 	const page = $derived(getCurrentPage());
+	const savedRevision = $derived(getPageRevision());
 	const selectedId = $derived(getSelectedBlockId());
 	const pack = $derived(page ? packFilesFromPage(page, selectedId) : []);
 
@@ -110,6 +111,8 @@
 	tag="section"
 	class="mt-4 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-default border border-border bg-card md:flex-row"
 	aria-label={t("workspace.code")}
+	data-page-id={page?.id ?? ""}
+	data-page-revision={savedRevision ?? ""}
 	data-block="code-pane"
 	data-stage={stage}
 >
