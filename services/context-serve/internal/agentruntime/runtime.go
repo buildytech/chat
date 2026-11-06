@@ -13,12 +13,16 @@ const (
 	ToolSavePage = "save_page"
 )
 
-// Capabilities describes what this foundation exposes. liveModel is always false in M3.
+// Capabilities describes what this process exposes.
+// liveModel / contextRuntime / lexproto flip only after real probes or successful live use —
+// never claimed from env presence alone.
 func Capabilities() map[string]any {
+	live := liveModelEnabled() // env intent; truthful "liveModel" still false until MarkLiveSuccess
+	cr := contextRuntimeEnabled()
 	return map[string]any{
 		"runtime":   RuntimeName,
-		"mode":      "deterministic-test",
-		"liveModel": false,
+		"mode":      modeLabel(live, cr),
+		"liveModel": liveSuccess.Load(),
 		"builder":   "deterministic-test-stub",
 		"tools":     []string{ToolSavePage},
 		"features": map[string]any{
@@ -29,10 +33,15 @@ func Capabilities() map[string]any {
 			"abort":          false,
 			"pageStore":      true,
 			"agentGateway":   "foundation",
-			"contextRuntime": false,
-			"lexproto":       false,
+			"contextRuntime": cr,
+			"lexproto":       lexprotoEnabled(),
 		},
-		"note": "M3/M4 Session HTTP foundation. Not a live model. Ordinary chat does not mutate pages; only explicit save_page creates or updates the draft.",
+		"live": map[string]any{
+			"requested": live,
+			"provider":  liveProviderName(),
+			"model":     liveModelName(),
+		},
+		"note": "Session HTTP. Ordinary chat does not mutate pages; only explicit save_page does. Live model/CR/lexproto require env + successful real calls.",
 	}
 }
 
