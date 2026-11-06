@@ -8,7 +8,7 @@ npm install
 npm run dev
 ```
 
-Open the printed localhost URL. New chat, type a message, toggle dark/light. Works offline (mock session API).
+Open the printed localhost URL. Desktop: AppNav | chat | workspace (Preview/Code). Below `lg`: Chat | Page tabs. New chat, type a message, toggle dark/light. Works offline (mock ChatCore).
 
 ```sh
 npm run build

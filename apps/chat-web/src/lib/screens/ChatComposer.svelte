@@ -36,13 +36,13 @@
 	}
 </script>
 
-<Block tag="footer" class="border-t border-border bg-background px-4 py-3 md:px-8">
-	<Form class="mx-auto flex max-w-3xl flex-col gap-2" onsubmit={submit}>
+<Block tag="footer" class="border-t border-border bg-background px-3 py-3">
+	<Form class="flex flex-col gap-2" onsubmit={submit}>
 		<Label for="composer" class="sr-only">{t("composer.label")}</Label>
 		<Textarea
 			id="composer"
 			name="message"
-			rows="3"
+			rows="2"
 			placeholder={t("composer.placeholder")}
 			class="min-h-16 w-full resize-none rounded-default border border-input bg-card px-3 py-2 text-sm text-foreground shadow-none outline-none ring-ring focus-visible:ring-2"
 			bind:value={draft}

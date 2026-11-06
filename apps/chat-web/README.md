@@ -13,7 +13,7 @@ npm run dev
 npm run build
 ```
 
-Offline mock session API: `src/lib/api/session.svelte.ts`.
+Creator shell (ADR-0003): AppNav (~248px) | ChatColumn (`w-80`) | Workspace (BlockTree + Preview/Code). Below `lg`, Chat | Page tabs. ChatCore mock: `src/lib/chat-core`. Agent Gateway / cursor-sdk are not wired (ADR-0004).
 
 ## UI8Kit
 

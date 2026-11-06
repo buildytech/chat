@@ -21,6 +21,17 @@
 		"theme.toLight": "Светлая тема",
 		"thread.untitled": "Новый чат",
 		"nav.brand": "SI Чат",
-		"assistant.ack": "Подготовлю обычную страницу с уникальным слагом. Оплата, скидки и остатки склада в эту версию не входят."
+		"assistant.ack": "Подготовлю обычную страницу с уникальным слагом. Оплата, скидки и остатки склада в эту версию не входят.",
+		"shell.tabs": "Виды конструктора",
+		"shell.tabChat": "Чат",
+		"shell.tabWorkspace": "Страница",
+		"shell.chatColumn": "Чат",
+		"workspace.label": "Текущая страница",
+		"workspace.preview": "Превью",
+		"workspace.code": "Код",
+		"workspace.blockTree": "Секции",
+		"workspace.empty": "На этой странице пока нет секций.",
+		"preview.runtime": "Svelte-превью (заглушка)",
+		"code.runtime": "Latte для WordPress (заглушка, не компилятор)"
 	}
 }

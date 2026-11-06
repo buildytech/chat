@@ -5,7 +5,7 @@
 	import Title from "../compose/Title.svelte";
 	import { t } from "../i18n/dictionary";
 	import { theme } from "../theme/theme.svelte";
-	import type { ChatSession } from "../api/types";
+	import type { ChatSession } from "../chat-core";
 	import ChatComposer from "./ChatComposer.svelte";
 	import ChatMessage from "./ChatMessage.svelte";
 	import ChatThreadHeader from "./ChatThreadHeader.svelte";
@@ -25,16 +25,16 @@
 	const title = $derived(session?.title ?? t("empty.title"));
 </script>
 
-<Block tag="main" id="main-content" class="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
+<Block class="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
 	<ChatThreadHeader {title} isDark={theme.isDark} onToggleTheme={() => theme.toggle()} />
-	<Stack class="min-h-0 flex-1 gap-4 overflow-y-auto px-4 py-6 md:px-8">
+	<Stack class="min-h-0 flex-1 gap-4 overflow-y-auto px-3 py-4">
 		{#if empty}
-			<Stack class="mx-auto max-w-xl gap-2 py-16 text-center">
-				<Title as={2} class="text-2xl font-medium text-foreground">{t("empty.title")}</Title>
+			<Stack class="gap-2 py-8 text-center">
+				<Title as={2} class="text-lg font-medium text-foreground">{t("empty.title")}</Title>
 				<Text tag="p" class="text-sm text-muted-foreground">{t("empty.subtitle")}</Text>
 			</Stack>
 		{:else}
-			<Stack class="mx-auto w-full max-w-3xl gap-3">
+			<Stack class="w-full gap-3">
 				{#each messages as message (message.id)}
 					<ChatMessage {message} />
 				{/each}

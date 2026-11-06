@@ -4,7 +4,7 @@ Committed in the bootstrap:
 
 **Runnable**
 
-- `apps/chat-web` — SvelteKit SPA (sidebar, empty/new chat, messages, composer, dark/light, ru dictionary, mock session API). `npm install && npm run dev` / `npm run build`.
+- `apps/chat-web` — SvelteKit SPA (CreatorShell: AppNav | ChatColumn | Workspace with BlockTree + Preview/Code stubs; mock ChatCore). `npm install && npm run dev` / `npm run build`.
 
 **Types / docs (no runtime)**
 

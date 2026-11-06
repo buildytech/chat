@@ -25,7 +25,7 @@
 
 <Block
 	tag="header"
-	class="flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4 md:hidden"
+	class="flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4 lg:hidden"
 >
 	<Group class="gap-2">
 		<Button

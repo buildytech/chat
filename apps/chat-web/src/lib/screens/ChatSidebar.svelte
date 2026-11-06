@@ -11,7 +11,7 @@
 	import Text from "../../ui/text/Text.svelte";
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
-	import type { SessionSummary } from "../api/types";
+	import type { SessionSummary } from "../chat-core";
 
 	let {
 		sessions,

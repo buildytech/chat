@@ -19,9 +19,9 @@
 	} = $props();
 </script>
 
-<Block tag="header" class="flex items-center justify-between border-b border-border px-4 py-4 md:px-8">
-	<Title as={1} class="text-lg font-semibold text-foreground">{title}</Title>
-	<Group class="hidden md:flex">
+<Block tag="header" class="flex items-center justify-between border-b border-border px-3 py-3">
+	<Title as={2} class="truncate text-base font-semibold text-foreground">{title}</Title>
+	<Group class="hidden lg:flex">
 		<Button
 			class="rounded-default p-2 text-foreground hover:bg-accent"
 			aria-label={isDark ? t("theme.toLight") : t("theme.toDark")}

@@ -1,7 +1,7 @@
 # Mock session API
 
-`session.svelte.ts` is the offline stub backend used by `npm run dev`.
+ChatCore lives in `src/lib/chat-core` (ADR-0003). This folder re-exports the mock for older imports.
 
 - Sessions persist in `localStorage` (`buildytech-chat-sessions`).
 - Assistant replies acknowledge an ordinary page + unique slug.
-- No orchestrator, WordPress, or Agent SDK keys.
+- No orchestrator, WordPress, Agent Gateway, or `@cursor/sdk` keys (ADR-0004).

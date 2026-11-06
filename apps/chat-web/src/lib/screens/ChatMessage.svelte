@@ -4,7 +4,7 @@
 	import Text from "../../ui/text/Text.svelte";
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
-	import type { ChatMessage as ChatMessageModel } from "../api/types";
+	import type { ChatMessage as ChatMessageModel } from "../chat-core";
 
 	let { message }: { message: ChatMessageModel } = $props();
 
@@ -14,7 +14,7 @@
 <Block
 	tag="article"
 	class={cn(
-		"max-w-3xl rounded-default px-4 py-3",
+		"max-w-full rounded-default px-3 py-2",
 		mine
 			? "ml-auto bg-primary text-primary-foreground"
 			: "mr-auto bg-secondary text-secondary-foreground"

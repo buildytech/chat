@@ -4,8 +4,8 @@
 	import Text from "../../ui/text/Text.svelte";
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
-	import type { SessionSummary } from "../api/types";
-	import ChatSidebar from "./ChatSidebar.svelte";
+	import type { SessionSummary } from "../chat-core";
+	import AppNav from "./AppNav.svelte";
 
 	let {
 		open,
@@ -29,15 +29,15 @@
 <Block
 	id="chat-sidebar-drawer"
 	class={cn(
-		"absolute inset-y-0 left-0 z-20 h-full md:static md:z-auto",
-		open ? "flex" : "hidden md:flex"
+		"absolute inset-y-0 left-0 z-20 h-full lg:static lg:z-auto",
+		open ? "flex" : "hidden lg:flex"
 	)}
 >
-	<ChatSidebar {sessions} {selectedId} {onNew} {onSelect} {onDelete} />
+	<AppNav {sessions} {selectedId} {onNew} {onSelect} {onDelete} />
 </Block>
 {#if open}
 	<Button
-		class="absolute inset-0 z-10 bg-foreground/20 md:hidden"
+		class="absolute inset-0 z-10 bg-foreground/20 lg:hidden"
 		aria-label={t("sidebar.close")}
 		onclick={onClose}
 	>

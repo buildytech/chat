@@ -20,6 +20,17 @@
 		"theme.toLight": "Light theme",
 		"thread.untitled": "New chat",
 		"nav.brand": "SI Chat",
-		"assistant.ack": "I will draft an ordinary page with a unique slug. Checkout, discounts, and stock numbers are out of scope."
+		"assistant.ack": "I will draft an ordinary page with a unique slug. Checkout, discounts, and stock numbers are out of scope.",
+		"shell.tabs": "Creator views",
+		"shell.tabChat": "Chat",
+		"shell.tabWorkspace": "Page",
+		"shell.chatColumn": "Chat",
+		"workspace.label": "Current page",
+		"workspace.preview": "Preview",
+		"workspace.code": "Code",
+		"workspace.blockTree": "Sections",
+		"workspace.empty": "No sections on this page yet.",
+		"preview.runtime": "Svelte preview (stub)",
+		"code.runtime": "Latte for WordPress (stub, not a compiler)"
 	}
 }
