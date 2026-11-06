@@ -1,6 +1,7 @@
 package sessionhttp
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -41,6 +42,7 @@ func NewMux(pages *pagestore.Store, sessions *sessionstore.Store) http.Handler {
 	mux.HandleFunc("GET /v1/sessions/{id}/messages", s.listMessages)
 	mux.HandleFunc("GET /v1/sessions/{id}/runs/{runId}", s.getRun)
 	mux.HandleFunc("POST /v1/sessions/{id}/runs/{runId}/recover", s.recoverRun)
+	mux.HandleFunc("GET /v1/runs/{runId}", s.getRunByID)
 	return mux
 }
 
@@ -127,12 +129,24 @@ func (s *Server) postMessage(w http.ResponseWriter, r *http.Request) {
 		writeContractErr(w, err)
 		return
 	}
+	headerKey := strings.TrimSpace(r.Header.Get("Idempotency-Key"))
+	if headerKey != "" {
+		if !idempotencyPattern.MatchString(headerKey) {
+			writeError(w, http.StatusBadRequest, "invalid_type", "Idempotency-Key", "value does not match required pattern")
+			return
+		}
+		if req.RequestID != "" && req.RequestID != headerKey {
+			writeError(w, http.StatusBadRequest, "idempotency_mismatch", "Idempotency-Key", "header does not match requestId")
+			return
+		}
+		req.RequestID = headerKey
+	}
 	res, err := s.sessions.PostMessage(r.Context(), id, req)
 	if err != nil {
 		writeSessionErr(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, turnResponse(res))
+	writeTurn(w, res)
 }
 
 func (s *Server) getRun(w http.ResponseWriter, r *http.Request) {
@@ -162,7 +176,47 @@ func (s *Server) recoverRun(w http.ResponseWriter, r *http.Request) {
 		writeSessionErr(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, turnResponse(res))
+	writeTurn(w, res)
+}
+
+func (s *Server) getRunByID(w http.ResponseWriter, r *http.Request) {
+	rid := r.PathValue("runId")
+	if !idPattern.MatchString(rid) {
+		writeError(w, http.StatusBadRequest, "invalid_id", "runId", "value does not match required pattern")
+		return
+	}
+	run, err := s.sessions.GetRunByID(r.Context(), rid)
+	if err != nil {
+		writeSessionErr(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"run": run})
+}
+
+func writeTurn(w http.ResponseWriter, res sessionstore.TurnResult) {
+	body := turnResponse(res)
+	switch res.Run.Status {
+	case "completed":
+		writeJSON(w, http.StatusOK, body)
+	case "pending":
+		writeJSON(w, http.StatusAccepted, body)
+	case "failed":
+		body["error"] = map[string]string{
+			"code":    firstNonEmpty(res.Run.ErrorCode, "failed"),
+			"path":    "$",
+			"message": firstNonEmpty(res.Run.ErrorMessage, "run failed"),
+		}
+		writeJSON(w, http.StatusUnprocessableEntity, body)
+	default:
+		writeJSON(w, http.StatusInternalServerError, body)
+	}
+}
+
+func firstNonEmpty(v, fallback string) string {
+	if strings.TrimSpace(v) != "" {
+		return v
+	}
+	return fallback
 }
 
 func turnResponse(res sessionstore.TurnResult) map[string]any {
@@ -256,13 +310,21 @@ func writeSessionErr(w http.ResponseWriter, err error) {
 	case errors.Is(err, sessionstore.ErrRunNotFound):
 		writeError(w, http.StatusNotFound, "not_found", "$", "run not found")
 	case errors.Is(err, sessionstore.ErrIdempotencyConflict):
-		writeError(w, http.StatusConflict, "idempotency_conflict", "requestId", "request id reused with different payload")
+		writeError(w, http.StatusConflict, "idempotency_conflict", "Idempotency-Key", "request id reused with different payload")
+	case errors.Is(err, sessionstore.ErrMissingIdempotencyKey):
+		writeError(w, http.StatusBadRequest, "missing_idempotency_key", "Idempotency-Key", "Idempotency-Key or requestId is required")
+	case errors.Is(err, sessionstore.ErrIdempotencyKeyMismatch):
+		writeError(w, http.StatusBadRequest, "idempotency_mismatch", "Idempotency-Key", "header does not match requestId")
 	case errors.Is(err, sessionstore.ErrPageIDMismatch):
-		writeError(w, http.StatusBadRequest, "invalid_id", "page.id", "save_page id must match session page id")
+		writeError(w, http.StatusBadRequest, "invalid_id", "page.id", "page id must match session page id")
 	case errors.Is(err, sessionstore.ErrInvalidTool):
 		writeError(w, http.StatusBadRequest, "invalid_tool", "tools", err.Error())
 	case errors.Is(err, sessionstore.ErrRunNotPending):
 		writeError(w, http.StatusConflict, "run_not_pending", "$", "run is not pending")
+	case errors.Is(err, context.DeadlineExceeded):
+		writeError(w, http.StatusRequestTimeout, "timeout", "$", "request timed out")
+	case errors.Is(err, context.Canceled):
+		writeError(w, http.StatusRequestTimeout, "canceled", "$", "request canceled")
 	case errors.Is(err, pagestore.ErrDuplicateSlug):
 		writeError(w, http.StatusConflict, "duplicate_slug", "slug", "slug already exists")
 	case errors.Is(err, pagestore.ErrDuplicateID):

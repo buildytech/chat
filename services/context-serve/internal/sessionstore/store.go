@@ -12,26 +12,36 @@ import (
 	"time"
 
 	"github.com/buildytech/chat/services/context-serve/internal/agentruntime"
+	"github.com/buildytech/chat/services/context-serve/internal/pagecontract"
 	"github.com/buildytech/chat/services/context-serve/internal/pagestore"
+	"github.com/buildytech/chat/services/context-serve/internal/stubbuilder"
 )
 
+const turnTimeout = 8 * time.Second
+
 var (
-	ErrNotFound             = errors.New("session not found")
-	ErrRunNotFound          = errors.New("run not found")
-	ErrIdempotencyConflict  = errors.New("request id reused with different payload")
-	ErrPageIDMismatch       = errors.New("save_page id must match session page id")
-	ErrInvalidTool          = errors.New("invalid tool request")
-	ErrRunNotPending        = errors.New("run is not pending")
+	ErrNotFound               = errors.New("session not found")
+	ErrRunNotFound            = errors.New("run not found")
+	ErrIdempotencyConflict    = errors.New("request id reused with different payload")
+	ErrPageIDMismatch         = errors.New("page id must match session page id")
+	ErrInvalidTool            = errors.New("invalid tool request")
+	ErrRunNotPending          = errors.New("run is not pending")
+	ErrMissingIdempotencyKey  = errors.New("Idempotency-Key or requestId is required")
+	ErrIdempotencyKeyMismatch = errors.New("Idempotency-Key does not match requestId")
 )
+
+type PageBuilder func(ctx context.Context, sess stubbuilder.SessionView, req agentruntime.TurnRequest) (map[string]any, error)
 
 type Store struct {
 	pages *pagestore.Store
+	// Builder defaults to the labelled deterministic stub. Tests may inject a fake.
+	Builder PageBuilder
 	// AfterPendingCommit runs after a run is durably pending. Tests use it to simulate crash.
 	AfterPendingCommit func(ctx context.Context, runID string) error
 }
 
 func New(pages *pagestore.Store) *Store {
-	return &Store{pages: pages}
+	return &Store{pages: pages, Builder: stubbuilder.Build}
 }
 
 type Session struct {
@@ -39,7 +49,7 @@ type Session struct {
 	PageID       string `json:"pageId"`
 	SlugIntent   string `json:"slugIntent,omitempty"`
 	Title        string `json:"title"`
-	PageBound     bool   `json:"pageBound"`
+	PageBound    bool   `json:"pageBound"`
 	PageRevision *int64 `json:"pageRevision"`
 	CreatedAt    string `json:"createdAt"`
 	UpdatedAt    string `json:"updatedAt"`
@@ -69,11 +79,11 @@ type Run struct {
 }
 
 type TurnResult struct {
-	Run      Run                `json:"run"`
-	Messages []Message          `json:"messages"`
-	Session  Session            `json:"session"`
-	Page     *pagestore.Record  `json:"-"`
-	PageBody *pageBody          `json:"page"`
+	Run      Run               `json:"run"`
+	Messages []Message         `json:"messages"`
+	Session  Session           `json:"session"`
+	Page     *pagestore.Record `json:"-"`
+	PageBody *pageBody         `json:"page"`
 }
 
 type pageBody struct {
@@ -90,7 +100,7 @@ func (s *Store) Create(ctx context.Context, slugIntent, title string) (Session, 
 		PageID:     newID("page"),
 		SlugIntent: slugIntent,
 		Title:      title,
-		PageBound:   false,
+		PageBound:  false,
 		CreatedAt:  now,
 		UpdatedAt:  now,
 	}
@@ -149,7 +159,17 @@ func (s *Store) GetRun(ctx context.Context, sessionID, runID string) (Run, error
 	return scanRun(row)
 }
 
+func (s *Store) GetRunByID(ctx context.Context, runID string) (Run, error) {
+	row := s.pages.DB().QueryRowContext(ctx, `SELECT id, session_id, request_id, status, request_hash, result_json, error_code, error_message, created_at, updated_at FROM runs WHERE id = ?`, runID)
+	return scanRun(row)
+}
+
 func (s *Store) PostMessage(ctx context.Context, sessionID string, req agentruntime.TurnRequest) (TurnResult, error) {
+	if _, ok := ctx.Deadline(); !ok {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, turnTimeout)
+		defer cancel()
+	}
 	sess, err := s.Get(ctx, sessionID)
 	if err != nil {
 		return TurnResult{}, err
@@ -159,19 +179,23 @@ func (s *Store) PostMessage(ctx context.Context, sessionID string, req agentrunt
 	if req.Tools == nil {
 		req.Tools = []agentruntime.ToolCall{}
 	}
+	if req.RequestID == "" {
+		return TurnResult{}, ErrMissingIdempotencyKey
+	}
 	hash, err := agentruntime.HashRequest(req)
 	if err != nil {
 		return TurnResult{}, err
 	}
-	if req.RequestID != "" {
-		if existing, ok, err := s.lookupRequest(ctx, req.RequestID); err != nil {
-			return TurnResult{}, err
-		} else if ok {
-			if existing.RequestHash != hash {
-				return TurnResult{}, ErrIdempotencyConflict
-			}
-			return s.materializeTurn(ctx, existing)
+	if existing, ok, err := s.lookupRequest(ctx, sessionID, req.RequestID); err != nil {
+		return TurnResult{}, err
+	} else if ok {
+		if existing.RequestHash != hash {
+			return TurnResult{}, ErrIdempotencyConflict
 		}
+		if existing.Status == "pending" {
+			return s.RecoverRun(ctx, existing.SessionID, existing.ID)
+		}
+		return s.materializeTurn(ctx, existing)
 	}
 
 	plan, err := agentruntime.PlanTurn(req)
@@ -186,7 +210,6 @@ func (s *Store) PostMessage(ctx context.Context, sessionID string, req agentrunt
 	now := nowUTC()
 	runID := newID("run")
 
-	// Phase 1: durable pending run + user message.
 	tx, err := s.pages.BeginTx(ctx, nil)
 	if err != nil {
 		return TurnResult{}, err
@@ -203,20 +226,23 @@ func (s *Store) PostMessage(ctx context.Context, sessionID string, req agentrunt
 		ID: newID("msg"), SessionID: sessionID, Seq: seq, Role: "user",
 		Content: req.Content, RunID: runID, CreatedAt: now,
 	}
-	if userMsg.Content == "" && plan.SavePage != nil {
-		userMsg.Content = "(explicit save_page tool request)"
+	if userMsg.Content == "" {
+		userMsg.Content = "(stub page turn)"
 	}
 	if _, err := tx.ExecContext(ctx, `INSERT INTO runs (id, session_id, request_id, status, request_hash, request_json, created_at, updated_at) VALUES (?, ?, ?, 'pending', ?, ?, ?, ?)`,
-		runID, sessionID, nullIfEmpty(req.RequestID), hash, string(rawReq), now, now); err != nil {
-		if req.RequestID != "" && isUnique(err) {
+		runID, sessionID, req.RequestID, hash, string(rawReq), now, now); err != nil {
+		if isUnique(err) {
 			_ = tx.Rollback()
-			existing, ok, lookErr := s.lookupRequest(ctx, req.RequestID)
+			existing, ok, lookErr := s.lookupRequest(ctx, sessionID, req.RequestID)
 			if lookErr != nil {
 				return TurnResult{}, lookErr
 			}
 			if ok {
 				if existing.RequestHash != hash {
 					return TurnResult{}, ErrIdempotencyConflict
+				}
+				if existing.Status == "pending" {
+					return s.RecoverRun(ctx, existing.SessionID, existing.ID)
 				}
 				return s.materializeTurn(ctx, existing)
 			}
@@ -227,7 +253,7 @@ func (s *Store) PostMessage(ctx context.Context, sessionID string, req agentrunt
 		userMsg.ID, userMsg.SessionID, userMsg.Seq, userMsg.Role, userMsg.Content, userMsg.RunID, userMsg.CreatedAt); err != nil {
 		return TurnResult{}, err
 	}
-	if strings.TrimSpace(sess.Title) == "" && userMsg.Content != "" && userMsg.Content != "(explicit save_page tool request)" {
+	if strings.TrimSpace(sess.Title) == "" && userMsg.Content != "" && userMsg.Content != "(stub page turn)" {
 		title := userMsg.Content
 		runes := []rune(title)
 		if len(runes) > 48 {
@@ -247,19 +273,21 @@ func (s *Store) PostMessage(ctx context.Context, sessionID string, req agentrunt
 			return TurnResult{}, err
 		}
 	}
-	return s.completeRun(ctx, sess, runID, req, plan)
+	return s.finishTurn(ctx, sess, runID, req, plan)
 }
 
 func (s *Store) RecoverRun(ctx context.Context, sessionID, runID string) (TurnResult, error) {
+	if _, ok := ctx.Deadline(); !ok {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, turnTimeout)
+		defer cancel()
+	}
 	run, err := s.GetRun(ctx, sessionID, runID)
 	if err != nil {
 		return TurnResult{}, err
 	}
 	if run.Status != "pending" {
-		if run.Status == "completed" || run.Status == "failed" {
-			return s.materializeTurn(ctx, run)
-		}
-		return TurnResult{}, ErrRunNotPending
+		return s.materializeTurn(ctx, run)
 	}
 	sess, err := s.Get(ctx, sessionID)
 	if err != nil {
@@ -275,12 +303,47 @@ func (s *Store) RecoverRun(ctx context.Context, sessionID, runID string) (TurnRe
 	}
 	plan, err := agentruntime.PlanTurn(req)
 	if err != nil {
+		_ = s.failRun(ctx, runID, fmt.Errorf("%w: %v", ErrInvalidTool, err))
 		return TurnResult{}, fmt.Errorf("%w: %v", ErrInvalidTool, err)
 	}
-	return s.completeRun(ctx, sess, runID, req, plan)
+	return s.finishTurn(ctx, sess, runID, req, plan)
 }
 
-func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req agentruntime.TurnRequest, plan agentruntime.TurnPlan) (TurnResult, error) {
+func (s *Store) finishTurn(ctx context.Context, sess Session, runID string, req agentruntime.TurnRequest, plan agentruntime.TurnPlan) (TurnResult, error) {
+	pageInput, err := s.buildPage(ctx, sess, req, plan)
+	if err != nil {
+		_ = s.failRun(ctx, runID, err)
+		return TurnResult{}, err
+	}
+	res, err := s.completeRun(ctx, sess, runID, req, plan, pageInput)
+	if err != nil {
+		_ = s.failRun(ctx, runID, err)
+		return TurnResult{}, err
+	}
+	return res, nil
+}
+
+func (s *Store) buildPage(ctx context.Context, sess Session, req agentruntime.TurnRequest, plan agentruntime.TurnPlan) (map[string]any, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if plan.SavePage != nil {
+		return asObjectMap(plan.SavePage.Page)
+	}
+	builder := s.Builder
+	if builder == nil {
+		builder = stubbuilder.Build
+	}
+	return builder(ctx, stubbuilder.SessionView{
+		ID:         sess.ID,
+		PageID:     sess.PageID,
+		SlugIntent: sess.SlugIntent,
+		Title:      sess.Title,
+		CreatedAt:  sess.CreatedAt,
+	}, req)
+}
+
+func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req agentruntime.TurnRequest, plan agentruntime.TurnPlan, pageInput map[string]any) (TurnResult, error) {
 	tx, err := s.pages.BeginTx(ctx, nil)
 	if err != nil {
 		return TurnResult{}, err
@@ -307,81 +370,30 @@ func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req
 	}
 
 	now := nowUTC()
-	var pageRec *pagestore.Record
-	msgs := make([]Message, 0, 3)
-
-	if plan.SavePage != nil {
-		pageMap, ok := plan.SavePage.Page.(map[string]any)
-		if !ok {
-			// re-decode via JSON for typed maps from request
-			raw, err := json.Marshal(plan.SavePage.Page)
-			if err != nil {
-				return TurnResult{}, err
-			}
-			if err := json.Unmarshal(raw, &pageMap); err != nil {
-				return TurnResult{}, err
-			}
-		}
-		if id, _ := pageMap["id"].(string); id != "" && id != sess.PageID {
-			return TurnResult{}, ErrPageIDMismatch
-		}
-		pageMap["id"] = sess.PageID
-		if _, hasSlug := pageMap["slug"]; !hasSlug || pageMap["slug"] == "" || pageMap["slug"] == nil {
-			if sess.SlugIntent != "" {
-				pageMap["slug"] = sess.SlugIntent
-			}
-		}
-
-		var rec pagestore.Record
-		var err error
-		idem := req.RequestID
-		if sess.PageBound {
-			expected := int64(0)
-			if plan.SavePage.ExpectedRevision != nil {
-				expected = *plan.SavePage.ExpectedRevision
-			} else if sess.PageRevision != nil {
-				expected = *sess.PageRevision
-			} else {
-				return TurnResult{}, pagestore.ErrRevisionConflict
-			}
-			rec, err = s.pages.UpdateDraftTx(ctx, tx, sess.PageID, expected, pageMap, idem)
-		} else {
-			rec, err = s.pages.CreateDraftTx(ctx, tx, pageMap, idem)
-		}
-		if err != nil {
-			return TurnResult{}, err
-		}
-		pageRec = &rec
-		rev := rec.Revision
-		if _, err := tx.ExecContext(ctx, `UPDATE sessions SET page_revision = ?, title = ?, updated_at = ? WHERE id = ?`,
-			rev, coalesceTitle(sess.Title, rec.Page.Title), now, sess.ID); err != nil {
-			return TurnResult{}, err
-		}
-		sess.PageBound = true
-		sess.PageRevision = &rev
-		sess.Title = coalesceTitle(sess.Title, rec.Page.Title)
-		sess.UpdatedAt = now
-
-		toolMsg := Message{
-			ID: newID("msg"), SessionID: sess.ID, Role: "tool",
-			Content: fmt.Sprintf(`{"tool":"save_page","pageId":%q,"revision":%d,"slug":%q}`, rec.Page.ID, rec.Revision, rec.Page.Slug),
-			RunID: runID, CreatedAt: now,
-		}
-		seq, err := nextSeq(ctx, tx, sess.ID)
-		if err != nil {
-			return TurnResult{}, err
-		}
-		toolMsg.Seq = seq
-		if _, err := tx.ExecContext(ctx, `INSERT INTO messages (id, session_id, seq, role, content, run_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-			toolMsg.ID, toolMsg.SessionID, toolMsg.Seq, toolMsg.Role, toolMsg.Content, toolMsg.RunID, toolMsg.CreatedAt); err != nil {
-			return TurnResult{}, err
-		}
-		msgs = append(msgs, toolMsg)
+	// Page-layer idempotency keys are global (M2 PagePort). Session
+	// exactly-once is the runs UNIQUE(session_id, request_id) + payload hash.
+	rec, err := s.persistBoundPage(ctx, tx, sess, pageInput, "")
+	if err != nil {
+		return TurnResult{}, err
 	}
+	rev := rec.Revision
+	title := coalesceTitle(sess.Title, rec.Page.Title)
+	if _, err := tx.ExecContext(ctx, `UPDATE sessions SET page_revision = ?, title = ?, updated_at = ? WHERE id = ?`,
+		rev, title, now, sess.ID); err != nil {
+		return TurnResult{}, err
+	}
+	sess.PageBound = true
+	sess.PageRevision = &rev
+	sess.Title = title
+	sess.UpdatedAt = now
 
+	asstText := plan.AssistantText
+	if asstText == "" {
+		asstText = stubAssistantText(rec)
+	}
 	asst := Message{
 		ID: newID("msg"), SessionID: sess.ID, Role: "assistant",
-		Content: plan.AssistantText, RunID: runID, CreatedAt: now,
+		Content: asstText, RunID: runID, CreatedAt: now,
 	}
 	seq, err := nextSeq(ctx, tx, sess.ID)
 	if err != nil {
@@ -392,16 +404,14 @@ func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req
 		asst.ID, asst.SessionID, asst.Seq, asst.Role, asst.Content, asst.RunID, asst.CreatedAt); err != nil {
 		return TurnResult{}, err
 	}
-	msgs = append(msgs, asst)
 
 	result := map[string]any{
-		"assistantText": plan.AssistantText,
-		"saved":         pageRec != nil,
-	}
-	if pageRec != nil {
-		result["pageId"] = pageRec.Page.ID
-		result["revision"] = pageRec.Revision
-		result["slug"] = pageRec.Page.Slug
+		"assistantText": asstText,
+		"builder":       stubbuilder.Name,
+		"liveModel":     false,
+		"pageId":        rec.Page.ID,
+		"revision":      rec.Revision,
+		"slug":          rec.Page.Slug,
 	}
 	rawResult, err := json.Marshal(result)
 	if err != nil {
@@ -411,12 +421,6 @@ func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req
 		string(rawResult), now, runID); err != nil {
 		return TurnResult{}, err
 	}
-	if !sess.PageBound {
-		if _, err := tx.ExecContext(ctx, `UPDATE sessions SET updated_at = ? WHERE id = ?`, now, sess.ID); err != nil {
-			return TurnResult{}, err
-		}
-		sess.UpdatedAt = now
-	}
 	if err := tx.Commit(); err != nil {
 		return TurnResult{}, err
 	}
@@ -425,18 +429,63 @@ func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req
 	if err != nil {
 		return TurnResult{}, err
 	}
-	// Include the user message for response convenience.
 	all, err := s.messagesForRun(ctx, sess.ID, runID)
 	if err != nil {
 		return TurnResult{}, err
 	}
-	out := TurnResult{Run: run, Messages: all, Session: sess}
-	if pageRec != nil {
-		out.Page = pageRec
-		out.PageBody = &pageBody{Page: pageRec.Page, Revision: pageRec.Revision}
+	return TurnResult{
+		Run:      run,
+		Messages: all,
+		Session:  sess,
+		Page:     &rec,
+		PageBody: &pageBody{Page: rec.Page, Revision: rec.Revision},
+	}, nil
+}
+
+func (s *Store) persistBoundPage(ctx context.Context, tx *sql.Tx, sess Session, pageMap map[string]any, idem string) (pagestore.Record, error) {
+	if id, _ := pageMap["id"].(string); id != "" && id != sess.PageID {
+		return pagestore.Record{}, ErrPageIDMismatch
 	}
-	_ = msgs
-	return out, nil
+	pageMap["id"] = sess.PageID
+	if slug, _ := pageMap["slug"].(string); strings.TrimSpace(slug) == "" {
+		if sess.SlugIntent != "" {
+			pageMap["slug"] = sess.SlugIntent
+		} else {
+			pageMap["slug"] = sess.ID
+		}
+	}
+
+	if !sess.PageBound {
+		rec, err := s.pages.CreateDraftTx(ctx, tx, pageMap, idem)
+		if errors.Is(err, pagestore.ErrDuplicateID) || errors.Is(err, pagestore.ErrDuplicateSlug) {
+			current, gerr := s.pages.GetByIDTx(ctx, tx, sess.PageID)
+			if gerr != nil {
+				return pagestore.Record{}, err
+			}
+			return s.pages.UpdateDraftTx(ctx, tx, sess.PageID, current.Revision, pageMap, idem)
+		}
+		return rec, err
+	}
+	expected := int64(0)
+	if sess.PageRevision != nil {
+		expected = *sess.PageRevision
+	}
+	rec, err := s.pages.UpdateDraftTx(ctx, tx, sess.PageID, expected, pageMap, idem)
+	if errors.Is(err, pagestore.ErrRevisionConflict) {
+		current, gerr := s.pages.GetByIDTx(ctx, tx, sess.PageID)
+		if gerr != nil {
+			return pagestore.Record{}, err
+		}
+		return s.pages.UpdateDraftTx(ctx, tx, sess.PageID, current.Revision, pageMap, idem)
+	}
+	return rec, err
+}
+
+func (s *Store) failRun(ctx context.Context, runID string, cause error) error {
+	code, msg := classifyError(cause)
+	_, err := s.pages.DB().ExecContext(context.WithoutCancel(ctx), `UPDATE runs SET status = 'failed', error_code = ?, error_message = ?, updated_at = ? WHERE id = ? AND status = 'pending'`,
+		code, msg, nowUTC(), runID)
+	return err
 }
 
 func (s *Store) materializeTurn(ctx context.Context, run Run) (TurnResult, error) {
@@ -449,7 +498,7 @@ func (s *Store) materializeTurn(ctx context.Context, run Run) (TurnResult, error
 		return TurnResult{}, err
 	}
 	out := TurnResult{Run: run, Messages: msgs, Session: sess}
-	if sess.PageBound {
+	if run.Status == "completed" && sess.PageBound {
 		rec, err := s.pages.GetByID(ctx, sess.PageID)
 		if err == nil {
 			out.Page = &rec
@@ -476,8 +525,8 @@ func (s *Store) messagesForRun(ctx context.Context, sessionID, runID string) ([]
 	return out, rows.Err()
 }
 
-func (s *Store) lookupRequest(ctx context.Context, requestID string) (Run, bool, error) {
-	row := s.pages.DB().QueryRowContext(ctx, `SELECT id, session_id, request_id, status, request_hash, result_json, error_code, error_message, created_at, updated_at FROM runs WHERE request_id = ?`, requestID)
+func (s *Store) lookupRequest(ctx context.Context, sessionID, requestID string) (Run, bool, error) {
+	row := s.pages.DB().QueryRowContext(ctx, `SELECT id, session_id, request_id, status, request_hash, result_json, error_code, error_message, created_at, updated_at FROM runs WHERE session_id = ? AND request_id = ?`, sessionID, requestID)
 	run, err := scanRun(row)
 	if errors.Is(err, ErrRunNotFound) || errors.Is(err, sql.ErrNoRows) {
 		return Run{}, false, nil
@@ -530,7 +579,7 @@ func scanSession(row rowScanner) (Session, error) {
 func scanMessage(row rowScanner) (Message, error) {
 	var m Message
 	var runID sql.NullString
-	err := row.Scan(&m.ID, &m.SessionID, &m.Seq, &m.Role, &m.Content, &runID, &m.CreatedAt)
+	err := row.Scan(&m.ID, &m.SessionID, &m.Seq, &m.Role, &m.Content, &m.RunID, &m.CreatedAt)
 	if err != nil {
 		return Message{}, err
 	}
@@ -606,4 +655,64 @@ func coalesceTitle(a, b string) string {
 
 func isUnique(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed")
+}
+
+func asObjectMap(v any) (map[string]any, error) {
+	if m, ok := v.(map[string]any); ok {
+		return m, nil
+	}
+	raw, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]any
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func stubAssistantText(rec pagestore.Record) string {
+	return fmt.Sprintf("Deterministic stub builder (%s) wrote page %s revision %d. Not a live model.", stubbuilder.Name, rec.Page.ID, rec.Revision)
+}
+
+func classifyError(err error) (code, msg string) {
+	if err == nil {
+		return "internal", "internal error"
+	}
+	var ce *pagecontract.Error
+	if errors.As(err, &ce) {
+		return ce.Code, clip(ce.Msg, 240)
+	}
+	switch {
+	case errors.Is(err, ErrIdempotencyConflict):
+		return "idempotency_conflict", err.Error()
+	case errors.Is(err, ErrPageIDMismatch):
+		return "invalid_id", err.Error()
+	case errors.Is(err, ErrInvalidTool):
+		return "invalid_tool", err.Error()
+	case errors.Is(err, ErrMissingIdempotencyKey):
+		return "missing_idempotency_key", err.Error()
+	case errors.Is(err, pagestore.ErrDuplicateSlug):
+		return "duplicate_slug", err.Error()
+	case errors.Is(err, pagestore.ErrDuplicateID):
+		return "duplicate_id", err.Error()
+	case errors.Is(err, pagestore.ErrRevisionConflict):
+		return "revision_conflict", err.Error()
+	case errors.Is(err, pagestore.ErrIdempotencyConflict):
+		return "idempotency_conflict", err.Error()
+	case errors.Is(err, context.Canceled):
+		return "canceled", "request canceled"
+	case errors.Is(err, context.DeadlineExceeded):
+		return "timeout", "request timed out"
+	default:
+		return "internal", clip(err.Error(), 240)
+	}
+}
+
+func clip(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	return s[:n]
 }

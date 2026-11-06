@@ -1,18 +1,24 @@
 package agentruntime
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
-func TestPlanTurnConversationNoSave(t *testing.T) {
+func TestPlanTurnConversationUsesStubNotSaveTool(t *testing.T) {
 	plan, err := PlanTurn(TurnRequest{Content: "hi"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if plan.SavePage != nil {
-		t.Fatal("conversation planned a save")
+		t.Fatal("conversation should use stub builder, not save_page args")
+	}
+	if !strings.Contains(plan.AssistantText, "Not a live model") {
+		t.Fatalf("assistant text %q", plan.AssistantText)
 	}
 }
 
-func TestPlanTurnRequiresExplicitTool(t *testing.T) {
+func TestPlanTurnOptionalExplicitDTO(t *testing.T) {
 	_, err := PlanTurn(TurnRequest{Content: "please create the page now"})
 	if err != nil {
 		t.Fatal(err)
@@ -24,6 +30,27 @@ func TestPlanTurnRequiresExplicitTool(t *testing.T) {
 		t.Fatal(err)
 	}
 	if plan.SavePage == nil {
-		t.Fatal("expected save")
+		t.Fatal("expected explicit dto")
+	}
+}
+
+func TestHashRequestIgnoresIdempotencyKey(t *testing.T) {
+	a, err := HashRequest(TurnRequest{Content: "hi", RequestID: "k1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := HashRequest(TurnRequest{Content: "hi", RequestID: "k2"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a != b {
+		t.Fatal("payload hash must ignore request id")
+	}
+	c, err := HashRequest(TurnRequest{Content: "other", RequestID: "k1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a == c {
+		t.Fatal("different payload must hash differently")
 	}
 }

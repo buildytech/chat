@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	RuntimeName = "context-local"
+	RuntimeName  = "context-local"
 	ToolSavePage = "save_page"
 )
 
@@ -19,18 +19,20 @@ func Capabilities() map[string]any {
 		"runtime":   RuntimeName,
 		"mode":      "deterministic-test",
 		"liveModel": false,
+		"builder":   "deterministic-test-stub",
 		"tools":     []string{ToolSavePage},
 		"features": map[string]any{
-			"sessions":     true,
-			"messages":     true,
-			"sse":          false,
-			"abort":        false,
-			"pageStore":    true,
-			"agentGateway": "foundation",
+			"sessions":       true,
+			"messages":       true,
+			"runs":           true,
+			"sse":            false,
+			"abort":          false,
+			"pageStore":      true,
+			"agentGateway":   "foundation",
 			"contextRuntime": false,
-			"lexproto":     false,
+			"lexproto":       false,
 		},
-		"note": "M3 infrastructure only. Not a finished full-agent runtime. Ordinary chat does not mutate pages; only explicit save_page does.",
+		"note": "M3 Session HTTP + deterministic stub builder. Not a live model. Not UI-wired. First successful turn binds one page; later turns update that page.",
 	}
 }
 
@@ -56,7 +58,15 @@ type SavePageArgs struct {
 }
 
 func HashRequest(v any) (string, error) {
-	raw, err := json.Marshal(v)
+	payload := v
+	if req, ok := v.(TurnRequest); ok {
+		tools := req.Tools
+		if tools == nil {
+			tools = []ToolCall{}
+		}
+		payload = map[string]any{"content": req.Content, "tools": tools}
+	}
+	raw, err := json.Marshal(payload)
 	if err != nil {
 		return "", err
 	}
@@ -64,7 +74,8 @@ func HashRequest(v any) (string, error) {
 	return hex.EncodeToString(sum[:]), nil
 }
 
-// PlanTurn is a deterministic harness: conversation never implies save_page.
+// PlanTurn is a deterministic harness. It does not call a live model.
+// Optional save_page supplies an explicit DTO; otherwise the stub builder emits one.
 func PlanTurn(req TurnRequest) (TurnPlan, error) {
 	tools := req.Tools
 	if tools == nil {
@@ -106,12 +117,12 @@ func PlanTurn(req TurnRequest) (TurnPlan, error) {
 			return TurnPlan{}, fmt.Errorf("content is required when no tools are requested")
 		}
 		return TurnPlan{
-			AssistantText: "Acknowledged. This is ordinary conversation — no page draft was created or revised. Call the save_page tool explicitly to create or update the page bound to this session.",
+			AssistantText: "Deterministic stub builder wrote the session page. Not a live model.",
 		}, nil
 	}
-	text := "save_page accepted by deterministic test runtime."
+	text := "Explicit page DTO accepted by deterministic test runtime. Not a live model."
 	if content != "" {
-		text = "Saved via explicit save_page tool. Conversation text was recorded but did not drive the write."
+		text = "Explicit page DTO override recorded. Stub/model invocation is not live."
 	}
 	return TurnPlan{AssistantText: text, SavePage: save}, nil
 }

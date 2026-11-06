@@ -251,3 +251,31 @@ func TestIdempotentCreate(t *testing.T) {
 		t.Fatalf("idempotency duplicated rows pages=%d revisions=%d", pages, revs)
 	}
 }
+
+func TestIdempotentConflictDifferentPayloadNoPartialRows(t *testing.T) {
+	s := openStore(t)
+	ctx := context.Background()
+	if _, err := s.CreateDraft(ctx, fixtureMap(t), "req-1"); err != nil {
+		t.Fatal(err)
+	}
+	doc := fixtureMap(t)
+	doc["title"] = "Different Payload"
+	_, err := s.CreateDraft(ctx, doc, "req-1")
+	if !errors.Is(err, ErrIdempotencyConflict) {
+		t.Fatalf("got %v", err)
+	}
+	pages, revs, err := s.Counts(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if pages != 1 || revs != 1 {
+		t.Fatalf("conflict wrote rows pages=%d revisions=%d", pages, revs)
+	}
+	got, err := s.GetByID(ctx, "page-home")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Page.Title == "Different Payload" {
+		t.Fatal("conflicting payload was stored")
+	}
+}

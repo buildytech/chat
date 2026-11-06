@@ -1,18 +1,18 @@
 # context-serve
 
-Go service for SI Chat. **M3:** durable PagePort + page-associated Session foundation (SQLite). This is **not** a finished full-agent runtime (no live model, Context Runtime, or lexproto wiring yet).
+Go service for SI Chat. **M3:** durable PagePort + Session HTTP/Gateway foundation (SQLite) with a labelled deterministic stub builder. This is **not** a live model. Chat-web talks to it through the Vite `/v1` proxy (M4); Workspace still does not treat stub output as live-model acceptance.
 
 ## Product model
 
-- One **session** ↔ one stable **pageId** (unique mutable slug after first save).
-- New clean page workspace = new clean session (isolated messages/runs/context).
-- Ordinary conversation persists messages and **must not** create or revise a page.
-- Only an explicit **`save_page` tool** request creates/updates the draft bound to that session.
-- Deterministic `context-local` test runtime exists for infrastructure tests only — do not treat it as a live agent.
+- One **session** ↔ one stable **pageId**. First successful turn binds that page in one short transaction; later turns update the same page with optimistic concurrency. They never mint a second page by accident.
+- A **new explicit session** is allowed to create a new page.
+- **Slug policy:** slug is globally unique. `slugIntent` is a hint used on the first successful turn. A colliding `slugIntent` fails that turn with `duplicate_slug` and must not leave a page row. Omit `slugIntent` to use the session id as the slug.
+- Page effect is **exactly-once**, not model invocation (there is no live model). Key = request-scoped session `Idempotency-Key` / `requestId` + payload hash of `content`+`tools`. Same key+payload returns the same run/page/revision. Same key different payload → `409`. A durable `pending` run is recovered after restart; it cannot stay stuck or create a second page.
+- Stub work runs **outside** the DB transaction. Persistence uses the validated M1 Page DTO and the M2 transaction boundary.
 
 ## HTTP contract (v1)
 
-Loopback by default (`127.0.0.1:8090`). Host/Origin must be loopback when present. No permissive CORS. No authentication; do not bind a public interface without a later auth layer. Body cap 72KiB.
+Loopback by default (`127.0.0.1:8090`). Unexpected `Host` and browser `Origin` values are rejected (loopback bind alone does not stop CSRF from websites). No CORS headers. No authentication; do not bind a public interface without a later auth layer. No model secrets. Body cap 72KiB.
 
 ### PagePort (M2, preserved)
 
@@ -24,17 +24,18 @@ Loopback by default (`127.0.0.1:8090`). Host/Origin must be loopback when presen
 | `PUT` | `/v1/pages/{id}` | update; optimistic `revision` |
 | `GET` | `/healthz` | store ping |
 
-### Session foundation (M3)
+### Session HTTP (M3)
 
 | Method | Path | Role |
 | --- | --- | --- |
-| `GET` | `/v1/capabilities` | runtime/capabilities (`liveModel: false`) |
+| `GET` | `/v1/capabilities` | `liveModel: false`, stub builder named |
 | `POST` | `/v1/sessions` | create session + allocate `pageId` (no page row yet) |
 | `GET` | `/v1/sessions` | list sessions |
 | `GET` | `/v1/sessions/{id}` | session + optional bound page |
-| `POST` | `/v1/sessions/{id}/messages` | user turn (conversation and/or explicit tools) |
+| `POST` | `/v1/sessions/{id}/messages` | user turn; `Idempotency-Key` or `requestId` required |
 | `GET` | `/v1/sessions/{id}/messages` | message history |
 | `GET` | `/v1/sessions/{id}/runs/{runId}` | run status / recovery read |
+| `GET` | `/v1/runs/{runId}` | run by id (polling) |
 | `POST` | `/v1/sessions/{id}/runs/{runId}/recover` | complete a durable `pending` run |
 
 Create session:
@@ -43,36 +44,25 @@ Create session:
 { "slugIntent": "home", "title": "optional" }
 ```
 
-Message turn (conversation only — no page write):
+Message turn (stub builder writes/updates the bound page):
 
-```json
-{ "content": "What should the hero say?", "requestId": "req-1" }
+```http
+POST /v1/sessions/{id}/messages
+Idempotency-Key: req-1
+Content-Type: application/json
+
+{ "content": "Harbor tables, seasonal plates" }
 ```
 
-Message turn with explicit save:
+Completed runs return `200` with `run.status=completed` and the page. Pending returns `202` (never fabricated success). Failed returns `422` with `run.status=failed` plus `error`. Repeat the same key after a crash to recover a pending run.
 
-```json
-{
-  "content": "optional note",
-  "requestId": "req-2",
-  "tools": [{
-    "name": "save_page",
-    "arguments": {
-      "page": { "...Page DTO with session pageId..." },
-      "expectedRevision": 1
-    }
-  }]
-}
-```
-
-`requestId` is durable idempotency for the turn: same key + same payload replays; same key + different payload → `409 idempotency_conflict`. First `save_page` creates revision 1 and binds the session; later saves update the same pageId. Pending runs survive crash and complete via `/recover`.
+Optional `save_page` tool supplies an explicit M1 DTO instead of the stub (used to test invalid DTO rejection). It is not a live model.
 
 ## Persistence
 
 - SQLite (`github.com/mattn/go-sqlite3`, CGO). Path: `PAGE_STORE_PATH` (default `data/pages.sqlite`).
-- Forward-only migrations: `001_init.sql` (pages/revisions), `002_sessions.sql` (sessions/messages/runs).
-- One logical page per session (`sessions.page_id` unique). Page content rows appear only after `save_page`.
-- Writes that bind a page commit page row + revision + run + messages in one transaction after the durable pending marker.
+- Forward-only migrations: `001_init.sql` (pages/revisions), `002_sessions.sql` (sessions/messages/runs), `003_session_request_scope.sql` (request id unique per session).
+- Writes that bind a page commit page row + revision + session revision + run result in one short transaction after the stub has finished.
 
 ## Run
 
@@ -87,4 +77,4 @@ Bare `:8090` is rewritten to `127.0.0.1:8090`.
 
 ## Not in M3
 
-Live model / Cursor SDK / Context Runtime / lexproto adapters, SSE/abort streaming, WordPress publish, five landings / hierarchy / UTM, UI wiring of Session API.
+Live model / Cursor SDK / Context Runtime / lexproto adapters, SSE/abort streaming, WordPress publish, five landings / hierarchy / UTM, UI wiring of Session API (M4). Demo “Wrote page” text in the SPA remains non-acceptance until M4.

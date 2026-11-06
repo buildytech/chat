@@ -6,7 +6,10 @@ import (
 	"strings"
 )
 
-// Wrap enforces loopback-oriented Host/Origin checks and never emits permissive CORS.
+// Wrap enforces loopback Host/Origin checks. Loopback bind alone does not
+// stop CSRF from websites, so unexpected Host, forwarded Host, and browser
+// Origins are rejected on every request, especially writes. No CORS headers
+// are emitted.
 func Wrap(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if host := r.Host; host != "" && !allowedHost(host) {
@@ -20,23 +23,15 @@ func Wrap(next http.Handler) http.Handler {
 				return
 			}
 		}
-		if origin := strings.TrimSpace(r.Header.Get("Origin")); origin != "" && !allowedOrigin(origin) {
+		origin := strings.TrimSpace(r.Header.Get("Origin"))
+		if origin != "" && !allowedOrigin(origin) {
 			writeForbidden(w, "origin_not_allowed", "Origin is not a loopback origin")
 			return
 		}
-		// Explicitly avoid Access-Control-Allow-Origin: *
-		if acr := r.Header.Get("Access-Control-Request-Method"); acr != "" || r.Method == http.MethodOptions {
-			w.Header().Set("Vary", "Origin")
-			if origin := strings.TrimSpace(r.Header.Get("Origin")); allowedOrigin(origin) {
-				w.Header().Set("Access-Control-Allow-Origin", origin)
-				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
-				w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Idempotency-Key, If-Match")
-				w.Header().Set("Access-Control-Max-Age", "600")
-			}
-			if r.Method == http.MethodOptions {
-				w.WriteHeader(http.StatusNoContent)
-				return
-			}
+		// Never emit Access-Control-Allow-Origin. Preflight cannot succeed.
+		if r.Method == http.MethodOptions {
+			writeForbidden(w, "cors_disabled", "browser CORS is not enabled")
+			return
 		}
 		next.ServeHTTP(w, r)
 	})
@@ -49,7 +44,7 @@ func allowedHost(host string) bool {
 	}
 	h = strings.Trim(strings.ToLower(h), "[]")
 	switch h {
-	case "127.0.0.1", "localhost", "::1", "0.0.0.0":
+	case "127.0.0.1", "localhost", "::1":
 		return true
 	default:
 		return false

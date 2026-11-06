@@ -18,15 +18,15 @@ import (
 //go:embed migrations/*.sql
 var migrationFS embed.FS
 
-const currentMigration = 2
+const currentMigration = 3
 
 var (
-	ErrNotFound              = errors.New("page not found")
-	ErrDuplicateSlug         = errors.New("duplicate slug")
-	ErrDuplicateID           = errors.New("duplicate page id")
-	ErrRevisionConflict      = errors.New("revision conflict")
-	ErrIDMismatch            = errors.New("page id does not match")
-	ErrIdempotencyConflict   = errors.New("idempotency key reused with different payload")
+	ErrNotFound            = errors.New("page not found")
+	ErrDuplicateSlug       = errors.New("duplicate slug")
+	ErrDuplicateID         = errors.New("duplicate page id")
+	ErrRevisionConflict    = errors.New("revision conflict")
+	ErrIDMismatch          = errors.New("page id does not match")
+	ErrIdempotencyConflict = errors.New("idempotency key reused with different payload")
 )
 
 type Record struct {
@@ -129,23 +129,37 @@ func migrationName(version int) string {
 		return "init"
 	case 2:
 		return "sessions"
+	case 3:
+		return "session_request_scope"
 	default:
 		return "unknown"
 	}
 }
 
 func (s *Store) GetByID(ctx context.Context, id string) (Record, error) {
-	return s.get(ctx, `SELECT dto_json, revision FROM pages WHERE id = ?`, id)
+	return s.get(ctx, nil, `SELECT dto_json, revision FROM pages WHERE id = ?`, id)
+}
+
+func (s *Store) GetByIDTx(ctx context.Context, tx *sql.Tx, id string) (Record, error) {
+	if tx == nil {
+		return Record{}, errors.New("tx required")
+	}
+	return s.get(ctx, tx, `SELECT dto_json, revision FROM pages WHERE id = ?`, id)
 }
 
 func (s *Store) GetBySlug(ctx context.Context, slug string) (Record, error) {
-	return s.get(ctx, `SELECT dto_json, revision FROM pages WHERE slug = ?`, slug)
+	return s.get(ctx, nil, `SELECT dto_json, revision FROM pages WHERE slug = ?`, slug)
 }
 
-func (s *Store) get(ctx context.Context, q, arg string) (Record, error) {
+func (s *Store) get(ctx context.Context, tx *sql.Tx, q, arg string) (Record, error) {
 	var raw string
 	var rev int64
-	err := s.db.QueryRowContext(ctx, q, arg).Scan(&raw, &rev)
+	var err error
+	if tx != nil {
+		err = tx.QueryRowContext(ctx, q, arg).Scan(&raw, &rev)
+	} else {
+		err = s.db.QueryRowContext(ctx, q, arg).Scan(&raw, &rev)
+	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return Record{}, ErrNotFound
 	}
@@ -178,7 +192,7 @@ func (s *Store) CreateDraft(ctx context.Context, input any, idempotencyKey strin
 	return rec, nil
 }
 
-// CreateDraftTx writes a draft inside an open transaction (used by session save_page commits).
+// CreateDraftTx writes a draft inside an open transaction (session persist boundary).
 func (s *Store) CreateDraftTx(ctx context.Context, tx *sql.Tx, input any, idempotencyKey string) (Record, error) {
 	page, err := pagecontract.ParseDraftPage(input)
 	if err != nil {
@@ -228,7 +242,6 @@ func (s *Store) CreateDraftTx(ctx context.Context, tx *sql.Tx, input any, idempo
 	}
 	return Record{Page: page, Revision: 1}, nil
 }
-
 
 func (s *Store) UpdateDraft(ctx context.Context, id string, expectedRev int64, input any, idempotencyKey string) (Record, error) {
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
