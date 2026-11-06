@@ -29,12 +29,29 @@
 	let {
 		disabled = false,
 		onSend,
-		draft = $bindable("")
+		draft = $bindable(""),
+		runtimeStatus = null
 	}: {
 		disabled?: boolean;
-		onSend: (text: string) => void;
+		onSend: (text: string) => void | Promise<void>;
 		draft?: string;
+		runtimeStatus?: {
+			mode: "live" | "mock" | "booting";
+			capabilities: { liveModel?: boolean; mode?: string; runtime?: string; note?: string } | null;
+			error: string | null;
+			canDelete: boolean;
+			lastRequestId: string | null;
+		} | null;
 	} = $props();
+
+	const runtimeLabel = $derived.by(() => {
+		if (!runtimeStatus) return "";
+		const caps = runtimeStatus.capabilities;
+		if (runtimeStatus.mode === "mock") return t("runtime.mockMode");
+		if (caps?.liveModel) return t("runtime.liveModel");
+		const mode = caps?.mode ?? "deterministic-test";
+		return t("runtime.testHarness").replace("{mode}", mode);
+	});
 
 	let model = $state<ModelId>("gpt");
 	let modelOpen = $state(false);
@@ -156,5 +173,15 @@
 				<Icon size="sm"><ArrowUp /></Icon>
 			</Button>
 		</Group>
+		{#if runtimeLabel || runtimeStatus?.error}
+			<Group class="items-center justify-between gap-2">
+				{#if runtimeLabel}
+					<Text tag="span" class="text-[11px] text-muted-foreground">{runtimeLabel}</Text>
+				{/if}
+				{#if runtimeStatus?.error}
+					<Text tag="span" class="text-[11px] text-destructive" role="status">{runtimeStatus.error}</Text>
+				{/if}
+			</Group>
+		{/if}
 	</Form>
 </Block>

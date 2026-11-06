@@ -25,6 +25,7 @@
 	} = $props();
 
 	const page = $derived(getCurrentPage());
+	const pageTitle = $derived(page?.title?.trim() ? page.title : t("thread.untitled"));
 	let published = $state(false);
 	let confirmOpen = $state(false);
 
@@ -71,7 +72,7 @@
 			disabled
 			title={t("shell.projectSoon")}
 		>
-			<Text tag="span" class="truncate font-semibold">{page.title}</Text>
+			<Text tag="span" class="truncate font-semibold">{pageTitle}</Text>
 			<Icon size="sm" class="text-muted-foreground"><ChevronDown /></Icon>
 		</Button>
 	</Group>
@@ -105,7 +106,7 @@
 	<Block class="fixed inset-0 z-40 flex items-center justify-center bg-foreground/30 p-4">
 		<Stack class="w-full max-w-sm gap-4 rounded-default border border-border bg-card p-5 shadow-lg">
 			<Title as={2} class="text-base font-semibold text-foreground">
-				{t("shell.publishConfirm").replace("{title}", page.title)}
+				{t("shell.publishConfirm").replace("{title}", pageTitle)}
 			</Title>
 			<Text tag="p" class="text-sm text-muted-foreground">{t("shell.publishConfirmBody")}</Text>
 			<Group class="justify-end gap-2">

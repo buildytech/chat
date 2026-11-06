@@ -11,9 +11,12 @@ export {
 } from "./page";
 export { mockLandingPage } from "./fixture";
 export {
+	clearCurrentPage,
 	getCurrentPage,
+	getPageRevision,
 	getSelectedBlock,
 	getSelectedBlockId,
+	loadMockFixturePage,
 	selectBlock,
 	setCurrentPage
 } from "./mock.svelte";

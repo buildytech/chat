@@ -136,6 +136,17 @@
 		"code.showFiles": "Показать файлы",
 		"splitter.nav": "Изменить ширину навигации",
 		"splitter.chat": "Изменить ширину чата",
-		"splitter.tree": "Изменить ширину дерева файлов"
+		"splitter.tree": "Изменить ширину дерева файлов",
+		"sidebar.deleteUnavailable": "Удаление недоступно, пока Session API его не поддерживает",
+		"runtime.mockMode": "Офлайн-мок (?mock=1) — не живой агент",
+		"runtime.testHarness": "Тестовый harness: {mode} · liveModel выкл.",
+		"runtime.liveModel": "Подключена живая модель",
+		"runtime.badPage": "Сохранённая страница не прошла валидацию — Workspace без изменений",
+		"runtime.loadFailed": "Не удалось загрузить сессию",
+		"runtime.hydrateFailed": "Session API недоступен",
+		"runtime.capabilitiesFailed": "Capabilities недоступны",
+		"runtime.sendFailed": "Не удалось отправить",
+		"runtime.deleteUnavailable": "Удаление сессии пока недоступно",
+		"message.savedRevision": "Черновик /{slug} · ревизия {revision}"
 	}
 }

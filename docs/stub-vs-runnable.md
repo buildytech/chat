@@ -16,7 +16,7 @@ Committed in the bootstrap:
 **Stubs (not live)**
 
 - `apps/orchestrator` — notes `@grok/agent-sdk@0.6.0`; no keys required
-- `services/context-serve` CR / sessions / Gateway — not wired (Page Store + Session foundation M3 is live)
+- `services/context-serve` CR / sessions / Gateway — not wired (Page Store + Session foundation M3; chat-web Session HTTP wire-up M4 is live)
 - `adapters/wordpress` — plugin shell + TS client, no REST yet
 - `adapters/wails3`, `adapters/telegram-mini`
 - `deploy/compose` — local CR+SDK compose placeholders

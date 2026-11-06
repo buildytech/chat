@@ -9,12 +9,20 @@
 		session,
 		busy,
 		onSend,
+		runtimeStatus = null,
 		visible = true,
 		chatHidden = false
 	}: {
 		session: ChatSession | null;
 		busy: boolean;
-		onSend: (text: string) => void;
+		onSend: (text: string) => void | Promise<void>;
+		runtimeStatus?: {
+			mode: "live" | "mock" | "booting";
+			capabilities: { liveModel?: boolean; mode?: string; runtime?: string; note?: string } | null;
+			error: string | null;
+			canDelete: boolean;
+			lastRequestId: string | null;
+		} | null;
 		visible?: boolean;
 		chatHidden?: boolean;
 	} = $props();
@@ -30,5 +38,5 @@
 		chatHidden ? "lg:hidden" : "lg:flex lg:w-[var(--creator-chat-w,320px)] lg:flex-none lg:shrink-0"
 	)}
 >
-	<ChatThread {session} {busy} {onSend} />
+	<ChatThread {session} {busy} {onSend} {runtimeStatus} />
 </Block>

@@ -9,16 +9,18 @@
 		onSelect,
 		onDelete,
 		onToggle,
-		collapsed = false
+		collapsed = false,
+		canDelete = false
 	}: {
 		sessions: SessionSummary[];
 		selectedId: string | null;
-		onNew: () => void;
-		onSelect: (id: string) => void;
+		onNew: () => void | Promise<void>;
+		onSelect: (id: string) => void | Promise<void>;
 		onDelete: (id: string) => void;
 		onToggle?: () => void;
 		collapsed?: boolean;
+		canDelete?: boolean;
 	} = $props();
 </script>
 
-<ChatSidebar {sessions} {selectedId} {onNew} {onSelect} {onDelete} {onToggle} {collapsed} />
+<ChatSidebar {sessions} {selectedId} {onNew} {onSelect} {onDelete} {onToggle} {collapsed} {canDelete} />

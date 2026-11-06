@@ -135,6 +135,17 @@
 		"code.showFiles": "Show files",
 		"splitter.nav": "Resize navigation",
 		"splitter.chat": "Resize chat",
-		"splitter.tree": "Resize file tree"
+		"splitter.tree": "Resize file tree",
+		"sidebar.deleteUnavailable": "Delete is unavailable until Session API supports it",
+		"runtime.mockMode": "Offline mock (?mock=1) — not a live agent",
+		"runtime.testHarness": "Test harness: {mode} · liveModel off",
+		"runtime.liveModel": "Live model connected",
+		"runtime.badPage": "Saved page failed validation — Workspace unchanged",
+		"runtime.loadFailed": "Could not load session",
+		"runtime.hydrateFailed": "Could not reach Session API",
+		"runtime.capabilitiesFailed": "Capabilities unreachable",
+		"runtime.sendFailed": "Send failed",
+		"runtime.deleteUnavailable": "Session delete is not available yet",
+		"message.savedRevision": "Saved draft /{slug} · revision {revision}"
 	}
 }

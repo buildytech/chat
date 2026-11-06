@@ -3,6 +3,7 @@
 	import {
 		createSession,
 		deleteSession,
+		getRuntimeStatus,
 		getSelectedSession,
 		hydrateSessions,
 		listSessions,
@@ -17,22 +18,33 @@
 	let busy = $state(false);
 
 	onMount(() => {
-		hydrateSessions();
+		void hydrateSessions();
 		theme.init();
 	});
 
 	const sessions = $derived(listSessions());
 	const selected = $derived(getSelectedSession());
 	const selectedId = $derived(selected?.id ?? null);
+	const runtime = $derived(getRuntimeStatus());
 
-	function onNew() {
-		createSession();
-		sidebarOpen = false;
+	async function onNew() {
+		busy = true;
+		try {
+			await createSession();
+			sidebarOpen = false;
+		} finally {
+			busy = false;
+		}
 	}
 
-	function onSelect(id: string) {
-		selectSession(id);
-		sidebarOpen = false;
+	async function onSelect(id: string) {
+		busy = true;
+		try {
+			await selectSession(id);
+			sidebarOpen = false;
+		} finally {
+			busy = false;
+		}
 	}
 
 	function onDelete(id: string) {
@@ -43,6 +55,8 @@
 		busy = true;
 		try {
 			await sendMessage(text);
+		} catch {
+			/* error surfaced via runtime.status */
 		} finally {
 			busy = false;
 		}
@@ -59,6 +73,7 @@
 	{selected}
 	{selectedId}
 	{busy}
+	{runtime}
 	{onNew}
 	{onSelect}
 	{onDelete}

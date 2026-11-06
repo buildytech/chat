@@ -17,7 +17,7 @@
 	} from "../page-store";
 
 	const page = $derived(getCurrentPage());
-	const blocks = $derived(blocksOf(page));
+	const blocks = $derived(page ? blocksOf(page) : []);
 	const selectedId = $derived(getSelectedBlockId());
 
 	const depthPad = ["pl-3", "pl-6", "pl-8"] as const;

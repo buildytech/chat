@@ -2,9 +2,11 @@
 export {
 	createSession,
 	deleteSession,
+	getRuntimeStatus,
 	getSelectedSession,
 	hydrateSessions,
 	listSessions,
+	retryLastFailed,
 	selectSession,
 	sendMessage
 } from "../chat-core/session.svelte";

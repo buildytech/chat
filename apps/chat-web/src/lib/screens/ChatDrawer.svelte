@@ -15,6 +15,7 @@
 		onNew,
 		onSelect,
 		onDelete,
+		canDelete = false,
 		onClose,
 		onToggle
 	}: {
@@ -22,9 +23,10 @@
 		collapsed?: boolean;
 		sessions: SessionSummary[];
 		selectedId: string | null;
-		onNew: () => void;
-		onSelect: (id: string) => void;
+		onNew: () => void | Promise<void>;
+		onSelect: (id: string) => void | Promise<void>;
 		onDelete: (id: string) => void;
+		canDelete?: boolean;
 		onClose: () => void;
 		onToggle?: () => void;
 	} = $props();
@@ -38,7 +40,7 @@
 		"lg:flex"
 	)}
 >
-	<AppNav {sessions} {selectedId} {onNew} {onSelect} {onDelete} {onToggle} {collapsed} />
+	<AppNav {sessions} {selectedId} {onNew} {onSelect} {onDelete} {onToggle} {collapsed} {canDelete} />
 </Block>
 {#if open}
 	<Button

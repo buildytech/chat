@@ -28,11 +28,12 @@
 
 	const page = $derived(getCurrentPage());
 	const selectedId = $derived(getSelectedBlockId());
-	const pack = $derived(packFilesFromPage(page, selectedId));
+	const pack = $derived(page ? packFilesFromPage(page, selectedId) : []);
 
 	let openFolders = $state<Record<string, boolean>>({ blocks: true });
 
 	const tree = $derived.by((): CodeTreeEntry[] => {
+		if (!page) return [];
 		const entries: CodeTreeEntry[] = [
 			{ id: "page.latte", label: "page.latte", kind: "file", path: "page.latte" },
 			{ id: "blocks", label: "blocks", kind: "folder", path: "blocks" }
@@ -67,10 +68,13 @@
 
 	const activeTab = $derived(tabs.find((tab) => tab.active) ?? tabs[0]);
 	const crumbs = $derived((activeTab?.path ?? "page.latte").split("/"));
-	const source = $derived(
-		pack.find((file) => file.path === (activeTab?.path ?? "page.latte"))?.content ??
+	const source = $derived.by(() => {
+		if (!page) return t("workspace.empty");
+		return (
+			pack.find((file) => file.path === (activeTab?.path ?? "page.latte"))?.content ??
 			latteFromPage(page, selectedId)
-	);
+		);
+	});
 
 	function openFile(entry: CodeTreeEntry) {
 		selectedPath = entry.path;

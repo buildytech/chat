@@ -1,14 +1,16 @@
 /**
  * ChatCore — session/messages logic, no DOM (ADR-0003).
- * Agent Gateway / AdapterRegistry / cursor-sdk: ADR-0004 (not implemented here).
+ * Live path: Session HTTP on context-serve (M4). Mock only with ?mock=1.
  */
 export {
 	createSession,
 	deleteSession,
+	getRuntimeStatus,
 	getSelectedSession,
 	hydrateSessions,
 	listSessions,
+	retryLastFailed,
 	selectSession,
 	sendMessage
 } from "./session.svelte";
-export type { ChatMessage, ChatRole, ChatSession, SessionSummary } from "./types";
+export type { ChatArtifact, ChatMessage, ChatRole, ChatSession, SessionSummary } from "./types";

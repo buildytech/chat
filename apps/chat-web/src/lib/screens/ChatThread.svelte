@@ -4,7 +4,6 @@
 	import Text from "../../ui/text/Text.svelte";
 	import Title from "../compose/Title.svelte";
 	import { t } from "../i18n/dictionary";
-	import { blocksOf, getCurrentPage, walkBlocks } from "../page-store";
 	import type { ChatSession } from "../chat-core";
 	import ChatComposer from "./ChatComposer.svelte";
 	import ChatMessage from "./ChatMessage.svelte";
@@ -12,28 +11,46 @@
 	let {
 		session,
 		busy,
-		onSend
+		onSend,
+		runtimeStatus = null
 	}: {
 		session: ChatSession | null;
 		busy: boolean;
-		onSend: (text: string) => void;
+		onSend: (text: string) => void | Promise<void>;
+		runtimeStatus?: {
+			mode: "live" | "mock" | "booting";
+			capabilities: { liveModel?: boolean; mode?: string; runtime?: string; note?: string } | null;
+			error: string | null;
+			canDelete: boolean;
+			lastRequestId: string | null;
+		} | null;
 	} = $props();
 
 	const messages = $derived(session?.messages ?? []);
 	const empty = $derived(messages.length === 0);
-	const page = $derived(getCurrentPage());
-	const lastAssistantId = $derived(
-		[...messages].reverse().find((message) => message.role === "assistant")?.id ?? null
-	);
-	const activity = $derived.by(() => {
-		const files = ["page.latte", ...walkBlocks(blocksOf(page)).slice(0, 4).map((block) => `blocks/${block.id}.latte`)];
-		return files.map((file) => t("message.wrote").replace("{file}", file));
-	});
 
 	let draft = $state("");
 
 	function onEdit(text: string) {
 		draft = text;
+	}
+
+	function activityFor(message: (typeof messages)[number]): string[] {
+		const arts = message.artifacts ?? [];
+		const lines: string[] = [];
+		for (const a of arts) {
+			if (a.kind === "saved_page") {
+				for (const file of a.files) {
+					lines.push(t("message.wrote").replace("{file}", file));
+				}
+				lines.push(
+					t("message.savedRevision")
+						.replace("{slug}", a.slug)
+						.replace("{revision}", String(a.revision))
+				);
+			}
+		}
+		return lines;
 	}
 </script>
 
@@ -47,15 +64,16 @@
 		{:else}
 			<Stack class="w-full gap-9">
 				{#each messages as message (message.id)}
+					{@const activity = activityFor(message)}
 					<ChatMessage
 						{message}
-						activity={activity}
-						showActivity={message.role === "assistant" && message.id === lastAssistantId}
+						{activity}
+						showActivity={message.role === "assistant" && activity.length > 0}
 						{onEdit}
 					/>
 				{/each}
 			</Stack>
 		{/if}
 	</Stack>
-	<ChatComposer disabled={busy} {onSend} bind:draft />
+	<ChatComposer disabled={busy} {onSend} bind:draft {runtimeStatus} />
 </Block>

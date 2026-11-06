@@ -18,9 +18,9 @@
 	import PreviewBlock from "./PreviewBlock.svelte";
 
 	const page = $derived(getCurrentPage());
-	const blocks = $derived(blocksOf(page));
+	const blocks = $derived(page ? blocksOf(page) : []);
 	const selectedId = $derived(getSelectedBlockId());
-	const slugUrl = $derived(`/${page.slug}`);
+	const slugUrl = $derived(page ? `/${page.slug}` : "/");
 
 	let device = $state<"desktop" | "mobile">("desktop");
 	let url = $state("");

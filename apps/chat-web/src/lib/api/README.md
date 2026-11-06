@@ -1,7 +1,7 @@
-# Mock session API
+# Session HTTP client (M4)
 
-ChatCore lives in `src/lib/chat-core` (ADR-0003). This folder re-exports the mock for older imports.
+Default: same-origin `/v1/*` via Vite proxy → loopback `context-serve`.
 
-- Sessions persist in `localStorage` (`buildytech-chat-sessions`).
-- Assistant replies acknowledge an ordinary page + unique slug.
-- No orchestrator, WordPress, Agent Gateway, or `@cursor/sdk` keys (ADR-0004).
+- Live mode talks to Session HTTP. Ordinary chat never auto-saves a page.
+- Explicit `?mock=1` keeps the old localStorage ChatCore + North Harbor fixture.
+- API failure never silently falls back to mock.

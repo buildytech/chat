@@ -227,6 +227,18 @@ func (s *Store) PostMessage(ctx context.Context, sessionID string, req agentrunt
 		userMsg.ID, userMsg.SessionID, userMsg.Seq, userMsg.Role, userMsg.Content, userMsg.RunID, userMsg.CreatedAt); err != nil {
 		return TurnResult{}, err
 	}
+	if strings.TrimSpace(sess.Title) == "" && userMsg.Content != "" && userMsg.Content != "(explicit save_page tool request)" {
+		title := userMsg.Content
+		runes := []rune(title)
+		if len(runes) > 48 {
+			title = string(runes[:48])
+		}
+		if _, err := tx.ExecContext(ctx, `UPDATE sessions SET title = ?, updated_at = ? WHERE id = ? AND title = ''`, title, now, sessionID); err != nil {
+			return TurnResult{}, err
+		}
+		sess.Title = title
+		sess.UpdatedAt = now
+	}
 	if err := tx.Commit(); err != nil {
 		return TurnResult{}, err
 	}

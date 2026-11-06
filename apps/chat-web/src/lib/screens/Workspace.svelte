@@ -19,7 +19,9 @@
 	let view = $state<"preview" | "code">("preview");
 
 	function onDownloadZip() {
-		downloadPageZip(getCurrentPage(), getSelectedBlockId());
+		const page = getCurrentPage();
+		if (!page) return;
+		downloadPageZip(page, getSelectedBlockId());
 	}
 </script>
 

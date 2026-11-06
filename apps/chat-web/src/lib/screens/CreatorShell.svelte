@@ -22,17 +22,25 @@
 		onDelete,
 		onSend,
 		onToggleSidebar,
-		onCloseSidebar
+		onCloseSidebar,
+		runtime
 	}: {
 		sidebarOpen: boolean;
 		sessions: SessionSummary[];
 		selected: ChatSession | null;
 		selectedId: string | null;
 		busy: boolean;
-		onNew: () => void;
-		onSelect: (id: string) => void;
+		runtime: {
+			mode: "live" | "mock" | "booting";
+			capabilities: { liveModel?: boolean; mode?: string; runtime?: string; note?: string } | null;
+			error: string | null;
+			canDelete: boolean;
+			lastRequestId: string | null;
+		};
+		onNew: () => void | Promise<void>;
+		onSelect: (id: string) => void | Promise<void>;
 		onDelete: (id: string) => void;
-		onSend: (text: string) => void;
+		onSend: (text: string) => void | Promise<void>;
 		onToggleSidebar: () => void;
 		onCloseSidebar: () => void;
 	} = $props();
@@ -78,6 +86,7 @@
 			{onNew}
 			{onSelect}
 			{onDelete}
+			canDelete={runtime.canDelete}
 			onClose={onCloseSidebar}
 			onToggle={handleNavToggle}
 		/>
@@ -94,6 +103,7 @@
 					session={selected}
 					{busy}
 					{onSend}
+					runtimeStatus={runtime}
 					visible={mobileSurface === "chat"}
 					{chatHidden}
 				/>

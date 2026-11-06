@@ -5,22 +5,30 @@ import { findBlock, firstBlockId, hasBlock } from "./tree";
 export { mockLandingPage };
 
 /**
- * Client-only in-memory Store (layout `ssr = false`). Reassigned as a whole page;
+ * Client page state. Unbound sessions keep `null` (blank Workspace — not the North Harbor fixture).
  * `$state.raw` avoids proxying the DTO. Do not introduce shared SSR module state.
  */
-let currentPage = $state.raw<Page>(mockLandingPage);
-/** Hydrated at module init — do not assign inside $derived. */
-let selectedBlockId = $state<string | null>(firstBlockId(mockLandingPage.layout.blocks));
+let currentPage = $state.raw<Page | null>(null);
+let selectedBlockId = $state<string | null>(null);
+let pageRevision = $state<number | null>(null);
 
-function syncSelection(page: Page): void {
+function syncSelection(page: Page | null): void {
+	if (!page) {
+		selectedBlockId = null;
+		return;
+	}
 	if (!hasBlock(page.layout.blocks, selectedBlockId)) {
 		selectedBlockId = firstBlockId(page.layout.blocks);
 	}
 }
 
 /** Pure read — do not mutate inside $derived. */
-export function getCurrentPage(): Page {
+export function getCurrentPage(): Page | null {
 	return currentPage;
+}
+
+export function getPageRevision(): number | null {
+	return pageRevision;
 }
 
 /** Pure read — do not mutate inside $derived. */
@@ -30,21 +38,34 @@ export function getSelectedBlockId(): string | null {
 
 /** Pure read — do not mutate inside $derived. */
 export function getSelectedBlock(): PageBlock | null {
+	if (!currentPage) return null;
 	return findBlock(currentPage.layout.blocks, selectedBlockId);
 }
 
 export function selectBlock(id: string): void {
-	if (!hasBlock(currentPage.layout.blocks, id)) return;
+	if (!currentPage || !hasBlock(currentPage.layout.blocks, id)) return;
 	selectedBlockId = id;
 }
 
 /**
  * Replace the current page after central runtime validation.
- * Resets selection when the id is missing from the new tree.
- * Call from event handlers / loaders — never from $derived.
+ * Malformed input must not call this — callers parse first and keep the previous page on failure.
  */
-export function setCurrentPage(page: Page): void {
+export function setCurrentPage(page: Page, revision: number | null = null): void {
 	const next = parsePage(page);
 	currentPage = next;
+	pageRevision = revision;
 	syncSelection(next);
+}
+
+/** Blank Workspace for a new / unbound session. Never loads the demo fixture. */
+export function clearCurrentPage(): void {
+	currentPage = null;
+	selectedBlockId = null;
+	pageRevision = null;
+}
+
+/** Mock-mode only: seed the North Harbor fixture. */
+export function loadMockFixturePage(): void {
+	setCurrentPage(mockLandingPage, 1);
 }

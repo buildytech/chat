@@ -13,9 +13,10 @@
   "scripts": {
     "dev": "npm run dev --workspace=@buildytech/chat-web",
     "build": "npm run build --workspace=@buildytech/chat-web",
-    "test": "npm run test --workspace=@buildytech/page-contract",
+    "test": "npm run test --workspace=@buildytech/page-contract && npm run test:api",
     "check": "npm run check --workspace=@buildytech/chat-web",
-    "verify": "npm test && npm run check && npm run build"
+    "verify": "npm test && npm run check && npm run build",
+    "test:api": "node --experimental-strip-types --test scripts/m4-api-tests/*.test.ts scripts/m4-api-tests/*.integration.test.ts"
   },
   "engines": {
     "node": ">=20"

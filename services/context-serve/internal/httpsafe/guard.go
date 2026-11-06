@@ -13,6 +13,13 @@ func Wrap(next http.Handler) http.Handler {
 			writeForbidden(w, "host_not_allowed", "Host is not a loopback name")
 			return
 		}
+		// Reject forwarded hosts that are not loopback (DNS-rebinding / proxy abuse).
+		for _, hdr := range []string{"X-Forwarded-Host", "Forwarded"} {
+			if v := strings.TrimSpace(r.Header.Get(hdr)); v != "" && !allowedForwarded(v) {
+				writeForbidden(w, "host_not_allowed", "forwarded host is not a loopback name")
+				return
+			}
+		}
 		if origin := strings.TrimSpace(r.Header.Get("Origin")); origin != "" && !allowedOrigin(origin) {
 			writeForbidden(w, "origin_not_allowed", "Origin is not a loopback origin")
 			return
@@ -57,6 +64,26 @@ func allowedOrigin(origin string) bool {
 	return strings.HasPrefix(origin, "http://127.0.0.1") ||
 		strings.HasPrefix(origin, "http://localhost") ||
 		strings.HasPrefix(origin, "http://[::1]")
+}
+
+func allowedForwarded(raw string) bool {
+	// Forwarded: for=...;host=example.com — take host= if present, else first token.
+	lower := strings.ToLower(raw)
+	if strings.Contains(lower, "host=") {
+		for _, part := range strings.Split(raw, ";") {
+			part = strings.TrimSpace(part)
+			if strings.HasPrefix(strings.ToLower(part), "host=") {
+				return allowedHost(strings.Trim(part[5:], `"`))
+			}
+		}
+	}
+	// X-Forwarded-Host may be a comma list — require every entry loopback.
+	for _, part := range strings.Split(raw, ",") {
+		if !allowedHost(strings.TrimSpace(part)) {
+			return false
+		}
+	}
+	return true
 }
 
 func writeForbidden(w http.ResponseWriter, code, message string) {

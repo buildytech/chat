@@ -44,15 +44,17 @@
 		onSelect,
 		onDelete,
 		onToggle,
-		collapsed = false
+		collapsed = false,
+		canDelete = false
 	}: {
 		sessions: SessionSummary[];
 		selectedId: string | null;
-		onNew: () => void;
-		onSelect: (id: string) => void;
+		onNew: () => void | Promise<void>;
+		onSelect: (id: string) => void | Promise<void>;
 		onDelete: (id: string) => void;
 		onToggle?: () => void;
 		collapsed?: boolean;
+		canDelete?: boolean;
 	} = $props();
 
 	let active = $state("home");
@@ -236,9 +238,11 @@
 								<Text tag="span" class="truncate">{session.title}</Text>
 							</Button>
 							<Button
-								class="shrink-0 rounded-default p-2 text-muted-foreground hover:bg-accent hover:text-destructive"
+								class="shrink-0 rounded-default p-2 text-muted-foreground hover:bg-accent hover:text-destructive disabled:opacity-40"
 								aria-label={t("sidebar.delete")}
-								onclick={() => onDelete(session.id)}
+								disabled={!canDelete}
+								title={canDelete ? t("sidebar.delete") : t("sidebar.deleteUnavailable")}
+								onclick={() => canDelete && onDelete(session.id)}
 							>
 								<Icon size="sm"><Trash2 /></Icon>
 							</Button>
