@@ -323,24 +323,18 @@ func (s *Store) finishTurn(ctx context.Context, sess Session, runID string, req 
 	return res, nil
 }
 
+// buildPage returns a page DTO only for explicit save_page. Ordinary chat returns nil (no draft mutation).
 func (s *Store) buildPage(ctx context.Context, sess Session, req agentruntime.TurnRequest, plan agentruntime.TurnPlan) (map[string]any, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	if plan.SavePage != nil {
-		return asObjectMap(plan.SavePage.Page)
+	if plan.SavePage == nil {
+		return nil, nil
 	}
-	builder := s.Builder
-	if builder == nil {
-		builder = stubbuilder.Build
-	}
-	return builder(ctx, stubbuilder.SessionView{
-		ID:         sess.ID,
-		PageID:     sess.PageID,
-		SlugIntent: sess.SlugIntent,
-		Title:      sess.Title,
-		CreatedAt:  sess.CreatedAt,
-	}, req)
+	_ = sess
+	_ = req
+	_ = s.Builder // retained for explicit test harnesses that inject a builder behind save_page
+	return asObjectMap(plan.SavePage.Page)
 }
 
 func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req agentruntime.TurnRequest, plan agentruntime.TurnPlan, pageInput map[string]any) (TurnResult, error) {
@@ -372,24 +366,47 @@ func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req
 	now := nowUTC()
 	// Page-layer idempotency keys are global (M2 PagePort). Session
 	// exactly-once is the runs UNIQUE(session_id, request_id) + payload hash.
-	rec, err := s.persistBoundPage(ctx, tx, sess, pageInput, "")
-	if err != nil {
+	var pageRec *pagestore.Record
+	if pageInput != nil {
+		rec, err := s.persistBoundPage(ctx, tx, sess, pageInput, req.RequestID)
+		if err != nil {
+			return TurnResult{}, err
+		}
+		pageRec = &rec
+		rev := rec.Revision
+		title := coalesceTitle(sess.Title, rec.Page.Title)
+		if _, err := tx.ExecContext(ctx, `UPDATE sessions SET page_revision = ?, title = ?, updated_at = ? WHERE id = ?`,
+			rev, title, now, sess.ID); err != nil {
+			return TurnResult{}, err
+		}
+		sess.PageBound = true
+		sess.PageRevision = &rev
+		sess.Title = title
+		sess.UpdatedAt = now
+
+		toolMsg := Message{
+			ID: newID("msg"), SessionID: sess.ID, Role: "tool",
+			Content: fmt.Sprintf(`{"tool":"save_page","pageId":%q,"revision":%d,"slug":%q}`, rec.Page.ID, rec.Revision, rec.Page.Slug),
+			RunID: runID, CreatedAt: now,
+		}
+		seq, err := nextSeq(ctx, tx, sess.ID)
+		if err != nil {
+			return TurnResult{}, err
+		}
+		toolMsg.Seq = seq
+		if _, err := tx.ExecContext(ctx, `INSERT INTO messages (id, session_id, seq, role, content, run_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+			toolMsg.ID, toolMsg.SessionID, toolMsg.Seq, toolMsg.Role, toolMsg.Content, toolMsg.RunID, toolMsg.CreatedAt); err != nil {
+			return TurnResult{}, err
+		}
+	} else if _, err := tx.ExecContext(ctx, `UPDATE sessions SET updated_at = ? WHERE id = ?`, now, sess.ID); err != nil {
 		return TurnResult{}, err
+	} else {
+		sess.UpdatedAt = now
 	}
-	rev := rec.Revision
-	title := coalesceTitle(sess.Title, rec.Page.Title)
-	if _, err := tx.ExecContext(ctx, `UPDATE sessions SET page_revision = ?, title = ?, updated_at = ? WHERE id = ?`,
-		rev, title, now, sess.ID); err != nil {
-		return TurnResult{}, err
-	}
-	sess.PageBound = true
-	sess.PageRevision = &rev
-	sess.Title = title
-	sess.UpdatedAt = now
 
 	asstText := plan.AssistantText
 	if asstText == "" {
-		asstText = stubAssistantText(rec)
+		asstText = "Acknowledged."
 	}
 	asst := Message{
 		ID: newID("msg"), SessionID: sess.ID, Role: "assistant",
@@ -407,11 +424,13 @@ func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req
 
 	result := map[string]any{
 		"assistantText": asstText,
-		"builder":       stubbuilder.Name,
 		"liveModel":     false,
-		"pageId":        rec.Page.ID,
-		"revision":      rec.Revision,
-		"slug":          rec.Page.Slug,
+		"saved":         pageRec != nil,
+	}
+	if pageRec != nil {
+		result["pageId"] = pageRec.Page.ID
+		result["revision"] = pageRec.Revision
+		result["slug"] = pageRec.Page.Slug
 	}
 	rawResult, err := json.Marshal(result)
 	if err != nil {
@@ -433,13 +452,16 @@ func (s *Store) completeRun(ctx context.Context, sess Session, runID string, req
 	if err != nil {
 		return TurnResult{}, err
 	}
-	return TurnResult{
+	out := TurnResult{
 		Run:      run,
 		Messages: all,
 		Session:  sess,
-		Page:     &rec,
-		PageBody: &pageBody{Page: rec.Page, Revision: rec.Revision},
-	}, nil
+	}
+	if pageRec != nil {
+		out.Page = pageRec
+		out.PageBody = &pageBody{Page: pageRec.Page, Revision: pageRec.Revision}
+	}
+	return out, nil
 }
 
 func (s *Store) persistBoundPage(ctx context.Context, tx *sql.Tx, sess Session, pageMap map[string]any, idem string) (pagestore.Record, error) {

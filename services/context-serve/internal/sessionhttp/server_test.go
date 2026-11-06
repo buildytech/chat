@@ -78,8 +78,8 @@ func TestHTTPSessionCreateMessageReadRunReplay(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &turn); err != nil {
 		t.Fatal(err)
 	}
-	if turn["page"] == nil {
-		t.Fatal("first turn must bind a page")
+	if turn["page"] != nil {
+		t.Fatalf("ordinary chat wrote page: %v", turn["page"])
 	}
 	run := turn["run"].(map[string]any)
 	runID, _ := run["id"].(string)
@@ -92,8 +92,8 @@ func TestHTTPSessionCreateMessageReadRunReplay(t *testing.T) {
 		t.Fatalf("list sessions %d %s", rec.Code, rec.Body.String())
 	}
 	rec = doJSON(t, h, http.MethodGet, "/v1/sessions/"+created.Session.ID, nil)
-	if rec.Code != http.StatusOK || !bytes.Contains(rec.Body.Bytes(), []byte(`"pageBound":true`)) {
-		t.Fatalf("get session %d %s", rec.Code, rec.Body.String())
+	if rec.Code != http.StatusOK || bytes.Contains(rec.Body.Bytes(), []byte(`"pageBound":true`)) {
+		t.Fatalf("get session should stay unbound %d %s", rec.Code, rec.Body.String())
 	}
 	rec = doJSON(t, h, http.MethodGet, "/v1/sessions/"+created.Session.ID+"/messages", nil)
 	if rec.Code != http.StatusOK || !bytes.Contains(rec.Body.Bytes(), []byte(`"role":"assistant"`)) {

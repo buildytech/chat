@@ -5,20 +5,20 @@ import (
 	"testing"
 )
 
-func TestPlanTurnConversationUsesStubNotSaveTool(t *testing.T) {
+func TestPlanTurnConversationNoSave(t *testing.T) {
 	plan, err := PlanTurn(TurnRequest{Content: "hi"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if plan.SavePage != nil {
-		t.Fatal("conversation should use stub builder, not save_page args")
+		t.Fatal("conversation planned a save")
 	}
-	if !strings.Contains(plan.AssistantText, "Not a live model") {
+	if !strings.Contains(plan.AssistantText, "ordinary conversation") {
 		t.Fatalf("assistant text %q", plan.AssistantText)
 	}
 }
 
-func TestPlanTurnOptionalExplicitDTO(t *testing.T) {
+func TestPlanTurnRequiresExplicitTool(t *testing.T) {
 	_, err := PlanTurn(TurnRequest{Content: "please create the page now"})
 	if err != nil {
 		t.Fatal(err)
@@ -30,7 +30,7 @@ func TestPlanTurnOptionalExplicitDTO(t *testing.T) {
 		t.Fatal(err)
 	}
 	if plan.SavePage == nil {
-		t.Fatal("expected explicit dto")
+		t.Fatal("expected save")
 	}
 }
 

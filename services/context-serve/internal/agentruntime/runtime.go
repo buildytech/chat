@@ -32,7 +32,7 @@ func Capabilities() map[string]any {
 			"contextRuntime": false,
 			"lexproto":       false,
 		},
-		"note": "M3 Session HTTP + deterministic stub builder. Not a live model. Not UI-wired. First successful turn binds one page; later turns update that page.",
+		"note": "M3/M4 Session HTTP foundation. Not a live model. Ordinary chat does not mutate pages; only explicit save_page creates or updates the draft.",
 	}
 }
 
@@ -75,7 +75,7 @@ func HashRequest(v any) (string, error) {
 }
 
 // PlanTurn is a deterministic harness. It does not call a live model.
-// Optional save_page supplies an explicit DTO; otherwise the stub builder emits one.
+// Ordinary conversation never implies a page write; only explicit save_page does.
 func PlanTurn(req TurnRequest) (TurnPlan, error) {
 	tools := req.Tools
 	if tools == nil {
@@ -117,12 +117,12 @@ func PlanTurn(req TurnRequest) (TurnPlan, error) {
 			return TurnPlan{}, fmt.Errorf("content is required when no tools are requested")
 		}
 		return TurnPlan{
-			AssistantText: "Deterministic stub builder wrote the session page. Not a live model.",
+			AssistantText: "Acknowledged. This is ordinary conversation — no page draft was created or revised. Call the save_page tool explicitly to create or update the page bound to this session.",
 		}, nil
 	}
-	text := "Explicit page DTO accepted by deterministic test runtime. Not a live model."
+	text := "save_page accepted by deterministic test runtime."
 	if content != "" {
-		text = "Explicit page DTO override recorded. Stub/model invocation is not live."
+		text = "Saved via explicit save_page tool. Conversation text was recorded but did not drive the write."
 	}
 	return TurnPlan{AssistantText: text, SavePage: save}, nil
 }

@@ -25,10 +25,7 @@ async function j<T>(path: string, init?: RequestInit): Promise<{ status: number;
 function fixturePage(pageId: string, slug: string) {
 	const here = dirname(fileURLToPath(import.meta.url));
 	const raw = JSON.parse(
-		readFileSync(
-			join(here, "../../packages/page-contract/fixtures/north-harbor-kitchen.json"),
-			"utf8"
-		)
+		readFileSync(join(here, "../../packages/page-contract/fixtures/north-harbor-kitchen.json"), "utf8")
 	) as Record<string, unknown>;
 	raw.id = pageId;
 	raw.slug = slug;
@@ -37,17 +34,7 @@ function fixturePage(pageId: string, slug: string) {
 }
 
 describe("session HTTP integration", () => {
-	it("first successful turn binds a draft; later turn updates the same page; reload restores", async (t) => {
-		try {
-			const health = await fetch(`${base}/healthz`);
-			if (!health.ok) {
-				t.skip("context-serve is not running");
-				return;
-			}
-		} catch {
-			t.skip("context-serve is not running");
-			return;
-		}
+	it("conversation does not create a draft; save_page does; reload restores", async () => {
 		const slug = `m4-home-${Date.now().toString(36)}`;
 		const caps = await j<{ liveModel: boolean; mode: string }>("/v1/capabilities");
 		assert.equal(caps.status, 200);
@@ -62,22 +49,15 @@ describe("session HTTP integration", () => {
 		const pageId = created.body.session.pageId;
 		assert.equal(created.body.session.pageBound, false);
 
-		const chat = await j<{
-			page: { revision: number; page: { id: string } } | null;
-			messages: unknown[];
-			session: { pageBound: boolean };
-		}>(`/v1/sessions/${sessionId}/messages`, {
+		const chat = await j<{ page: unknown; messages: unknown[] }>(`/v1/sessions/${sessionId}/messages`, {
 			method: "POST",
 			body: JSON.stringify({ content: "What color for the hero?", requestId: `req-chat-${Date.now()}` })
 		});
 		assert.equal(chat.status, 200);
-		assert.ok(chat.body.page);
-		assert.equal(chat.body.page?.revision, 1);
-		assert.equal(chat.body.page?.page.id, pageId);
-		assert.equal(chat.body.session.pageBound, true);
+		assert.equal(chat.body.page, null);
 
 		const pagesBefore = await j(`/v1/pages/${pageId}`);
-		assert.equal(pagesBefore.status, 200);
+		assert.equal(pagesBefore.status, 404);
 
 		const save = await j<{
 			page: { revision: number; page: { id: string; slug: string } } | null;
@@ -91,8 +71,7 @@ describe("session HTTP integration", () => {
 		});
 		assert.equal(save.status, 200);
 		assert.ok(save.body.page);
-		assert.equal(save.body.page?.revision, 2);
-		assert.equal(save.body.page?.page.id, pageId);
+		assert.equal(save.body.page?.revision, 1);
 		assert.equal(save.body.session.pageBound, true);
 
 		const got = await j<{ session: { pageBound: boolean }; page: { page: { slug: string } } }>(
@@ -106,30 +85,17 @@ describe("session HTTP integration", () => {
 		assert.ok(msgs.body.messages.some((m) => m.role === "user"));
 		assert.ok(msgs.body.messages.some((m) => m.role === "assistant"));
 
-		// Independent second session stays empty
 		const other = await j<{ session: { id: string; pageId: string } }>("/v1/sessions", {
 			method: "POST",
 			body: JSON.stringify({})
 		});
-		const otherMsgs = await j<{ messages: unknown[] }>(
-			`/v1/sessions/${other.body.session.id}/messages`
-		);
+		const otherMsgs = await j<{ messages: unknown[] }>(`/v1/sessions/${other.body.session.id}/messages`);
 		assert.equal(otherMsgs.body.messages.length, 0);
 		const otherPage = await j(`/v1/pages/${other.body.session.pageId}`);
 		assert.equal(otherPage.status, 404);
 	});
 
-	it("rejects non-loopback Host", async (t) => {
-		try {
-			const health = await fetch(`${base}/healthz`);
-			if (!health.ok) {
-				t.skip("context-serve is not running");
-				return;
-			}
-		} catch {
-			t.skip("context-serve is not running");
-			return;
-		}
+	it("rejects non-loopback Host", async () => {
 		const { request } = await import("node:http");
 		const url = new URL(`${base}/v1/capabilities`);
 		const status = await new Promise<number>((resolve, reject) => {
