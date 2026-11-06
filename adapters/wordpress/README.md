@@ -1,19 +1,27 @@
-# adapters/wordpress
+# adapters/wordpress — BuildYtech SI Chat
 
-Thin WordPress plugin that **embeds the Svelte chat-web bundle** and speaks **PagePort REST**.
+CMS-agnostic Creator chat WordPress adapter (draft-only).
 
-chat-web stays CMS-agnostic: no WordPress PHP imports inside `apps/chat-web`.
+## Installable ZIP
 
-## Status: stub
+Built by `scripts/m7-package-plugin-zip.sh` →  
+`/workspace/var/phpingineer/buildy-vps/release/latest/buildytech-si-chat.zip`
 
-- `buildytech-si-chat.php` — placeholder admin page (`#buildytech-si-chat-root`).
-- `src/client.ts` — TypeScript client for `/buildytech/v1/pages*` (not served yet).
+Top-level directory: `buildytech-si-chat/` with plugin header, compiled SPA (`app/`), Latte vendor, INSTALL.md. **No credentials in ZIP.**
 
-## Planned embed
+## Security model (t138u)
 
-1. `npm run build` in `apps/chat-web` (adapter-static, `200.html` fallback).
-2. Plugin copies `build/` into `wp-content/plugins/buildytech-si-chat/app/`.
-3. Admin enqueue of the SPA; `paths.base` set to the plugin URL.
-4. REST routes implement `CatalogPort` / `PagePort` / `PublishPort` / `PreviewPort` as ordinary `page` + unique slug.
+- WP capability `edit_pages` / `manage_options` — no separate BuildY login / Authfly.
+- One **site_id** (auto from `home_url`) + **site_token** (server-side option only).
+- Session validates `X-BuildY-Site-Id` + `X-BuildY-Site-Token` when `BUILDY_SITE_TOKENS` is set.
+- Session URL allowlist: loopback always; non-loopback https hosts only (default includes `chat.buildy.tw`).
+- Model secrets stay on VPS — never in the plugin. Site token does **not** open an anonymous paid endpoint.
+- Public publish returns 403.
 
-No checkout, no fabricated commerce fields.
+## Not claimed
+
+Does **not** require WP FastY / Fasty theme. Preview is the bundled Svelte SPA. Latte HTML is optional (vendor + Node emit). Visual Builder remains untouched.
+
+## Dev layout
+
+See `includes/`, `bin/emit-latte.mjs`, `tests/plugin-http-integration.php`.

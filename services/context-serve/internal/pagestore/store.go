@@ -12,13 +12,14 @@ import (
 	"time"
 
 	"github.com/buildytech/chat/services/context-serve/internal/pagecontract"
+	"github.com/buildytech/chat/services/context-serve/internal/siteauth"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 //go:embed migrations/*.sql
 var migrationFS embed.FS
 
-const currentMigration = 3
+const currentMigration = 4
 
 var (
 	ErrNotFound            = errors.New("page not found")
@@ -131,24 +132,29 @@ func migrationName(version int) string {
 		return "sessions"
 	case 3:
 		return "session_request_scope"
+	case 4:
+		return "site_id"
 	default:
 		return "unknown"
 	}
 }
 
 func (s *Store) GetByID(ctx context.Context, id string) (Record, error) {
-	return s.get(ctx, nil, `SELECT dto_json, revision FROM pages WHERE id = ?`, id)
+	site := siteauth.SiteIDFrom(ctx)
+	return s.get2(ctx, nil, `SELECT dto_json, revision FROM pages WHERE id = ? AND site_id = ?`, id, site)
 }
 
 func (s *Store) GetByIDTx(ctx context.Context, tx *sql.Tx, id string) (Record, error) {
 	if tx == nil {
 		return Record{}, errors.New("tx required")
 	}
-	return s.get(ctx, tx, `SELECT dto_json, revision FROM pages WHERE id = ?`, id)
+	site := siteauth.SiteIDFrom(ctx)
+	return s.get2(ctx, tx, `SELECT dto_json, revision FROM pages WHERE id = ? AND site_id = ?`, id, site)
 }
 
 func (s *Store) GetBySlug(ctx context.Context, slug string) (Record, error) {
-	return s.get(ctx, nil, `SELECT dto_json, revision FROM pages WHERE slug = ?`, slug)
+	site := siteauth.SiteIDFrom(ctx)
+	return s.get2(ctx, nil, `SELECT dto_json, revision FROM pages WHERE slug = ? AND site_id = ?`, slug, site)
 }
 
 func (s *Store) get(ctx context.Context, tx *sql.Tx, q, arg string) (Record, error) {
@@ -159,6 +165,28 @@ func (s *Store) get(ctx context.Context, tx *sql.Tx, q, arg string) (Record, err
 		err = tx.QueryRowContext(ctx, q, arg).Scan(&raw, &rev)
 	} else {
 		err = s.db.QueryRowContext(ctx, q, arg).Scan(&raw, &rev)
+	}
+	if errors.Is(err, sql.ErrNoRows) {
+		return Record{}, ErrNotFound
+	}
+	if err != nil {
+		return Record{}, err
+	}
+	page, err := pagecontract.ParseJSON([]byte(raw), false)
+	if err != nil {
+		return Record{}, err
+	}
+	return Record{Page: page, Revision: rev}, nil
+}
+
+func (s *Store) get2(ctx context.Context, tx *sql.Tx, q, arg1, arg2 string) (Record, error) {
+	var raw string
+	var rev int64
+	var err error
+	if tx != nil {
+		err = tx.QueryRowContext(ctx, q, arg1, arg2).Scan(&raw, &rev)
+	} else {
+		err = s.db.QueryRowContext(ctx, q, arg1, arg2).Scan(&raw, &rev)
 	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return Record{}, ErrNotFound
@@ -216,8 +244,8 @@ func (s *Store) CreateDraftTx(ctx context.Context, tx *sql.Tx, input any, idempo
 		}
 	}
 
-	if _, err := tx.ExecContext(ctx, `INSERT INTO pages (id, slug, revision, dto_json, updated_at) VALUES (?, ?, 1, ?, ?)`,
-		page.ID, page.Slug, string(raw), page.UpdatedAt); err != nil {
+	if _, err := tx.ExecContext(ctx, `INSERT INTO pages (id, site_id, slug, revision, dto_json, updated_at) VALUES (?, ?, ?, 1, ?, ?)`,
+		page.ID, siteauth.SiteIDFrom(ctx), page.Slug, string(raw), page.UpdatedAt); err != nil {
 		return Record{}, mapConstraint(err)
 	}
 	if s.AfterPageInsert != nil {
@@ -376,7 +404,7 @@ func mapConstraint(err error) error {
 		return nil
 	}
 	msg := err.Error()
-	if strings.Contains(msg, "UNIQUE constraint failed: pages.slug") {
+	if strings.Contains(msg, "UNIQUE constraint failed: pages.site_id, pages.slug") || strings.Contains(msg, "UNIQUE constraint failed: pages.slug") {
 		return ErrDuplicateSlug
 	}
 	if strings.Contains(msg, "UNIQUE constraint failed: pages.id") {

@@ -14,6 +14,7 @@ import (
 	"github.com/buildytech/chat/services/context-serve/internal/agentruntime"
 	"github.com/buildytech/chat/services/context-serve/internal/pagecontract"
 	"github.com/buildytech/chat/services/context-serve/internal/pagestore"
+	"github.com/buildytech/chat/services/context-serve/internal/siteauth"
 	"github.com/buildytech/chat/services/context-serve/internal/stubbuilder"
 )
 
@@ -55,6 +56,7 @@ func New(pages *pagestore.Store) *Store {
 
 type Session struct {
 	ID           string `json:"id"`
+	SiteID       string `json:"siteId,omitempty"`
 	PageID       string `json:"pageId"`
 	SlugIntent   string `json:"slugIntent,omitempty"`
 	Title        string `json:"title"`
@@ -113,8 +115,9 @@ func (s *Store) Create(ctx context.Context, slugIntent, title string) (Session, 
 		CreatedAt:  now,
 		UpdatedAt:  now,
 	}
-	_, err := s.pages.DB().ExecContext(ctx, `INSERT INTO sessions (id, page_id, slug_intent, title, page_revision, created_at, updated_at) VALUES (?, ?, ?, ?, NULL, ?, ?)`,
-		sess.ID, sess.PageID, nullIfEmpty(slugIntent), title, now, now)
+	sess.SiteID = siteauth.SiteIDFrom(ctx)
+	_, err := s.pages.DB().ExecContext(ctx, `INSERT INTO sessions (id, site_id, page_id, slug_intent, title, page_revision, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NULL, ?, ?)`,
+		sess.ID, sess.SiteID, sess.PageID, nullIfEmpty(slugIntent), title, now, now)
 	if err != nil {
 		return Session{}, err
 	}
@@ -122,7 +125,7 @@ func (s *Store) Create(ctx context.Context, slugIntent, title string) (Session, 
 }
 
 func (s *Store) List(ctx context.Context) ([]Session, error) {
-	rows, err := s.pages.DB().QueryContext(ctx, `SELECT id, page_id, slug_intent, title, page_revision, created_at, updated_at FROM sessions ORDER BY created_at DESC`)
+	rows, err := s.pages.DB().QueryContext(ctx, `SELECT id, page_id, slug_intent, title, page_revision, created_at, updated_at, site_id FROM sessions WHERE site_id = ? ORDER BY created_at DESC`, siteauth.SiteIDFrom(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +142,7 @@ func (s *Store) List(ctx context.Context) ([]Session, error) {
 }
 
 func (s *Store) Get(ctx context.Context, id string) (Session, error) {
-	row := s.pages.DB().QueryRowContext(ctx, `SELECT id, page_id, slug_intent, title, page_revision, created_at, updated_at FROM sessions WHERE id = ?`, id)
+	row := s.pages.DB().QueryRowContext(ctx, `SELECT id, page_id, slug_intent, title, page_revision, created_at, updated_at, site_id FROM sessions WHERE id = ? AND site_id = ?`, id, siteauth.SiteIDFrom(ctx))
 	return scanSession(row)
 }
 
@@ -619,13 +622,15 @@ func scanSession(row rowScanner) (Session, error) {
 	var sess Session
 	var slug sql.NullString
 	var rev sql.NullInt64
-	err := row.Scan(&sess.ID, &sess.PageID, &slug, &sess.Title, &rev, &sess.CreatedAt, &sess.UpdatedAt)
+	var siteID string
+	err := row.Scan(&sess.ID, &sess.PageID, &slug, &sess.Title, &rev, &sess.CreatedAt, &sess.UpdatedAt, &siteID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Session{}, ErrNotFound
 	}
 	if err != nil {
 		return Session{}, err
 	}
+	sess.SiteID = siteID
 	if slug.Valid {
 		sess.SlugIntent = slug.String
 	}

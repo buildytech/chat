@@ -24,3 +24,4 @@ tmp/
 *.sqlite-shm
 services/context-serve/data/
 services/context-serve/bin/
+adapters/wordpress/vendor/

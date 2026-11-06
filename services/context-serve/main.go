@@ -8,11 +8,13 @@ import (
 	"strings"
 
 	"github.com/buildytech/chat/services/context-serve/internal/agentruntime"
+	"github.com/buildytech/chat/services/context-serve/internal/basicauth"
 	"github.com/buildytech/chat/services/context-serve/internal/httpsafe"
 	"github.com/buildytech/chat/services/context-serve/internal/liveruntime"
 	"github.com/buildytech/chat/services/context-serve/internal/pagestore"
 	"github.com/buildytech/chat/services/context-serve/internal/sessionhttp"
 	"github.com/buildytech/chat/services/context-serve/internal/sessionstore"
+	"github.com/buildytech/chat/services/context-serve/internal/siteauth"
 )
 
 func main() {
@@ -50,7 +52,19 @@ func main() {
 	}
 
 	log.Printf("context-serve page+session on %s (sqlite %s)", addr, dbPath)
-	handler := httpsafe.Wrap(sessionhttp.NewMux(store, sessions))
+	auth := basicauth.FromEnv()
+	if auth.Enabled() {
+		log.Printf("basic auth ENABLED (BUILDY_BASIC_AUTH_USER set; pass not logged)")
+	} else {
+		log.Printf("basic auth off (set BUILDY_BASIC_AUTH_USER+PASS for WP proxy / VPS)")
+	}
+	sites := siteauth.FromEnv()
+	if sites.Enabled() {
+		log.Printf("site tokens ENABLED (%d sites); X-BuildY-Site-Id/Token required (not a model spend gate alone)", len(sites))
+	} else {
+		log.Printf("site tokens off (set BUILDY_SITE_TOKENS for multi-WP isolation)")
+	}
+	handler := basicauth.Wrap(auth, siteauth.Wrap(sites, httpsafe.Wrap(sessionhttp.NewMux(store, sessions))))
 	if err := http.ListenAndServe(addr, handler); err != nil {
 		log.Fatal(err)
 	}
