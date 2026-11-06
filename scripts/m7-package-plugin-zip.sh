@@ -7,8 +7,8 @@ PLUGIN_SRC="$REPO/adapters/wordpress"
 STAGE="$OUT_ROOT/zip-stage/buildytech-si-chat"
 mkdir -p "$STAGE" "$OUT_ROOT/bin" "$OUT_ROOT/docs" "$OUT_ROOT/systemd" "$OUT_ROOT/env"
 
-echo "== SPA build =="
-( cd "$REPO/apps/chat-web" && npm run build )
+echo "== SPA build (Kit static) + WP embed (router-free mount) =="
+( cd "$REPO/apps/chat-web" && npm run build && npm run build:wp-embed )
 
 echo "== linux Session binary =="
 ( cd "$REPO/services/context-serve" && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o "$OUT_ROOT/bin/buildy-session-serve" . )
@@ -147,6 +147,10 @@ mkdir -p "$STAGE/app"
 if [[ -d "$REPO/apps/chat-web/build" ]]; then
   cp -a "$REPO/apps/chat-web/build/." "$STAGE/app/"
 fi
+# Router-free WP embed (preferred; stops Kit reload loops on admin.php?page=…)
+if [[ -d "$REPO/apps/chat-web/build-wp" ]]; then
+  cp -a "$REPO/apps/chat-web/build-wp/." "$STAGE/app/"
+fi
 # Strip any accidental secrets
 find "$STAGE" -name '*.env' -delete
 # Ensure no default site_token in shipped PHP defaults (already empty)
@@ -156,7 +160,7 @@ cat > "$STAGE/readme.txt" << 'READ'
 Contributors: buildytech
 Requires at least: 6.4
 Requires PHP: 8.2
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: Apache-2.0
 
 CMS-agnostic Creator chat adapter for WordPress (draft-only).
@@ -218,9 +222,17 @@ Each WP install has its own `site_id`. Session stores rows tagged with that id; 
 - Latte endpoint needs Node on the WP host **or** skip Latte and use SPA Preview/Code only.
 INST
 
-# ZIP with top-level directory
-( cd "$OUT_ROOT/zip-stage" && zip -qr "$OUT_ROOT/buildytech-si-chat-$STAMP.zip" buildytech-si-chat )
+# ZIP with top-level directory; Python stdlib avoids a system zip dependency.
 ZIP="$OUT_ROOT/buildytech-si-chat-$STAMP.zip"
+python3 - "$OUT_ROOT/zip-stage" "$ZIP" <<'PYZIP'
+from pathlib import Path
+import sys, zipfile
+root = Path(sys.argv[1])
+with zipfile.ZipFile(sys.argv[2], 'w', zipfile.ZIP_DEFLATED) as archive:
+    for file in sorted((root / 'buildytech-si-chat').rglob('*')):
+        if file.is_file():
+            archive.write(file, file.relative_to(root))
+PYZIP
 
 # Release docs + systemd (from earlier script patterns)
 cp "$REPO/deploy/systemd/"* "$OUT_ROOT/systemd/" 2>/dev/null || true

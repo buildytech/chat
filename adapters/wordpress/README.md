@@ -25,3 +25,10 @@ Does **not** require WP FastY / Fasty theme. Preview is the bundled Svelte SPA. 
 ## Dev layout
 
 See `includes/`, `bin/emit-latte.mjs`, `tests/plugin-http-integration.php`.
+
+## WP admin mount (0.1.1+)
+
+Creator loads via **router-free** `app/wp-embed.js` (`svelte` `mount` of ChatApp).
+SvelteKit `kit.start` is **not** used on `admin.php?page=buildytech-si-chat` (avoids full-page reload loops when Kit owns history/URL).
+Asset and REST URLs are host-relative so reverse proxies / ngrok work.
+Deactivate does not wipe options or draft pages.
