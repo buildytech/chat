@@ -324,7 +324,12 @@ async function sdkStreamTextLoop(
 		const streamText = aiMod.streamText as (opts: Record<string, unknown>) => Promise<{ text: Promise<string> }>;
 		const tool = aiMod.tool as (opts: Record<string, unknown>) => unknown;
 		const stepCountIs = (aiMod as { stepCountIs?: (n: number) => unknown }).stepCountIs;
-		const z = await import("zod");
+		const z = (await import("zod")) as {
+			object: (shape: Record<string, unknown>) => unknown;
+			enum: (values: [string, ...string[]]) => { optional: () => unknown };
+			string: () => { optional: () => unknown };
+			number: () => { optional: () => unknown };
+		};
 
 		const provider = createOpenAI({
 			name: "xai",
