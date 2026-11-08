@@ -74,6 +74,7 @@ export {
 	isSharedPublicSurface,
 	readBasicAuthConfig,
 	authorizeBasic,
+	timingSafeEqualString,
 	unauthorizedResponse,
 	gateRequest,
 	basicAuthorizationHeader,

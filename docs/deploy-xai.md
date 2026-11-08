@@ -7,8 +7,8 @@ This repo is a **static SvelteKit SPA** (`@sveltejs/adapter-static`) plus a **No
 | Piece | Where | Docs |
 | --- | --- | --- |
 | Other / static output | `vercel.json` `framework: null`, `outputDirectory: apps/chat-web/build` | [Project configuration](https://vercel.com/docs/project-configuration/vercel-json) |
-| Routing Middleware | root `middleware.ts`, Node runtime, **no matcher** (covers HTML, `/_app`, `/api`, `/runtime`) | [Routing Middleware](https://vercel.com/docs/routing-middleware/getting-started) |
-| Node Function (Web `fetch`) | `api/runtime/[...path].ts` | [Node.js runtime](https://vercel.com/docs/functions/runtimes/node-js) |
+| Routing Middleware | root `middleware.js` (self-contained ESM; root `"type": "module"`). Node runtime, **no matcher** (covers HTML, `/_app`, `/api`, `/runtime`) | [Routing Middleware](https://vercel.com/docs/routing-middleware/getting-started) |
+| Node Function (Web `fetch`) | `api/runtime/[...path].ts` via `@buildytech/xai-runtime/http` | [Node.js runtime](https://vercel.com/docs/functions/runtimes/node-js) |
 | SPA fallback | rewrite to `/200.html` after `/runtime` → `/api/runtime` | adapter-static `fallback: '200.html'` |
 
 Dashboard Password Protection is a paid plan feature. This app implements fail-closed **HTTP Basic Auth** in Routing Middleware instead. No Fluid Compute / 300s / 800s duration is configured. Function `maxDuration` is **60 seconds** (Hobby-safe documented example). Abort/tool-loop/usage stay in `apps/xai-runtime`; HTTP to the browser remains a JSON body (SDK `streamText` is internal).

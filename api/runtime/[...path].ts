@@ -3,7 +3,7 @@
  * https://vercel.com/docs/functions/runtimes/node-js
  * Hobby-safe maxDuration 60s from documented examples. Not Pro 300/800.
  */
-import { handleRuntimeFetch } from "../../apps/xai-runtime/src/http.ts";
+import { handleRuntimeFetch } from "@buildytech/xai-runtime/http";
 
 export const config = {
 	maxDuration: 60

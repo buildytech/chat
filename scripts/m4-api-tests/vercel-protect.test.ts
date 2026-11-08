@@ -1,18 +1,19 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import {
 	authorizeBasic,
 	basicAuthorizationHeader,
 	clampRunBudgetMs,
 	isSharedPublicSurface,
 	stripRuntimePrefix,
+	timingSafeEqualString,
 	VERCEL_HOBBY_SAFE_MAX_DURATION_SEC
 } from "../../packages/builder-core/src/index.ts";
 import { handleRuntimeFetch } from "../../apps/xai-runtime/src/http.ts";
-import middleware, { config as middlewareConfig } from "../../middleware.ts";
+import middleware, { config as middlewareConfig } from "../../middleware.js";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -55,9 +56,27 @@ async function asJson(res: Response): Promise<Record<string, unknown>> {
 	return (await res.json()) as Record<string, unknown>;
 }
 
+function withProcessEnv<T>(patch: NodeJS.ProcessEnv, fn: () => T): T {
+	const keys = Object.keys(patch);
+	const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+	for (const key of keys) {
+		const value = patch[key];
+		if (value === undefined) delete process.env[key];
+		else process.env[key] = value;
+	}
+	try {
+		return fn();
+	} finally {
+		for (const key of keys) {
+			if (previous[key] === undefined) delete process.env[key];
+			else process.env[key] = previous[key];
+		}
+	}
+}
+
 test("root tsconfig typechecks Vercel entry files only", () => {
 	const cfg = JSON.parse(readFileSync(join(REPO, "tsconfig.json"), "utf8")) as { include: string[] };
-	assert.deepEqual(cfg.include, ["api/**/*.ts", "middleware.ts"]);
+	assert.deepEqual(cfg.include, ["api/**/*.ts"]);
 });
 
 test("vercel.json is Other + static SPA output + hobby-safe Node function, no matcher hole", () => {
@@ -174,6 +193,85 @@ test("XAI_API_KEY absent returns 503 and does not call the provider", async () =
 	} finally {
 		globalThis.fetch = original;
 	}
+});
+
+test("root package.json is ESM so Vercel middleware.js is a module", () => {
+	const pkg = JSON.parse(readFileSync(join(REPO, "package.json"), "utf8")) as { type?: string };
+	assert.equal(pkg.type, "module");
+});
+
+test("middleware source has no runtime imports (Vercel Other does not bundle it)", () => {
+	const src = readFileSync(join(REPO, "middleware.js"), "utf8");
+	assert.doesNotMatch(src, /^\s*import\s/m);
+	assert.doesNotMatch(src, /from\s+['"][^'"]+\.ts['"]/);
+	assert.doesNotMatch(src, /:\s*(Request|Response|string|boolean)\b/);
+	assert.match(src, /BUILDY_RUNTIME_BASIC_AUTH_PASSWORD/);
+	assert.match(src, /timingSafeEqualString/);
+	assert.equal(existsSync(join(REPO, "middleware.ts")), false);
+});
+
+test("Vercel function entry does not import .ts specifiers", () => {
+	const src = readFileSync(join(REPO, "api/runtime/[...path].ts"), "utf8");
+	assert.doesNotMatch(src, /from\s+['"][^'"]+\.ts['"]/);
+	assert.match(src, /@buildytech\/xai-runtime\/http/);
+});
+
+test("timingSafeEqualString is length-aware and rejects mismatches", () => {
+	assert.equal(timingSafeEqualString("abc", "abc"), true);
+	assert.equal(timingSafeEqualString("", ""), true);
+	assert.equal(timingSafeEqualString("abc", "abd"), false);
+	assert.equal(timingSafeEqualString("abc", "ab"), false);
+	assert.equal(timingSafeEqualString("ab", "abc"), false);
+});
+
+test("middleware.js loads as ESM without .ts imports and 401s without secrets", async () => {
+	const middlewareJs = readFileSync(join(REPO, "middleware.js"), "utf8");
+	assert.doesNotMatch(middlewareJs, /from\s+['"][^'"]+\.ts['"]/);
+	assert.doesNotMatch(middlewareJs, /^\s*import\s/m);
+	assert.match(middlewareJs, /export\s+(default|const)/);
+	const dest = join(REPO, "tmp", "vercel-middleware-esm");
+	rmSync(dest, { recursive: true, force: true });
+	mkdirSync(dest, { recursive: true });
+	const file = join(dest, "middleware.mjs");
+	writeFileSync(file, middlewareJs);
+	const mod = (await import(`${pathToFileURL(file).href}?t=${Date.now()}`)) as {
+		default: (request: Request) => Response | undefined;
+		config: { runtime: string };
+	};
+	assert.equal(mod.config.runtime, "nodejs");
+	const denied = withProcessEnv(
+		{
+			VERCEL: "1",
+			VERCEL_ENV: "preview",
+			BUILDY_RUNTIME_BASIC_AUTH_USER: undefined,
+			BUILDY_RUNTIME_BASIC_AUTH_PASSWORD: undefined
+		},
+		() => mod.default(new Request("https://byc-staging-7q4.vercel.app/"))
+	);
+	assert.ok(denied);
+	assert.equal(denied?.status, 401);
+	assert.equal(denied?.headers.get("www-authenticate")?.includes("Basic"), true);
+	const body = (await denied.json()) as { error?: { code?: string } };
+	assert.equal(body.error?.code, "basic_auth_required_before_shared_bind");
+
+	const apiSrc = readFileSync(join(REPO, "api/runtime/[...path].ts"), "utf8");
+	assert.doesNotMatch(apiSrc, /from\s+['"][^'"]+\.ts['"]/);
+	assert.match(apiSrc, /@buildytech\/xai-runtime\/http/);
+});
+
+test("valid Basic Auth passes middleware; wrong credentials stay 401", () => {
+	withProcessEnv(withAuth(), () => {
+		const allowed = middleware(
+			new Request("https://example.vercel.app/200.html", { headers: { Authorization: AUTH } })
+		);
+		assert.equal(allowed, undefined);
+		const denied = middleware(
+			new Request("https://example.vercel.app/", {
+				headers: { Authorization: basicAuthorizationHeader("nope", "nope") }
+			})
+		);
+		assert.equal(denied?.status, 401);
+	});
 });
 
 test("valid auth on an unknown runtime path is 404, not an open page", async () => {

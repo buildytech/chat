@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "description": "Browser-first SI Chat Creator (CMS-agnostic Page Store)",
   "license": "Apache-2.0",
+  "type": "module",
   "workspaces": [
     "apps/chat-web",
     "apps/xai-runtime",

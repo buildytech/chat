@@ -49,6 +49,19 @@ function decodeBasic(authorization: string): { user: string; pass: string } | nu
 	}
 }
 
+/** Web-safe constant-time compare. Do not import node:crypto (browser barrel). */
+export function timingSafeEqualString(left: string, right: string): boolean {
+	const encoder = new TextEncoder();
+	const a = encoder.encode(left);
+	const b = encoder.encode(right);
+	const len = Math.max(a.length, b.length, 1);
+	let diff = a.length ^ b.length;
+	for (let i = 0; i < len; i++) {
+		diff |= (a[i] ?? 0) ^ (b[i] ?? 0);
+	}
+	return diff === 0;
+}
+
 export function authorizeBasic(
 	authorization: string | null | undefined,
 	env?: EnvMap,
@@ -63,8 +76,10 @@ export function authorizeBasic(
 		if (loopbackOk) return { ok: true };
 		return { ok: false, code: "basic_auth_required_before_shared_bind" };
 	}
-	const parsed = decodeBasic(authorization ?? "");
-	if (!parsed || parsed.user !== user || parsed.pass !== pass) {
+	const parsed = decodeBasic(authorization ?? "") ?? { user: "", pass: "" };
+	const userOk = timingSafeEqualString(parsed.user, user);
+	const passOk = timingSafeEqualString(parsed.pass, pass);
+	if (!userOk || !passOk) {
 		return { ok: false, code: "unauthorized" };
 	}
 	return { ok: true };

@@ -5,6 +5,10 @@
   "type": "module",
   "license": "Apache-2.0",
   "description": "Protected server-side xAI Grok runtime for catalog tools. XAI_API_KEY only. No Cursor SDK. No browser keys.",
+  "exports": {
+    ".": "./src/http.ts",
+    "./http": "./src/http.ts"
+  },
   "scripts": {
     "start": "node --experimental-strip-types src/server.ts",
     "status": "node --experimental-strip-types src/status.ts"

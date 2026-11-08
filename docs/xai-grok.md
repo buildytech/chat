@@ -39,6 +39,6 @@ That proves **protocol support**, not page assembly. It is not a production Stoc
 - `XAI_API_KEY` — server-only. Never `VITE_` / `PUBLIC_`.
 - `BUILDY_RUNTIME_BASIC_AUTH_USER` + `BUILDY_RUNTIME_BASIC_AUTH_PASSWORD` — required before a non-loopback bind **and** on Vercel (fail-closed; missing config denies the site).
 - Local runtime: `apps/xai-runtime` on `127.0.0.1:18100`. Vite proxies `/runtime`.
-- Vercel: root `middleware.ts` (Routing Middleware, all paths) + `api/runtime/[...path].ts` (Node Function, `maxDuration` 60). See `docs/deploy-xai.md` and `vercel.json`.
+- Vercel: root `middleware.js` (Routing Middleware, all paths, ESM `"type": "module"`) + `api/runtime/[...path].ts` (Node Function, `maxDuration` 60). See `docs/deploy-xai.md` and `vercel.json`.
 
 Parent verification without this checkout: copy `scripts/verify-xai-parent.mjs`.
