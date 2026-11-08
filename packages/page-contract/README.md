@@ -15,7 +15,7 @@ This package is the structured layout document written to the Page Store. It is 
 | IDs | `^[a-z][a-z0-9-]{0,62}$`, unique in the tree. Safe to interpolate into the existing Latte emitter (`{define #id}` / `$page->blocks['id']`). |
 | Slug | Ordinary page slug `^[a-z0-9]+(?:-[a-z0-9]+)*$`, 1–48 chars. No UTM/query variants. |
 | Bounds | Max depth 4, max 64 blocks, bounded string lengths, max ~64k serialized payload. |
-| URLs | Known string fields: schemes `http`, `https`, `mailto` only. `javascript:`, `data:`, `vbscript:`, `file:` (including whitespace-obfuscated forms) are rejected. |
+| URLs | Dangerous schemes `javascript:`, `data:`, `vbscript:`, `file:` are rejected on every string, including whitespace-obfuscated forms. A value that *starts* with a URL scheme (spaces kept) may only use `http`, `https`, or `mailto`. Prose with a colon (`QA Landing 1109: …`, `Hours: 11:00`) is not a URL. |
 
 Consumers **must** run `parsePage` / `parseDraftPage` at the external Store boundary. TypeScript casts are not validation.
 

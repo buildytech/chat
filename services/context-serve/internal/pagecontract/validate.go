@@ -43,12 +43,14 @@ var (
 	localePattern   = regexp.MustCompile(`^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$`)
 	datetimePattern = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$`)
 	markupPattern   = regexp.MustCompile(`[<>{}]|<\?`)
-	schemePattern   = regexp.MustCompile(`^[a-z][a-z0-9+.-]*:`)
+	urlShapedPattern = regexp.MustCompile(`^[a-z][a-z0-9+.-]*://`)
 )
 
 var allowedSchemes = map[string]struct{}{
 	"http:": {}, "https:": {}, "mailto:": {},
 }
+
+var dangerousSchemes = []string{"javascript:", "data:", "vbscript:", "file:"}
 
 var pageKeys = setOf("id", "slug", "status", "title", "layout", "seo", "locale", "createdAt", "updatedAt")
 var layoutKeys = setOf("version", "blocks")
@@ -310,12 +312,21 @@ func assertSafeURL(value, path string) error {
 			b.WriteRune(r)
 		}
 	}
-	stripped := strings.ToLower(b.String())
-	loc := schemePattern.FindStringIndex(stripped)
+	collapsed := strings.ToLower(b.String())
+	for _, scheme := range dangerousSchemes {
+		if strings.HasPrefix(collapsed, scheme) {
+			return fail("unsafe_url", path, fmt.Sprintf("scheme %q is not allowed", scheme))
+		}
+	}
+	trimmed := strings.ToLower(strings.TrimSpace(value))
+	if strings.HasPrefix(trimmed, "mailto:") {
+		return nil
+	}
+	loc := urlShapedPattern.FindStringIndex(trimmed)
 	if loc == nil {
 		return nil
 	}
-	scheme := stripped[loc[0]:loc[1]]
+	scheme := trimmed[loc[0] : loc[1]-2]
 	if _, ok := allowedSchemes[scheme]; !ok {
 		return fail("unsafe_url", path, fmt.Sprintf("scheme %q is not allowed", scheme))
 	}

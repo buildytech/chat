@@ -49,7 +49,9 @@ const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const LOCALE_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 const DATETIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/;
 const ALLOWED_URL_SCHEMES = new Set(["http:", "https:", "mailto:"]);
+const DANGEROUS_URL_SCHEMES = ["javascript:", "data:", "vbscript:", "file:"] as const;
 const MARKUP_PATTERN = /[<>{}]|<\?/;
+const URL_SHAPED_AT_START = /^[a-z][a-z0-9+.-]*:\/\//;
 
 function fail(code: string, path: string, message: string): never {
 	throw new PageContractError(code, path, message);
@@ -91,12 +93,24 @@ function assertPlainText(value: string, path: string): void {
 	}
 }
 
+/**
+ * Injection: reject javascript/data/vbscript/file even when whitespace is used to hide the scheme.
+ * URL-shaped values: scheme + "://" (http/https only) or mailto:. Prose with a colon is not a URL.
+ */
 function assertSafeUrlPolicy(value: string, path: string): void {
-	const stripped = value.replace(/[\u0000-\u0020]/g, "").toLowerCase();
-	const match = /^[a-z][a-z0-9+.-]*:/.exec(stripped);
-	if (!match) return;
-	if (!ALLOWED_URL_SCHEMES.has(match[0])) {
-		fail("unsafe_url", path, `scheme "${match[0]}" is not allowed`);
+	const collapsed = value.replace(/[\u0000-\u0020]/g, "").toLowerCase();
+	for (const scheme of DANGEROUS_URL_SCHEMES) {
+		if (collapsed.startsWith(scheme)) {
+			fail("unsafe_url", path, `scheme "${scheme}" is not allowed`);
+		}
+	}
+	const trimmed = value.trim().toLowerCase();
+	if (trimmed.startsWith("mailto:")) return;
+	const urlShaped = URL_SHAPED_AT_START.exec(trimmed);
+	if (!urlShaped) return;
+	const scheme = urlShaped[0].slice(0, -2);
+	if (!ALLOWED_URL_SCHEMES.has(scheme)) {
+		fail("unsafe_url", path, `scheme "${scheme}" is not allowed`);
 	}
 }
 

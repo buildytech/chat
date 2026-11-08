@@ -207,6 +207,31 @@
 					"value": "https://northharbor.example/reserve"
 				}
 			]
+		},
+		{
+			"name": "prose-colon-headline-is-not-a-scheme",
+			"parser": "page",
+			"set": [
+				{
+					"path": ["layout", "blocks", 1, "copy", "headline"],
+					"value": "QA Landing 1109: Create a New Year landing page"
+				}
+			]
+		},
+		{
+			"name": "prose-hours-colon-is-not-a-scheme",
+			"parser": "page",
+			"set": [
+				{
+					"path": ["layout", "blocks", 4, "copy", "days"],
+					"value": "Hours: Mon-Sun 11:00-22:00"
+				}
+			]
+		},
+		{
+			"name": "unsafe-url-ftp-at-start",
+			"code": "unsafe_url",
+			"set": [{ "path": ["layout", "blocks", 6, "copy", "contact"], "value": "ftp://files.example/secret" }]
 		}
 	]
 }
