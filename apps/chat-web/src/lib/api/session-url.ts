@@ -1,6 +1,6 @@
 /**
  * Session deep-link helpers. Explicit ?session= wins over persisted selection.
- * Preserves other query flags (e.g. ?mock=1). Browser-only writes are no-ops on SSR.
+ * Preserves other query flags (e.g. ?live=1). Browser-only writes are no-ops on SSR.
  */
 
 export type SessionSelection =

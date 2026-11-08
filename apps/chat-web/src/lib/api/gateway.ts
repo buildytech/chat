@@ -1,4 +1,4 @@
-import { apiBase, wpRestNonce } from "./mode.ts";
+import { apiBase } from "./mode.ts";
 
 export type GatewayError = {
 	status: number;
@@ -101,10 +101,6 @@ export async function gatewayFetch<T>(
 	const headers = new Headers(init.headers);
 	if (init.body && !headers.has("Content-Type")) {
 		headers.set("Content-Type", "application/json");
-	}
-	const nonce = wpRestNonce();
-	if (nonce && !headers.has("X-WP-Nonce")) {
-		headers.set("X-WP-Nonce", nonce);
 	}
 	const res = await fetch(`${apiBase()}${path}`, { ...init, headers });
 	if (!res.ok) throw await parseError(res);

@@ -64,24 +64,25 @@ describe("resolveSessionSelection", () => {
 
 describe("readSessionQuery", () => {
 	it("reads session param", () => {
-		assert.equal(readSessionQuery("?session=sess-1&mock=1"), "sess-1");
-		assert.equal(readSessionQuery("?mock=1"), null);
+		assert.equal(readSessionQuery("?session=sess-1&live=1"), "sess-1");
+		assert.equal(readSessionQuery("?live=1"), null);
 		assert.equal(readSessionQuery(""), null);
 	});
 });
 
 describe("syncSessionQuery", () => {
-	it("sets session while preserving mock flag", () => {
+	it("sets session while preserving live flag", () => {
 		const next = syncSessionQuery("sess-new", {
-			href: "http://127.0.0.1:5173/?mock=1&session=sess-old"
+			href: "http://127.0.0.1:5173/?live=1&session=sess-old"
 		});
-		assert.equal(next, "/?mock=1&session=sess-new");
+		assert.equal(next, "/?live=1&session=sess-new");
 	});
 
-	it("clears session while preserving mock flag", () => {
+	it("clears session while preserving live flag", () => {
 		const next = syncSessionQuery(null, {
-			href: "http://127.0.0.1:5173/?session=sess-old&mock=1"
+			href: "http://127.0.0.1:5173/?session=sess-old&live=1"
 		});
-		assert.equal(next, "/?mock=1");
+		assert.equal(next, "/?live=1");
 	});
 });
+

@@ -1,38 +1,36 @@
-/** Explicit mock only via ?mock=1. Never fall back to mock on API failure. */
-export function isMockMode(): boolean {
-	if (typeof window === "undefined") return false;
+/**
+ * Browser-first transport selection.
+ *
+ * Default: local mock ChatCore (localStorage + fixture). No Session HTTP, WP, or nonce.
+ * Opt-in live Session HTTP: `?live=1` (Vite may proxy `/v1` to optional context-serve).
+ * Live mode never silently falls back to mock on API failure.
+ */
+
+export function searchParamsOf(search: string = ""): URLSearchParams {
+	const raw = search.startsWith("?") || search === "" ? search : `?${search}`;
+	return new URLSearchParams(raw);
+}
+
+/** True when Session HTTP is explicitly requested. */
+export function isLiveSessionMode(search: string = ""): boolean {
 	try {
-		return new URLSearchParams(window.location.search).get("mock") === "1";
+		const raw =
+			search || (typeof window !== "undefined" ? window.location.search : "");
+		return searchParamsOf(raw).get("live") === "1";
 	} catch {
 		return false;
 	}
 }
 
-type WpCfg = {
-	apiBase?: string;
-	restBase?: string;
-	nonce?: string;
-};
-
-function wpCfg(): WpCfg | null {
-	if (typeof window === "undefined") return null;
-	return (window as unknown as { __BUILDYTECH_SI_CHAT__?: WpCfg }).__BUILDYTECH_SI_CHAT__ ?? null;
+/** Default Creator path. SSR and missing window stay mock. */
+export function isMockMode(search: string = ""): boolean {
+	return !isLiveSessionMode(search);
 }
 
 /**
- * Session HTTP base.
- * - Vite: "" (proxy /v1 → Session)
- * - WordPress: apiBase (.../wp-json/buildytech) so paths `/v1/...` hit plugin REST
+ * Session HTTP base for the optional live path.
+ * Same-origin `/v1` (Vite proxy when developing). No CMS embed rewrite.
  */
 export function apiBase(): string {
-	const cfg = wpCfg();
-	if (cfg?.apiBase) return cfg.apiBase.replace(/\/$/, "");
-	if (cfg?.restBase) return cfg.restBase.replace(/\/v1\/?$/, "").replace(/\/$/, "");
 	return "";
-}
-
-/** WP REST cookie auth nonce when embedded in wp-admin. */
-export function wpRestNonce(): string | null {
-	const n = wpCfg()?.nonce;
-	return n && n.length > 0 ? n : null;
 }

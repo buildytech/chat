@@ -1,6 +1,6 @@
 /**
- * CMS-agnostic ports. Adapters (WordPress, FastyGo, Wails, …) implement these.
- * apps/chat-web must not import WordPress PHP or WP REST types.
+ * CMS-agnostic ports. Host adapters implement these.
+ * apps/chat-web talks to ports over HTTP or the local mock, never to CMS internals.
  */
 import type { Page, PageSummary } from "@buildytech/page-contract";
 

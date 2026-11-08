@@ -28,4 +28,4 @@ export BUILDY_LIVE_MODEL=0
 # restart Session context-serve without BUILDY_LIVE_MODEL; leave CR on :18085 or stop intentionally
 ```
 
-Ngrok and WordPress writes are out of scope for this path.
+Ngrok and CMS publish writes are out of scope for this path. This is optional and **not** the default Creator start.

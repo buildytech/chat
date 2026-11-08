@@ -33,8 +33,14 @@ const outDir = process.env.M5_OUT || "/workspace/var/phpingineer/logs/m5-codepor
 const dbPath = process.env.PAGE_STORE_PATH || "/home/box/.config/buildy-demo/pages.sqlite";
 const pageId = process.env.M5_PAGE_ID || "page-5975af4003592b2c";
 const sessionId = process.env.M5_SESSION_ID || "sess-dcfe3398319aee1e";
-const phpBin = process.env.PHP_BIN || "/workspace/bin/php";
-const latteVendor = process.env.M5_LATTE_VENDOR || "/workspace/wpfasty-agpl/themes/latte/vendor";
+const phpBin = process.env.PHP_BIN || "php";
+const latteVendor = process.env.M5_LATTE_VENDOR || "";
+if (!latteVendor) {
+	console.error(
+		"Optional CodePort smoke: set M5_LATTE_VENDOR to a PHP Latte 3 vendor dir (not a WordPress product)."
+	);
+	process.exit(2);
+}
 
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(join(outDir, "pack"), { recursive: true });

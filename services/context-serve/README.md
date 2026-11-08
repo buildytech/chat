@@ -1,6 +1,6 @@
 # context-serve
 
-Go service for SI Chat. **M3:** durable PagePort + Session HTTP/Gateway foundation (SQLite) with a labelled deterministic stub builder. This is **not** a live model. Chat-web talks to it through the Vite `/v1` proxy (M4); Workspace still does not treat stub output as live-model acceptance.
+Go service for SI Chat. **M3:** durable PagePort + Session HTTP/Gateway foundation (SQLite) with a labelled deterministic stub builder. This is **not** a live model. Optional from chat-web: open `/?live=1` so Vite `/v1` proxies here. Default Creator start is mock and does not require this process. Workspace still does not treat stub output as live-model acceptance.
 
 ## Product model
 
@@ -77,4 +77,4 @@ Bare `:8090` is rewritten to `127.0.0.1:8090`.
 
 ## Not in M3
 
-Live model / Cursor SDK / Context Runtime / lexproto adapters, SSE/abort streaming, WordPress publish, five landings / hierarchy / UTM, UI wiring of Session API (M4). Demo “Wrote page” text in the SPA remains non-acceptance until M4.
+Live model / Cursor SDK / Context Runtime / lexproto adapters, SSE/abort streaming, CMS publish, five landings / hierarchy / UTM. Demo “Wrote page” text in the SPA is not live-model acceptance.

@@ -7,7 +7,6 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "build:wp-embed": "vite build --config vite.config.wp-embed.ts",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "node -e \"console.log(\"chat-web unit tests live under scripts/m4-api-tests (npm run test:api)\")\""

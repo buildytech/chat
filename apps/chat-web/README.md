@@ -1,6 +1,6 @@
 # chat-web
 
-SvelteKit SPA for the SI Chat Website Builder.
+SvelteKit SPA for the SI Chat Creator (browser-first).
 
 ## Run
 
@@ -9,11 +9,13 @@ npm install
 npm run dev
 ```
 
+Open `http://127.0.0.1:5173`. Mock ChatCore (localStorage) is the default. Optional Session HTTP: `/?live=1` while `services/context-serve` is running.
+
 ```sh
 npm run build
 ```
 
-Creator shell (ADR-0003): AppNav (~248px) | ChatColumn (`w-80`) | Workspace (BlockTree + Preview/Code). Below `lg`, Chat | Page tabs. ChatCore mock: `src/lib/chat-core`. Agent Gateway / cursor-sdk are not wired (ADR-0004).
+Creator shell (ADR-0003): AppNav (~248px) | ChatColumn (`w-80`) | Workspace (BlockTree + Preview/Code). Below `lg`, Chat | Page tabs. ChatCore: `src/lib/chat-core`. Agent Gateway / cursor-sdk are not wired (ADR-0004).
 
 ## UI8Kit
 

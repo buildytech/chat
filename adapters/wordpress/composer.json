@@ -1,9 +1,0 @@
-{
-  "name": "buildytech/si-chat-wordpress",
-  "description": "WordPress adapter for BuildY SI Chat",
-  "license": "Apache-2.0",
-  "require": {
-    "php": ">=8.2",
-    "latte/latte": "^3.0"
-  }
-}

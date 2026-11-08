@@ -31,7 +31,7 @@ P0 цель: **SLSA Build L1 documented + CI provenance toward L2**.
 
 - Hermetic build (fixed toolchain, no network during compile).
 - SLSA Build **L3** (isolated / hardened builders, non-falsifiable provenance).
-- Provenance для stub-артефактов (`context-serve`, orchestrator, WP plugin).
+- Provenance для stub-артефактов (`context-serve`, orchestrator).
 - SBOM как gate (optional later; см. controls.md).
 - Self-hosted runners, reusable SLSA3 generator (`slsa-github-generator`).
 - Подпись git-тегов / GPG commits.

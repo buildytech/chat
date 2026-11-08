@@ -7,4 +7,4 @@ Interfaces for the shared Page Store:
 - `PublishPort` — publish / unpublish
 - `PreviewPort` — preview URL
 
-Implementations live in `adapters/*`. The chat SPA talks to ports over HTTP (or a mock), never to CMS internals.
+Host adapters (when present) implement these. The Creator SPA talks to ports over HTTP or the local mock, never to CMS internals. `published` on the Page DTO is a domain status, not a CMS product.

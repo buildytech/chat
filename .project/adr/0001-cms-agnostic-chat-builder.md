@@ -1,6 +1,6 @@
 # ADR 0001: CMS-agnostic chat builder
 
-- Status: Accepted
+- Status: Accepted (WordPress embed host **superseded** by [ADR-0006](0006-browser-first-no-wordpress-runtime.md); Page Store ports remain)
 - Date: 2026-11-06
 - Source of truth: [docs/architecture.md](../../docs/architecture.md)
 
@@ -25,10 +25,10 @@
 
 | Target | Path |
 | --- | --- |
-| Browser SPA | `apps/chat-web` |
-| WordPress embed | `adapters/wordpress` |
-| Wails3 | `adapters/wails3` |
-| Telegram Mini App | `adapters/telegram-mini` |
+| Browser SPA | `apps/chat-web` (active) |
+| WordPress embed | *removed from this repo; see ADR-0006* |
+| Wails3 | `adapters/wails3` (stub) |
+| Telegram Mini App | `adapters/telegram-mini` (stub) |
 
 **Stack split:**
 

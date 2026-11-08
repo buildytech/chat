@@ -1,6 +1,6 @@
 /**
  * ChatCore — session/messages logic, no DOM (ADR-0003).
- * Live path: Session HTTP on context-serve (M4). Mock only with ?mock=1.
+ * Default: local mock (localStorage). Optional Session HTTP with ?live=1.
  */
 export {
 	createSession,

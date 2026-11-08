@@ -166,7 +166,7 @@ async function loadSessionDetail(id: string, token: number): Promise<void> {
 	}
 }
 
-/** Load sessions from Session HTTP (or mock). Safe for onMount — not for $derived. */
+/** Load sessions from mock (default) or Session HTTP (`?live=1`). Safe for onMount — not for $derived. */
 export async function hydrateSessions(): Promise<void> {
 	if (hydrated || hydrating) return;
 	hydrating = true;
@@ -179,7 +179,7 @@ export async function hydrateSessions(): Promise<void> {
 				mode: "localStorage",
 				liveModel: false,
 				tools: [],
-				note: "Explicit ?mock=1 offline ChatCore"
+				note: "Default localStorage ChatCore (no Session HTTP)"
 			};
 			const initial = loadMock();
 			memory = initial;

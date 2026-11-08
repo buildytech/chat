@@ -1,5 +1,7 @@
 # buildytech/chat — bootstrap brief (owner 2026-11-06)
 
+> **Historical snapshot.** Current start is the browser SPA mock (`npm run dev`). WordPress adapter path listed below is **superseded** ([ADR-0006](../../.project/adr/0006-browser-first-no-wordpress-runtime.md)). Do not treat this file as current run instructions.
+
 ## Product
 CMS-agnostic SI Chat Website Builder (Lovable-like).
 Targets: browser SPA (history sidebar) · WP admin Svelte bundle · Wails3 · Telegram Mini App.

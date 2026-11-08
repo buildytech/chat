@@ -1,6 +1,6 @@
 # ADR 0003: Creator surfaces & Preview/Code ports
 
-- Status: Accepted
+- Status: Accepted (WordPress embed composition **superseded** by [ADR-0006](0006-browser-first-no-wordpress-runtime.md); CreatorShell / Preview+Code remain)
 - Date: 2026-11-06
 - Extends: [0001-cms-agnostic-chat-builder.md](0001-cms-agnostic-chat-builder.md)
 - Related: [0004-agent-runtime-adapters.md](0004-agent-runtime-adapters.md)
@@ -57,8 +57,8 @@ Figma по-прежнему только layout reference (ADR-0001).
 
 | Host | Compose |
 | --- | --- |
-| Browser SPA (`apps/chat-web`) | CreatorShell + ChatColumn + Workspace |
-| WordPress embed | ChatColumn (± thin chrome). Без полного CreatorShell, пока plugin не потребует preview frame. |
+| Browser SPA (`apps/chat-web`) | CreatorShell + ChatColumn + Workspace (active) |
+| WordPress embed | *removed from this repo; see ADR-0006* |
 | Wails3 | Same SPA as browser (Shell + Column + Workspace) in the webview. |
 | Telegram Mini App | Same SPA; compact Chat \| Workspace tabs acceptable. |
 
