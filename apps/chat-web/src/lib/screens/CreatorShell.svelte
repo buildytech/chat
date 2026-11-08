@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import Block from "../compose/Block.svelte";
 	import Group from "../compose/Group.svelte";
-	import type { ChatSession, SessionSummary } from "../chat-core";
+	import type { ChatSession, CreatorRuntimeStatus, SessionSummary } from "../chat-core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
 	import { creatorLayout } from "../creator-layout.svelte";
 	import ChatColumn from "./ChatColumn.svelte";
@@ -39,13 +39,7 @@
 		selected: ChatSession | null;
 		selectedId: string | null;
 		busy: boolean;
-		runtime: {
-			mode: "live" | "mock" | "booting";
-			capabilities: { liveModel?: boolean; live?: { requested?: boolean; model?: string }; mode?: string; runtime?: string; note?: string } | null;
-			error: string | null;
-			canDelete: boolean;
-			lastRequestId: string | null;
-		};
+		runtime: CreatorRuntimeStatus;
 		onNew: () => void | Promise<void>;
 		onSelect: (id: string) => void | Promise<void>;
 		onDelete: (id: string) => void;

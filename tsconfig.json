@@ -7,12 +7,8 @@
 		"noEmit": true,
 		"skipLibCheck": true,
 		"types": ["node"],
-		"allowImportingTsExtensions": true
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true
 	},
-	"include": [
-		"api/**/*.ts",
-		"middleware.ts",
-		"packages/builder-core/src/**/*.ts",
-		"apps/xai-runtime/src/**/*.ts"
-	]
+	"include": ["api/**/*.ts", "middleware.ts"]
 }

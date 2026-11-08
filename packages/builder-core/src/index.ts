@@ -80,5 +80,6 @@ export {
 	clampRunBudgetMs,
 	stripRuntimePrefix
 } from "./protect.ts";
-export type { EnvMap } from "./protect.ts";
+export type { EnvMap } from "./env-map.ts";
+export { readEnv } from "./env-map.ts";
 export type { CatalogScreen, CatalogFacetFilter, SearchResult, ScreenCompatibility, CatalogSnapshot } from "./catalog/types.ts";

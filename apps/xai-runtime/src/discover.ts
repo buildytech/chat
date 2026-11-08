@@ -2,8 +2,10 @@ import {
 	CANDIDATE_CHAT_MODEL,
 	XAI_BASE_URL,
 	classifyDiscoveredModels,
+	readEnv,
 	readXaiKeyState,
-	redactValue
+	redactValue,
+	type EnvMap
 } from "@buildytech/builder-core";
 
 export type DiscoveredModels = {
@@ -51,7 +53,7 @@ async function getJson(path: string, apiKey: string, signal: AbortSignal): Promi
 }
 
 export async function discoverAccountModels(
-	env: NodeJS.ProcessEnv = process.env,
+	env: EnvMap = readEnv(),
 	signal?: AbortSignal
 ): Promise<DiscoveredModels> {
 	const key = readXaiKeyState(env);

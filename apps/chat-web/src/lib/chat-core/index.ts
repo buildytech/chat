@@ -24,5 +24,6 @@ export type {
 	ChatRole,
 	ChatRunRecord,
 	ChatSession,
+	CreatorRuntimeStatus,
 	SessionSummary
 } from "./types";

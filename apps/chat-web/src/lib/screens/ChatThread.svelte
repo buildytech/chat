@@ -2,7 +2,7 @@
 	import Block from "../compose/Block.svelte";
 	import Stack from "../compose/Stack.svelte";
 	import { t } from "../i18n/dictionary";
-	import type { ChatSession } from "../chat-core";
+	import type { ChatSession, CreatorRuntimeStatus } from "../chat-core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
 	import ChatComposer from "./ChatComposer.svelte";
 	import ChatMessage from "./ChatMessage.svelte";
@@ -34,13 +34,7 @@
 		chatModels?: readonly GrokChatModel[];
 		selectedModelId?: string;
 		sessionUsage?: SessionUsage | null;
-		runtimeStatus?: {
-			mode: "live" | "mock" | "booting";
-			capabilities: { liveModel?: boolean; live?: { requested?: boolean; model?: string }; mode?: string; runtime?: string; note?: string } | null;
-			error: string | null;
-			canDelete: boolean;
-			lastRequestId: string | null;
-		} | null;
+		runtimeStatus?: CreatorRuntimeStatus | null;
 	} = $props();
 
 	const messages = $derived(session?.messages ?? []);

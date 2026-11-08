@@ -55,6 +55,11 @@ async function asJson(res: Response): Promise<Record<string, unknown>> {
 	return (await res.json()) as Record<string, unknown>;
 }
 
+test("root tsconfig typechecks Vercel entry files only", () => {
+	const cfg = JSON.parse(readFileSync(join(REPO, "tsconfig.json"), "utf8")) as { include: string[] };
+	assert.deepEqual(cfg.include, ["api/**/*.ts", "middleware.ts"]);
+});
+
 test("vercel.json is Other + static SPA output + hobby-safe Node function, no matcher hole", () => {
 	const cfg = JSON.parse(readFileSync(join(REPO, "vercel.json"), "utf8")) as {
 		framework: null;

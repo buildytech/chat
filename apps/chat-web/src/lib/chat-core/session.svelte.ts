@@ -44,7 +44,7 @@ import {
 	setCandidatePage,
 	setCurrentPage
 } from "../page-store";
-import type { ChatMessage, ChatSession, SessionSummary } from "./types";
+import type { ChatMessage, ChatSession, CreatorRuntimeStatus, SessionSummary } from "./types";
 
 const STORE_KEY = "buildytech-chat-sessions";
 const SELECTED_KEY = "buildy.creator.selectedSessionId";
@@ -280,13 +280,7 @@ export function getSelectedSession(): ChatSession | null {
 	return memory.find((s) => s.id === selectedId) ?? null;
 }
 
-export function getRuntimeStatus(): {
-	mode: "live" | "mock" | "booting";
-	capabilities: ServerCapabilities | null;
-	error: string | null;
-	canDelete: boolean;
-	lastRequestId: string | null;
-} {
+export function getRuntimeStatus(): CreatorRuntimeStatus {
 	return {
 		mode: connectionMode,
 		capabilities,

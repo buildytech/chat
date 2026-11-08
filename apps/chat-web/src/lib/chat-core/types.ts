@@ -1,4 +1,13 @@
 import type { RunUsage, SessionUsage } from "@buildytech/builder-core";
+import type { ServerCapabilities } from "../api/gateway";
+
+export type CreatorRuntimeStatus = {
+	mode: "live" | "mock" | "booting";
+	capabilities: ServerCapabilities | null;
+	error: string | null;
+	canDelete: boolean;
+	lastRequestId: string | null;
+};
 
 export type ChatRole = "user" | "assistant";
 

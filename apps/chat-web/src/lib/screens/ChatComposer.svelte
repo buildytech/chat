@@ -13,6 +13,7 @@
 	import Textarea from "../../ui/textarea/Textarea.svelte";
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
+	import type { CreatorRuntimeStatus } from "../chat-core";
 	import { formatTokens, type GrokChatModel, type SessionUsage } from "@buildytech/builder-core";
 
 	let {
@@ -50,19 +51,7 @@
 		chatModels?: readonly GrokChatModel[];
 		selectedModelId?: string;
 		sessionUsage?: SessionUsage | null;
-		runtimeStatus?: {
-			mode: "live" | "mock" | "booting";
-			capabilities: {
-				liveModel?: boolean;
-				live?: { requested?: boolean; model?: string };
-				mode?: string;
-				runtime?: string;
-				note?: string;
-			} | null;
-			error: string | null;
-			canDelete: boolean;
-			lastRequestId: string | null;
-		} | null;
+		runtimeStatus?: CreatorRuntimeStatus | null;
 	} = $props();
 
 	let ime = $state(false);
@@ -148,6 +137,7 @@
 					<Icon size="sm"><Plus /></Icon>
 				</Button>
 				<Button
+					type="button"
 					class="inline-flex max-w-[220px] items-center gap-1 rounded-default border border-border px-2 py-1.5 text-sm text-foreground hover:bg-accent"
 					aria-label={t("composer.model")}
 					aria-expanded={modelOpen ? "true" : "false"}
@@ -157,6 +147,7 @@
 					<Text tag="span" class="truncate">{modelButtonLabel}</Text>
 				</Button>
 				<Button
+					type="button"
 					class="rounded-default border border-border px-2 py-1.5 text-sm text-foreground hover:bg-accent"
 					onclick={() => {
 						modelOpen = false;
@@ -190,6 +181,7 @@
 			<Stack class="gap-1 rounded-default border border-border bg-card p-2" role="listbox" aria-label={t("composer.modelList")}>
 				{#each chatModels as model (model.id)}
 					<Button
+						type="button"
 						class={cn(
 							"w-full items-start justify-start rounded-default px-2 py-1.5 text-left hover:bg-accent",
 							model.id === selectedModelId ? "bg-accent" : ""

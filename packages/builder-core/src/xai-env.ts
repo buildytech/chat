@@ -2,6 +2,7 @@
  * xAI Grok (official). Server-only. Never VITE_/PUBLIC_.
  * Distinct from Cursor SDK keys. Do not rename CURSOR_API_KEY to this.
  */
+import { readEnv, type EnvMap } from "./env-map.ts";
 
 export const XAI_SECRET_ENV = ["XAI_API_KEY"] as const;
 export const RUNTIME_AUTH_ENV = ["BUILDY_RUNTIME_BASIC_AUTH_USER", "BUILDY_RUNTIME_BASIC_AUTH_PASSWORD"] as const;
@@ -47,21 +48,19 @@ export type XaiKeyState =
 	| { present: false; source: null; code: "xai_api_key_missing" }
 	| { present: true; source: "XAI_API_KEY"; code: "xai_api_key_present" };
 
-export function readXaiKeyState(
-	env: NodeJS.ProcessEnv = typeof process === "undefined" ? {} : process.env
-): XaiKeyState {
-	if (env.XAI_API_KEY?.trim()) {
+export function readXaiKeyState(env?: EnvMap): XaiKeyState {
+	const bag = readEnv(env);
+	if (bag.XAI_API_KEY?.trim()) {
 		return { present: true, source: "XAI_API_KEY", code: "xai_api_key_present" };
 	}
 	return { present: false, source: null, code: "xai_api_key_missing" };
 }
 
-export function hasPublicSecretLeak(
-	env: NodeJS.ProcessEnv = typeof process === "undefined" ? {} : process.env
-): string[] {
+export function hasPublicSecretLeak(env?: EnvMap): string[] {
+	const bag = readEnv(env);
 	const leaks: string[] = [];
-	for (const key of Object.keys(env)) {
-		if (/^(VITE_|PUBLIC_|NEXT_PUBLIC_)/.test(key) && /KEY|SECRET|TOKEN|PASSWORD/i.test(key) && env[key]?.trim()) {
+	for (const key of Object.keys(bag)) {
+		if (/^(VITE_|PUBLIC_|NEXT_PUBLIC_)/.test(key) && /KEY|SECRET|TOKEN|PASSWORD/i.test(key) && bag[key]?.trim()) {
 			leaks.push(key);
 		}
 	}

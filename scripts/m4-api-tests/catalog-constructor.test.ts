@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { PAGE_BLOCK_KINDS, parsePage } from "../../packages/page-contract/src/index.ts";
 import {
 	ALLOWED_TOOLS,
 	OWNER_FILTERS,
+	SCENARIO_IDS,
 	catalogSnapshot,
 	catalogToolParameterSchema,
 	executeTool,
@@ -166,4 +168,58 @@ test("constructor tools reject synthetic names and honor no-fit", () => {
 		updatedAt: "2026-11-08T00:00:00.000Z"
 	});
 	assert.equal("ok" in fabricated && fabricated.ok === false, true);
+});
+
+test("constructor integration uses real Stock screens for all three ideas", () => {
+	const kinds = new Set<string>(PAGE_BLOCK_KINDS);
+	const snapshotSrc = readFileSync(new URL("../../packages/builder-core/src/catalog/snapshot.ts", import.meta.url), "utf8");
+	assert.match(snapshotSrc, /with \{ type: "json" \}/);
+	assert.equal(
+		readFileSync(new URL("../../packages/builder-core/src/catalog/snapshot.json.d.ts", import.meta.url), "utf8").includes(
+			"CatalogSnapshot"
+		),
+		true
+	);
+
+	for (const scenarioId of SCENARIO_IDS) {
+		const search = searchCatalog({ ...OWNER_FILTERS[scenarioId], page: 1 });
+		assert.equal(search.noFit, false, scenarioId);
+		assert.ok(search.items.length > 0, scenarioId);
+		const screen =
+			search.items.find((item) => item.compatibility.compatible || item.compatibility.partial) ?? search.items[0];
+		assert.ok(screen, scenarioId);
+
+		for (const label of screen.labels.blocks.slice(0, 12)) {
+			const details = getBlockDetails({ id: label });
+			if ("ok" in details && details.ok === false) continue;
+			if ("rendererKind" in details && details.rendererKind) {
+				assert.equal(kinds.has(details.rendererKind), true, `${scenarioId} ${details.rendererKind}`);
+			}
+		}
+
+		const proposal = proposeLayout({
+			brief: `Create a ${scenarioId} using UI8Kit rules and contracts.`,
+			scenarioId,
+			screenId: screen.screenId,
+			expectedRevision: 0,
+			now: "2026-11-08T00:00:00.000Z"
+		});
+		assert.equal(proposal.ok, true, `${scenarioId} propose ${screen.screenId}`);
+		if (!proposal.ok) continue;
+		parsePage(proposal.page);
+		assert.ok(proposal.page.layout.blocks.length > 0, scenarioId);
+		for (const block of proposal.page.layout.blocks) {
+			assert.equal(kinds.has(block.kind), true, `${scenarioId} ${block.kind}`);
+		}
+
+		const run = runConstructorTools({
+			brief: `Create a ${scenarioId} using UI8Kit rules and contracts.`,
+			scenarioId,
+			screenId: screen.screenId,
+			expectedRevision: 0,
+			now: "2026-11-08T00:00:00.000Z"
+		});
+		assert.equal(run.ok, true, `${scenarioId} tools`);
+		if (run.ok) assert.ok(run.page.layout.blocks.length > 0, scenarioId);
+	}
 });

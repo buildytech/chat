@@ -34,6 +34,7 @@
 		setKeepOutsideScreen,
 		setPage
 	} from "../browser/onboarding.svelte";
+	import type { CreatorRuntimeStatus } from "../chat-core";
 	import type { GrokChatModel, ScenarioId, SessionUsage } from "@buildytech/builder-core";
 	import StockCard from "./StockCard.svelte";
 	import ChatComposer from "./ChatComposer.svelte";
@@ -52,19 +53,7 @@
 		sessionUsage = null
 	}: {
 		busy?: boolean;
-		runtimeStatus?: {
-			mode: "live" | "mock" | "booting";
-			capabilities: {
-				liveModel?: boolean;
-				live?: { requested?: boolean; model?: string };
-				mode?: string;
-				runtime?: string;
-				note?: string;
-			} | null;
-			error: string | null;
-			canDelete: boolean;
-			lastRequestId: string | null;
-		} | null;
+		runtimeStatus?: CreatorRuntimeStatus | null;
 		onSend: (text: string) => void | Promise<void>;
 		onCancel?: () => void;
 		onAddModel?: () => void;

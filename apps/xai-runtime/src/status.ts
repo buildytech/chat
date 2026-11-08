@@ -8,7 +8,9 @@ import {
 	hasPublicSecretLeak,
 	isSharedPublicSurface,
 	readBasicAuthConfig,
-	readXaiKeyState
+	readEnv,
+	readXaiKeyState,
+	type EnvMap
 } from "@buildytech/builder-core";
 import { discoverAccountModels } from "./discover.ts";
 
@@ -52,7 +54,7 @@ async function sdkPresent(): Promise<{ openaiProvider: boolean; ai: boolean }> {
 	return { openaiProvider, ai };
 }
 
-export async function runtimeStatus(env: NodeJS.ProcessEnv = process.env): Promise<XaiRuntimeStatus> {
+export async function runtimeStatus(env: EnvMap = readEnv()): Promise<XaiRuntimeStatus> {
 	const leaks = hasPublicSecretLeak(env);
 	const key = readXaiKeyState(env);
 	const { configured: basicRequired } = readBasicAuthConfig(env);

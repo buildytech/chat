@@ -3,9 +3,11 @@ import {
 	gateRequest,
 	isSharedPublicSurface,
 	mapChatRunRequest,
+	readEnv,
 	readXaiKeyState,
 	safeErrorMessage,
-	stripRuntimePrefix
+	stripRuntimePrefix,
+	type EnvMap
 } from "@buildytech/builder-core";
 import { runXaiCatalogTurn, revalidateProposal } from "./chat-tools.ts";
 import { runtimeStatus } from "./status.ts";
@@ -34,7 +36,7 @@ function combinedAbort(request: Request, ms: number): AbortSignal {
 
 export async function handleRuntimeFetch(
 	request: Request,
-	env: NodeJS.ProcessEnv = process.env,
+	env: EnvMap = readEnv(),
 	opts: { surface: "vercel" | "node" } = { surface: "node" }
 ): Promise<Response> {
 	const allowLoopback = opts.surface === "node" && !isSharedPublicSurface(env);

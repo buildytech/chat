@@ -1,7 +1,7 @@
 import raw from "./snapshot.json" with { type: "json" };
 import type { CatalogSnapshot } from "./types.ts";
 
-export const catalogSnapshot = raw as CatalogSnapshot;
+export const catalogSnapshot: CatalogSnapshot = raw;
 
 export function catalogProvenance(): Pick<
 	CatalogSnapshot,
