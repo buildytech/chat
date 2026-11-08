@@ -44,11 +44,14 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 			headers: { Accept: "application/json" }
 		});
 		const body = (await res.json()) as XaiClientStatus;
+		const code =
+			body.code ||
+			(res.ok ? "ok" : res.status === 404 ? "xai_runtime_unreachable" : "xai_status_error");
 		return {
 			...body,
 			liveModel: false,
 			ready: Boolean(body.ready),
-			code: body.code || (res.ok ? "ok" : "xai_status_error")
+			code
 		};
 	} catch {
 		return {
@@ -76,7 +79,8 @@ export async function runXaiProposal(
 				scenarioId: ctx.scenarioId,
 				screenId: ctx.screenId,
 				expectedRevision: ctx.expectedRevision,
-				pageId: ctx.pageId
+				pageId: ctx.pageId ?? ctx.currentPage?.id,
+				currentPage: ctx.currentPage ?? null
 			}),
 			signal
 		});

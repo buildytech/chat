@@ -16,14 +16,16 @@ UI8Kit rules live with the contract. Copied here from [`github.com/ui8kit/contra
 
 ```sh
 npm install
-npm run dev          # http://127.0.0.1:5173 — mock localStorage ChatCore
+npm run dev          # http://127.0.0.1:5173 — mock ChatCore (chats + pages in this browser)
 npm test             # page-contract + unit tests (includes WP-runtime guard)
 npm run check        # svelte-check
 npm run build        # static SPA
 npm run verify       # test + check + build
 ```
 
-Optional, non-default Session HTTP: run `services/context-serve` and open `/?live=1`. Default `npm run dev` must not require it.
+Default ChatCore saves chats and per-session applied/candidate pages in localStorage. That is not live Grok. Preview is Svelte UI8Kit; Code is generated Svelte UI8Kit source, not Latte.
+
+Optional leftover Session HTTP: `services/context-serve` and `/?live=1`. Default `npm run dev` must not require it.
 
 Optional protected xAI runtime (`XAI_API_KEY` server-only): `npm run start --workspace=@buildytech/xai-runtime` on `127.0.0.1:18100`. Vite proxies `/runtime`. Chat selector sends one of the five verified text model ids. Non-loopback bind is fail-closed without Basic Auth. Vercel staging uses root `middleware.js` (ESM, `"type": "module"`) + `api/runtime` (see `docs/deploy-xai.md`). Do not open a Vercel project until Basic Auth env is set.
 
@@ -40,5 +42,5 @@ Svelte 5: runes (`$state` / `$derived` / `$props`). Logic-only ChatCore lives in
 
 - Reintroduce WordPress adapters, `X-WP-Nonce`, `wp-json`, `wp-admin` embed, plugin ZIP deploy scripts.
 - Implement Browser MVP, BYOK, paid model calls, telemetry, proxies-as-product, or Page schema rewrites in a cleanup.
-- Delete Page DTO, ports, mock PageStore, Latte CodePort, or CreatorShell because a WP adapter used to implement them.
+- Delete Page DTO, ports, mock PageStore, or CreatorShell because a WP adapter used to implement them.
 - Treat domain status `published` as WordPress-specific.

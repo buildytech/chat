@@ -12,8 +12,10 @@ export {
 export { mockLandingPage } from "./fixture";
 export {
 	applyCandidate,
+	bindPageSession,
 	clearCurrentPage,
 	discardCandidate,
+	getBoundPageSessionId,
 	getCandidatePage,
 	getCurrentPage,
 	getLastAppliedPage,
@@ -26,6 +28,7 @@ export {
 	setCandidatePage,
 	setCurrentPage
 } from "./mock.svelte";
+export { svelteForBlock, svelteFromPage, sveltePackFiles } from "./svelte-code";
 export { latteFromPage, latteForBlock } from "./latte";
 export { buildStoreZip, downloadPageZip, packFilesFromPage, type PackFile } from "./pack";
 export { findBlock, firstBlockId, hasBlock, walkBlocks } from "./tree";

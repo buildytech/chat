@@ -76,7 +76,8 @@ function withProcessEnv<T>(patch: NodeJS.ProcessEnv, fn: () => T): T {
 
 test("root tsconfig typechecks Vercel entry files only", () => {
 	const cfg = JSON.parse(readFileSync(join(REPO, "tsconfig.json"), "utf8")) as { include: string[] };
-	assert.deepEqual(cfg.include, ["api/**/*.ts"]);
+	assert.ok(cfg.include.includes("api/**/*.ts"));
+	assert.ok(cfg.include.includes("api/**/*.d.ts"));
 });
 
 test("vercel.json is Other + static SPA output + hobby-safe Node function, no matcher hole", () => {
@@ -214,6 +215,17 @@ test("Vercel function entry does not import .ts specifiers", () => {
 	const src = readFileSync(join(REPO, "api/runtime/[...path].ts"), "utf8");
 	assert.doesNotMatch(src, /from\s+['"][^'"]+\.ts['"]/);
 	assert.match(src, /@buildytech\/xai-runtime\/http/);
+});
+
+test("Vercel API typecheck has AI SDK shims and does not silently assemble Grok turns", () => {
+	assert.equal(existsSync(join(REPO, "api/ai-shims.d.ts")), true);
+	const shims = readFileSync(join(REPO, "api/ai-shims.d.ts"), "utf8");
+	assert.match(shims, /declare module "@ai-sdk\/openai"/);
+	assert.match(shims, /declare module "ai"/);
+	assert.match(shims, /declare module "zod"/);
+	const tools = readFileSync(join(REPO, "apps/xai-runtime/src/chat-tools.ts"), "utf8");
+	assert.doesNotMatch(tools, /runConstructorTools\(ctx\)/);
+	assert.match(tools, /propose_layout_missing/);
 });
 
 test("timingSafeEqualString is length-aware and rejects mismatches", () => {

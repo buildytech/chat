@@ -1,4 +1,4 @@
-import type { RunUsage, SessionUsage } from "@buildytech/builder-core";
+import type { RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
 import type { ServerCapabilities } from "../api/gateway";
 
 export type CreatorRuntimeStatus = {
@@ -59,6 +59,8 @@ export type ChatSession = {
 	pageId?: string;
 	pageBound?: boolean;
 	pageRevision?: number | null;
+	scenarioId?: ScenarioId | null;
+	screenId?: string | null;
 	selectedModelId?: string;
 	usage?: SessionUsage;
 };

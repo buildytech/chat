@@ -101,12 +101,14 @@ export function selectScenario(id: ScenarioId): void {
 	scenarioId = id;
 	page = 1;
 	placeholderIndex = 0;
+	persistNow();
 }
 
 export function clearScenario(): void {
 	scenarioId = null;
 	page = 1;
 	placeholderIndex = 0;
+	persistNow();
 }
 
 export function attachScreen(id: string): { ok: true } | { ok: false; code: string } {
@@ -114,12 +116,14 @@ export function attachScreen(id: string): { ok: true } | { ok: false; code: stri
 	if (!screen) return { ok: false, code: "unknown_screen" };
 	screenId = id;
 	keepOutsideScreen = true;
+	persistNow();
 	return { ok: true };
 }
 
 export function removeScreen(): void {
 	screenId = null;
 	keepOutsideScreen = true;
+	persistNow();
 }
 
 export function setKeepOutsideScreen(keep: boolean): void {
@@ -192,4 +196,22 @@ export function resetOnboarding(): void {
 	composing = false;
 	modal = null;
 	keepOutsideScreen = true;
+}
+
+export function hydrateSessionContext(ctx: { scenarioId?: ScenarioId | null; screenId?: string | null }): void {
+	scenarioId = ctx.scenarioId ?? null;
+	screenId = ctx.screenId ?? null;
+	page = 1;
+	placeholderIndex = 0;
+}
+
+type ContextPersist = (ctx: { scenarioId: ScenarioId | null; screenId: string | null }) => void;
+let persistContext: ContextPersist | null = null;
+
+export function setOnboardingPersist(fn: ContextPersist | null): void {
+	persistContext = fn;
+}
+
+function persistNow(): void {
+	persistContext?.({ scenarioId, screenId });
 }

@@ -1,3 +1,4 @@
+/// <reference path="../ai-shims.d.ts" />
 /**
  * Vercel Node.js Function (Web fetch handler).
  * https://vercel.com/docs/functions/runtimes/node-js

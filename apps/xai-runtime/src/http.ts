@@ -119,7 +119,8 @@ export async function handleRuntimeFetch(
 						scenarioId: mapped.request.scenarioId,
 						screenId: mapped.request.screenId,
 						expectedRevision: mapped.request.expectedRevision,
-						pageId: mapped.request.pageId
+						pageId: mapped.request.pageId,
+						currentPage: mapped.request.currentPage
 					},
 					signal
 				);

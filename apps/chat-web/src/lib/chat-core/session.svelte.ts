@@ -35,18 +35,29 @@ import {
 } from "@buildytech/builder-core";
 import { fetchXaiStatus, runXaiProposal, type XaiRunResponse } from "../browser/xai-client";
 import { getSelectedModelId } from "../browser/models.svelte";
-import { getScenarioId, getScreenId } from "../browser/onboarding.svelte";
+import {
+	getScenarioId,
+	getScreenId,
+	hydrateSessionContext,
+	setOnboardingPersist
+} from "../browser/onboarding.svelte";
+import {
+	getPersistError,
+	loadSessionsJson,
+	saveSessionsJson
+} from "../browser/persist";
 import {
 	applyCandidate,
+	bindPageSession,
 	clearCurrentPage,
 	discardCandidate,
+	getLastAppliedPage,
 	getPageRevision,
 	setCandidatePage,
 	setCurrentPage
 } from "../page-store";
 import type { ChatMessage, ChatSession, CreatorRuntimeStatus, SessionSummary } from "./types";
 
-const STORE_KEY = "buildytech-chat-sessions";
 const SELECTED_KEY = "buildy.creator.selectedSessionId";
 
 function nowIso(): string {
@@ -58,20 +69,31 @@ function uid(prefix: string): string {
 }
 
 function loadMock(): ChatSession[] {
-	if (typeof localStorage === "undefined") return [];
-	try {
-		const raw = localStorage.getItem(STORE_KEY);
-		if (!raw) return [];
-		const parsed = JSON.parse(raw) as ChatSession[];
-		return Array.isArray(parsed) ? parsed : [];
-	} catch {
-		return [];
-	}
+	const parsed = loadSessionsJson();
+	return Array.isArray(parsed) ? (parsed as ChatSession[]) : [];
 }
 
 function saveMock(sessions: ChatSession[]): void {
-	if (typeof localStorage === "undefined") return;
-	localStorage.setItem(STORE_KEY, JSON.stringify(sessions));
+	saveSessionsJson(sessions);
+}
+
+function persistSessionContext(): void {
+	const session = getSelectedSession();
+	if (!session) return;
+	replaceSession({
+		...session,
+		scenarioId: getScenarioId(),
+		screenId: getScreenId()
+	});
+	saveMock(memory);
+}
+
+function restoreSessionWorkspace(session: ChatSession | null): void {
+	hydrateSessionContext({
+		scenarioId: session?.scenarioId ?? null,
+		screenId: session?.screenId ?? null
+	});
+	bindPageSession(session?.id ?? null);
 }
 
 function readSelectedId(): string | null {
@@ -189,7 +211,7 @@ export async function hydrateSessions(): Promise<void> {
 				mode: "localStorage",
 				liveModel: false,
 				tools: [],
-				note: "Default localStorage ChatCore (no Session HTTP)"
+				note: t("runtime.mockMode")
 			};
 			const initial = loadMock();
 			memory = initial;
@@ -198,9 +220,10 @@ export async function hydrateSessions(): Promise<void> {
 				persistedId: readSelectedId(),
 				sessionIds: initial.map((s) => s.id)
 			});
+			setOnboardingPersist(() => persistSessionContext());
 			if (pick.kind === "missing") {
 				rememberSelection(null);
-				clearCurrentPage();
+				restoreSessionWorkspace(null);
 				lastError = t("runtime.sessionNotFound").replace("{id}", pick.requested);
 				syncSessionQuery(pick.requested, { mode: "replace" });
 				hydrated = true;
@@ -209,7 +232,7 @@ export async function hydrateSessions(): Promise<void> {
 			const id = pick.kind === "ok" ? pick.id : null;
 			rememberSelection(id);
 			syncSessionQuery(id, { mode: "replace" });
-			clearCurrentPage();
+			restoreSessionWorkspace(id ? memory.find((s) => s.id === id) ?? null : null);
 			hydrated = true;
 			return;
 		}
@@ -281,10 +304,11 @@ export function getSelectedSession(): ChatSession | null {
 }
 
 export function getRuntimeStatus(): CreatorRuntimeStatus {
+	const persist = getPersistError();
 	return {
 		mode: connectionMode,
 		capabilities,
-		error: lastError,
+		error: persist?.message ?? lastError,
 		canDelete: canDeleteSessions,
 		lastRequestId
 	};
@@ -301,24 +325,24 @@ export async function selectSession(
 	if (historyMode !== "none") {
 		syncSessionQuery(id, { mode: historyMode });
 	}
-	clearCurrentPage(); // clear stale DTO immediately
-	// Clear messages visually until load completes by keeping summary-only entry
-	const existing = memory.find((s) => s.id === id);
-	if (existing) {
-		replaceSession({ ...existing, messages: [] });
-	}
 	if (isMockMode()) {
-		const full = loadMock().find((s) => s.id === id);
+		const full = loadMock().find((s) => s.id === id) ?? memory.find((s) => s.id === id);
 		if (full) {
 			replaceSession(full);
+			restoreSessionWorkspace(full);
 			lastError = null;
 		} else {
 			memory = memory.filter((s) => s.id !== id);
 			rememberSelection(null);
-			clearCurrentPage();
+			restoreSessionWorkspace(null);
 			lastError = t("runtime.sessionNotFound").replace("{id}", id);
 		}
 		return;
+	}
+	clearCurrentPage();
+	const existing = memory.find((s) => s.id === id);
+	if (existing) {
+		replaceSession({ ...existing, messages: [] });
 	}
 	await loadSessionDetail(id, token);
 }
@@ -337,6 +361,8 @@ export async function createSession(): Promise<ChatSession> {
 		rememberSelection(session.id);
 		syncSessionQuery(session.id, { mode: "push" });
 		saveMock(memory);
+		hydrateSessionContext({ scenarioId: null, screenId: null });
+		bindPageSession(session.id);
 		clearCurrentPage();
 		return session;
 	}
@@ -375,11 +401,14 @@ export function abortInflightRun(): void {
 }
 
 function constructorContext(brief: string): ProposalContext {
+	const applied = getLastAppliedPage();
 	return {
 		brief,
 		scenarioId: getScenarioId(),
 		screenId: getScreenId(),
-		expectedRevision: getPageRevision() ?? 0
+		expectedRevision: getPageRevision() ?? 0,
+		pageId: applied?.id,
+		currentPage: applied ?? undefined
 	};
 }
 
@@ -454,6 +483,20 @@ async function runConstructor(brief: string, signal: AbortSignal) {
 			usage
 		};
 	}
+	if (import.meta.env.PROD) {
+		return {
+			result: {
+				ok: false as const,
+				code: status.code || "xai_runtime_not_ready",
+				message: runtimeNoteFor(status)
+			},
+			via: "blocked" as const,
+			status,
+			modelId: mapped.request.modelId,
+			live: false,
+			usage: unknownUsage("error", 0)
+		};
+	}
 	return {
 		result: runConstructorTools(ctx),
 		via: "local" as const,
@@ -462,6 +505,16 @@ async function runConstructor(brief: string, signal: AbortSignal) {
 		live: false,
 		usage: localRunUsage()
 	};
+}
+
+function runtimeNoteFor(status: { ready?: boolean; code?: string }): string {
+	if (status.ready) return t("runtime.xaiReady");
+	if (status.code === "xai_api_key_missing") return t("runtime.xaiMissing");
+	if (status.code === "xai_runtime_unreachable" || status.code === "xai_status_error") {
+		return t("runtime.unreachable");
+	}
+	if (status.code) return t("runtime.notReady").replace("{code}", status.code);
+	return t("runtime.unreachable");
 }
 
 function proposalMessage(
@@ -525,6 +578,8 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 		...session,
 		title: nextTitle,
 		updatedAt: nowIso(),
+		scenarioId: session.scenarioId ?? getScenarioId(),
+		screenId: session.screenId ?? getScreenId(),
 		messages: [...session.messages, userMsg]
 	};
 	replaceSession(pending);
@@ -542,7 +597,7 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 			liveModel: false,
 			live: { requested: true, provider: "xai", model: modelId },
 			tools: ["search_catalog", "get_block_details", "propose_layout", "get_skill"],
-			note: status.ready ? t("runtime.xaiReady") : t("runtime.xaiMissing")
+			note: runtimeNoteFor(status)
 		};
 		if (!result.ok) lastError = result.message;
 		else lastError = null;
@@ -590,13 +645,20 @@ export function applyProposal(): boolean {
 	if (!session) return false;
 	const last = [...session.messages].reverse().find((m) => m.proposal && !m.proposal.applied);
 	const ok = applyCandidate((getPageRevision() ?? 0) + 1);
-	if (!ok || !last) return ok;
+	if (!ok) return false;
+	const applied = getLastAppliedPage();
 	const next: ChatSession = {
 		...session,
 		updatedAt: nowIso(),
-		messages: session.messages.map((m) =>
-			m.id === last.id && m.proposal ? { ...m, proposal: { ...m.proposal, applied: true } } : m
-		)
+		pageId: applied?.id,
+		pageRevision: getPageRevision(),
+		scenarioId: session.scenarioId ?? getScenarioId(),
+		screenId: session.screenId ?? getScreenId(),
+		messages: last
+			? session.messages.map((m) =>
+					m.id === last.id && m.proposal ? { ...m, proposal: { ...m.proposal, applied: true } } : m
+				)
+			: session.messages
 	};
 	replaceSession(next);
 	saveMock(memory);

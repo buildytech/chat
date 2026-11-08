@@ -1,6 +1,7 @@
 import { parsePage, type Page, type PageBlock } from "@buildytech/page-contract";
 import { mockLandingPage } from "./fixture";
 import { findBlock, firstBlockId, hasBlock } from "./tree";
+import { readSessionPages, writeSessionPages, type StoredPageRecord } from "../browser/persist";
 
 export { mockLandingPage };
 
@@ -12,6 +13,27 @@ let currentPage = $state.raw<Page | null>(null);
 let candidatePage = $state.raw<Page | null>(null);
 let selectedBlockId = $state<string | null>(null);
 let pageRevision = $state<number | null>(null);
+let boundSessionId: string | null = null;
+
+function parseStored(raw: unknown): Page | null {
+	if (raw == null) return null;
+	try {
+		return parsePage(raw);
+	} catch {
+		return null;
+	}
+}
+
+function persistBound(): void {
+	if (!boundSessionId) return;
+	const record: StoredPageRecord = {
+		applied: currentPage,
+		candidate: candidatePage,
+		selectedBlockId,
+		revision: pageRevision
+	};
+	writeSessionPages(boundSessionId, record);
+}
 
 function syncSelection(page: Page | null): void {
 	if (!page) {
@@ -21,6 +43,38 @@ function syncSelection(page: Page | null): void {
 	if (!hasBlock(page.layout.blocks, selectedBlockId)) {
 		selectedBlockId = firstBlockId(page.layout.blocks);
 	}
+}
+
+function restoreRecord(record: StoredPageRecord | null): void {
+	const applied = parseStored(record?.applied);
+	const candidate = parseStored(record?.candidate);
+	currentPage = applied;
+	candidatePage = candidate;
+	pageRevision = typeof record?.revision === "number" ? record.revision : applied ? 1 : null;
+	const visible = candidate ?? applied;
+	if (visible && record?.selectedBlockId && hasBlock(visible.layout.blocks, record.selectedBlockId)) {
+		selectedBlockId = record.selectedBlockId;
+	} else {
+		syncSelection(visible);
+	}
+}
+
+/** Bind Workspace to a chat. Persists the previous session first. Does not write on restore. */
+export function bindPageSession(sessionId: string | null): void {
+	if (boundSessionId && boundSessionId !== sessionId) persistBound();
+	boundSessionId = sessionId;
+	if (!sessionId) {
+		currentPage = null;
+		candidatePage = null;
+		selectedBlockId = null;
+		pageRevision = null;
+		return;
+	}
+	restoreRecord(readSessionPages(sessionId));
+}
+
+export function getBoundPageSessionId(): string | null {
+	return boundSessionId;
 }
 
 /** Preview prefers an unapplied candidate, then last applied. */
@@ -60,6 +114,7 @@ export function selectBlock(id: string): void {
 	const page = candidatePage ?? currentPage;
 	if (!page || !hasBlock(page.layout.blocks, id)) return;
 	selectedBlockId = id;
+	persistBound();
 }
 
 /**
@@ -72,16 +127,19 @@ export function setCurrentPage(page: Page, revision: number | null = null): void
 	candidatePage = null;
 	pageRevision = revision;
 	syncSelection(next);
+	persistBound();
 }
 
 export function setCandidatePage(page: Page): void {
 	candidatePage = parsePage(page);
 	syncSelection(candidatePage);
+	persistBound();
 }
 
 export function discardCandidate(): void {
 	candidatePage = null;
 	syncSelection(currentPage);
+	persistBound();
 }
 
 export function applyCandidate(revision: number | null = null): boolean {
@@ -90,6 +148,7 @@ export function applyCandidate(revision: number | null = null): boolean {
 	candidatePage = null;
 	pageRevision = revision ?? (pageRevision ?? 0) + 1;
 	syncSelection(currentPage);
+	persistBound();
 	return true;
 }
 
@@ -99,6 +158,7 @@ export function clearCurrentPage(): void {
 	candidatePage = null;
 	selectedBlockId = null;
 	pageRevision = null;
+	persistBound();
 }
 
 /** Mock-mode only: seed the North Harbor fixture. */

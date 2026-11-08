@@ -62,12 +62,15 @@
 		selected ? `${selected.label}` : t("composer.modelGrok")
 	);
 
+	const persistLabel = $derived(
+		runtimeStatus?.mode === "mock" ? t("persist.browserLocal") : ""
+	);
 	const runtimeLabel = $derived.by(() => {
 		if (!runtimeStatus) return "";
 		const caps = runtimeStatus.capabilities;
 		if (caps?.liveModel) return t("runtime.liveModel");
 		if (caps?.note) return caps.note;
-		if (runtimeStatus.mode === "mock") return t("runtime.xaiMissing");
+		if (runtimeStatus.mode === "mock") return t("runtime.mockMode");
 		return t("runtime.localAssembler");
 	});
 
@@ -214,6 +217,9 @@
 					.replace("{runs}", String(sessionUsage.runs))}
 			</Text>
 			<Text tag="p" class="text-[11px] text-muted-foreground">{t("usage.noDollars")}</Text>
+		{/if}
+		{#if persistLabel}
+			<Text tag="p" class="text-[11px] text-muted-foreground">{persistLabel}</Text>
 		{/if}
 		{#if runtimeLabel || runtimeStatus?.error}
 			<Group class="items-center justify-between gap-2">
