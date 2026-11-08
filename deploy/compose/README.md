@@ -18,4 +18,4 @@ cd apps/chat-web && npm install && npm run dev
 - Non-loopback runtime bind requires `BUILDY_RUNTIME_BASIC_AUTH_USER` and `BUILDY_RUNTIME_BASIC_AUTH_PASSWORD` or the process exits.
 - Browser BYOK in chat-web is UI-only and does not receive the server key.
 
-See `docs/deploy-xai.md`.
+Protected public staging is Vercel Routing Middleware + `api/runtime`, not this compose file. See `docs/deploy-xai.md`.

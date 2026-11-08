@@ -37,7 +37,12 @@ function runtimeBase(): string {
 
 export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientStatus> {
 	try {
-		const res = await fetch(`${runtimeBase()}/v1/status`, { signal, headers: { Accept: "application/json" } });
+		const res = await fetch(`${runtimeBase()}/v1/status`, {
+			signal,
+			credentials: "same-origin",
+			cache: "no-store",
+			headers: { Accept: "application/json" }
+		});
 		const body = (await res.json()) as XaiClientStatus;
 		return {
 			...body,
@@ -62,6 +67,8 @@ export async function runXaiProposal(
 	try {
 		const res = await fetch(`${runtimeBase()}/v1/run`, {
 			method: "POST",
+			credentials: "same-origin",
+			cache: "no-store",
 			headers: { "Content-Type": "application/json", Accept: "application/json" },
 			body: JSON.stringify({
 				modelId: ctx.modelId,

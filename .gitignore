@@ -17,6 +17,7 @@ apps/orchestrator/.cursor/
 tmp/
 .idea/
 .vscode/
+.vercel/
 *.tsbuildinfo
 .manual/
 *.sqlite

@@ -68,4 +68,17 @@ export {
 	classifyDiscoveredModels,
 	pickChatModel
 } from "./xai-env.ts";
+export {
+	VERCEL_HOBBY_SAFE_MAX_DURATION_SEC,
+	isLoopbackBind,
+	isSharedPublicSurface,
+	readBasicAuthConfig,
+	authorizeBasic,
+	unauthorizedResponse,
+	gateRequest,
+	basicAuthorizationHeader,
+	clampRunBudgetMs,
+	stripRuntimePrefix
+} from "./protect.ts";
+export type { EnvMap } from "./protect.ts";
 export type { CatalogScreen, CatalogFacetFilter, SearchResult, ScreenCompatibility, CatalogSnapshot } from "./catalog/types.ts";

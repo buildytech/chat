@@ -6,6 +6,8 @@ import {
 	XAI_RUNTIME_NOTES,
 	XAI_SECRET_ENV,
 	hasPublicSecretLeak,
+	isSharedPublicSurface,
+	readBasicAuthConfig,
 	readXaiKeyState
 } from "@buildytech/builder-core";
 import { discoverAccountModels } from "./discover.ts";
@@ -53,11 +55,9 @@ async function sdkPresent(): Promise<{ openaiProvider: boolean; ai: boolean }> {
 export async function runtimeStatus(env: NodeJS.ProcessEnv = process.env): Promise<XaiRuntimeStatus> {
 	const leaks = hasPublicSecretLeak(env);
 	const key = readXaiKeyState(env);
-	const user = env.BUILDY_RUNTIME_BASIC_AUTH_USER?.trim() ?? "";
-	const pass = env.BUILDY_RUNTIME_BASIC_AUTH_PASSWORD?.trim() ?? "";
-	const basicRequired = Boolean(user && pass);
-	const bind = env.BUILDY_RUNTIME_BIND?.trim() || "127.0.0.1";
-	const loopbackOnly = bind === "127.0.0.1" || bind === "::1";
+	const { configured: basicRequired } = readBasicAuthConfig(env);
+	const shared = isSharedPublicSurface(env);
+	const loopbackOnly = !shared;
 	const sdk = await sdkPresent();
 
 	let listed = false;
@@ -78,7 +78,7 @@ export async function runtimeStatus(env: NodeJS.ProcessEnv = process.env): Promi
 	let code = "xai_api_key_missing";
 	if (leaks.length) code = "public_secret_forbidden";
 	else if (!key.present) code = "xai_api_key_missing";
-	else if (!loopbackOnly && !basicRequired) code = "basic_auth_required_before_shared_bind";
+	else if (shared && !basicRequired) code = "basic_auth_required_before_shared_bind";
 	else if (!listed) code = discoverCode;
 	else if (!candidate) code = "xai_no_chat_models";
 	else code = "xai_runtime_ready";

@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-Open the printed `http://127.0.0.1:5173` URL. ChatCore uses **localStorage**. The homepage starts Blank. The chat model selector lists five verified Grok text ids; image models are not chat choices. Optional protected xAI runtime: `XAI_API_KEY` plus `apps/xai-runtime`. Publish only with server-only key and fail-closed Basic Auth (`docs/deploy-xai.md`). No WordPress, no ModulY. See `docs/xai-grok.md`.
+Open the printed `http://127.0.0.1:5173` URL. ChatCore uses **localStorage**. The homepage starts Blank. The chat model selector lists five verified Grok text ids; image models are not chat choices. Optional protected xAI runtime: `XAI_API_KEY` plus `apps/xai-runtime`. Protected Vercel staging: root `vercel.json` + Routing Middleware Basic Auth on every path (`docs/deploy-xai.md`). Missing auth env denies; missing `XAI_API_KEY` is a safe 503. No WordPress, no ModulY. See `docs/xai-grok.md`.
 
 ```sh
 npm test
