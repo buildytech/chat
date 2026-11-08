@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -85,16 +86,21 @@ test("vercel.json is Other + static SPA output + hobby-safe Node function, no ma
 		framework: null;
 		outputDirectory: string;
 		buildCommand: string;
-		functions: Record<string, { maxDuration?: number }>;
+		functions: Record<string, { maxDuration?: number; runtime?: string }>;
 		rewrites: Array<{ source: string; destination: string }>;
 		proxy?: { matcher?: unknown };
 	};
 	assert.equal(cfg.framework, null);
 	assert.equal(cfg.outputDirectory, "apps/chat-web/build");
+	assert.match(cfg.buildCommand, /bundle-vercel-runtime/);
 	assert.match(cfg.buildCommand, /chat-web/);
 	assert.equal(cfg.functions["api/runtime/[...path].ts"], undefined);
+	assert.equal(cfg.functions["api/runtime/v1/status.js"], undefined);
+	assert.equal(cfg.functions["api/runtime/v1/run.js"], undefined);
 	assert.equal(cfg.functions["api/runtime/v1/status.ts"]?.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
 	assert.equal(cfg.functions["api/runtime/v1/run.ts"]?.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
+	assert.equal(cfg.functions["api/runtime/v1/status.ts"]?.runtime, "nodejs22.x");
+	assert.equal(cfg.functions["api/runtime/v1/run.ts"]?.runtime, "nodejs22.x");
 	assert.ok(
 		cfg.rewrites.some((row) => row.source === "/runtime/v1/status" && row.destination === "/api/runtime/v1/status")
 	);
@@ -202,8 +208,20 @@ test("XAI_API_KEY absent returns 503 and does not call the provider", async () =
 });
 
 test("root package.json is ESM so Vercel middleware.js is a module", () => {
-	const pkg = JSON.parse(readFileSync(join(REPO, "package.json"), "utf8")) as { type?: string };
+	const pkg = JSON.parse(readFileSync(join(REPO, "package.json"), "utf8")) as {
+		type?: string;
+		engines?: { node?: string };
+	};
 	assert.equal(pkg.type, "module");
+	assert.equal(pkg.engines?.node, "22.x");
+	const runtimePkg = JSON.parse(readFileSync(join(REPO, "apps/xai-runtime/package.json"), "utf8")) as {
+		engines?: { node?: string };
+	};
+	assert.equal(runtimePkg.engines?.node, "22.x");
+	const webPkg = JSON.parse(readFileSync(join(REPO, "apps/chat-web/package.json"), "utf8")) as {
+		engines?: { node?: string };
+	};
+	assert.equal(webPkg.engines?.node, "22.x");
 });
 
 test("middleware source has no runtime imports (Vercel Other does not bundle it)", () => {
@@ -216,18 +234,49 @@ test("middleware source has no runtime imports (Vercel Other does not bundle it)
 	assert.equal(existsSync(join(REPO, "middleware.ts")), false);
 });
 
-test("Vercel functions are concrete Other-framework files, not a Next.js catch-all", () => {
+test("Vercel functions are bundled JS artifacts, not workspace TypeScript exports", async () => {
 	assert.equal(existsSync(join(REPO, "api/runtime/[...path].ts")), false);
+	const source = readFileSync(join(REPO, "apps/xai-runtime/src/vercel-fetch.ts"), "utf8");
+	assert.match(source, /from "\.\/http\.ts"/);
+	assert.match(source, /export default \{/);
+	const bundled = spawnSync(process.execPath, [join(REPO, "scripts/bundle-vercel-runtime.mjs")], {
+		encoding: "utf8",
+		cwd: REPO
+	});
+	assert.equal(bundled.status, 0, bundled.stderr || bundled.stdout);
 	const statusFile = join(REPO, "api/runtime/v1/status.ts");
 	const runFile = join(REPO, "api/runtime/v1/run.ts");
-	assert.equal(existsSync(statusFile), true);
-	assert.equal(existsSync(runFile), true);
-	for (const file of [statusFile, runFile]) {
-		const src = readFileSync(file, "utf8");
-		assert.doesNotMatch(src, /from\s+['"][^'"]+\.ts['"]/);
-		assert.match(src, /@buildytech\/xai-runtime\/http/);
-		assert.match(src, /export default \{/);
-		assert.match(src, /async fetch\(request: Request\)/);
+	const statusSrc = readFileSync(statusFile, "utf8");
+	const runSrc = readFileSync(runFile, "utf8");
+	assert.equal(statusSrc, runSrc);
+	for (const name of ["status.ts", "run.ts"]) {
+		const file = join(REPO, "api/runtime/v1", name);
+		assert.equal(existsSync(file), true, name);
+		const js = readFileSync(file, "utf8");
+		assert.doesNotMatch(js, /from ["']@buildytech\//);
+		assert.doesNotMatch(js, /from ["']\.\/http\.ts["']/);
+		assert.doesNotMatch(js, /node_modules\/@buildytech\/xai-runtime\/src\/http\.ts/);
+		assert.match(js, /xai-grok/);
+		assert.match(js, /codegen-x/);
+		assert.match(js, /apps\/xai-runtime\/src\/http\.ts/);
+		assert.match(js, /catalog\/snapshot\.json/);
+		assert.equal([...js.matchAll(/^export /gm)].length, 2, "only footer export const config + export default");
+		assert.doesNotMatch(js, /\nexport (async )?function /);
+		const mod = (await import(`${pathToFileURL(file).href}?t=${Date.now()}`)) as {
+			default: { fetch: (request: Request) => Promise<Response> };
+			config: { maxDuration: number };
+		};
+		assert.equal(typeof mod.default.fetch, "function");
+		assert.equal(mod.config.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
+		const res = await withProcessEnv(withAuth(), () =>
+			mod.default.fetch(
+				new Request("https://example.vercel.app/runtime/v1/status", { headers: { Authorization: AUTH } })
+			)
+		);
+		assert.equal(res.status, 503);
+		const body = (await res.json()) as { code?: string; runtime?: string };
+		assert.equal(body.code, "xai_api_key_missing");
+		assert.equal(body.runtime, "xai-grok");
 	}
 });
 
@@ -282,9 +331,8 @@ test("middleware.js loads as ESM without .ts imports and 401s without secrets", 
 	const body = (await denied.json()) as { error?: { code?: string } };
 	assert.equal(body.error?.code, "basic_auth_required_before_shared_bind");
 
-	const apiSrc = readFileSync(join(REPO, "api/runtime/v1/status.ts"), "utf8");
-	assert.doesNotMatch(apiSrc, /from\s+['"][^'"]+\.ts['"]/);
-	assert.match(apiSrc, /@buildytech\/xai-runtime\/http/);
+	const apiSrc = readFileSync(join(REPO, "apps/xai-runtime/src/vercel-fetch.ts"), "utf8");
+	assert.match(apiSrc, /from "\.\/http\.ts"/);
 });
 
 test("valid Basic Auth passes middleware; wrong credentials stay 401", () => {

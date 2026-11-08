@@ -2,16 +2,16 @@
 	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"framework": null,
 	"installCommand": "npm ci",
-	"buildCommand": "npm run build --workspace=@buildytech/chat-web",
+	"buildCommand": "node scripts/bundle-vercel-runtime.mjs && npm run build --workspace=@buildytech/chat-web",
 	"outputDirectory": "apps/chat-web/build",
 	"functions": {
 		"api/runtime/v1/status.ts": {
-			"maxDuration": 60,
-			"includeFiles": "packages/builder-core/src/catalog/**"
+			"runtime": "nodejs22.x",
+			"maxDuration": 60
 		},
 		"api/runtime/v1/run.ts": {
-			"maxDuration": 60,
-			"includeFiles": "packages/builder-core/src/catalog/**"
+			"runtime": "nodejs22.x",
+			"maxDuration": 60
 		}
 	},
 	"rewrites": [
