@@ -1,6 +1,6 @@
 # Architecture
 
-SI Chat is a **CMS-agnostic** website builder. The same ordinary pages (`page` + unique slug) are edited by two UIs that share one **Page Store**. This repo's active target is the **browser Creator SPA**.
+SI Chat is a **CMS-agnostic** website builder. The same ordinary pages (`page` + unique slug) are edited by two UIs that share one **Page Store**. BuildY is **one product** on three hosts (WordPress builder page, Browser, Desktop Wails3) with one pinned CodeGen-X Stock catalog ([ADR-0007](../.project/adr/0007-one-buildy-three-hosts.md), [plan](plans/one-buildy-three-hosts.md)). This repo's **active, in-tree** target is the **browser Creator SPA**; finish that before Wails3. WordPress is not a runtime here (ADR-0006). Portable export/import is planned, not implemented.
 
 ## Dual builders
 
@@ -47,10 +47,10 @@ P0 pages are ordinary pages only: unique slug, no multilanding/UTM, no checkout/
 | `services/context-serve` | Go PagePort + Session HTTP (SQLite) | optional stub; opt-in from the SPA with `?live=1` |
 | `packages/page-contract` | Page DTO | types + runtime validator (`layout.version` 1) |
 | `packages/ports` | Catalog / Page / Publish / Preview | types |
-| `adapters/wails3` | Desktop webview | stub |
-| `adapters/telegram-mini` | Mini App host | stub |
+| `adapters/wails3` | Desktop webview | stub — sequenced **after** Browser; same core, not a catalog fork (ADR-0007) |
+| `adapters/telegram-mini` | Mini App host | stub (not a product host in ADR-0007) |
 
-WordPress plugin/embed is **not** in this repository. Historical dual-host notes: [ADR-0001](../.project/adr/0001-cms-agnostic-chat-builder.md) (superseded in part by [ADR-0006](../.project/adr/0006-browser-first-no-wordpress-runtime.md)).
+WordPress plugin/embed is **not** in this repository. PHP / Latte is an optional CodePort / future adapter target, not a Browser requirement. Go `services/context-serve` is optional (`?live=1`), not the default runtime. Historical dual-host notes: [ADR-0001](../.project/adr/0001-cms-agnostic-chat-builder.md) (WP embed host superseded by [ADR-0006](../.project/adr/0006-browser-first-no-wordpress-runtime.md); three-host product: [ADR-0007](../.project/adr/0007-one-buildy-three-hosts.md)).
 
 ## Chat-web UI
 

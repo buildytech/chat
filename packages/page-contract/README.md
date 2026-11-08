@@ -30,6 +30,6 @@ Go `services/context-serve` validates the **same JSON** (see `fixtures/conforman
 
 **Known follow-up (not M2):** the v1 plain-text rule rejects `<>{}` in every string. That is stricter than some legitimate copy (comparisons, examples). Broaden only in an explicit contract review — persistence must not silently loosen it.
 
-Out of this contract: multilanding, UTM, checkout, Codex equivalence, Gateway, publish.
+Out of this contract: multilanding, UTM, checkout, Codex equivalence, Gateway, publish, WordPress import, portable multi-host export envelope ([ADR-0007](../../.project/adr/0007-one-buildy-three-hosts.md)). v1 is the SPA layout document. Do not treat it as already compatible with a Latte/PHP importer.
 
 See [docs/architecture.md](../../docs/architecture.md).

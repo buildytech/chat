@@ -8,8 +8,8 @@ SI Chat Website Builder — turnkey **landing page + embedded chat**, собра
 
 **P0:** runnable SPA (`apps/chat-web`) с каркасом CreatorShell, контракт портов, mock ChatCore. Нет checkout/payment, нет fabricated promo/stock, нет multilanding/UTM. Нет live `@cursor/sdk` / Docker / CMS publish в этом этапе.
 
-**Targets:** browser SPA (Shell+Column+Workspace) is the active product in this repo. Wails3 and Telegram Mini App remain stubs. WordPress embed is not a target here (ADR-0006).
+**Targets:** one BuildY product on three hosts (WordPress builder page, Browser, Desktop Wails3) sharing the pinned CodeGen-X Stock catalog ([ADR-0007](adr/0007-one-buildy-three-hosts.md)). This repo ships the **Browser first** (ADR-0006). Wails3 is a later copy of the same core, not a catalog fork (stub today). WordPress remains a separate runtime; portable data import is planned, not implemented here. Telegram Mini App stays an unrelated stub.
 
 Figma — только layout reference. Copyright **BuildYtech**, Apache-2.0.
 
-См. [docs/architecture.md](../docs/architecture.md), [adr/0001](adr/0001-cms-agnostic-chat-builder.md), [adr/0003](adr/0003-creator-surfaces-preview-code.md), [adr/0004](adr/0004-agent-runtime-adapters.md), [adr/0006](adr/0006-browser-first-no-wordpress-runtime.md).
+See [docs/architecture.md](../docs/architecture.md), [docs/plans/one-buildy-three-hosts.md](../docs/plans/one-buildy-three-hosts.md), [adr/0001](adr/0001-cms-agnostic-chat-builder.md), [adr/0003](adr/0003-creator-surfaces-preview-code.md), [adr/0004](adr/0004-agent-runtime-adapters.md), [adr/0006](adr/0006-browser-first-no-wordpress-runtime.md), [adr/0007](adr/0007-one-buildy-three-hosts.md).

@@ -15,7 +15,7 @@ npm run check
 npm run build
 ```
 
-Static SPA with `200.html` fallback. CI: `.github/workflows/ci.yml`. Operator notes: [.project/](../.project/README.md). Browser handoff: [browser-handoff.md](browser-handoff.md).
+Static SPA with `200.html` fallback. CI: `.github/workflows/ci.yml`. Operator notes: [.project/](../.project/README.md). Browser handoff: [browser-handoff.md](browser-handoff.md). Three-host plan: [plans/one-buildy-three-hosts.md](plans/one-buildy-three-hosts.md).
 
 ## Optional Session HTTP (not default)
 

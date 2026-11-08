@@ -11,6 +11,7 @@ Owner product spec (informative; implement later):
 - Commit as `Grok Bot <grokbot@users.noreply.github.com>` via `git -c`.
 - No force / reset / amend of published history.
 - Do not edit wp-fasty / wpmodules / local-wp. WP Builder core + Agent ModulY live there independently.
+- Three-host product (shared Stock, Browser first, Wails3 later): [ADR-0007](../.project/adr/0007-one-buildy-three-hosts.md), [plan](plans/one-buildy-three-hosts.md). Do not start desktop or WP import in this cleanup.
 
 ## Shared provider / contract
 

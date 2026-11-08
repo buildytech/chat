@@ -52,3 +52,4 @@ P0 pages: ordinary pages only. Нет checkout/payment, fabricated discounts/sto
 
 - [ADR-0003](0003-creator-surfaces-preview-code.md) — Creator surfaces (ChatCore / ChatColumn / CreatorShell), Workspace = BlockTree текущей страницы, PreviewPort (Svelte) + CodePort (Latte), paint vs structure, host composition.
 - [ADR-0004](0004-agent-runtime-adapters.md) — Agent Gateway as sole chat channel, AdapterRegistry (`context-local` default, opt-in `cursor-sdk`), capabilities-only UI.
+- [ADR-0007](0007-one-buildy-three-hosts.md) — one product, three hosts, shared Stock; Browser first; WP import and Wails3 planned, not implemented.
