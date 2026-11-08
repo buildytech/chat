@@ -234,7 +234,7 @@ const codeLayout = ViewPlugin.fromClass(
 
 export type LatteCodeOptions = {
 	editable?: boolean;
-	language?: "latte" | "json";
+	language?: "latte" | "json" | "svelte";
 };
 
 /** Full extension set: CodeMirror with Latte StreamLanguage (or JSON) and CSS syntax classes. */

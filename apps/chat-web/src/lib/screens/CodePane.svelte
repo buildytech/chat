@@ -15,8 +15,8 @@
 		blocksOf,
 		getCurrentPage, getPageRevision,
 		getSelectedBlockId,
-		latteFromPage,
 		packFilesFromPage,
+		svelteFromPage,
 		walkBlocks
 	} from "../page-store";
 	import CodeEditor from "../editor/CodeEditor.svelte";
@@ -36,15 +36,15 @@
 	const tree = $derived.by((): CodeTreeEntry[] => {
 		if (!page) return [];
 		const entries: CodeTreeEntry[] = [
-			{ id: "page.latte", label: "page.latte", kind: "file", path: "page.latte" },
+			{ id: "page.svelte", label: "page.svelte", kind: "file", path: "page.svelte" },
 			{ id: "blocks", label: "blocks", kind: "folder", path: "blocks" }
 		];
 		for (const block of walkBlocks(blocksOf(page))) {
 			entries.push({
-				id: `blocks/${block.id}.latte`,
-				label: `${block.id}.latte`,
+				id: `blocks/${block.id}.svelte`,
+				label: `${block.id}.svelte`,
 				kind: "file",
-				path: `blocks/${block.id}.latte`
+				path: `blocks/${block.id}.svelte`
 			});
 		}
 		entries.push({
@@ -57,25 +57,28 @@
 	});
 
 	const visibleTree = $derived(
-		tree.filter((entry) => entry.kind === "folder" || entry.path === "page.latte" || entry.path === "manifest.json" || (entry.path.startsWith("blocks/") && !!openFolders["blocks"]))
+		tree.filter((entry) => entry.kind === "folder" || entry.path === "page.svelte" || entry.path === "manifest.json" || (entry.path.startsWith("blocks/") && !!openFolders["blocks"]))
 	);
 
 	const treeCollapsed = $derived(creatorLayout.treeCollapsed);
 
 	let pane = $state<"files" | "search" | "apps">("files");
-	let tabs = $state<CodeTab[]>([{ label: "page.latte", path: "page.latte", active: true }]);
-	let selectedPath = $state("page.latte");
+	let tabs = $state<CodeTab[]>([{ label: "page.svelte", path: "page.svelte", active: true }]);
+	let selectedPath = $state("page.svelte");
 	let stage = $state<"files" | "editor">("editor");
 
 	const activeTab = $derived(tabs.find((tab) => tab.active) ?? tabs[0]);
-	const crumbs = $derived((activeTab?.path ?? "page.latte").split("/"));
+	const crumbs = $derived((activeTab?.path ?? "page.svelte").split("/"));
 	const source = $derived.by(() => {
 		if (!page) return t("workspace.empty");
 		return (
-			pack.find((file) => file.path === (activeTab?.path ?? "page.latte"))?.content ??
-			latteFromPage(page, selectedId)
+			pack.find((file) => file.path === (activeTab?.path ?? "page.svelte"))?.content ??
+			svelteFromPage(page, selectedId)
 		);
 	});
+	const editorLanguage = $derived(
+		(activeTab?.path ?? "").endsWith(".json") ? "json" : "svelte"
+	);
 
 	function openFile(entry: CodeTreeEntry) {
 		selectedPath = entry.path;
@@ -98,7 +101,7 @@
 		} else {
 			tabs = next;
 		}
-		selectedPath = (tabs.find((tab) => tab.active) ?? tabs[0])?.path ?? "page.latte";
+		selectedPath = (tabs.find((tab) => tab.active) ?? tabs[0])?.path ?? "page.svelte";
 	}
 
 	function activateTab(index: number) {
@@ -196,7 +199,7 @@
 			<Text tag="p" class="text-xs text-muted-foreground">{t("code.runtime")}</Text>
 			<CodeEditor
 				doc={source}
-				language={(activeTab?.path ?? "").endsWith(".json") ? "json" : "latte"}
+				language={editorLanguage}
 				editable={false}
 			/>
 		</Stack>

@@ -24,7 +24,7 @@ function parseToolArtifact(content: string): SavedArtifact | null {
 			pageId: raw.pageId,
 			slug: raw.slug,
 			revision: raw.revision,
-			files: ["page.latte"]
+			files: ["page.svelte"]
 		};
 	} catch {
 		return null;

@@ -24,6 +24,8 @@ export { getBlockDetails, screenCanonicalJson } from "./catalog/details.ts";
 export { proposeLayout, applyProposal, rejectFabricatedLayout, isClearPageCommand } from "./assemble.ts";
 export type { ProposalContext, LayoutProposal, LayoutProposalError } from "./assemble.ts";
 export { executeTool, runConstructorTools, isAllowedTool } from "./tools.ts";
+export type { ToolHost } from "./tools.ts";
+export { inferScenarioId, isScenarioId, displayTitleFromBrief } from "./brief.ts";
 export {
 	ENABLED_SKILLS,
 	ALLOWED_TOOLS,

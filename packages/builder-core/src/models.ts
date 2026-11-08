@@ -1,4 +1,6 @@
+import { parsePage, type Page } from "@buildytech/page-contract";
 import { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } from "./xai-env.ts";
+import { inferScenarioId } from "./brief.ts";
 
 /**
  * Readable labels for the five parent-verified TEXT models.
@@ -148,6 +150,7 @@ export type ChatRunRequest = {
 	screenId: string | null;
 	expectedRevision: number;
 	pageId?: string;
+	currentPage?: Page;
 };
 
 /**
@@ -162,6 +165,7 @@ export function mapChatRunRequest(
 		screenId?: unknown;
 		expectedRevision?: unknown;
 		pageId?: unknown;
+		currentPage?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -171,21 +175,31 @@ export function mapChatRunRequest(
 		allowUnlistedTrial: opts.allowUnlistedTrial
 	});
 	if (!resolved.ok) return resolved;
+	const brief = String(body.brief ?? "");
 	const scenarioId =
 		body.scenarioId === "dashboard" || body.scenarioId === "landing" || body.scenarioId === "website"
 			? body.scenarioId
-			: null;
+			: inferScenarioId(brief);
+	let currentPage: Page | undefined;
+	if (body.currentPage != null) {
+		try {
+			currentPage = parsePage(body.currentPage);
+		} catch {
+			currentPage = undefined;
+		}
+	}
 	return {
 		ok: true,
 		request: {
 			modelId: resolved.modelId,
 			label: resolved.label,
 			live: resolved.live,
-			brief: String(body.brief ?? ""),
+			brief,
 			scenarioId,
 			screenId: typeof body.screenId === "string" ? body.screenId : null,
 			expectedRevision: typeof body.expectedRevision === "number" ? body.expectedRevision : 0,
-			pageId: typeof body.pageId === "string" ? body.pageId : undefined
+			pageId: typeof body.pageId === "string" ? body.pageId : currentPage?.id,
+			currentPage
 		}
 	};
 }

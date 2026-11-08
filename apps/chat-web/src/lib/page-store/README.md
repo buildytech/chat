@@ -1,7 +1,5 @@
-# Page Store (chat-web mock)
+# Page Store (chat-web)
 
-One Page DTO (`fixture.ts` → `mockLandingPage`) feeds Workspace BlockTree, PreviewPort (Svelte stub) and CodePort (Latte stub). ADR-0003.
+One Page DTO feeds Workspace Preview (Svelte UI8Kit blocks) and Code (Svelte UI8Kit source). Applied page and unapplied proposal are stored separately per chat in `buildytech-creator-pages-v1`. Chat messages stay in `buildytech-chat-sessions`. Hydrate / session switch restore the bound page. Discard does not mutate the saved applied page.
 
-Selection (`selectedBlockId`) lives next to the page in `mock.svelte.ts`. Hydrate / `setCurrentPage` / `selectBlock` run outside `$derived`. Preview and Code read the same tree and the same selected id.
-
-Live CatalogPort / PagePort adapters are not wired. The Latte string is generated from the DTO — not a compiler, not a second hand-edited source. Domain status `published` is a Page DTO field, not a CMS product.
+Code is generated from the DTO (`svelteFromPage`) — not a compiler, not Latte, not a second hand-edited source. Domain status `published` is a Page DTO field, not a CMS product.

@@ -31,3 +31,11 @@ test("Preview and Code consume the same page and saved revision store", () => {
 		assert.match(s, /data-page-revision/);
 	}
 });
+
+test("Code pane emits Svelte UI8Kit source, not Latte", () => {
+	const s = source("CodePane");
+	assert.match(s, /page\.svelte/);
+	assert.match(s, /svelteFromPage/);
+	assert.doesNotMatch(s, /page\.latte/);
+	assert.doesNotMatch(s, /latteFromPage/);
+});

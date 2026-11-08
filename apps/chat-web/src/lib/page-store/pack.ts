@@ -1,7 +1,5 @@
-import { blocksOf, parsePage, type CreatorPage } from "./page";
-import { latteForBlock, latteFromPage } from "./latte";
-import { walkBlocks } from "./tree";
-import { COIMPORT_PACK_FILES } from "./codeport-runtime";
+import { parsePage, type CreatorPage } from "./page";
+import { svelteFromPage, sveltePackFiles } from "./svelte-code";
 
 export type PackFile = {
 	path: string;
@@ -170,38 +168,26 @@ function sha256Hex(data: Uint8Array): string {
 	return [h0, h1, h2, h3, h4, h5, h6, h7].map((x) => x.toString(16).padStart(8, "0")).join("");
 }
 
-function codeportRuntimeFiles(): PackFile[] {
-	return COIMPORT_PACK_FILES.map((f) => ({ path: f.path, content: f.content }));
-}
-
 export function packFilesFromPage(
 	page: CreatorPage,
 	selectedId: string | null = null
 ): PackFile[] {
 	const valid = parsePage(page);
-	const pageLatte = latteFromPage(valid, selectedId);
-	const files: PackFile[] = [{ path: "page.latte", content: pageLatte }];
-	for (const block of walkBlocks(blocksOf(valid))) {
-		files.push({
-			path: `blocks/${block.id}.latte`,
-			content: latteForBlock(block, selectedId)
-		});
-	}
-	const runtime = codeportRuntimeFiles();
-	files.push(...runtime);
+	const svelteFiles = sveltePackFiles(valid, selectedId);
+	const pageSvelte = svelteFromPage(valid, selectedId);
+	const files: PackFile[] = [...svelteFiles];
 	files.push({
 		path: "page.json",
 		content: `${JSON.stringify(valid, null, 2)}\n`
 	});
 	const generator = {
 		name: "@buildytech/chat-web/codeport",
-		emitter: "latteFromPage",
+		emitter: "svelteFromPage",
 		packApi: "packFilesFromPage",
 		packageVersion: "0.0.0",
-		pageLatteSha256: sha256Text(pageLatte),
-		runtimeFiles: runtime.map((f) => ({ path: f.path, sha256: sha256Text(f.content) })),
+		pageSvelteSha256: sha256Text(pageSvelte),
 		contract:
-			"layout Main/page.latte; $page object with title/id/slug/locale/status/seo and blocks[id] arrays"
+			"Svelte 5 UI8Kit page.svelte composing blocks/*.svelte; imports from $lib/compose and $ui"
 	};
 	files.push({
 		path: "GENERATOR.json",
@@ -219,7 +205,7 @@ export function packFilesFromPage(
 		generator: {
 			name: generator.name,
 			emitter: generator.emitter,
-			pageLatteSha256: generator.pageLatteSha256
+			pageSvelteSha256: generator.pageSvelteSha256
 		}
 	};
 	files.push({

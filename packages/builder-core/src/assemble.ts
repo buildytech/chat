@@ -7,6 +7,7 @@ import {
 	type PageBlockKind
 } from "@buildytech/page-contract";
 import { SCENARIO_PROMPTS, type ScenarioId } from "./copy.ts";
+import { displayTitleFromBrief, inferScenarioId } from "./brief.ts";
 import { catalogProvenance } from "./catalog/snapshot.ts";
 import { compatibilityFor, rendererKindForLabel } from "./catalog/compatibility.ts";
 import { getBlockDetails } from "./catalog/details.ts";
@@ -22,6 +23,8 @@ export type ProposalContext = {
 	expectedRevision: number;
 	pageId?: string;
 	now?: string;
+	/** Trusted host page for follow-up edits. Not accepted from tool JSON layouts. */
+	currentPage?: Page;
 };
 
 export type LayoutProposal = {
@@ -193,7 +196,7 @@ function copyFor(
 	if (kind === "hero") {
 		return {
 			eyebrow: prompt?.label ?? "Blank page",
-			headline: brief.slice(0, 80) || prompt?.label || "Describe the page",
+			headline: displayTitleFromBrief(brief, prompt?.label ?? "Describe the page"),
 			lede: "I will use only catalog blocks this renderer can paint. I will ask before inventing business facts.",
 			action: scenario === "dashboard" ? "Review metrics" : "Continue"
 		};
@@ -283,6 +286,39 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 
 const DEFAULT_SEARCH = 12;
 
+function resolvedScenario(ctx: ProposalContext, brief: string): ScenarioId | null {
+	return ctx.scenarioId ?? inferScenarioId(brief);
+}
+
+function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal | LayoutProposalError {
+	const current = ctx.currentPage;
+	if (!current) {
+		return { ok: false, code: "missing_page", message: "No saved page is attached to this chat." };
+	}
+	const title = displayTitleFromBrief(brief, current.title);
+	const stamp = iso(ctx.now);
+	const blocks = current.layout.blocks.map((node) => {
+		if (node.kind !== "hero") return node;
+		return {
+			...node,
+			copy: {
+				...node.copy,
+				headline: title,
+				lede: node.copy?.lede
+			}
+		};
+	});
+	return finishProposal(
+		{ ...ctx, pageId: current.id, scenarioId: resolvedScenario(ctx, brief) },
+		brief,
+		null,
+		blocks,
+		["Edited the saved page from this chat. Apply to keep the change."],
+		[],
+		{ title, id: current.id, createdAt: current.createdAt, stamp, status: current.status, slug: current.slug }
+	);
+}
+
 export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalError {
 	INSPECTED.clear();
 	const brief = ctx.brief.trim();
@@ -295,7 +331,15 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		return finishProposal(ctx, brief, null, [], [], []);
 	}
 
-	const resolved = resolveCatalogScreen(ctx);
+	const scenarioId = resolvedScenario(ctx, brief);
+	const working: ProposalContext = { ...ctx, scenarioId };
+
+	const looksNewPage = /\bcreate\b/i.test(brief) && Boolean(scenarioId);
+	if (ctx.currentPage && ctx.expectedRevision > 0 && !ctx.screenId && !looksNewPage) {
+		return editExistingPage(working, brief);
+	}
+
+	const resolved = resolveCatalogScreen(working);
 	if (resolved !== null && "ok" in resolved) return resolved;
 	const screen = resolved;
 	if (!screen) {
@@ -303,7 +347,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 			ok: false,
 			code: "needs_clarification",
 			message:
-				"Attach a Dashboard, Landing, or Website scenario, pick a Stock screen, or send an explicit clear-page command. Unsolicited empty or invented layouts are rejected."
+				"Say that you want a landing, dashboard, or website, attach that scenario, or pick a Stock screen. Unsolicited empty or invented layouts are rejected."
 		};
 	}
 
@@ -323,7 +367,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		if (kind === "nav-link" || kind === "feature" || kind === "dish") continue;
 		if (kind === "nav") {
 			blocks.push(
-				block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", ctx.scenarioId, screen, brief), navLinks(ctx.scenarioId))
+				block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", working.scenarioId, screen, brief), navLinks(working.scenarioId))
 			);
 			continue;
 		}
@@ -335,7 +379,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 					titleFor("features", screen),
 					summaryFor("features"),
 					undefined,
-					featuresFor(ctx.scenarioId, screen)
+					featuresFor(working.scenarioId, screen)
 				)
 			);
 			continue;
@@ -355,7 +399,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 				kind,
 				titleFor(kind, screen),
 				summaryFor(kind),
-				copyFor(kind, ctx.scenarioId, screen, brief)
+				copyFor(kind, working.scenarioId, screen, brief)
 			)
 		);
 	}
@@ -369,8 +413,17 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		};
 	}
 
-	return finishProposal(ctx, brief, screen, blocks, warnings, missing);
+	return finishProposal(working, brief, screen, blocks, warnings, missing);
 }
+
+type FinishIdentity = {
+	title?: string;
+	id?: string;
+	createdAt?: string;
+	stamp?: string;
+	status?: Page["status"];
+	slug?: string;
+};
 
 function finishProposal(
 	ctx: ProposalContext,
@@ -378,16 +431,23 @@ function finishProposal(
 	screen: CatalogScreen | null,
 	blocks: PageBlock[],
 	warnings: string[],
-	missing: string[]
+	missing: string[],
+	identity?: FinishIdentity
 ): LayoutProposal | LayoutProposalError {
-	const title = (screen ? `${screen.title} ${screen.subtitle}`.trim() : brief).slice(0, 160) || "Draft page";
-	const id = ctx.pageId ?? "page-draft";
-	const stamp = iso(ctx.now);
+	const assembledTitle = (screen ? `${screen.title} ${screen.subtitle}`.trim() : displayTitleFromBrief(brief)).slice(
+		0,
+		160
+	);
+	const title = (identity?.title ?? assembledTitle) || "Draft page";
+	const id = identity?.id ?? ctx.pageId ?? "page-draft";
+	const stamp = identity?.stamp ?? iso(ctx.now);
+	const status = identity?.status ?? "draft";
+	const slug = identity?.slug ?? slugify(title);
 	try {
-		const page = parseDraftPage({
+		const raw = {
 			id,
-			slug: slugify(title),
-			status: "draft",
+			slug,
+			status,
 			title,
 			layout: { version: PAGE_LAYOUT_VERSION, blocks },
 			seo: {
@@ -395,9 +455,10 @@ function finishProposal(
 				description: "Local draft. Not published. Catalog blocks only."
 			},
 			locale: "en",
-			createdAt: stamp,
+			createdAt: identity?.createdAt ?? stamp,
 			updatedAt: stamp
-		});
+		};
+		const page = status === "draft" ? parseDraftPage(raw) : parsePage(raw);
 		return {
 			ok: true,
 			status: "proposal",

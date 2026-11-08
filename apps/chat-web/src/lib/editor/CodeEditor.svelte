@@ -5,7 +5,7 @@
 		/** 1-based line that holds the cursor initially */
 		activeLine?: number;
 		editable?: boolean;
-		language?: "latte" | "json";
+		language?: "latte" | "json" | "svelte";
 		class?: string;
 		[key: string]: unknown;
 	};

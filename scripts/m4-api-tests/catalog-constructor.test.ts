@@ -14,6 +14,8 @@ import {
 	parseCatalogSnapshot,
 	proposeLayout,
 	rejectFabricatedLayout,
+	displayTitleFromBrief,
+	inferScenarioId,
 	runConstructorTools,
 	searchCatalog
 } from "../../packages/builder-core/src/index.ts";
@@ -258,4 +260,36 @@ test("constructor integration uses real Stock screens for all three ideas", () =
 		assert.equal(run.ok, true, `${scenarioId} tools`);
 		if (run.ok) assert.ok(run.page.layout.blocks.length > 0, scenarioId);
 	}
+});
+
+test("natural language landing request does not require a scenario badge", () => {
+	assert.equal(inferScenarioId("Create a New Year landing page for Barbecue at Home, a grill food delivery restaurant."), "landing");
+	assert.equal(displayTitleFromBrief("Create a New Year landing page for Barbecue at Home, a grill food delivery restaurant."), "Barbecue at Home");
+	const run = runConstructorTools({
+		brief:
+			"Create a New Year landing page for Barbecue at Home, a grill food delivery restaurant. Include a hero, menu and contact section using existing Stock blocks. Use no invented reviews or discounts.",
+		scenarioId: null,
+		screenId: null,
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(run.ok, true);
+	if (!run.ok) return;
+	parsePage(run.page);
+	assert.ok(run.page.layout.blocks.some((block) => block.kind === "hero"));
+	const hero = run.page.layout.blocks.find((block) => block.kind === "hero");
+	assert.equal(hero?.copy?.headline, "Barbecue at Home");
+	assert.doesNotMatch(JSON.stringify(run.page), /qalanding1109/i);
+});
+
+test("ambiguous briefs still do not invent a layout", () => {
+	const run = proposeLayout({
+		brief: "Make something nice please",
+		scenarioId: null,
+		screenId: null,
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(run.ok, false);
+	if (!run.ok) assert.equal(run.code, "needs_clarification");
 });
