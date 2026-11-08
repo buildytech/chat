@@ -1,7 +1,8 @@
-import { paginateScreens } from "./catalog/search.ts";
+import { searchCatalog } from "./catalog/search.ts";
 import { getBlockDetails } from "./catalog/details.ts";
 import { getSkill, ALLOWED_TOOLS, type AllowedTool } from "./policy.ts";
 import { proposeLayout, type LayoutProposal, type LayoutProposalError, type ProposalContext } from "./assemble.ts";
+import type { SearchResult } from "./catalog/types.ts";
 
 export type ToolName = AllowedTool;
 
@@ -13,24 +14,31 @@ export function isAllowedTool(name: string): name is AllowedTool {
 
 export function executeTool(
 	call: ToolCall
-): { ok: true; name: AllowedTool; result: unknown } | { ok: false; code: string; message: string } {
+): { ok: true; name: AllowedTool; result: unknown } | { ok: false; code: string; message: string; result?: unknown } {
 	if (!isAllowedTool(call.name)) {
-		return { ok: false, code: "unknown_tool", message: `Tool "${call.name}" is not on the allowlist.` };
+		return {
+			ok: false,
+			code: "unknown_tool",
+			message: `Tool "${call.name}" is not on the allowlist. Production tools are search_catalog, get_block_details, propose_layout, get_skill.`
+		};
 	}
 	const args = call.arguments ?? {};
 	if (call.name === "search_catalog") {
-		try {
-			const result = paginateScreens({
-				type: "screen",
-				section: typeof args.section === "string" ? args.section : undefined,
-				job: typeof args.job === "string" ? args.job : undefined,
-				page: typeof args.page === "number" ? args.page : 1
-			});
-			return { ok: true, name: call.name, result };
-		} catch (err) {
-			const code = err && typeof err === "object" && "code" in err ? String((err as { code: unknown }).code) : "search_failed";
-			return { ok: false, code, message: err instanceof Error ? err.message : "search failed" };
+		const result = searchCatalog({
+			type: "screen",
+			section: typeof args.section === "string" ? args.section : undefined,
+			job: typeof args.job === "string" ? args.job : undefined,
+			page: typeof args.page === "number" ? args.page : 1
+		});
+		if (result.code === "catalog_facet_unknown") {
+			return {
+				ok: false,
+				code: "catalog_facet_unknown",
+				message: result.clarification ?? "Unknown catalog facet. Use the pinned Stock vocabulary.",
+				result
+			};
 		}
+		return { ok: true, name: call.name, result };
 	}
 	if (call.name === "get_block_details") {
 		const details = getBlockDetails({
@@ -84,18 +92,20 @@ export function runConstructorTools(ctx: ProposalContext): LayoutProposal | Layo
 					: {}
 	});
 	if (!search.ok) return { ok: false, code: search.code, message: search.message };
+	const found = search.result as SearchResult;
+	if (found.noFit) {
+		return {
+			ok: false,
+			code: "catalog_no_fit",
+			message: found.clarification ?? "No Stock screens match. Re-search with a bounded facet from the vocabulary."
+		};
+	}
 
 	if (ctx.screenId) {
-		const screenSearch = search.result as { items: Array<{ screenId: string; labels: { blocks: string[] } }> };
-		const hit = screenSearch.items.find((item) => item.screenId === ctx.screenId);
+		const hit = found.items.find((item) => item.screenId === ctx.screenId);
 		const labels = hit?.labels.blocks ?? [];
 		for (const id of labels.slice(0, 12)) {
 			executeTool({ name: "get_block_details", arguments: { id } });
-		}
-	} else {
-		for (const id of ["nav", "hero", "features", "cta", "footer"]) {
-			const details = executeTool({ name: "get_block_details", arguments: { id } });
-			if (!details.ok) return { ok: false, code: details.code, message: details.message };
 		}
 	}
 

@@ -8,10 +8,20 @@ export {
 } from "./copy.ts";
 export type { ScenarioId, PlaceholderMode } from "./copy.ts";
 export { catalogSnapshot, catalogProvenance } from "./catalog/snapshot.ts";
-export { paginateScreens, filterScreens, getScreenById, DEFAULT_PAGE_SIZE, assertFacetValue } from "./catalog/search.ts";
+export {
+	paginateScreens,
+	searchCatalog,
+	filterScreens,
+	getScreenById,
+	DEFAULT_PAGE_SIZE,
+	assertFacetValue,
+	facetVocabulary,
+	misplacedFacet,
+	catalogToolParameterSchema
+} from "./catalog/search.ts";
 export { compatibilityFor, getBlockIndex, rendererKindForLabel, sendBlockedByScreen } from "./catalog/compatibility.ts";
 export { getBlockDetails, screenCanonicalJson } from "./catalog/details.ts";
-export { proposeLayout, applyProposal, rejectFabricatedLayout } from "./assemble.ts";
+export { proposeLayout, applyProposal, rejectFabricatedLayout, isClearPageCommand } from "./assemble.ts";
 export type { ProposalContext, LayoutProposal, LayoutProposalError } from "./assemble.ts";
 export { executeTool, runConstructorTools, isAllowedTool } from "./tools.ts";
 export {

@@ -1,13 +1,21 @@
-# Local compose (CR + SDK)
+# Local compose
 
-Bring up the **stub** context-serve binary and a Node container for the orchestrator.
+Stub context-serve plus the protected xAI runtime. Images are not a live Grok product.
 
 ```sh
 docker compose -f deploy/compose/docker-compose.yml up --build
 ```
 
-Neither service requires live Agent SDK keys. chat-web runs separately:
+chat-web still runs separately:
 
 ```sh
 cd apps/chat-web && npm install && npm run dev
 ```
+
+## Fail-closed publish rules
+
+- `XAI_API_KEY` belongs only on the runtime container/process. Never `VITE_` / `PUBLIC_`.
+- Non-loopback runtime bind requires `BUILDY_RUNTIME_BASIC_AUTH_USER` and `BUILDY_RUNTIME_BASIC_AUTH_PASSWORD` or the process exits.
+- Browser BYOK in chat-web is UI-only and does not receive the server key.
+
+See `docs/deploy-xai.md`.

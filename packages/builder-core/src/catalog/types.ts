@@ -72,4 +72,10 @@ export type SearchResult = {
 	total: number;
 	pageCount: number;
 	items: Array<CatalogScreen & { compatibility: ScreenCompatibility }>;
+	vocabulary: { type: string[]; section: string[]; job: string[] };
+	noFit: boolean;
+	code?: "catalog_facet_unknown";
+	clarification?: string;
+	suggested?: Array<{ section?: string; job?: string; reason: string }>;
+	misplaced?: { used: "section" | "job"; value: string; tryFacet: "section" | "job" };
 };

@@ -28,6 +28,12 @@ Dollar cost is shown only when official current rates for that exact model id ar
 
 Stored with each turn (non-secret): model id, `POLICY_VERSION`, `MODEL_CATALOG_VERSION`, catalog digest. No raw key, request, or error logging.
 
+## Protocol vs assembly
+
+Parent 2026-11-08: Chat Completions tool-protocol test on `grok-4.20-0309-non-reasoning` returned 2 steps, HTTP 200, tool calls, no retries, usage 393+434=827. That used **synthetic TEST blocks** and artificial `search_blocks(section)` / `propose_page` tools. The model searched `section=hero` while the fixture used `job=hero`, then forced an empty-blocks proposal.
+
+That proves **protocol support**, not page assembly. It is not a production Stock bug. This app’s tools are `search_catalog`, `get_block_details`, `propose_layout`, `get_skill` against the pinned codegen-x snapshot (80 screens, `sha256:a9d256e6935c6a8d579f86d634eebb46dfe36cacd02d9e4e2a0fdce4ff41664a`). Facets are bounded enums. `hero` is a **job**, not a section. No-fit returns clarification and a bounded re-search. Empty unsolicited proposals are rejected unless the author explicitly asks to clear the page.
+
 ## Env
 
 - `XAI_API_KEY` — server-only. Never `VITE_` / `PUBLIC_`.

@@ -10,7 +10,8 @@ import { SCENARIO_PROMPTS, type ScenarioId } from "./copy.ts";
 import { catalogProvenance } from "./catalog/snapshot.ts";
 import { compatibilityFor, rendererKindForLabel } from "./catalog/compatibility.ts";
 import { getBlockDetails } from "./catalog/details.ts";
-import { getScreenById } from "./catalog/search.ts";
+import { getScreenById, searchCatalog } from "./catalog/search.ts";
+import { OWNER_FILTERS } from "./copy.ts";
 import type { CatalogScreen } from "./catalog/types.ts";
 import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } from "./policy.ts";
 
@@ -98,8 +99,7 @@ function block(
 	return node;
 }
 
-function uniqueKindsFromScreen(screen: CatalogScreen | null): PageBlockKind[] {
-	if (!screen) return ["nav", "hero", "features", "cta", "footer"];
+function uniqueKindsFromScreen(screen: CatalogScreen): PageBlockKind[] {
 	const seen = new Set<PageBlockKind>();
 	const ordered: PageBlockKind[] = [];
 	for (const label of screen.labels.blocks) {
@@ -109,17 +109,14 @@ function uniqueKindsFromScreen(screen: CatalogScreen | null): PageBlockKind[] {
 		seen.add(kind);
 		ordered.push(kind);
 	}
-	if (!seen.has("nav")) {
-		inspectKind("nav");
-		ordered.unshift("nav");
-	}
-	if (ordered.length === 1 && ordered[0] === "nav") {
-		for (const kind of ["hero", "features", "cta", "footer"] as const) {
-			inspectKind(kind);
-			ordered.push(kind);
-		}
-	}
 	return ordered;
+}
+
+export function isClearPageCommand(brief: string): boolean {
+	const text = brief.trim().toLowerCase();
+	return /^(?:please\s+)?(?:create\s+(?:an?\s+)?)?(?:clear|empty|blank)(?:\s+the)?\s+(?:page|layout|canvas)\.?$/.test(
+		text
+	);
 }
 
 function navLinks(scenario: ScenarioId | null): PageBlock[] {
@@ -206,7 +203,7 @@ function copyFor(
 		return {
 			lede: "This is a local proposal. Apply it to replace the blank page. Nothing is published.",
 			action: "Apply when ready",
-			note: screenTitle ? `Screen reference: ${screen.screenId}` : "No screen attached."
+			note: screenTitle ? `Stock screen ${screen.screenId}` : "No screen attached."
 		};
 	}
 	if (kind === "footer") {
@@ -246,16 +243,9 @@ function summaryFor(kind: PageBlockKind): string {
 	return "Compatible catalog section.";
 }
 
-export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalError {
-	INSPECTED.clear();
-	const brief = ctx.brief.trim();
-	if (!brief) {
-		return { ok: false, code: "empty_brief", message: "Write a task or attach a scenario before sending." };
-	}
-
-	let screen: CatalogScreen | null = null;
+function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutProposalError | null {
 	if (ctx.screenId) {
-		screen = getScreenById(ctx.screenId);
+		const screen = getScreenById(ctx.screenId);
 		if (!screen) {
 			return { ok: false, code: "unknown_screen", message: `Unknown screen ${ctx.screenId}` };
 		}
@@ -267,6 +257,55 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 				message: "This screen has no renderer-compatible blocks in the current Browser snapshot."
 			};
 		}
+		return screen;
+	}
+	if (!ctx.scenarioId) return null;
+	const filter = OWNER_FILTERS[ctx.scenarioId];
+	const found = searchCatalog({ ...filter, page: 1, pageSize: DEFAULT_SEARCH });
+	if (found.noFit || found.total === 0) {
+		return {
+			ok: false,
+			code: "catalog_no_fit",
+			message:
+				found.clarification ??
+				"No Stock screens match that scenario filter. Re-search with a bounded section or job, or pick another scenario."
+		};
+	}
+	const grounded = found.items.find((item) => item.compatibility.compatible || item.compatibility.partial);
+	if (!grounded) {
+		return {
+			ok: false,
+			code: "catalog_no_fit",
+			message: "Matching Stock screens have no renderer-compatible blocks. Attach a different screen or scenario."
+		};
+	}
+	return grounded;
+}
+
+const DEFAULT_SEARCH = 12;
+
+export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalError {
+	INSPECTED.clear();
+	const brief = ctx.brief.trim();
+	if (!brief) {
+		return { ok: false, code: "empty_brief", message: "Write a task or attach a scenario before sending." };
+	}
+
+	const clearPage = isClearPageCommand(brief);
+	if (clearPage) {
+		return finishProposal(ctx, brief, null, [], [], []);
+	}
+
+	const resolved = resolveCatalogScreen(ctx);
+	if (resolved && "ok" in resolved && resolved.ok === false) return resolved;
+	const screen = resolved as CatalogScreen | null;
+	if (!screen) {
+		return {
+			ok: false,
+			code: "needs_clarification",
+			message:
+				"Attach a Dashboard, Landing, or Website scenario, pick a Stock screen, or send an explicit clear-page command. Unsolicited empty or invented layouts are rejected."
+		};
 	}
 
 	const kinds = uniqueKindsFromScreen(screen);
@@ -322,6 +361,26 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		);
 	}
 
+	if (blocks.length === 0 && !clearPage) {
+		return {
+			ok: false,
+			code: "empty_unsolicited_proposal",
+			message:
+				"Empty layout proposals are rejected unless you explicitly ask to clear the page. Search the catalog again with a bounded facet or attach a compatible screen."
+		};
+	}
+
+	return finishProposal(ctx, brief, screen, blocks, warnings, missing);
+}
+
+function finishProposal(
+	ctx: ProposalContext,
+	brief: string,
+	screen: CatalogScreen | null,
+	blocks: PageBlock[],
+	warnings: string[],
+	missing: string[]
+): LayoutProposal | LayoutProposalError {
 	const title = (screen ? `${screen.title} ${screen.subtitle}`.trim() : brief).slice(0, 160) || "Draft page";
 	const id = ctx.pageId ?? "page-draft";
 	const stamp = iso(ctx.now);
@@ -362,7 +421,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 			trialPolicyVersion: TRIAL_POLICY_VERSION,
 			catalog: catalogProvenance(),
 			scenarioId: ctx.scenarioId,
-			screenId: ctx.screenId,
+			screenId: ctx.screenId ?? screen?.screenId ?? null,
 			assembler: "local-catalog-assembler"
 		}
 		};

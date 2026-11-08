@@ -29,7 +29,7 @@ export const PARENT_VERIFIED_CHAT_IDS = [
 
 export const PARENT_VERIFIED_IMAGE_IDS = ["grok-imagine-image", "grok-imagine-image-2.0"] as const;
 
-/** Chat Completions ping succeeded on the parent box. Tool calling was not tested. */
+/** Chat Completions ping succeeded. Parent later proved tool protocol on a synthetic fixture; Stock assembly is not proven. */
 export const CANDIDATE_CHAT_MODEL = "grok-4.20-0309-non-reasoning";
 
 export const XAI_RUNTIME_NOTES = {
@@ -40,7 +40,7 @@ export const XAI_RUNTIME_NOTES = {
 	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
 	tools: "Application-executed tools only: search_catalog, get_block_details, propose_layout, get_skill. Never mix hosted web_search / code_execution.",
 	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. Telemetry off. maxRetries 0.",
-	toolCalling: "Function calling is documented on Chat Completions. It was not empirically proven on the parent ping. Runtime must validate tool support and must not claim it until a tool round-trip succeeds."
+	toolCalling: "Parent 2026-11-08: bounded Chat Completions tool-protocol test on grok-4.20-0309-non-reasoning succeeded (2 steps, HTTP 200, tool calls, no retries, usage 393+434=827). That test used synthetic TEST blocks and artificial search_blocks(section)/propose_page tools, not this app's Stock catalog or search_catalog/get_block_details/propose_layout. Protocol support is proven. Page assembly is not proven. Do not treat the fixture miss (section=hero vs job=hero, empty blocks) as a production catalog bug."
 } as const;
 
 export type XaiKeyState =
