@@ -187,7 +187,6 @@ function copyFor(
 	brief: string
 ): PageBlock["copy"] | undefined {
 	const prompt = scenario ? SCENARIO_PROMPTS[scenario] : null;
-	const screenTitle = screen ? `${screen.title} ${screen.subtitle}`.trim() : "";
 	if (kind === "nav") {
 		return { brand: prompt?.label ?? "BuildY" };
 	}
@@ -203,7 +202,7 @@ function copyFor(
 		return {
 			lede: "This is a local proposal. Apply it to replace the blank page. Nothing is published.",
 			action: "Apply when ready",
-			note: screenTitle ? `Stock screen ${screen.screenId}` : "No screen attached."
+			note: screen ? `Stock screen ${screen.screenId}` : "No screen attached."
 		};
 	}
 	if (kind === "footer") {
@@ -297,8 +296,8 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 	}
 
 	const resolved = resolveCatalogScreen(ctx);
-	if (resolved && "ok" in resolved && resolved.ok === false) return resolved;
-	const screen = resolved as CatalogScreen | null;
+	if (resolved !== null && "ok" in resolved) return resolved;
+	const screen = resolved;
 	if (!screen) {
 		return {
 			ok: false,

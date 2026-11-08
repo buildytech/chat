@@ -7,7 +7,7 @@ export {
 	OWNER_FILTERS
 } from "./copy.ts";
 export type { ScenarioId, PlaceholderMode } from "./copy.ts";
-export { catalogSnapshot, catalogProvenance } from "./catalog/snapshot.ts";
+export { catalogSnapshot, catalogProvenance, parseCatalogSnapshot } from "./catalog/snapshot.ts";
 export {
 	paginateScreens,
 	searchCatalog,

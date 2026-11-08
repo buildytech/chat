@@ -11,6 +11,7 @@ import {
 	executeTool,
 	getBlockDetails,
 	isClearPageCommand,
+	parseCatalogSnapshot,
 	proposeLayout,
 	rejectFabricatedLayout,
 	runConstructorTools,
@@ -18,7 +19,8 @@ import {
 } from "../../packages/builder-core/src/index.ts";
 
 const SNAPSHOT_PATH = new URL("../../packages/builder-core/src/catalog/snapshot.json", import.meta.url);
-const raw = JSON.parse(readFileSync(SNAPSHOT_PATH, "utf8")) as typeof catalogSnapshot;
+const fileUnknown: unknown = JSON.parse(readFileSync(SNAPSHOT_PATH, "utf8"));
+const raw = parseCatalogSnapshot(fileUnknown);
 
 test("production snapshot is pinned codegen-x Stock, not a synthetic TEST fixture", () => {
 	assert.equal(raw.provider, "codegen-x");
@@ -111,6 +113,40 @@ test("propose_layout rejects unsolicited empty generation and accepts explicit c
 	if (cleared.ok) {
 		assert.equal(cleared.page.layout.blocks.length, 0);
 		assert.equal(cleared.applied, false);
+	}
+});
+
+test("snapshot parse narrows ownerFilters and rejects a widened type", () => {
+	assert.equal(catalogSnapshot.ownerFilters.blank.type, "screen");
+	assert.equal(catalogSnapshot.ownerFilters.dashboard.type, "screen");
+	assert.equal(catalogSnapshot.ownerFilters.landing.type, "screen");
+	assert.equal(catalogSnapshot.ownerFilters.website.type, "screen");
+	const clone = JSON.parse(JSON.stringify(fileUnknown)) as {
+		ownerFilters: Record<string, { type?: string; section?: string; job?: string }>;
+	};
+	clone.ownerFilters.dashboard = { type: "hero", section: "dashboard" };
+	assert.throws(
+		() => parseCatalogSnapshot(clone),
+		(err: Error & { code?: string }) => err.code === "catalog_snapshot_invalid" && /ownerFilters\.dashboard\.type/.test(err.message)
+	);
+});
+
+test("cta note is taken from the actual screen object", () => {
+	const search = searchCatalog({ ...OWNER_FILTERS.dashboard, page: 1 });
+	const screen =
+		search.items.find((item) => item.compatibility.compatible || item.compatibility.partial) ?? search.items[0];
+	assert.ok(screen);
+	const withScreen = proposeLayout({
+		brief: "Create a responsive dashboard using UI8Kit rules and contracts.",
+		scenarioId: "dashboard",
+		screenId: screen.screenId,
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(withScreen.ok, true);
+	if (withScreen.ok) {
+		const cta = withScreen.page.layout.blocks.find((block) => block.kind === "cta");
+		if (cta?.copy) assert.equal(cta.copy.note, `Stock screen ${screen.screenId}`);
 	}
 });
 

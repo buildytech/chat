@@ -1,10 +1,12 @@
 import raw from "./snapshot.json" with { type: "json" };
-import type { CatalogSnapshot } from "./types.ts";
+import { parseCatalogSnapshot } from "./parse-snapshot.ts";
 
-export const catalogSnapshot: CatalogSnapshot = raw;
+export { parseCatalogSnapshot } from "./parse-snapshot.ts";
+
+export const catalogSnapshot = parseCatalogSnapshot(raw);
 
 export function catalogProvenance(): Pick<
-	CatalogSnapshot,
+	typeof catalogSnapshot,
 	| "provider"
 	| "repo"
 	| "pinnedCommit"
