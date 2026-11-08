@@ -6,11 +6,9 @@
 	"outputDirectory": "apps/chat-web/build",
 	"functions": {
 		"api/runtime/v1/status.ts": {
-			"runtime": "nodejs22.x",
 			"maxDuration": 60
 		},
 		"api/runtime/v1/run.ts": {
-			"runtime": "nodejs22.x",
 			"maxDuration": 60
 		}
 	},

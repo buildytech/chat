@@ -8,7 +8,7 @@ This repo is a **static SvelteKit SPA** (`@sveltejs/adapter-static`) plus a **No
 | --- | --- | --- |
 | Other / static output | `vercel.json` `framework: null`, `outputDirectory: apps/chat-web/build` | [Project configuration](https://vercel.com/docs/project-configuration/vercel-json) |
 | Routing Middleware | root `middleware.js` (self-contained ESM; root `"type": "module"`). Node runtime, **no matcher** (covers HTML, `/_app`, `/api`, `/runtime`) | [Routing Middleware](https://vercel.com/docs/routing-middleware/getting-started) |
-| Node Function (Web `fetch`) | Bundled `api/runtime/v1/status.ts` and `run.ts` (`nodejs22.x`). Source is `apps/xai-runtime/src/vercel-fetch.ts`; `scripts/bundle-vercel-runtime.mjs` inlines xai-runtime, builder-core, and catalog JSON into the entry so `/var/task` does not import workspace `http.ts`. `includeFiles` is not packaging. | [Functions quickstart](https://vercel.com/docs/functions/quickstart), [Node.js runtime](https://vercel.com/docs/functions/runtimes/node-js) |
+| Node Function (Web `fetch`) | Bundled `api/runtime/v1/status.ts` and `run.ts` (`maxDuration` 60 only). Node major is `package.json` `engines.node` `22.x`, not `functions.runtime` (`runtime` there is a custom runtime `name@version`, e.g. `vercel-php@0.5.2`). Source is `apps/xai-runtime/src/vercel-fetch.ts`; `scripts/bundle-vercel-runtime.mjs` inlines xai-runtime, builder-core, and catalog JSON into the entry so `/var/task` does not import workspace `http.ts`. `includeFiles` is not packaging. | [Functions quickstart](https://vercel.com/docs/functions/quickstart), [Node.js versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions), [custom runtime](https://vercel.com/docs/functions/configuring-functions/runtime) |
 | SPA fallback | rewrite to `/200.html` after `/runtime/v1/status` and `/runtime/v1/run` → the matching `/api/runtime/v1/*` function | adapter-static `fallback: '200.html'` |
 
 Dashboard Password Protection is a paid plan feature. This app implements fail-closed **HTTP Basic Auth** in Routing Middleware instead. No Fluid Compute / 300s / 800s duration is configured. Function `maxDuration` is **60 seconds** (Hobby-safe documented example). Abort/tool-loop/usage stay in `apps/xai-runtime`; HTTP to the browser remains a JSON body (SDK `streamText` is internal).
@@ -30,7 +30,7 @@ Never set `VITE_XAI_API_KEY`, `PUBLIC_XAI_API_KEY`, or `NEXT_PUBLIC_*` secrets. 
 - Wrong credentials deny. Path variants `/`, `/200.html`, `/_app/…`, `/runtime/…`, `/api/runtime/…` all go through Middleware.
 - Without `XAI_API_KEY`, no provider call. Local catalog assembly is not a live Grok reply.
 - Vite `/runtime` proxy is local-dev only. Staging rewrites `/runtime/v1/status` and `/runtime/v1/run` onto bundled `/api/runtime/v1/status.ts` and `run.ts` Functions. A 401 is middleware only. Platform HTML `NOT_FOUND` means the Function file is missing. `ERR_MODULE_NOT_FOUND` for workspace `http.ts` means the entry was transpiled without bundling.
-- Root `engines.node` is `22.x` (not `>=20`). Function runtime is `nodejs22.x`.
+- Root `engines.node` is `22.x` (not `>=20`). Do not set `functions.runtime` to `nodejs22.x`; CLI 65 treats that as a custom runtime and fails with `invalid_function_runtime`.
 
 ## Local Node (unchanged)
 

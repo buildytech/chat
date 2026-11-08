@@ -99,8 +99,15 @@ test("vercel.json is Other + static SPA output + hobby-safe Node function, no ma
 	assert.equal(cfg.functions["api/runtime/v1/run.js"], undefined);
 	assert.equal(cfg.functions["api/runtime/v1/status.ts"]?.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
 	assert.equal(cfg.functions["api/runtime/v1/run.ts"]?.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
-	assert.equal(cfg.functions["api/runtime/v1/status.ts"]?.runtime, "nodejs22.x");
-	assert.equal(cfg.functions["api/runtime/v1/run.ts"]?.runtime, "nodejs22.x");
+	assert.equal(cfg.functions["api/runtime/v1/status.ts"]?.runtime, undefined);
+	assert.equal(cfg.functions["api/runtime/v1/run.ts"]?.runtime, undefined);
+	for (const fn of Object.values(cfg.functions)) {
+		assert.equal(
+			fn.runtime,
+			undefined,
+			"functions.runtime is a custom runtime (name@version), not Node; pin Node with package.json engines.node"
+		);
+	}
 	assert.ok(
 		cfg.rewrites.some((row) => row.source === "/runtime/v1/status" && row.destination === "/api/runtime/v1/status")
 	);
