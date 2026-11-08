@@ -92,8 +92,13 @@ test("vercel.json is Other + static SPA output + hobby-safe Node function, no ma
 	assert.equal(cfg.framework, null);
 	assert.equal(cfg.outputDirectory, "apps/chat-web/build");
 	assert.match(cfg.buildCommand, /chat-web/);
-	assert.equal(cfg.functions["api/runtime/[...path].ts"]?.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
-	assert.ok(cfg.rewrites.some((row) => row.source.startsWith("/runtime") && row.destination.includes("/api/runtime")));
+	assert.equal(cfg.functions["api/runtime/[...path].ts"], undefined);
+	assert.equal(cfg.functions["api/runtime/v1/status.ts"]?.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
+	assert.equal(cfg.functions["api/runtime/v1/run.ts"]?.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
+	assert.ok(
+		cfg.rewrites.some((row) => row.source === "/runtime/v1/status" && row.destination === "/api/runtime/v1/status")
+	);
+	assert.ok(cfg.rewrites.some((row) => row.source === "/runtime/v1/run" && row.destination === "/api/runtime/v1/run"));
 	assert.equal(cfg.proxy?.matcher, undefined);
 	assert.ok(
 		!JSON.stringify(cfg).includes("_next/static"),
@@ -211,10 +216,19 @@ test("middleware source has no runtime imports (Vercel Other does not bundle it)
 	assert.equal(existsSync(join(REPO, "middleware.ts")), false);
 });
 
-test("Vercel function entry does not import .ts specifiers", () => {
-	const src = readFileSync(join(REPO, "api/runtime/[...path].ts"), "utf8");
-	assert.doesNotMatch(src, /from\s+['"][^'"]+\.ts['"]/);
-	assert.match(src, /@buildytech\/xai-runtime\/http/);
+test("Vercel functions are concrete Other-framework files, not a Next.js catch-all", () => {
+	assert.equal(existsSync(join(REPO, "api/runtime/[...path].ts")), false);
+	const statusFile = join(REPO, "api/runtime/v1/status.ts");
+	const runFile = join(REPO, "api/runtime/v1/run.ts");
+	assert.equal(existsSync(statusFile), true);
+	assert.equal(existsSync(runFile), true);
+	for (const file of [statusFile, runFile]) {
+		const src = readFileSync(file, "utf8");
+		assert.doesNotMatch(src, /from\s+['"][^'"]+\.ts['"]/);
+		assert.match(src, /@buildytech\/xai-runtime\/http/);
+		assert.match(src, /export default \{/);
+		assert.match(src, /async fetch\(request: Request\)/);
+	}
 });
 
 test("Vercel API typecheck has AI SDK shims and does not silently assemble Grok turns", () => {
@@ -268,7 +282,7 @@ test("middleware.js loads as ESM without .ts imports and 401s without secrets", 
 	const body = (await denied.json()) as { error?: { code?: string } };
 	assert.equal(body.error?.code, "basic_auth_required_before_shared_bind");
 
-	const apiSrc = readFileSync(join(REPO, "api/runtime/[...path].ts"), "utf8");
+	const apiSrc = readFileSync(join(REPO, "api/runtime/v1/status.ts"), "utf8");
 	assert.doesNotMatch(apiSrc, /from\s+['"][^'"]+\.ts['"]/);
 	assert.match(apiSrc, /@buildytech\/xai-runtime\/http/);
 });

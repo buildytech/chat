@@ -8,8 +8,8 @@ This repo is a **static SvelteKit SPA** (`@sveltejs/adapter-static`) plus a **No
 | --- | --- | --- |
 | Other / static output | `vercel.json` `framework: null`, `outputDirectory: apps/chat-web/build` | [Project configuration](https://vercel.com/docs/project-configuration/vercel-json) |
 | Routing Middleware | root `middleware.js` (self-contained ESM; root `"type": "module"`). Node runtime, **no matcher** (covers HTML, `/_app`, `/api`, `/runtime`) | [Routing Middleware](https://vercel.com/docs/routing-middleware/getting-started) |
-| Node Function (Web `fetch`) | `api/runtime/[...path].ts` via `@buildytech/xai-runtime/http` | [Node.js runtime](https://vercel.com/docs/functions/runtimes/node-js) |
-| SPA fallback | rewrite to `/200.html` after `/runtime` → `/api/runtime` | adapter-static `fallback: '200.html'` |
+| Node Function (Web `fetch`) | **Concrete** files `api/runtime/v1/status.ts` and `api/runtime/v1/run.ts` (Other / `framework:null` does not route Next.js `[...path]` catch-alls; those 404 as `NOT_FOUND` with no JSON) | [Functions quickstart](https://vercel.com/docs/functions/quickstart), [Node.js runtime](https://vercel.com/docs/functions/runtimes/node-js) |
+| SPA fallback | rewrite to `/200.html` after `/runtime/v1/status` and `/runtime/v1/run` → the matching `/api/runtime/v1/*` function | adapter-static `fallback: '200.html'` |
 
 Dashboard Password Protection is a paid plan feature. This app implements fail-closed **HTTP Basic Auth** in Routing Middleware instead. No Fluid Compute / 300s / 800s duration is configured. Function `maxDuration` is **60 seconds** (Hobby-safe documented example). Abort/tool-loop/usage stay in `apps/xai-runtime`; HTTP to the browser remains a JSON body (SDK `streamText` is internal).
 
@@ -29,7 +29,7 @@ Never set `VITE_XAI_API_KEY`, `PUBLIC_XAI_API_KEY`, or `NEXT_PUBLIC_*` secrets. 
 - Missing Basic Auth user/password **denies** (401 + `WWW-Authenticate`). It does not fall open.
 - Wrong credentials deny. Path variants `/`, `/200.html`, `/_app/…`, `/runtime/…`, `/api/runtime/…` all go through Middleware.
 - Without `XAI_API_KEY`, no provider call. Local catalog assembly is not a live Grok reply.
-- Vite `/runtime` proxy is local-dev only. Staging uses the rewrite `/runtime/:path*` → `/api/runtime/:path*`.
+- Vite `/runtime` proxy is local-dev only. Staging rewrites `/runtime/v1/status` and `/runtime/v1/run` onto the matching concrete `/api/runtime/v1/*` Functions. A 401 is middleware only; platform HTML `NOT_FOUND` means the Function file is missing.
 
 ## Local Node (unchanged)
 

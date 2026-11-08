@@ -5,14 +5,19 @@
 	"buildCommand": "npm run build --workspace=@buildytech/chat-web",
 	"outputDirectory": "apps/chat-web/build",
 	"functions": {
-		"api/runtime/[...path].ts": {
+		"api/runtime/v1/status.ts": {
+			"maxDuration": 60,
+			"includeFiles": "packages/builder-core/src/catalog/**"
+		},
+		"api/runtime/v1/run.ts": {
 			"maxDuration": 60,
 			"includeFiles": "packages/builder-core/src/catalog/**"
 		}
 	},
 	"rewrites": [
 		{ "source": "/runtime", "destination": "/api/runtime/v1/status" },
-		{ "source": "/runtime/:path*", "destination": "/api/runtime/:path*" },
+		{ "source": "/runtime/v1/status", "destination": "/api/runtime/v1/status" },
+		{ "source": "/runtime/v1/run", "destination": "/api/runtime/v1/run" },
 		{ "source": "/((?!api(?:/|$)|runtime(?:/|$)|_app(?:/|$)).*)", "destination": "/200.html" }
 	]
 }

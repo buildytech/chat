@@ -1,8 +1,8 @@
-/// <reference path="../ai-shims.d.ts" />
+/// <reference path="../../ai-shims.d.ts" />
 /**
- * Vercel Node.js Function (Web fetch handler).
- * https://vercel.com/docs/functions/runtimes/node-js
- * Hobby-safe maxDuration 60s from documented examples. Not Pro 300/800.
+ * Concrete Other-framework Function for POST /api/runtime/v1/run.
+ * framework:null does not map Next.js `[...path]` catch-alls; those 404 at the platform.
+ * https://vercel.com/docs/functions/quickstart
  */
 import { handleRuntimeFetch } from "@buildytech/xai-runtime/http";
 
