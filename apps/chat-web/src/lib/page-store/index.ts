@@ -11,13 +11,19 @@ export {
 } from "./page";
 export { mockLandingPage } from "./fixture";
 export {
+	applyCandidate,
 	clearCurrentPage,
+	discardCandidate,
+	getCandidatePage,
 	getCurrentPage,
+	getLastAppliedPage,
 	getPageRevision,
 	getSelectedBlock,
 	getSelectedBlockId,
+	hasUnappliedProposal,
 	loadMockFixturePage,
 	selectBlock,
+	setCandidatePage,
 	setCurrentPage
 } from "./mock.svelte";
 export { latteFromPage, latteForBlock } from "./latte";

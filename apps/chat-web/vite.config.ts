@@ -7,6 +7,10 @@ const contextServe =
 	(typeof process !== 'undefined' && process.env?.CONTEXT_SERVE_PROXY_TARGET?.trim()) ||
 	'http://127.0.0.1:18090';
 
+const xaiRuntime =
+	(typeof process !== 'undefined' && process.env?.XAI_RUNTIME_PROXY_TARGET?.trim()) ||
+	'http://127.0.0.1:18100';
+
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
 	server: {
@@ -21,6 +25,11 @@ export default defineConfig({
 			'/healthz': {
 				target: contextServe,
 				changeOrigin: true
+			},
+			'/runtime': {
+				target: xaiRuntime,
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/runtime/, '') || '/'
 			}
 		}
 	}

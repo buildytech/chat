@@ -1,0 +1,5926 @@
+{
+  "format": "buildy-browser-catalog-snapshot",
+  "schemaVersion": 1,
+  "provider": "codegen-x",
+  "repo": "codegen-x/ui8kit",
+  "pinnedCommit": "6b2e71b56375cf3aab161a755c8eee806e7309fb",
+  "sourceArtifact": "apps/stock/content/assets.v0.json",
+  "sourceDigest": "sha256:a9d256e6935c6a8d579f86d634eebb46dfe36cacd02d9e4e2a0fdce4ff41664a",
+  "sourceVersion": "0",
+  "counts": {
+    "screen": 80,
+    "upstreamBlock": 532,
+    "upstreamScreen": 80
+  },
+  "pageSize": 12,
+  "facetVocabulary": {
+    "type": [
+      "screen",
+      "block"
+    ],
+    "section": [
+      "account",
+      "commerce",
+      "content",
+      "dashboard",
+      "marketing",
+      "onboarding",
+      "promo",
+      "support"
+    ],
+    "job": [
+      "article",
+      "auth",
+      "blog",
+      "catalog",
+      "checkout",
+      "comparison",
+      "contacts",
+      "cta",
+      "dashboard",
+      "delivery",
+      "faq",
+      "features",
+      "footer",
+      "hero",
+      "how",
+      "lead",
+      "logos",
+      "navigation",
+      "numbers",
+      "pricing",
+      "product",
+      "proof",
+      "testimonials",
+      "value"
+    ]
+  },
+  "ownerFilters": {
+    "blank": {
+      "type": "screen"
+    },
+    "dashboard": {
+      "type": "screen",
+      "section": "dashboard"
+    },
+    "landing": {
+      "type": "screen",
+      "section": "marketing"
+    },
+    "website": {
+      "type": "screen",
+      "job": "hero"
+    }
+  },
+  "rendererKinds": [
+    "cta",
+    "dish",
+    "feature",
+    "features",
+    "footer",
+    "hero",
+    "hours",
+    "menu",
+    "nav",
+    "nav-link"
+  ],
+  "screens": [
+    {
+      "screenId": "screen.site/home",
+      "sourceOrdinal": 0,
+      "title": "Site",
+      "subtitle": "Home",
+      "spec": "screen.site",
+      "variant": "home",
+      "group": "screen.site/home",
+      "order": 532,
+      "preview": {
+        "kind": "screen",
+        "screen": "site",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero",
+          "features",
+          "cta"
+        ],
+        "blocks": [
+          "cta",
+          "features",
+          "footer",
+          "header",
+          "hero"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.site/pricing",
+      "sourceOrdinal": 1,
+      "title": "Site",
+      "subtitle": "Pricing",
+      "spec": "screen.site",
+      "variant": "pricing",
+      "group": "screen.site/pricing",
+      "order": 533,
+      "preview": {
+        "kind": "screen",
+        "screen": "site",
+        "area": "pricing"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero",
+          "pricing",
+          "faq"
+        ],
+        "blocks": [
+          "faq",
+          "footer",
+          "header",
+          "hero",
+          "pricing"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.site/notfound",
+      "sourceOrdinal": 2,
+      "title": "Site",
+      "subtitle": "Notfound",
+      "spec": "screen.site",
+      "variant": "notfound",
+      "group": "screen.site/notfound",
+      "order": 534,
+      "preview": {
+        "kind": "screen",
+        "screen": "site",
+        "area": "notfound"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero"
+        ],
+        "blocks": [
+          "footer",
+          "header",
+          "hero"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/home",
+      "sourceOrdinal": 3,
+      "title": "Account portal",
+      "subtitle": "Home",
+      "spec": "screen.theme-account-portal",
+      "variant": "home",
+      "group": "screen.theme-account-portal/home",
+      "order": 535,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "account"
+        ],
+        "job": [
+          "auth"
+        ],
+        "blocks": [
+          "navbar",
+          "authpage",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/start",
+      "sourceOrdinal": 4,
+      "title": "Account portal",
+      "subtitle": "Start",
+      "spec": "screen.theme-account-portal",
+      "variant": "start",
+      "group": "screen.theme-account-portal/start",
+      "order": 536,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "start"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "account"
+        ],
+        "job": [
+          "auth"
+        ],
+        "blocks": [
+          "navbar",
+          "authpage",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/signup",
+      "sourceOrdinal": 5,
+      "title": "Account portal",
+      "subtitle": "Signup",
+      "spec": "screen.theme-account-portal",
+      "variant": "signup",
+      "group": "screen.theme-account-portal/signup",
+      "order": 537,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "signup"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "account"
+        ],
+        "job": [
+          "auth"
+        ],
+        "blocks": [
+          "navbar",
+          "authpage",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/welcome",
+      "sourceOrdinal": 6,
+      "title": "Account portal",
+      "subtitle": "Welcome",
+      "spec": "screen.theme-account-portal",
+      "variant": "welcome",
+      "group": "screen.theme-account-portal/welcome",
+      "order": 538,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "welcome"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "account"
+        ],
+        "job": [
+          "auth"
+        ],
+        "blocks": [
+          "navbar",
+          "authpage",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/reset",
+      "sourceOrdinal": 7,
+      "title": "Account portal",
+      "subtitle": "Reset",
+      "spec": "screen.theme-account-portal",
+      "variant": "reset",
+      "group": "screen.theme-account-portal/reset",
+      "order": 539,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "reset"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "account"
+        ],
+        "job": [
+          "auth"
+        ],
+        "blocks": [
+          "navbar",
+          "authpage",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/magic",
+      "sourceOrdinal": 8,
+      "title": "Account portal",
+      "subtitle": "Magic",
+      "spec": "screen.theme-account-portal",
+      "variant": "magic",
+      "group": "screen.theme-account-portal/magic",
+      "order": 540,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "magic"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "account"
+        ],
+        "job": [
+          "auth"
+        ],
+        "blocks": [
+          "navbar",
+          "authpage",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/minimal",
+      "sourceOrdinal": 9,
+      "title": "Account portal",
+      "subtitle": "Minimal",
+      "spec": "screen.theme-account-portal",
+      "variant": "minimal",
+      "group": "screen.theme-account-portal/minimal",
+      "order": 541,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "minimal"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "account"
+        ],
+        "job": [
+          "auth"
+        ],
+        "blocks": [
+          "navbar",
+          "authpage",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/options",
+      "sourceOrdinal": 10,
+      "title": "Account portal",
+      "subtitle": "Options",
+      "spec": "screen.theme-account-portal",
+      "variant": "options",
+      "group": "screen.theme-account-portal/options",
+      "order": 542,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "options"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "account"
+        ],
+        "job": [
+          "auth"
+        ],
+        "blocks": [
+          "navbar",
+          "authpage",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/join",
+      "sourceOrdinal": 11,
+      "title": "Account portal",
+      "subtitle": "Join",
+      "spec": "screen.theme-account-portal",
+      "variant": "join",
+      "group": "screen.theme-account-portal/join",
+      "order": 543,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "join"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "account"
+        ],
+        "job": [
+          "navigation",
+          "auth"
+        ],
+        "blocks": [
+          "navbar",
+          "pagehead",
+          "wizard",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/cards",
+      "sourceOrdinal": 12,
+      "title": "Account portal",
+      "subtitle": "Cards",
+      "spec": "screen.theme-account-portal",
+      "variant": "cards",
+      "group": "screen.theme-account-portal/cards",
+      "order": 544,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "cards"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "account"
+        ],
+        "job": [
+          "navigation",
+          "auth"
+        ],
+        "blocks": [
+          "auth",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-account-portal/profile",
+      "sourceOrdinal": 13,
+      "title": "Account portal",
+      "subtitle": "Profile",
+      "spec": "screen.theme-account-portal",
+      "variant": "profile",
+      "group": "screen.theme-account-portal/profile",
+      "order": 545,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-account-portal",
+        "area": "profile"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "account"
+        ],
+        "job": [
+          "navigation",
+          "dashboard"
+        ],
+        "blocks": [
+          "navbar",
+          "pagehead",
+          "profile",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-commerce-shop/home",
+      "sourceOrdinal": 14,
+      "title": "Commerce shop",
+      "subtitle": "Home",
+      "spec": "screen.theme-commerce-shop",
+      "variant": "home",
+      "group": "screen.theme-commerce-shop/home",
+      "order": 546,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-commerce-shop",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce",
+          "promo"
+        ],
+        "job": [
+          "hero",
+          "testimonials",
+          "cta",
+          "lead",
+          "catalog",
+          "product"
+        ],
+        "blocks": [
+          "cta",
+          "categories",
+          "hero",
+          "navbar",
+          "newsletter",
+          "products",
+          "reviews",
+          "sitemap"
+        ],
+        "industry": [
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-commerce-shop/catalog",
+      "sourceOrdinal": 15,
+      "title": "Commerce shop",
+      "subtitle": "Catalog",
+      "spec": "screen.theme-commerce-shop",
+      "variant": "catalog",
+      "group": "screen.theme-commerce-shop/catalog",
+      "order": 547,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-commerce-shop",
+        "area": "catalog"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "categories",
+          "navbar",
+          "pagetrail",
+          "products",
+          "sitemap"
+        ],
+        "industry": [
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-commerce-shop/browse",
+      "sourceOrdinal": 16,
+      "title": "Commerce shop",
+      "subtitle": "Browse",
+      "spec": "screen.theme-commerce-shop",
+      "variant": "browse",
+      "group": "screen.theme-commerce-shop/browse",
+      "order": 548,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-commerce-shop",
+        "area": "browse"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "categories",
+          "navbar",
+          "pagehead",
+          "products",
+          "sitemap"
+        ],
+        "industry": [
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-commerce-shop/offers",
+      "sourceOrdinal": 17,
+      "title": "Commerce shop",
+      "subtitle": "Offers",
+      "spec": "screen.theme-commerce-shop",
+      "variant": "offers",
+      "group": "screen.theme-commerce-shop/offers",
+      "order": 549,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-commerce-shop",
+        "area": "offers"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "commerce"
+        ],
+        "job": [
+          "hero",
+          "value",
+          "catalog",
+          "checkout"
+        ],
+        "blocks": [
+          "cartdrawer",
+          "navbar",
+          "products",
+          "sitemap",
+          "storehero",
+          "usp"
+        ],
+        "industry": [
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-commerce-shop/product",
+      "sourceOrdinal": 18,
+      "title": "Commerce shop",
+      "subtitle": "Product",
+      "spec": "screen.theme-commerce-shop",
+      "variant": "product",
+      "group": "screen.theme-commerce-shop/product",
+      "order": 550,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-commerce-shop",
+        "area": "product"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "commerce"
+        ],
+        "job": [
+          "testimonials",
+          "catalog",
+          "product"
+        ],
+        "blocks": [
+          "navbar",
+          "productinfo",
+          "products",
+          "product",
+          "reviews",
+          "sitemap"
+        ],
+        "industry": [
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-commerce-shop/cart",
+      "sourceOrdinal": 19,
+      "title": "Commerce shop",
+      "subtitle": "Cart",
+      "spec": "screen.theme-commerce-shop",
+      "variant": "cart",
+      "group": "screen.theme-commerce-shop/cart",
+      "order": 551,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-commerce-shop",
+        "area": "cart"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "checkout"
+        ],
+        "blocks": [
+          "cart",
+          "cartpage",
+          "navbar",
+          "summary",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-commerce-shop/checkout",
+      "sourceOrdinal": 20,
+      "title": "Commerce shop",
+      "subtitle": "Checkout",
+      "spec": "screen.theme-commerce-shop",
+      "variant": "checkout",
+      "group": "screen.theme-commerce-shop/checkout",
+      "order": 552,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-commerce-shop",
+        "area": "checkout"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "checkout"
+        ],
+        "blocks": [
+          "checkout",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-commerce-shop/delivery",
+      "sourceOrdinal": 21,
+      "title": "Commerce shop",
+      "subtitle": "Delivery",
+      "spec": "screen.theme-commerce-shop",
+      "variant": "delivery",
+      "group": "screen.theme-commerce-shop/delivery",
+      "order": 553,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-commerce-shop",
+        "area": "delivery"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "contacts",
+          "delivery"
+        ],
+        "blocks": [
+          "delivery",
+          "slots",
+          "zones",
+          "navbar",
+          "pagehead",
+          "sitemap",
+          "locations"
+        ],
+        "industry": [
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-commerce-shop/orders",
+      "sourceOrdinal": 22,
+      "title": "Commerce shop",
+      "subtitle": "Orders",
+      "spec": "screen.theme-commerce-shop",
+      "variant": "orders",
+      "group": "screen.theme-commerce-shop/orders",
+      "order": 554,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-commerce-shop",
+        "area": "orders"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "checkout"
+        ],
+        "blocks": [
+          "navbar",
+          "orders",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-content-blog/home",
+      "sourceOrdinal": 23,
+      "title": "Content blog",
+      "subtitle": "Home",
+      "spec": "screen.theme-content-blog",
+      "variant": "home",
+      "group": "screen.theme-content-blog/home",
+      "order": 555,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-content-blog",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "content",
+          "promo"
+        ],
+        "job": [
+          "navigation",
+          "lead",
+          "blog"
+        ],
+        "blocks": [
+          "posts",
+          "navbar",
+          "newsletter",
+          "pagehead",
+          "postshowcase",
+          "sitemap"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-content-blog/articles",
+      "sourceOrdinal": 24,
+      "title": "Content blog",
+      "subtitle": "Articles",
+      "spec": "screen.theme-content-blog",
+      "variant": "articles",
+      "group": "screen.theme-content-blog/articles",
+      "order": 556,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-content-blog",
+        "area": "articles"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "content"
+        ],
+        "job": [
+          "navigation",
+          "blog"
+        ],
+        "blocks": [
+          "posts",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-content-blog/archive",
+      "sourceOrdinal": 25,
+      "title": "Content blog",
+      "subtitle": "Archive",
+      "spec": "screen.theme-content-blog",
+      "variant": "archive",
+      "group": "screen.theme-content-blog/archive",
+      "order": 557,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-content-blog",
+        "area": "archive"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "content"
+        ],
+        "job": [
+          "navigation",
+          "blog"
+        ],
+        "blocks": [
+          "posts",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-content-blog/post",
+      "sourceOrdinal": 26,
+      "title": "Content blog",
+      "subtitle": "Post",
+      "spec": "screen.theme-content-blog",
+      "variant": "post",
+      "group": "screen.theme-content-blog/post",
+      "order": 558,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-content-blog",
+        "area": "post"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "content"
+        ],
+        "job": [
+          "article"
+        ],
+        "blocks": [
+          "article",
+          "navbar",
+          "postheader",
+          "sitemap"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density"
+      ]
+    },
+    {
+      "screenId": "screen.theme-content-blog/story",
+      "sourceOrdinal": 27,
+      "title": "Content blog",
+      "subtitle": "Story",
+      "spec": "screen.theme-content-blog",
+      "variant": "story",
+      "group": "screen.theme-content-blog/story",
+      "order": 559,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-content-blog",
+        "area": "story"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "content"
+        ],
+        "job": [
+          "blog",
+          "article"
+        ],
+        "blocks": [
+          "article",
+          "navbar",
+          "postsplit",
+          "sitemap"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density"
+      ]
+    },
+    {
+      "screenId": "screen.theme-content-blog/essay",
+      "sourceOrdinal": 28,
+      "title": "Content blog",
+      "subtitle": "Essay",
+      "spec": "screen.theme-content-blog",
+      "variant": "essay",
+      "group": "screen.theme-content-blog/essay",
+      "order": 560,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-content-blog",
+        "area": "essay"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "content",
+          "promo"
+        ],
+        "job": [
+          "lead",
+          "article"
+        ],
+        "blocks": [
+          "article",
+          "navbar",
+          "newsletter",
+          "postheader",
+          "sitemap"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density"
+      ]
+    },
+    {
+      "screenId": "screen.theme-content-blog/plain",
+      "sourceOrdinal": 29,
+      "title": "Content blog",
+      "subtitle": "Plain",
+      "spec": "screen.theme-content-blog",
+      "variant": "plain",
+      "group": "screen.theme-content-blog/plain",
+      "order": 561,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-content-blog",
+        "area": "plain"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "content"
+        ],
+        "job": [
+          "blog",
+          "article"
+        ],
+        "blocks": [
+          "article",
+          "posts",
+          "navbar",
+          "postheader",
+          "sitemap"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-content-blog/page",
+      "sourceOrdinal": 30,
+      "title": "Content blog",
+      "subtitle": "Page",
+      "spec": "screen.theme-content-blog",
+      "variant": "page",
+      "group": "screen.theme-content-blog/page",
+      "order": 562,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-content-blog",
+        "area": "page"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "content"
+        ],
+        "job": [
+          "article"
+        ],
+        "blocks": [
+          "navbar",
+          "richtext",
+          "sitemap"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "composition",
+        "character",
+        "density",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-dashboard-console/home",
+      "sourceOrdinal": 31,
+      "title": "Dashboard console",
+      "subtitle": "Home",
+      "spec": "screen.theme-dashboard-console",
+      "variant": "home",
+      "group": "screen.theme-dashboard-console/home",
+      "order": 563,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-dashboard-console",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "dashboard"
+        ],
+        "job": [
+          "navigation",
+          "numbers",
+          "dashboard"
+        ],
+        "blocks": [
+          "activity",
+          "chart",
+          "overview",
+          "metrics",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-dashboard-console/board",
+      "sourceOrdinal": 32,
+      "title": "Dashboard console",
+      "subtitle": "Board",
+      "spec": "screen.theme-dashboard-console",
+      "variant": "board",
+      "group": "screen.theme-dashboard-console/board",
+      "order": 564,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-dashboard-console",
+        "area": "board"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "dashboard"
+        ],
+        "job": [
+          "navigation",
+          "dashboard"
+        ],
+        "blocks": [
+          "kanban",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "composition",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-dashboard-console/workspace",
+      "sourceOrdinal": 33,
+      "title": "Dashboard console",
+      "subtitle": "Workspace",
+      "spec": "screen.theme-dashboard-console",
+      "variant": "workspace",
+      "group": "screen.theme-dashboard-console/workspace",
+      "order": 565,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-dashboard-console",
+        "area": "workspace"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "dashboard"
+        ],
+        "job": [
+          "navigation",
+          "dashboard"
+        ],
+        "blocks": [
+          "shell",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-dashboard-console/shells",
+      "sourceOrdinal": 34,
+      "title": "Dashboard console",
+      "subtitle": "Shells",
+      "spec": "screen.theme-dashboard-console",
+      "variant": "shells",
+      "group": "screen.theme-dashboard-console/shells",
+      "order": 566,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-dashboard-console",
+        "area": "shells"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "dashboard"
+        ],
+        "job": [
+          "navigation",
+          "dashboard"
+        ],
+        "blocks": [
+          "dashshell",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "composition"
+      ]
+    },
+    {
+      "screenId": "screen.theme-dashboard-console/layouts",
+      "sourceOrdinal": 35,
+      "title": "Dashboard console",
+      "subtitle": "Layouts",
+      "spec": "screen.theme-dashboard-console",
+      "variant": "layouts",
+      "group": "screen.theme-dashboard-console/layouts",
+      "order": 567,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-dashboard-console",
+        "area": "layouts"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "dashboard"
+        ],
+        "job": [
+          "navigation",
+          "numbers",
+          "dashboard"
+        ],
+        "blocks": [
+          "bottomnav",
+          "chart",
+          "overview",
+          "metrics",
+          "navbar",
+          "pagehead",
+          "sidenav",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-dashboard-console/states",
+      "sourceOrdinal": 36,
+      "title": "Dashboard console",
+      "subtitle": "States",
+      "spec": "screen.theme-dashboard-console",
+      "variant": "states",
+      "group": "screen.theme-dashboard-console/states",
+      "order": 568,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-dashboard-console",
+        "area": "states"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "dashboard"
+        ],
+        "job": [
+          "navigation",
+          "dashboard"
+        ],
+        "blocks": [
+          "empty",
+          "skeleton",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-food-delivery/home",
+      "sourceOrdinal": 37,
+      "title": "Food delivery",
+      "subtitle": "Home",
+      "spec": "screen.theme-food-delivery",
+      "variant": "home",
+      "group": "screen.theme-food-delivery/home",
+      "order": 569,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-food-delivery",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "dishcart",
+          "dishshowcase",
+          "dishstrip",
+          "navbar",
+          "pagehead",
+          "quickorder",
+          "sitemap"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-food-delivery/pizza",
+      "sourceOrdinal": 38,
+      "title": "Food delivery",
+      "subtitle": "Pizza",
+      "spec": "screen.theme-food-delivery",
+      "variant": "pizza",
+      "group": "screen.theme-food-delivery/pizza",
+      "order": 570,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-food-delivery",
+        "area": "pizza"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "dishstrip",
+          "navbar",
+          "pagehead",
+          "pizzapicker",
+          "sitemap",
+          "sushisets"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-food-delivery/sets",
+      "sourceOrdinal": 39,
+      "title": "Food delivery",
+      "subtitle": "Sets",
+      "spec": "screen.theme-food-delivery",
+      "variant": "sets",
+      "group": "screen.theme-food-delivery/sets",
+      "order": 571,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-food-delivery",
+        "area": "sets"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "combobuilder",
+          "dishcart",
+          "navbar",
+          "pagehead",
+          "pizzapicker",
+          "sitemap",
+          "sushisets"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-food-delivery/kits",
+      "sourceOrdinal": 40,
+      "title": "Food delivery",
+      "subtitle": "Kits",
+      "spec": "screen.theme-food-delivery",
+      "variant": "kits",
+      "group": "screen.theme-food-delivery/kits",
+      "order": 572,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-food-delivery",
+        "area": "kits"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "grocerylist",
+          "navbar",
+          "pagehead",
+          "recipekits",
+          "sitemap",
+          "veggiebox"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-food-delivery/market",
+      "sourceOrdinal": 41,
+      "title": "Food delivery",
+      "subtitle": "Market",
+      "spec": "screen.theme-food-delivery",
+      "variant": "market",
+      "group": "screen.theme-food-delivery/market",
+      "order": 573,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-food-delivery",
+        "area": "market"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "grocerylist",
+          "navbar",
+          "pagehead",
+          "recipekits",
+          "sitemap",
+          "veggiebox"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-food-delivery/menu",
+      "sourceOrdinal": 42,
+      "title": "Food delivery",
+      "subtitle": "Menu",
+      "spec": "screen.theme-food-delivery",
+      "variant": "menu",
+      "group": "screen.theme-food-delivery/menu",
+      "order": 574,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-food-delivery",
+        "area": "menu"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "dishshowcase",
+          "navbar",
+          "pagehead",
+          "quickorder",
+          "restaurantmenu",
+          "sitemap",
+          "weekmenu"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-food-delivery/week",
+      "sourceOrdinal": 43,
+      "title": "Food delivery",
+      "subtitle": "Week",
+      "spec": "screen.theme-food-delivery",
+      "variant": "week",
+      "group": "screen.theme-food-delivery/week",
+      "order": 575,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-food-delivery",
+        "area": "week"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "dishshowcase",
+          "navbar",
+          "pagehead",
+          "restaurantmenu",
+          "sitemap",
+          "weekmenu"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "composition",
+        "character",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-food-grill/home",
+      "sourceOrdinal": 44,
+      "title": "Food grill",
+      "subtitle": "Home",
+      "spec": "screen.theme-food-grill",
+      "variant": "home",
+      "group": "screen.theme-food-grill/home",
+      "order": 576,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-food-grill",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "hero",
+          "faq",
+          "catalog",
+          "delivery"
+        ],
+        "blocks": [
+          "combobuilder",
+          "delivery",
+          "faq",
+          "grillbuilder",
+          "hero",
+          "navbar",
+          "sitemap"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-food-grill/dishes",
+      "sourceOrdinal": 45,
+      "title": "Food grill",
+      "subtitle": "Dishes",
+      "spec": "screen.theme-food-grill",
+      "variant": "dishes",
+      "group": "screen.theme-food-grill/dishes",
+      "order": 577,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-food-grill",
+        "area": "dishes"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "dishbento",
+          "dishshowcase",
+          "navbar",
+          "pagehead",
+          "restaurantmenu",
+          "sitemap"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-food-grill/compare",
+      "sourceOrdinal": 46,
+      "title": "Food grill",
+      "subtitle": "Compare",
+      "spec": "screen.theme-food-grill",
+      "variant": "compare",
+      "group": "screen.theme-food-grill/compare",
+      "order": 578,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-food-grill",
+        "area": "compare"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "cta",
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "cta",
+          "dishcompare",
+          "dishbento",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-landing/home",
+      "sourceOrdinal": 47,
+      "title": "Marketing landing",
+      "subtitle": "Home",
+      "spec": "screen.theme-marketing-landing",
+      "variant": "home",
+      "group": "screen.theme-marketing-landing/home",
+      "order": 579,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-landing",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero",
+          "features",
+          "testimonials",
+          "cta",
+          "faq",
+          "how",
+          "logos",
+          "numbers"
+        ],
+        "blocks": [
+          "cta",
+          "faq",
+          "features",
+          "hero",
+          "steps",
+          "logos",
+          "navbar",
+          "sitemap",
+          "stats",
+          "testimonials"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-landing/launch",
+      "sourceOrdinal": 48,
+      "title": "Marketing landing",
+      "subtitle": "Launch",
+      "spec": "screen.theme-marketing-landing",
+      "variant": "launch",
+      "group": "screen.theme-marketing-landing/launch",
+      "order": 580,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-landing",
+        "area": "launch"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero",
+          "features",
+          "testimonials",
+          "cta",
+          "proof",
+          "value",
+          "lead"
+        ],
+        "blocks": [
+          "cta",
+          "hero",
+          "iconwall",
+          "proof",
+          "navbar",
+          "sitemap",
+          "testimonials"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-landing/developers",
+      "sourceOrdinal": 49,
+      "title": "Marketing landing",
+      "subtitle": "Developers",
+      "spec": "screen.theme-marketing-landing",
+      "variant": "developers",
+      "group": "screen.theme-marketing-landing/developers",
+      "order": 581,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-landing",
+        "area": "developers"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero",
+          "features",
+          "cta",
+          "faq",
+          "catalog"
+        ],
+        "blocks": [
+          "bento",
+          "cta",
+          "faq",
+          "features",
+          "hero",
+          "navbar",
+          "sitemap",
+          "templates"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-marketing-landing/studio",
+      "sourceOrdinal": 50,
+      "title": "Marketing landing",
+      "subtitle": "Studio",
+      "spec": "screen.theme-marketing-landing",
+      "variant": "studio",
+      "group": "screen.theme-marketing-landing/studio",
+      "order": 582,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-landing",
+        "area": "studio"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero",
+          "features",
+          "testimonials",
+          "cta",
+          "logos"
+        ],
+        "blocks": [
+          "cta",
+          "features",
+          "hero",
+          "logos",
+          "navbar",
+          "sitemap",
+          "testimonials"
+        ],
+        "industry": [
+          "portfolio"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-marketing-landing/events",
+      "sourceOrdinal": 51,
+      "title": "Marketing landing",
+      "subtitle": "Events",
+      "spec": "screen.theme-marketing-landing",
+      "variant": "events",
+      "group": "screen.theme-marketing-landing/events",
+      "order": 583,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-landing",
+        "area": "events"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero",
+          "testimonials",
+          "cta",
+          "proof",
+          "numbers"
+        ],
+        "blocks": [
+          "cta",
+          "hero",
+          "navbar",
+          "sitemap",
+          "stats",
+          "testimonials",
+          "videos"
+        ],
+        "industry": [
+          "events"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-marketing-landing/company",
+      "sourceOrdinal": 52,
+      "title": "Marketing landing",
+      "subtitle": "Company",
+      "spec": "screen.theme-marketing-landing",
+      "variant": "company",
+      "group": "screen.theme-marketing-landing/company",
+      "order": 584,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-landing",
+        "area": "company"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "content"
+        ],
+        "job": [
+          "proof",
+          "navigation",
+          "value",
+          "catalog",
+          "article"
+        ],
+        "blocks": [
+          "about",
+          "jobs",
+          "navbar",
+          "pagehead",
+          "sitemap",
+          "storytabs",
+          "team",
+          "timeline"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-landing/work",
+      "sourceOrdinal": 53,
+      "title": "Marketing landing",
+      "subtitle": "Work",
+      "spec": "screen.theme-marketing-landing",
+      "variant": "work",
+      "group": "screen.theme-marketing-landing/work",
+      "order": 585,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-landing",
+        "area": "work"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "value",
+          "catalog"
+        ],
+        "blocks": [
+          "aboutme",
+          "navbar",
+          "photos",
+          "projects",
+          "sitemap"
+        ],
+        "industry": [
+          "portfolio"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-landing/teams",
+      "sourceOrdinal": 54,
+      "title": "Marketing landing",
+      "subtitle": "Teams",
+      "spec": "screen.theme-marketing-landing",
+      "variant": "teams",
+      "group": "screen.theme-marketing-landing/teams",
+      "order": 586,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-landing",
+        "area": "teams"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero",
+          "testimonials",
+          "cta",
+          "faq",
+          "proof",
+          "logos"
+        ],
+        "blocks": [
+          "ctaproof",
+          "faqsplit",
+          "herosplit",
+          "logos",
+          "navbar",
+          "sitemap",
+          "quotesplit"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-pricing/home",
+      "sourceOrdinal": 55,
+      "title": "Marketing pricing",
+      "subtitle": "Home",
+      "spec": "screen.theme-marketing-pricing",
+      "variant": "home",
+      "group": "screen.theme-marketing-pricing/home",
+      "order": 587,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-pricing",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "pricing",
+          "cta",
+          "faq",
+          "navigation",
+          "logos",
+          "comparison"
+        ],
+        "blocks": [
+          "cta",
+          "compare",
+          "faq",
+          "logos",
+          "navbar",
+          "pagehead",
+          "pricing",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-pricing/plans",
+      "sourceOrdinal": 56,
+      "title": "Marketing pricing",
+      "subtitle": "Plans",
+      "spec": "screen.theme-marketing-pricing",
+      "variant": "plans",
+      "group": "screen.theme-marketing-pricing/plans",
+      "order": 588,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-pricing",
+        "area": "plans"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "pricing",
+          "navigation",
+          "comparison"
+        ],
+        "blocks": [
+          "compare",
+          "navbar",
+          "pagehead",
+          "plan",
+          "pricing",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-pricing/usage",
+      "sourceOrdinal": 57,
+      "title": "Marketing pricing",
+      "subtitle": "Usage",
+      "spec": "screen.theme-marketing-pricing",
+      "variant": "usage",
+      "group": "screen.theme-marketing-pricing/usage",
+      "order": 589,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-pricing",
+        "area": "usage"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "pricing",
+          "cta",
+          "navigation"
+        ],
+        "blocks": [
+          "cta",
+          "credits",
+          "navbar",
+          "pagehead",
+          "pricing",
+          "sitemap",
+          "usage"
+        ],
+        "industry": [
+          "saas",
+          "finance"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-pricing/compare",
+      "sourceOrdinal": 58,
+      "title": "Marketing pricing",
+      "subtitle": "Compare",
+      "spec": "screen.theme-marketing-pricing",
+      "variant": "compare",
+      "group": "screen.theme-marketing-pricing/compare",
+      "order": 590,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-pricing",
+        "area": "compare"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero",
+          "testimonials",
+          "cta",
+          "faq",
+          "comparison"
+        ],
+        "blocks": [
+          "cta",
+          "compare",
+          "faq",
+          "hero",
+          "navbar",
+          "sitemap",
+          "testimonials"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-product/home",
+      "sourceOrdinal": 59,
+      "title": "Marketing product",
+      "subtitle": "Home",
+      "spec": "screen.theme-marketing-product",
+      "variant": "home",
+      "group": "screen.theme-marketing-product/home",
+      "order": 591,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-product",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "hero",
+          "features",
+          "value"
+        ],
+        "blocks": [
+          "bento",
+          "accordion",
+          "featureshowcase",
+          "featuretabs",
+          "features",
+          "featuresplit",
+          "hero",
+          "navbar",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-marketing-product/tour",
+      "sourceOrdinal": 60,
+      "title": "Marketing product",
+      "subtitle": "Tour",
+      "spec": "screen.theme-marketing-product",
+      "variant": "tour",
+      "group": "screen.theme-marketing-product/tour",
+      "order": 592,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-product",
+        "area": "tour"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "features",
+          "proof",
+          "navigation",
+          "value",
+          "how"
+        ],
+        "blocks": [
+          "beforeafter",
+          "steps",
+          "megamenu",
+          "navbar",
+          "pagehead",
+          "sitemap",
+          "sticky",
+          "videos"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-product/capabilities",
+      "sourceOrdinal": 61,
+      "title": "Marketing product",
+      "subtitle": "Capabilities",
+      "spec": "screen.theme-marketing-product",
+      "variant": "capabilities",
+      "group": "screen.theme-marketing-product/capabilities",
+      "order": 593,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-product",
+        "area": "capabilities"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "features",
+          "cta",
+          "navigation",
+          "value"
+        ],
+        "blocks": [
+          "beforeafter",
+          "cta",
+          "accordion",
+          "features",
+          "iconwall",
+          "navbar",
+          "pagehead",
+          "sitemap",
+          "sticky"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-marketing-product/navigation",
+      "sourceOrdinal": 62,
+      "title": "Marketing product",
+      "subtitle": "Navigation",
+      "spec": "screen.theme-marketing-product",
+      "variant": "navigation",
+      "group": "screen.theme-marketing-product/navigation",
+      "order": 594,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-marketing-product",
+        "area": "navigation"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "navigation",
+          "footer"
+        ],
+        "blocks": [
+          "footer",
+          "header",
+          "megamenu",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "saas"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-onboarding-flow/home",
+      "sourceOrdinal": 63,
+      "title": "Onboarding flow",
+      "subtitle": "Home",
+      "spec": "screen.theme-onboarding-flow",
+      "variant": "home",
+      "group": "screen.theme-onboarding-flow/home",
+      "order": 595,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-onboarding-flow",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "onboarding"
+        ],
+        "job": [
+          "navigation",
+          "how",
+          "dashboard"
+        ],
+        "blocks": [
+          "navbar",
+          "pagehead",
+          "checklist",
+          "sitemap",
+          "stepper",
+          "tour"
+        ],
+        "industry": [
+          "saas",
+          "education"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-onboarding-flow/welcome",
+      "sourceOrdinal": 64,
+      "title": "Onboarding flow",
+      "subtitle": "Welcome",
+      "spec": "screen.theme-onboarding-flow",
+      "variant": "welcome",
+      "group": "screen.theme-onboarding-flow/welcome",
+      "order": 596,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-onboarding-flow",
+        "area": "welcome"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "onboarding"
+        ],
+        "job": [
+          "navigation",
+          "how",
+          "dashboard"
+        ],
+        "blocks": [
+          "navbar",
+          "pagehead",
+          "checklist",
+          "sitemap",
+          "videomodal"
+        ],
+        "industry": [
+          "saas",
+          "education"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-onboarding-flow/setup",
+      "sourceOrdinal": 65,
+      "title": "Onboarding flow",
+      "subtitle": "Setup",
+      "spec": "screen.theme-onboarding-flow",
+      "variant": "setup",
+      "group": "screen.theme-onboarding-flow/setup",
+      "order": 597,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-onboarding-flow",
+        "area": "setup"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "dashboard",
+          "onboarding"
+        ],
+        "job": [
+          "navigation",
+          "dashboard"
+        ],
+        "blocks": [
+          "empty",
+          "navbar",
+          "pagehead",
+          "checklist",
+          "sitemap",
+          "stepper"
+        ],
+        "industry": [
+          "saas",
+          "education"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": []
+    },
+    {
+      "screenId": "screen.theme-onboarding-flow/tour",
+      "sourceOrdinal": 66,
+      "title": "Onboarding flow",
+      "subtitle": "Tour",
+      "spec": "screen.theme-onboarding-flow",
+      "variant": "tour",
+      "group": "screen.theme-onboarding-flow/tour",
+      "order": 598,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-onboarding-flow",
+        "area": "tour"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "onboarding"
+        ],
+        "job": [
+          "navigation",
+          "how",
+          "dashboard"
+        ],
+        "blocks": [
+          "navbar",
+          "pagehead",
+          "checklist",
+          "sitemap",
+          "tour",
+          "videomodal"
+        ],
+        "industry": [
+          "saas",
+          "education"
+        ]
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-promo-campaign/home",
+      "sourceOrdinal": 67,
+      "title": "Promo campaign",
+      "subtitle": "Home",
+      "spec": "screen.theme-promo-campaign",
+      "variant": "home",
+      "group": "screen.theme-promo-campaign/home",
+      "order": 599,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-promo-campaign",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "promo"
+        ],
+        "job": [
+          "hero",
+          "cta",
+          "navigation",
+          "lead"
+        ],
+        "blocks": [
+          "announcement",
+          "cta",
+          "cookie",
+          "footersplit",
+          "hero",
+          "navbar",
+          "newsletter"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-promo-campaign/launch",
+      "sourceOrdinal": 68,
+      "title": "Promo campaign",
+      "subtitle": "Launch",
+      "spec": "screen.theme-promo-campaign",
+      "variant": "launch",
+      "group": "screen.theme-promo-campaign/launch",
+      "order": 600,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-promo-campaign",
+        "area": "launch"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "promo"
+        ],
+        "job": [
+          "hero",
+          "cta",
+          "logos",
+          "lead"
+        ],
+        "blocks": [
+          "announcement",
+          "cta",
+          "footersplit",
+          "hero",
+          "logos",
+          "navbar",
+          "newsletter"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-promo-campaign/offer",
+      "sourceOrdinal": 69,
+      "title": "Promo campaign",
+      "subtitle": "Offer",
+      "spec": "screen.theme-promo-campaign",
+      "variant": "offer",
+      "group": "screen.theme-promo-campaign/offer",
+      "order": 601,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-promo-campaign",
+        "area": "offer"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "promo"
+        ],
+        "job": [
+          "cta",
+          "navigation",
+          "lead"
+        ],
+        "blocks": [
+          "announcement",
+          "cta",
+          "footersplit",
+          "navbar",
+          "newsletter",
+          "pagehead"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-promo-campaign/notices",
+      "sourceOrdinal": 70,
+      "title": "Promo campaign",
+      "subtitle": "Notices",
+      "spec": "screen.theme-promo-campaign",
+      "variant": "notices",
+      "group": "screen.theme-promo-campaign/notices",
+      "order": 602,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-promo-campaign",
+        "area": "notices"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "promo"
+        ],
+        "job": [
+          "cta",
+          "navigation",
+          "lead"
+        ],
+        "blocks": [
+          "announcement",
+          "cookie",
+          "footersplit",
+          "navbar",
+          "newsletter",
+          "pagehead"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-restaurant-house/home",
+      "sourceOrdinal": 71,
+      "title": "Restaurant house",
+      "subtitle": "Home",
+      "spec": "screen.theme-restaurant-house",
+      "variant": "home",
+      "group": "screen.theme-restaurant-house/home",
+      "order": 603,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-restaurant-house",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "lead",
+          "catalog"
+        ],
+        "blocks": [
+          "dish",
+          "menuboard",
+          "navbar",
+          "pagehead",
+          "reservation",
+          "sitemap"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2026-11-05",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-restaurant-house/menu",
+      "sourceOrdinal": 72,
+      "title": "Restaurant house",
+      "subtitle": "Menu",
+      "spec": "screen.theme-restaurant-house",
+      "variant": "menu",
+      "group": "screen.theme-restaurant-house/menu",
+      "order": 604,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-restaurant-house",
+        "area": "menu"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "dish",
+          "menuboard",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2026-11-05",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-restaurant-house/book",
+      "sourceOrdinal": 73,
+      "title": "Restaurant house",
+      "subtitle": "Book",
+      "spec": "screen.theme-restaurant-house",
+      "variant": "book",
+      "group": "screen.theme-restaurant-house/book",
+      "order": 605,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-restaurant-house",
+        "area": "book"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "lead",
+          "catalog"
+        ],
+        "blocks": [
+          "navbar",
+          "pagehead",
+          "reservation",
+          "sitemap"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2026-11-05",
+      "missingFacets": [
+        "character",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-restaurant-house/room",
+      "sourceOrdinal": 74,
+      "title": "Restaurant house",
+      "subtitle": "Room",
+      "spec": "screen.theme-restaurant-house",
+      "variant": "room",
+      "group": "screen.theme-restaurant-house/room",
+      "order": 606,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-restaurant-house",
+        "area": "room"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "commerce"
+        ],
+        "job": [
+          "navigation",
+          "catalog"
+        ],
+        "blocks": [
+          "lightboxgallery",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": [
+          "food",
+          "ecommerce"
+        ]
+      },
+      "added": "2026-11-05",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-support-center/home",
+      "sourceOrdinal": 75,
+      "title": "Support center",
+      "subtitle": "Home",
+      "spec": "screen.theme-support-center",
+      "variant": "home",
+      "group": "screen.theme-support-center/home",
+      "order": 607,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-support-center",
+        "area": "home"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "support"
+        ],
+        "job": [
+          "faq",
+          "proof",
+          "navigation",
+          "contacts"
+        ],
+        "blocks": [
+          "contact",
+          "faq",
+          "medialist",
+          "navbar",
+          "pagehead",
+          "sitemap",
+          "channels"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character"
+      ]
+    },
+    {
+      "screenId": "screen.theme-support-center/faq",
+      "sourceOrdinal": 76,
+      "title": "Support center",
+      "subtitle": "Faq",
+      "spec": "screen.theme-support-center",
+      "variant": "faq",
+      "group": "screen.theme-support-center/faq",
+      "order": 608,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-support-center",
+        "area": "faq"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing"
+        ],
+        "job": [
+          "faq",
+          "navigation"
+        ],
+        "blocks": [
+          "faq",
+          "navbar",
+          "pagehead",
+          "sitemap"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-support-center/contact",
+      "sourceOrdinal": 77,
+      "title": "Support center",
+      "subtitle": "Contact",
+      "spec": "screen.theme-support-center",
+      "variant": "contact",
+      "group": "screen.theme-support-center/contact",
+      "order": 609,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-support-center",
+        "area": "contact"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "marketing",
+          "support"
+        ],
+        "job": [
+          "navigation",
+          "contacts"
+        ],
+        "blocks": [
+          "contact",
+          "navbar",
+          "pagehead",
+          "sitemap",
+          "channels"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "pattern"
+      ]
+    },
+    {
+      "screenId": "screen.theme-support-center/missing",
+      "sourceOrdinal": 78,
+      "title": "Support center",
+      "subtitle": "Missing",
+      "spec": "screen.theme-support-center",
+      "variant": "missing",
+      "group": "screen.theme-support-center/missing",
+      "order": 610,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-support-center",
+        "area": "missing"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "support"
+        ],
+        "job": [
+          "navigation",
+          "dashboard"
+        ],
+        "blocks": [
+          "errorpage",
+          "navbar",
+          "sitemap"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density",
+        "media"
+      ]
+    },
+    {
+      "screenId": "screen.theme-support-center/moved",
+      "sourceOrdinal": 79,
+      "title": "Support center",
+      "subtitle": "Moved",
+      "spec": "screen.theme-support-center",
+      "variant": "moved",
+      "group": "screen.theme-support-center/moved",
+      "order": 611,
+      "preview": {
+        "kind": "screen",
+        "screen": "theme-support-center",
+        "area": "moved"
+      },
+      "labels": {
+        "type": [
+          "screen"
+        ],
+        "section": [
+          "support"
+        ],
+        "job": [
+          "navigation",
+          "contacts",
+          "dashboard"
+        ],
+        "blocks": [
+          "errorpage",
+          "navbar",
+          "sitemap",
+          "channels"
+        ],
+        "industry": []
+      },
+      "added": "2025-01-01",
+      "missingFacets": [
+        "character",
+        "density"
+      ]
+    }
+  ],
+  "blockIndex": [
+    {
+      "blockId": "about",
+      "spec": "block.about",
+      "catalogIds": [
+        "block.about/split",
+        "block.about/stacked",
+        "block.about/muted"
+      ],
+      "variants": [
+        "split",
+        "stacked",
+        "muted"
+      ],
+      "title": "About the company",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "aboutme",
+      "spec": "block.aboutme",
+      "catalogIds": [
+        "block.aboutme/facts",
+        "block.aboutme/factsEnd",
+        "block.aboutme/skills",
+        "block.aboutme/skillsMuted"
+      ],
+      "variants": [
+        "facts",
+        "factsEnd",
+        "skills",
+        "skillsMuted"
+      ],
+      "title": "About me",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "accordion",
+      "spec": "block.accordion",
+      "catalogIds": [
+        "block.accordion/first",
+        "block.accordion/closed",
+        "block.accordion/media",
+        "block.accordion/muted"
+      ],
+      "variants": [
+        "first",
+        "closed",
+        "media",
+        "muted"
+      ],
+      "title": "Feature accordion",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "activity",
+      "spec": "block.activity",
+      "catalogIds": [
+        "block.activity/timeline",
+        "block.activity/list",
+        "block.activity/compact",
+        "block.activity/muted"
+      ],
+      "variants": [
+        "timeline",
+        "list",
+        "compact",
+        "muted"
+      ],
+      "title": "Activity feed",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "announcement",
+      "spec": "block.announcement",
+      "catalogIds": [
+        "block.announcement/bar",
+        "block.announcement/badge",
+        "block.announcement/bottom",
+        "block.announcement/muted",
+        "block.announcement/split",
+        "block.announcement/dismissible",
+        "block.announcement/shop",
+        "block.announcement/agency"
+      ],
+      "variants": [
+        "bar",
+        "badge",
+        "bottom",
+        "muted",
+        "split",
+        "dismissible",
+        "shop",
+        "agency"
+      ],
+      "title": "Announcement bar",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "article",
+      "spec": "block.article",
+      "catalogIds": [
+        "block.article/column",
+        "block.article/toc",
+        "block.article/plain",
+        "block.article/muted"
+      ],
+      "variants": [
+        "column",
+        "toc",
+        "plain",
+        "muted"
+      ],
+      "title": "Article",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "auth",
+      "spec": "block.auth",
+      "catalogIds": [
+        "block.auth/signin",
+        "block.auth/magic",
+        "block.auth/socialFirst",
+        "block.auth/signup",
+        "block.auth/reset",
+        "block.auth/plain",
+        "block.auth/social",
+        "block.auth/signupSocial"
+      ],
+      "variants": [
+        "signin",
+        "magic",
+        "socialFirst",
+        "signup",
+        "reset",
+        "plain",
+        "social",
+        "signupSocial"
+      ],
+      "title": "Auth card",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "authpage",
+      "spec": "block.authpage",
+      "catalogIds": [
+        "block.authpage/split",
+        "block.authpage/splitStart",
+        "block.authpage/centered",
+        "block.authpage/minimal",
+        "block.authpage/signup",
+        "block.authpage/reset",
+        "block.authpage/magic",
+        "block.authpage/social"
+      ],
+      "variants": [
+        "split",
+        "splitStart",
+        "centered",
+        "minimal",
+        "signup",
+        "reset",
+        "magic",
+        "social"
+      ],
+      "title": "Sign-in page",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "beforeafter",
+      "spec": "block.beforeafter",
+      "catalogIds": [
+        "block.beforeafter/cards",
+        "block.beforeafter/rows",
+        "block.beforeafter/plain",
+        "block.beforeafter/muted"
+      ],
+      "variants": [
+        "cards",
+        "rows",
+        "plain",
+        "muted"
+      ],
+      "title": "Before and after",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "bento",
+      "spec": "block.bento",
+      "catalogIds": [
+        "block.bento/bento",
+        "block.bento/even",
+        "block.bento/images",
+        "block.bento/muted"
+      ],
+      "variants": [
+        "bento",
+        "even",
+        "images",
+        "muted"
+      ],
+      "title": "Bento grid",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "bottomnav",
+      "spec": "block.bottomnav",
+      "catalogIds": [
+        "block.bottomnav/labels",
+        "block.bottomnav/icons",
+        "block.bottomnav/sticky",
+        "block.bottomnav/muted"
+      ],
+      "variants": [
+        "labels",
+        "icons",
+        "sticky",
+        "muted"
+      ],
+      "title": "Bottom tab bar",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "cart",
+      "spec": "block.cart",
+      "catalogIds": [
+        "block.cart/table",
+        "block.cart/cards",
+        "block.cart/tableCompact",
+        "block.cart/cardsPlain"
+      ],
+      "variants": [
+        "table",
+        "cards",
+        "tableCompact",
+        "cardsPlain"
+      ],
+      "title": "Cart",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "cartdrawer",
+      "spec": "block.cartdrawer",
+      "catalogIds": [
+        "block.cartdrawer/filled",
+        "block.cartdrawer/compact",
+        "block.cartdrawer/empty"
+      ],
+      "variants": [
+        "filled",
+        "compact",
+        "empty"
+      ],
+      "title": "Cart drawer",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "cartpage",
+      "spec": "block.cartpage",
+      "catalogIds": [
+        "block.cartpage/split",
+        "block.cartpage/stacked",
+        "block.cartpage/plain"
+      ],
+      "variants": [
+        "split",
+        "stacked",
+        "plain"
+      ],
+      "title": "Cart page",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "categories",
+      "spec": "block.categories",
+      "catalogIds": [
+        "block.categories/chips",
+        "block.categories/bar",
+        "block.categories/sidebar",
+        "block.categories/chipsPlain",
+        "block.categories/barCompact",
+        "block.categories/tiles",
+        "block.categories/toolbar"
+      ],
+      "variants": [
+        "chips",
+        "bar",
+        "sidebar",
+        "chipsPlain",
+        "barCompact",
+        "tiles",
+        "toolbar"
+      ],
+      "title": "Category navigation",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "channels",
+      "spec": "block.channels",
+      "catalogIds": [
+        "block.channels/grid",
+        "block.channels/twoUp",
+        "block.channels/list",
+        "block.channels/plain"
+      ],
+      "variants": [
+        "grid",
+        "twoUp",
+        "list",
+        "plain"
+      ],
+      "title": "Support channels",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "chart",
+      "spec": "block.chart",
+      "catalogIds": [
+        "block.chart/bars",
+        "block.chart/short",
+        "block.chart/meters",
+        "block.chart/muted"
+      ],
+      "variants": [
+        "bars",
+        "short",
+        "meters",
+        "muted"
+      ],
+      "title": "Chart panel",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "checklist",
+      "spec": "block.checklist",
+      "catalogIds": [
+        "block.checklist/card",
+        "block.checklist/expand",
+        "block.checklist/plain",
+        "block.checklist/text",
+        "block.checklist/none",
+        "block.checklist/numbered",
+        "block.checklist/muted"
+      ],
+      "variants": [
+        "card",
+        "expand",
+        "plain",
+        "text",
+        "none",
+        "numbered",
+        "muted"
+      ],
+      "title": "Setup checklist",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "checkout",
+      "spec": "block.checkout",
+      "catalogIds": [
+        "block.checkout/cards",
+        "block.checkout/numbered",
+        "block.checkout/noSummary"
+      ],
+      "variants": [
+        "cards",
+        "numbered",
+        "noSummary"
+      ],
+      "title": "Checkout",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "combobuilder",
+      "spec": "block.combobuilder",
+      "catalogIds": [
+        "block.combobuilder/split",
+        "block.combobuilder/stacked"
+      ],
+      "variants": [
+        "split",
+        "stacked"
+      ],
+      "title": "Combo builder",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "compare",
+      "spec": "block.compare",
+      "catalogIds": [
+        "block.compare/plans",
+        "block.compare/highlight",
+        "block.compare/rivals",
+        "block.compare/muted"
+      ],
+      "variants": [
+        "plans",
+        "highlight",
+        "rivals",
+        "muted"
+      ],
+      "title": "Comparison table",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "contact",
+      "spec": "block.contact",
+      "catalogIds": [
+        "block.contact/single",
+        "block.contact/page",
+        "block.contact/short",
+        "block.contact/split",
+        "block.contact/consent",
+        "block.contact/muted"
+      ],
+      "variants": [
+        "single",
+        "page",
+        "short",
+        "split",
+        "consent",
+        "muted"
+      ],
+      "title": "Contact form",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "cookie",
+      "spec": "block.cookie",
+      "catalogIds": [
+        "block.cookie/bar",
+        "block.cookie/card",
+        "block.cookie/settings",
+        "block.cookie/muted"
+      ],
+      "variants": [
+        "bar",
+        "card",
+        "settings",
+        "muted"
+      ],
+      "title": "Cookie notice",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "credits",
+      "spec": "block.credits",
+      "catalogIds": [
+        "block.credits/tiles4",
+        "block.credits/tiles2",
+        "block.credits/rows",
+        "block.credits/muted"
+      ],
+      "variants": [
+        "tiles4",
+        "tiles2",
+        "rows",
+        "muted"
+      ],
+      "title": "Credit packs",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "cta",
+      "spec": "block.cta",
+      "catalogIds": [
+        "block.cta/card",
+        "block.cta/banner",
+        "block.cta/row",
+        "block.cta/form",
+        "block.cta/quote",
+        "block.cta/band",
+        "block.cta/split",
+        "block.cta/compact"
+      ],
+      "variants": [
+        "card",
+        "banner",
+        "row",
+        "form",
+        "quote",
+        "band",
+        "split",
+        "compact"
+      ],
+      "title": "Call to action",
+      "available": true,
+      "rendererKind": "cta",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "ctaproof",
+      "spec": "block.ctaproof",
+      "catalogIds": [
+        "block.ctaproof/centerLogos",
+        "block.ctaproof/centerFeatures",
+        "block.ctaproof/centerStats",
+        "block.ctaproof/splitStats",
+        "block.ctaproof/splitStatsStart",
+        "block.ctaproof/splitRows",
+        "block.ctaproof/splitZones"
+      ],
+      "variants": [
+        "centerLogos",
+        "centerFeatures",
+        "centerStats",
+        "splitStats",
+        "splitStatsStart",
+        "splitRows",
+        "splitZones"
+      ],
+      "title": "Call to action, with proof",
+      "available": true,
+      "rendererKind": "cta",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "dashshell",
+      "spec": "block.dashshell",
+      "catalogIds": [
+        "block.dashshell/classic",
+        "block.dashshell/inset",
+        "block.dashshell/rail",
+        "block.dashshell/railFooter",
+        "block.dashshell/collapsed",
+        "block.dashshell/twoLevel",
+        "block.dashshell/twoLevelFull",
+        "block.dashshell/end"
+      ],
+      "variants": [
+        "classic",
+        "inset",
+        "rail",
+        "railFooter",
+        "collapsed",
+        "twoLevel",
+        "twoLevelFull",
+        "end"
+      ],
+      "title": "Dashboard shell",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "delivery",
+      "spec": "block.delivery",
+      "catalogIds": [
+        "block.delivery/full",
+        "block.delivery/split",
+        "block.delivery/facts"
+      ],
+      "variants": [
+        "full",
+        "split",
+        "facts"
+      ],
+      "title": "Delivery info",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "dish",
+      "spec": "block.dish",
+      "catalogIds": [
+        "block.dish/vertical",
+        "block.dish/horizontal",
+        "block.dish/textOnly",
+        "block.dish/compact",
+        "block.dish/browse"
+      ],
+      "variants": [
+        "vertical",
+        "horizontal",
+        "textOnly",
+        "compact",
+        "browse"
+      ],
+      "title": "Dish card",
+      "available": true,
+      "rendererKind": "dish",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "dishbento",
+      "spec": "block.dishbento",
+      "catalogIds": [
+        "block.dishbento/start",
+        "block.dishbento/end"
+      ],
+      "variants": [
+        "start",
+        "end"
+      ],
+      "title": "Dish bento",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "dishcart",
+      "spec": "block.dishcart",
+      "catalogIds": [
+        "block.dishcart/cards",
+        "block.dishcart/textOnly"
+      ],
+      "variants": [
+        "cards",
+        "textOnly"
+      ],
+      "title": "Dish cart grid",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "dishcompare",
+      "spec": "block.dishcompare",
+      "catalogIds": [
+        "block.dishcompare/table",
+        "block.dishcompare/cards"
+      ],
+      "variants": [
+        "table",
+        "cards"
+      ],
+      "title": "Cut compare",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "dishshowcase",
+      "spec": "block.dishshowcase",
+      "catalogIds": [
+        "block.dishshowcase/grid3",
+        "block.dishshowcase/grid4",
+        "block.dishshowcase/muted"
+      ],
+      "variants": [
+        "grid3",
+        "grid4",
+        "muted"
+      ],
+      "title": "Dish showcase",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "dishstrip",
+      "spec": "block.dishstrip",
+      "catalogIds": [
+        "block.dishstrip/small",
+        "block.dishstrip/large"
+      ],
+      "variants": [
+        "small",
+        "large"
+      ],
+      "title": "Dish strip",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "empty",
+      "spec": "block.empty",
+      "catalogIds": [
+        "block.empty/illustrated",
+        "block.empty/orders",
+        "block.empty/results",
+        "block.empty/inbox",
+        "block.empty/compact",
+        "block.empty/plainNoAction"
+      ],
+      "variants": [
+        "illustrated",
+        "orders",
+        "results",
+        "inbox",
+        "compact",
+        "plainNoAction"
+      ],
+      "title": "Empty state",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "errorpage",
+      "spec": "block.errorpage",
+      "catalogIds": [
+        "block.errorpage/centered",
+        "block.errorpage/split",
+        "block.errorpage/noCode",
+        "block.errorpage/two",
+        "block.errorpage/muted"
+      ],
+      "variants": [
+        "centered",
+        "split",
+        "noCode",
+        "two",
+        "muted"
+      ],
+      "title": "Error page",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "faq",
+      "spec": "block.faq",
+      "catalogIds": [
+        "block.faq/list",
+        "block.faq/chat",
+        "block.faq/search",
+        "block.faq/tabs",
+        "block.faq/twoColumns",
+        "block.faq/muted",
+        "block.faq/roomy"
+      ],
+      "variants": [
+        "list",
+        "chat",
+        "search",
+        "tabs",
+        "twoColumns",
+        "muted",
+        "roomy"
+      ],
+      "title": "FAQ",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "faqsplit",
+      "spec": "block.faqsplit",
+      "catalogIds": [
+        "block.faqsplit/headSplit",
+        "block.faqsplit/helpCard",
+        "block.faqsplit/picture",
+        "block.faqsplit/finder",
+        "block.faqsplit/cards3",
+        "block.faqsplit/cards4",
+        "block.faqsplit/cardsIcons"
+      ],
+      "variants": [
+        "headSplit",
+        "helpCard",
+        "picture",
+        "finder",
+        "cards3",
+        "cards4",
+        "cardsIcons"
+      ],
+      "title": "FAQ, split",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "features",
+      "spec": "block.features",
+      "catalogIds": [
+        "block.features/grid",
+        "block.features/grid2",
+        "block.features/tiles4",
+        "block.features/cells4",
+        "block.features/rows",
+        "block.features/rowsStart",
+        "block.features/rowsAlternate",
+        "block.features/tilesMuted"
+      ],
+      "variants": [
+        "grid",
+        "grid2",
+        "tiles4",
+        "cells4",
+        "rows",
+        "rowsStart",
+        "rowsAlternate",
+        "tilesMuted"
+      ],
+      "title": "Features",
+      "available": true,
+      "rendererKind": "features",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "featureshowcase",
+      "spec": "block.featureshowcase",
+      "catalogIds": [
+        "block.featureshowcase/pictureCards3",
+        "block.featureshowcase/panelCards4",
+        "block.featureshowcase/pictureCards4",
+        "block.featureshowcase/panelCards3"
+      ],
+      "variants": [
+        "pictureCards3",
+        "panelCards4",
+        "pictureCards4",
+        "panelCards3"
+      ],
+      "title": "Feature cards with a picture",
+      "available": true,
+      "rendererKind": "features",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "featuresplit",
+      "spec": "block.featuresplit",
+      "catalogIds": [
+        "block.featuresplit/gridStart",
+        "block.featuresplit/statsStart",
+        "block.featuresplit/gridMuted",
+        "block.featuresplit/metricCards",
+        "block.featuresplit/featureCards"
+      ],
+      "variants": [
+        "gridStart",
+        "statsStart",
+        "gridMuted",
+        "metricCards",
+        "featureCards"
+      ],
+      "title": "Features, split",
+      "available": true,
+      "rendererKind": "features",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "featuretabs",
+      "spec": "block.featuretabs",
+      "catalogIds": [
+        "block.featuretabs/split",
+        "block.featuretabs/stack",
+        "block.featuretabs/muted"
+      ],
+      "variants": [
+        "split",
+        "stack",
+        "muted"
+      ],
+      "title": "Feature tabs",
+      "available": true,
+      "rendererKind": "features",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "footer",
+      "spec": "block.footer",
+      "catalogIds": [
+        "block.footer/minimal",
+        "block.footer/centered",
+        "block.footer/compact"
+      ],
+      "variants": [
+        "minimal",
+        "centered",
+        "compact"
+      ],
+      "title": "Footer",
+      "available": true,
+      "rendererKind": "footer",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "footersplit",
+      "spec": "block.footersplit",
+      "catalogIds": [
+        "block.footersplit/statsCards",
+        "block.footersplit/splitPoints",
+        "block.footersplit/splitLinks",
+        "block.footersplit/newsletterStart",
+        "block.footersplit/splitContacts",
+        "block.footersplit/channelsStart"
+      ],
+      "variants": [
+        "statsCards",
+        "splitPoints",
+        "splitLinks",
+        "newsletterStart",
+        "splitContacts",
+        "channelsStart"
+      ],
+      "title": "Footer, split",
+      "available": true,
+      "rendererKind": "footer",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "grillbuilder",
+      "spec": "block.grillbuilder",
+      "catalogIds": [
+        "block.grillbuilder/split",
+        "block.grillbuilder/stacked"
+      ],
+      "variants": [
+        "split",
+        "stacked"
+      ],
+      "title": "Grill dish builder",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "grocerylist",
+      "spec": "block.grocerylist",
+      "catalogIds": [
+        "block.grocerylist/twoCols",
+        "block.grocerylist/plain"
+      ],
+      "variants": [
+        "twoCols",
+        "plain"
+      ],
+      "title": "Grocery list",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "header",
+      "spec": "block.header",
+      "catalogIds": [
+        "block.header/inline",
+        "block.header/stacked",
+        "block.header/sticky",
+        "block.header/withCta"
+      ],
+      "variants": [
+        "inline",
+        "stacked",
+        "sticky",
+        "withCta"
+      ],
+      "title": "Header",
+      "available": true,
+      "rendererKind": "nav",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "hero",
+      "spec": "block.hero",
+      "catalogIds": [
+        "block.hero/centered",
+        "block.hero/screenshot",
+        "block.hero/backdrop",
+        "block.hero/code",
+        "block.hero/cluster",
+        "block.hero/display",
+        "block.hero/form",
+        "block.hero/prompt"
+      ],
+      "variants": [
+        "centered",
+        "screenshot",
+        "backdrop",
+        "code",
+        "cluster",
+        "display",
+        "form",
+        "prompt"
+      ],
+      "title": "Hero",
+      "available": true,
+      "rendererKind": "hero",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "herosplit",
+      "spec": "block.herosplit",
+      "catalogIds": [
+        "block.herosplit/statsCards",
+        "block.herosplit/avatars",
+        "block.herosplit/miniCards",
+        "block.herosplit/quoteStats",
+        "block.herosplit/planCards",
+        "block.herosplit/pictureGrid",
+        "block.herosplit/pictureGridStart"
+      ],
+      "variants": [
+        "statsCards",
+        "avatars",
+        "miniCards",
+        "quoteStats",
+        "planCards",
+        "pictureGrid",
+        "pictureGridStart"
+      ],
+      "title": "Hero, split",
+      "available": true,
+      "rendererKind": "hero",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "iconwall",
+      "spec": "block.iconwall",
+      "catalogIds": [
+        "block.iconwall/tiles4",
+        "block.iconwall/tiles3",
+        "block.iconwall/chips6",
+        "block.iconwall/chips4",
+        "block.iconwall/muted"
+      ],
+      "variants": [
+        "tiles4",
+        "tiles3",
+        "chips6",
+        "chips4",
+        "muted"
+      ],
+      "title": "Icon wall",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "jobs",
+      "spec": "block.jobs",
+      "catalogIds": [
+        "block.jobs/grid",
+        "block.jobs/salary",
+        "block.jobs/grouped",
+        "block.jobs/table"
+      ],
+      "variants": [
+        "grid",
+        "salary",
+        "grouped",
+        "table"
+      ],
+      "title": "Careers",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "kanban",
+      "spec": "block.kanban",
+      "catalogIds": [
+        "block.kanban/detail",
+        "block.kanban/simple",
+        "block.kanban/twoCols",
+        "block.kanban/muted"
+      ],
+      "variants": [
+        "detail",
+        "simple",
+        "twoCols",
+        "muted"
+      ],
+      "title": "Kanban board",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "lightboxgallery",
+      "spec": "block.lightboxgallery",
+      "catalogIds": [
+        "block.lightboxgallery/grid",
+        "block.lightboxgallery/masonry",
+        "block.lightboxgallery/featured",
+        "block.lightboxgallery/open"
+      ],
+      "variants": [
+        "grid",
+        "masonry",
+        "featured",
+        "open"
+      ],
+      "title": "Lightbox gallery",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "locations",
+      "spec": "block.locations",
+      "catalogIds": [
+        "block.locations/cards",
+        "block.locations/list",
+        "block.locations/map"
+      ],
+      "variants": [
+        "cards",
+        "list",
+        "map"
+      ],
+      "title": "Store locations",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "logos",
+      "spec": "block.logos",
+      "catalogIds": [
+        "block.logos/grid4",
+        "block.logos/grid3",
+        "block.logos/row",
+        "block.logos/icons",
+        "block.logos/grid2",
+        "block.logos/tiles4"
+      ],
+      "variants": [
+        "grid4",
+        "grid3",
+        "row",
+        "icons",
+        "grid2",
+        "tiles4"
+      ],
+      "title": "Logo cloud",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "medialist",
+      "spec": "block.medialist",
+      "catalogIds": [
+        "block.medialist/figuresStart",
+        "block.medialist/proofReview",
+        "block.medialist/stepsRows",
+        "block.medialist/latestPosts",
+        "block.medialist/topicRows",
+        "block.medialist/contactStart"
+      ],
+      "variants": [
+        "figuresStart",
+        "proofReview",
+        "stepsRows",
+        "latestPosts",
+        "topicRows",
+        "contactStart"
+      ],
+      "title": "List beside a picture",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "megamenu",
+      "spec": "block.megamenu",
+      "catalogIds": [
+        "block.megamenu/open",
+        "block.megamenu/closed",
+        "block.megamenu/twoCols",
+        "block.megamenu/promo"
+      ],
+      "variants": [
+        "open",
+        "closed",
+        "twoCols",
+        "promo"
+      ],
+      "title": "Mega menu",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "menuboard",
+      "spec": "block.menuboard",
+      "catalogIds": [
+        "block.menuboard/sections",
+        "block.menuboard/grid",
+        "block.menuboard/list",
+        "block.menuboard/noPrices",
+        "block.menuboard/compact"
+      ],
+      "variants": [
+        "sections",
+        "grid",
+        "list",
+        "noPrices",
+        "compact"
+      ],
+      "title": "Menu board",
+      "available": true,
+      "rendererKind": "menu",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "metrics",
+      "spec": "block.metrics",
+      "catalogIds": [
+        "block.metrics/tiles",
+        "block.metrics/twoUp",
+        "block.metrics/compact",
+        "block.metrics/muted"
+      ],
+      "variants": [
+        "tiles",
+        "twoUp",
+        "compact",
+        "muted"
+      ],
+      "title": "Metric tiles",
+      "available": true,
+      "rendererKind": "features",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "navbar",
+      "spec": "block.navbar",
+      "catalogIds": [
+        "block.navbar/inline",
+        "block.navbar/split",
+        "block.navbar/search",
+        "block.navbar/media",
+        "block.navbar/plain",
+        "block.navbar/inverse"
+      ],
+      "variants": [
+        "inline",
+        "split",
+        "search",
+        "media",
+        "plain",
+        "inverse"
+      ],
+      "title": "Navigation bar",
+      "available": true,
+      "rendererKind": "nav",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "newsletter",
+      "spec": "block.newsletter",
+      "catalogIds": [
+        "block.newsletter/inline",
+        "block.newsletter/stacked",
+        "block.newsletter/split",
+        "block.newsletter/consent",
+        "block.newsletter/muted"
+      ],
+      "variants": [
+        "inline",
+        "stacked",
+        "split",
+        "consent",
+        "muted"
+      ],
+      "title": "Newsletter sign-up",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "orders",
+      "spec": "block.orders",
+      "catalogIds": [
+        "block.orders/table",
+        "block.orders/cards",
+        "block.orders/noPager",
+        "block.orders/compactMuted"
+      ],
+      "variants": [
+        "table",
+        "cards",
+        "noPager",
+        "compactMuted"
+      ],
+      "title": "Order history",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "overview",
+      "spec": "block.overview",
+      "catalogIds": [
+        "block.overview/split",
+        "block.overview/stacked",
+        "block.overview/twoCols",
+        "block.overview/muted"
+      ],
+      "variants": [
+        "split",
+        "stacked",
+        "twoCols",
+        "muted"
+      ],
+      "title": "Dashboard overview",
+      "available": true,
+      "rendererKind": "features",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "pagehead",
+      "spec": "block.pagehead",
+      "catalogIds": [
+        "block.pagehead/start",
+        "block.pagehead/center",
+        "block.pagehead/muted"
+      ],
+      "variants": [
+        "start",
+        "center",
+        "muted"
+      ],
+      "title": "Page heading",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "pagetrail",
+      "spec": "block.pagetrail",
+      "catalogIds": [
+        "block.pagetrail/crumbs",
+        "block.pagetrail/crumbsFigure",
+        "block.pagetrail/crumbsNote",
+        "block.pagetrail/keyFacts"
+      ],
+      "variants": [
+        "crumbs",
+        "crumbsFigure",
+        "crumbsNote",
+        "keyFacts"
+      ],
+      "title": "Page heading with breadcrumbs",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "photos",
+      "spec": "block.photos",
+      "catalogIds": [
+        "block.photos/grid",
+        "block.photos/gridPlain",
+        "block.photos/masonry",
+        "block.photos/mosaic",
+        "block.photos/featured",
+        "block.photos/cards"
+      ],
+      "variants": [
+        "grid",
+        "gridPlain",
+        "masonry",
+        "mosaic",
+        "featured",
+        "cards"
+      ],
+      "title": "Photo gallery",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "pizzapicker",
+      "spec": "block.pizzapicker",
+      "catalogIds": [
+        "block.pizzapicker/cards",
+        "block.pizzapicker/rows"
+      ],
+      "variants": [
+        "cards",
+        "rows"
+      ],
+      "title": "Pizza picker",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "plan",
+      "spec": "block.plan",
+      "catalogIds": [
+        "block.plan/standard",
+        "block.plan/flat",
+        "block.plan/compact"
+      ],
+      "variants": [
+        "standard",
+        "flat",
+        "compact"
+      ],
+      "title": "Plan",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "postheader",
+      "spec": "block.postheader",
+      "catalogIds": [
+        "block.postheader/start",
+        "block.postheader/center",
+        "block.postheader/noCover",
+        "block.postheader/minimal"
+      ],
+      "variants": [
+        "start",
+        "center",
+        "noCover",
+        "minimal"
+      ],
+      "title": "Post header",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "posts",
+      "spec": "block.posts",
+      "catalogIds": [
+        "block.posts/grid",
+        "block.posts/filters",
+        "block.posts/twoUp",
+        "block.posts/row4",
+        "block.posts/news4",
+        "block.posts/list",
+        "block.posts/listPaged",
+        "block.posts/listLinks"
+      ],
+      "variants": [
+        "grid",
+        "filters",
+        "twoUp",
+        "row4",
+        "news4",
+        "list",
+        "listPaged",
+        "listLinks"
+      ],
+      "title": "Blog posts",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "postshowcase",
+      "spec": "block.postshowcase",
+      "catalogIds": [
+        "block.postshowcase/introCards",
+        "block.postshowcase/featuredEnd",
+        "block.postshowcase/overlay3",
+        "block.postshowcase/overlay2"
+      ],
+      "variants": [
+        "introCards",
+        "featuredEnd",
+        "overlay3",
+        "overlay2"
+      ],
+      "title": "Post showcase",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "postsplit",
+      "spec": "block.postsplit",
+      "catalogIds": [
+        "block.postsplit/centerShare",
+        "block.postsplit/splitTags",
+        "block.postsplit/splitBioStart",
+        "block.postsplit/splitSquare",
+        "block.postsplit/outlineStart",
+        "block.postsplit/splitStats"
+      ],
+      "variants": [
+        "centerShare",
+        "splitTags",
+        "splitBioStart",
+        "splitSquare",
+        "outlineStart",
+        "splitStats"
+      ],
+      "title": "Post header, split",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "pricing",
+      "spec": "block.pricing",
+      "catalogIds": [
+        "block.pricing/grid",
+        "block.pricing/monthly",
+        "block.pricing/annual",
+        "block.pricing/duo",
+        "block.pricing/grid2",
+        "block.pricing/grid4",
+        "block.pricing/stack",
+        "block.pricing/flat"
+      ],
+      "variants": [
+        "grid",
+        "monthly",
+        "annual",
+        "duo",
+        "grid2",
+        "grid4",
+        "stack",
+        "flat"
+      ],
+      "title": "Pricing",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "product",
+      "spec": "block.product",
+      "catalogIds": [
+        "block.product/split",
+        "block.product/splitEnd",
+        "block.product/stacked",
+        "block.product/compact",
+        "block.product/muted"
+      ],
+      "variants": [
+        "split",
+        "splitEnd",
+        "stacked",
+        "compact",
+        "muted"
+      ],
+      "title": "Product page",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "productinfo",
+      "spec": "block.productinfo",
+      "catalogIds": [
+        "block.productinfo/split",
+        "block.productinfo/stacked",
+        "block.productinfo/closed"
+      ],
+      "variants": [
+        "split",
+        "stacked",
+        "closed"
+      ],
+      "title": "Product details",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "products",
+      "spec": "block.products",
+      "catalogIds": [
+        "block.products/grid3",
+        "block.products/grid4",
+        "block.products/grid2",
+        "block.products/list",
+        "block.products/catalog",
+        "block.products/browse",
+        "block.products/showcase",
+        "block.products/rail"
+      ],
+      "variants": [
+        "grid3",
+        "grid4",
+        "grid2",
+        "list",
+        "catalog",
+        "browse",
+        "showcase",
+        "rail"
+      ],
+      "title": "Product grid",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "profile",
+      "spec": "block.profile",
+      "catalogIds": [
+        "block.profile/stacked",
+        "block.profile/split",
+        "block.profile/minimal",
+        "block.profile/muted"
+      ],
+      "variants": [
+        "stacked",
+        "split",
+        "minimal",
+        "muted"
+      ],
+      "title": "Profile form",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "projects",
+      "spec": "block.projects",
+      "catalogIds": [
+        "block.projects/cards",
+        "block.projects/compact",
+        "block.projects/overlay",
+        "block.projects/bento",
+        "block.projects/list",
+        "block.projects/cardsMuted"
+      ],
+      "variants": [
+        "cards",
+        "compact",
+        "overlay",
+        "bento",
+        "list",
+        "cardsMuted"
+      ],
+      "title": "Projects",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "proof",
+      "spec": "block.proof",
+      "catalogIds": [
+        "block.proof/above",
+        "block.proof/beside",
+        "block.proof/icons",
+        "block.proof/muted"
+      ],
+      "variants": [
+        "above",
+        "beside",
+        "icons",
+        "muted"
+      ],
+      "title": "Logos and stats",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "quickorder",
+      "spec": "block.quickorder",
+      "catalogIds": [
+        "block.quickorder/phone",
+        "block.quickorder/rows"
+      ],
+      "variants": [
+        "phone",
+        "rows"
+      ],
+      "title": "Quick order",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "quotesplit",
+      "spec": "block.quotesplit",
+      "catalogIds": [
+        "block.quotesplit/quoteCard",
+        "block.quotesplit/logoTiles",
+        "block.quotesplit/ratingPanel",
+        "block.quotesplit/stackedCards",
+        "block.quotesplit/compact4",
+        "block.quotesplit/bentoFigures"
+      ],
+      "variants": [
+        "quoteCard",
+        "logoTiles",
+        "ratingPanel",
+        "stackedCards",
+        "compact4",
+        "bentoFigures"
+      ],
+      "title": "Testimonials, split",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "recipekits",
+      "spec": "block.recipekits",
+      "catalogIds": [
+        "block.recipekits/rows",
+        "block.recipekits/cards"
+      ],
+      "variants": [
+        "rows",
+        "cards"
+      ],
+      "title": "Recipe kits",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "reservation",
+      "spec": "block.reservation",
+      "catalogIds": [
+        "block.reservation/single",
+        "block.reservation/split",
+        "block.reservation/compact",
+        "block.reservation/consent",
+        "block.reservation/dense"
+      ],
+      "variants": [
+        "single",
+        "split",
+        "compact",
+        "consent",
+        "dense"
+      ],
+      "title": "Reservation form",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "restaurantmenu",
+      "spec": "block.restaurantmenu",
+      "catalogIds": [
+        "block.restaurantmenu/column",
+        "block.restaurantmenu/twoCols"
+      ],
+      "variants": [
+        "column",
+        "twoCols"
+      ],
+      "title": "Restaurant menu",
+      "available": true,
+      "rendererKind": "menu",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "reviews",
+      "spec": "block.reviews",
+      "catalogIds": [
+        "block.reviews/list",
+        "block.reviews/grid",
+        "block.reviews/plain",
+        "block.reviews/avatars",
+        "block.reviews/mutedGrid"
+      ],
+      "variants": [
+        "list",
+        "grid",
+        "plain",
+        "avatars",
+        "mutedGrid"
+      ],
+      "title": "Reviews",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "richtext",
+      "spec": "block.richtext",
+      "catalogIds": [
+        "block.richtext/narrow",
+        "block.richtext/wide",
+        "block.richtext/sidebar",
+        "block.richtext/media",
+        "block.richtext/card",
+        "block.richtext/heroTitle"
+      ],
+      "variants": [
+        "narrow",
+        "wide",
+        "sidebar",
+        "media",
+        "card",
+        "heroTitle"
+      ],
+      "title": "Rich text",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "shell",
+      "spec": "block.shell",
+      "catalogIds": [
+        "block.shell/sidebar",
+        "block.shell/top",
+        "block.shell/panes",
+        "block.shell/dense"
+      ],
+      "variants": [
+        "sidebar",
+        "top",
+        "panes",
+        "dense"
+      ],
+      "title": "App shell",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "sidenav",
+      "spec": "block.sidenav",
+      "catalogIds": [
+        "block.sidenav/full",
+        "block.sidenav/compact",
+        "block.sidenav/noUser",
+        "block.sidenav/dense"
+      ],
+      "variants": [
+        "full",
+        "compact",
+        "noUser",
+        "dense"
+      ],
+      "title": "Sidebar navigation",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "sitemap",
+      "spec": "block.sitemap",
+      "catalogIds": [
+        "block.sitemap/columns",
+        "block.sitemap/card",
+        "block.sitemap/row",
+        "block.sitemap/newsletter",
+        "block.sitemap/status",
+        "block.sitemap/compact"
+      ],
+      "variants": [
+        "columns",
+        "card",
+        "row",
+        "newsletter",
+        "status",
+        "compact"
+      ],
+      "title": "Sitemap footer",
+      "available": true,
+      "rendererKind": "footer",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "skeleton",
+      "spec": "block.skeleton",
+      "catalogIds": [
+        "block.skeleton/cards",
+        "block.skeleton/list",
+        "block.skeleton/article",
+        "block.skeleton/muted"
+      ],
+      "variants": [
+        "cards",
+        "list",
+        "article",
+        "muted"
+      ],
+      "title": "Loading state",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "slots",
+      "spec": "block.slots",
+      "catalogIds": [
+        "block.slots/split",
+        "block.slots/plain",
+        "block.slots/stacked"
+      ],
+      "variants": [
+        "split",
+        "plain",
+        "stacked"
+      ],
+      "title": "Delivery window",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "stats",
+      "spec": "block.stats",
+      "catalogIds": [
+        "block.stats/plain4",
+        "block.stats/panel",
+        "block.stats/stack",
+        "block.stats/image",
+        "block.stats/cards",
+        "block.stats/icons",
+        "block.stats/muted2",
+        "block.stats/cardsCompact"
+      ],
+      "variants": [
+        "plain4",
+        "panel",
+        "stack",
+        "image",
+        "cards",
+        "icons",
+        "muted2",
+        "cardsCompact"
+      ],
+      "title": "Stats",
+      "available": true,
+      "rendererKind": "features",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "stepper",
+      "spec": "block.stepper",
+      "catalogIds": [
+        "block.stepper/horizontal",
+        "block.stepper/vertical",
+        "block.stepper/icons",
+        "block.stepper/bare"
+      ],
+      "variants": [
+        "horizontal",
+        "vertical",
+        "icons",
+        "bare"
+      ],
+      "title": "Stepper",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "steps",
+      "spec": "block.steps",
+      "catalogIds": [
+        "block.steps/row",
+        "block.steps/rowIcons",
+        "block.steps/column",
+        "block.steps/centered",
+        "block.steps/columnIcons",
+        "block.steps/compact"
+      ],
+      "variants": [
+        "row",
+        "rowIcons",
+        "column",
+        "centered",
+        "columnIcons",
+        "compact"
+      ],
+      "title": "How it works",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "sticky",
+      "spec": "block.sticky",
+      "catalogIds": [
+        "block.sticky/end",
+        "block.sticky/start",
+        "block.sticky/card",
+        "block.sticky/muted"
+      ],
+      "variants": [
+        "end",
+        "start",
+        "card",
+        "muted"
+      ],
+      "title": "Sticky feature list",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "storehero",
+      "spec": "block.storehero",
+      "catalogIds": [
+        "block.storehero/overlay",
+        "block.storehero/overlayStart",
+        "block.storehero/backdrop",
+        "block.storehero/muted"
+      ],
+      "variants": [
+        "overlay",
+        "overlayStart",
+        "backdrop",
+        "muted"
+      ],
+      "title": "Store hero",
+      "available": true,
+      "rendererKind": "hero",
+      "rendererCompatible": true
+    },
+    {
+      "blockId": "storytabs",
+      "spec": "block.storytabs",
+      "catalogIds": [
+        "block.storytabs/yearTabs",
+        "block.storytabs/carouselSplit",
+        "block.storytabs/yearTabsMuted"
+      ],
+      "variants": [
+        "yearTabs",
+        "carouselSplit",
+        "yearTabsMuted"
+      ],
+      "title": "Story in steps",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "summary",
+      "spec": "block.summary",
+      "catalogIds": [
+        "block.summary/card",
+        "block.summary/plain",
+        "block.summary/noCta",
+        "block.summary/muted"
+      ],
+      "variants": [
+        "card",
+        "plain",
+        "noCta",
+        "muted"
+      ],
+      "title": "Order summary",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "sushisets",
+      "spec": "block.sushisets",
+      "catalogIds": [
+        "block.sushisets/grid4",
+        "block.sushisets/grid3"
+      ],
+      "variants": [
+        "grid4",
+        "grid3"
+      ],
+      "title": "Sushi sets",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "team",
+      "spec": "block.team",
+      "catalogIds": [
+        "block.team/cards4",
+        "block.team/cards3",
+        "block.team/minimal",
+        "block.team/detailed",
+        "block.team/list",
+        "block.team/directory"
+      ],
+      "variants": [
+        "cards4",
+        "cards3",
+        "minimal",
+        "detailed",
+        "list",
+        "directory"
+      ],
+      "title": "Team",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "templates",
+      "spec": "block.templates",
+      "catalogIds": [
+        "block.templates/grid4",
+        "block.templates/grid3",
+        "block.templates/muted",
+        "block.templates/roomy"
+      ],
+      "variants": [
+        "grid4",
+        "grid3",
+        "muted",
+        "roomy"
+      ],
+      "title": "Template gallery",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "testimonials",
+      "spec": "block.testimonials",
+      "catalogIds": [
+        "block.testimonials/grid3",
+        "block.testimonials/masonry",
+        "block.testimonials/strip",
+        "block.testimonials/social",
+        "block.testimonials/featured",
+        "block.testimonials/grid2",
+        "block.testimonials/single",
+        "block.testimonials/stack"
+      ],
+      "variants": [
+        "grid3",
+        "masonry",
+        "strip",
+        "social",
+        "featured",
+        "grid2",
+        "single",
+        "stack"
+      ],
+      "title": "Testimonials",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "timeline",
+      "spec": "block.timeline",
+      "catalogIds": [
+        "block.timeline/split",
+        "block.timeline/stacked",
+        "block.timeline/row",
+        "block.timeline/rowMuted"
+      ],
+      "variants": [
+        "split",
+        "stacked",
+        "row",
+        "rowMuted"
+      ],
+      "title": "Timeline",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "tour",
+      "spec": "block.tour",
+      "catalogIds": [
+        "block.tour/below",
+        "block.tour/above",
+        "block.tour/end",
+        "block.tour/muted"
+      ],
+      "variants": [
+        "below",
+        "above",
+        "end",
+        "muted"
+      ],
+      "title": "Tour callout",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "usage",
+      "spec": "block.usage",
+      "catalogIds": [
+        "block.usage/card",
+        "block.usage/plain",
+        "block.usage/noEnds",
+        "block.usage/muted"
+      ],
+      "variants": [
+        "card",
+        "plain",
+        "noEnds",
+        "muted"
+      ],
+      "title": "Usage calculator",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "usp",
+      "spec": "block.usp",
+      "catalogIds": [
+        "block.usp/strip",
+        "block.usp/cards",
+        "block.usp/stripCompact",
+        "block.usp/bar",
+        "block.usp/barMuted"
+      ],
+      "variants": [
+        "strip",
+        "cards",
+        "stripCompact",
+        "bar",
+        "barMuted"
+      ],
+      "title": "Store promises",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "veggiebox",
+      "spec": "block.veggiebox",
+      "catalogIds": [
+        "block.veggiebox/split",
+        "block.veggiebox/stacked"
+      ],
+      "variants": [
+        "split",
+        "stacked"
+      ],
+      "title": "Vegetable box",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "videomodal",
+      "spec": "block.videomodal",
+      "catalogIds": [
+        "block.videomodal/default",
+        "block.videomodal/wide",
+        "block.videomodal/chapters",
+        "block.videomodal/muted"
+      ],
+      "variants": [
+        "default",
+        "wide",
+        "chapters",
+        "muted"
+      ],
+      "title": "Video walkthrough",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "videos",
+      "spec": "block.videos",
+      "catalogIds": [
+        "block.videos/grid3",
+        "block.videos/grid2",
+        "block.videos/overlay",
+        "block.videos/muted"
+      ],
+      "variants": [
+        "grid3",
+        "grid2",
+        "overlay",
+        "muted"
+      ],
+      "title": "Video testimonials",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "weekmenu",
+      "spec": "block.weekmenu",
+      "catalogIds": [
+        "block.weekmenu/week",
+        "block.weekmenu/compact"
+      ],
+      "variants": [
+        "week",
+        "compact"
+      ],
+      "title": "Week of meals",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "wizard",
+      "spec": "block.wizard",
+      "catalogIds": [
+        "block.wizard/bar",
+        "block.wizard/list",
+        "block.wizard/plain",
+        "block.wizard/second"
+      ],
+      "variants": [
+        "bar",
+        "list",
+        "plain",
+        "second"
+      ],
+      "title": "Sign-up wizard",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    },
+    {
+      "blockId": "zones",
+      "spec": "block.zones",
+      "catalogIds": [
+        "block.zones/table",
+        "block.zones/cards",
+        "block.zones/tableMuted"
+      ],
+      "variants": [
+        "table",
+        "cards",
+        "tableMuted"
+      ],
+      "title": "Delivery zones",
+      "available": true,
+      "rendererKind": null,
+      "rendererCompatible": false
+    }
+  ],
+  "rendererMap": {
+    "navbar": "nav",
+    "header": "nav",
+    "hero": "hero",
+    "herosplit": "hero",
+    "storehero": "hero",
+    "features": "features",
+    "featureshowcase": "features",
+    "featuretabs": "features",
+    "featuresplit": "features",
+    "metrics": "features",
+    "overview": "features",
+    "stats": "features",
+    "cta": "cta",
+    "ctaproof": "cta",
+    "footer": "footer",
+    "footersplit": "footer",
+    "sitemap": "footer",
+    "restaurantmenu": "menu",
+    "menuboard": "menu",
+    "dish": "dish"
+  }
+}

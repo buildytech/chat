@@ -9,6 +9,7 @@ export { mockLandingPage };
  * `$state.raw` avoids proxying the DTO. Do not introduce shared SSR module state.
  */
 let currentPage = $state.raw<Page | null>(null);
+let candidatePage = $state.raw<Page | null>(null);
 let selectedBlockId = $state<string | null>(null);
 let pageRevision = $state<number | null>(null);
 
@@ -22,9 +23,21 @@ function syncSelection(page: Page | null): void {
 	}
 }
 
-/** Pure read — do not mutate inside $derived. */
+/** Preview prefers an unapplied candidate, then last applied. */
 export function getCurrentPage(): Page | null {
+	return candidatePage ?? currentPage;
+}
+
+export function getLastAppliedPage(): Page | null {
 	return currentPage;
+}
+
+export function getCandidatePage(): Page | null {
+	return candidatePage;
+}
+
+export function hasUnappliedProposal(): boolean {
+	return candidatePage !== null;
 }
 
 export function getPageRevision(): number | null {
@@ -38,12 +51,14 @@ export function getSelectedBlockId(): string | null {
 
 /** Pure read — do not mutate inside $derived. */
 export function getSelectedBlock(): PageBlock | null {
-	if (!currentPage) return null;
-	return findBlock(currentPage.layout.blocks, selectedBlockId);
+	const page = candidatePage ?? currentPage;
+	if (!page) return null;
+	return findBlock(page.layout.blocks, selectedBlockId);
 }
 
 export function selectBlock(id: string): void {
-	if (!currentPage || !hasBlock(currentPage.layout.blocks, id)) return;
+	const page = candidatePage ?? currentPage;
+	if (!page || !hasBlock(page.layout.blocks, id)) return;
 	selectedBlockId = id;
 }
 
@@ -54,13 +69,34 @@ export function selectBlock(id: string): void {
 export function setCurrentPage(page: Page, revision: number | null = null): void {
 	const next = parsePage(page);
 	currentPage = next;
+	candidatePage = null;
 	pageRevision = revision;
 	syncSelection(next);
+}
+
+export function setCandidatePage(page: Page): void {
+	candidatePage = parsePage(page);
+	syncSelection(candidatePage);
+}
+
+export function discardCandidate(): void {
+	candidatePage = null;
+	syncSelection(currentPage);
+}
+
+export function applyCandidate(revision: number | null = null): boolean {
+	if (!candidatePage) return false;
+	currentPage = candidatePage;
+	candidatePage = null;
+	pageRevision = revision ?? (pageRevision ?? 0) + 1;
+	syncSelection(currentPage);
+	return true;
 }
 
 /** Blank Workspace for a new / unbound session. Never loads the demo fixture. */
 export function clearCurrentPage(): void {
 	currentPage = null;
+	candidatePage = null;
 	selectedBlockId = null;
 	pageRevision = null;
 }

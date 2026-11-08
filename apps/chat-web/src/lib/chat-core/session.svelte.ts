@@ -18,8 +18,32 @@ import {
 	syncSessionQuery
 } from "../api/session-url";
 import { t } from "../i18n/dictionary";
-import translit from "../i18n/translit.json";
-import { clearCurrentPage, loadMockFixturePage, setCurrentPage } from "../page-store";
+import {
+	COST_UNAVAILABLE,
+	MODEL_CATALOG_VERSION,
+	POLICY_VERSION,
+	TRIAL_POLICY_VERSION,
+	aggregateSessionUsage,
+	catalogProvenance,
+	formatChatModelChoice,
+	getChatModel,
+	mapChatRunRequest,
+	runConstructorTools,
+	unknownUsage,
+	type ProposalContext,
+	type RunUsage
+} from "@buildytech/builder-core";
+import { fetchXaiStatus, runXaiProposal, type XaiRunResponse } from "../browser/xai-client";
+import { getSelectedModelId } from "../browser/models.svelte";
+import { getScenarioId, getScreenId } from "../browser/onboarding.svelte";
+import {
+	applyCandidate,
+	clearCurrentPage,
+	discardCandidate,
+	getPageRevision,
+	setCandidatePage,
+	setCurrentPage
+} from "../page-store";
 import type { ChatMessage, ChatSession, SessionSummary } from "./types";
 
 const STORE_KEY = "buildytech-chat-sessions";
@@ -31,20 +55,6 @@ function nowIso(): string {
 
 function uid(prefix: string): string {
 	return `${prefix}-${crypto.randomUUID()}`;
-}
-
-function slugify(text: string): string {
-	const map = translit as Record<string, string>;
-	const folded = text
-		.toLowerCase()
-		.split("")
-		.map((ch) => map[ch] ?? ch)
-		.join("");
-	const slug = folded
-		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/^-+|-+$/g, "")
-		.slice(0, 48);
-	return slug || "page";
 }
 
 function loadMock(): ChatSession[] {
@@ -199,8 +209,7 @@ export async function hydrateSessions(): Promise<void> {
 			const id = pick.kind === "ok" ? pick.id : null;
 			rememberSelection(id);
 			syncSessionQuery(id, { mode: "replace" });
-			if (id) loadMockFixturePage();
-			else clearCurrentPage();
+			clearCurrentPage();
 			hydrated = true;
 			return;
 		}
@@ -366,9 +375,138 @@ export function deleteSession(_id: string): void {
 	lastError = t("runtime.deleteUnavailable");
 }
 
-function assistantReply(userText: string): string {
-	const slug = slugify(userText);
-	return `${t("assistant.ack")} slug: ${slug}`;
+export function abortInflightRun(): void {
+	abortInflight();
+	lastError = t("runtime.cancelled");
+}
+
+function constructorContext(brief: string): ProposalContext {
+	return {
+		brief,
+		scenarioId: getScenarioId(),
+		screenId: getScreenId(),
+		expectedRevision: getPageRevision() ?? 0
+	};
+}
+
+function localRunUsage(): RunUsage {
+	return {
+		status: "complete",
+		steps: 0,
+		promptTokens: 0,
+		completionTokens: 0,
+		totalTokens: 0,
+		cost: COST_UNAVAILABLE
+	};
+}
+
+function sessionUsageFrom(session: ChatSession, extra?: RunUsage) {
+	const runs = session.messages.map((m) => m.run?.usage).filter((u): u is RunUsage => Boolean(u));
+	if (extra) runs.push(extra);
+	return aggregateSessionUsage(runs);
+}
+
+function runRecord(opts: {
+	modelId: string;
+	live: boolean;
+	usage: RunUsage;
+	catalogDigest?: string;
+}): import("./types").ChatRunRecord {
+	const model = getChatModel(opts.modelId);
+	return {
+		requestedModelId: opts.modelId,
+		modelId: opts.modelId,
+		modelLabel: model ? formatChatModelChoice(model) : opts.modelId,
+		live: opts.live,
+		policyVersion: POLICY_VERSION,
+		modelCatalogVersion: MODEL_CATALOG_VERSION,
+		trialPolicyVersion: TRIAL_POLICY_VERSION,
+		catalogDigest: opts.catalogDigest ?? catalogProvenance().sourceDigest,
+		usage: opts.usage
+	};
+}
+
+async function runConstructor(brief: string, signal: AbortSignal) {
+	const ctx = constructorContext(brief);
+	const status = await fetchXaiStatus(signal);
+	const mapped = mapChatRunRequest(
+		{ ...ctx, modelId: getSelectedModelId() },
+		{
+			discoveredChatIds: status.models?.listed ? status.models.chatIds ?? [] : undefined,
+			allowUnlistedTrial: !status.ready
+		}
+	);
+	if (!mapped.ok) {
+		return {
+			result: { ok: false as const, code: mapped.code, message: mapped.message },
+			via: "blocked" as const,
+			status,
+			modelId: mapped.requestedId,
+			live: false,
+			usage: unknownUsage("error", 0)
+		};
+	}
+	if (status.ready) {
+		const live = await runXaiProposal({ ...ctx, modelId: mapped.request.modelId }, signal);
+		const usage =
+			live.usage ??
+			unknownUsage(live.ok === false && (live.code === "aborted" || signal.aborted) ? "cancelled" : "error", 0);
+		return {
+			result: live,
+			via: "xai" as const,
+			status,
+			modelId: mapped.request.modelId,
+			live: Boolean(live.ok && (live as XaiRunResponse).toolCallingProven),
+			usage
+		};
+	}
+	return {
+		result: runConstructorTools(ctx),
+		via: "local" as const,
+		status,
+		modelId: mapped.request.modelId,
+		live: false,
+		usage: localRunUsage()
+	};
+}
+
+function proposalMessage(
+	result: Awaited<ReturnType<typeof runConstructor>>["result"],
+	modelId: string,
+	live: boolean,
+	usage: RunUsage
+): ChatMessage {
+	const run = runRecord({ modelId, live, usage });
+	if (!result.ok) {
+		return {
+			id: uid("msg"),
+			role: "assistant",
+			text: result.message,
+			createdAt: nowIso(),
+			run
+		};
+	}
+	setCandidatePage(result.page);
+	const via =
+		result.source === "local-catalog-assembler" ? t("assistant.localAssembler") : t("assistant.xaiProposal");
+	const missing = result.missing.length
+		? ` ${t("assistant.missingBlocks").replace("{list}", result.missing.join(", "))}`
+		: "";
+	return {
+		id: uid("msg"),
+		role: "assistant",
+		text: `${via} ${t("assistant.proposalReady").replace("{title}", result.page.title)}${missing}`,
+		createdAt: nowIso(),
+		proposal: {
+			applied: false,
+			source: result.source,
+			liveModel: false,
+			warnings: result.warnings,
+			missing: result.missing,
+			title: result.page.title
+		},
+		run
+	};
 }
 
 async function sendMessageMock(text: string): Promise<ChatSession> {
@@ -384,7 +522,8 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 		id: uid("msg"),
 		role: "user",
 		text: trimmed,
-		createdAt: nowIso()
+		createdAt: nowIso(),
+		selectedModelId: getSelectedModelId()
 	};
 	const untitled = session.title === t("thread.untitled") || session.title === "New chat";
 	const nextTitle = untitled ? trimmed.slice(0, 48) : session.title;
@@ -396,21 +535,82 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 	};
 	replaceSession(pending);
 	saveMock(memory);
-	await new Promise((r) => setTimeout(r, 240));
-	const reply: ChatMessage = {
-		id: uid("msg"),
-		role: "assistant",
-		text: assistantReply(trimmed),
-		createdAt: nowIso()
-	};
-	const done: ChatSession = {
-		...pending,
+	abortInflight();
+	const ac = new AbortController();
+	inflight = ac;
+	const token = epoch;
+	try {
+		const { result, status, modelId, live, usage } = await runConstructor(trimmed, ac.signal);
+		if (token !== epoch) return getSelectedSession() ?? pending;
+		capabilities = {
+			runtime: status.runtime || "xai-grok",
+			mode: result.ok && "source" in result && result.source === "local-catalog-assembler" ? "local-assembler" : status.code,
+			liveModel: false,
+			live: { requested: true, provider: "xai", model: modelId },
+			tools: ["search_catalog", "get_block_details", "propose_layout", "get_skill"],
+			note: status.ready ? t("runtime.xaiReady") : t("runtime.xaiMissing")
+		};
+		if (!result.ok) lastError = result.message;
+		else lastError = null;
+		const reply = proposalMessage(result, modelId, live, usage);
+		const done: ChatSession = {
+			...pending,
+			updatedAt: nowIso(),
+			selectedModelId: modelId,
+			messages: [...pending.messages, reply],
+			usage: sessionUsageFrom(pending, usage)
+		};
+		replaceSession(done);
+		saveMock(memory);
+		return done;
+	} catch (err) {
+		if ((err as Error).name === "AbortError") {
+			lastError = t("runtime.cancelled");
+			const cancelled = unknownUsage("cancelled", 0);
+			const reply: ChatMessage = {
+				id: uid("msg"),
+				role: "assistant",
+				text: t("runtime.cancelled"),
+				createdAt: nowIso(),
+				run: runRecord({ modelId: getSelectedModelId(), live: false, usage: cancelled })
+			};
+			const done: ChatSession = {
+				...pending,
+				updatedAt: nowIso(),
+				messages: [...pending.messages, reply],
+				usage: sessionUsageFrom(pending, cancelled)
+			};
+			replaceSession(done);
+			saveMock(memory);
+			return done;
+		}
+		lastError = t("runtime.sendFailed");
+		throw err;
+	} finally {
+		if (inflight === ac) inflight = null;
+	}
+}
+
+export function applyProposal(): boolean {
+	const session = getSelectedSession();
+	if (!session) return false;
+	const last = [...session.messages].reverse().find((m) => m.proposal && !m.proposal.applied);
+	const ok = applyCandidate((getPageRevision() ?? 0) + 1);
+	if (!ok || !last) return ok;
+	const next: ChatSession = {
+		...session,
 		updatedAt: nowIso(),
-		messages: [...pending.messages, reply]
+		messages: session.messages.map((m) =>
+			m.id === last.id && m.proposal ? { ...m, proposal: { ...m.proposal, applied: true } } : m
+		)
 	};
-	replaceSession(done);
+	replaceSession(next);
 	saveMock(memory);
-	return done;
+	return true;
+}
+
+export function discardProposal(): void {
+	discardCandidate();
 }
 
 /**

@@ -1,25 +1,42 @@
 <script lang="ts">
 	import Block from "../compose/Block.svelte";
 	import Stack from "../compose/Stack.svelte";
-	import Text from "../../ui/text/Text.svelte";
-	import Title from "../compose/Title.svelte";
 	import { t } from "../i18n/dictionary";
 	import type { ChatSession } from "../chat-core";
+	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
 	import ChatComposer from "./ChatComposer.svelte";
 	import ChatMessage from "./ChatMessage.svelte";
+	import HomeOnboarding from "./HomeOnboarding.svelte";
+	import AddModelDialog from "./AddModelDialog.svelte";
 
 	let {
 		session,
 		busy,
 		onSend,
+		onCancel,
+		onAddModel,
+		onSelectModel,
+		onApply,
+		onDiscard,
+		chatModels = [],
+		selectedModelId = "",
+		sessionUsage = null,
 		runtimeStatus = null
 	}: {
 		session: ChatSession | null;
 		busy: boolean;
 		onSend: (text: string) => void | Promise<void>;
+		onCancel?: () => void;
+		onAddModel?: () => void;
+		onSelectModel?: (id: string) => void;
+		onApply?: () => void;
+		onDiscard?: () => void;
+		chatModels?: readonly GrokChatModel[];
+		selectedModelId?: string;
+		sessionUsage?: SessionUsage | null;
 		runtimeStatus?: {
 			mode: "live" | "mock" | "booting";
-			capabilities: { liveModel?: boolean; mode?: string; runtime?: string; note?: string } | null;
+			capabilities: { liveModel?: boolean; live?: { requested?: boolean; model?: string }; mode?: string; runtime?: string; note?: string } | null;
 			error: string | null;
 			canDelete: boolean;
 			lastRequestId: string | null;
@@ -30,6 +47,7 @@
 	const empty = $derived(messages.length === 0);
 
 	let draft = $state("");
+	let addModelOpen = $state(false);
 
 	function onEdit(text: string) {
 		draft = text;
@@ -55,13 +73,20 @@
 </script>
 
 <Block class="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
-	<Stack class="min-h-0 flex-1 gap-9 overflow-y-auto px-3 py-4">
-		{#if empty}
-			<Stack class="gap-2 py-8 text-center">
-				<Title as={2} class="text-lg font-medium text-foreground">{t("empty.title")}</Title>
-				<Text tag="p" class="text-sm text-muted-foreground">{t("empty.subtitle")}</Text>
-			</Stack>
-		{:else}
+	{#if empty}
+		<HomeOnboarding
+			{busy}
+			{runtimeStatus}
+			{onSend}
+			{onCancel}
+			{onAddModel}
+			{onSelectModel}
+			{chatModels}
+			{selectedModelId}
+			{sessionUsage}
+		/>
+	{:else}
+		<Stack class="min-h-0 flex-1 gap-9 overflow-y-auto px-3 py-4">
 			<Stack class="w-full gap-9">
 				{#each messages as message (message.id)}
 					{@const activity = activityFor(message)}
@@ -70,10 +95,30 @@
 						{activity}
 						showActivity={message.role === "assistant" && activity.length > 0}
 						{onEdit}
+						{onApply}
+						{onDiscard}
 					/>
 				{/each}
 			</Stack>
-		{/if}
-	</Stack>
-	<ChatComposer disabled={busy} {onSend} bind:draft {runtimeStatus} />
+		</Stack>
+		<ChatComposer
+			disabled={busy}
+			{busy}
+			{onSend}
+			{onCancel}
+			onAddModel={() => {
+				onAddModel?.();
+				addModelOpen = true;
+			}}
+			{onSelectModel}
+			{chatModels}
+			{selectedModelId}
+			{sessionUsage}
+			bind:draft
+			{runtimeStatus}
+		/>
+	{/if}
+	{#if addModelOpen}
+		<AddModelDialog onClose={() => (addModelOpen = false)} />
+	{/if}
 </Block>

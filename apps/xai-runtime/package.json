@@ -1,0 +1,19 @@
+{
+  "name": "@buildytech/xai-runtime",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Protected server-side xAI Grok runtime for catalog tools. XAI_API_KEY only. No Cursor SDK. No browser keys.",
+  "scripts": {
+    "start": "node --experimental-strip-types src/server.ts",
+    "status": "node --experimental-strip-types src/status.ts"
+  },
+  "dependencies": {
+    "@buildytech/builder-core": "0.0.0",
+    "@buildytech/page-contract": "0.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

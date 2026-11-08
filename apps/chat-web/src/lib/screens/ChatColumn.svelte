@@ -3,12 +3,21 @@
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
 	import type { ChatSession } from "../chat-core";
+	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
 	import ChatThread from "./ChatThread.svelte";
 
 	let {
 		session,
 		busy,
 		onSend,
+		onCancel,
+		onAddModel,
+		onSelectModel,
+		onApply,
+		onDiscard,
+		chatModels = [],
+		selectedModelId = "",
+		sessionUsage = null,
 		runtimeStatus = null,
 		visible = true,
 		chatHidden = false
@@ -16,6 +25,14 @@
 		session: ChatSession | null;
 		busy: boolean;
 		onSend: (text: string) => void | Promise<void>;
+		onCancel?: () => void;
+		onAddModel?: () => void;
+		onSelectModel?: (id: string) => void;
+		onApply?: () => void;
+		onDiscard?: () => void;
+		chatModels?: readonly GrokChatModel[];
+		selectedModelId?: string;
+		sessionUsage?: SessionUsage | null;
 		runtimeStatus?: {
 			mode: "live" | "mock" | "booting";
 			capabilities: { liveModel?: boolean; live?: { requested?: boolean; model?: string }; mode?: string; runtime?: string; note?: string } | null;
@@ -38,5 +55,18 @@
 		chatHidden ? "lg:hidden" : "lg:flex lg:w-[var(--creator-chat-w,320px)] lg:flex-none lg:shrink-0"
 	)}
 >
-	<ChatThread {session} {busy} {onSend} {runtimeStatus} />
+	<ChatThread
+		{session}
+		{busy}
+		{onSend}
+		{onCancel}
+		{onAddModel}
+		{onSelectModel}
+		{onApply}
+		{onDiscard}
+		{chatModels}
+		{selectedModelId}
+		{sessionUsage}
+		{runtimeStatus}
+	/>
 </Block>

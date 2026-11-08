@@ -16,18 +16,26 @@
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
 	import type { ChatMessage as ChatMessageModel } from "../chat-core";
+	import { formatTokens } from "@buildytech/builder-core";
 
 	let {
 		message,
 		activity = [],
 		showActivity = false,
-		onEdit
+		onEdit,
+		onApply,
+		onDiscard
 	}: {
 		message: ChatMessageModel;
 		activity?: string[];
 		showActivity?: boolean;
 		onEdit?: (text: string) => void;
+		onApply?: () => void;
+		onDiscard?: () => void;
 	} = $props();
+
+	const run = $derived(message.run);
+	const proposal = $derived(message.proposal);
 
 	const mine = $derived(message.role === "user");
 	let vote = $state<"good" | "bad" | null>(null);
@@ -111,6 +119,42 @@
 	{:else}
 		<Stack class="gap-6">
 			<Text tag="p" class="text-sm font-medium whitespace-pre-wrap text-foreground">{message.text}</Text>
+			{#if proposal}
+				<Group class="flex-wrap items-center gap-2">
+					<Text tag="span" class="text-xs text-muted-foreground">
+						{proposal.applied ? t("proposal.applied") : t("proposal.notApplied")}
+					</Text>
+					{#if !proposal.applied}
+						<Button
+							class="rounded-default bg-foreground px-3 py-1.5 text-sm text-background hover:bg-foreground/90"
+							onclick={() => onApply?.()}
+						>
+							<Text tag="span">{t("proposal.apply")}</Text>
+						</Button>
+						<Button
+							class="rounded-default border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+							onclick={() => onDiscard?.()}
+						>
+							<Text tag="span">{t("proposal.discard")}</Text>
+						</Button>
+					{/if}
+				</Group>
+			{/if}
+			{#if run}
+				<Stack class="gap-1">
+					<Text tag="p" class="font-mono text-[11px] text-muted-foreground">
+						{t("usage.runModel").replace("{label}", run.modelLabel).replace("{id}", run.modelId)}
+					</Text>
+					<Text tag="p" class="text-[11px] text-muted-foreground">
+						{t("usage.run")
+							.replace("{status}", run.usage.status === "incomplete" ? t("usage.incomplete") : t("usage.complete"))
+							.replace("{prompt}", formatTokens(run.usage.promptTokens))
+							.replace("{completion}", formatTokens(run.usage.completionTokens))
+							.replace("{total}", formatTokens(run.usage.totalTokens))}
+					</Text>
+					<Text tag="p" class="text-[11px] text-muted-foreground">{t("usage.noDollars")}</Text>
+				</Stack>
+			{/if}
 			{#if showActivity && activity.length > 0}
 				<Stack class="gap-2.5" role="list" aria-label={t("chat.activity")}>
 					{#each activity as line (line)}

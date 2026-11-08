@@ -3,8 +3,11 @@
  * Default: local mock (localStorage). Optional Session HTTP with ?live=1.
  */
 export {
+	abortInflightRun,
+	applyProposal,
 	createSession,
 	deleteSession,
+	discardProposal,
 	getRuntimeStatus,
 	getSelectedSession,
 	applySessionFromUrl,
@@ -14,4 +17,12 @@ export {
 	selectSession,
 	sendMessage
 } from "./session.svelte";
-export type { ChatArtifact, ChatMessage, ChatRole, ChatSession, SessionSummary } from "./types";
+export type {
+	ChatArtifact,
+	ChatMessage,
+	ChatProposalState,
+	ChatRole,
+	ChatRunRecord,
+	ChatSession,
+	SessionSummary
+} from "./types";

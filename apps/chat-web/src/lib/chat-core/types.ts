@@ -1,3 +1,5 @@
+import type { RunUsage, SessionUsage } from "@buildytech/builder-core";
+
 export type ChatRole = "user" | "assistant";
 
 export type ChatArtifact = {
@@ -8,12 +10,36 @@ export type ChatArtifact = {
 	files: string[];
 };
 
+export type ChatProposalState = {
+	applied: boolean;
+	source: string;
+	liveModel: false;
+	warnings: string[];
+	missing: string[];
+	title: string;
+};
+
+export type ChatRunRecord = {
+	requestedModelId: string;
+	modelId: string;
+	modelLabel: string;
+	live: boolean;
+	policyVersion: string;
+	modelCatalogVersion: string;
+	trialPolicyVersion: string;
+	catalogDigest?: string;
+	usage: RunUsage;
+};
+
 export type ChatMessage = {
 	id: string;
 	role: ChatRole;
 	text: string;
 	createdAt: string;
 	artifacts?: ChatArtifact[];
+	proposal?: ChatProposalState;
+	run?: ChatRunRecord;
+	selectedModelId?: string;
 };
 
 export type ChatSession = {
@@ -24,6 +50,8 @@ export type ChatSession = {
 	pageId?: string;
 	pageBound?: boolean;
 	pageRevision?: number | null;
+	selectedModelId?: string;
+	usage?: SessionUsage;
 };
 
 export type SessionSummary = Pick<ChatSession, "id" | "title" | "updatedAt">;

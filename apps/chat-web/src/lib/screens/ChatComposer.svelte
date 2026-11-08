@@ -1,10 +1,10 @@
 <script lang="ts">
 	import ArrowUp from "@lucide/svelte/icons/arrow-up";
-	import FileText from "@lucide/svelte/icons/file-text";
 	import Plus from "@lucide/svelte/icons/plus";
 	import X from "@lucide/svelte/icons/x";
 	import Block from "../compose/Block.svelte";
 	import Group from "../compose/Group.svelte";
+	import Stack from "../compose/Stack.svelte";
 	import Button from "../../ui/button/Button.svelte";
 	import Form from "../../ui/form/Form.svelte";
 	import Icon from "../../ui/icon/Icon.svelte";
@@ -12,113 +12,217 @@
 	import Text from "../../ui/text/Text.svelte";
 	import Textarea from "../../ui/textarea/Textarea.svelte";
 	import { t } from "../i18n/dictionary";
+	import { cn } from "../../utils/cn";
+	import { formatTokens, type GrokChatModel, type SessionUsage } from "@buildytech/builder-core";
 
 	let {
 		disabled = false,
+		sendDisabled = false,
 		onSend,
+		onCancel,
+		onAddModel,
+		onSelectModel,
+		onFocus,
+		onBlur,
+		onComposition,
 		draft = $bindable(""),
+		placeholder = "",
+		variant = "thread",
+		busy = false,
+		chatModels = [],
+		selectedModelId = "",
+		sessionUsage = null,
 		runtimeStatus = null
 	}: {
 		disabled?: boolean;
+		sendDisabled?: boolean;
 		onSend: (text: string) => void | Promise<void>;
+		onCancel?: () => void;
+		onAddModel?: () => void;
+		onSelectModel?: (id: string) => void;
+		onFocus?: () => void;
+		onBlur?: () => void;
+		onComposition?: (next: boolean) => void;
 		draft?: string;
+		placeholder?: string;
+		variant?: "thread" | "onboarding";
+		busy?: boolean;
+		chatModels?: readonly GrokChatModel[];
+		selectedModelId?: string;
+		sessionUsage?: SessionUsage | null;
 		runtimeStatus?: {
 			mode: "live" | "mock" | "booting";
-			capabilities: { liveModel?: boolean; live?: { requested?: boolean; model?: string }; mode?: string; runtime?: string; note?: string } | null;
+			capabilities: {
+				liveModel?: boolean;
+				live?: { requested?: boolean; model?: string };
+				mode?: string;
+				runtime?: string;
+				note?: string;
+			} | null;
 			error: string | null;
 			canDelete: boolean;
 			lastRequestId: string | null;
 		} | null;
 	} = $props();
 
+	let ime = $state(false);
+	let modelOpen = $state(false);
+
+	const selected = $derived(chatModels.find((m) => m.id === selectedModelId) ?? chatModels[0] ?? null);
+	const modelButtonLabel = $derived(
+		selected ? `${selected.label}` : t("composer.modelGrok")
+	);
+
 	const runtimeLabel = $derived.by(() => {
 		if (!runtimeStatus) return "";
 		const caps = runtimeStatus.capabilities;
-		if (runtimeStatus.mode === "mock") return t("runtime.mockMode");
 		if (caps?.liveModel) return t("runtime.liveModel");
-		const mode = caps?.mode ?? "deterministic-test";
-		return t("runtime.testHarness").replace("{mode}", mode);
+		if (caps?.note) return caps.note;
+		if (runtimeStatus.mode === "mock") return t("runtime.xaiMissing");
+		return t("runtime.localAssembler");
 	});
 
-	let showDesign = $state(true);
-	// There is no per-message model switch in Session. Reflect server configuration,
-	// never imply selecting GPT/Claude/Gemini changes the running Grok agent.
-	const configuredModel = $derived(runtimeStatus?.capabilities?.live?.model || "");
-	const modelLabel = $derived(configuredModel || t("composer.modelGrok"));
+	const fieldPlaceholder = $derived(placeholder || t("composer.placeholder"));
+	const cannotSend = $derived(disabled || sendDisabled || !(draft.trim() || variant === "thread"));
 
 	function submit(event: Event) {
 		event.preventDefault();
 		const text = draft.trim();
-		if (!text || disabled) return;
+		if (cannotSend) return;
 		onSend(text);
-		draft = "";
+		if (variant === "thread") draft = "";
 	}
 
 	function onKeydown(event: KeyboardEvent) {
-		if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+		if (ime || event.isComposing) return;
+		if (event.key === "Enter" && !event.shiftKey) {
 			event.preventDefault();
 			submit(event);
 		}
 	}
 
+	function chooseModel(id: string) {
+		onSelectModel?.(id);
+		modelOpen = false;
+	}
 </script>
 
-
-<Block tag="footer" class="sticky bottom-0 z-10 mt-auto border-t border-border bg-background px-3 py-3 lg:static lg:z-auto">
+<Block
+	tag="footer"
+	class={cn(
+		variant === "onboarding"
+			? "w-full rounded-default border border-border bg-card px-3 py-3"
+			: "sticky bottom-0 z-10 mt-auto border-t border-border bg-background px-3 py-3 lg:static lg:z-auto"
+	)}
+>
 	<Form class="flex flex-col gap-2" onsubmit={submit}>
-		{#if showDesign}
-			<Group class="flex-wrap gap-2">
-				<Group class="items-center gap-2 rounded-default border border-border bg-card px-2 py-1">
-					<Icon size="sm" class="text-muted-foreground"><FileText /></Icon>
-					<Text tag="span" class="text-xs font-medium">{t("composer.attachmentDesign")}</Text>
-					<Button
-						class="inline-flex size-5 items-center justify-center rounded-default text-muted-foreground hover:bg-accent hover:text-foreground"
-						aria-label={t("composer.removeAttachment")}
-						onclick={() => (showDesign = false)}
-					>
-						<Icon size="sm"><X /></Icon>
-					</Button>
-				</Group>
-			</Group>
-		{/if}
 		<Label for="composer" class="sr-only">{t("composer.label")}</Label>
 		<Textarea
 			id="composer"
 			name="message"
 			rows="2"
-			placeholder={t("composer.placeholder")}
-			class="min-h-16 w-full resize-none rounded-default border border-input bg-card px-3 py-2 text-sm text-foreground shadow-none outline-none ring-ring focus-visible:ring-2"
+			placeholder={fieldPlaceholder}
+			class="max-h-[30vh] min-h-16 w-full resize-none overflow-y-auto rounded-default border border-input bg-card px-3 py-2 text-sm text-foreground shadow-none outline-none ring-ring focus-visible:ring-2"
 			bind:value={draft}
 			onkeydown={onKeydown}
+			onfocus={onFocus}
+			onblur={onBlur}
+			oncompositionstart={() => {
+				ime = true;
+				onComposition?.(true);
+			}}
+			oncompositionend={() => {
+				ime = false;
+				onComposition?.(false);
+			}}
 			disabled={disabled}
 		/>
+		<Text tag="p" class="text-[11px] text-muted-foreground">{t("composer.enterHint")}</Text>
 		<Group class="items-center justify-between gap-2">
 			<Group class="items-center gap-2">
 				<Button
 					class="inline-flex size-8 items-center justify-center rounded-default border border-border text-foreground hover:bg-accent"
 					aria-label={t("composer.add")}
-					onclick={() => (showDesign = true)}
+					disabled
 				>
 					<Icon size="sm"><Plus /></Icon>
 				</Button>
 				<Button
-					class="inline-flex items-center gap-1 rounded-default border border-border px-2 py-1.5 text-sm text-foreground"
+					class="inline-flex max-w-[220px] items-center gap-1 rounded-default border border-border px-2 py-1.5 text-sm text-foreground hover:bg-accent"
 					aria-label={t("composer.model")}
-					title={t("composer.modelServerConfigured")}
-					disabled
+					aria-expanded={modelOpen ? "true" : "false"}
+					aria-haspopup="listbox"
+					onclick={() => (modelOpen = !modelOpen)}
 				>
-					<Text tag="span">{modelLabel}</Text>
+					<Text tag="span" class="truncate">{modelButtonLabel}</Text>
+				</Button>
+				<Button
+					class="rounded-default border border-border px-2 py-1.5 text-sm text-foreground hover:bg-accent"
+					onclick={() => {
+						modelOpen = false;
+						onAddModel?.();
+					}}
+				>
+					<Text tag="span">{t("composer.addModel")}</Text>
 				</Button>
 			</Group>
-			<Button
-				type="submit"
-				disabled={disabled}
-				class="inline-flex size-8 items-center justify-center rounded-default bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
-				aria-label={t("composer.send")}
-			>
-				<Icon size="sm"><ArrowUp /></Icon>
-			</Button>
+			<Group class="items-center gap-2">
+				{#if busy && onCancel}
+					<Button
+						class="inline-flex size-8 items-center justify-center rounded-default border border-border text-foreground hover:bg-accent"
+						aria-label={t("composer.cancel")}
+						onclick={onCancel}
+					>
+						<Icon size="sm"><X /></Icon>
+					</Button>
+				{/if}
+				<Button
+					type="submit"
+					disabled={cannotSend}
+					class="inline-flex size-8 items-center justify-center rounded-default bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
+					aria-label={t("composer.send")}
+				>
+					<Icon size="sm"><ArrowUp /></Icon>
+				</Button>
+			</Group>
 		</Group>
+		{#if modelOpen && chatModels.length > 0}
+			<Stack class="gap-1 rounded-default border border-border bg-card p-2" role="listbox" aria-label={t("composer.modelList")}>
+				{#each chatModels as model (model.id)}
+					<Button
+						class={cn(
+							"w-full items-start justify-start rounded-default px-2 py-1.5 text-left hover:bg-accent",
+							model.id === selectedModelId ? "bg-accent" : ""
+						)}
+						role="option"
+						aria-selected={model.id === selectedModelId ? "true" : "false"}
+						onclick={() => chooseModel(model.id)}
+					>
+						<Stack class="gap-0.5">
+							<Text tag="span" class="text-sm text-foreground">{model.label}</Text>
+							<Text tag="span" class="font-mono text-[11px] text-muted-foreground">{model.id}</Text>
+						</Stack>
+					</Button>
+				{/each}
+				<Text tag="p" class="px-2 pt-1 text-[11px] text-muted-foreground">{t("composer.modelTrialHint")}</Text>
+			</Stack>
+		{/if}
+		{#if selected}
+			<Text tag="p" class="font-mono text-[11px] text-muted-foreground">
+				{t("composer.selectedModel").replace("{label}", selected.label).replace("{id}", selected.id)}
+			</Text>
+		{/if}
+		{#if sessionUsage}
+			<Text tag="p" class="text-[11px] text-muted-foreground" role="status">
+				{t("usage.session")
+					.replace("{status}", sessionUsage.status === "incomplete" ? t("usage.incomplete") : t("usage.complete"))
+					.replace("{prompt}", formatTokens(sessionUsage.promptTokens))
+					.replace("{completion}", formatTokens(sessionUsage.completionTokens))
+					.replace("{total}", formatTokens(sessionUsage.totalTokens))
+					.replace("{runs}", String(sessionUsage.runs))}
+			</Text>
+			<Text tag="p" class="text-[11px] text-muted-foreground">{t("usage.noDollars")}</Text>
+		{/if}
 		{#if runtimeLabel || runtimeStatus?.error}
 			<Group class="items-center justify-between gap-2">
 				{#if runtimeLabel}

@@ -3,6 +3,7 @@
 	import Block from "../compose/Block.svelte";
 	import Group from "../compose/Group.svelte";
 	import type { ChatSession, SessionSummary } from "../chat-core";
+	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
 	import { creatorLayout } from "../creator-layout.svelte";
 	import ChatColumn from "./ChatColumn.svelte";
 	import ChatDrawer from "./ChatDrawer.svelte";
@@ -21,6 +22,14 @@
 		onSelect,
 		onDelete,
 		onSend,
+		onCancel,
+		onAddModel,
+		onSelectModel,
+		onApply,
+		onDiscard,
+		chatModels = [],
+		selectedModelId = "",
+		sessionUsage = null,
 		onToggleSidebar,
 		onCloseSidebar,
 		runtime
@@ -41,6 +50,14 @@
 		onSelect: (id: string) => void | Promise<void>;
 		onDelete: (id: string) => void;
 		onSend: (text: string) => void | Promise<void>;
+		onCancel?: () => void;
+		onAddModel?: () => void;
+		onSelectModel?: (id: string) => void;
+		onApply?: () => void;
+		onDiscard?: () => void;
+		chatModels?: readonly GrokChatModel[];
+		selectedModelId?: string;
+		sessionUsage?: SessionUsage | null;
 		onToggleSidebar: () => void;
 		onCloseSidebar: () => void;
 	} = $props();
@@ -103,6 +120,14 @@
 					session={selected}
 					{busy}
 					{onSend}
+					{onCancel}
+					{onAddModel}
+					{onSelectModel}
+					{onApply}
+					{onDiscard}
+					{chatModels}
+					{selectedModelId}
+					{sessionUsage}
 					runtimeStatus={runtime}
 					visible={mobileSurface === "chat"}
 					{chatHidden}

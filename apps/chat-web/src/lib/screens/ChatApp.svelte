@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import {
+		abortInflightRun,
+		applyProposal,
 		applySessionFromUrl,
 		createSession,
 		deleteSession,
+		discardProposal,
 		getRuntimeStatus,
 		getSelectedSession,
 		hydrateSessions,
@@ -11,12 +14,14 @@
 		selectSession,
 		sendMessage
 	} from "../chat-core";
+	import { getSelectedModelId, listChatModels, setSelectedModelId } from "../browser/models.svelte";
 	import { t } from "../i18n/dictionary";
 	import { theme } from "../theme/theme.svelte";
 	import CreatorShell from "./CreatorShell.svelte";
 
 	let sidebarOpen = $state(false);
 	let busy = $state(false);
+	let modelEpoch = $state(0);
 
 	onMount(() => {
 		void hydrateSessions();
@@ -36,6 +41,12 @@
 	const selected = $derived(getSelectedSession());
 	const selectedId = $derived(selected?.id ?? null);
 	const runtime = $derived(getRuntimeStatus());
+	const chatModels = $derived(listChatModels());
+	const selectedModelId = $derived.by(() => {
+		void modelEpoch;
+		return getSelectedModelId();
+	});
+	const sessionUsage = $derived(selected?.usage ?? null);
 
 	async function onNew() {
 		busy = true;
@@ -71,6 +82,24 @@
 			busy = false;
 		}
 	}
+
+	function onCancel() {
+		abortInflightRun();
+		busy = false;
+	}
+
+	function onSelectModel(id: string) {
+		setSelectedModelId(id);
+		modelEpoch += 1;
+	}
+
+	function onApply() {
+		applyProposal();
+	}
+
+	function onDiscard() {
+		discardProposal();
+	}
 </script>
 
 <svelte:window onpopstate={onPopState} />
@@ -86,10 +115,17 @@
 	{selectedId}
 	{busy}
 	{runtime}
+	{chatModels}
+	{selectedModelId}
+	{sessionUsage}
 	{onNew}
 	{onSelect}
 	{onDelete}
 	{onSend}
+	{onCancel}
+	{onSelectModel}
+	{onApply}
+	{onDiscard}
 	onToggleSidebar={() => (sidebarOpen = !sidebarOpen)}
 	onCloseSidebar={() => (sidebarOpen = false)}
 />
