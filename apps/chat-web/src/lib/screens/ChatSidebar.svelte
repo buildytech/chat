@@ -10,6 +10,7 @@
 	import Zap from "@lucide/svelte/icons/zap";
 	import type { Component } from "svelte";
 	import Block from "../compose/Block.svelte";
+	import Box from "../../ui/box/Box.svelte";
 	import Group from "../compose/Group.svelte";
 	import Stack from "../compose/Stack.svelte";
 	import Button from "../../ui/button/Button.svelte";
@@ -22,6 +23,7 @@
 	import { cn } from "../../utils/cn";
 	import { deleteAllSessions, type SessionSummary } from "../chat-core";
 	import { getSelectedModelId, listChatModels, setSelectedModelId } from "../browser/models.svelte";
+	import ConfirmDialog from "./ConfirmDialog.svelte";
 
 	type NavItem = {
 		id: string;
@@ -56,6 +58,7 @@
 	let searchDraft = $state("");
 	let settingsOpen = $state(false);
 	let storageNote = $state("");
+	let pendingDelete = $state<{ kind: "one"; id: string; title: string } | { kind: "all" } | null>(null);
 	const chatModels = listChatModels();
 	const selectedModelId = $derived(getSelectedModelId());
 
@@ -80,7 +83,12 @@
 			return;
 		}
 		searchOpen = false;
-		if (id === "settings") settingsOpen = !settingsOpen;
+		if (id === "settings") {
+			settingsOpen = !settingsOpen;
+			if (settingsOpen) {
+				queueMicrotask(() => document.getElementById("creator-settings-model")?.focus());
+			}
+		}
 	}
 
 	function pickRecent(id: string) {
@@ -89,6 +97,7 @@
 	}
 
 	function onSearchKey(event: KeyboardEvent) {
+		if (pendingDelete) return;
 		if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
 			event.preventDefault();
 			pick("search");
@@ -101,14 +110,25 @@
 				event.preventDefault();
 			} else if (settingsOpen) {
 				settingsOpen = false;
+				active = "home";
 				event.preventDefault();
 			}
 		}
 	}
 
-	function clearStorage() {
-		deleteAllSessions();
-		storageNote = t("sidebar.cleared");
+	function requestDelete(session: SessionSummary) {
+		pendingDelete = { kind: "one", id: session.id, title: session.title };
+	}
+
+	function confirmPendingDelete() {
+		if (!pendingDelete) return;
+		if (pendingDelete.kind === "all") {
+			deleteAllSessions();
+			storageNote = t("sidebar.cleared");
+		} else {
+			onDelete(pendingDelete.id);
+		}
+		pendingDelete = null;
 	}
 </script>
 
@@ -123,12 +143,12 @@
 	<Stack class="gap-3 p-3 in-data-[nav=collapsed]:items-center in-data-[nav=collapsed]:p-2">
 		<Group class="justify-between gap-2 in-data-[nav=collapsed]:flex-col in-data-[nav=collapsed]:items-center">
 			<Group class="min-w-0 gap-2 in-data-[nav=collapsed]:hidden">
-				<Block
+				<Box
 					class="flex size-8 items-center justify-center rounded-default bg-primary text-xs font-semibold text-primary-foreground"
 					aria-hidden="true"
 				>
-					<Text tag="span">C</Text>
-				</Block>
+					<Text tag="span">{t("sidebar.brandMark")}</Text>
+				</Box>
 				<Text tag="span" class="truncate text-sm font-semibold">{t("sidebar.brand")}</Text>
 			</Group>
 			<Group class="gap-1 in-data-[nav=collapsed]:flex-col">
@@ -163,6 +183,8 @@
 							: "text-foreground hover:bg-accent/70"
 					)}
 					aria-pressed={active === item.id ? "true" : "false"}
+					aria-expanded={item.id === "search" ? (searchOpen ? "true" : "false") : undefined}
+					aria-controls={item.id === "search" ? "sidebar-chat-search" : undefined}
 					title={item.label}
 					onclick={() => pick(item.id)}
 				>
@@ -240,9 +262,10 @@
 							<Button
 								class="shrink-0 rounded-default p-2 text-muted-foreground hover:bg-accent hover:text-destructive disabled:opacity-40"
 								aria-label={t("sidebar.delete")}
+								aria-haspopup="dialog"
 								disabled={!canDelete}
 								title={canDelete ? t("sidebar.delete") : t("sidebar.deleteUnavailable")}
-								onclick={() => canDelete && onDelete(session.id)}
+								onclick={() => canDelete && requestDelete(session)}
 							>
 								<Icon size="sm"><Trash2 /></Icon>
 							</Button>
@@ -268,17 +291,26 @@
 			onclick={() => {
 				settingsOpen = !settingsOpen;
 				active = settingsOpen ? "settings" : "home";
+				if (settingsOpen) {
+					queueMicrotask(() => document.getElementById("creator-settings-model")?.focus());
+				}
 			}}
 		>
 			<Icon size="sm"><Settings /></Icon>
 			<Text tag="span" class="in-data-[nav=collapsed]:hidden">{t("sidebar.settings")}</Text>
 		</Button>
 		{#if settingsOpen && !collapsed}
-			<Stack id="creator-settings" class="gap-2 rounded-default border border-border p-2">
+			<Stack
+				id="creator-settings"
+				class="gap-2 rounded-default border border-border p-2"
+				role="region"
+				aria-label={t("sidebar.settingsRegion")}
+			>
 				<Text tag="p" class="text-xs text-muted-foreground">{t("sidebar.settingsHint")}</Text>
 				<Text tag="p" class="text-xs font-medium text-foreground">{t("sidebar.settingsModel")}</Text>
-				{#each chatModels as model (model.id)}
+				{#each chatModels as model, index (model.id)}
 					<Button
+						id={index === 0 ? "creator-settings-model" : undefined}
 						class={cn(
 							"w-full justify-start rounded-default px-2 py-1.5 text-left text-sm hover:bg-accent/70",
 							model.id === selectedModelId ? "bg-accent text-accent-foreground" : "text-foreground"
@@ -297,7 +329,8 @@
 				</Button>
 				<Button
 					class="w-full justify-start rounded-default px-2 py-1.5 text-sm text-destructive hover:bg-accent/70"
-					onclick={clearStorage}
+					aria-haspopup="dialog"
+					onclick={() => (pendingDelete = { kind: "all" })}
 				>
 					{t("sidebar.clearStorage")}
 				</Button>
@@ -316,15 +349,25 @@
 					title={t("sidebar.nightMode")}
 					onclick={() => theme.toggle()}
 				>
-					<Block
+					<Box
 						class={cn(
 							"absolute top-0.5 size-4 rounded-full bg-foreground transition-[left]",
 							theme.isDark ? "left-4" : "left-0.5"
 						)}
-					></Block>
+					></Box>
 				</Button>
 				<Text tag="span" class="text-sm in-data-[nav=collapsed]:hidden">{t("sidebar.nightMode")}</Text>
 			</Group>
 		</Group>
 	</Stack>
 </Block>
+
+{#if pendingDelete}
+	<ConfirmDialog
+		title={pendingDelete.kind === "all" ? t("sidebar.deleteAllConfirmTitle") : t("sidebar.deleteConfirmTitle")}
+		description={pendingDelete.kind === "all" ? t("sidebar.deleteAllConfirmBody") : t("sidebar.deleteConfirmBody")}
+		confirmLabel={pendingDelete.kind === "all" ? t("sidebar.clearStorage") : t("sidebar.deleteConfirm")}
+		onConfirm={confirmPendingDelete}
+		onClose={() => (pendingDelete = null)}
+	/>
+{/if}

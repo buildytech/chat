@@ -11,8 +11,8 @@ This package is the structured layout document written to the Page Store. It is 
 | Schema | `layout.version === 1`. Any other version is rejected. Unknown keys at every object are rejected. |
 | Status | `draft \| pending \| scheduled \| published \| archived \| trashed` (PagePort). Ordinary **draft creation** uses `parseDraftPage` (status must be `draft`). `parsePage` keeps published and the other statuses valid for load/save. |
 | Blocks | Closed `kind` allowlist from implemented Preview components: `nav`, `nav-link`, `hero`, `features`, `feature`, `menu`, `dish`, `hours`, `cta`, `footer`. |
-| Copy | Closed keys matching Preview + Latte (`eyebrow`, `headline`, `lede`, `action`, `note`, `brand`, `contact`, `legal`, `days`, `address`). Plain text only; no HTML/Latte/PHP markup. |
-| IDs | `^[a-z][a-z0-9-]{0,62}$`, unique in the tree. Safe to interpolate into the existing Latte emitter (`{define #id}` / `$page->blocks['id']`). |
+| Copy | Closed keys matching Preview + generated Svelte Code (`eyebrow`, `headline`, `lede`, `action`, `note`, `brand`, `contact`, `legal`, `days`, `address`). Plain text only; no HTML/PHP markup. |
+| IDs | `^[a-z][a-z0-9-]{0,62}$`, unique in the tree. Safe to interpolate into generated Svelte (`data-block-id`). |
 | Slug | Ordinary page slug `^[a-z0-9]+(?:-[a-z0-9]+)*$`, 1–48 chars. No UTM/query variants. |
 | Bounds | Max depth 4, max 64 blocks, bounded string lengths, max ~64k serialized payload. |
 | URLs | Dangerous schemes `javascript:`, `data:`, `vbscript:`, `file:` are rejected on every string, including whitespace-obfuscated forms. A value that *starts* with a URL scheme (spaces kept) may only use `http`, `https`, or `mailto`. Prose with a colon (`QA Landing 1109: …`, `Hours: 11:00`) is not a URL. |
@@ -30,6 +30,6 @@ TypeScript `parsePage` / `parseDraftPage` is the product validator (see `fixture
 
 **Known follow-up (not M2):** the v1 plain-text rule rejects `<>{}` in every string. That is stricter than some legitimate copy (comparisons, examples). Broaden only in an explicit contract review — persistence must not silently loosen it.
 
-Out of this contract: multilanding, UTM, checkout, Codex equivalence, Gateway, publish, WordPress import, portable multi-host export envelope ([ADR-0007](../../.project/adr/0007-one-buildy-three-hosts.md)). v1 is the SPA layout document. Do not treat it as already compatible with a Latte/PHP importer.
+Out of this contract: multilanding, UTM, checkout, Codex equivalence, Gateway, publish, WordPress import, portable multi-host export envelope ([ADR-0007](../../.project/adr/0007-one-buildy-three-hosts.md)). v1 is the SPA layout document. This repo does not ship a WordPress or Latte runtime.
 
 See [docs/architecture.md](../../docs/architecture.md).

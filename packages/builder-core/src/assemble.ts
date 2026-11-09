@@ -374,11 +374,19 @@ function poolFor(ctx: ProposalContext): CatalogScreen[] {
 	return [];
 }
 
-function pickSupportedScreen(pool: CatalogScreen[], brief: string): CatalogScreen | null {
+function screenInPool(screen: CatalogScreen, pool: CatalogScreen[]): boolean {
+	return pool.some((item) => item.screenId === screen.screenId);
+}
+
+function pickSupportedScreen(
+	pool: CatalogScreen[],
+	brief: string,
+	scenarioId: ScenarioId | null
+): CatalogScreen | null {
 	if (!pool.length) return null;
 	const wantsMenu = /\bmenus?\b/i.test(brief) || briefMentionsGrill(brief) || briefMentionsDelivery(brief);
-	if (wantsMenu && inferScenarioId(brief) !== "landing") {
-		const menuPool = filterScreens({ type: "screen", section: "marketing" })
+	if (wantsMenu && scenarioId === "website") {
+		const menuPool = pool
 			.filter((screen) => screenSupport(screen).mappedKinds.includes("menu"))
 			.sort(compareScreenSupport);
 		const namedMenu = menuPool.find((screen) => screen.variant === "menu" || /\/menu$/.test(screen.screenId));
@@ -386,7 +394,25 @@ function pickSupportedScreen(pool: CatalogScreen[], brief: string): CatalogScree
 		if (menuPool[0]) return menuPool[0];
 	}
 	const supported = pool.filter((screen) => screenSupport(screen).supported);
-	return (supported[0] ?? pool[0]) ?? null;
+	if (supported[0]) return supported[0];
+	if (scenarioId === "dashboard") return pool[0] ?? null;
+	return null;
+}
+
+function kindsForPage(screen: CatalogScreen, brief: string, scenarioId: ScenarioId | null): PageBlockKind[] {
+	const kinds = uniqueKindsFromScreen(screen);
+	if (scenarioId !== "website") return kinds;
+	const wantsMenu = /\bmenus?\b/i.test(brief) || briefMentionsGrill(brief);
+	const wantsContact = /\bcontact\b/i.test(brief) || /\bhours\b/i.test(brief) || briefMentionsDelivery(brief);
+	if (wantsMenu && !kinds.includes("menu")) kinds.push("menu");
+	if (wantsContact && !kinds.includes("hours")) kinds.push("hours");
+	const jobRank = new Map<PageBlockKind, number>();
+	for (const [index, job] of screen.labels.job.entries()) {
+		const kind = rendererKindForLabel(job);
+		if (kind && !jobRank.has(kind)) jobRank.set(kind, index);
+	}
+	kinds.sort((a, b) => pageSlot(a, jobRank) - pageSlot(b, jobRank));
+	return kinds;
 }
 
 function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutProposalError | null {
@@ -401,6 +427,15 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 				suggestedScreenIds: suggestedFrom(pool)
 			};
 		}
+		const best = pickSupportedScreen(pool.length ? pool : [screen], ctx.brief, ctx.scenarioId);
+		if (ctx.scenarioId && pool.length && !screenInPool(screen, pool)) {
+			return {
+				ok: false,
+				code: "scenario_screen_mismatch",
+				message: `${screen.screenId} is not a ${ctx.scenarioId} Stock screen. Use a scenario-compatible screen${best ? ` such as ${best.screenId}` : ""}. Do not retry the same screenId.`,
+				suggestedScreenIds: suggestedFrom(best ? [best, ...pool] : pool)
+			};
+		}
 		const compat = compatibilityFor(screen);
 		if (!compat.compatible && !compat.partial) {
 			return {
@@ -410,14 +445,13 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 				suggestedScreenIds: suggestedFrom(pool)
 			};
 		}
-		const best = pickSupportedScreen(pool.length ? pool : [screen], ctx.brief);
 		const current = screenSupport(screen);
-		if (best && best.screenId !== screen.screenId && compareScreenSupport(best, screen) < 0) {
+		if (!current.supported && ctx.scenarioId !== "dashboard") {
 			return {
 				ok: false,
 				code: "screen_not_renderable",
-				message: `${screen.screenId} drops ${current.missing.join(", ") || "most blocks"} in this Browser snapshot. Use a supported screen such as ${best.screenId}. Do not retry the same screenId.`,
-				suggestedScreenIds: suggestedFrom([best, ...pool])
+				message: `${screen.screenId} is not renderer-supported (drops ${current.missing.join(", ") || "required sections"}). Use a supported screen${best ? ` such as ${best.screenId}` : ""}. Do not retry the same screenId.`,
+				suggestedScreenIds: suggestedFrom(best ? [best, ...pool] : pool)
 			};
 		}
 		return screen;
@@ -431,7 +465,7 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 				"No Stock screens match that scenario filter. Re-search with a bounded section or job, or pick another scenario."
 		};
 	}
-	const picked = pickSupportedScreen(pool, ctx.brief);
+	const picked = pickSupportedScreen(pool, ctx.brief, ctx.scenarioId);
 	if (!picked) {
 		return {
 			ok: false,
@@ -513,7 +547,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 	const working: ProposalContext = { ...ctx, scenarioId };
 
 	const looksNewPage = isNewPageCommand(brief);
-	if (ctx.currentPage && ctx.expectedRevision > 0 && !ctx.screenId && !looksNewPage) {
+	if (ctx.currentPage && !looksNewPage) {
 		return editExistingPage(working, brief);
 	}
 
@@ -529,7 +563,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		};
 	}
 
-	const kinds = uniqueKindsFromScreen(screen);
+	const kinds = kindsForPage(screen, brief, working.scenarioId);
 	const warnings: string[] = [];
 	const missing: string[] = [];
 	const support = screenSupport(screen);
@@ -581,6 +615,18 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 			);
 			continue;
 		}
+		if (kind === "hours") {
+			blocks.push(
+				block(
+					"block-hours",
+					"hours",
+					/\bcontact\b/i.test(brief) ? "Contact" : titleFor("hours", screen),
+					summaryFor("hours"),
+					copyFor("hours", working.scenarioId, screen, brief, pageTitle)
+				)
+			);
+			continue;
+		}
 		blocks.push(
 			block(
 				`block-${kind}`,
@@ -599,6 +645,15 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 			message:
 				"Empty layout proposals are rejected unless you explicitly ask to clear the page. Search the catalog again with a bounded facet or attach a compatible screen."
 		};
+	}
+
+	const edits = working.edits?.length ? working.edits : extractCopyEditsFromBrief(brief);
+	if (edits.length) {
+		const patched = applyCopyEdits(blocks, edits);
+		if (patched.changed.length) {
+			warnings.push(`Applied copy edits: ${patched.changed.join(", ")}.`);
+		}
+		return finishProposal(working, brief, screen, patched.blocks, warnings, missing);
 	}
 
 	return finishProposal(working, brief, screen, blocks, warnings, missing);

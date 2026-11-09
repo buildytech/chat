@@ -6,6 +6,7 @@
 	import ThumbsDown from "@lucide/svelte/icons/thumbs-down";
 	import ThumbsUp from "@lucide/svelte/icons/thumbs-up";
 	import Block from "../compose/Block.svelte";
+	import Box from "../../ui/box/Box.svelte";
 	import Group from "../compose/Group.svelte";
 	import Stack from "../compose/Stack.svelte";
 	import Button from "../../ui/button/Button.svelte";
@@ -64,6 +65,7 @@
 	);
 
 	const mine = $derived(message.role === "user");
+	const youMark = $derived(t("message.you").slice(0, 1));
 	let vote = $state<"good" | "bad" | null>(null);
 	let copied = $state(false);
 
@@ -108,12 +110,12 @@
 <Block tag="article" class="w-full max-w-full" data-role={message.role}>
 	{#if mine}
 		<Group class="items-start gap-3">
-			<Block
+			<Box
 				class="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground"
 				aria-hidden="true"
 			>
-				<Text tag="span">{t("message.you").slice(0, 1)}</Text>
-			</Block>
+				<Text tag="span">{youMark}</Text>
+			</Box>
 			<Stack class="min-w-0 flex-1 gap-2">
 				<Group class="justify-between gap-2">
 					<Group class="min-w-0 gap-2">
@@ -137,9 +139,9 @@
 						</Button>
 					</Group>
 				</Group>
-				<Block class="rounded-default bg-muted px-3 py-2 text-foreground">
+				<Box class="rounded-default bg-muted px-3 py-2 text-foreground">
 					<Text tag="p" class="text-sm whitespace-pre-wrap">{message.text}</Text>
-				</Block>
+				</Box>
 			</Stack>
 		</Group>
 	{:else}

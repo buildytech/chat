@@ -3,6 +3,7 @@ import { afterEach, test } from "node:test";
 import {
 	PAGES_KEY,
 	SESSIONS_KEY,
+	allowPersistOverwrite,
 	clearPersistError,
 	getPersistError,
 	loadPagesBlob,
@@ -69,6 +70,11 @@ test("corrupt session JSON is not overwritten", () => {
 	assert.deepEqual(loaded, []);
 	assert.equal(getPersistError()?.code, "corrupt");
 	assert.equal(memory.getItem(SESSIONS_KEY), "{not-json");
+	assert.equal(saveSessionsJson([{ id: "session-x" }]), false);
+	assert.equal(memory.getItem(SESSIONS_KEY), "{not-json");
+	allowPersistOverwrite();
+	assert.equal(saveSessionsJson([{ id: "session-x" }]), true);
+	assert.deepEqual(loadSessionsJson(), [{ id: "session-x" }]);
 });
 
 test("pages are stored per session and discard does not need a write of applied", () => {

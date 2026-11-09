@@ -1,0 +1,36 @@
+From: Grok Bot <grokbot@users.noreply.github.com>
+Subject: owner-only: drop retired context-serve CI job
+
+Owner-only workflow patch. Agents must not apply this file.
+Location to edit: `.github/workflows/ci.yml` job `context-serve` (after `chat-web`).
+`services/context-serve` stays as a retired placeholder until this job is removed.
+
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -63,25 +63,3 @@ jobs:
+       - name: Build
+         run: npm run build --workspace=@buildytech/chat-web
+-
+-  context-serve:
+-    name: context-serve
+-    runs-on: ubuntu-latest
+-    needs: pin-check
+-    defaults:
+-      run:
+-        working-directory: services/context-serve
+-    steps:
+-      - name: Checkout
+-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+-
+-      - name: Setup Go
+-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+-        with:
+-          go-version-file: services/context-serve/go.mod
+-          cache-dependency-path: services/context-serve/go.sum
+-
+-      - name: Test
+-        run: go test ./...
+-
+-      - name: Build
+-        run: go build -o context-serve .

@@ -47,6 +47,9 @@ test("Escape closes the model menu and Ctrl+K searches saved chats", () => {
 	assert.match(composer, /onEscape/);
 	assert.match(composer, /svelte:window/);
 	assert.match(composer, /modelOpen = false/);
+	assert.match(composer, /composer-model-trigger/);
+	assert.match(composer, /closeModelMenu/);
+	assert.match(composer, /getElementById\("composer-model-trigger"\)\?\.focus/);
 	assert.doesNotMatch(composer, /composer\.add"/);
 	assert.match(composer, /composer\.addModel/);
 	const sidebar = source("ChatSidebar");
@@ -55,8 +58,14 @@ test("Escape closes the model menu and Ctrl+K searches saved chats", () => {
 	assert.match(sidebar, /key === "Escape"/);
 	assert.match(sidebar, /deleteAllSessions/);
 	assert.match(sidebar, /setSelectedModelId/);
+	assert.match(sidebar, /ConfirmDialog/);
+	assert.match(sidebar, /pendingDelete/);
+	assert.match(sidebar, /sidebar\.deleteAllConfirmBody/);
+	assert.match(sidebar, /sidebar\.brandMark/);
+	assert.doesNotMatch(sidebar, /function clearStorage/);
 	assert.doesNotMatch(sidebar, /sidebar\.comingSoon/);
 	assert.doesNotMatch(sidebar, /sidebar\.settingsSoon/);
+	assert.doesNotMatch(sidebar, /<Block[\s\S]*<Block/);
 });
 
 test("Code pane copy reports success or failure", () => {

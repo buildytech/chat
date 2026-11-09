@@ -11,6 +11,7 @@
 		"sidebar.close": "Закрыть боковую панель",
 		"sidebar.delete": "Удалить чат",
 		"sidebar.brand": "Creator",
+		"sidebar.brandMark": "C",
 		"sidebar.home": "Главная",
 		"sidebar.search": "Поиск",
 		"sidebar.searchKbd": "Ctrl+K",
@@ -119,7 +120,7 @@
 		"preview.openNew": "Открыть в новой вкладке",
 		"preview.site": "Сайт",
 		"preview.device": "Устройство",
-		"code.runtime": "Latte CodePort (заглушка, не компилятор)",
+		"code.runtime": "Generated Svelte UI8Kit source for this Page. Not compiled or executed here.",
 		"code.selected": "Выбрано в исходнике",
 		"code.files": "Файлы",
 		"code.search": "Поиск",
@@ -138,7 +139,7 @@
 		"splitter.nav": "Изменить ширину навигации",
 		"splitter.chat": "Изменить ширину чата",
 		"splitter.tree": "Изменить ширину дерева файлов",
-		"sidebar.deleteUnavailable": "Удаление недоступно, пока Session API его не поддерживает",
+		"sidebar.deleteUnavailable": "This chat cannot be deleted from this browser right now",
 		"runtime.mockMode": "Офлайн-мок — localStorage, не живой агент",
 		"runtime.testHarness": "Тестовый harness: {mode} · liveModel выкл.",
 		"runtime.liveModel": "Подключена живая модель",
@@ -148,7 +149,7 @@
 		"runtime.hydrateFailed": "Session API недоступен",
 		"runtime.capabilitiesFailed": "Capabilities недоступны",
 		"runtime.sendFailed": "Не удалось отправить",
-		"runtime.deleteUnavailable": "Удаление сессии пока недоступно",
+		"runtime.deleteUnavailable": "Could not delete that saved chat from this browser",
 		"message.savedRevision": "Черновик /{slug} · ревизия {revision}"
 	}
 }

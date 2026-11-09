@@ -59,5 +59,13 @@ export function displayTitleFromBrief(brief: string, fallback = "Draft page"): s
 		.replace(/^(?:please\s+)?create\s+(?:a\s+)?(?:new year\s+)?/i, "")
 		.trim();
 	const first = (withoutPrefix.split(/[.!?]/)[0] ?? withoutPrefix).trim();
-	return (first || trimmed).slice(0, 80) || fallback;
+	if (
+		!first ||
+		/\b(?:create|build|make|using existing|no invented|keep all other)\b/i.test(first) ||
+		/^(?:a\s+)?(?:landing(?:\s+pages?)?|dashboard|website|page)\b/i.test(first)
+	) {
+		return fallback;
+	}
+	if (first.split(/\s+/).length > 8) return fallback;
+	return first.slice(0, 80) || fallback;
 }

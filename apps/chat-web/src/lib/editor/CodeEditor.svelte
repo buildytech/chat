@@ -16,7 +16,7 @@
 	import { EditorView } from "@codemirror/view";
 	import { EditorState } from "@codemirror/state";
 	import { cn } from "../../utils/cn";
-	import { latteCode, remeasure } from "./latte-code";
+	import { editorCode, remeasure } from "./editor-code";
 
 	let {
 		doc,
@@ -38,7 +38,7 @@
 
 		const state = EditorState.create({
 			doc: untrack(() => doc),
-			extensions: latteCode({ editable: canEdit, language: lang })
+			extensions: editorCode({ editable: canEdit, language: lang })
 		});
 		const line = state.doc.line(Math.min(Math.max(untrack(() => activeLine), 1), state.doc.lines));
 		const next = new EditorView({

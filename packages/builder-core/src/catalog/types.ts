@@ -63,7 +63,7 @@ export type ScreenCompatibility = {
 	missing: Array<{ catalogLabel: string; catalogIds: string[]; reason: string }>;
 };
 
-export type SearchQuery = CatalogFacetFilter & { page?: number; pageSize?: number };
+export type SearchQuery = CatalogFacetFilter & { page?: number; pageSize?: number; supportedOnly?: boolean };
 
 export type SearchResult = {
 	query: CatalogFacetFilter;

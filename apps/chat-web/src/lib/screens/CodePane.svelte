@@ -154,8 +154,8 @@
 		<PaneSplitter pane="tree" class="max-md:hidden" />
 	{/if}
 
-	<Block class="flex min-h-0 min-w-0 flex-1 flex-col max-md:in-data-[stage=files]:hidden">
-		<Block class="hidden border-b border-border p-4 max-md:in-data-[stage=editor]:block">
+	<Stack class="flex min-h-0 min-w-0 flex-1 flex-col max-md:in-data-[stage=files]:hidden">
+		<Stack class="hidden border-b border-border p-4 max-md:in-data-[stage=editor]:block">
 			<Button
 				class="inline-flex w-full items-center justify-center gap-2 rounded-default border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
 				onclick={() => (stage = "files")}
@@ -163,7 +163,7 @@
 				<Icon size="sm" class="text-muted-foreground"><ChevronLeft /></Icon>
 				<Text tag="span">{t("code.backFiles")}</Text>
 			</Button>
-		</Block>
+		</Stack>
 		<Group class="h-10 shrink-0 items-center overflow-hidden border-b border-border bg-muted">
 			{#if treeCollapsed}
 				<Button
@@ -234,5 +234,5 @@
 				editable={false}
 			/>
 		</Stack>
-	</Block>
+	</Stack>
 </Block>

@@ -6684,9 +6684,7 @@ function screenSupport(screen: CatalogScreen): ScreenSupport {
 	const hasBody = mappedKinds.some((kind) => kind === "hero" || kind === "features" || kind === "menu");
 	const hasFrame = mappedKinds.includes("nav") || mappedKinds.includes("footer") || mappedKinds.includes("cta");
 	const supported =
-		missing.length === 0
-			? mappedKinds.length >= 3
-			: mappedKinds.length >= 3 && missing.length < mappedKinds.length && hasBody && hasFrame;
+		mappedKinds.length >= 3 && hasBody && hasFrame && (missing.length === 0 || missing.length < compat.mapped.length);
 	return {
 		mappedKinds,
 		missing,
@@ -6801,7 +6799,8 @@ function searchCatalog(query: SearchQuery = {}): SearchResult {
 		};
 	}
 
-	const items = filterScreens(query).slice().sort(compareScreenSupport);
+	let items = filterScreens(query).slice().sort(compareScreenSupport);
+	if (query.supportedOnly) items = items.filter((screen) => screenSupport(screen).supported);
 	const total = items.length;
 	const pageCount = total === 0 ? 1 : Math.ceil(total / pageSize);
 	let page = query.page ?? 1;
@@ -6823,7 +6822,9 @@ function searchCatalog(query: SearchQuery = {}): SearchResult {
 		vocabulary,
 		noFit,
 		clarification: noFit
-			? "No Stock screens match that filter. Re-search with a bounded section or job from the vocabulary, or attach a scenario."
+			? query.supportedOnly
+				? "No renderer-supported Stock screens match that filter. Attach a different scenario or a supported screen."
+				: "No Stock screens match that filter. Re-search with a bounded section or job from the vocabulary, or attach a scenario."
 			: undefined,
 		suggested: noFit ? ownerSuggestions() : undefined
 	};
@@ -7008,7 +7009,15 @@ function displayTitleFromBrief(brief: string, fallback = "Draft page"): string {
 		.replace(/^(?:please\s+)?create\s+(?:a\s+)?(?:new year\s+)?/i, "")
 		.trim();
 	const first = (withoutPrefix.split(/[.!?]/)[0] ?? withoutPrefix).trim();
-	return (first || trimmed).slice(0, 80) || fallback;
+	if (
+		!first ||
+		/\b(?:create|build|make|using existing|no invented|keep all other)\b/i.test(first) ||
+		/^(?:a\s+)?(?:landing(?:\s+pages?)?|dashboard|website|page)\b/i.test(first)
+	) {
+		return fallback;
+	}
+	if (first.split(/\s+/).length > 8) return fallback;
+	return first.slice(0, 80) || fallback;
 }
 
 exports["inferScenarioId"] = inferScenarioId;
@@ -7023,6 +7032,48 @@ __def("packages/builder-core/src/edits.ts", function (exports) {
 const { PAGE_BLOCK_KINDS, PAGE_COPY_KEYS } = __req("packages/page-contract/src/index.ts");
 const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
 const FIELD_SET = new Set<string>(PAGE_COPY_KEYS);
+
+const KIND_ALIASES: Record<string, PageBlockKind> = {
+	navigation: "nav",
+	header: "hero",
+	heading: "hero",
+	calltoaction: "cta",
+	"call-to-action": "cta"
+};
+
+const FIELD_ALIASES: Record<string, PageCopyKey> = {
+	title: "headline",
+	subtitle: "lede",
+	description: "lede",
+	body: "lede",
+	cta: "action",
+	button: "action",
+	label: "action"
+};
+
+function normalizeKind(raw: string): PageBlockKind | null {
+	const key = raw.trim().toLowerCase();
+	if (KIND_SET.has(key)) return key as PageBlockKind;
+	return KIND_ALIASES[key] ?? null;
+}
+
+function normalizeField(raw: string): PageCopyKey | null {
+	const key = raw.trim().toLowerCase();
+	if (FIELD_SET.has(key)) return key as PageCopyKey;
+	const aliased = FIELD_ALIASES[key];
+	return aliased && FIELD_SET.has(aliased) ? aliased : null;
+}
+
+function parseCopyPath(path: string): { kind: PageBlockKind; field: PageCopyKey } | null {
+	const parts = path
+		.split(".")
+		.map((part) => part.trim().toLowerCase())
+		.filter(Boolean);
+	const kind = parts.map(normalizeKind).find((item): item is PageBlockKind => Boolean(item));
+	const field = [...parts].reverse().map(normalizeField).find((item): item is PageCopyKey => Boolean(item));
+	if (!kind || !field) return null;
+	return { kind, field };
+}
 
 function looksLikeRawInstruction(value: string): boolean {
 	const words = value.trim().split(/\s+/);
@@ -7046,11 +7097,12 @@ function parseLayoutCopyEdits(raw: unknown): LayoutCopyEdit[] {
 	for (const item of raw) {
 		if (!item || typeof item !== "object") continue;
 		const rec = item as Record<string, unknown>;
-		const kind = String(rec.kind ?? rec.blockKind ?? "");
-		const field = String(rec.field ?? rec.copyKey ?? rec.key ?? "");
+		const fromPath = typeof rec.path === "string" ? parseCopyPath(rec.path) : null;
+		const kind = normalizeKind(String(rec.kind ?? rec.blockKind ?? rec.slot ?? rec.block ?? fromPath?.kind ?? ""));
+		const field = normalizeField(String(rec.field ?? rec.copyKey ?? rec.key ?? fromPath?.field ?? ""));
 		const value = cleanExtractedValue(String(rec.value ?? ""));
-		if (!KIND_SET.has(kind) || !FIELD_SET.has(field) || !value) continue;
-		out.push({ kind: kind as PageBlockKind, field: field as PageCopyKey, value });
+		if (!kind || !field || !value) continue;
+		out.push({ kind, field, value });
 	}
 	return out;
 }
@@ -7486,11 +7538,19 @@ function poolFor(ctx: ProposalContext): CatalogScreen[] {
 	return [];
 }
 
-function pickSupportedScreen(pool: CatalogScreen[], brief: string): CatalogScreen | null {
+function screenInPool(screen: CatalogScreen, pool: CatalogScreen[]): boolean {
+	return pool.some((item) => item.screenId === screen.screenId);
+}
+
+function pickSupportedScreen(
+	pool: CatalogScreen[],
+	brief: string,
+	scenarioId: ScenarioId | null
+): CatalogScreen | null {
 	if (!pool.length) return null;
 	const wantsMenu = /\bmenus?\b/i.test(brief) || briefMentionsGrill(brief) || briefMentionsDelivery(brief);
-	if (wantsMenu && inferScenarioId(brief) !== "landing") {
-		const menuPool = filterScreens({ type: "screen", section: "marketing" })
+	if (wantsMenu && scenarioId === "website") {
+		const menuPool = pool
 			.filter((screen) => screenSupport(screen).mappedKinds.includes("menu"))
 			.sort(compareScreenSupport);
 		const namedMenu = menuPool.find((screen) => screen.variant === "menu" || /\/menu$/.test(screen.screenId));
@@ -7498,7 +7558,25 @@ function pickSupportedScreen(pool: CatalogScreen[], brief: string): CatalogScree
 		if (menuPool[0]) return menuPool[0];
 	}
 	const supported = pool.filter((screen) => screenSupport(screen).supported);
-	return (supported[0] ?? pool[0]) ?? null;
+	if (supported[0]) return supported[0];
+	if (scenarioId === "dashboard") return pool[0] ?? null;
+	return null;
+}
+
+function kindsForPage(screen: CatalogScreen, brief: string, scenarioId: ScenarioId | null): PageBlockKind[] {
+	const kinds = uniqueKindsFromScreen(screen);
+	if (scenarioId !== "website") return kinds;
+	const wantsMenu = /\bmenus?\b/i.test(brief) || briefMentionsGrill(brief);
+	const wantsContact = /\bcontact\b/i.test(brief) || /\bhours\b/i.test(brief) || briefMentionsDelivery(brief);
+	if (wantsMenu && !kinds.includes("menu")) kinds.push("menu");
+	if (wantsContact && !kinds.includes("hours")) kinds.push("hours");
+	const jobRank = new Map<PageBlockKind, number>();
+	for (const [index, job] of screen.labels.job.entries()) {
+		const kind = rendererKindForLabel(job);
+		if (kind && !jobRank.has(kind)) jobRank.set(kind, index);
+	}
+	kinds.sort((a, b) => pageSlot(a, jobRank) - pageSlot(b, jobRank));
+	return kinds;
 }
 
 function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutProposalError | null {
@@ -7513,6 +7591,15 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 				suggestedScreenIds: suggestedFrom(pool)
 			};
 		}
+		const best = pickSupportedScreen(pool.length ? pool : [screen], ctx.brief, ctx.scenarioId);
+		if (ctx.scenarioId && pool.length && !screenInPool(screen, pool)) {
+			return {
+				ok: false,
+				code: "scenario_screen_mismatch",
+				message: `${screen.screenId} is not a ${ctx.scenarioId} Stock screen. Use a scenario-compatible screen${best ? ` such as ${best.screenId}` : ""}. Do not retry the same screenId.`,
+				suggestedScreenIds: suggestedFrom(best ? [best, ...pool] : pool)
+			};
+		}
 		const compat = compatibilityFor(screen);
 		if (!compat.compatible && !compat.partial) {
 			return {
@@ -7522,14 +7609,13 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 				suggestedScreenIds: suggestedFrom(pool)
 			};
 		}
-		const best = pickSupportedScreen(pool.length ? pool : [screen], ctx.brief);
 		const current = screenSupport(screen);
-		if (best && best.screenId !== screen.screenId && compareScreenSupport(best, screen) < 0) {
+		if (!current.supported && ctx.scenarioId !== "dashboard") {
 			return {
 				ok: false,
 				code: "screen_not_renderable",
-				message: `${screen.screenId} drops ${current.missing.join(", ") || "most blocks"} in this Browser snapshot. Use a supported screen such as ${best.screenId}. Do not retry the same screenId.`,
-				suggestedScreenIds: suggestedFrom([best, ...pool])
+				message: `${screen.screenId} is not renderer-supported (drops ${current.missing.join(", ") || "required sections"}). Use a supported screen${best ? ` such as ${best.screenId}` : ""}. Do not retry the same screenId.`,
+				suggestedScreenIds: suggestedFrom(best ? [best, ...pool] : pool)
 			};
 		}
 		return screen;
@@ -7543,7 +7629,7 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 				"No Stock screens match that scenario filter. Re-search with a bounded section or job, or pick another scenario."
 		};
 	}
-	const picked = pickSupportedScreen(pool, ctx.brief);
+	const picked = pickSupportedScreen(pool, ctx.brief, ctx.scenarioId);
 	if (!picked) {
 		return {
 			ok: false,
@@ -7625,7 +7711,7 @@ function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalErr
 	const working: ProposalContext = { ...ctx, scenarioId };
 
 	const looksNewPage = isNewPageCommand(brief);
-	if (ctx.currentPage && ctx.expectedRevision > 0 && !ctx.screenId && !looksNewPage) {
+	if (ctx.currentPage && !looksNewPage) {
 		return editExistingPage(working, brief);
 	}
 
@@ -7641,7 +7727,7 @@ function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalErr
 		};
 	}
 
-	const kinds = uniqueKindsFromScreen(screen);
+	const kinds = kindsForPage(screen, brief, working.scenarioId);
 	const warnings: string[] = [];
 	const missing: string[] = [];
 	const support = screenSupport(screen);
@@ -7693,6 +7779,18 @@ function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalErr
 			);
 			continue;
 		}
+		if (kind === "hours") {
+			blocks.push(
+				block(
+					"block-hours",
+					"hours",
+					/\bcontact\b/i.test(brief) ? "Contact" : titleFor("hours", screen),
+					summaryFor("hours"),
+					copyFor("hours", working.scenarioId, screen, brief, pageTitle)
+				)
+			);
+			continue;
+		}
 		blocks.push(
 			block(
 				`block-${kind}`,
@@ -7711,6 +7809,15 @@ function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalErr
 			message:
 				"Empty layout proposals are rejected unless you explicitly ask to clear the page. Search the catalog again with a bounded facet or attach a compatible screen."
 		};
+	}
+
+	const edits = working.edits?.length ? working.edits : extractCopyEditsFromBrief(brief);
+	if (edits.length) {
+		const patched = applyCopyEdits(blocks, edits);
+		if (patched.changed.length) {
+			warnings.push(`Applied copy edits: ${patched.changed.join(", ")}.`);
+		}
+		return finishProposal(working, brief, screen, patched.blocks, warnings, missing);
 	}
 
 	return finishProposal(working, brief, screen, blocks, warnings, missing);
@@ -7898,10 +8005,41 @@ function isAllowedTool(name: string): name is AllowedTool {
 	return (ALLOWED_TOOLS as string[]).includes(name);
 }
 
+function toolLoopProposalFailure(input: {
+	toolsCalled: string[];
+	rejections: ToolLoopRejection[];
+}): LayoutProposalError {
+	const proposeCount = input.toolsCalled.filter((name) => name === "propose_layout").length;
+	if (proposeCount > 0) {
+		const codes = [...new Set(input.rejections.map((row) => row.code).filter(Boolean))];
+		const paths = [...new Set(input.rejections.map((row) => row.path).filter((path): path is string => Boolean(path)))];
+		const detail = [
+			codes.length ? `codes ${codes.join(", ")}` : "assembler rejected every call",
+			paths.length ? `paths ${paths.join(", ")}` : null
+		]
+			.filter(Boolean)
+			.join("; ");
+		return {
+			ok: false,
+			code: "propose_layout_rejected",
+			message: `propose_layout was called ${proposeCount} time(s) and rejected (${detail}). No local layout was substituted.`,
+			path: paths[0]
+		};
+	}
+	const used = input.toolsCalled.length > 0;
+	return {
+		ok: false,
+		code: used ? "propose_layout_missing" : "tools_not_used",
+		message: used
+			? "Grok used catalog tools but did not call propose_layout. No local layout was substituted."
+			: "Grok did not call catalog tools on this turn. No local layout was substituted."
+	};
+}
+
 function executeTool(
 	call: ToolCall,
 	host?: ToolHost
-): { ok: true; name: AllowedTool; result: unknown } | { ok: false; code: string; message: string; result?: unknown } {
+): { ok: true; name: AllowedTool; result: unknown } | { ok: false; code: string; message: string; result?: unknown; path?: string } {
 	if (!isAllowedTool(call.name)) {
 		return {
 			ok: false,
@@ -7915,7 +8053,8 @@ function executeTool(
 			type: "screen",
 			section: typeof args.section === "string" ? args.section : undefined,
 			job: typeof args.job === "string" ? args.job : undefined,
-			page: typeof args.page === "number" ? args.page : 1
+			page: typeof args.page === "number" ? args.page : 1,
+			supportedOnly: true
 		});
 		if (result.code === "catalog_facet_unknown") {
 			return {
@@ -7977,7 +8116,11 @@ function executeTool(
 				ok: false,
 				code: result.code,
 				message: result.message,
-				result: result.suggestedScreenIds ? { suggestedScreenIds: result.suggestedScreenIds } : undefined
+				path: result.path,
+				result: {
+					...(result.suggestedScreenIds ? { suggestedScreenIds: result.suggestedScreenIds } : {}),
+					...(result.path ? { path: result.path } : {})
+				}
 			};
 		}
 		return { ok: true, name: call.name, result };
@@ -8032,6 +8175,7 @@ function runConstructorTools(ctx: ProposalContext): LayoutProposal | LayoutPropo
 
 exports["compactSearchResult"] = compactSearchResult;
 exports["isAllowedTool"] = isAllowedTool;
+exports["toolLoopProposalFailure"] = toolLoopProposalFailure;
 exports["executeTool"] = executeTool;
 exports["runConstructorTools"] = runConstructorTools;
 
@@ -8722,6 +8866,7 @@ exports["executeTool"] = __req("packages/builder-core/src/tools.ts")["executeToo
 exports["runConstructorTools"] = __req("packages/builder-core/src/tools.ts")["runConstructorTools"];
 exports["isAllowedTool"] = __req("packages/builder-core/src/tools.ts")["isAllowedTool"];
 exports["compactSearchResult"] = __req("packages/builder-core/src/tools.ts")["compactSearchResult"];
+exports["toolLoopProposalFailure"] = __req("packages/builder-core/src/tools.ts")["toolLoopProposalFailure"];
 exports["inferScenarioId"] = __req("packages/builder-core/src/brief.ts")["inferScenarioId"];
 exports["isScenarioId"] = __req("packages/builder-core/src/brief.ts")["isScenarioId"];
 exports["displayTitleFromBrief"] = __req("packages/builder-core/src/brief.ts")["displayTitleFromBrief"];
@@ -8783,7 +8928,7 @@ exports["readEnv"] = __req("packages/builder-core/src/env-map.ts")["readEnv"];
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, aggregateStepUsage, assertNoFallback, catalogProvenance, catalogToolParameterSchema, executeTool, facetVocabulary, readProviderUsage, rejectFabricatedLayout, safeErrorMessage, unknownUsage } = __req("packages/builder-core/src/index.ts");
+const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, aggregateStepUsage, assertNoFallback, catalogProvenance, catalogToolParameterSchema, executeTool, facetVocabulary, inferScenarioId, isNewPageCommand, readProviderUsage, rejectFabricatedLayout, safeErrorMessage, toolLoopProposalFailure, unknownUsage } = __req("packages/builder-core/src/index.ts");
 const SYSTEM = [
 	"You are the BuildY page builder.",
 	`Policy ${POLICY_VERSION}.`,
@@ -8794,7 +8939,9 @@ const SYSTEM = [
 	"propose_layout assembles from the pinned catalog. Empty unsolicited layouts are rejected unless the author explicitly asked to clear the page.",
 	"Search the catalog, inspect block details, then propose_layout. Do not apply or publish.",
 	"search_catalog returns a compact shortlist. Prefer items with supported=true. Do not pick a screen whose missing list is most of the blocks.",
-	"If propose_layout returns screen_not_renderable, call it once more with a suggestedScreenId. Do not retry the same screenId.",
+	"If propose_layout returns screen_not_renderable or scenario_screen_mismatch, call it once more with a suggestedScreenId. Do not retry the same screenId.",
+	"If scenarioId is dashboard, search section=dashboard and propose only dashboard Stock (for example screen.theme-dashboard-console/home). Never substitute a restaurant or marketing menu screen.",
+	"If the author asked for menu or contact, include those page-contract sections using existing menu/hours blocks with empty facts. Do not drop them for a home-only screen.",
 	"search_catalog returns a compact shortlist (no previews or snapshot). get_block_details returns schema without the catalog dump. propose_layout returns a summary; the host keeps the full Page.",
 	"Do not page through the whole catalog. One shortlist page is enough.",
 	"If currentPage is present, edit that page. Keep its id, slug, and block ids. Do not assemble a replacement from scratch unless the author asked for a new page.",
@@ -8860,9 +9007,11 @@ const OPENAI_TOOLS: OpenAiTool[] = [
 									type: "string",
 									enum: ["eyebrow", "headline", "lede", "action", "note", "brand", "contact", "legal", "days", "address"]
 								},
-								value: { type: "string", description: "Replacement copy only, never the author's instruction sentence." }
+								value: { type: "string", description: "Replacement copy only, never the author's instruction sentence." },
+								path: { type: "string", description: "Optional kind.field path when kind/field are omitted." },
+								slot: { type: "string" }
 							},
-							required: ["kind", "field", "value"]
+							required: ["value"]
 						}
 					}
 				},
@@ -8964,10 +9113,25 @@ function compactToolPayload(
 		ok: false,
 		code: result.code,
 		message: result.message,
+		path: "path" in result ? result.path : undefined,
 		suggestedScreenIds:
 			result.result && typeof result.result === "object" && result.result !== null && "suggestedScreenIds" in result.result
 				? (result.result as { suggestedScreenIds?: string[] }).suggestedScreenIds
 				: undefined
+	};
+}
+
+function bindProposeArgs(args: Record<string, unknown>, ctx: ProposalContext): Record<string, unknown> {
+	const brief = String(args.brief ?? ctx.brief);
+	const inferred = inferScenarioId(brief);
+	const keepHostScenario =
+		Boolean(ctx.scenarioId) && !(isNewPageCommand(brief) && inferred && inferred !== ctx.scenarioId);
+	return {
+		...args,
+		brief,
+		scenarioId: keepHostScenario ? ctx.scenarioId : (args.scenarioId ?? ctx.scenarioId),
+		screenId: ctx.currentPage && !isNewPageCommand(brief) ? args.screenId : (args.screenId ?? ctx.screenId),
+		expectedRevision: args.expectedRevision ?? ctx.expectedRevision
 	};
 }
 
@@ -9019,6 +9183,7 @@ async function completionsToolLoop(
 	let lastProposal: LayoutProposal | LayoutProposalError | null = null;
 	const stepUsage: StepUsage[] = [];
 	const toolsCalled: string[] = [];
+	const rejections: ToolLoopRejection[] = [];
 	const host = toolHost(ctx);
 
 	while (steps < RUN_BUDGET.maxToolCalls) {
@@ -9106,14 +9271,13 @@ async function completionsToolLoop(
 				args = {};
 			}
 			if (name === "propose_layout") {
-				args.brief = String(args.brief ?? ctx.brief);
-				args.scenarioId = args.scenarioId ?? ctx.scenarioId;
-				args.screenId = args.screenId ?? ctx.screenId;
-				args.expectedRevision = args.expectedRevision ?? ctx.expectedRevision;
+				args = bindProposeArgs(args, ctx);
 			}
 			const result = executeTool({ name, arguments: args }, host);
 			if (name === "propose_layout" && result.ok) {
 				lastProposal = markLiveProposal(result.result as LayoutProposal);
+			} else if (name === "propose_layout") {
+				rejections.push({ code: result.code, path: result.path });
 			}
 			messages.push({
 				role: "tool",
@@ -9132,13 +9296,7 @@ async function completionsToolLoop(
 		};
 	}
 	return {
-		proposal: {
-			ok: false,
-			code: toolCallingWorked ? "propose_layout_missing" : "tools_not_used",
-			message: toolCallingWorked
-				? "Grok used catalog tools but did not call propose_layout. No local layout was substituted."
-				: "Grok did not call catalog tools on this turn. No local layout was substituted."
-		},
+		proposal: toolLoopProposalFailure({ toolsCalled, rejections }),
 		meta: turnMeta("chat-completions", modelId, toolCallingWorked, steps, toolsCalled, usage, runId)
 	};
 }
@@ -9176,21 +9334,17 @@ async function sdkStreamTextLoop(
 		let lastProposal: LayoutProposal | LayoutProposalError | null = null;
 		let toolCallingWorked = false;
 		const toolsCalled: string[] = [];
+		const rejections: ToolLoopRejection[] = [];
 		const host = toolHost(ctx);
 
 		const toolDef = (name: string, description: string, schema: unknown) => {
 			const execute = async (args: Record<string, unknown>) => {
 				toolCallingWorked = true;
 				toolsCalled.push(name);
-				const payload = { ...args };
-				if (name === "propose_layout") {
-					payload.brief = String(payload.brief ?? ctx.brief);
-					payload.scenarioId = payload.scenarioId ?? ctx.scenarioId;
-					payload.screenId = payload.screenId ?? ctx.screenId;
-					payload.expectedRevision = payload.expectedRevision ?? ctx.expectedRevision;
-				}
+				const payload = name === "propose_layout" ? bindProposeArgs({ ...args }, ctx) : { ...args };
 				const result = executeTool({ name, arguments: payload }, host);
 				if (name === "propose_layout" && result.ok) lastProposal = markLiveProposal(result.result as LayoutProposal);
+				else if (name === "propose_layout") rejections.push({ code: result.code, path: result.path });
 				return compactToolPayload(name, result);
 			};
 			try {
@@ -9235,7 +9389,17 @@ async function sdkStreamTextLoop(
 						scenarioId: z.enum(["dashboard", "landing", "website"]).optional(),
 						screenId: z.string().optional(),
 						expectedRevision: z.number().optional(),
-						edits: z.array(z.object({ kind: z.string(), field: z.string(), value: z.string() })).optional()
+						edits: z
+							.array(
+								z.object({
+									kind: z.string().optional(),
+									field: z.string().optional(),
+									value: z.string(),
+									path: z.string().optional(),
+									slot: z.string().optional()
+								})
+							)
+							.optional()
 					})
 				),
 				get_skill: toolDef("get_skill", "Read an enabled allowlisted skill.", z.object({ id: z.string() }))
@@ -9262,13 +9426,7 @@ async function sdkStreamTextLoop(
 			};
 		}
 		return {
-			proposal: {
-				ok: false,
-				code: toolCallingWorked ? "propose_layout_missing" : "tools_not_used",
-				message: toolCallingWorked
-					? "Grok used catalog tools but did not call propose_layout. No local layout was substituted."
-					: "Grok did not call catalog tools on this turn. No local layout was substituted."
-			},
+			proposal: toolLoopProposalFailure({ toolsCalled, rejections }),
 			meta: turnMeta("sdk-streamText", modelId, toolCallingWorked, steps, toolsCalled, usage, runId)
 		};
 	} catch (err) {

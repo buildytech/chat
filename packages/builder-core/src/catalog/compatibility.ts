@@ -72,9 +72,7 @@ export function screenSupport(screen: CatalogScreen): ScreenSupport {
 	const hasBody = mappedKinds.some((kind) => kind === "hero" || kind === "features" || kind === "menu");
 	const hasFrame = mappedKinds.includes("nav") || mappedKinds.includes("footer") || mappedKinds.includes("cta");
 	const supported =
-		missing.length === 0
-			? mappedKinds.length >= 3
-			: mappedKinds.length >= 3 && missing.length < mappedKinds.length && hasBody && hasFrame;
+		mappedKinds.length >= 3 && hasBody && hasFrame && (missing.length === 0 || missing.length < compat.mapped.length);
 	return {
 		mappedKinds,
 		missing,

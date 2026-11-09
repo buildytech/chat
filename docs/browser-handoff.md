@@ -43,8 +43,11 @@ Removed from this repo: `adapters/wordpress`, WP embed entry (`src/embed/wp-main
 - Project persistence in localStorage as a first-class project, not only chat sessions
 - Direct BYOK, memory-only key
 - UI8Kit **strict actual catalog** via codegen-x shared provider
-- Blank centered chat + Dashboard / Landing / Website prompt badges
-- 12 screens, JSON badges, pagination
+- True narrow-browser viewport QA (app Preview device frame is not a substitute)
+- Formal UI8Kit `ui-gates` / 8+4 / six detectors: not vendored in this repo; app screens are not 8+4. Do not claim full strict compliance.
+- Generated `Button` has `aria-pressed?: string` only (no `pressed` boolean). No `Switch` / `checked` primitive. Night Mode keeps `role="switch"` + `aria-checked` as a workaround. Do not hand-edit kit files.
+- Generated `Separator` sets redundant `role="separator"` on `<hr>`; fix through generator/spec only.
+- Owner-only: apply [`docs/owner-workflow-cleanup.patch`](owner-workflow-cleanup.patch) to drop `.github/workflows/ci.yml` job `context-serve`
 
 ## Next implementation scope
 

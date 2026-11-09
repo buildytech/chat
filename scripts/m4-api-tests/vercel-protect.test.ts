@@ -299,7 +299,7 @@ test("Vercel API typecheck has AI SDK shims and does not silently assemble Grok 
 	assert.match(shims, /\benum:\s*\(/);
 	const tools = readFileSync(join(REPO, "apps/xai-runtime/src/chat-tools.ts"), "utf8");
 	assert.doesNotMatch(tools, /runConstructorTools\(ctx\)/);
-	assert.match(tools, /propose_layout_missing/);
+	assert.match(tools, /toolLoopProposalFailure/);
 });
 
 test("timingSafeEqualString is length-aware and rejects mismatches", () => {

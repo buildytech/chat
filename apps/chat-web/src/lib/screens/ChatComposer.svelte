@@ -87,6 +87,7 @@
 	function closeModelMenu() {
 		if (!modelOpen) return;
 		modelOpen = false;
+		queueMicrotask(() => document.getElementById("composer-model-trigger")?.focus());
 	}
 
 	function onEscape(event: KeyboardEvent) {
@@ -110,7 +111,7 @@
 
 	function chooseModel(id: string) {
 		onSelectModel?.(id);
-		modelOpen = false;
+		closeModelMenu();
 	}
 </script>
 
@@ -150,14 +151,19 @@
 		<Group class="items-center justify-between gap-2">
 			<Group class="items-center gap-2">
 				<Button
+					id="composer-model-trigger"
 					type="button"
 					class="inline-flex max-w-[220px] items-center gap-1 rounded-default border border-border px-2 py-1.5 text-sm text-foreground hover:bg-accent"
 					aria-label={t("composer.model")}
 					aria-expanded={modelOpen ? "true" : "false"}
 					aria-haspopup="listbox"
+					aria-controls="composer-model-list"
 					onclick={() => {
-						modelOpen = !modelOpen;
-						if (!modelOpen) return;
+						if (modelOpen) {
+							closeModelMenu();
+							return;
+						}
+						modelOpen = true;
 						queueMicrotask(() =>
 							(document.querySelector("#composer-model-list [role=option]") as HTMLElement | null)?.focus()
 						);

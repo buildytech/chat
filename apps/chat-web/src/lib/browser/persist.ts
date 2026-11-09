@@ -28,6 +28,7 @@ type PagesBlobV1 = {
 };
 
 let lastError: PersistError | null = null;
+const frozenKeys = new Set<string>();
 
 export function getPersistError(): PersistError | null {
 	return lastError;
@@ -35,6 +36,13 @@ export function getPersistError(): PersistError | null {
 
 export function clearPersistError(): void {
 	lastError = null;
+	frozenKeys.clear();
+}
+
+/** After an explicit in-app confirm, later writes may replace a corrupt blob. */
+export function allowPersistOverwrite(): void {
+	frozenKeys.clear();
+	if (lastError?.code === "corrupt") lastError = null;
 }
 
 function remember(code: PersistErrorCode, message: string): void {
@@ -62,6 +70,10 @@ function isQuota(err: unknown): boolean {
 function writeJson(key: string, value: unknown): boolean {
 	const store = storage();
 	if (!store) return false;
+	if (frozenKeys.has(key)) {
+		remember("corrupt", "Saved data could not be read. Existing data was left untouched.");
+		return false;
+	}
 	try {
 		store.setItem(key, JSON.stringify(value));
 		if (lastError?.code === "quota") lastError = null;
@@ -88,9 +100,11 @@ export function loadSessionsJson(): unknown {
 			return (parsed as { sessions: unknown[] }).sessions;
 		}
 		remember("corrupt", "Saved chats could not be read. Existing data was left untouched.");
+		frozenKeys.add(SESSIONS_KEY);
 		return [];
 	} catch {
 		remember("corrupt", "Saved chats could not be read. Existing data was left untouched.");
+		frozenKeys.add(SESSIONS_KEY);
 		return [];
 	}
 }
@@ -112,11 +126,13 @@ export function loadPagesBlob(): PagesBlobV1 {
 		const parsed = JSON.parse(raw) as PagesBlobV1;
 		if (!parsed || parsed.version !== PAGES_VERSION || typeof parsed.pages !== "object" || parsed.pages == null) {
 			remember("corrupt", "Saved pages could not be read. Existing data was left untouched.");
+			frozenKeys.add(PAGES_KEY);
 			return emptyBlob();
 		}
 		return { version: PAGES_VERSION, pages: parsed.pages };
 	} catch {
 		remember("corrupt", "Saved pages could not be read. Existing data was left untouched.");
+		frozenKeys.add(PAGES_KEY);
 		return emptyBlob();
 	}
 }

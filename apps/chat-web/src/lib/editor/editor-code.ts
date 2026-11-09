@@ -25,7 +25,7 @@ import { json } from "@codemirror/lang-json";
 import { tagHighlighter, tags as t } from "@lezer/highlight";
 
 /** Lezer tag → CSS class (cm-syn-*). The class → colour-role mapping is in editor.css. */
-export const latteHighlighter = tagHighlighter([
+export const editorHighlighter = tagHighlighter([
 	{
 		tag: [
 			t.keyword,
@@ -48,14 +48,14 @@ export const latteHighlighter = tagHighlighter([
 const MACRO =
 	/^(?:\/)?(?:ifchanged|continueIf|breakIf|elseif|contentType|templatePrint|templateType|iterateWhile|ifset|isset|else|foreach|embed|define|block|snippet|capture|include|extends|layout|import|sandbox|spaceless|translate|syntax|rollback|recovery|debugbreak|default|switch|case|first|last|while|area|asset|cache|dump|status|try|var|php|sep|for|do|if|l|r)\b/;
 
-type Mode = "html" | "tag" | "latte" | "comment" | "htmlcomment";
+type Mode = "html" | "tag" | "expr" | "comment" | "htmlcomment";
 
-type LatteState = {
+type StreamState = {
 	mode: Mode;
 	quote: string | null;
 };
 
-function tokenString(stream: StringStream, state: LatteState): string {
+function tokenString(stream: StringStream, state: StreamState): string {
 	const quote = state.quote!;
 	while (!stream.eol()) {
 		const ch = stream.next();
@@ -71,7 +71,7 @@ function tokenString(stream: StringStream, state: LatteState): string {
 	return "string";
 }
 
-function tokenLatte(stream: StringStream, state: LatteState): string | null {
+function tokenExpr(stream: StringStream, state: StreamState): string | null {
 	if (state.quote) return tokenString(stream, state);
 	if (stream.eat("}")) {
 		state.mode = "html";
@@ -97,7 +97,7 @@ function tokenLatte(stream: StringStream, state: LatteState): string | null {
 	return null;
 }
 
-function tokenTag(stream: StringStream, state: LatteState): string | null {
+function tokenTag(stream: StringStream, state: StreamState): string | null {
 	if (state.quote) return tokenString(stream, state);
 	if (stream.eatSpace()) return null;
 	if (stream.match("/>") || stream.eat(">")) {
@@ -109,7 +109,7 @@ function tokenTag(stream: StringStream, state: LatteState): string | null {
 		return "comment";
 	}
 	if (stream.eat("{")) {
-		state.mode = "latte";
+		state.mode = "expr";
 		return "punct";
 	}
 	if (stream.match(/^[A-Za-z_:][\w:.-]*/)) return "fn";
@@ -124,7 +124,7 @@ function tokenTag(stream: StringStream, state: LatteState): string | null {
 	return null;
 }
 
-function token(stream: StringStream, state: LatteState): string | null {
+function token(stream: StringStream, state: StreamState): string | null {
 	if (state.mode === "comment") {
 		if (stream.match("*}")) {
 			state.mode = "html";
@@ -143,7 +143,7 @@ function token(stream: StringStream, state: LatteState): string | null {
 		}
 		return "comment";
 	}
-	if (state.mode === "latte") return tokenLatte(stream, state);
+	if (state.mode === "expr") return tokenExpr(stream, state);
 	if (state.mode === "tag") return tokenTag(stream, state);
 
 	if (stream.match("{*")) {
@@ -152,7 +152,7 @@ function token(stream: StringStream, state: LatteState): string | null {
 	}
 	if (stream.match("{{")) return null;
 	if (stream.eat("{")) {
-		state.mode = "latte";
+		state.mode = "expr";
 		return "punct";
 	}
 	if (stream.match("<!--")) {
@@ -168,9 +168,9 @@ function token(stream: StringStream, state: LatteState): string | null {
 	return null;
 }
 
-const latteLanguage = StreamLanguage.define<LatteState>({
-	name: "latte",
-	startState: (): LatteState => ({ mode: "html", quote: null }),
+const svelteLanguage = StreamLanguage.define<StreamState>({
+	name: "svelte",
+	startState: (): StreamState => ({ mode: "html", quote: null }),
 	token,
 	tokenTable: {
 		keyword: t.keyword,
@@ -232,13 +232,13 @@ const codeLayout = ViewPlugin.fromClass(
 	{ decorations: (v) => v.decorations }
 );
 
-export type LatteCodeOptions = {
+export type EditorCodeOptions = {
 	editable?: boolean;
 	language?: "json" | "svelte";
 };
 
 /** Full extension set: CodeMirror with Svelte/HTML StreamLanguage (or JSON) and CSS syntax classes. */
-export function latteCode({ editable = true, language = "svelte" }: LatteCodeOptions = {}): Extension {
+export function editorCode({ editable = true, language = "svelte" }: EditorCodeOptions = {}): Extension {
 	return [
 		lineNumbers(),
 		highlightActiveLineGutter(),
@@ -249,8 +249,8 @@ export function latteCode({ editable = true, language = "svelte" }: LatteCodeOpt
 		EditorView.lineWrapping,
 		EditorState.tabSize.of(2),
 		indentUnit.of("  "),
-		language === "json" ? json() : new LanguageSupport(latteLanguage),
-		syntaxHighlighting(latteHighlighter),
+		language === "json" ? json() : new LanguageSupport(svelteLanguage),
+		syntaxHighlighting(editorHighlighter),
 		codeLayout,
 		EditorView.editable.of(editable),
 		EditorView.contentAttributes.of({ "aria-label": "Code editor" })

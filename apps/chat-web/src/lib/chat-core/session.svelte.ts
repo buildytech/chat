@@ -28,6 +28,7 @@ import {
 	setOnboardingPersist
 } from "../browser/onboarding.svelte";
 import {
+	allowPersistOverwrite,
 	clearPagesBlob,
 	deleteSessionPages,
 	getPersistError,
@@ -296,6 +297,7 @@ export function deleteSession(id: string): void {
 export function deleteAllSessions(): void {
 	abortInflight();
 	lastError = null;
+	allowPersistOverwrite();
 	for (const session of memory) deleteSessionPages(session.id);
 	memory = [];
 	saveMock(memory);

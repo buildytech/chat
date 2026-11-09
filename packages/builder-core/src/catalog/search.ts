@@ -84,7 +84,8 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 		};
 	}
 
-	const items = filterScreens(query).slice().sort(compareScreenSupport);
+	let items = filterScreens(query).slice().sort(compareScreenSupport);
+	if (query.supportedOnly) items = items.filter((screen) => screenSupport(screen).supported);
 	const total = items.length;
 	const pageCount = total === 0 ? 1 : Math.ceil(total / pageSize);
 	let page = query.page ?? 1;
@@ -106,7 +107,9 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 		vocabulary,
 		noFit,
 		clarification: noFit
-			? "No Stock screens match that filter. Re-search with a bounded section or job from the vocabulary, or attach a scenario."
+			? query.supportedOnly
+				? "No renderer-supported Stock screens match that filter. Attach a different scenario or a supported screen."
+				: "No Stock screens match that filter. Re-search with a bounded section or job from the vocabulary, or attach a scenario."
 			: undefined,
 		suggested: noFit ? ownerSuggestions() : undefined
 	};

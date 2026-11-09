@@ -69,10 +69,44 @@ export function isAllowedTool(name: string): name is AllowedTool {
 	return (ALLOWED_TOOLS as readonly string[]).includes(name);
 }
 
+export type ToolLoopRejection = { code: string; path?: string };
+
+/** User-facing tool-loop miss. Codes and schema paths only — no author text. */
+export function toolLoopProposalFailure(input: {
+	toolsCalled: string[];
+	rejections: ToolLoopRejection[];
+}): LayoutProposalError {
+	const proposeCount = input.toolsCalled.filter((name) => name === "propose_layout").length;
+	if (proposeCount > 0) {
+		const codes = [...new Set(input.rejections.map((row) => row.code).filter(Boolean))];
+		const paths = [...new Set(input.rejections.map((row) => row.path).filter((path): path is string => Boolean(path)))];
+		const detail = [
+			codes.length ? `codes ${codes.join(", ")}` : "assembler rejected every call",
+			paths.length ? `paths ${paths.join(", ")}` : null
+		]
+			.filter(Boolean)
+			.join("; ");
+		return {
+			ok: false,
+			code: "propose_layout_rejected",
+			message: `propose_layout was called ${proposeCount} time(s) and rejected (${detail}). No local layout was substituted.`,
+			path: paths[0]
+		};
+	}
+	const used = input.toolsCalled.length > 0;
+	return {
+		ok: false,
+		code: used ? "propose_layout_missing" : "tools_not_used",
+		message: used
+			? "Grok used catalog tools but did not call propose_layout. No local layout was substituted."
+			: "Grok did not call catalog tools on this turn. No local layout was substituted."
+	};
+}
+
 export function executeTool(
 	call: ToolCall,
 	host?: ToolHost
-): { ok: true; name: AllowedTool; result: unknown } | { ok: false; code: string; message: string; result?: unknown } {
+): { ok: true; name: AllowedTool; result: unknown } | { ok: false; code: string; message: string; result?: unknown; path?: string } {
 	if (!isAllowedTool(call.name)) {
 		return {
 			ok: false,
@@ -86,7 +120,8 @@ export function executeTool(
 			type: "screen",
 			section: typeof args.section === "string" ? args.section : undefined,
 			job: typeof args.job === "string" ? args.job : undefined,
-			page: typeof args.page === "number" ? args.page : 1
+			page: typeof args.page === "number" ? args.page : 1,
+			supportedOnly: true
 		});
 		if (result.code === "catalog_facet_unknown") {
 			return {
@@ -148,7 +183,11 @@ export function executeTool(
 				ok: false,
 				code: result.code,
 				message: result.message,
-				result: result.suggestedScreenIds ? { suggestedScreenIds: result.suggestedScreenIds } : undefined
+				path: result.path,
+				result: {
+					...(result.suggestedScreenIds ? { suggestedScreenIds: result.suggestedScreenIds } : {}),
+					...(result.path ? { path: result.path } : {})
+				}
 			};
 		}
 		return { ok: true, name: call.name, result };

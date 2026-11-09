@@ -23,8 +23,8 @@ export { compatibilityFor, getBlockIndex, rendererKindForLabel, sendBlockedByScr
 export { getBlockDetails, screenCanonicalJson } from "./catalog/details.ts";
 export { proposeLayout, applyProposal, rejectFabricatedLayout, isClearPageCommand, isNewPageCommand } from "./assemble.ts";
 export type { ProposalContext, LayoutProposal, LayoutProposalError } from "./assemble.ts";
-export { executeTool, runConstructorTools, isAllowedTool, compactSearchResult } from "./tools.ts";
-export type { ToolHost, CompactSearchItem } from "./tools.ts";
+export { executeTool, runConstructorTools, isAllowedTool, compactSearchResult, toolLoopProposalFailure } from "./tools.ts";
+export type { ToolHost, CompactSearchItem, ToolLoopRejection } from "./tools.ts";
 export { inferScenarioId, isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
 export { parseLayoutCopyEdits, extractCopyEditsFromBrief } from "./edits.ts";
 export type { LayoutCopyEdit } from "./edits.ts";

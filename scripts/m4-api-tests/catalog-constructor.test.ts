@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { PAGE_BLOCK_KINDS, parsePage } from "../../packages/page-contract/src/index.ts";
-	import {
+import {
 	ALLOWED_TOOLS,
 	OWNER_FILTERS,
 	SCENARIO_IDS,
@@ -11,6 +11,8 @@ import { PAGE_BLOCK_KINDS, parsePage } from "../../packages/page-contract/src/in
 	catalogToolParameterSchema,
 	executeTool,
 	extractCopyEditsFromBrief,
+	parseLayoutCopyEdits,
+	toolLoopProposalFailure,
 	getBlockDetails,
 	isClearPageCommand,
 	isNewPageCommand,
@@ -297,7 +299,7 @@ test("natural language landing request does not require a scenario badge", () =>
 });
 
 test("search_catalog tool payload is a compact shortlist without preview or snapshot dump", () => {
-	const full = searchCatalog({ job: "hero", page: 1 });
+	const full = searchCatalog({ job: "hero", page: 1, supportedOnly: true });
 	const tool = executeTool({ name: "search_catalog", arguments: { job: "hero", page: 1 } });
 	assert.equal(tool.ok, true);
 	if (!tool.ok) return;
@@ -365,7 +367,7 @@ test("search ranks supported screens and rejects hollow commerce shop for websit
 	});
 	assert.equal(shop.ok, false);
 	if (!shop.ok) {
-		assert.equal(shop.code, "screen_not_renderable");
+		assert.ok(shop.code === "screen_not_renderable" || shop.code === "scenario_screen_mismatch");
 		assert.ok(shop.suggestedScreenIds?.includes("screen.site/home"));
 	}
 });
@@ -390,6 +392,19 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 		assert.ok(dash.missing.includes("activity"));
 		assert.ok(dash.warnings.some((line) => /screen\.theme-dashboard-console\/home/.test(line)));
 		assert.doesNotMatch(JSON.stringify(dash.page), /Blank page|Catalog only|Apply when ready/);
+		assert.doesNotMatch(JSON.stringify(dash.page), /grill plate|menuboard/);
+	}
+	const restaurant = proposeLayout({
+		brief: "Create a Dashboard for Orders. No invented figures.",
+		scenarioId: "dashboard",
+		screenId: "screen.theme-restaurant-house/menu",
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(restaurant.ok, false);
+	if (!restaurant.ok) {
+		assert.equal(restaurant.code, "scenario_screen_mismatch");
+		assert.ok(restaurant.suggestedScreenIds?.includes("screen.theme-dashboard-console/home"));
 	}
 	const site = proposeLayout({
 		brief: "Create a Website with menu, overview and contact using existing Stock blocks.",
@@ -400,12 +415,15 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 	});
 	assert.equal(site.ok, true);
 	if (site.ok) {
-		assert.match(site.provenance.screenId, /\/menu$/);
+		assert.equal(site.provenance.screenId, "screen.site/home");
 		assert.ok(site.page.layout.blocks.some((block) => block.kind === "menu"));
+		assert.ok(site.page.layout.blocks.some((block) => block.kind === "hours"));
 		assert.ok(site.page.layout.blocks.some((block) => block.kind === "nav"));
 		assert.ok(site.page.layout.blocks.some((block) => block.kind === "footer"));
 		assert.equal(site.page.layout.blocks[0]?.kind, "nav");
 		assert.equal(site.page.layout.blocks.at(-1)?.kind, "footer");
+		const dish = site.page.layout.blocks.find((block) => block.kind === "menu")?.children?.[0];
+		assert.match(String(dish?.summary ?? ""), /Ask the author/);
 	}
 });
 
@@ -446,7 +464,7 @@ test("follow-up extracts headline value and keeps other blocks", () => {
 	const follow = proposeLayout({
 		brief: "Change only the hero headline to New Year Grill Delivery. Keep all other sections and their content unchanged.",
 		scenarioId: "landing",
-		screenId: null,
+		screenId: "screen.site/home",
 		expectedRevision: 1,
 		currentPage: first.page,
 		now: "2026-11-08T00:00:00.000Z"
@@ -465,6 +483,36 @@ test("follow-up extracts headline value and keeps other blocks", () => {
 		follow.page.layout.blocks.find((block) => block.kind === "footer")?.copy,
 		footer?.copy
 	);
+	const pathEdits = parseLayoutCopyEdits([
+		{ path: "hero.headline", value: "New Year Grill Delivery" }
+	]);
+	assert.deepEqual(pathEdits, [{ kind: "hero", field: "headline", value: "New Year Grill Delivery" }]);
+	const viaTool = executeTool(
+		{
+			name: "propose_layout",
+			arguments: {
+				brief: "Change only the hero headline to New Year Grill Delivery. Keep all other sections and their content unchanged.",
+				scenarioId: "landing",
+				screenId: "screen.site/home",
+				expectedRevision: 1,
+				edits: [{ path: "hero.headline", value: "New Year Grill Delivery" }]
+			}
+		},
+		{ currentPage: first.page }
+	);
+	assert.equal(viaTool.ok, true);
+	if (viaTool.ok) {
+		const page = (viaTool.result as { page: { layout: { blocks: Array<{ kind: string; copy?: { headline?: string } }> } } }).page;
+		assert.equal(page.layout.blocks.find((block) => block.kind === "hero")?.copy?.headline, "New Year Grill Delivery");
+	}
+	const rejected = toolLoopProposalFailure({
+		toolsCalled: ["search_catalog", "propose_layout", "propose_layout"],
+		rejections: [{ code: "scenario_screen_mismatch" }, { code: "screen_not_renderable", path: "/layout/blocks/0" }]
+	});
+	assert.equal(rejected.code, "propose_layout_rejected");
+	assert.match(rejected.message, /propose_layout was called 2 time/);
+	assert.doesNotMatch(rejected.message, /did not call propose_layout/);
+	assert.doesNotMatch(rejected.message, /Change only|New Year/);
 });
 
 test("missing-renderer warnings include faq, pricing, authpage, pagehead, and wizard", () => {

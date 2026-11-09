@@ -4,7 +4,7 @@
  * This is a structured page layout document, not a Codex v0.4 entry.
  * Codex records and this DTO stay distinct; do not treat `kind` here as a CMS kind.
  *
- * Preview (Svelte) and Code (Latte) project the same `layout.blocks` tree.
+ * Preview (Svelte) and Code (generated Svelte UI8Kit source) project the same `layout.blocks` tree.
  * Ordinary pages only: unique slug, no UTM/multilanding, no commerce fields.
  */
 
@@ -27,7 +27,7 @@ export const PAGE_BLOCK_KINDS = [
 export type PageBlockKind = (typeof PAGE_BLOCK_KINDS)[number];
 
 /**
- * Copy keys projected by Preview and the Latte emitter.
+ * Copy keys projected by Preview and the generated Svelte Code pane.
  * Values are opaque plain-text strings, never executable markup.
  */
 export const PAGE_COPY_KEYS = [
