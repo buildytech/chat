@@ -109,6 +109,8 @@
 		"workspace.downloadZip": "Скачать ZIP",
 		"preview.runtime": "Svelte preview of this Page. It renders the sections in the browser. It is not a compiled site.",
 		"preview.noScreen": "none attached",
+		"preview.genericRenderer": "Общий вид",
+		"preview.registryRenderer": "Организм UI8Kit",
 		"preview.selectBlock": "Выбрать секцию",
 		"preview.address": "Адрес страницы",
 		"preview.desktop": "Десктоп",

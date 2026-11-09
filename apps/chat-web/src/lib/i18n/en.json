@@ -137,6 +137,8 @@
 		"workspace.downloadZip": "Download ZIP",
 		"preview.runtime": "Svelte preview of this Page. It renders the sections in the browser. It is not a compiled site.",
 		"preview.noScreen": "none attached",
+		"preview.genericRenderer": "Generic preview",
+		"preview.registryRenderer": "UI8Kit organism",
 		"preview.selectBlock": "Select section",
 		"preview.address": "Page address",
 		"preview.desktop": "Desktop",

@@ -1,8 +1,11 @@
 @import "tailwindcss";
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
 @import "./styles/fonts.css";
 @import "./styles/tokens.css";
 @import "./styles/editor.css";
+/* UI8Kit registry organisms in the preview: their classes, and the kit tokens scoped to .ui8kit-preview. */
+@source "./registry/svelte";
+@import "./registry/preview-kit.css";
 
 @theme {
 	--font-sans: "Istok Web", ui-sans-serif, system-ui, sans-serif;

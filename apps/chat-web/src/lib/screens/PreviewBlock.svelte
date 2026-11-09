@@ -10,6 +10,8 @@
 	import { cn } from "../../utils/cn";
 	import { selectBlock, type PageBlock } from "../page-store";
 	import PreviewItem from "./PreviewItem.svelte";
+	import CatalogBlockPreview from "./CatalogBlockPreview.svelte";
+	import { organismFor } from "@buildytech/builder-core";
 	import { barHeightClass, itemViewFor } from "../page-store/data-view";
 
 	let {
@@ -25,6 +27,8 @@
 	const children = $derived(block.children ?? []);
 	const kind = $derived(block.kind);
 	const view = $derived(itemViewFor(block.kind));
+	// A block with a registry source renders its real UI8Kit organism; the rest falls back to the generic renderer.
+	const organism = $derived(organismFor(block));
 
 	function onSelect() {
 		selectBlock(block.id);
@@ -51,6 +55,9 @@
 	}
 </script>
 
+{#if organism}
+	<CatalogBlockPreview {block} {selectedId} render={organism} />
+{:else}
 <Block
 	tag="article"
 	class={cn(
@@ -58,6 +65,7 @@
 		selected ? "border-primary" : "border-border"
 	)}
 	aria-label={t("preview.selectBlock")}
+	data-renderer="generic"
 	onclick={onSelect}
 >
 	<Stack class="gap-3">
@@ -65,6 +73,7 @@
 			<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
 				{kind}
 			</Text>
+			<Text tag="span" class="text-xs text-muted-foreground" data-slot="renderer-label">{t("preview.genericRenderer")}</Text>
 			{#if copy?.badge}
 				<Text
 					tag="span"
@@ -304,3 +313,4 @@
 		{/if}
 	</Stack>
 </Block>
+{/if}
