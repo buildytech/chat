@@ -3711,7 +3711,8 @@
         "block.authpage/signup",
         "block.authpage/reset",
         "block.authpage/magic",
-        "block.authpage/social"
+        "block.authpage/social",
+        "block.authpage/socialFirst"
       ],
       "variants": [
         "split",
@@ -3721,7 +3722,8 @@
         "signup",
         "reset",
         "magic",
-        "social"
+        "social",
+        "socialFirst"
       ],
       "title": "Sign-in page",
       "available": true,
@@ -4065,7 +4067,10 @@
         "block.cta/quote",
         "block.cta/band",
         "block.cta/split",
-        "block.cta/compact"
+        "block.cta/compact",
+        "block.cta/saas",
+        "block.cta/shop",
+        "block.cta/agency"
       ],
       "variants": [
         "card",
@@ -4075,7 +4080,10 @@
         "quote",
         "band",
         "split",
-        "compact"
+        "compact",
+        "saas",
+        "shop",
+        "agency"
       ],
       "title": "Call to action",
       "available": true,
@@ -4119,7 +4127,11 @@
         "block.dashshell/collapsed",
         "block.dashshell/twoLevel",
         "block.dashshell/twoLevelFull",
-        "block.dashshell/end"
+        "block.dashshell/end",
+        "block.dashshell/railEnd",
+        "block.dashshell/topOnly",
+        "block.dashshell/sideOnly",
+        "block.dashshell/collapsedEnd"
       ],
       "variants": [
         "classic",
@@ -4129,7 +4141,11 @@
         "collapsed",
         "twoLevel",
         "twoLevelFull",
-        "end"
+        "end",
+        "railEnd",
+        "topOnly",
+        "sideOnly",
+        "collapsedEnd"
       ],
       "title": "Dashboard shell",
       "available": true,
@@ -4549,7 +4565,14 @@
         "block.hero/cluster",
         "block.hero/display",
         "block.hero/form",
-        "block.hero/prompt"
+        "block.hero/prompt",
+        "block.hero/twoActions",
+        "block.hero/split",
+        "block.hero/splitStart",
+        "block.hero/muted",
+        "block.hero/saas",
+        "block.hero/shop",
+        "block.hero/blog"
       ],
       "variants": [
         "centered",
@@ -4559,7 +4582,14 @@
         "cluster",
         "display",
         "form",
-        "prompt"
+        "prompt",
+        "twoActions",
+        "split",
+        "splitStart",
+        "muted",
+        "saas",
+        "shop",
+        "blog"
       ],
       "title": "Hero",
       "available": true,
@@ -5015,7 +5045,10 @@
         "block.posts/news4",
         "block.posts/list",
         "block.posts/listPaged",
-        "block.posts/listLinks"
+        "block.posts/listLinks",
+        "block.posts/magazine",
+        "block.posts/textOnly",
+        "block.posts/digest"
       ],
       "variants": [
         "grid",
@@ -5025,7 +5058,10 @@
         "news4",
         "list",
         "listPaged",
-        "listLinks"
+        "listLinks",
+        "magazine",
+        "textOnly",
+        "digest"
       ],
       "title": "Blog posts",
       "available": true,
@@ -5087,7 +5123,9 @@
         "block.pricing/grid2",
         "block.pricing/grid4",
         "block.pricing/stack",
-        "block.pricing/flat"
+        "block.pricing/flat",
+        "block.pricing/compactMuted",
+        "block.pricing/roomy"
       ],
       "variants": [
         "grid",
@@ -5097,7 +5135,9 @@
         "grid2",
         "grid4",
         "stack",
-        "flat"
+        "flat",
+        "compactMuted",
+        "roomy"
       ],
       "title": "Pricing",
       "available": true,
@@ -5155,7 +5195,8 @@
         "block.products/catalog",
         "block.products/browse",
         "block.products/showcase",
-        "block.products/rail"
+        "block.products/rail",
+        "block.products/railCompact"
       ],
       "variants": [
         "grid3",
@@ -5165,7 +5206,8 @@
         "catalog",
         "browse",
         "showcase",
-        "rail"
+        "rail",
+        "railCompact"
       ],
       "title": "Product grid",
       "available": true,
@@ -5699,7 +5741,9 @@
         "block.testimonials/featured",
         "block.testimonials/grid2",
         "block.testimonials/single",
-        "block.testimonials/stack"
+        "block.testimonials/stack",
+        "block.testimonials/plain",
+        "block.testimonials/noRating"
       ],
       "variants": [
         "grid3",
@@ -5709,7 +5753,9 @@
         "featured",
         "grid2",
         "single",
-        "stack"
+        "stack",
+        "plain",
+        "noRating"
       ],
       "title": "Testimonials",
       "available": true,

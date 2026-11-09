@@ -1,15 +1,19 @@
 /**
- * Registry sources of catalog blocks: the pinned registry snapshot (sha256 lockfile), variant -> props presets
- * generated from the compose-gen block specs, variant and icon validation in propose_layout / edit_page /
- * get_block_details, the page block -> organism props mapping, and the scoped preview CSS.
+ * Registry sources of catalog blocks: the pinned registry snapshot (the CLI tree and its ui8kit.lock.json), the
+ * published variants (registry.buildy.tw/variants/v0.json, sha256-pinned), variant and icon validation in
+ * propose_layout / edit_page / get_block_details, the page block -> registry block props mapping, and the CSS.
  */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { pageSpecIssues, type Page } from "../../packages/page-contract/src/index.ts";
 import {
+	catalogSnapshot,
+	catalogSourceFor,
 	catalogSources,
 	editPage,
 	editPageParameterSchema,
@@ -18,12 +22,14 @@ import {
 	organismFor,
 	proposeContentParameterSchema,
 	proposeLayout,
+	registryItemFor,
+	variantProps,
 	type LayoutProposal
 } from "../../packages/builder-core/src/index.ts";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const NOW = "2026-11-09T12:00:00.000Z";
-const FEATURES = catalogSources.blocks["block.features"]!;
+const FEATURES = catalogSourceFor("block.features")!;
 
 function propose(block: Record<string, unknown>) {
 	return executeTool(
@@ -39,33 +45,48 @@ function features(page: Page) {
 	return page.layout.blocks.find((block) => block.kind === "features")!;
 }
 
-test("registry snapshot: every vendored file matches the lockfile sha256 (offline)", () => {
+test("registry snapshot: the CLI tree matches its ui8kit.lock.json (offline), every item from registry.buildy.tw/svelte", () => {
 	const run = spawnSync(process.execPath, ["scripts/registry-snapshot.mjs", "--check"], { cwd: ROOT, encoding: "utf8" });
 	assert.equal(run.status, 0, run.stderr || run.stdout);
 	assert.match(run.stdout, /all sha256 match/);
-	const lock = JSON.parse(readFileSync(new URL("../../registry/registry.lock.json", import.meta.url), "utf8")) as {
-		items: Array<{ name: string; url: string; status: number; sha256: string; files: Array<{ sha256: string }> }>;
+	const lock = JSON.parse(readFileSync(join(ROOT, "registry/svelte/ui8kit.lock.json"), "utf8")) as {
+		lockVersion: number;
+		cli: string;
+		items: Record<string, { name: string; source: string; runtime: string; files: Record<string, string> }>;
 	};
-	assert.ok(lock.items.some((item) => item.name === "feature-grid"));
-	for (const item of lock.items) {
-		assert.match(item.url, /^https:\/\/registry\.buildy\.tw\/svelte\/(blocks|components|components\/ui|lib|utils)\/[a-z0-9-]+\.json$/);
-		assert.equal(item.status, 200);
-		assert.match(item.sha256, /^sha256:[0-9a-f]{64}$/);
-		for (const file of item.files) assert.match(file.sha256, /^sha256:[0-9a-f]{64}$/);
+	assert.equal(lock.lockVersion, 2);
+	assert.equal(`ui8kit@${lock.cli}`, catalogSources.cli);
+	const items = Object.values(lock.items);
+	assert.ok(items.length >= 300);
+	for (const item of items) {
+		assert.equal(item.source, "https://registry.buildy.tw/svelte");
+		assert.equal(item.runtime, "svelte");
+		for (const sha of Object.values(item.files)) assert.match(sha, /^[0-9a-f]{64}$/);
 	}
+	const config = JSON.parse(readFileSync(join(ROOT, "registry/svelte/ui8kit.config.json"), "utf8"));
+	assert.equal(config.dir, "src");
+	assert.equal(config.framework, "svelte");
+	assert.deepEqual(catalogSources.initItems, ["presets", "recipes", "utils"]);
 });
 
-test("variant presets are generated from the pinned compose-gen spec, every prop is an axis value", () => {
+test("published variants: sha256 pinned, every Stock catalog asset maps to a registry block of the snapshot", () => {
+	const text = readFileSync(join(ROOT, "registry/variants.v0.json"));
+	assert.equal(createHash("sha256").update(text).digest("hex"), catalogSources.variants.sha256);
+	const variants = JSON.parse(text.toString("utf8")) as { items: Record<string, { variants: Record<string, { asset: string }> }> };
+	const assets = Object.values(variants.items).flatMap((item) => Object.values(item.variants).map((variant) => variant.asset));
+	assert.equal(assets.length, 532);
+	const catalogIds = catalogSnapshot.blockIndex.flatMap((entry) => entry.catalogIds);
+	assert.equal(catalogIds.length, 532, "no cap on variants per catalog block");
+	for (const id of catalogIds) {
+		const [spec, variant] = [id.slice(0, id.indexOf("/")), id.slice(id.indexOf("/") + 1)];
+		const hit = registryItemFor(spec, variant);
+		assert.ok(hit, `${id} has no registry item`);
+		assert.equal(catalogSources.items[hit.item]?.type, "registry:block", id);
+	}
+	for (const entry of catalogSnapshot.blockIndex) assert.ok(registryItemFor(entry.spec), `${entry.spec} has no default item`);
 	assert.equal(FEATURES.item, "feature-grid");
 	assert.equal(FEATURES.defaultVariant, "grid");
-	assert.match(catalogSources.specs.commit, /^[0-9a-f]{40}$/);
-	assert.ok(catalogSources.specs.files.every((file) => /^sha256:[0-9a-f]{64}$/.test(file.sha256)));
 	assert.ok(Object.keys(FEATURES.variants).length >= 2);
-	for (const [id, preset] of Object.entries(FEATURES.variants)) {
-		for (const [axis, value] of Object.entries(preset.props)) assert.ok(FEATURES.axes[axis]?.includes(value), `${id}: ${axis}=${value}`);
-	}
-	assert.deepEqual(FEATURES.variants.grid!.props, FEATURES.defaults);
-	assert.ok(isLucideIcon(FEATURES.fallbackIcon));
 	assert.ok(catalogSources.icons.length > 100);
 });
 
@@ -104,10 +125,10 @@ test("unknown variant and non-Lucide icon are rejected with a code and path", ()
 test("get_block_details keeps the requested variant and returns the registry presets", () => {
 	const r = executeTool({ name: "get_block_details", arguments: { id: "features", variant: "grid2" } });
 	assert.equal(r.ok, true, JSON.stringify(r));
-	const details = r.result as { variant?: string; registry?: { item: string; variantProps: Record<string, string>; icons: string[] } };
+	const details = r.result as { variant?: string; registry?: { item: string; variantProps: Record<string, unknown>; icons: string[] } };
 	assert.equal(details.variant, "grid2");
 	assert.equal(details.registry?.item, "feature-grid");
-	assert.deepEqual(details.registry?.variantProps, FEATURES.variants.grid2!.props);
+	assert.deepEqual(details.registry?.variantProps, variantProps("block.features", "grid2"));
 	const bad = executeTool({ name: "get_block_details", arguments: { id: "features", variant: "mosaic" } });
 	assert.equal(bad.ok, false);
 });
@@ -146,20 +167,22 @@ test("edit_page set_items carries row icons and rejects unknown ones", () => {
 	assert.equal(bad.ok, false);
 });
 
-test("organism props: variant preset, slot mapping, fallback icon for a row without one", () => {
+test("registry block props: variant props, page content in the block's prop names, fallback icon for a row without one", () => {
 	const r = propose({ variant: "cells4", action: { label: "View all", href: "#/features" }, items: [{ label: "Fast", detail: "Static pages.", icon: "zap" }, { label: "Plain", detail: "No icon." }] });
 	assert.equal(r.ok, true, JSON.stringify(r));
 	const block = features((r.result as LayoutProposal).page);
 	const render = organismFor(block)!;
 	assert.equal(render.organism, "blocks/feature-grid.svelte");
 	assert.equal(render.variant, "cells4");
-	assert.deepEqual(Object.fromEntries(Object.keys(FEATURES.axes).map((axis) => [axis, render.props[axis]])), FEATURES.variants.cells4!.props);
+	for (const axis of ["layout", "cols", "item", "density"]) assert.equal(render.props[axis], (variantProps("block.features", "cells4") as Record<string, unknown>)[axis], axis);
 	assert.equal(render.props.id, block.id);
 	assert.equal(render.props.title, block.title);
+	// The page's own link wins over the variant's sample href; the dictionary label ref is never passed on.
 	assert.deepEqual(render.props.action, { label: "View all", href: "#/features" });
 	const rows = render.props.features as Array<{ title: string; text: string; icon: string }>;
-	assert.deepEqual(rows.map((row) => row.icon), ["zap", FEATURES.fallbackIcon]);
+	assert.deepEqual(rows.map((row) => row.icon), ["zap", "circle-dot"]);
 	assert.equal(rows[0]!.text, "Static pages.");
+	assert.doesNotMatch(JSON.stringify(render.props), /"\$"/);
 	assert.equal(organismFor({ ...block, catalogBlock: undefined }), null);
 });
 
@@ -172,19 +195,37 @@ test("tool schemas carry variant, row icon and set_variant (no hardcoded value l
 	assert.doesNotMatch(propose + edit, /tiles4|cells4|rowsAlternate/);
 });
 
-test("preview CSS: kit tokens only inside .ui8kit-preview of the preview frame, dark by class or data-theme", () => {
-	const css = readFileSync(new URL("../../apps/chat-web/src/registry/preview-kit.css", import.meta.url), "utf8");
-	assert.match(css, /:is\(\.dark, \[data-theme="dark"\]\) \.ui8kit-preview/);
-	assert.doesNotMatch(css, /Istok/);
-	const selectors = [...css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/^([^\s@{}][^{]*)\{/gm)].map((match) => match[1]!.trim());
-	assert.ok(selectors.length > 5);
-	for (const selector of selectors) assert.match(selector, /\.ui8kit-preview/, selector);
-	const app = readFileSync(new URL("../../apps/chat-web/src/app.css", import.meta.url), "utf8");
-	assert.match(app, /@custom-variant dark \(&:is\(\.dark \*, \[data-theme="dark"\] \*\)\)/);
-	// The kit theme lives only in the preview iframe's stylesheet, not in the chat page.
-	assert.doesNotMatch(app, /preview-kit\.css/);
-	assert.match(app, /@source not "\.\/registry"/);
-	const frame = readFileSync(new URL("../../apps/chat-web/src/preview-frame.css", import.meta.url), "utf8");
-	assert.match(frame, /@import "\.\/registry\/preview-kit\.css"/);
-	assert.match(frame, /@custom-variant dark \(&:is\(\.dark \*, \[data-theme="dark"\] \*\)\)/);
+function walk(dir: string): string[] {
+	return readdirSync(dir).flatMap((name) => {
+		const path = join(dir, name);
+		return statSync(path).isDirectory() ? walk(path) : [path];
+	});
+}
+
+test("CSS: theme and tokens only from the registry tree; the chat declares no colour tokens of its own", () => {
+	const app = readFileSync(join(ROOT, "apps/chat-web/src/app.css"), "utf8");
+	assert.match(app, /@import "\.\.\/\.\.\/\.\.\/registry\/svelte\/src\/styles\/theme\.css"/);
+	assert.match(app, /@import "\.\.\/\.\.\/\.\.\/registry\/svelte\/src\/styles\/kit\.css"/);
+	const frame = readFileSync(join(ROOT, "apps/chat-web/src/preview-frame.css"), "utf8");
+	assert.match(frame, /@import "\.\.\/\.\.\/\.\.\/registry\/svelte\/src\/styles\/index\.css"/);
+	const theme = readFileSync(join(ROOT, "registry/svelte/src/styles/theme.css"), "utf8");
+	assert.match(theme, /@custom-variant dark \(&:is\(\.dark \*, \[data-theme="dark"\] \*\)\)/);
+	for (const file of walk(join(ROOT, "apps/chat-web/src")).filter((path) => path.endsWith(".css"))) {
+		assert.doesNotMatch(readFileSync(file, "utf8"), /--(background|foreground|primary|border|radius)\s*:/, `${file} redeclares a registry token`);
+	}
+});
+
+test("layout: lib holds only logic (no .svelte), no chat-owned 'compose' path, no own primitives", () => {
+	const src = join(ROOT, "apps/chat-web/src");
+	const files = walk(src).map((path) => path.slice(src.length + 1).split("\\").join("/"));
+	assert.deepEqual(files.filter((path) => path.startsWith("lib/") && path.endsWith(".svelte")), []);
+	assert.deepEqual(files.filter((path) => /(^|\/)compose(\/|\.|$)/i.test(path)), []);
+	assert.deepEqual(files.filter((path) => path.startsWith("ui/") || path.startsWith("utils/") || path.startsWith("registry/")), []);
+	for (const file of files.filter((path) => path.endsWith(".svelte"))) {
+		const text = readFileSync(join(src, file), "utf8");
+		for (const [, spec] of text.matchAll(/from "([^"]+\.svelte)"/g)) {
+			// $lib/x.svelte names a runes module (x.svelte.ts): lib holds no components (asserted above).
+			assert.ok(["$registry/", "$lib/", "./", "../app/"].some((prefix) => spec!.startsWith(prefix)), `${file} imports ${spec}`);
+		}
+	}
 });

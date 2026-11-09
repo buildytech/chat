@@ -2,6 +2,7 @@
 // Only catalog data is used (asset titles, subtitles, labels, search words, facet value labels and
 // synonyms). No hand-written keyword lists: new catalog terms reach search without code changes.
 //
+// Also lists every block asset of a spec in snapshot.json blockIndex (catalogIds, variants), without a cap.
 // Usage: node scripts/build-catalog-index.mjs [--assets path] [--facets path]
 // Without paths the files are fetched from raw.githubusercontent.com at the snapshot's pinned commit.
 import { readFileSync, writeFileSync } from "node:fs";
@@ -64,6 +65,19 @@ for (const asset of blockAssets) {
 	list.push(asset);
 	blocksBySpec.set(asset.spec, list);
 }
+
+// Every catalog asset of a block spec (no cap): blockIndex catalogIds and variants of snapshot.json follow the assets.
+let lifted = 0;
+for (const entry of snapshot.blockIndex) {
+	const list = blocksBySpec.get(entry.spec) ?? [];
+	if (!list.length) continue;
+	const catalogIds = list.map((asset) => asset.id);
+	const variants = list.map((asset) => asset.variant ?? asset.id.slice(entry.spec.length + 1));
+	if (catalogIds.length !== entry.catalogIds.length) lifted += catalogIds.length - entry.catalogIds.length;
+	entry.catalogIds = catalogIds;
+	entry.variants = variants;
+}
+writeFileSync(snapshotPath, `${JSON.stringify(snapshot, null, 2)}\n`);
 
 // Block labels used by screens, titled from their block assets.
 const blockVocab = new Map();
@@ -136,4 +150,5 @@ const index = {
 // ASCII only (repo rule: no non-Latin script outside the ru locale file); JSON \u escapes keep the data.
 const ascii = JSON.stringify(index).replace(/[\u007f-\uffff]/g, (ch) => `\\u${ch.charCodeAt(0).toString(16).padStart(4, "0")}`);
 writeFileSync(outPath, ascii + "\n");
+console.log(`snapshot.json blockIndex: ${snapshot.blockIndex.reduce((n, entry) => n + entry.catalogIds.length, 0)} catalog ids (+${lifted})`);
 console.log(`search-index: ${Object.keys(packed).length} screens, ${termList.length} terms, ${vocabulary.blocks.length} block labels, ${(JSON.stringify(index).length / 1024).toFixed(1)} KB`);

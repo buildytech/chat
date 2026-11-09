@@ -31,9 +31,18 @@ export {
 	resolveCatalogChoice,
 	variantProps,
 	type CatalogSourceBlock,
+	type RegistryBlock,
 	type CatalogSources
 } from "./catalog/sources.ts";
-export { organismFor, registryClosure, registryNpmDependencies, type OrganismRender } from "./catalog/organism.ts";
+export {
+	organismFor,
+	registryClosure,
+	registryInitItems,
+	registryItemClosure,
+	registryItemFor,
+	registryNpmDependencies,
+	type OrganismRender
+} from "./catalog/organism.ts";
 export { contractFingerprint } from "./catalog/fingerprint.ts";
 export { clientProposalGate } from "./client-gate.ts";
 export {

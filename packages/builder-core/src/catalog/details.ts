@@ -24,7 +24,7 @@ export type BlockDetails = {
 		organism: string;
 		defaultVariant: string;
 		/** Organism props of the selected (or default) variant. */
-		variantProps: Record<string, string>;
+		variantProps: Record<string, unknown>;
 		/** page-spec slot -> organism prop. */
 		slots: unknown;
 		/** Lucide names allowed in copy.icon / items[].icon. */
