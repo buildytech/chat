@@ -1,0 +1,22 @@
+/* Stylesheet of the preview iframe (injected into its document; not part of the chat page).
+   Generic preview blocks use the chat tokens; registry organisms get the kit theme inside .ui8kit-preview. */
+@import "tailwindcss";
+@custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
+@import "./styles/fonts.css";
+@import "./styles/tokens.css";
+@import "./styles/chat-theme.css";
+@source "./lib/screens";
+@source "./registry/svelte";
+@import "./registry/preview-kit.css";
+
+button,
+input,
+textarea,
+select {
+	font: inherit;
+}
+
+html,
+body {
+	min-height: 0;
+}

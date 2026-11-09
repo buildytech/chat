@@ -114,6 +114,8 @@
 		"preview.selectBlock": "Выбрать секцию",
 		"preview.address": "Адрес страницы",
 		"preview.desktop": "Десктоп",
+		"preview.tablet": "Планшет",
+		"preview.frame": "Предпросмотр страницы",
 		"preview.mobile": "Мобильный",
 		"preview.back": "Назад",
 		"preview.forward": "Вперёд",

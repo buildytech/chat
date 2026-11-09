@@ -142,6 +142,8 @@
 		"preview.selectBlock": "Select section",
 		"preview.address": "Page address",
 		"preview.desktop": "Desktop",
+		"preview.tablet": "Tablet",
+		"preview.frame": "Page preview",
 		"preview.mobile": "Mobile",
 		"preview.back": "Back",
 		"preview.forward": "Forward",

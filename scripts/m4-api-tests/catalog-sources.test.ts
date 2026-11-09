@@ -172,7 +172,7 @@ test("tool schemas carry variant, row icon and set_variant (no hardcoded value l
 	assert.doesNotMatch(propose + edit, /tiles4|cells4|rowsAlternate/);
 });
 
-test("preview CSS: kit tokens only inside .ui8kit-preview, dark by class or data-theme", () => {
+test("preview CSS: kit tokens only inside .ui8kit-preview of the preview frame, dark by class or data-theme", () => {
 	const css = readFileSync(new URL("../../apps/chat-web/src/registry/preview-kit.css", import.meta.url), "utf8");
 	assert.match(css, /:is\(\.dark, \[data-theme="dark"\]\) \.ui8kit-preview/);
 	assert.doesNotMatch(css, /Istok/);
@@ -181,5 +181,10 @@ test("preview CSS: kit tokens only inside .ui8kit-preview, dark by class or data
 	for (const selector of selectors) assert.match(selector, /\.ui8kit-preview/, selector);
 	const app = readFileSync(new URL("../../apps/chat-web/src/app.css", import.meta.url), "utf8");
 	assert.match(app, /@custom-variant dark \(&:is\(\.dark \*, \[data-theme="dark"\] \*\)\)/);
-	assert.match(app, /@import "\.\/registry\/preview-kit\.css"/);
+	// The kit theme lives only in the preview iframe's stylesheet, not in the chat page.
+	assert.doesNotMatch(app, /preview-kit\.css/);
+	assert.match(app, /@source not "\.\/registry"/);
+	const frame = readFileSync(new URL("../../apps/chat-web/src/preview-frame.css", import.meta.url), "utf8");
+	assert.match(frame, /@import "\.\/registry\/preview-kit\.css"/);
+	assert.match(frame, /@custom-variant dark \(&:is\(\.dark \*, \[data-theme="dark"\] \*\)\)/);
 });
