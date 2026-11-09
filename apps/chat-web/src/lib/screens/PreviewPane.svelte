@@ -14,13 +14,17 @@
 	import Text from "../../ui/text/Text.svelte";
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
-	import { applyProposal, discardProposal } from "../chat-core";
+	import { applyProposal, discardProposal, getSelectedSession } from "../chat-core";
 	import { blocksOf, getCurrentPage, getPageRevision, getSelectedBlockId, hasUnappliedProposal } from "../page-store";
 	import PreviewBlock from "./PreviewBlock.svelte";
 
 	const page = $derived(getCurrentPage());
 	const savedRevision = $derived(getPageRevision());
 	const unapplied = $derived(hasUnappliedProposal());
+	const appliedLabel = $derived.by(() => {
+		const last = getSelectedSession()?.messages.slice().reverse().find((message) => message.proposal);
+		return last?.proposal?.applied && !unapplied ? t("proposal.applied") : "";
+	});
 	const blocks = $derived(page ? blocksOf(page) : []);
 	const selectedId = $derived(getSelectedBlockId());
 	const slugUrl = $derived(page ? `/${page.slug}` : "/");
@@ -212,6 +216,10 @@
 							<Text tag="span">{t("proposal.discard")}</Text>
 						</Button>
 					</Group>
+				</Group>
+			{:else if appliedLabel}
+				<Group class="items-center justify-between gap-2 rounded-default border border-border bg-muted px-3 py-2">
+					<Text tag="span" class="text-xs text-muted-foreground">{appliedLabel}</Text>
 				</Group>
 			{/if}
 			{#key reloadKey}

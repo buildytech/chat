@@ -8,7 +8,7 @@ import type {
 export type XaiClientStatus = {
 	runtime: string;
 	ready: boolean;
-	liveModel: false;
+	liveModel: boolean;
 	code: string;
 	key?: { present: boolean };
 	models?: {
@@ -28,7 +28,11 @@ export type XaiRunResponse = (LayoutProposal | LayoutProposalError) & {
 	usage?: RunUsage;
 	toolCallingProven?: boolean;
 	liveXai?: boolean;
+	liveModel?: boolean;
 	path?: string;
+	runId?: string;
+	toolsUsed?: string[];
+	assembler?: string;
 };
 
 function runtimeBase(): string {
@@ -49,7 +53,7 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 			(res.ok ? "ok" : res.status === 404 ? "xai_runtime_unreachable" : "xai_status_error");
 		return {
 			...body,
-			liveModel: false,
+			liveModel: Boolean(body.liveModel ?? body.ready),
 			ready: Boolean(body.ready),
 			code
 		};

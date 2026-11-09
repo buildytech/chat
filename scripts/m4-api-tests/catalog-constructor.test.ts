@@ -164,6 +164,8 @@ test("scenario proposal is catalog-grounded and schema-valid", () => {
 	if (proposal.ok) {
 		assert.ok(proposal.page.layout.blocks.length > 0);
 		assert.equal(proposal.liveModel, false);
+		assert.equal(proposal.source, "local-catalog-assembler");
+		assert.equal(proposal.provenance.assembler, "local-catalog-assembler");
 		assert.equal(proposal.applied, false);
 		assert.equal(proposal.provenance.catalog.sourceDigest, raw.sourceDigest);
 		assert.ok(proposal.provenance.screenId === null || typeof proposal.provenance.screenId === "string");
@@ -276,10 +278,68 @@ test("natural language landing request does not require a scenario badge", () =>
 	assert.equal(run.ok, true);
 	if (!run.ok) return;
 	parsePage(run.page);
+	assert.equal(run.liveModel, false);
+	assert.equal(run.source, "local-catalog-assembler");
+	assert.equal(run.provenance.assembler, "local-catalog-assembler");
+	assert.equal(run.page.title, "Barbecue at Home");
 	assert.ok(run.page.layout.blocks.some((block) => block.kind === "hero"));
 	const hero = run.page.layout.blocks.find((block) => block.kind === "hero");
 	assert.equal(hero?.copy?.headline, "Barbecue at Home");
+	assert.match(String(hero?.copy?.lede ?? ""), /Barbecue at Home/);
+	assert.match(String(hero?.copy?.lede ?? ""), /New Year/);
+	const cta = run.page.layout.blocks.find((block) => block.kind === "cta");
+	assert.notEqual(cta?.copy?.action, "Apply when ready");
+	assert.doesNotMatch(JSON.stringify(run.page), /Apply when ready/);
 	assert.doesNotMatch(JSON.stringify(run.page), /qalanding1109/i);
+});
+
+test("search_catalog tool payload is a compact shortlist without preview or snapshot dump", () => {
+	const full = searchCatalog({ job: "hero", page: 1 });
+	const tool = executeTool({ name: "search_catalog", arguments: { job: "hero", page: 1 } });
+	assert.equal(tool.ok, true);
+	if (!tool.ok) return;
+	const compact = tool.result as { items: Array<Record<string, unknown>> };
+	assert.equal(compact.items.length, full.items.length);
+	for (const item of compact.items) {
+		assert.equal("preview" in item, false);
+		assert.equal("spec" in item, false);
+		assert.ok(item.screenId);
+		assert.ok(item.labels);
+	}
+	const details = executeTool({ name: "get_block_details", arguments: { id: "hero" } });
+	assert.equal(details.ok, true);
+	if (details.ok) {
+		const body = details.result as Record<string, unknown>;
+		assert.equal("provenance" in body, false);
+		assert.equal(typeof body.catalogDigest, "string");
+	}
+});
+
+test("live xAI tool host tags source xai-runtime but keeps the local assembler", () => {
+	const live = executeTool(
+		{
+			name: "propose_layout",
+			arguments: {
+				brief: "Create a New Year landing page for Barbecue at Home, a grill food delivery restaurant.",
+				scenarioId: "landing"
+			}
+		},
+		{ liveTurn: true }
+	);
+	assert.equal(live.ok, true);
+	if (!live.ok) return;
+	const proposal = live.result as {
+		source: string;
+		liveModel: boolean;
+		provenance: { assembler: string };
+		page: { title: string; layout: { blocks: Array<{ kind: string; copy?: { action?: string; headline?: string } }> } };
+	};
+	assert.equal(proposal.source, "xai-runtime");
+	assert.equal(proposal.liveModel, true);
+	assert.equal(proposal.provenance.assembler, "local-catalog-assembler");
+	assert.equal(proposal.page.title, "Barbecue at Home");
+	const cta = proposal.page.layout.blocks.find((block) => block.kind === "cta");
+	assert.notEqual(cta?.copy?.action, "Apply when ready");
 });
 
 test("ambiguous briefs still do not invent a layout", () => {

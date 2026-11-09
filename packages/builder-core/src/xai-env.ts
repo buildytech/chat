@@ -40,7 +40,7 @@ export const XAI_RUNTIME_NOTES = {
 	responses: "AI SDK 7 xai(modelId) defaults to Responses. This app does not use that default for catalog tools. If Responses is ever chosen, store:false. No zero-retention promise.",
 	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
 	tools: "Application-executed tools only: search_catalog, get_block_details, propose_layout, get_skill. Never mix hosted web_search / code_execution.",
-	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. Telemetry off. maxRetries 0.",
+	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",
 	toolCalling: "Parent 2026-11-08: bounded Chat Completions tool-protocol test on grok-4.20-0309-non-reasoning succeeded (2 steps, HTTP 200, tool calls, no retries, usage 393+434=827). That test used synthetic TEST blocks and artificial search_blocks(section)/propose_page tools, not this app's Stock catalog or search_catalog/get_block_details/propose_layout. Protocol support is proven. Page assembly is not proven. Do not treat the fixture miss (section=hero vs job=hero, empty blocks) as a production catalog bug."
 } as const;
 

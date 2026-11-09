@@ -19,6 +19,12 @@ export type RunUsage = {
 	totalTokens: TokenCount;
 	reasoningTokens?: number;
 	cachedTokens?: number;
+	/** Who produced the token counts. Never a local snapshot byte size. */
+	reportedBy: "xai-provider" | "none";
+	/** How prompt/completion were combined when reportedBy is xai-provider. */
+	aggregation?: "sum-of-tool-loop-requests";
+	/** Last provider usage object in the loop, when present. */
+	lastStep?: StepUsage;
 	cost: CostUnavailable | CostEstimate;
 };
 
@@ -65,6 +71,7 @@ export function unknownUsage(reason: RunUsage["incompleteReason"], steps = 0): R
 		promptTokens: "unknown",
 		completionTokens: "unknown",
 		totalTokens: "unknown",
+		reportedBy: "none",
 		cost: COST_UNAVAILABLE
 	};
 }
@@ -138,6 +145,7 @@ export function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, o
 	}
 	const total: TokenCount =
 		prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion;
+	const last = present[present.length - 1];
 	const run: RunUsage = {
 		status: opts?.incomplete ? "incomplete" : "complete",
 		incompleteReason: opts?.incomplete,
@@ -145,6 +153,9 @@ export function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, o
 		promptTokens: prompt,
 		completionTokens: completion,
 		totalTokens: total,
+		reportedBy: "xai-provider",
+		aggregation: "sum-of-tool-loop-requests",
+		lastStep: last,
 		cost: COST_UNAVAILABLE
 	};
 	if (sawReasoning) run.reasoningTokens = reasoning;

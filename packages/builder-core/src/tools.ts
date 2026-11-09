@@ -12,7 +12,49 @@ export type ToolCall = { name: string; arguments?: Record<string, unknown> };
 
 export type ToolHost = {
 	currentPage?: Page | null;
+	/** Live xAI tool loop. Assembly stays the deterministic catalog assembler. */
+	liveTurn?: boolean;
 };
+
+export type CompactSearchItem = {
+	screenId: string;
+	title: string;
+	subtitle: string;
+	variant: string;
+	group: string;
+	labels: SearchResult["items"][number]["labels"];
+	compatibility: { compatible: boolean; partial: boolean; missing: string[] };
+};
+
+/** Tool-loop payload: shortlist only. No preview, spec, or snapshot dump. */
+export function compactSearchResult(result: SearchResult): Omit<SearchResult, "items"> & { items: CompactSearchItem[] } {
+	return {
+		query: result.query,
+		page: result.page,
+		pageSize: result.pageSize,
+		total: result.total,
+		pageCount: result.pageCount,
+		vocabulary: result.vocabulary,
+		noFit: result.noFit,
+		code: result.code,
+		clarification: result.clarification,
+		suggested: result.suggested,
+		misplaced: result.misplaced,
+		items: result.items.map((item) => ({
+			screenId: item.screenId,
+			title: item.title,
+			subtitle: item.subtitle,
+			variant: item.variant,
+			group: item.group,
+			labels: item.labels,
+			compatibility: {
+				compatible: item.compatibility.compatible,
+				partial: item.compatibility.partial,
+				missing: item.compatibility.missing.map((row) => row.catalogLabel)
+			}
+		}))
+	};
+}
 
 export function isAllowedTool(name: string): name is AllowedTool {
 	return (ALLOWED_TOOLS as readonly string[]).includes(name);
@@ -45,7 +87,7 @@ export function executeTool(
 				result
 			};
 		}
-		return { ok: true, name: call.name, result };
+		return { ok: true, name: call.name, result: compactSearchResult(result) };
 	}
 	if (call.name === "get_block_details") {
 		const details = getBlockDetails({
@@ -55,6 +97,14 @@ export function executeTool(
 		});
 		if ("ok" in details && details.ok === false) {
 			return { ok: false, code: details.code, message: `No authoritative details for ${details.id}` };
+		}
+		if (!("ok" in details)) {
+			const { provenance, ...compact } = details;
+			return {
+				ok: true,
+				name: call.name,
+				result: { ...compact, catalogDigest: provenance.sourceDigest }
+			};
 		}
 		return { ok: true, name: call.name, result: details };
 	}
@@ -80,7 +130,8 @@ export function executeTool(
 			screenId: typeof args.screenId === "string" ? args.screenId : null,
 			expectedRevision: typeof args.expectedRevision === "number" ? args.expectedRevision : 0,
 			pageId: typeof args.pageId === "string" ? args.pageId : host?.currentPage?.id,
-			currentPage: host?.currentPage ?? undefined
+			currentPage: host?.currentPage ?? undefined,
+			liveTurn: Boolean(host?.liveTurn)
 		});
 		if (!result.ok) return { ok: false, code: result.code, message: result.message };
 		return { ok: true, name: call.name, result };

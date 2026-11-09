@@ -21,6 +21,12 @@ export function isScenarioId(value: unknown): value is ScenarioId {
  * Short page/hero title from a brief. Drops synthetic QA prefixes.
  * Does not invent a business name that is not in the text.
  */
+/** Occasion words already in the brief. Null when none — do not invent a holiday. */
+export function occasionFromBrief(brief: string): string | null {
+	if (/\bnew year\b/i.test(brief)) return "New Year";
+	return null;
+}
+
 export function displayTitleFromBrief(brief: string, fallback = "Draft page"): string {
 	const trimmed = brief.trim();
 	if (!trimmed) return fallback;

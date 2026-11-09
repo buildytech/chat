@@ -198,6 +198,22 @@ async function loadSessionDetail(id: string, token: number): Promise<void> {
 	}
 }
 
+async function overlayXaiCapability(token: number): Promise<void> {
+	try {
+		const status = await fetchXaiStatus();
+		if (token !== epoch) return;
+		capabilities = {
+			runtime: status.runtime || "xai-grok",
+			mode: "localStorage",
+			liveModel: Boolean(status.ready),
+			tools: ["search_catalog", "get_block_details", "propose_layout", "get_skill"],
+			note: runtimeNoteFor(status)
+		};
+	} catch {
+		/* keep the mock capability row */
+	}
+}
+
 /** Load sessions from mock (default) or Session HTTP (`?live=1`). Safe for onMount — not for $derived. */
 export async function hydrateSessions(): Promise<void> {
 	if (hydrated || hydrating) return;
@@ -227,6 +243,7 @@ export async function hydrateSessions(): Promise<void> {
 				lastError = t("runtime.sessionNotFound").replace("{id}", pick.requested);
 				syncSessionQuery(pick.requested, { mode: "replace" });
 				hydrated = true;
+				await overlayXaiCapability(token);
 				return;
 			}
 			const id = pick.kind === "ok" ? pick.id : null;
@@ -234,6 +251,7 @@ export async function hydrateSessions(): Promise<void> {
 			syncSessionQuery(id, { mode: "replace" });
 			restoreSessionWorkspace(id ? memory.find((s) => s.id === id) ?? null : null);
 			hydrated = true;
+			await overlayXaiCapability(token);
 			return;
 		}
 
@@ -419,6 +437,7 @@ function localRunUsage(): RunUsage {
 		promptTokens: 0,
 		completionTokens: 0,
 		totalTokens: 0,
+		reportedBy: "none",
 		cost: COST_UNAVAILABLE
 	};
 }
@@ -434,6 +453,9 @@ function runRecord(opts: {
 	live: boolean;
 	usage: RunUsage;
 	catalogDigest?: string;
+	path?: string;
+	tools?: string[];
+	runId?: string;
 }): import("./types").ChatRunRecord {
 	const model = getChatModel(opts.modelId);
 	return {
@@ -445,6 +467,9 @@ function runRecord(opts: {
 		modelCatalogVersion: MODEL_CATALOG_VERSION,
 		trialPolicyVersion: TRIAL_POLICY_VERSION,
 		catalogDigest: opts.catalogDigest ?? catalogProvenance().sourceDigest,
+		path: opts.path,
+		tools: opts.tools,
+		runId: opts.runId,
 		usage: opts.usage
 	};
 }
@@ -479,8 +504,11 @@ async function runConstructor(brief: string, signal: AbortSignal) {
 			via: "xai" as const,
 			status,
 			modelId: mapped.request.modelId,
-			live: Boolean(live.ok && (live as XaiRunResponse).toolCallingProven),
-			usage
+			live: Boolean(live.ok && ((live as XaiRunResponse).toolCallingProven || (live as XaiRunResponse).liveXai)),
+			usage,
+			path: (live as XaiRunResponse).path,
+			tools: (live as XaiRunResponse).toolsUsed,
+			runId: (live as XaiRunResponse).runId
 		};
 	}
 	if (import.meta.env.PROD) {
@@ -521,9 +549,10 @@ function proposalMessage(
 	result: Awaited<ReturnType<typeof runConstructor>>["result"],
 	modelId: string,
 	live: boolean,
-	usage: RunUsage
+	usage: RunUsage,
+	extra?: { path?: string; tools?: string[]; runId?: string }
 ): ChatMessage {
-	const run = runRecord({ modelId, live, usage });
+	const run = runRecord({ modelId, live, usage, path: extra?.path, tools: extra?.tools, runId: extra?.runId });
 	if (!result.ok) {
 		return {
 			id: uid("msg"),
@@ -534,8 +563,7 @@ function proposalMessage(
 		};
 	}
 	setCandidatePage(result.page);
-	const via =
-		result.source === "local-catalog-assembler" ? t("assistant.localAssembler") : t("assistant.xaiProposal");
+	const via = live ? t("assistant.xaiProposal") : t("assistant.localAssembler");
 	const missing = result.missing.length
 		? ` ${t("assistant.missingBlocks").replace("{list}", result.missing.join(", "))}`
 		: "";
@@ -547,7 +575,8 @@ function proposalMessage(
 		proposal: {
 			applied: false,
 			source: result.source,
-			liveModel: false,
+			liveModel: live,
+			assembler: result.provenance.assembler,
 			warnings: result.warnings,
 			missing: result.missing,
 			title: result.page.title
@@ -589,19 +618,19 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 	inflight = ac;
 	const token = epoch;
 	try {
-		const { result, status, modelId, live, usage } = await runConstructor(trimmed, ac.signal);
+		const { result, status, modelId, live, usage, path, tools, runId } = await runConstructor(trimmed, ac.signal);
 		if (token !== epoch) return getSelectedSession() ?? pending;
 		capabilities = {
 			runtime: status.runtime || "xai-grok",
-			mode: result.ok && "source" in result && result.source === "local-catalog-assembler" ? "local-assembler" : status.code,
-			liveModel: false,
+			mode: live ? "xai-runtime" : status.ready ? status.code || "xai_runtime_ready" : "local-assembler",
+			liveModel: Boolean(status.ready),
 			live: { requested: true, provider: "xai", model: modelId },
 			tools: ["search_catalog", "get_block_details", "propose_layout", "get_skill"],
 			note: runtimeNoteFor(status)
 		};
 		if (!result.ok) lastError = result.message;
 		else lastError = null;
-		const reply = proposalMessage(result, modelId, live, usage);
+		const reply = proposalMessage(result, modelId, live, usage, { path, tools, runId });
 		const done: ChatSession = {
 			...pending,
 			updatedAt: nowIso(),

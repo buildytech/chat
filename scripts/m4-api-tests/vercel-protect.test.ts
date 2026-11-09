@@ -190,6 +190,8 @@ test("XAI_API_KEY absent returns 503 and does not call the provider", async () =
 		assert.equal(status.status, 503);
 		const statusBody = await asJson(status);
 		assert.equal(statusBody.code, "xai_api_key_missing");
+		assert.equal(statusBody.ready, false);
+		assert.equal(statusBody.liveModel, false);
 		assert.equal((statusBody.key as { present?: boolean } | undefined)?.present, false);
 
 		const run = await handleRuntimeFetch(

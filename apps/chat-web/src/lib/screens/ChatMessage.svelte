@@ -148,10 +148,31 @@
 					<Text tag="p" class="text-[11px] text-muted-foreground">
 						{t("usage.run")
 							.replace("{status}", run.usage.status === "incomplete" ? t("usage.incomplete") : t("usage.complete"))
+							.replace("{steps}", String(run.usage.steps))
 							.replace("{prompt}", formatTokens(run.usage.promptTokens))
 							.replace("{completion}", formatTokens(run.usage.completionTokens))
 							.replace("{total}", formatTokens(run.usage.totalTokens))}
 					</Text>
+					{#if run.usage.reportedBy === "xai-provider"}
+						<Text tag="p" class="text-[11px] text-muted-foreground">{t("usage.reportedBy")}. {t("usage.aggregation")}</Text>
+						{#if run.usage.lastStep}
+							<Text tag="p" class="text-[11px] text-muted-foreground">
+								{t("usage.lastStep")
+									.replace("{prompt}", formatTokens(run.usage.lastStep.promptTokens))
+									.replace("{completion}", formatTokens(run.usage.lastStep.completionTokens))}
+							</Text>
+						{/if}
+						{#if typeof run.usage.cachedTokens === "number"}
+							<Text tag="p" class="text-[11px] text-muted-foreground">
+								{t("usage.cached").replace("{cached}", formatTokens(run.usage.cachedTokens))}
+							</Text>
+						{/if}
+					{/if}
+					{#if run.tools && run.tools.length > 0}
+						<Text tag="p" class="text-[11px] text-muted-foreground">
+							{t("usage.tools").replace("{list}", run.tools.join(", "))}
+						</Text>
+					{/if}
 					<Text tag="p" class="text-[11px] text-muted-foreground">{t("usage.noDollars")}</Text>
 				</Stack>
 			{/if}

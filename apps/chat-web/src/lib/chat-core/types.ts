@@ -22,7 +22,8 @@ export type ChatArtifact = {
 export type ChatProposalState = {
 	applied: boolean;
 	source: string;
-	liveModel: false;
+	liveModel: boolean;
+	assembler?: string;
 	warnings: string[];
 	missing: string[];
 	title: string;
@@ -37,6 +38,9 @@ export type ChatRunRecord = {
 	modelCatalogVersion: string;
 	trialPolicyVersion: string;
 	catalogDigest?: string;
+	path?: string;
+	tools?: string[];
+	runId?: string;
 	usage: RunUsage;
 };
 

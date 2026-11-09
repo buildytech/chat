@@ -17,7 +17,8 @@ import { discoverAccountModels } from "./discover.ts";
 export type XaiRuntimeStatus = {
 	runtime: "xai-grok";
 	ready: boolean;
-	liveModel: false;
+	/** Capability: this host can run a live Grok turn. Not a per-turn tool proof. */
+	liveModel: boolean;
 	code: string;
 	key: { present: boolean; source: string | null };
 	auth: { basicRequired: boolean; loopbackOnly: boolean };
@@ -26,7 +27,8 @@ export type XaiRuntimeStatus = {
 		chatIds: string[];
 		imageIds: string[];
 		candidate: string | null;
-		toolCallingProven: false;
+		/** Status never claims a tool loop. Proven per /v1/run. */
+		toolCallingProven: boolean;
 		parentVerifiedChat: readonly string[];
 		parentVerifiedImage: readonly string[];
 	};
@@ -90,7 +92,7 @@ export async function runtimeStatus(env: EnvMap = readEnv()): Promise<XaiRuntime
 	return {
 		runtime: "xai-grok",
 		ready,
-		liveModel: false,
+		liveModel: ready,
 		code,
 		key: { present: key.present, source: key.source },
 		auth: { basicRequired, loopbackOnly },

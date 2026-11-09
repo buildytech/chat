@@ -7,7 +7,7 @@ import {
 	type PageBlockKind
 } from "@buildytech/page-contract";
 import { SCENARIO_PROMPTS, type ScenarioId } from "./copy.ts";
-import { displayTitleFromBrief, inferScenarioId } from "./brief.ts";
+import { displayTitleFromBrief, inferScenarioId, occasionFromBrief } from "./brief.ts";
 import { catalogProvenance } from "./catalog/snapshot.ts";
 import { compatibilityFor, rendererKindForLabel } from "./catalog/compatibility.ts";
 import { getBlockDetails } from "./catalog/details.ts";
@@ -25,6 +25,11 @@ export type ProposalContext = {
 	now?: string;
 	/** Trusted host page for follow-up edits. Not accepted from tool JSON layouts. */
 	currentPage?: Page;
+	/**
+	 * True when this assemble ran because a live xAI tool call asked for it.
+	 * Assembly stays the deterministic local catalog assembler either way.
+	 */
+	liveTurn?: boolean;
 };
 
 export type LayoutProposal = {
@@ -32,7 +37,7 @@ export type LayoutProposal = {
 	status: "proposal";
 	applied: false;
 	source: "local-catalog-assembler" | "xai-runtime";
-	liveModel: false;
+	liveModel: boolean;
 	page: Page;
 	baseRevision: number;
 	warnings: string[];
@@ -148,17 +153,18 @@ function navLinks(scenario: ScenarioId | null): PageBlock[] {
 	return rows.map(([id, title, summary]) => block(`block-nav-${id}`, "nav-link", title, summary));
 }
 
-function featuresFor(scenario: ScenarioId | null, screen: CatalogScreen | null): PageBlock[] {
+function featuresFor(scenario: ScenarioId | null, screen: CatalogScreen | null, title: string): PageBlock[] {
+	const who = title && title !== "Draft page" ? title : "this page";
 	if (scenario === "dashboard") {
 		return [
-			block("block-feature-overview", "feature", "Overview", "A short status strip. No invented KPIs."),
+			block("block-feature-overview", "feature", `${who} overview`, "A short status strip. No invented KPIs."),
 			block("block-feature-metrics", "feature", "Metrics", "Figures stay empty until the author supplies real data."),
 			block("block-feature-work", "feature", "Work queue", "Tasks the audience actually performs.")
 		];
 	}
 	if (scenario === "landing") {
 		return [
-			block("block-feature-offer", "feature", "Clear offer", "State the product in the author's words, not invented claims."),
+			block("block-feature-offer", "feature", `${who} offer`, "State the product in the author's words, not invented claims."),
 			block("block-feature-proof", "feature", "Evidence", "Testimonials and logos wait for verified facts."),
 			block("block-feature-action", "feature", "One action", "A single next step. No checkout in this draft.")
 		];
@@ -166,7 +172,7 @@ function featuresFor(scenario: ScenarioId | null, screen: CatalogScreen | null):
 	if (scenario === "website") {
 		return [
 			block("block-feature-nav", "feature", "Find the way", "Home, about, and the next useful page."),
-			block("block-feature-story", "feature", "What you do", "Business facts come from the author."),
+			block("block-feature-story", "feature", `What ${who} does`, "Business facts come from the author."),
 			block("block-feature-contact", "feature", "Talk to us", "Contact copy stays generic until confirmed.")
 		];
 	}
@@ -187,24 +193,36 @@ function copyFor(
 	kind: PageBlockKind,
 	scenario: ScenarioId | null,
 	screen: CatalogScreen | null,
-	brief: string
+	brief: string,
+	title: string
 ): PageBlock["copy"] | undefined {
 	const prompt = scenario ? SCENARIO_PROMPTS[scenario] : null;
+	const occasion = occasionFromBrief(brief);
+	const who = title && title !== "Draft page" ? title : "this page";
 	if (kind === "nav") {
-		return { brand: prompt?.label ?? "BuildY" };
+		return { brand: who.slice(0, 32) };
 	}
 	if (kind === "hero") {
+		const occasionBit = occasion ? ` ${occasion}` : "";
 		return {
-			eyebrow: prompt?.label ?? "Blank page",
+			eyebrow: occasion ?? prompt?.label ?? "Blank page",
 			headline: displayTitleFromBrief(brief, prompt?.label ?? "Describe the page"),
-			lede: "I will use only catalog blocks this renderer can paint. I will ask before inventing business facts.",
-			action: scenario === "dashboard" ? "Review metrics" : "Continue"
+			lede: `${who}${occasionBit} draft. Catalog blocks only. Confirm menu, hours, and offers with the author. No invented reviews or discounts.`,
+			action: /\b(menu|grill|restaurant|food|barbecue|bbq)\b/i.test(brief)
+				? "See the menu"
+				: scenario === "dashboard"
+					? "Review metrics"
+					: "Continue"
 		};
 	}
 	if (kind === "cta") {
 		return {
-			lede: "This is a local proposal. Apply it to replace the blank page. Nothing is published.",
-			action: "Apply when ready",
+			lede: `${who} next step. This draft is not published. Ask the author for the real call to action.`,
+			action: /\b(menu|grill|restaurant|food|barbecue|bbq)\b/i.test(brief)
+				? "Ask for hours"
+				: scenario === "dashboard"
+					? "Review metrics"
+					: "Contact",
 			note: screen ? `Stock screen ${screen.screenId}` : "No screen attached."
 		};
 	}
@@ -273,15 +291,20 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 				"No Stock screens match that scenario filter. Re-search with a bounded section or job, or pick another scenario."
 		};
 	}
-	const grounded = found.items.find((item) => item.compatibility.compatible || item.compatibility.partial);
-	if (!grounded) {
+	const grounded = found.items.filter((item) => item.compatibility.compatible || item.compatibility.partial);
+	if (!grounded.length) {
 		return {
 			ok: false,
 			code: "catalog_no_fit",
 			message: "Matching Stock screens have no renderer-compatible blocks. Attach a different screen or scenario."
 		};
 	}
-	return grounded;
+	const wantsMenu = /\b(menu|grill|restaurant|food|barbecue|bbq|dish)\b/i.test(ctx.brief);
+	if (wantsMenu) {
+		const withMenu = grounded.find((item) => item.labels.blocks.some((label) => /menu/i.test(label)));
+		if (withMenu) return withMenu;
+	}
+	return grounded[0];
 }
 
 const DEFAULT_SEARCH = 12;
@@ -362,12 +385,13 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		}
 	}
 
+	const pageTitle = displayTitleFromBrief(brief);
 	const blocks: PageBlock[] = [];
 	for (const kind of kinds) {
 		if (kind === "nav-link" || kind === "feature" || kind === "dish") continue;
 		if (kind === "nav") {
 			blocks.push(
-				block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", working.scenarioId, screen, brief), navLinks(working.scenarioId))
+				block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", working.scenarioId, screen, brief, pageTitle), navLinks(working.scenarioId))
 			);
 			continue;
 		}
@@ -379,7 +403,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 					titleFor("features", screen),
 					summaryFor("features"),
 					undefined,
-					featuresFor(working.scenarioId, screen)
+					featuresFor(working.scenarioId, screen, pageTitle)
 				)
 			);
 			continue;
@@ -387,8 +411,8 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		if (kind === "menu") {
 			blocks.push(
 				block("block-menu", "menu", titleFor("menu", screen), summaryFor("menu"), undefined, [
-					block("block-dish-one", "dish", "House plate", "A placeholder dish. No price is invented."),
-					block("block-dish-two", "dish", "Seasonal plate", "Ask the author for the real menu.")
+					block("block-dish-one", "dish", `${pageTitle} plate`, "A placeholder dish. Ask the author for the real grill menu. No price is invented."),
+					block("block-dish-two", "dish", "Seasonal plate", "Ask the author for the real menu. No invented specials.")
 				])
 			);
 			continue;
@@ -399,7 +423,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 				kind,
 				titleFor(kind, screen),
 				summaryFor(kind),
-				copyFor(kind, working.scenarioId, screen, brief)
+				copyFor(kind, working.scenarioId, screen, brief, pageTitle)
 			)
 		);
 	}
@@ -434,7 +458,9 @@ function finishProposal(
 	missing: string[],
 	identity?: FinishIdentity
 ): LayoutProposal | LayoutProposalError {
-	const assembledTitle = (screen ? `${screen.title} ${screen.subtitle}`.trim() : displayTitleFromBrief(brief)).slice(
+	const briefTitle = displayTitleFromBrief(brief);
+	const catalogTitle = screen ? `${screen.title} ${screen.subtitle}`.trim() : "";
+	const assembledTitle = (briefTitle && briefTitle !== "Draft page" ? briefTitle : catalogTitle || briefTitle).slice(
 		0,
 		160
 	);
@@ -452,7 +478,7 @@ function finishProposal(
 			layout: { version: PAGE_LAYOUT_VERSION, blocks },
 			seo: {
 				title,
-				description: "Local draft. Not published. Catalog blocks only."
+				description: `${title} draft. Not published. Catalog blocks only.`
 			},
 			locale: "en",
 			createdAt: identity?.createdAt ?? stamp,
@@ -463,8 +489,8 @@ function finishProposal(
 			ok: true,
 			status: "proposal",
 			applied: false,
-			source: "local-catalog-assembler",
-			liveModel: false,
+			source: ctx.liveTurn ? "xai-runtime" : "local-catalog-assembler",
+			liveModel: Boolean(ctx.liveTurn),
 			page,
 			baseRevision: ctx.expectedRevision,
 			warnings,

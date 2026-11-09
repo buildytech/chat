@@ -16,6 +16,17 @@ export { VERCEL_HOBBY_SAFE_MAX_DURATION_SEC } from "@buildytech/builder-core";
 
 const MAX_BODY = 256_000;
 
+function toolCounts(names: string[]): Array<{ name: string; count: number }> {
+	const map = new Map<string, number>();
+	for (const name of names) map.set(name, (map.get(name) ?? 0) + 1);
+	return [...map.entries()].map(([name, count]) => ({ name, count }));
+}
+
+/** One JSON line. No brief, page, headers, secrets, or raw provider payloads. */
+function logSanitizedRun(event: Record<string, unknown>): void {
+	console.log(JSON.stringify({ runtime: "xai-grok", ...event }));
+}
+
 function jsonResponse(status: number, body: unknown): Response {
 	return new Response(JSON.stringify(body), {
 		status,
@@ -120,20 +131,51 @@ export async function handleRuntimeFetch(
 						screenId: mapped.request.screenId,
 						expectedRevision: mapped.request.expectedRevision,
 						pageId: mapped.request.pageId,
-						currentPage: mapped.request.currentPage
+						currentPage: mapped.request.currentPage,
+						liveTurn: true
 					},
 					signal
 				);
 				const checked = revalidateProposal(proposal);
+				const live = Boolean(checked.ok && meta.toolCallingWorked);
+				logSanitizedRun({
+					event: "xai_run",
+					surface: opts.surface,
+					runId: meta.runId,
+					ok: checked.ok,
+					code: checked.ok ? "ok" : checked.code,
+					path: meta.path,
+					modelId: meta.modelId,
+					liveModel: live,
+					liveXai: live,
+					toolCallingProven: meta.toolCallingWorked,
+					steps: meta.steps,
+					tools: toolCounts(meta.toolsCalled),
+					usage: {
+						reportedBy: meta.usage.reportedBy,
+						aggregation: meta.usage.aggregation ?? null,
+						status: meta.usage.status,
+						steps: meta.usage.steps,
+						promptTokens: meta.usage.promptTokens,
+						completionTokens: meta.usage.completionTokens,
+						totalTokens: meta.usage.totalTokens,
+						cachedTokens: meta.usage.cachedTokens ?? null,
+						lastPromptTokens: meta.usage.lastStep?.promptTokens ?? null,
+						lastCompletionTokens: meta.usage.lastStep?.completionTokens ?? null
+					}
+				});
 				return jsonResponse(checked.ok ? 200 : 422, {
 					...checked,
-					liveModel: false,
-					liveXai: checked.ok && meta.toolCallingWorked,
+					liveModel: live,
+					liveXai: live,
 					toolCallingProven: meta.toolCallingWorked,
+					assembler: checked.ok ? checked.provenance.assembler : "local-catalog-assembler",
 					runtime: "xai-grok",
 					modelId: meta.modelId,
 					requestedModelId: mapped.request.modelId,
 					path: meta.path,
+					runId: meta.runId,
+					toolsUsed: meta.toolsCalled,
 					usage: meta.usage
 				});
 			} catch (err) {
