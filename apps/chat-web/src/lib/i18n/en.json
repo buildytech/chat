@@ -137,8 +137,9 @@
 		"workspace.downloadZip": "Download ZIP",
 		"preview.runtime": "Svelte preview of this Page. It renders the sections in the browser. It is not a compiled site.",
 		"preview.noScreen": "none attached",
-		"preview.genericRenderer": "Generic preview",
 		"preview.registryRenderer": "UI8Kit organism",
+		"preview.notInRegistry": "Not in the registry",
+		"preview.registryLoadFailed": "Registry block failed to load",
 		"preview.selectBlock": "Select section",
 		"preview.address": "Page address",
 		"preview.desktop": "Desktop",
@@ -291,9 +292,6 @@
 		"composer.modelUnavailable": "Unavailable here: multi-agent models cannot run this app's catalog tools",
 		"runtime.clientOutdated": "The app was updated while this tab was open. Reload the page to continue; your chats are kept.",
 		"runtime.modelTooSlow": "{label} is disabled here: in live runs it took 1-4 minutes per page and often timed out. Pick another model. No other model was substituted.",
-		"composer.modelTooSlow": "Unavailable here: too slow for the catalog tools (1-4 min per page, frequent timeouts)",
-		"preview.sidenavOpen": "Open navigation",
-		"preview.sidenavClose": "Close navigation",
-		"preview.appMain": "Main content"
+		"composer.modelTooSlow": "Unavailable here: too slow for the catalog tools (1-4 min per page, frequent timeouts)"
 	}
 }

@@ -10,8 +10,8 @@ const config = {
 			strict: false
 		}),
 		alias: {
-			$ui: 'src/ui',
-			$utils: 'src/utils'
+			// The UI8Kit registry tree exactly as `npx ui8kit init` + `add` writes it (docs/adr/0001).
+			$registry: '../../registry/svelte/src'
 		}
 	}
 };

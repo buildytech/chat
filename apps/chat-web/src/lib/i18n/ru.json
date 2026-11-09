@@ -109,8 +109,9 @@
 		"workspace.downloadZip": "Скачать ZIP",
 		"preview.runtime": "Svelte preview of this Page. It renders the sections in the browser. It is not a compiled site.",
 		"preview.noScreen": "none attached",
-		"preview.genericRenderer": "Общий вид",
 		"preview.registryRenderer": "Организм UI8Kit",
+		"preview.notInRegistry": "Нет в реестре",
+		"preview.registryLoadFailed": "Блок реестра не загрузился",
 		"preview.selectBlock": "Выбрать секцию",
 		"preview.address": "Адрес страницы",
 		"preview.desktop": "Десктоп",
@@ -181,9 +182,6 @@
 		"composer.modelUnavailable": "Недоступна: multi-agent модели не работают с инструментами каталога",
 		"runtime.clientOutdated": "Приложение обновилось, пока вкладка была открыта. Обновите страницу, чтобы продолжить; чаты сохранятся.",
 		"runtime.modelTooSlow": "{label} отключена: в живых прогонах страница собиралась 1–4 минуты и часто не укладывалась в лимит времени. Выберите другую модель. Другая модель не подставлялась.",
-		"composer.modelTooSlow": "Недоступна: слишком медленная для инструментов каталога (1–4 мин на страницу, частые таймауты)",
-		"preview.sidenavOpen": "Открыть навигацию",
-		"preview.sidenavClose": "Закрыть навигацию",
-		"preview.appMain": "Основное содержимое"
+		"composer.modelTooSlow": "Недоступна: слишком медленная для инструментов каталога (1–4 мин на страницу, частые таймауты)"
 	}
 }

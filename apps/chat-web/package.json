@@ -14,17 +14,14 @@
   "ui8kit": {
     "runtime": "svelte",
     "kit": [
-      "src/ui",
-      "src/utils",
-      "src/lib/icons"
+      "../../registry/svelte/src"
     ],
     "composition": [
-      "src/lib/compose",
-      "src/lib/screens",
+      "src/app",
       "src/routes"
     ],
     "blockRoot": [
-      "src/lib/screens",
+      "src/app",
       "src/routes"
     ]
   },

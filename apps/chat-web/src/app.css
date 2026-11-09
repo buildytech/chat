@@ -1,12 +1,26 @@
-@import "tailwindcss";
-@custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
+/* Theme, tokens and kit CSS come only from the UI8Kit registry tree (registry/svelte, written by the ui8kit CLI).
+   The chat adds its brand font, the code editor styles and the shell layout variables, nothing else. */
+@import "../../../registry/svelte/src/styles/theme.css";
+@import "../../../registry/svelte/src/styles/kit.css";
 @import "./styles/fonts.css";
-@import "./styles/tokens.css";
 @import "./styles/editor.css";
-/* The UI8Kit registry and its kit theme live only in the preview frame (preview-frame.css). */
-@source not "./registry";
+/* Classes of the registry components the app shell uses (recipes live in compose/recipes.ts). */
+@source "../../../registry/svelte/src/compose";
+@source "../../../registry/svelte/src/kit";
+@source "../../../registry/svelte/src/utils";
+/* The page blocks render only inside the preview frame (preview-frame.css). */
+@source not "../../../registry/svelte/src/blocks";
+@source not "../../../registry/svelte/src/components";
 
-@import "./styles/chat-theme.css";
+@theme {
+	--font-sans: "Istok Web", ui-sans-serif, system-ui, sans-serif;
+}
+
+html,
+body {
+	min-height: 100%;
+	font-family: var(--font-sans);
+}
 
 button,
 input,

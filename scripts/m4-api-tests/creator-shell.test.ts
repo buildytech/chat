@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const source = (file: string) =>
-	readFileSync(new URL(`../../apps/chat-web/src/lib/screens/${file}.svelte`, import.meta.url), "utf8");
+	readFileSync(new URL(`../../apps/chat-web/src/app/${file}.svelte`, import.meta.url), "utf8");
 const sessionCore = () =>
 	readFileSync(new URL("../../apps/chat-web/src/lib/chat-core/session.svelte.ts", import.meta.url), "utf8");
 
@@ -40,7 +40,7 @@ test("Preview and Code consume the same page and saved revision store", () => {
 
 test("Code pane emits Svelte UI8Kit source, not Latte", () => {
 	const s = source("CodePane");
-	assert.match(s, /page\.svelte/);
+	assert.match(s, /App\.svelte/);
 	assert.match(s, /svelteFromPage/);
 	assert.doesNotMatch(s, /page\.latte/);
 	assert.doesNotMatch(s, /latteFromPage/);
