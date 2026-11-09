@@ -19,13 +19,15 @@ export {
 	misplacedFacet,
 	catalogToolParameterSchema
 } from "./catalog/search.ts";
-export { compatibilityFor, getBlockIndex, rendererKindForLabel, sendBlockedByScreen } from "./catalog/compatibility.ts";
+export { compatibilityFor, getBlockIndex, rendererKindForLabel, sendBlockedByScreen, screenSupport, compareScreenSupport } from "./catalog/compatibility.ts";
 export { getBlockDetails, screenCanonicalJson } from "./catalog/details.ts";
-export { proposeLayout, applyProposal, rejectFabricatedLayout, isClearPageCommand } from "./assemble.ts";
+export { proposeLayout, applyProposal, rejectFabricatedLayout, isClearPageCommand, isNewPageCommand } from "./assemble.ts";
 export type { ProposalContext, LayoutProposal, LayoutProposalError } from "./assemble.ts";
 export { executeTool, runConstructorTools, isAllowedTool, compactSearchResult } from "./tools.ts";
 export type { ToolHost, CompactSearchItem } from "./tools.ts";
-export { inferScenarioId, isScenarioId, displayTitleFromBrief, occasionFromBrief } from "./brief.ts";
+export { inferScenarioId, isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
+export { parseLayoutCopyEdits, extractCopyEditsFromBrief } from "./edits.ts";
+export type { LayoutCopyEdit } from "./edits.ts";
 export {
 	ENABLED_SKILLS,
 	ALLOWED_TOOLS,

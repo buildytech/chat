@@ -1,6 +1,5 @@
 <script lang="ts">
 	import ArrowUp from "@lucide/svelte/icons/arrow-up";
-	import Plus from "@lucide/svelte/icons/plus";
 	import X from "@lucide/svelte/icons/x";
 	import Block from "../compose/Block.svelte";
 	import Group from "../compose/Group.svelte";
@@ -85,9 +84,25 @@
 		if (variant === "thread") draft = "";
 	}
 
+	function closeModelMenu() {
+		if (!modelOpen) return;
+		modelOpen = false;
+	}
+
+	function onEscape(event: KeyboardEvent) {
+		if (event.key !== "Escape" || !modelOpen) return;
+		event.preventDefault();
+		closeModelMenu();
+	}
+
 	function onKeydown(event: KeyboardEvent) {
+		if (event.key === "Escape") {
+			onEscape(event);
+			return;
+		}
 		if (ime || event.isComposing) return;
 		if (event.key === "Enter" && !event.shiftKey) {
+			if (modelOpen) return;
 			event.preventDefault();
 			submit(event);
 		}
@@ -99,6 +114,8 @@
 	}
 </script>
 
+<svelte:window onkeydown={onEscape} />
+
 <Block
 	tag="footer"
 	class={cn(
@@ -107,7 +124,7 @@
 			: "sticky bottom-0 z-10 mt-auto border-t border-border bg-background px-3 py-3 lg:static lg:z-auto"
 	)}
 >
-	<Form class="flex flex-col gap-2" onsubmit={submit}>
+	<Form class="flex flex-col gap-2" onsubmit={submit} onkeydown={onKeydown}>
 		<Label for="composer" class="sr-only">{t("composer.label")}</Label>
 		<Textarea
 			id="composer"
@@ -133,19 +150,18 @@
 		<Group class="items-center justify-between gap-2">
 			<Group class="items-center gap-2">
 				<Button
-					class="inline-flex size-8 items-center justify-center rounded-default border border-border text-foreground hover:bg-accent"
-					aria-label={t("composer.add")}
-					disabled
-				>
-					<Icon size="sm"><Plus /></Icon>
-				</Button>
-				<Button
 					type="button"
 					class="inline-flex max-w-[220px] items-center gap-1 rounded-default border border-border px-2 py-1.5 text-sm text-foreground hover:bg-accent"
 					aria-label={t("composer.model")}
 					aria-expanded={modelOpen ? "true" : "false"}
 					aria-haspopup="listbox"
-					onclick={() => (modelOpen = !modelOpen)}
+					onclick={() => {
+						modelOpen = !modelOpen;
+						if (!modelOpen) return;
+						queueMicrotask(() =>
+							(document.querySelector("#composer-model-list [role=option]") as HTMLElement | null)?.focus()
+						);
+					}}
 				>
 					<Text tag="span" class="truncate">{modelButtonLabel}</Text>
 				</Button>
@@ -181,7 +197,7 @@
 			</Group>
 		</Group>
 		{#if modelOpen && chatModels.length > 0}
-			<Stack class="gap-1 rounded-default border border-border bg-card p-2" role="listbox" aria-label={t("composer.modelList")}>
+			<Stack id="composer-model-list" class="gap-1 rounded-default border border-border bg-card p-2" role="listbox" aria-label={t("composer.modelList")}>
 				{#each chatModels as model (model.id)}
 					<Button
 						type="button"

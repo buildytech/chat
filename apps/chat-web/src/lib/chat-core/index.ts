@@ -1,12 +1,13 @@
 /**
  * ChatCore — session/messages logic, no DOM (ADR-0003).
- * Default: local mock (localStorage). Live Grok uses `/runtime`, not Session HTTP.
+ * Browser persistence is localStorage. Live Grok uses `/runtime`.
  */
 export {
 	abortInflightRun,
 	applyProposal,
 	createSession,
 	deleteSession,
+	deleteAllSessions,
 	discardProposal,
 	getRuntimeStatus,
 	getSelectedSession,
@@ -17,6 +18,7 @@ export {
 	selectSession,
 	sendMessage
 } from "./session.svelte";
+export { isPendingProposal, proposalStatus, markPendingProposals, migrateProposal, migrateSessionProposals } from "./proposals";
 export type {
 	ChatArtifact,
 	ChatMessage,
@@ -25,5 +27,6 @@ export type {
 	ChatRunRecord,
 	ChatSession,
 	CreatorRuntimeStatus,
+	ProposalStatus,
 	SessionSummary
 } from "./types";

@@ -7,6 +7,8 @@ import {
 	getPersistError,
 	loadPagesBlob,
 	loadSessionsJson,
+	clearPagesBlob,
+	deleteSessionPages,
 	readSessionPages,
 	saveSessionsJson,
 	writeSessionPages
@@ -82,6 +84,17 @@ test("pages are stored per session and discard does not need a write of applied"
 	assert.equal(readSessionPages("session-2"), null);
 	assert.equal(loadPagesBlob().version, 1);
 	assert.ok(memory.getItem(PAGES_KEY)?.includes("session-1"));
+});
+
+test("QA can delete a session's pages or clear the pages blob", () => {
+	assert.equal(writeSessionPages("session-1", { applied: { id: "page-a" }, candidate: null, selectedBlockId: null, revision: 1 }), true);
+	assert.equal(writeSessionPages("session-2", { applied: { id: "page-b" }, candidate: null, selectedBlockId: null, revision: 1 }), true);
+	assert.equal(deleteSessionPages("session-1"), true);
+	assert.equal(readSessionPages("session-1"), null);
+	assert.equal(readSessionPages("session-2")?.revision, 1);
+	assert.equal(clearPagesBlob(), true);
+	assert.equal(readSessionPages("session-2"), null);
+	assert.equal(loadPagesBlob().version, 1);
 });
 
 test("quota errors are truthful and leave the last good blob", () => {

@@ -1,12 +1,12 @@
 # SI Chat Creator
 
-Browser-first chat builder for ordinary website pages (`page` + unique slug). CMS-agnostic Page Store. Same Creator shell for local mock work: history | Chat | Workspace Preview/Code.
+Browser-first chat builder for ordinary website pages (`page` + unique slug). CMS-agnostic Page Store. Same Creator shell: history | Chat | Workspace Preview/Code.
 
 Copyright **BuildYtech**. Licensed under Apache-2.0 (see `LICENSE`).
 
 This repository is **not** a WordPress runtime. WP Builder lives independently in other products. Do not add WP plugin, nonce, or `wp-json` dependencies here. Product-level three hosts (WordPress builder page, Browser, Desktop Wails3) share one pinned Stock catalog: [ADR-0007](.project/adr/0007-one-buildy-three-hosts.md), [plan](docs/plans/one-buildy-three-hosts.md). Browser first; Wails3 later, same core. Portable WP import is planned, not implemented.
 
-## Start (mock, no backend)
+## Start (Browser npm / Svelte)
 
 From the repo root:
 
@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-Open the printed `http://127.0.0.1:5173` URL. ChatCore uses **localStorage**. The homepage starts Blank. The chat model selector lists five verified Grok text ids; image models are not chat choices. Optional protected xAI runtime: `XAI_API_KEY` plus `apps/xai-runtime`. Protected Vercel staging: root `vercel.json` + Routing Middleware Basic Auth on every path (`docs/deploy-xai.md`). Missing auth env denies; missing `XAI_API_KEY` is a safe 503. No WordPress, no ModulY. See `docs/xai-grok.md`.
+Open the printed `http://127.0.0.1:5173` URL. Chats and pages persist in **this browser**. The homepage starts Blank. The chat model selector lists five verified Grok text ids; image models are not chat choices. Live Grok uses the protected `/runtime` when `XAI_API_KEY` is set (`apps/xai-runtime`). Protected Vercel staging: root `vercel.json` + Routing Middleware Basic Auth on every path (`docs/deploy-xai.md`). Missing auth env denies; missing `XAI_API_KEY` is a safe 503. No WordPress, no ModulY. See `docs/xai-grok.md`.
 
 ```sh
 npm test
@@ -38,7 +38,7 @@ npm run build
 | Now (this repo) | Planned (not this cleanup) |
 | --- | --- |
 | CreatorShell: AppNav / history \| Chat \| Workspace Preview + Code | Browser MVP badges, 12 screens, JSON badges, pagination |
-| Mock ChatCore + fake transport | Direct BYOK (memory-only), local-first project persistence |
+| Browser ChatCore + localStorage persistence; live Grok via `/runtime` | Direct BYOK (memory-only), local-first project persistence |
 | Page DTO + Catalog/Page/Publish/Preview ports | Host adapters that implement those ports |
 | UI8Kit Svelte primitives, ui8px policy, shadcn tokens | Strict actual-catalog codegen-x shared provider wiring |
 | Protected xAI `/runtime` (optional server key) | Paid/live model as a separate product, deploy, own inference backend |
@@ -52,7 +52,7 @@ Handoff for the next Browser slice: [docs/browser-handoff.md](docs/browser-hando
 
 | Path | Role |
 | --- | --- |
-| `apps/chat-web` | Runnable SvelteKit SPA (default mock) |
+| `apps/chat-web` | Runnable SvelteKit SPA |
 | `packages/page-contract` | Framework-neutral Page DTO (`published` is a domain status) |
 | `packages/ports` | CatalogPort / PagePort / PublishPort / PreviewPort |
 | `services/context-serve` | Retired CI placeholder (not a Session HTTP product) |

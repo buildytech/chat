@@ -1,20 +1,12 @@
 <script lang="ts">
-	import BookOpen from "@lucide/svelte/icons/book-open";
-	import Cable from "@lucide/svelte/icons/cable";
 	import ChevronDown from "@lucide/svelte/icons/chevron-down";
 	import ChevronUp from "@lucide/svelte/icons/chevron-up";
 	import Circle from "@lucide/svelte/icons/circle";
-	import Folder from "@lucide/svelte/icons/folder";
-	import FolderKanban from "@lucide/svelte/icons/folder-kanban";
-	import Folders from "@lucide/svelte/icons/folders";
 	import House from "@lucide/svelte/icons/house";
-	import Languages from "@lucide/svelte/icons/languages";
 	import PanelLeft from "@lucide/svelte/icons/panel-left";
 	import Search from "@lucide/svelte/icons/search";
 	import Settings from "@lucide/svelte/icons/settings";
-	import Star from "@lucide/svelte/icons/star";
 	import Trash2 from "@lucide/svelte/icons/trash-2";
-	import Users from "@lucide/svelte/icons/users";
 	import Zap from "@lucide/svelte/icons/zap";
 	import type { Component } from "svelte";
 	import Block from "../compose/Block.svelte";
@@ -22,19 +14,20 @@
 	import Stack from "../compose/Stack.svelte";
 	import Button from "../../ui/button/Button.svelte";
 	import Icon from "../../ui/icon/Icon.svelte";
+	import Input from "../../ui/input/Input.svelte";
 	import Separator from "../../ui/separator/Separator.svelte";
 	import Text from "../../ui/text/Text.svelte";
 	import { t } from "../i18n/dictionary";
 	import { theme } from "../theme/theme.svelte";
 	import { cn } from "../../utils/cn";
-	import type { SessionSummary } from "../chat-core";
+	import { deleteAllSessions, type SessionSummary } from "../chat-core";
+	import { getSelectedModelId, listChatModels, setSelectedModelId } from "../browser/models.svelte";
 
 	type NavItem = {
 		id: string;
 		label: string;
 		icon: Component;
 		kbd?: string;
-		stub?: boolean;
 	};
 
 	let {
@@ -58,27 +51,36 @@
 	} = $props();
 
 	let active = $state("home");
-	let projectsOpen = $state(true);
 	let recentsOpen = $state(true);
+	let searchOpen = $state(false);
+	let searchDraft = $state("");
+	let settingsOpen = $state(false);
+	let storageNote = $state("");
+	const chatModels = listChatModels();
+	const selectedModelId = $derived(getSelectedModelId());
 
 	const mainItems: NavItem[] = [
 		{ id: "home", label: t("sidebar.home"), icon: House },
-		{ id: "search", label: t("sidebar.search"), icon: Search, kbd: t("sidebar.searchKbd"), stub: true },
-		{ id: "resources", label: t("sidebar.resources"), icon: Folder, stub: true },
-		{ id: "connectors", label: t("sidebar.connectors"), icon: Cable, stub: true }
+		{ id: "search", label: t("sidebar.search"), icon: Search, kbd: t("sidebar.searchKbd") }
 	];
 
-	const projectItems: NavItem[] = [
-		{ id: "all-projects", label: t("sidebar.allProjects"), icon: Folders, stub: true },
-		{ id: "starred", label: t("sidebar.starred"), icon: Star, stub: true },
-		{ id: "my-projects", label: t("sidebar.myProjects"), icon: FolderKanban, stub: true },
-		{ id: "shared", label: t("sidebar.shared"), icon: Users, stub: true }
-	];
+	const visibleSessions = $derived.by(() => {
+		const needle = searchDraft.trim().toLowerCase();
+		if (!needle) return sessions;
+		return sessions.filter(
+			(session) => session.title.toLowerCase().includes(needle) || session.id.toLowerCase().includes(needle)
+		);
+	});
 
-	function pick(id: string, stub = false) {
+	function pick(id: string) {
 		active = id;
-		if (id === "home") return;
-		void stub;
+		if (id === "search") {
+			searchOpen = true;
+			queueMicrotask(() => document.getElementById("sidebar-chat-search")?.focus());
+			return;
+		}
+		searchOpen = false;
+		if (id === "settings") settingsOpen = !settingsOpen;
 	}
 
 	function pickRecent(id: string) {
@@ -89,8 +91,24 @@
 	function onSearchKey(event: KeyboardEvent) {
 		if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
 			event.preventDefault();
-			active = "search";
+			pick("search");
 		}
+		if (event.key === "Escape") {
+			if (searchOpen) {
+				searchOpen = false;
+				searchDraft = "";
+				active = "home";
+				event.preventDefault();
+			} else if (settingsOpen) {
+				settingsOpen = false;
+				event.preventDefault();
+			}
+		}
+	}
+
+	function clearStorage() {
+		deleteAllSessions();
+		storageNote = t("sidebar.cleared");
 	}
 </script>
 
@@ -145,8 +163,8 @@
 							: "text-foreground hover:bg-accent/70"
 					)}
 					aria-pressed={active === item.id ? "true" : "false"}
-					title={item.stub ? t("sidebar.comingSoon") : item.label}
-					onclick={() => pick(item.id, item.stub)}
+					title={item.label}
+					onclick={() => pick(item.id)}
 				>
 					<Group class="min-w-0 w-full justify-between gap-2 in-data-[nav=collapsed]:w-auto in-data-[nav=collapsed]:justify-center">
 						<Group class="min-w-0 gap-2 in-data-[nav=collapsed]:gap-0">
@@ -167,41 +185,21 @@
 		</Stack>
 
 		{#if !collapsed}
-		<Stack class="gap-1">
-			<Button
-				class="w-full justify-between rounded-default px-3 py-2 text-sm text-muted-foreground hover:bg-accent/70 hover:text-foreground"
-				aria-expanded={projectsOpen ? "true" : "false"}
-				aria-controls="creator-projects"
-				onclick={() => (projectsOpen = !projectsOpen)}
-			>
-				<Text tag="span">{t("sidebar.projects")}</Text>
-				<Icon size="sm">
-					{#if projectsOpen}
-						<ChevronUp />
-					{:else}
-						<ChevronDown />
-					{/if}
-				</Icon>
-			</Button>
-			<Stack id="creator-projects" class="gap-1" hidden={!projectsOpen}>
-				{#each projectItems as item (item.id)}
-					<Button
-						class={cn(
-							"w-full justify-start gap-2 rounded-default px-3 py-2 text-sm",
-							active === item.id
-								? "bg-accent text-accent-foreground"
-								: "text-foreground hover:bg-accent/70"
-						)}
-						aria-pressed={active === item.id ? "true" : "false"}
-						title={t("sidebar.comingSoon")}
-						onclick={() => pick(item.id, true)}
-					>
-						<Icon size="sm"><item.icon /></Icon>
-						<Text tag="span" class="truncate">{item.label}</Text>
-					</Button>
-				{/each}
+		{#if searchOpen}
+			<Stack class="gap-1 px-1">
+				<Input
+					id="sidebar-chat-search"
+					type="search"
+					value={searchDraft}
+					placeholder={t("sidebar.searchPlaceholder")}
+					aria-label={t("sidebar.search")}
+					class="w-full rounded-default border border-input bg-card px-3 py-1.5 text-sm"
+					oninput={(event: Event) => {
+						searchDraft = (event.currentTarget as HTMLInputElement).value;
+					}}
+				/>
 			</Stack>
-		</Stack>
+		{/if}
 
 		<Stack class="gap-1">
 			<Button
@@ -220,10 +218,12 @@
 				</Icon>
 			</Button>
 			<Stack id="creator-recents" class="min-h-0 gap-1" hidden={!recentsOpen}>
-				{#if sessions.length === 0}
-					<Text tag="p" class="px-3 py-2 text-sm text-muted-foreground">{t("sidebar.empty")}</Text>
+				{#if visibleSessions.length === 0}
+					<Text tag="p" class="px-3 py-2 text-sm text-muted-foreground">
+						{searchDraft.trim() ? t("sidebar.noMatches") : t("sidebar.empty")}
+					</Text>
 				{:else}
-					{#each sessions as session (session.id)}
+					{#each visibleSessions as session (session.id)}
 						<Group class="gap-1">
 							<Button
 								class={cn(
@@ -262,24 +262,50 @@
 				"in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0",
 				active === "settings" ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/70"
 			)}
-			title={t("sidebar.settingsSoon")}
-			onclick={() => pick("settings", true)}
+			title={t("sidebar.settings")}
+			aria-expanded={settingsOpen ? "true" : "false"}
+			aria-controls="creator-settings"
+			onclick={() => {
+				settingsOpen = !settingsOpen;
+				active = settingsOpen ? "settings" : "home";
+			}}
 		>
 			<Icon size="sm"><Settings /></Icon>
 			<Text tag="span" class="in-data-[nav=collapsed]:hidden">{t("sidebar.settings")}</Text>
 		</Button>
-		<Button
-			class={cn(
-				"w-full justify-start gap-2 rounded-default px-3 py-2 text-sm",
-				"in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0",
-				active === "language" ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/70"
-			)}
-			title={t("sidebar.languageSoon")}
-			onclick={() => pick("language", true)}
-		>
-			<Icon size="sm"><Languages /></Icon>
-			<Text tag="span" class="in-data-[nav=collapsed]:hidden">{t("sidebar.language")}</Text>
-		</Button>
+		{#if settingsOpen && !collapsed}
+			<Stack id="creator-settings" class="gap-2 rounded-default border border-border p-2">
+				<Text tag="p" class="text-xs text-muted-foreground">{t("sidebar.settingsHint")}</Text>
+				<Text tag="p" class="text-xs font-medium text-foreground">{t("sidebar.settingsModel")}</Text>
+				{#each chatModels as model (model.id)}
+					<Button
+						class={cn(
+							"w-full justify-start rounded-default px-2 py-1.5 text-left text-sm hover:bg-accent/70",
+							model.id === selectedModelId ? "bg-accent text-accent-foreground" : "text-foreground"
+						)}
+						aria-pressed={model.id === selectedModelId ? "true" : "false"}
+						onclick={() => setSelectedModelId(model.id)}
+					>
+						{model.label}
+					</Button>
+				{/each}
+				<Button
+					class="w-full justify-start rounded-default px-2 py-1.5 text-sm text-foreground hover:bg-accent/70"
+					onclick={() => theme.toggle()}
+				>
+					{theme.isDark ? t("sidebar.useLight") : t("sidebar.useDark")}
+				</Button>
+				<Button
+					class="w-full justify-start rounded-default px-2 py-1.5 text-sm text-destructive hover:bg-accent/70"
+					onclick={clearStorage}
+				>
+					{t("sidebar.clearStorage")}
+				</Button>
+				{#if storageNote}
+					<Text tag="p" class="text-xs text-muted-foreground">{storageNote}</Text>
+				{/if}
+			</Stack>
+		{/if}
 		<Group class="justify-between gap-2 rounded-default px-3 py-2 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0">
 			<Group class="gap-2 in-data-[nav=collapsed]:gap-0">
 				<Button
@@ -300,17 +326,5 @@
 				<Text tag="span" class="text-sm in-data-[nav=collapsed]:hidden">{t("sidebar.nightMode")}</Text>
 			</Group>
 		</Group>
-		<Button
-			class={cn(
-				"w-full justify-start gap-2 rounded-default px-3 py-2 text-sm",
-				"in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0",
-				active === "learn" ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/70"
-			)}
-			title={t("sidebar.learnSoon")}
-			onclick={() => pick("learn", true)}
-		>
-			<Icon size="sm"><BookOpen /></Icon>
-			<Text tag="span" class="in-data-[nav=collapsed]:hidden">{t("sidebar.learn")}</Text>
-		</Button>
 	</Stack>
 </Block>

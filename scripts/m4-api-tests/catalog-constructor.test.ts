@@ -2,15 +2,18 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { PAGE_BLOCK_KINDS, parsePage } from "../../packages/page-contract/src/index.ts";
-import {
+	import {
 	ALLOWED_TOOLS,
 	OWNER_FILTERS,
 	SCENARIO_IDS,
 	catalogSnapshot,
+	compatibilityFor,
 	catalogToolParameterSchema,
 	executeTool,
+	extractCopyEditsFromBrief,
 	getBlockDetails,
 	isClearPageCommand,
+	isNewPageCommand,
 	parseCatalogSnapshot,
 	proposeLayout,
 	rejectFabricatedLayout,
@@ -340,6 +343,155 @@ test("live xAI tool host tags source xai-runtime but keeps the local assembler",
 	assert.equal(proposal.page.title, "Barbecue at Home");
 	const cta = proposal.page.layout.blocks.find((block) => block.kind === "cta");
 	assert.notEqual(cta?.copy?.action, "Apply when ready");
+});
+
+test("search ranks supported screens and rejects hollow commerce shop for website", () => {
+	const hero = searchCatalog({ job: "hero", page: 1 });
+	assert.equal(hero.items[0]?.screenId, "screen.site/home");
+	assert.equal(hero.items[0]?.compatibility.missing.length, 0);
+	const compact = executeTool({ name: "search_catalog", arguments: { job: "hero", page: 1 } });
+	assert.equal(compact.ok, true);
+	if (compact.ok) {
+		const first = (compact.result as { items: Array<{ screenId: string; supported: boolean }> }).items[0];
+		assert.equal(first.supported, true);
+		assert.equal(first.screenId, "screen.site/home");
+	}
+	const shop = proposeLayout({
+		brief: "Create a website with a menu, overview, and contact using existing Stock blocks.",
+		scenarioId: "website",
+		screenId: "screen.theme-commerce-shop/home",
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(shop.ok, false);
+	if (!shop.ok) {
+		assert.equal(shop.code, "screen_not_renderable");
+		assert.ok(shop.suggestedScreenIds?.includes("screen.site/home"));
+	}
+});
+
+test("dashboard and website natural language use renderable Stock coverage", () => {
+	assert.equal(inferScenarioId("Create a Dashboard for Orders"), "dashboard");
+	assert.equal(inferScenarioId("Create a Website with menu, overview and contact"), "website");
+	const dash = proposeLayout({
+		brief: "Create a Dashboard for Orders. No invented figures.",
+		scenarioId: null,
+		screenId: null,
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(dash.ok, true);
+	if (dash.ok) {
+		assert.equal(dash.provenance.screenId, "screen.theme-dashboard-console/home");
+		assert.deepEqual(
+			dash.page.layout.blocks.map((block) => block.kind),
+			["nav", "features", "footer"]
+		);
+		assert.ok(dash.missing.includes("activity"));
+		assert.ok(dash.warnings.some((line) => /screen\.theme-dashboard-console\/home/.test(line)));
+		assert.doesNotMatch(JSON.stringify(dash.page), /Blank page|Catalog only|Apply when ready/);
+	}
+	const site = proposeLayout({
+		brief: "Create a Website with menu, overview and contact using existing Stock blocks.",
+		scenarioId: null,
+		screenId: null,
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(site.ok, true);
+	if (site.ok) {
+		assert.match(site.provenance.screenId, /\/menu$/);
+		assert.ok(site.page.layout.blocks.some((block) => block.kind === "menu"));
+		assert.ok(site.page.layout.blocks.some((block) => block.kind === "nav"));
+		assert.ok(site.page.layout.blocks.some((block) => block.kind === "footer"));
+		assert.equal(site.page.layout.blocks[0]?.kind, "nav");
+		assert.equal(site.page.layout.blocks.at(-1)?.kind, "footer");
+	}
+});
+
+test("site.home layout is nav, hero, features, cta, footer", () => {
+	const page = proposeLayout({
+		brief: "Create a landing page named Harbor",
+		scenarioId: "landing",
+		screenId: "screen.site/home",
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(page.ok, true);
+	if (page.ok) {
+		assert.deepEqual(
+			page.page.layout.blocks.map((block) => block.kind),
+			["nav", "hero", "features", "cta", "footer"]
+		);
+	}
+});
+
+test("follow-up extracts headline value and keeps other blocks", () => {
+	assert.equal(isNewPageCommand("create a stronger CTA"), false);
+	assert.equal(isNewPageCommand("Create a landing page for Harbor"), true);
+	const edits = extractCopyEditsFromBrief(
+		"Change only the hero headline to New Year Grill Delivery. Keep all other sections and their content unchanged."
+	);
+	assert.deepEqual(edits, [{ kind: "hero", field: "headline", value: "New Year Grill Delivery" }]);
+	const first = proposeLayout({
+		brief: "Create a New Year landing page for Barbecue at Home, a grill food delivery restaurant.",
+		scenarioId: "landing",
+		screenId: "screen.site/home",
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(first.ok, true);
+	if (!first.ok) return;
+	const footer = first.page.layout.blocks.find((block) => block.kind === "footer");
+	const follow = proposeLayout({
+		brief: "Change only the hero headline to New Year Grill Delivery. Keep all other sections and their content unchanged.",
+		scenarioId: "landing",
+		screenId: null,
+		expectedRevision: 1,
+		currentPage: first.page,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(follow.ok, true);
+	if (!follow.ok) return;
+	assert.equal(follow.page.id, first.page.id);
+	assert.deepEqual(
+		follow.page.layout.blocks.map((block) => block.id),
+		first.page.layout.blocks.map((block) => block.id)
+	);
+	const hero = follow.page.layout.blocks.find((block) => block.kind === "hero");
+	assert.equal(hero?.copy?.headline, "New Year Grill Delivery");
+	assert.doesNotMatch(String(hero?.copy?.headline ?? ""), /Change only/);
+	assert.deepEqual(
+		follow.page.layout.blocks.find((block) => block.kind === "footer")?.copy,
+		footer?.copy
+	);
+});
+
+test("missing-renderer warnings include faq, pricing, authpage, pagehead, and wizard", () => {
+	const labels = ["faq", "pricing", "authpage", "pagehead", "wizard"];
+	for (const label of labels) {
+		const screen = catalogSnapshot.screens.find((item) => item.labels.blocks.includes(label));
+		assert.ok(screen, `catalog has ${label}`);
+		const compat = compatibilityFor(screen!);
+		assert.ok(
+			compat.missing.some((row) => row.catalogLabel === label),
+			`${label} is reported missing`
+		);
+	}
+	const pricing = proposeLayout({
+		brief: "Create a pricing page",
+		scenarioId: "landing",
+		screenId: "screen.site/pricing",
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	if (pricing.ok) {
+		assert.ok(pricing.missing.includes("faq") || pricing.missing.includes("pricing"));
+		assert.ok(pricing.warnings.some((line) => /Not rendered/.test(line)));
+	} else {
+		assert.equal(pricing.code, "screen_not_renderable");
+		assert.match(pricing.message, /faq|pricing/);
+	}
 });
 
 test("ambiguous briefs still do not invent a layout", () => {

@@ -1,6 +1,6 @@
 # AGENTS.md — buildytech/chat
 
-Browser-first Creator SPA. Cleanup baseline: mock ChatCore, UI8Kit paint, Page DTO/ports. This repository is **not** a WordPress, ModulY, or manager runtime. Product hosts (WordPress builder page, Browser, Desktop Wails3) are sequenced in [ADR-0007](.project/adr/0007-one-buildy-three-hosts.md); finish Browser here first.
+Browser-first Creator SPA (`npm` / Svelte 5). Chat + pages persist in this browser; live Grok uses protected `/runtime`. This repository is **not** a WordPress, ModulY, or manager runtime. Product hosts (WordPress builder page, Browser, Desktop Wails3) are sequenced in [ADR-0007](.project/adr/0007-one-buildy-three-hosts.md); finish Browser here first.
 
 UI8Kit rules live with the contract. Copied here from [`github.com/ui8kit/contract`](https://github.com/ui8kit/contract) (`.cursor/rules`, `.cursor/skills`). Reference implementation: `codegen-x/ui8kit`. Shared provider / catalog codegen is **planned**, not wired in this repo.
 
@@ -16,14 +16,14 @@ UI8Kit rules live with the contract. Copied here from [`github.com/ui8kit/contra
 
 ```sh
 npm install
-npm run dev          # http://127.0.0.1:5173 — mock ChatCore (chats + pages in this browser)
+npm run dev          # http://127.0.0.1:5173 — Browser SPA (chats + pages in this browser)
 npm test             # page-contract + unit tests (includes WP-runtime guard)
 npm run check        # svelte-check
 npm run build        # static SPA
 npm run verify       # test + check + build
 ```
 
-Default ChatCore saves chats and per-session applied/candidate pages in localStorage. That is not live Grok. Preview is Svelte UI8Kit; Code is generated Svelte UI8Kit source, not Latte.
+ChatCore saves chats and per-session applied/candidate pages in the browser. That persistence is not live Grok. Preview is a Svelte renderer of the Page DTO; Code is generated Svelte UI8Kit source, not a compiler and not Latte.
 
 `services/context-serve` is a retired CI placeholder, not a Session HTTP product. Default `npm run dev` does not require it.
 

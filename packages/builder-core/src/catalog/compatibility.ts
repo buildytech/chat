@@ -53,3 +53,43 @@ export function sendBlockedByScreen(screen: CatalogScreen | null): boolean {
 	const compat = compatibilityFor(screen);
 	return !compat.compatible && !compat.partial;
 }
+
+export type ScreenSupport = {
+	mappedKinds: string[];
+	missing: string[];
+	mapped: number;
+	missingCount: number;
+	supported: boolean;
+	score: number;
+};
+
+/** Browser-renderable coverage. supported means a complete enough Page, not a hollow chrome shell. */
+export function screenSupport(screen: CatalogScreen): ScreenSupport {
+	const compat = compatibilityFor(screen);
+	const mappedKinds = [...new Set(compat.mapped.map((row) => row.rendererKind))];
+	const missing = compat.missing.map((row) => row.catalogLabel);
+	const score = mappedKinds.length - missing.length;
+	const hasBody = mappedKinds.some((kind) => kind === "hero" || kind === "features" || kind === "menu");
+	const hasFrame = mappedKinds.includes("nav") || mappedKinds.includes("footer") || mappedKinds.includes("cta");
+	const supported =
+		missing.length === 0
+			? mappedKinds.length >= 3
+			: mappedKinds.length >= 3 && missing.length < mappedKinds.length && hasBody && hasFrame;
+	return {
+		mappedKinds,
+		missing,
+		mapped: compat.mapped.length,
+		missingCount: missing.length,
+		supported,
+		score
+	};
+}
+
+export function compareScreenSupport(a: CatalogScreen, b: CatalogScreen): number {
+	const sa = screenSupport(a);
+	const sb = screenSupport(b);
+	if (sa.supported !== sb.supported) return sa.supported ? -1 : 1;
+	if (sb.score !== sa.score) return sb.score - sa.score;
+	if (sb.mappedKinds.length !== sa.mappedKinds.length) return sb.mappedKinds.length - sa.mappedKinds.length;
+	return sa.missingCount - sb.missingCount;
+}

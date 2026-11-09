@@ -19,6 +19,7 @@ export type ModalKind = "scenario" | "screen" | "model" | null;
 let scenarioId = $state<ScenarioId | null>(null);
 let screenId = $state<string | null>(null);
 let page = $state(1);
+let stockQuery = $state("");
 let placeholderIndex = $state(0);
 let focused = $state(false);
 let composing = $state(false);
@@ -86,8 +87,39 @@ export function catalogQuery() {
 	return OWNER_FILTERS.blank;
 }
 
+export function getStockQuery(): string {
+	return stockQuery;
+}
+
+export function setStockQuery(next: string): void {
+	stockQuery = next;
+	page = 1;
+}
+
 export function catalogPage(): SearchResult {
-	return paginateScreens({ ...catalogQuery(), page });
+	const raw = paginateScreens({ ...catalogQuery(), page: 1, pageSize: 500 });
+	const needle = stockQuery.trim().toLowerCase();
+	const matched = needle
+		? raw.items.filter((screen) =>
+				`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`
+					.toLowerCase()
+					.includes(needle)
+			)
+		: raw.items;
+	const pageSize = 12;
+	const total = matched.length;
+	const pageCount = Math.max(1, Math.ceil(total / pageSize) || 1);
+	const current = Math.min(Math.max(page, 1), pageCount);
+	const start = (current - 1) * pageSize;
+	return {
+		...raw,
+		page: current,
+		pageSize,
+		pageCount,
+		total,
+		items: matched.slice(start, start + pageSize),
+		noFit: total === 0
+	};
 }
 
 export function screenOutsideFilter(): boolean {
@@ -136,8 +168,7 @@ export function getKeepOutsideScreen(): boolean {
 }
 
 export function setPage(next: number): void {
-	const result = paginateScreens({ ...catalogQuery(), page: next });
-	page = result.page;
+	page = Math.max(1, next);
 }
 
 export function setFocused(next: boolean): void {
@@ -191,6 +222,7 @@ export function resetOnboarding(): void {
 	scenarioId = null;
 	screenId = null;
 	page = 1;
+	stockQuery = "";
 	placeholderIndex = 0;
 	focused = false;
 	composing = false;

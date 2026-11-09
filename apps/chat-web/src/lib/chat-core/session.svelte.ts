@@ -28,6 +28,8 @@ import {
 	setOnboardingPersist
 } from "../browser/onboarding.svelte";
 import {
+	clearPagesBlob,
+	deleteSessionPages,
 	getPersistError,
 	loadSessionsJson,
 	saveSessionsJson
@@ -41,6 +43,7 @@ import {
 	getPageRevision,
 	setCandidatePage
 } from "../page-store";
+import { markPendingProposals, migrateSessionProposals } from "./proposals";
 import type {
 	ChatMessage,
 	ChatSession,
@@ -61,7 +64,8 @@ function uid(prefix: string): string {
 
 function loadMock(): ChatSession[] {
 	const parsed = loadSessionsJson();
-	return Array.isArray(parsed) ? (parsed as ChatSession[]) : [];
+	if (!Array.isArray(parsed)) return [];
+	return (parsed as ChatSession[]).map(migrateSessionProposals);
 }
 
 function saveMock(sessions: ChatSession[]): void {
@@ -117,7 +121,7 @@ let lastRequestId = $state<string | null>(null);
 let lastFailedText = $state<string | null>(null);
 let capabilities = $state<ServerCapabilities | null>(null);
 let connectionMode = $state<"live" | "mock" | "booting">("booting");
-let canDeleteSessions = $state(false); // Session HTTP has no DELETE in M4
+let canDeleteSessions = $state(true);
 
 function bumpEpoch(): number {
 	epoch += 1;
@@ -163,11 +167,11 @@ export async function hydrateSessions(): Promise<void> {
 	try {
 		connectionMode = "mock";
 		capabilities = {
-			runtime: "mock",
+			runtime: "xai-grok",
 			mode: "localStorage",
 			liveModel: false,
 			tools: [],
-			note: t("runtime.mockMode")
+			note: t("runtime.checking")
 		};
 		const initial = loadMock();
 		memory = initial;
@@ -274,9 +278,31 @@ export async function applySessionFromUrl(): Promise<void> {
 	await selectSession(urlSession, { history: "none" });
 }
 
-/** M4: Session HTTP has no DELETE — UI must stay disabled/truthful. */
-export function deleteSession(_id: string): void {
-	lastError = t("runtime.deleteUnavailable");
+/** Browser-local delete. Removes the chat and its pages from this browser. */
+export function deleteSession(id: string): void {
+	abortInflight();
+	lastError = null;
+	const remaining = memory.filter((session) => session.id !== id);
+	memory = remaining;
+	saveMock(memory);
+	deleteSessionPages(id);
+	if (selectedId !== id) return;
+	const next = remaining[0] ?? null;
+	rememberSelection(next?.id ?? null);
+	syncSessionQuery(next?.id ?? null, { mode: "replace" });
+	restoreSessionWorkspace(next);
+}
+
+export function deleteAllSessions(): void {
+	abortInflight();
+	lastError = null;
+	for (const session of memory) deleteSessionPages(session.id);
+	memory = [];
+	saveMock(memory);
+	clearPagesBlob();
+	rememberSelection(null);
+	syncSessionQuery(null, { mode: "replace" });
+	restoreSessionWorkspace(null);
 }
 
 export function abortInflightRun(): void {
@@ -440,12 +466,14 @@ function proposalMessage(
 		createdAt: nowIso(),
 		proposal: {
 			applied: false,
+			status: "pending",
 			source: result.source,
 			liveModel: live,
 			assembler: result.provenance.assembler,
 			warnings: result.warnings,
 			missing: result.missing,
-			title: result.page.title
+			title: result.page.title,
+			screenId: result.provenance.screenId
 		},
 		run
 	};
@@ -497,11 +525,12 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 		if (!result.ok) lastError = result.message;
 		else lastError = null;
 		const reply = proposalMessage(result, modelId, live, usage, { path, tools, runId });
+		const prior = result.ok ? markPendingProposals(pending.messages, "superseded", "all") : pending.messages;
 		const done: ChatSession = {
 			...pending,
 			updatedAt: nowIso(),
 			selectedModelId: modelId,
-			messages: [...pending.messages, reply],
+			messages: [...prior, reply],
 			usage: sessionUsageFrom(pending, usage)
 		};
 		replaceSession(done);
@@ -538,7 +567,6 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 export function applyProposal(): boolean {
 	const session = getSelectedSession();
 	if (!session) return false;
-	const last = [...session.messages].reverse().find((m) => m.proposal && !m.proposal.applied);
 	const ok = applyCandidate((getPageRevision() ?? 0) + 1);
 	if (!ok) return false;
 	const applied = getLastAppliedPage();
@@ -549,11 +577,7 @@ export function applyProposal(): boolean {
 		pageRevision: getPageRevision(),
 		scenarioId: session.scenarioId ?? getScenarioId(),
 		screenId: session.screenId ?? getScreenId(),
-		messages: last
-			? session.messages.map((m) =>
-					m.id === last.id && m.proposal ? { ...m, proposal: { ...m.proposal, applied: true } } : m
-				)
-			: session.messages
+		messages: markPendingProposals(session.messages, "applied", "latest")
 	};
 	replaceSession(next);
 	saveMock(memory);
@@ -562,6 +586,14 @@ export function applyProposal(): boolean {
 
 export function discardProposal(): void {
 	discardCandidate();
+	const session = getSelectedSession();
+	if (!session) return;
+	replaceSession({
+		...session,
+		updatedAt: nowIso(),
+		messages: markPendingProposals(session.messages, "discarded", "latest")
+	});
+	saveMock(memory);
 }
 
 /** ChatCore send. Ordinary text never auto-saves a page. Live Grok uses `/runtime`. */

@@ -14,7 +14,7 @@
 	import Text from "../../ui/text/Text.svelte";
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
-	import { applyProposal, discardProposal, getSelectedSession } from "../chat-core";
+	import { applyProposal, discardProposal, getSelectedSession, proposalStatus } from "../chat-core";
 	import { blocksOf, getCurrentPage, getPageRevision, getSelectedBlockId, hasUnappliedProposal } from "../page-store";
 	import PreviewBlock from "./PreviewBlock.svelte";
 
@@ -23,11 +23,16 @@
 	const unapplied = $derived(hasUnappliedProposal());
 	const appliedLabel = $derived.by(() => {
 		const last = getSelectedSession()?.messages.slice().reverse().find((message) => message.proposal);
-		return last?.proposal?.applied && !unapplied ? t("proposal.applied") : "";
+		return last?.proposal && proposalStatus(last.proposal) === "applied" && !unapplied ? t("proposal.applied") : "";
 	});
 	const blocks = $derived(page ? blocksOf(page) : []);
 	const selectedId = $derived(getSelectedBlockId());
 	const slugUrl = $derived(page ? `/${page.slug}` : "/");
+	const lastProposal = $derived.by(() => {
+		return getSelectedSession()?.messages.slice().reverse().find((message) => message.proposal)?.proposal ?? null;
+	});
+	const screenId = $derived(lastProposal?.screenId ?? "");
+	const missingLabels = $derived((lastProposal?.missing ?? []).join(", "));
 
 	let device = $state<"desktop" | "mobile">("desktop");
 	let url = $state("");
@@ -97,6 +102,7 @@
 	aria-label={t("workspace.preview")}
 	data-page-id={page?.id ?? ""}
 	data-page-revision={savedRevision ?? ""}
+	data-screen-id={screenId}
 	data-block="preview-pane"
 >
 	<Group
@@ -180,14 +186,6 @@
 
 		<Group class="items-center gap-2 max-md:order-2">
 			<Button
-				class="inline-flex items-center rounded-default border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
-				aria-label={t("preview.edit")}
-				disabled
-				title={t("preview.editSoon")}
-			>
-				<Text tag="span">{t("preview.edit")}</Text>
-			</Button>
-			<Button
 				class="inline-flex size-8 items-center justify-center rounded-default border border-border text-foreground hover:bg-accent"
 				aria-label={t("preview.openNew")}
 				onclick={openNew}
@@ -224,6 +222,14 @@
 			{/if}
 			{#key reloadKey}
 				<Text tag="p" class="text-xs text-muted-foreground">{t("preview.runtime")}</Text>
+				{#if screenId}
+					<Text tag="p" class="text-xs text-muted-foreground">{screenId}</Text>
+				{/if}
+				{#if missingLabels}
+					<Text tag="p" class="text-xs text-muted-foreground" role="status">
+						{t("home.incompatible")} {t("home.missing").replace("{list}", missingLabels)}
+					</Text>
+				{/if}
 				{#if blocks.length === 0}
 					<Text tag="p" class="text-sm text-muted-foreground">{t("workspace.empty")}</Text>
 				{:else}

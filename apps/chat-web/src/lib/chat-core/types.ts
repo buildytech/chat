@@ -28,14 +28,18 @@ export type ChatArtifact = {
 	files: string[];
 };
 
+export type ProposalStatus = "pending" | "applied" | "discarded" | "superseded";
+
 export type ChatProposalState = {
 	applied: boolean;
+	status?: ProposalStatus;
 	source: string;
 	liveModel: boolean;
 	assembler?: string;
 	warnings: string[];
 	missing: string[];
 	title: string;
+	screenId?: string | null;
 };
 
 export type ChatRunRecord = {

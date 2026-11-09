@@ -36,12 +36,10 @@
 		<Text tag="p" class="text-xs text-muted-foreground">{screen.subtitle}</Text>
 		<Text tag="p" class="text-[11px] text-muted-foreground">{screen.screenId}</Text>
 	</Stack>
-	{#if !compatibility.compatible}
+	{#if missing}
 		<Text tag="p" class="text-xs text-muted-foreground">
 			{t("home.incompatible")}
-			{#if missing}
-				{t("home.missing").replace("{list}", missing)}
-			{/if}
+			{t("home.missing").replace("{list}", missing)}
 		</Text>
 	{/if}
 	<Group class="mt-auto">

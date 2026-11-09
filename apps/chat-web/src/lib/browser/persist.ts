@@ -137,3 +137,7 @@ export function deleteSessionPages(sessionId: string): boolean {
 	delete blob.pages[sessionId];
 	return writeJson(PAGES_KEY, blob);
 }
+
+export function clearPagesBlob(): boolean {
+	return writeJson(PAGES_KEY, emptyBlob());
+}

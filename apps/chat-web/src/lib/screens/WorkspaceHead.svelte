@@ -1,6 +1,4 @@
 <script lang="ts">
-	import History from "@lucide/svelte/icons/history";
-	import ChevronDown from "@lucide/svelte/icons/chevron-down";
 	import FolderArchive from "@lucide/svelte/icons/folder-archive";
 	import PanelLeft from "@lucide/svelte/icons/panel-left";
 	import Group from "../compose/Group.svelte";
@@ -76,16 +74,6 @@
 	</Group>
 
 	<Group class="items-center gap-2 max-md:w-full max-md:gap-3">
-		<Button
-			class="inline-flex items-center gap-2 rounded-default border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent max-md:flex-1"
-			aria-label={t("workspace.version")}
-			disabled
-			title={t("workspace.versionSoon")}
-		>
-			<Icon size="sm" class="text-muted-foreground"><History /></Icon>
-			<Text tag="span">{t("workspace.version")}</Text>
-			<Icon size="sm" class="text-muted-foreground"><ChevronDown /></Icon>
-		</Button>
 		<Button
 			class="inline-flex items-center gap-2 rounded-default border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent max-md:flex-1"
 			aria-label={t("workspace.downloadZip")}

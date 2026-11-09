@@ -1,9 +1,7 @@
 <script lang="ts">
 	import Copy from "@lucide/svelte/icons/copy";
-	import Ellipsis from "@lucide/svelte/icons/ellipsis";
 	import FileText from "@lucide/svelte/icons/file-text";
 	import Pencil from "@lucide/svelte/icons/pencil";
-	import RefreshCw from "@lucide/svelte/icons/refresh-cw";
 	import Share2 from "@lucide/svelte/icons/share-2";
 	import ThumbsDown from "@lucide/svelte/icons/thumbs-down";
 	import ThumbsUp from "@lucide/svelte/icons/thumbs-up";
@@ -16,6 +14,7 @@
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
 	import type { ChatMessage as ChatMessageModel } from "../chat-core";
+	import { isPendingProposal, proposalStatus } from "../chat-core/proposals";
 	import { formatTokens } from "@buildytech/builder-core";
 
 	let {
@@ -36,6 +35,33 @@
 
 	const run = $derived(message.run);
 	const proposal = $derived(message.proposal);
+	const status = $derived(proposal ? proposalStatus(proposal) : null);
+	const pending = $derived(proposal ? isPendingProposal(proposal) : false);
+	const body = $derived.by(() => {
+		if (!proposal || !status) return message.text;
+		const via = proposal.liveModel ? t("assistant.xaiProposal") : t("assistant.localAssembler");
+		const key =
+			status === "applied"
+				? "assistant.proposalApplied"
+				: status === "discarded"
+					? "assistant.proposalDiscarded"
+					: status === "superseded"
+						? "assistant.proposalSuperseded"
+						: "assistant.proposalPending";
+		const missing = proposal.missing.length
+			? ` ${t("assistant.missingBlocks").replace("{list}", proposal.missing.join(", "))}`
+			: "";
+		return `${via} ${t(key).replace("{title}", proposal.title).replace("{screen}", proposal.screenId ?? "none attached")}${missing}`;
+	});
+	const statusLabel = $derived(
+		status === "applied"
+			? t("proposal.applied")
+			: status === "discarded"
+				? t("proposal.discarded")
+				: status === "superseded"
+					? t("proposal.superseded")
+					: t("proposal.notApplied")
+	);
 
 	const mine = $derived(message.role === "user");
 	let vote = $state<"good" | "bad" | null>(null);
@@ -118,13 +144,13 @@
 		</Group>
 	{:else}
 		<Stack class="gap-6">
-			<Text tag="p" class="text-sm font-medium whitespace-pre-wrap text-foreground">{message.text}</Text>
+			<Text tag="p" class="text-sm font-medium whitespace-pre-wrap text-foreground">{body}</Text>
 			{#if proposal}
 				<Group class="flex-wrap items-center gap-2">
 					<Text tag="span" class="text-xs text-muted-foreground">
-						{proposal.applied ? t("proposal.applied") : t("proposal.notApplied")}
+						{statusLabel}
 					</Text>
-					{#if !proposal.applied}
+					{#if pending}
 						<Button
 							class="rounded-default bg-foreground px-3 py-1.5 text-sm text-background hover:bg-foreground/90"
 							onclick={() => onApply?.()}
@@ -222,22 +248,6 @@
 					onclick={shareText}
 				>
 					<Icon size="sm"><Share2 /></Icon>
-				</Button>
-				<Button
-					class="inline-flex size-7 items-center justify-center rounded-default text-muted-foreground hover:bg-accent"
-					aria-label={t("message.regenerate")}
-					disabled
-					title={t("message.regenerateSoon")}
-				>
-					<Icon size="sm"><RefreshCw /></Icon>
-				</Button>
-				<Button
-					class="inline-flex size-7 items-center justify-center rounded-default text-muted-foreground hover:bg-accent"
-					aria-label={t("message.more")}
-					disabled
-					title={t("message.moreSoon")}
-				>
-					<Icon size="sm"><Ellipsis /></Icon>
 				</Button>
 			</Group>
 		</Stack>

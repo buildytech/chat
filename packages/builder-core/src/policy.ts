@@ -42,7 +42,7 @@ export function getSkill(id: string):
 }
 
 export const RUN_BUDGET = {
-	maxToolCalls: 16,
+	maxToolCalls: 8,
 	maxMs: 90_000,
 	shortlist: 12
 } as const;

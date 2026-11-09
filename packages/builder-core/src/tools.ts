@@ -1,8 +1,10 @@
 import { searchCatalog } from "./catalog/search.ts";
+import { screenSupport } from "./catalog/compatibility.ts";
 import { getBlockDetails } from "./catalog/details.ts";
 import { getSkill, ALLOWED_TOOLS, type AllowedTool } from "./policy.ts";
 import { proposeLayout, type LayoutProposal, type LayoutProposalError, type ProposalContext } from "./assemble.ts";
 import { inferScenarioId, isScenarioId } from "./brief.ts";
+import { parseLayoutCopyEdits } from "./edits.ts";
 import type { Page } from "@buildytech/page-contract";
 import type { SearchResult } from "./catalog/types.ts";
 
@@ -23,6 +25,8 @@ export type CompactSearchItem = {
 	variant: string;
 	group: string;
 	labels: SearchResult["items"][number]["labels"];
+	mappedKinds: string[];
+	supported: boolean;
 	compatibility: { compatible: boolean; partial: boolean; missing: string[] };
 };
 
@@ -40,19 +44,24 @@ export function compactSearchResult(result: SearchResult): Omit<SearchResult, "i
 		clarification: result.clarification,
 		suggested: result.suggested,
 		misplaced: result.misplaced,
-		items: result.items.map((item) => ({
-			screenId: item.screenId,
-			title: item.title,
-			subtitle: item.subtitle,
-			variant: item.variant,
-			group: item.group,
-			labels: item.labels,
-			compatibility: {
-				compatible: item.compatibility.compatible,
-				partial: item.compatibility.partial,
-				missing: item.compatibility.missing.map((row) => row.catalogLabel)
-			}
-		}))
+		items: result.items.map((item) => {
+			const support = screenSupport(item);
+			return {
+				screenId: item.screenId,
+				title: item.title,
+				subtitle: item.subtitle,
+				variant: item.variant,
+				group: item.group,
+				labels: item.labels,
+				mappedKinds: support.mappedKinds,
+				supported: support.supported,
+				compatibility: {
+					compatible: item.compatibility.compatible,
+					partial: item.compatibility.partial,
+					missing: support.missing
+				}
+			};
+		})
 	};
 }
 
@@ -131,9 +140,17 @@ export function executeTool(
 			expectedRevision: typeof args.expectedRevision === "number" ? args.expectedRevision : 0,
 			pageId: typeof args.pageId === "string" ? args.pageId : host?.currentPage?.id,
 			currentPage: host?.currentPage ?? undefined,
-			liveTurn: Boolean(host?.liveTurn)
+			liveTurn: Boolean(host?.liveTurn),
+			edits: parseLayoutCopyEdits(args.edits)
 		});
-		if (!result.ok) return { ok: false, code: result.code, message: result.message };
+		if (!result.ok) {
+			return {
+				ok: false,
+				code: result.code,
+				message: result.message,
+				result: result.suggestedScreenIds ? { suggestedScreenIds: result.suggestedScreenIds } : undefined
+			};
+		}
 		return { ok: true, name: call.name, result };
 	}
 	return { ok: false, code: "unknown_tool", message: "Unreachable tool" };

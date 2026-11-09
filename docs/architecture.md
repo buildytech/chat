@@ -50,7 +50,7 @@ WordPress plugin/embed is **not** in this repository. Code is Svelte UI8Kit, not
 
 Figma "Chat Preview Site" is **layout reference only** (desktop sidebar ~248px + content; 768/360 use a 64px navigate bar). Implementation uses **UI8Kit Svelte** primitives (`tag` retag, no bare HTML in composition), **Istok Web** (local), **rounded-default**, **shadcn HSL tokens**, Lucide icons, dictionary strings.
 
-**Creator surfaces** (see [ADR-0003](../.project/adr/0003-creator-surfaces-preview-code.md)): ChatCore (no DOM) · ChatColumn · CreatorShell (AppNav \| chat \| Workspace). Workspace is the current page BlockTree with Preview (Svelte) and Code (Svelte UI8Kit source) tabs — both from one Page DTO.
+**Creator surfaces** (see [ADR-0003](../.project/adr/0003-creator-surfaces-preview-code.md)): ChatCore (no DOM) · ChatColumn · CreatorShell (AppNav \| chat \| Workspace). Below `lg`, CreatorTabs switch chat vs workspace (`max-lg:hidden` on the inactive pane) — that is the app layout, not only the Preview device frame. Workspace is the current page BlockTree with Preview (Svelte) and Code (Svelte UI8Kit source) tabs — both from one Page DTO. Local chat search, session delete, Settings (model / Night Mode / this-browser storage), and Copy code are wired; unsupported chrome is omitted rather than stubbed.
 
 Default ChatCore is **mock** (localStorage). Protected Grok uses `/runtime`. See [live-model-local.md](live-model-local.md) for historical Session HTTP notes.
 

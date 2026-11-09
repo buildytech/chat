@@ -7,11 +7,12 @@ import {
 	type PageBlockKind
 } from "@buildytech/page-contract";
 import { SCENARIO_PROMPTS, type ScenarioId } from "./copy.ts";
-import { displayTitleFromBrief, inferScenarioId, occasionFromBrief } from "./brief.ts";
+import { displayTitleFromBrief, inferScenarioId, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
+import { extractCopyEditsFromBrief, type LayoutCopyEdit } from "./edits.ts";
 import { catalogProvenance } from "./catalog/snapshot.ts";
-import { compatibilityFor, rendererKindForLabel } from "./catalog/compatibility.ts";
+import { compareScreenSupport, compatibilityFor, rendererKindForLabel, screenSupport } from "./catalog/compatibility.ts";
 import { getBlockDetails } from "./catalog/details.ts";
-import { getScreenById, searchCatalog } from "./catalog/search.ts";
+import { filterScreens, getScreenById, searchCatalog } from "./catalog/search.ts";
 import { OWNER_FILTERS } from "./copy.ts";
 import type { CatalogScreen } from "./catalog/types.ts";
 import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } from "./policy.ts";
@@ -30,6 +31,8 @@ export type ProposalContext = {
 	 * Assembly stays the deterministic local catalog assembler either way.
 	 */
 	liveTurn?: boolean;
+	/** Structured copy patches from propose_layout.edits. Never the raw author prompt. */
+	edits?: LayoutCopyEdit[];
 };
 
 export type LayoutProposal = {
@@ -62,6 +65,7 @@ export type LayoutProposalError = {
 	path?: string;
 	usage?: import("./usage.ts").RunUsage;
 	modelId?: string;
+	suggestedScreenIds?: string[];
 };
 
 const INSPECTED = new Set<string>();
@@ -107,17 +111,37 @@ function block(
 	return node;
 }
 
+function pageSlot(kind: PageBlockKind, jobRank: Map<PageBlockKind, number>): number {
+	if (kind === "nav") return 0;
+	if (kind === "hero") return 10;
+	if (kind === "cta") return 90;
+	if (kind === "footer") return 100;
+	if (kind === "nav-link" || kind === "feature" || kind === "dish") return 200;
+	const job = jobRank.get(kind);
+	if (job != null) return 20 + job;
+	if (kind === "features") return 20;
+	if (kind === "menu") return 30;
+	if (kind === "hours") return 40;
+	return 50;
+}
+
 function uniqueKindsFromScreen(screen: CatalogScreen): PageBlockKind[] {
 	const seen = new Set<PageBlockKind>();
-	const ordered: PageBlockKind[] = [];
+	const kinds: PageBlockKind[] = [];
 	for (const label of screen.labels.blocks) {
 		const kind = rendererKindForLabel(label);
 		if (!kind || seen.has(kind)) continue;
 		inspectKind(kind, label);
 		seen.add(kind);
-		ordered.push(kind);
+		kinds.push(kind);
 	}
-	return ordered;
+	const jobRank = new Map<PageBlockKind, number>();
+	for (const [index, job] of screen.labels.job.entries()) {
+		const kind = rendererKindForLabel(job);
+		if (kind && !jobRank.has(kind)) jobRank.set(kind, index);
+	}
+	kinds.sort((a, b) => pageSlot(a, jobRank) - pageSlot(b, jobRank));
+	return kinds;
 }
 
 export function isClearPageCommand(brief: string): boolean {
@@ -127,11 +151,33 @@ export function isClearPageCommand(brief: string): boolean {
 	);
 }
 
-function navLinks(scenario: ScenarioId | null): PageBlock[] {
+/** New page from the brief itself — not a leftover scenario badge, not "create a stronger CTA". */
+export function isNewPageCommand(brief: string): boolean {
+	const text = brief.trim();
+	if (!text) return false;
+	if (/\b(?:start over|from scratch)\b/i.test(text)) return true;
+	if (/\breplace (?:the )?(?:entire )?(?:page|layout)\b/i.test(text)) return true;
+	if (!/\b(?:create|build|make|start)\b/i.test(text)) return false;
+	if (inferScenarioId(text) == null) return false;
+	const namesScenario = /\b(?:landing(?:\s+pages?)?|dashboard|website|web site)\b/i.test(text);
+	const namesBlock = /\b(cta|call to action|headline|hero|footer|nav(?:igation)?|button)\b/i.test(text);
+	if (namesBlock && !namesScenario) return false;
+	return true;
+}
+
+function briefMentionsGrill(brief: string): boolean {
+	return /\b(menu|grill|restaurant|food|barbecue|bbq|dish)\b/i.test(brief);
+}
+
+function briefMentionsDelivery(brief: string): boolean {
+	return /\bdeliver(?:y|ies|ed)?\b/i.test(brief);
+}
+
+function navLinks(scenario: ScenarioId | null, brief: string): PageBlock[] {
 	const byScenario: Record<ScenarioId, Array<[string, string, string]>> = {
 		dashboard: [
 			["overview", "Overview", "Jump to the metrics overview."],
-			["activity", "Activity", "Recent work the author can verify."],
+			["orders", "Orders", "Orders the author can verify. Counts are not invented."],
 			["ask", "Ask", "Questions about audience and data."]
 		],
 		landing: [
@@ -145,21 +191,68 @@ function navLinks(scenario: ScenarioId | null): PageBlock[] {
 			["contact", "Contact", "How to reach the author."]
 		]
 	};
-	const rows = scenario ? byScenario[scenario] : [
-		["brief", "Brief", "What this page is for."],
-		["sections", "Sections", "Blocks chosen from the catalog."],
-		["next", "Next", "Ask the author before inventing facts."]
-	];
+	const grill = briefMentionsGrill(brief);
+	const delivery = briefMentionsDelivery(brief);
+	const rows = grill
+		? [
+				["home", "Home", "This page."],
+				["menu", "Menu", "Ask the author for the real grill menu."],
+				[delivery ? "delivery" : "hours", delivery ? "Delivery" : "Hours", delivery ? "Delivery area waits for the author." : "Hours wait for the author."],
+				["contact", "Contact", "How to reach the author."]
+			]
+		: scenario
+			? byScenario[scenario]
+			: [
+					["home", "Home", "This page."],
+					["about", "About", "Who the business is. Facts still needed."],
+					["contact", "Contact", "How to reach the author."]
+				];
 	return rows.map(([id, title, summary]) => block(`block-nav-${id}`, "nav-link", title, summary));
 }
 
-function featuresFor(scenario: ScenarioId | null, screen: CatalogScreen | null, title: string): PageBlock[] {
+function featuresFor(
+	scenario: ScenarioId | null,
+	screen: CatalogScreen | null,
+	title: string,
+	brief: string
+): PageBlock[] {
 	const who = title && title !== "Draft page" ? title : "this page";
-	if (scenario === "dashboard") {
+	const occasion = occasionFromBrief(brief);
+	const grill = briefMentionsGrill(brief);
+	const delivery = briefMentionsDelivery(brief);
+	if (grill) {
 		return [
-			block("block-feature-overview", "feature", `${who} overview`, "A short status strip. No invented KPIs."),
+			block(
+				"block-feature-place",
+				"feature",
+				occasion ? `${occasion} at ${who}` : who,
+				"Place and occasion from the brief. No invented reviews."
+			),
+			block("block-feature-menu", "feature", `${who} grill menu`, "Ask the author for the real dishes. No prices."),
+			block(
+				"block-feature-order",
+				"feature",
+				delivery ? "Grill delivery" : "How to order",
+				delivery ? "Delivery area and timing wait for the author." : "Ordering facts wait for the author."
+			)
+		];
+	}
+	if (scenario === "dashboard") {
+		const orders = /\borders?\b/i.test(brief);
+		return [
+			block(
+				"block-feature-overview",
+				"feature",
+				orders ? `${who} orders` : `${who} overview`,
+				orders ? "Order list structure. Counts stay empty until the author supplies them." : "A short status strip. No invented KPIs."
+			),
 			block("block-feature-metrics", "feature", "Metrics", "Figures stay empty until the author supplies real data."),
-			block("block-feature-work", "feature", "Work queue", "Tasks the audience actually performs.")
+			block(
+				"block-feature-work",
+				"feature",
+				orders ? "Order queue" : "Work queue",
+				"Tasks the audience actually performs. No invented volumes."
+			)
 		];
 	}
 	if (scenario === "landing") {
@@ -173,7 +266,7 @@ function featuresFor(scenario: ScenarioId | null, screen: CatalogScreen | null, 
 		return [
 			block("block-feature-nav", "feature", "Find the way", "Home, about, and the next useful page."),
 			block("block-feature-story", "feature", `What ${who} does`, "Business facts come from the author."),
-			block("block-feature-contact", "feature", "Talk to us", "Contact copy stays generic until confirmed.")
+			block("block-feature-contact", "feature", "Talk to us", "Contact details wait for the author.")
 		];
 	}
 	const labels = screen?.labels.blocks.filter((l) => rendererKindForLabel(l) === "features") ?? [];
@@ -183,9 +276,9 @@ function featuresFor(scenario: ScenarioId | null, screen: CatalogScreen | null, 
 		);
 	}
 	return [
-		block("block-feature-one", "feature", "Catalog only", "Only blocks that exist in this snapshot are used."),
-		block("block-feature-two", "feature", "Human apply", "Nothing is written until you apply the proposal."),
-		block("block-feature-three", "feature", "Ask first", "Unknown facts are questions, not invented copy.")
+		block("block-feature-one", "feature", `What ${who} is`, "Describe the page in the author's words."),
+		block("block-feature-two", "feature", occasion ?? "Next step", "Ask the author before inventing facts."),
+		block("block-feature-three", "feature", "Contact", "Contact details wait for the author.")
 	];
 }
 
@@ -199,30 +292,37 @@ function copyFor(
 	const prompt = scenario ? SCENARIO_PROMPTS[scenario] : null;
 	const occasion = occasionFromBrief(brief);
 	const who = title && title !== "Draft page" ? title : "this page";
+	const grill = briefMentionsGrill(brief);
+	const delivery = briefMentionsDelivery(brief);
 	if (kind === "nav") {
 		return { brand: who.slice(0, 32) };
 	}
 	if (kind === "hero") {
 		const occasionBit = occasion ? ` ${occasion}` : "";
+		const lede = grill
+			? delivery
+				? `${who}${occasionBit} grill food delivery. Ask the author for the real menu, hours, and delivery area. No invented reviews, prices, or discounts.`
+				: `${who}${occasionBit} grill. Ask the author for the real menu and hours. No invented reviews, prices, or discounts.`
+			: scenario === "dashboard"
+				? `${who} dashboard. Confirm audience, data, and tasks with the author. No invented KPIs.`
+				: scenario === "website"
+					? `${who} website. Confirm business facts and contact details with the author.`
+					: `${who}${occasionBit}. Confirm the real offer with the author. No invented reviews or discounts.`;
 		return {
-			eyebrow: occasion ?? prompt?.label ?? "Blank page",
-			headline: displayTitleFromBrief(brief, prompt?.label ?? "Describe the page"),
-			lede: `${who}${occasionBit} draft. Catalog blocks only. Confirm menu, hours, and offers with the author. No invented reviews or discounts.`,
-			action: /\b(menu|grill|restaurant|food|barbecue|bbq)\b/i.test(brief)
-				? "See the menu"
-				: scenario === "dashboard"
-					? "Review metrics"
-					: "Continue"
+			eyebrow: occasion ?? prompt?.label ?? who,
+			headline: title && title !== "Draft page" ? title : displayTitleFromBrief(brief, prompt?.label ?? who),
+			lede,
+			action: grill ? (delivery ? "Order grill delivery" : "See the grill menu") : scenario === "dashboard" ? "Review metrics" : scenario === "website" ? "Contact" : "See the offer"
 		};
 	}
 	if (kind === "cta") {
 		return {
-			lede: `${who} next step. This draft is not published. Ask the author for the real call to action.`,
-			action: /\b(menu|grill|restaurant|food|barbecue|bbq)\b/i.test(brief)
-				? "Ask for hours"
-				: scenario === "dashboard"
-					? "Review metrics"
-					: "Contact",
+			lede: grill
+				? delivery
+					? `${who} grill delivery. Ask the author for hours and the delivery area. Not published.`
+					: `${who} grill. Ask the author for hours. Not published.`
+				: `${who} next step. Not published. Ask the author for the real call to action.`,
+			action: grill ? (delivery ? "Ask about delivery" : "Ask for hours") : scenario === "dashboard" ? "Review metrics" : "Contact",
 			note: screen ? `Stock screen ${screen.screenId}` : "No screen attached."
 		};
 	}
@@ -263,54 +363,102 @@ function summaryFor(kind: PageBlockKind): string {
 	return "Compatible catalog section.";
 }
 
+function suggestedFrom(screens: CatalogScreen[]): string[] {
+	return screens.slice(0, 3).map((screen) => screen.screenId);
+}
+
+function poolFor(ctx: ProposalContext): CatalogScreen[] {
+	if (ctx.scenarioId) {
+		return filterScreens(OWNER_FILTERS[ctx.scenarioId]).slice().sort(compareScreenSupport);
+	}
+	return [];
+}
+
+function pickSupportedScreen(pool: CatalogScreen[], brief: string): CatalogScreen | null {
+	if (!pool.length) return null;
+	const wantsMenu = /\bmenus?\b/i.test(brief) || briefMentionsGrill(brief) || briefMentionsDelivery(brief);
+	if (wantsMenu && inferScenarioId(brief) !== "landing") {
+		const menuPool = filterScreens({ type: "screen", section: "marketing" })
+			.filter((screen) => screenSupport(screen).mappedKinds.includes("menu"))
+			.sort(compareScreenSupport);
+		const namedMenu = menuPool.find((screen) => screen.variant === "menu" || /\/menu$/.test(screen.screenId));
+		if (namedMenu) return namedMenu;
+		if (menuPool[0]) return menuPool[0];
+	}
+	const supported = pool.filter((screen) => screenSupport(screen).supported);
+	return (supported[0] ?? pool[0]) ?? null;
+}
+
 function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutProposalError | null {
+	const pool = poolFor(ctx);
 	if (ctx.screenId) {
 		const screen = getScreenById(ctx.screenId);
 		if (!screen) {
-			return { ok: false, code: "unknown_screen", message: `Unknown screen ${ctx.screenId}` };
+			return {
+				ok: false,
+				code: "unknown_screen",
+				message: `Unknown screen ${ctx.screenId}`,
+				suggestedScreenIds: suggestedFrom(pool)
+			};
 		}
 		const compat = compatibilityFor(screen);
 		if (!compat.compatible && !compat.partial) {
 			return {
 				ok: false,
 				code: "incompatible_screen",
-				message: "This screen has no renderer-compatible blocks in the current Browser snapshot."
+				message: "This screen has no renderer-compatible blocks in the current Browser snapshot.",
+				suggestedScreenIds: suggestedFrom(pool)
+			};
+		}
+		const best = pickSupportedScreen(pool.length ? pool : [screen], ctx.brief);
+		const current = screenSupport(screen);
+		if (best && best.screenId !== screen.screenId && compareScreenSupport(best, screen) < 0) {
+			return {
+				ok: false,
+				code: "screen_not_renderable",
+				message: `${screen.screenId} drops ${current.missing.join(", ") || "most blocks"} in this Browser snapshot. Use a supported screen such as ${best.screenId}. Do not retry the same screenId.`,
+				suggestedScreenIds: suggestedFrom([best, ...pool])
 			};
 		}
 		return screen;
 	}
 	if (!ctx.scenarioId) return null;
-	const filter = OWNER_FILTERS[ctx.scenarioId];
-	const found = searchCatalog({ ...filter, page: 1, pageSize: DEFAULT_SEARCH });
-	if (found.noFit || found.total === 0) {
+	if (!pool.length) {
 		return {
 			ok: false,
 			code: "catalog_no_fit",
 			message:
-				found.clarification ??
 				"No Stock screens match that scenario filter. Re-search with a bounded section or job, or pick another scenario."
 		};
 	}
-	const grounded = found.items.filter((item) => item.compatibility.compatible || item.compatibility.partial);
-	if (!grounded.length) {
+	const picked = pickSupportedScreen(pool, ctx.brief);
+	if (!picked) {
 		return {
 			ok: false,
 			code: "catalog_no_fit",
 			message: "Matching Stock screens have no renderer-compatible blocks. Attach a different screen or scenario."
 		};
 	}
-	const wantsMenu = /\b(menu|grill|restaurant|food|barbecue|bbq|dish)\b/i.test(ctx.brief);
-	if (wantsMenu) {
-		const withMenu = grounded.find((item) => item.labels.blocks.some((label) => /menu/i.test(label)));
-		if (withMenu) return withMenu;
-	}
-	return grounded[0];
+	return picked;
 }
 
-const DEFAULT_SEARCH = 12;
-
 function resolvedScenario(ctx: ProposalContext, brief: string): ScenarioId | null {
-	return ctx.scenarioId ?? inferScenarioId(brief);
+	return inferScenarioId(brief) ?? ctx.scenarioId;
+}
+
+function applyCopyEdits(blocks: PageBlock[], edits: LayoutCopyEdit[]): { blocks: PageBlock[]; changed: string[] } {
+	const changed: string[] = [];
+	const next = blocks.map((node) => {
+		const patches = edits.filter((edit) => edit.kind === node.kind);
+		if (!patches.length) return node;
+		const copy = { ...node.copy };
+		for (const patch of patches) {
+			copy[patch.field] = patch.value;
+			changed.push(`${node.kind}.${patch.field}`);
+		}
+		return { ...node, copy };
+	});
+	return { blocks: next, changed };
 }
 
 function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal | LayoutProposalError {
@@ -318,25 +466,32 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 	if (!current) {
 		return { ok: false, code: "missing_page", message: "No saved page is attached to this chat." };
 	}
-	const title = displayTitleFromBrief(brief, current.title);
+	const title = titleFromSavedEdit(brief, current.title);
 	const stamp = iso(ctx.now);
-	const blocks = current.layout.blocks.map((node) => {
-		if (node.kind !== "hero") return node;
-		return {
-			...node,
-			copy: {
-				...node.copy,
-				headline: title,
-				lede: node.copy?.lede
-			}
-		};
-	});
+	const scenarioId = resolvedScenario(ctx, brief);
+	const edits = ctx.edits?.length ? ctx.edits : extractCopyEditsFromBrief(brief);
+	if (edits.length) {
+		const patched = applyCopyEdits(current.layout.blocks, edits);
+		return finishProposal(
+			{ ...ctx, pageId: current.id, scenarioId },
+			brief,
+			null,
+			patched.blocks,
+			[
+				patched.changed.length
+					? `Edited ${patched.changed.join(", ")} on the saved page. Other blocks are unchanged.`
+					: "No matching block to edit. Other blocks are unchanged."
+			],
+			[],
+			{ title, id: current.id, createdAt: current.createdAt, stamp, status: current.status, slug: current.slug }
+		);
+	}
 	return finishProposal(
-		{ ...ctx, pageId: current.id, scenarioId: resolvedScenario(ctx, brief) },
+		{ ...ctx, pageId: current.id, scenarioId },
 		brief,
 		null,
-		blocks,
-		["Edited the saved page from this chat. Apply to keep the change."],
+		current.layout.blocks,
+		["No structured copy edit in that message. Other blocks are unchanged."],
 		[],
 		{ title, id: current.id, createdAt: current.createdAt, stamp, status: current.status, slug: current.slug }
 	);
@@ -357,7 +512,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 	const scenarioId = resolvedScenario(ctx, brief);
 	const working: ProposalContext = { ...ctx, scenarioId };
 
-	const looksNewPage = /\bcreate\b/i.test(brief) && Boolean(scenarioId);
+	const looksNewPage = isNewPageCommand(brief);
 	if (ctx.currentPage && ctx.expectedRevision > 0 && !ctx.screenId && !looksNewPage) {
 		return editExistingPage(working, brief);
 	}
@@ -377,12 +532,15 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 	const kinds = uniqueKindsFromScreen(screen);
 	const warnings: string[] = [];
 	const missing: string[] = [];
-	if (screen) {
-		const compat = compatibilityFor(screen);
-		for (const miss of compat.missing) {
-			missing.push(miss.catalogLabel);
-			warnings.push(`Catalog block "${miss.catalogLabel}" has no Browser renderer and was not added.`);
-		}
+	const support = screenSupport(screen);
+	warnings.push(
+		`Stock screen ${screen.screenId}. Browser renders ${support.mappedKinds.join(", ") || "no sections"}.`
+	);
+	if (support.missing.length) {
+		missing.push(...support.missing);
+		warnings.push(
+			`Not rendered (no Browser contract renderer): ${support.missing.join(", ")}. Pick a supported screen if you need those sections.`
+		);
 	}
 
 	const pageTitle = displayTitleFromBrief(brief);
@@ -391,7 +549,7 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		if (kind === "nav-link" || kind === "feature" || kind === "dish") continue;
 		if (kind === "nav") {
 			blocks.push(
-				block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", working.scenarioId, screen, brief, pageTitle), navLinks(working.scenarioId))
+				block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", working.scenarioId, screen, brief, pageTitle), navLinks(working.scenarioId, brief))
 			);
 			continue;
 		}
@@ -403,16 +561,22 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 					titleFor("features", screen),
 					summaryFor("features"),
 					undefined,
-					featuresFor(working.scenarioId, screen, pageTitle)
+					featuresFor(working.scenarioId, screen, pageTitle, brief)
 				)
 			);
 			continue;
 		}
 		if (kind === "menu") {
+			const occasion = occasionFromBrief(brief);
 			blocks.push(
 				block("block-menu", "menu", titleFor("menu", screen), summaryFor("menu"), undefined, [
-					block("block-dish-one", "dish", `${pageTitle} plate`, "A placeholder dish. Ask the author for the real grill menu. No price is invented."),
-					block("block-dish-two", "dish", "Seasonal plate", "Ask the author for the real menu. No invented specials.")
+					block("block-dish-one", "dish", `${pageTitle} grill plate`, "Placeholder dish. Ask the author for the real grill menu. No price is invented."),
+					block(
+						"block-dish-two",
+						"dish",
+						occasion ? `${occasion} platter` : `${pageTitle} delivery plate`,
+						"Placeholder dish. Ask the author for the real menu. No invented specials or prices."
+					)
 				])
 			);
 			continue;

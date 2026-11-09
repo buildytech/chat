@@ -2,7 +2,7 @@
 
 **Runnable (default)**
 
-- `apps/chat-web` — SvelteKit SPA (CreatorShell: AppNav | ChatColumn | Workspace). Mock ChatCore + localStorage. `npm install && npm run dev` / `npm run build`. Preview/Code read the mock Page DTO.
+- `apps/chat-web` — SvelteKit SPA (CreatorShell: AppNav | ChatColumn | Workspace). ChatCore + localStorage. `npm install && npm run dev` / `npm run build`. Preview/Code read the Page DTO. Narrow viewports use CreatorTabs, not only the Preview phone frame.
 
 **Runnable (optional, non-default)**
 

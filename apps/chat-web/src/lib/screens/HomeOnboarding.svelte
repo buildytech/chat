@@ -4,6 +4,7 @@
 	import Group from "../compose/Group.svelte";
 	import Stack from "../compose/Stack.svelte";
 	import Button from "../../ui/button/Button.svelte";
+	import Input from "../../ui/input/Input.svelte";
 	import Text from "../../ui/text/Text.svelte";
 	import Title from "../compose/Title.svelte";
 	import { t } from "../i18n/dictionary";
@@ -13,6 +14,7 @@
 		attachScreen,
 		catalogPage,
 		clearScenario,
+		getStockQuery,
 		closeModal,
 		currentPlaceholder,
 		getKeepOutsideScreen,
@@ -32,7 +34,8 @@
 		setComposing,
 		setFocused,
 		setKeepOutsideScreen,
-		setPage
+		setPage,
+		setStockQuery
 	} from "../browser/onboarding.svelte";
 	import type { CreatorRuntimeStatus } from "../chat-core";
 	import type { GrokChatModel, ScenarioId, SessionUsage } from "@buildytech/builder-core";
@@ -70,8 +73,10 @@
 	const result = $derived.by(() => {
 		void getScenarioId();
 		void getPage();
+		void getStockQuery();
 		return catalogPage();
 	});
+	const stockQuery = $derived(getStockQuery());
 	const placeholder = $derived.by(() => {
 		void getScenarioId();
 		void currentPlaceholder();
@@ -197,13 +202,26 @@
 		/>
 
 		<Stack class="gap-4">
-			<Group class="items-center justify-between gap-2">
+			<Group class="flex-wrap items-center justify-between gap-2">
 				<Title as={2} class="text-sm font-semibold text-foreground">{t("home.stock")}</Title>
-				{#if scenario}
-					<Button class="text-sm text-muted-foreground hover:text-foreground" onclick={clearScenario}>
-						<Text tag="span">{t("home.clearScenario")}</Text>
-					</Button>
-				{/if}
+				<Group class="min-w-0 flex-1 items-center justify-end gap-2">
+					<Input
+						id="stock-search"
+						type="search"
+						value={stockQuery}
+						placeholder={t("home.stockSearch")}
+						aria-label={t("home.stockSearch")}
+						class="min-w-0 max-w-xs flex-1 rounded-default border border-input bg-card px-3 py-1.5 text-sm"
+						oninput={(event: Event) => {
+							setStockQuery((event.currentTarget as HTMLInputElement).value);
+						}}
+					/>
+					{#if scenario}
+						<Button class="text-sm text-muted-foreground hover:text-foreground" onclick={clearScenario}>
+							<Text tag="span">{t("home.clearScenario")}</Text>
+						</Button>
+					{/if}
+				</Group>
 			</Group>
 			{#if result.total === 0}
 				<Text tag="p" class="text-sm text-muted-foreground">{t("home.stockEmpty")}</Text>

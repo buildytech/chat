@@ -1,6 +1,6 @@
 import { catalogSnapshot } from "./snapshot.ts";
 import type { CatalogFacetFilter, CatalogScreen, SearchQuery, SearchResult } from "./types.ts";
-import { compatibilityFor } from "./compatibility.ts";
+import { compareScreenSupport, compatibilityFor, screenSupport } from "./compatibility.ts";
 import { OWNER_FILTERS } from "../copy.ts";
 
 export const DEFAULT_PAGE_SIZE = catalogSnapshot.pageSize;
@@ -84,7 +84,7 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 		};
 	}
 
-	const items = filterScreens(query);
+	const items = filterScreens(query).slice().sort(compareScreenSupport);
 	const total = items.length;
 	const pageCount = total === 0 ? 1 : Math.ceil(total / pageSize);
 	let page = query.page ?? 1;

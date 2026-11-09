@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ChevronLeft from "@lucide/svelte/icons/chevron-left";
+	import Copy from "@lucide/svelte/icons/copy";
 	import FileCode from "@lucide/svelte/icons/file-code";
 	import Files from "@lucide/svelte/icons/files";
 	import X from "@lucide/svelte/icons/x";
@@ -62,7 +63,8 @@
 
 	const treeCollapsed = $derived(creatorLayout.treeCollapsed);
 
-	let pane = $state<"files" | "search" | "apps">("files");
+	let pane = $state<"files" | "search">("files");
+	let copyNote = $state("");
 	let tabs = $state<CodeTab[]>([{ label: "page.svelte", path: "page.svelte", active: true }]);
 	let selectedPath = $state("page.svelte");
 	let stage = $state<"files" | "editor">("editor");
@@ -107,6 +109,24 @@
 	function activateTab(index: number) {
 		tabs = tabs.map((tab, i) => ({ ...tab, active: i === index }));
 		selectedPath = tabs[index]?.path ?? selectedPath;
+	}
+
+	async function copySource() {
+		const text = source.trim();
+		if (!text) {
+			copyNote = t("code.copyEmpty");
+			return;
+		}
+		try {
+			if (!navigator.clipboard?.writeText) {
+				copyNote = t("code.copyFailed");
+				return;
+			}
+			await navigator.clipboard.writeText(source);
+			copyNote = t("code.copyOk");
+		} catch {
+			copyNote = t("code.copyFailed");
+		}
 	}
 </script>
 
@@ -194,9 +214,20 @@
 				{/if}
 				<Text tag="span" class="text-xs text-foreground">{crumb}</Text>
 			{/each}
+			<Button
+				class="ml-auto inline-flex items-center gap-1 rounded-default border border-border px-2 py-1 text-xs text-foreground hover:bg-accent"
+				aria-label={t("code.copy")}
+				onclick={copySource}
+			>
+				<Icon size="sm"><Copy /></Icon>
+				<Text tag="span">{t("code.copy")}</Text>
+			</Button>
 		</Group>
 		<Stack class="min-h-0 flex-1 gap-2 overflow-hidden p-4">
 			<Text tag="p" class="text-xs text-muted-foreground">{t("code.runtime")}</Text>
+			{#if copyNote}
+				<Text tag="p" class="text-xs text-muted-foreground" role="status">{copyNote}</Text>
+			{/if}
 			<CodeEditor
 				doc={source}
 				language={editorLanguage}

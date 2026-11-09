@@ -27,6 +27,20 @@ export function occasionFromBrief(brief: string): string | null {
 	return null;
 }
 
+/** Keep the saved title unless the follow-up actually names or renames the page. */
+export function titleFromSavedEdit(brief: string, current: string): string {
+	const named = brief.match(/\bnamed\s+["']?([^"'.,\n]+)/i);
+	if (named?.[1]?.trim()) return named[1].trim().slice(0, 80);
+	const forMatch = brief.match(/\bfor\s+([^.,\n]+?)(?:,|\s+a\s+|\s+an\s+)/i);
+	if (forMatch?.[1]) {
+		const name = forMatch[1].replace(/\b(?:a|an|the)\s+new year\s+/i, "").trim();
+		if (name && name.split(/\s+/).length <= 8) return name.slice(0, 80);
+	}
+	const rename = brief.match(/\b(?:rename(?:d)?|title|called)\s+(?:to|as|:)\s+["']?([^"'.,\n]+)/i);
+	if (rename?.[1]?.trim()) return rename[1].trim().slice(0, 80);
+	return current;
+}
+
 export function displayTitleFromBrief(brief: string, fallback = "Draft page"): string {
 	const trimmed = brief.trim();
 	if (!trimmed) return fallback;
