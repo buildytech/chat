@@ -4,6 +4,8 @@
  * Pages live in a separate versioned key so older clients never mis-parse a wrapper.
  */
 
+import { isScenarioId, type ScenarioId } from "@buildytech/builder-core";
+
 export const SESSIONS_KEY = "buildytech-chat-sessions";
 export const PAGES_KEY = "buildytech-creator-pages-v1";
 export const PAGES_VERSION = 1 as const;
@@ -17,7 +19,7 @@ export type PersistError = {
 
 export type StoredPageProvenance = {
 	screenId: string | null;
-	scenarioId: string | null;
+	scenarioId: ScenarioId | null;
 	missing: string[];
 	assembler?: string;
 };
@@ -63,7 +65,7 @@ function normalizeProvenance(raw: unknown, page: unknown): StoredPageProvenance 
 	const rec = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : null;
 	return {
 		screenId: recordedId(rec?.screenId) ?? inferScreenIdFromUnknown(page),
-		scenarioId: typeof rec?.scenarioId === "string" ? rec.scenarioId : null,
+		scenarioId: isScenarioId(rec?.scenarioId) ? rec.scenarioId : null,
 		missing: Array.isArray(rec?.missing) ? rec.missing.filter((row): row is string => typeof row === "string") : [],
 		assembler: typeof rec?.assembler === "string" ? rec.assembler : undefined
 	};

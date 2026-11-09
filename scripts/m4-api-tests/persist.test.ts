@@ -123,6 +123,26 @@ test("old saved pages migrate Stock provenance from CTA note, else none attached
 	});
 	assert.equal(blank.appliedProvenance?.screenId, null);
 	assert.equal(blank.appliedProvenance?.screenId ?? "none attached", "none attached");
+	const junk = migrateStoredPageRecord(
+		JSON.parse(
+			JSON.stringify({
+				applied: { id: "page-c" },
+				candidate: null,
+				appliedProvenance: { screenId: "screen.site/home", scenarioId: "wordpress", missing: [] },
+				selectedBlockId: null,
+				revision: 1
+			})
+		)
+	);
+	assert.equal(junk.appliedProvenance?.scenarioId, null);
+	const landing = migrateStoredPageRecord({
+		applied: { id: "page-d" },
+		candidate: null,
+		appliedProvenance: { screenId: "screen.site/home", scenarioId: "landing", missing: [] },
+		selectedBlockId: null,
+		revision: 1
+	});
+	assert.equal(landing.appliedProvenance?.scenarioId, "landing");
 });
 
 test("quota errors are truthful and leave the last good blob", () => {

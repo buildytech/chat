@@ -12,6 +12,7 @@ import {
 	aggregateSessionUsage,
 	catalogProvenance,
 	formatChatModelChoice,
+	isScenarioId,
 	recordedScreenId,
 	screenIdFromPage,
 	getChatModel,
@@ -320,9 +321,8 @@ function constructorContext(brief: string): ProposalContext {
 	const provenance = getAppliedProvenance();
 	const screenId =
 		recordedScreenId(provenance?.screenId) ?? recordedScreenId(getScreenId()) ?? screenIdFromPage(applied);
-	const scenarioId = provenance?.scenarioId === "dashboard" || provenance?.scenarioId === "landing" || provenance?.scenarioId === "website"
-		? provenance.scenarioId
-		: getScenarioId();
+	const storedScenario = provenance?.scenarioId;
+	const scenarioId = isScenarioId(storedScenario) ? storedScenario : getScenarioId();
 	return {
 		brief,
 		scenarioId,
@@ -593,13 +593,18 @@ export function applyProposal(): boolean {
 	const ok = applyCandidate((getPageRevision() ?? 0) + 1);
 	if (!ok) return false;
 	const applied = getLastAppliedPage();
+	const provenance = getAppliedProvenance();
+	const storedScenario = provenance?.scenarioId;
+	const scenarioId = isScenarioId(storedScenario)
+		? storedScenario
+		: (session.scenarioId ?? getScenarioId());
 	const next: ChatSession = {
 		...session,
 		updatedAt: nowIso(),
 		pageId: applied?.id,
 		pageRevision: getPageRevision(),
-		scenarioId: getAppliedProvenance()?.scenarioId ?? session.scenarioId ?? getScenarioId(),
-		screenId: recordedScreenId(getAppliedProvenance()?.screenId) ?? session.screenId ?? getScreenId(),
+		scenarioId,
+		screenId: recordedScreenId(provenance?.screenId) ?? session.screenId ?? getScreenId(),
 		messages: markPendingProposals(session.messages, "applied", "latest")
 	};
 	replaceSession(next);
