@@ -1,0 +1,29 @@
+{
+	"$comment": "Inputs of scripts/registry-snapshot.mjs. Items are fetched from the UI8Kit registry with their registryDependencies (like npx ui8kit add), pinned by sha256 in registry/registry.lock.json and vendored under apps/chat-web/src/registry/svelte. Presets come from compose-gen block specs at the pinned codegen-x/ui8kit commit.",
+	"registry": "https://registry.buildy.tw",
+	"runtime": "svelte",
+	"specs": {
+		"repo": "codegen-x/ui8kit",
+		"commit": "6b2e71b56375cf3aab161a755c8eee806e7309fb",
+		"dir": "packages/compose-gen/specs/blocks"
+	},
+	"blocks": [
+		{
+			"catalogBlock": "block.features",
+			"spec": "features",
+			"item": "feature-grid",
+			"organism": "blocks/feature-grid.svelte",
+			"kind": "features",
+			"props": {
+				"id": "block.id",
+				"title": "block.title",
+				"action": { "label": "copy.action", "href": "copy.href" },
+				"features": {
+					"from": "children",
+					"fields": { "id": "child.id", "title": "child.title", "text": "child.summary", "icon": "child.copy.icon" }
+				}
+			},
+			"fallbackIcon": "circle-dot"
+		}
+	]
+}
