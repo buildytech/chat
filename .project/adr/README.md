@@ -11,6 +11,7 @@
 | [0005](0005-contextly-historical-lexproto-cr-gates.md) | ContextlY historical CR + lexproto/Jev gate scheme (future only) | Proposed |
 | [0006](0006-browser-first-no-wordpress-runtime.md) | Browser-first Creator; no WordPress runtime in this repo | Accepted |
 | [0007](0007-one-buildy-three-hosts.md) | One BuildY product, three hosts, shared Stock | Accepted |
+| [0008](0008-registry-single-source-of-ui.md) | The UI8Kit registry is the single source of UI | Accepted |
 
 Status values: Proposed, Accepted, Superseded, Deprecated.
 
@@ -18,3 +19,4 @@ Status values: Proposed, Accepted, Superseded, Deprecated.
 0005 records a historical ContextlY gate scheme for future design only; it does not implement lexproto or change runtime defaults.
 0006 removes the WordPress runtime from this repo and makes mock ChatCore the default start; optional Session HTTP stays non-default.
 0007 records the product-level three-host strategy (WordPress builder page, Browser, Desktop Wails3) on one pinned Stock catalog. Browser first; Wails3 later, same core. Portable export / WP import / round-trip tests are planned, not implemented. 0006 still bans a WordPress runtime in this repository. Plan: [docs/plans/one-buildy-three-hosts.md](../../docs/plans/one-buildy-three-hosts.md).
+0008 makes registry.buildy.tw/svelte the only source of UI: a pinned CLI snapshot (`registry/svelte`, sha256 lock), published variants, `lib` without components, a "not in the registry" stub instead of own layouts, and a ZIP identical to `ui8kit init` + `add`.

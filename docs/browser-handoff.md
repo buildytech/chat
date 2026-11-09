@@ -19,19 +19,19 @@ Owner product spec (informative; implement later):
 | --- | --- |
 | [`github.com/ui8kit/contract`](https://github.com/ui8kit/contract) | Central UI8Kit rules (`AGENTS.md`, `.cursor/rules`, `.cursor/skills`). Copied into this repo. |
 | `codegen-x/ui8kit` | Reference implementation / catalog codegen. **Not wired** as the live shared provider here. |
-| `@ui8kit` registry (`ui8kit.config.json`) | Intended primitive install; current `apps/chat-web/src/ui` is a vendored Svelte 5 kit. |
+| `@ui8kit` registry (`registry/svelte/ui8kit.config.json`) | Pinned CLI snapshot (`init` + `add --all`), sha256 lock; ADR 0008. |
 
 ## Surviving module map
 
 | Module | Path | Keep |
 | --- | --- | --- |
-| CreatorShell | `apps/chat-web/src/lib/screens/CreatorShell.svelte` | nav / history \| Chat \| Workspace |
+| CreatorShell | `apps/chat-web/src/app/CreatorShell.svelte` | nav / history \| Chat \| Workspace |
 | ChatColumn / ChatCore | `screens/ChatColumn.svelte`, `lib/chat-core` | mock localStorage; Grok via `/runtime` |
 | Preview / Code | `screens/PreviewPane.svelte`, `CodePane.svelte` | same Page DTO; Svelte UI8Kit source |
 | Page mock store | `apps/chat-web/src/lib/page-store` | fixture, BlockTree, Svelte Code |
 | Page DTO | `packages/page-contract` | includes domain status `published` |
 | Ports | `packages/ports` | Catalog / Page / Publish / Preview |
-| UI8Kit kit | `apps/chat-web/src/ui` | generated primitives; do not hand-patch |
+| UI8Kit kit | `registry/svelte/src` | CLI snapshot of registry.buildy.tw/svelte; do not hand-patch |
 | Optional xAI | `apps/xai-runtime`, `api/runtime` | not Session HTTP |
 | Retired Session HTTP | `services/context-serve` | CI placeholder only |
 

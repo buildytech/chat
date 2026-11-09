@@ -19,7 +19,7 @@ Do not describe these as future work.
 - Browser Creator SPA: `apps/chat-web` (CreatorShell, ChatCore mock + localStorage, Preview + Code).
 - Pinned Stock snapshot: `packages/builder-core` (`catalogProvenance()`, `NOTICE`). Constructor search / propose uses that snapshot.
 - Versioned Page DTO for this SPA: `packages/page-contract` `layout.version` **1**. `parsePage` rejects other versions and unknown keys. This is **not** a WordPress import contract.
-- UI8Kit composition rules copied from [`ui8kit/contract`](https://github.com/ui8kit/contract) (`.cursor/rules`, `.cursor/skills`). Kit files in `apps/chat-web/src/ui` are generated; do not hand-patch. Identical DOM / ARIA / tokens across eight runtimes is a **contract rule**, not a shipping exporter.
+- UI8Kit composition rules copied from [`ui8kit/contract`](https://github.com/ui8kit/contract) (`.cursor/rules`, `.cursor/skills`). Kit files in `registry/svelte` are the pinned CLI snapshot (ADR 0008); do not hand-patch. Identical DOM / ARIA / tokens across eight runtimes is a **contract rule**, not a shipping exporter.
 - Code tab: Svelte UI8Kit `page.svelte` from `svelteFromPage`. No PHP/Latte runtime in Browser or Vercel.
 - `services/context-serve`: retired CI placeholder. Default `npm run dev` must not require it.
 - Protected Vercel static SPA + `/runtime`: `docs/deploy-xai.md`, root `middleware.js` (ESM, `"type": "module"`).

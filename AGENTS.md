@@ -33,7 +33,7 @@ Optional protected xAI runtime (`XAI_API_KEY` server-only): `npm run start --wor
 
 - Rules: `.cursor/rules/00-ui8kit-core.mdc` … `05-checks-baselines.mdc`.
 - Skills: `.cursor/skills/ui8kit-new-block`, `ui8kit-rule-checks`, `ui8kit-spacing-ui8px`.
-- App composition: primitives in `apps/chat-web/src/ui` (generated kit; do not hand-patch). Screens in `src/lib/screens` use `tag` retag.
+- Single source of UI ([ADR 0008](.project/adr/0008-registry-single-source-of-ui.md)): `registry/svelte` is the literal `npx ui8kit init` + `add --all` output (do not hand-edit; `npm run registry:snapshot`, `npm run registry:check`). App UI lives in `apps/chat-web/src/app` and imports only `$registry/...` components with `tag` retag; `src/lib` is logic only (no `.svelte`). Blocks without a registry item render the "Not in the registry" stub.
 - This repo does **not** vendor `packages/tooling` / `ui-gates`. Applicable gates here are `svelte-check`, `npm test`, `npm run build`. Do not grow UI8Kit baselines.
 
 Svelte 5: runes (`$state` / `$derived` / `$props`). Logic-only ChatCore lives in `.svelte.ts` modules.
