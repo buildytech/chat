@@ -27,7 +27,8 @@ export const PAGE_BLOCK_KINDS = [
 	"metrics",
 	"metric",
 	"chart",
-	"activity"
+	"activity",
+	"activity-item"
 ] as const;
 
 export type PageBlockKind = (typeof PAGE_BLOCK_KINDS)[number];
@@ -35,6 +36,8 @@ export type PageBlockKind = (typeof PAGE_BLOCK_KINDS)[number];
 /**
  * Copy keys projected by Preview and the generated Svelte Code pane.
  * Values are opaque plain-text strings, never executable markup.
+ * `value` is a display figure on a metric tile or chart point (text, e.g. "128" or "94%").
+ * `badge` is a short marker such as a demo-data label; the author can edit or delete it.
  */
 export const PAGE_COPY_KEYS = [
 	"eyebrow",
@@ -46,7 +49,9 @@ export const PAGE_COPY_KEYS = [
 	"contact",
 	"legal",
 	"days",
-	"address"
+	"address",
+	"value",
+	"badge"
 ] as const;
 
 export type PageCopyKey = (typeof PAGE_COPY_KEYS)[number];

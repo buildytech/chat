@@ -18,6 +18,7 @@
 	import { isPendingProposal, proposalStatus } from "../chat-core/proposals";
 	import { formatTokens, recordedScreenId } from "@buildytech/builder-core";
 	import { getCurrentProvenance } from "../page-store";
+	import CatalogRefsList from "./CatalogRefsList.svelte";
 
 	let {
 		message,
@@ -172,6 +173,9 @@
 						</Button>
 					{/if}
 				</Group>
+				{#if proposal.catalogRefs && (proposal.catalogRefs.blocks.length > 0 || proposal.catalogRefs.screen)}
+					<CatalogRefsList refs={proposal.catalogRefs} demo={Boolean(proposal.demoData)} />
+				{/if}
 			{/if}
 			{#if run}
 				<Stack class="gap-1">

@@ -261,6 +261,17 @@
 		"runtime.xaiReady": "Protected xAI runtime can reach this account's Grok chat models. Tool calling is proven per turn, not by this status.",
 		"runtime.xaiMissing": "XAI_API_KEY is not provisioned on this app host. No provider call was made. This is not a live Grok reply.",
 		"runtime.localAssembler": "Local catalog assembler — not a live model",
-		"runtime.toolsUnsupported": "This Grok model rejected application tools. No other model was substituted."
+		"runtime.toolsUnsupported": "This Grok model rejected application tools. No other model was substituted.",
+		"assistant.catalogRejected": "Proposal rejected by the Stock catalog check ({code}). {message}",
+		"catalogRefs.title": "Catalog blocks",
+		"catalogRefs.label": "Stock catalog blocks used by this proposal",
+		"catalogRefs.screen": "Stock screen",
+		"catalogRefs.open": "Open {title} in Stock",
+		"catalogRefs.copyId": "Copy catalog id {id}",
+		"catalogRefs.copied": "Copied {id}",
+		"catalogRefs.rows": "{n} rows",
+		"catalogRefs.demo": "Demo data on this page is not real",
+		"catalogRefs.digest": "Pinned catalog {digest}",
+		"catalogRefs.meta": "kind={kind} · label={label} · variants={variants}"
 	}
 }

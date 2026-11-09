@@ -19,6 +19,7 @@ import {
 	mapChatRunRequest,
 	runConstructorTools,
 	unknownUsage,
+	validateCatalogProvenance,
 	type ProposalContext,
 	type RunUsage
 } from "@buildytech/builder-core";
@@ -325,6 +326,7 @@ function constructorContext(brief: string): ProposalContext {
 	const scenarioId = isScenarioId(storedScenario) ? storedScenario : getScenarioId();
 	return {
 		brief,
+		authorBrief: brief,
 		scenarioId,
 		screenId,
 		expectedRevision: getPageRevision() ?? 0,
@@ -472,6 +474,21 @@ function proposalMessage(
 			run
 		};
 	}
+	// Program-level catalog gate (never the model): recompute refs from the bundled Stock catalog.
+	const catalog = validateCatalogProvenance({
+		page: result.page,
+		screenId: recordedScreenId(result.provenance.screenId),
+		catalogDigest: result.provenance.catalog?.sourceDigest ?? null
+	});
+	if (!catalog.ok) {
+		return {
+			id: uid("msg"),
+			role: "assistant",
+			text: t("assistant.catalogRejected").replace("{code}", catalog.code).replace("{message}", catalog.message),
+			createdAt: nowIso(),
+			run
+		};
+	}
 	setCandidatePage(result.page, {
 		screenId: recordedScreenId(result.provenance.screenId),
 		scenarioId: result.provenance.scenarioId,
@@ -496,7 +513,10 @@ function proposalMessage(
 			warnings: result.warnings,
 			missing: result.missing,
 			title: result.page.title,
-			screenId: recordedScreenId(result.provenance.screenId)
+			screenId: recordedScreenId(result.provenance.screenId),
+			locale: result.page.locale,
+			demoData: Boolean(result.demoData),
+			catalogRefs: catalog.refs
 		},
 		run
 	};

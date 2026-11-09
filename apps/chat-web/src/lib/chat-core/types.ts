@@ -1,4 +1,4 @@
-import type { RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
+import type { CatalogRefs, RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
 
 export type ServerCapabilities = {
 	runtime: string;
@@ -40,6 +40,12 @@ export type ChatProposalState = {
 	missing: string[];
 	title: string;
 	screenId?: string | null;
+	/** Page language of this proposal (follows the author's request). */
+	locale?: string;
+	/** Author asked for demo data and the page carries marked demo rows. */
+	demoData?: boolean;
+	/** Program-generated from the pinned Stock catalog after validation. Persisted with the chat. */
+	catalogRefs?: CatalogRefs;
 };
 
 export type ChatRunRecord = {

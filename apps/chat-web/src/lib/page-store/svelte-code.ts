@@ -1,10 +1,19 @@
 import { blocksOf, type CreatorPage, type PageBlock } from "@buildytech/page-contract";
+import { barHeightClass, itemViewFor, type ItemView } from "./data-view.ts";
 
-function walkBlocks(blocks: PageBlock[]): PageBlock[] {
-	const out: PageBlock[] = [];
+type ItemContext = { view: ItemView; barClass?: string };
+
+function walkBlocks(blocks: PageBlock[], parent: PageBlock | null = null): Array<{ block: PageBlock; item?: ItemContext }> {
+	const out: Array<{ block: PageBlock; item?: ItemContext }> = [];
 	for (const block of blocks) {
-		out.push(block);
-		if (block.children?.length) out.push(...walkBlocks(block.children));
+		const item: ItemContext | undefined = parent
+			? {
+					view: itemViewFor(parent.kind),
+					barClass: parent.kind === "chart" ? barHeightClass(block, parent.children ?? []) : undefined
+				}
+			: undefined;
+		out.push({ block, item });
+		if (block.children?.length) out.push(...walkBlocks(block.children, block));
 	}
 	return out;
 }
@@ -48,14 +57,22 @@ function primitiveImports(extra: string[]): string[] {
 	];
 }
 
-export function svelteForBlock(block: PageBlock, selectedId: string | null = null): string {
+export function svelteForBlock(
+	block: PageBlock,
+	selectedId: string | null = null,
+	item?: ItemContext
+): string {
 	const selected = selectedId === block.id;
 	const copy = block.copy;
 	const kind = block.kind;
+	const children = block.children ?? [];
+	const view = item?.view ?? "plain";
 	const extra: string[] = [];
 	if (kind === "hero" || kind === "cta") extra.push('import Button from "$ui/button/Button.svelte";');
-	if (kind === "nav") extra.push('import Group from "$lib/compose/Group.svelte";');
-	if (kind === "chart") extra.push('import Box from "$ui/box/Box.svelte";');
+	if (kind === "nav" || copy?.badge || view === "row" || (kind === "chart" && children.length))
+		extra.push('import Group from "$lib/compose/Group.svelte";');
+	if (kind === "chart" || kind === "overview" || kind === "metrics" || view === "bar")
+		extra.push('import Box from "$ui/box/Box.svelte";');
 	if (kind !== "footer") extra.push('import Title from "$lib/compose/Title.svelte";');
 	const importLines = [...primitiveImports(extra), ...childImports(block)];
 	const imports = importLines.join("\n");
@@ -87,11 +104,47 @@ ${childTags(block)}
 			<Title as={1} class="text-xl font-semibold text-foreground">${textContent(copy?.headline ?? block.title)}</Title>
 			<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.lede)}</Text>
 		</Stack>`;
-	} else if (kind === "overview" || kind === "metrics" || kind === "activity") {
+	} else if (view === "tile") {
+		body = `<Stack class="gap-1">
+			<Text tag="span" class="text-xs text-muted-foreground">${textContent(block.title)}</Text>
+			<Text tag="span" class="text-2xl font-semibold text-foreground">${textContent(copy?.value)}</Text>
+			<Text tag="span" class="text-xs text-muted-foreground">${textContent(copy?.note)}</Text>
+		</Stack>`;
+	} else if (view === "row") {
+		body = `<Group class="items-start justify-between gap-3">
+			<Stack class="min-w-0 gap-1">
+				<Title as={3} class="text-sm font-medium text-foreground">${textContent(block.title)}</Title>
+				<Text tag="p" class="text-xs text-muted-foreground">${textContent(block.summary)}</Text>
+			</Stack>
+			<Text tag="span" class="shrink-0 text-xs text-muted-foreground">${textContent(copy?.note)}</Text>
+		</Group>`;
+	} else if (view === "bar") {
+		body = `<Stack class="items-stretch gap-1">
+			<Text tag="span" class="text-center text-xs font-medium text-foreground">${textContent(copy?.value)}</Text>
+			<Box class=${JSON.stringify(`w-full rounded-default bg-primary ${item?.barClass ?? "h-2"}`)} aria-hidden="true"></Box>
+			<Text tag="span" class="truncate text-center text-xs text-muted-foreground">${textContent(block.title)}</Text>
+		</Stack>`;
+	} else if (kind === "overview" || kind === "metrics") {
 		body = `<Stack class="gap-2">
 			<Title as={2} class="text-lg font-semibold text-foreground">${textContent(block.title)}</Title>
-			<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.lede ?? block.summary)}</Text>
+			<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.lede ?? (children.length ? "" : block.summary))}</Text>
+			<Box class="grid grid-cols-2 gap-2 lg:grid-cols-3">
 ${childTags(block)}
+			</Box>
+		</Stack>`;
+	} else if (kind === "activity") {
+		body = `<Stack class="gap-2">
+			<Title as={2} class="text-lg font-semibold text-foreground">${textContent(block.title)}</Title>
+			<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.lede ?? (children.length ? "" : block.summary))}</Text>
+${childTags(block)}
+		</Stack>`;
+	} else if (kind === "chart" && children.length) {
+		body = `<Stack class="gap-2">
+			<Title as={2} class="text-lg font-semibold text-foreground">${textContent(block.title)}</Title>
+			<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.lede)}</Text>
+			<Group class="min-h-32 items-end gap-2 overflow-x-auto rounded-default border border-border bg-muted px-2 py-2">
+${childTags(block)}
+			</Group>
 		</Stack>`;
 	} else if (kind === "chart") {
 		body = `<Stack class="gap-2">
@@ -128,13 +181,22 @@ ${childTags(block)}
 		</Stack>`;
 	}
 
+	const label = copy?.badge
+		? `<Group class="flex-wrap items-center gap-2">
+			<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">${textContent(kind)}</Text>
+			<Text tag="span" class="rounded-full border border-border bg-muted px-2 py-1 text-xs font-medium text-foreground" data-badge="demo">${textContent(copy.badge)}</Text>
+		</Group>`
+		: view === "plain"
+			? `<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">${textContent(kind)}</Text>`
+			: "";
+
 	return `<script lang="ts">
 	${imports.split("\n").join("\n\t")}
 </script>
 
 <Block tag="article" class=${border} data-block-id=${JSON.stringify(block.id)} data-block-kind=${JSON.stringify(kind)}>
 	<Stack class="gap-3">
-		<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">${textContent(kind)}</Text>
+		${label}
 		${body}
 	</Stack>
 </Block>
@@ -169,10 +231,10 @@ export function sveltePackFiles(
 	const files: { path: string; content: string }[] = [
 		{ path: "page.svelte", content: svelteFromPage(page, selectedId) }
 	];
-	for (const block of walkBlocks(blocksOf(page))) {
+	for (const { block, item } of walkBlocks(blocksOf(page))) {
 		files.push({
 			path: `blocks/${block.id}.svelte`,
-			content: svelteForBlock(block, selectedId)
+			content: svelteForBlock(block, selectedId, item)
 		});
 	}
 	return files;

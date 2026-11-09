@@ -43,6 +43,35 @@ export {
 export type { ToolHost, CompactSearchItem, CompactSearchPayload, ToolLoopRejection } from "./tools.ts";
 export { inferScenarioId, isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
 export { parseLayoutCopyEdits, extractCopyEditsFromBrief } from "./edits.ts";
+export {
+	DATA_KINDS,
+	cleanText,
+	defaultDemoLabel,
+	detectBriefLocale,
+	detectDemoDataRequest,
+	explicitLocaleRequest,
+	hasModelContent,
+	isPageLocale,
+	mergeModelContent,
+	parseModelContent,
+	proposeContentParameterSchema,
+	resolvePageLocale
+} from "./content.ts";
+export type { ModelBlockContent, ModelContentItem, ModelPageContent, MergeResult } from "./content.ts";
+export {
+	STOCK_APP_URL,
+	sameCatalogRefs,
+	stockAssetUrl,
+	stockSearchUrl,
+	validateCatalogProvenance
+} from "./catalog/provenance.ts";
+export type {
+	CatalogBlockRef,
+	CatalogFilters,
+	CatalogRefs,
+	CatalogScreenRef,
+	CatalogValidationError
+} from "./catalog/provenance.ts";
 export type { LayoutCopyEdit } from "./edits.ts";
 export {
 	ENABLED_SKILLS,

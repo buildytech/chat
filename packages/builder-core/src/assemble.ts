@@ -16,6 +16,15 @@ import { filterScreens, getScreenById, searchCatalog } from "./catalog/search.ts
 import { OWNER_FILTERS } from "./copy.ts";
 import type { CatalogScreen } from "./catalog/types.ts";
 import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } from "./policy.ts";
+import { validateCatalogProvenance, type CatalogRefs } from "./catalog/provenance.ts";
+import {
+	defaultDemoLabel,
+	detectDemoDataRequest,
+	explicitLocaleRequest,
+	mergeModelContent,
+	resolvePageLocale,
+	type ModelPageContent
+} from "./content.ts";
 
 export type ProposalContext = {
 	brief: string;
@@ -33,6 +42,13 @@ export type ProposalContext = {
 	liveTurn?: boolean;
 	/** Structured copy patches from propose_layout.edits. Never the raw author prompt. */
 	edits?: LayoutCopyEdit[];
+	/**
+	 * The author's own message (trusted host input). Demo-data and locale detection read
+	 * this, never the model's paraphrased brief.
+	 */
+	authorBrief?: string;
+	/** Model copy per Stock block kind from propose_layout. Parsed and bounded; never a layout. */
+	content?: ModelPageContent;
 	/** Saved page metadata for content-only edits. Not accepted from tool JSON layouts. */
 	currentProvenance?: {
 		screenId: string | null;
@@ -53,6 +69,10 @@ export type LayoutProposal = {
 	inspected: string[];
 	missing: string[];
 	diff: { added: string[]; removed: string[]; changed: string[] };
+	/** True when the author explicitly asked for demo data and the model supplied rows. */
+	demoData: boolean;
+	/** Program-generated from the pinned catalog after validation. Never model text. */
+	catalogRefs: CatalogRefs;
 	provenance: {
 		policyVersion: string;
 		modelCatalogVersion: string;
@@ -197,11 +217,17 @@ function titleWho(brief: string, screen: CatalogScreen | null): string {
 
 function navLinks(scenario: ScenarioId | null, brief: string): PageBlock[] {
 	const byScenario: Record<ScenarioId, Array<[string, string, string]>> = {
-		dashboard: [
-			["overview", "Overview", "Jump to the operational overview."],
-			["orders", "Orders", "Orders stay empty until the author supplies them."],
-			["activity", "Activity", "Activity stays empty until the author supplies it."]
-		],
+		dashboard: briefMentionsOrders(brief)
+			? [
+					["overview", "Overview", "Jump to the operational overview."],
+					["orders", "Orders", "Orders stay empty until the author supplies them."],
+					["activity", "Activity", "Activity stays empty until the author supplies it."]
+				]
+			: [
+					["overview", "Overview", "Jump to the operational overview."],
+					["metrics", "Metrics", "Metric tiles for this dashboard."],
+					["activity", "Activity", "Activity stays empty until the author supplies it."]
+				],
 		landing: [
 			["offer", "Offer", "The value proposition section."],
 			["proof", "Proof", "Evidence the author still needs to confirm."],
@@ -475,20 +501,23 @@ function pickSupportedScreen(
 	return null;
 }
 
-function kindsForPage(screen: CatalogScreen, brief: string, scenarioId: ScenarioId | null): PageBlockKind[] {
+/**
+ * Stock blocks of the selected screen only. Sections the author asked for that the screen
+ * does not contain are reported as unavailable, never invented (catalog provenance gate).
+ */
+function kindsForPage(
+	screen: CatalogScreen,
+	brief: string,
+	scenarioId: ScenarioId | null
+): { kinds: PageBlockKind[]; unavailable: string[] } {
 	const kinds = uniqueKindsFromScreen(screen);
-	if (scenarioId !== "website") return kinds;
+	const unavailable: string[] = [];
+	if (scenarioId !== "website") return { kinds, unavailable };
 	const wantsMenu = /\bmenus?\b/i.test(brief) || briefMentionsGrill(brief);
 	const wantsContact = /\bcontact\b/i.test(brief) || /\bhours\b/i.test(brief) || briefMentionsDelivery(brief);
-	if (wantsMenu && !kinds.includes("menu")) kinds.push("menu");
-	if (wantsContact && !kinds.includes("hours")) kinds.push("hours");
-	const jobRank = new Map<PageBlockKind, number>();
-	for (const [index, job] of screen.labels.job.entries()) {
-		const kind = rendererKindForLabel(job);
-		if (kind && !jobRank.has(kind)) jobRank.set(kind, index);
-	}
-	kinds.sort((a, b) => pageSlot(a, jobRank) - pageSlot(b, jobRank));
-	return kinds;
+	if (wantsMenu && !kinds.includes("menu")) unavailable.push("menu");
+	if (wantsContact && !kinds.includes("hours")) unavailable.push("hours");
+	return { kinds, unavailable };
 }
 
 function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutProposalError | null {
@@ -614,8 +643,25 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 	const missing = ctx.currentProvenance?.missing ?? [];
 	const edits = ctx.edits?.length ? ctx.edits : extractCopyEditsFromBrief(brief);
 	const working: ProposalContext = { ...ctx, pageId: current.id, scenarioId, screenId };
+	const author = authorText(working);
+	const locale =
+		explicitLocaleRequest(author) ??
+		(working.content?.locale ? resolvePageLocale({ brief: author, modelLocale: working.content.locale }) : current.locale);
+	const warnings: string[] = [];
+	const overlay = overlayModelContent(working, current.layout.blocks, locale, warnings);
+	const identity = {
+		title: working.content?.title ?? title,
+		id: current.id,
+		createdAt: current.createdAt,
+		stamp,
+		status: current.status,
+		slug: current.slug,
+		locale,
+		demoData: overlay.demo || hasDemoBadge(current.layout.blocks),
+		demoLabel: overlay.demoLabel
+	};
 	if (edits.length) {
-		const patched = applyCopyEdits(current.layout.blocks, edits);
+		const patched = applyCopyEdits(overlay.blocks, edits);
 		return finishProposal(
 			working,
 			brief,
@@ -624,21 +670,26 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 			[
 				patched.changed.length
 					? `Edited ${patched.changed.join(", ")} on the saved page. Other blocks are unchanged.`
-					: "No matching block to edit. Other blocks are unchanged."
+					: "No matching block to edit. Other blocks are unchanged.",
+				...warnings
 			],
 			missing,
-			{ title, id: current.id, createdAt: current.createdAt, stamp, status: current.status, slug: current.slug }
+			identity
 		);
 	}
 	return finishProposal(
 		working,
 		brief,
 		screen,
-		current.layout.blocks,
-		["No structured copy edit in that message. Other blocks are unchanged."],
+		overlay.blocks,
+		warnings.length ? warnings : ["No structured copy edit in that message. Other blocks are unchanged."],
 		missing,
-		{ title, id: current.id, createdAt: current.createdAt, stamp, status: current.status, slug: current.slug }
+		identity
 	);
+}
+
+function hasDemoBadge(blocks: PageBlock[]): boolean {
+	return walk(blocks).some((node) => typeof node.copy?.badge === "string" && node.copy.badge.length > 0);
 }
 
 export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalError {
@@ -673,9 +724,15 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		};
 	}
 
-	const kinds = kindsForPage(screen, brief, working.scenarioId);
+	const { kinds, unavailable } = kindsForPage(screen, brief, working.scenarioId);
 	const warnings: string[] = [];
 	const missing: string[] = [];
+	if (unavailable.length) {
+		missing.push(...unavailable);
+		warnings.push(
+			`Requested ${unavailable.join(", ")} but Stock screen ${screen.screenId} has no such block. Not invented; pick a Stock screen that has it.`
+		);
+	}
 	const support = screenSupport(screen);
 	warnings.push(
 		`Stock screen ${screen.screenId}. Browser renders ${support.mappedKinds.join(", ") || "no sections"}.`
@@ -757,20 +814,59 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		};
 	}
 
+	const locale = resolvePageLocale({ brief: authorText(working), modelLocale: working.content?.locale });
+	const overlay = overlayModelContent(working, blocks, locale, warnings);
+	let assembled = overlay.blocks;
 	const edits = working.edits?.length ? working.edits : extractCopyEditsFromBrief(brief);
 	if (edits.length) {
-		const patched = applyCopyEdits(blocks, edits);
+		const patched = applyCopyEdits(assembled, edits);
 		if (patched.changed.length) {
 			warnings.push(`Applied copy edits: ${patched.changed.join(", ")}.`);
 		}
-		return finishProposal(working, brief, screen, patched.blocks, warnings, missing);
+		assembled = patched.blocks;
 	}
 
-	return finishProposal(working, brief, screen, blocks, warnings, missing);
+	return finishProposal(working, brief, screen, assembled, warnings, missing, {
+		locale,
+		title: working.content?.title,
+		demoData: overlay.demo,
+		demoLabel: overlay.demoLabel
+	});
+}
+
+function authorText(ctx: ProposalContext): string {
+	return (ctx.authorBrief ?? ctx.brief).trim();
+}
+
+/** Model copy over Stock blocks; demo rows only on an explicit author request. */
+function overlayModelContent(
+	ctx: ProposalContext,
+	blocks: PageBlock[],
+	locale: string,
+	warnings: string[]
+): { blocks: PageBlock[]; demo: boolean; demoLabel: string } {
+	const wantsDemo = detectDemoDataRequest(authorText(ctx));
+	const demoLabel = ctx.content?.demoLabel ?? defaultDemoLabel(locale);
+	const merged = mergeModelContent(blocks, ctx.content, { demo: wantsDemo, demoLabel, locale });
+	if (merged.changed.length) warnings.push(`Model copy kept on: ${[...new Set(merged.changed.map((c) => c.split(".")[0]))].join(", ")}.`);
+	if (merged.droppedData.length) {
+		warnings.push(
+			`Data rows dropped on ${merged.droppedData.join(", ")}: the author did not ask for demo data. Figures stay empty until the author supplies them.`
+		);
+	}
+	if (wantsDemo && merged.demoBlocks.length) {
+		warnings.push(`Demo data (not real) on ${merged.demoBlocks.join(", ")}, marked "${demoLabel}".`);
+	} else if (wantsDemo) {
+		warnings.push("Demo data was requested but no data rows were supplied. Data blocks keep their empty state.");
+	}
+	return { blocks: merged.blocks, demo: wantsDemo && merged.demoBlocks.length > 0, demoLabel };
 }
 
 type FinishIdentity = {
 	title?: string;
+	locale?: string;
+	demoData?: boolean;
+	demoLabel?: string;
 	id?: string;
 	createdAt?: string;
 	stamp?: string;
@@ -797,7 +893,12 @@ function finishProposal(
 	const id = identity?.id ?? ctx.pageId ?? "page-draft";
 	const stamp = identity?.stamp ?? iso(ctx.now);
 	const status = identity?.status ?? "draft";
-	const slug = identity?.slug ?? slugify(title);
+	const slug = identity?.slug ?? (slugify(title) !== "page" ? slugify(title) : slugify(catalogTitle || title));
+	const locale = identity?.locale ?? "en";
+	const demo = Boolean(identity?.demoData);
+	const seoDescription = demo
+		? `${title}. ${identity?.demoLabel ?? "Demo data"}. Draft, not published.`
+		: `${title} draft. Not published. Catalog blocks only.`;
 	try {
 		const raw = {
 			id,
@@ -806,14 +907,17 @@ function finishProposal(
 			title,
 			layout: { version: PAGE_LAYOUT_VERSION, blocks },
 			seo: {
-				title,
-				description: `${title} draft. Not published. Catalog blocks only.`
+				title: title.slice(0, 200),
+				description: seoDescription.slice(0, 200)
 			},
-			locale: "en",
+			locale,
 			createdAt: identity?.createdAt ?? stamp,
 			updatedAt: stamp
 		};
 		const page = status === "draft" ? parseDraftPage(raw) : parsePage(raw);
+		const screenId = recordedScreenId(screen?.screenId) ?? inheritedScreenId(ctx);
+		const checked = validateCatalogProvenance({ page, screenId, catalogDigest: catalogProvenance().sourceDigest });
+		if (!checked.ok) return checked;
 		return {
 			ok: true,
 			status: "proposal",
@@ -830,13 +934,15 @@ function finishProposal(
 				removed: [],
 				changed: []
 			},
+			demoData: demo,
+			catalogRefs: checked.refs,
 		provenance: {
 			policyVersion: POLICY_VERSION,
 			modelCatalogVersion: MODEL_CATALOG_VERSION,
 			trialPolicyVersion: TRIAL_POLICY_VERSION,
 			catalog: catalogProvenance(),
 			scenarioId: ctx.scenarioId,
-			screenId: recordedScreenId(screen?.screenId) ?? inheritedScreenId(ctx),
+			screenId,
 			assembler: "local-catalog-assembler"
 		}
 		};

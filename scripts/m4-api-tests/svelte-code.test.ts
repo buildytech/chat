@@ -5,7 +5,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { parsePage } from "../../packages/page-contract/src/index.ts";
-import { proposeLayout } from "../../packages/builder-core/src/index.ts";
+import { executeTool, proposeLayout, type LayoutProposal } from "../../packages/builder-core/src/index.ts";
+import { RU_DEMO_PROMPT, ruDashboardArgs } from "./fixtures-demo.ts";
 import { svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
 
 const CHAT_WEB = fileURLToPath(new URL("../../apps/chat-web/", import.meta.url));
@@ -116,12 +117,35 @@ function dashboardPage() {
 	return dash.page;
 }
 
+function demoDashboardPage() {
+	const result = executeTool(
+		{ name: "propose_layout", arguments: ruDashboardArgs() },
+		{ liveTurn: true, authorBrief: RU_DEMO_PROMPT }
+	);
+	assert.equal(result.ok, true);
+	if (!result.ok) throw new Error("demo dashboard failed");
+	return (result.result as LayoutProposal).page;
+}
+
 test("generated pack imports resolve to kit primitives and emitted files", () => {
 	assertPackImports("north-harbor", sveltePackFiles(page, "block-hero"));
 	assertPackImports("dashboard", sveltePackFiles(dashboardPage(), null));
+	assertPackImports("demo-dashboard", sveltePackFiles(demoDashboardPage(), null));
 });
 
 test("generated page.svelte and block files compile as Svelte 5", () => {
 	assertPackCompiles("north-harbor", sveltePackFiles(page, "block-hero"));
 	assertPackCompiles("dashboard", sveltePackFiles(dashboardPage(), null));
+	assertPackCompiles("demo-dashboard", sveltePackFiles(demoDashboardPage(), null));
+});
+
+test("demo dashboard Code renders values, bars, rows, and the demo badge", () => {
+	const files = sveltePackFiles(demoDashboardPage(), null);
+	const byPath = (path: string) => files.find((file) => file.path === path)?.content ?? "";
+	assert.match(byPath("blocks/block-metrics.svelte"), /data-badge="demo"/);
+	assert.match(byPath("blocks/block-metrics.svelte"), /grid grid-cols-2/);
+	assert.match(byPath("blocks/block-metrics-item-1.svelte"), /94%/);
+	assert.match(byPath("blocks/block-chart-item-2.svelte"), /bg-primary h-32/);
+	assert.match(byPath("blocks/block-chart-item-3.svelte"), /bg-primary h-(?:8|12)"/);
+	assert.doesNotMatch(files.map((file) => file.content).join("\n"), /style=/);
 });

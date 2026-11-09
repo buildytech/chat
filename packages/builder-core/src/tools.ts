@@ -12,6 +12,7 @@ import {
 } from "./assemble.ts";
 import { inferScenarioId, isScenarioId } from "./brief.ts";
 import { parseLayoutCopyEdits } from "./edits.ts";
+import { parseModelContent } from "./content.ts";
 import { OWNER_FILTERS, type ScenarioId } from "./copy.ts";
 import type { Page } from "@buildytech/page-contract";
 import type { CatalogFacetFilter, SearchResult } from "./catalog/types.ts";
@@ -26,6 +27,8 @@ export type ToolHost = {
 	scenarioId?: ScenarioId | null;
 	/** Live xAI tool loop. Assembly stays the deterministic catalog assembler. */
 	liveTurn?: boolean;
+	/** The author's own message. Demo-data and locale detection read this, not the model's brief. */
+	authorBrief?: string;
 };
 
 export type CompactSearchItem = {
@@ -235,7 +238,9 @@ export function executeTool(
 			currentPage,
 			currentProvenance,
 			liveTurn: Boolean(host?.liveTurn),
-			edits: parseLayoutCopyEdits(args.edits)
+			edits: parseLayoutCopyEdits(args.edits),
+			authorBrief: host?.authorBrief,
+			content: parseModelContent(args)
 		});
 		if (!result.ok) {
 			return {
@@ -256,7 +261,7 @@ export function executeTool(
 
 export function runConstructorTools(ctx: ProposalContext): LayoutProposal | LayoutProposalError {
 	const scenarioId = ctx.scenarioId ?? inferScenarioId(ctx.brief);
-	const host = { currentPage: ctx.currentPage };
+	const host = { currentPage: ctx.currentPage, authorBrief: ctx.authorBrief ?? ctx.brief };
 	const search = executeTool({
 		name: "search_catalog",
 		arguments: scenarioId === "dashboard"

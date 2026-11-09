@@ -151,6 +151,17 @@
 		"runtime.capabilitiesFailed": "Capabilities недоступны",
 		"runtime.sendFailed": "Не удалось отправить",
 		"runtime.deleteUnavailable": "Could not delete that saved chat from this browser",
-		"message.savedRevision": "Черновик /{slug} · ревизия {revision}"
+		"message.savedRevision": "Черновик /{slug} · ревизия {revision}",
+		"assistant.catalogRejected": "Предложение отклонено проверкой каталога Stock ({code}). {message}",
+		"catalogRefs.title": "Блоки каталога",
+		"catalogRefs.label": "Блоки каталога Stock в этом предложении",
+		"catalogRefs.screen": "Экран Stock",
+		"catalogRefs.open": "Открыть {title} в Stock",
+		"catalogRefs.copyId": "Скопировать id каталога {id}",
+		"catalogRefs.copied": "Скопировано {id}",
+		"catalogRefs.rows": "Строк: {n}",
+		"catalogRefs.demo": "Демо-данные на этой странице не настоящие",
+		"catalogRefs.digest": "Закреплённый каталог {digest}",
+		"catalogRefs.meta": "kind={kind} · label={label} · variants={variants}"
 	}
 }

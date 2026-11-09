@@ -484,14 +484,17 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 	assert.equal(site.ok, true);
 	if (site.ok) {
 		assert.equal(site.provenance.screenId, "screen.site/home");
-		assert.ok(site.page.layout.blocks.some((block) => block.kind === "menu"));
-		assert.ok(site.page.layout.blocks.some((block) => block.kind === "hours"));
+		// Catalog provenance gate: screen.site/home has no menu or hours Stock block, so they are
+		// reported as missing instead of invented.
+		assert.ok(!site.page.layout.blocks.some((block) => block.kind === "menu"));
+		assert.ok(!site.page.layout.blocks.some((block) => block.kind === "hours"));
+		assert.ok(site.missing.includes("menu"));
+		assert.ok(site.missing.includes("hours"));
 		assert.ok(site.page.layout.blocks.some((block) => block.kind === "nav"));
 		assert.ok(site.page.layout.blocks.some((block) => block.kind === "footer"));
 		assert.equal(site.page.layout.blocks[0]?.kind, "nav");
 		assert.equal(site.page.layout.blocks.at(-1)?.kind, "footer");
-		const dish = site.page.layout.blocks.find((block) => block.kind === "menu")?.children?.[0];
-		assert.match(String(dish?.summary ?? ""), /Ask the author/);
+		assert.ok(site.warnings.some((line) => /has no such block/.test(line)));
 	}
 });
 

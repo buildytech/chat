@@ -10,6 +10,7 @@
 	import { cn } from "../../utils/cn";
 	import { selectBlock, type PageBlock } from "../page-store";
 	import PreviewItem from "./PreviewItem.svelte";
+	import { barHeightClass, itemViewFor } from "../page-store/data-view";
 
 	let {
 		block,
@@ -23,6 +24,7 @@
 	const copy = $derived(block.copy);
 	const children = $derived(block.children ?? []);
 	const kind = $derived(block.kind);
+	const view = $derived(itemViewFor(block.kind));
 
 	function onSelect() {
 		selectBlock(block.id);
@@ -44,9 +46,20 @@
 	onclick={onSelect}
 >
 	<Stack class="gap-3">
-		<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-			{kind}
-		</Text>
+		<Group class="flex-wrap items-center gap-2">
+			<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+				{kind}
+			</Text>
+			{#if copy?.badge}
+				<Text
+					tag="span"
+					class="rounded-full border border-border bg-muted px-2 py-1 text-xs font-medium text-foreground"
+					data-badge="demo"
+				>
+					{copy.badge}
+				</Text>
+			{/if}
+		</Group>
 
 		{#if kind === "nav"}
 			<Group class="flex-wrap justify-between gap-3">
@@ -100,27 +113,54 @@
 					<Text tag="p" class="text-sm text-muted-foreground">{copy.lede}</Text>
 				{/if}
 			</Stack>
-		{:else if kind === "overview" || kind === "metrics" || kind === "activity"}
+		{:else if kind === "overview" || kind === "metrics"}
 			<Stack class="gap-2">
 				<Title as={2} class="text-lg font-semibold text-foreground">{block.title}</Title>
-				<Text tag="p" class="text-sm text-muted-foreground">{copy?.lede ?? block.summary}</Text>
+				{#if copy?.lede || children.length === 0}
+					<Text tag="p" class="text-sm text-muted-foreground">{copy?.lede ?? block.summary}</Text>
+				{/if}
+			</Stack>
+			{#if children.length > 0}
+				<Box class="grid grid-cols-2 gap-2 lg:grid-cols-3">
+					{#each children as child (child.id)}
+						<PreviewItem block={child} {selectedId} {view} />
+					{/each}
+				</Box>
+			{/if}
+		{:else if kind === "activity"}
+			<Stack class="gap-2">
+				<Title as={2} class="text-lg font-semibold text-foreground">{block.title}</Title>
+				{#if copy?.lede || children.length === 0}
+					<Text tag="p" class="text-sm text-muted-foreground">{copy?.lede ?? block.summary}</Text>
+				{/if}
 			</Stack>
 			{#if children.length > 0}
 				<Stack class="gap-2">
 					{#each children as child (child.id)}
-						<PreviewItem block={child} {selectedId} />
+						<PreviewItem block={child} {selectedId} {view} />
 					{/each}
 				</Stack>
 			{/if}
 		{:else if kind === "chart"}
 			<Stack class="gap-2">
 				<Title as={2} class="text-lg font-semibold text-foreground">{block.title}</Title>
-				<Box
-					tag="div"
-					class="flex min-h-32 items-center justify-center rounded-default border border-dashed border-border bg-muted px-4 py-8"
-				>
-					<Text tag="p" class="text-sm text-muted-foreground">{copy?.lede ?? block.summary}</Text>
-				</Box>
+				{#if children.length > 0}
+					{#if copy?.lede}
+						<Text tag="p" class="text-sm text-muted-foreground">{copy.lede}</Text>
+					{/if}
+					<Group class="min-h-32 items-end gap-2 overflow-x-auto rounded-default border border-border bg-muted px-2 py-2">
+						{#each children as child (child.id)}
+							<PreviewItem block={child} {selectedId} {view} barClass={barHeightClass(child, children)} />
+						{/each}
+					</Group>
+				{:else}
+					<Box
+						tag="div"
+						class="flex min-h-32 items-center justify-center rounded-default border border-dashed border-border bg-muted px-4 py-8"
+					>
+						<Text tag="p" class="text-sm text-muted-foreground">{copy?.lede ?? block.summary}</Text>
+					</Box>
+				{/if}
 			</Stack>
 		{:else if kind === "features" || kind === "menu"}
 			<Stack class="gap-2">

@@ -17,7 +17,8 @@
 			"metrics",
 			"metric",
 			"chart",
-			"activity"
+			"activity",
+			"activity-item"
 		],
 		"copyKeys": [
 			"eyebrow",
@@ -29,7 +30,9 @@
 			"contact",
 			"legal",
 			"days",
-			"address"
+			"address",
+			"value",
+			"badge"
 		],
 		"statuses": ["draft", "pending", "scheduled", "published", "archived", "trashed"],
 		"limits": {
