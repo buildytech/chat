@@ -40,6 +40,8 @@ export type PageBlockKind = (typeof PAGE_BLOCK_KINDS)[number];
  * Values are opaque plain-text strings, never executable markup.
  * `value` is a display figure on a metric tile or chart point (text, e.g. "128" or "94%").
  * `badge` is a short marker such as a demo-data label; the author can edit or delete it.
+ * `icon` is a Lucide icon name (checked against the pinned registry snapshot); `href` is the link of `action`
+ * (#fragment, /path, http(s) or mailto). Both page-spec 1.1.0.
  */
 export const PAGE_COPY_KEYS = [
 	"eyebrow",
@@ -53,7 +55,9 @@ export const PAGE_COPY_KEYS = [
 	"days",
 	"address",
 	"value",
-	"badge"
+	"badge",
+	"icon",
+	"href"
 ] as const;
 
 export type PageCopyKey = (typeof PAGE_COPY_KEYS)[number];
@@ -87,6 +91,13 @@ export const PAGE_LIMITS = {
 	maxJsonChars: 65_536
 } as const;
 
+/** Lengths of the page-spec 1.1.0 catalog fields (catalogBlock, variant, copy.icon). */
+export const PAGE_CATALOG_LIMITS = {
+	maxCatalogBlockLength: 80,
+	maxVariantLength: 40,
+	maxIconLength: 64
+} as const;
+
 export type PageSeo = {
 	title?: string;
 	description?: string;
@@ -97,6 +108,13 @@ export type PageBlock = {
 	kind: PageBlockKind;
 	title: string;
 	summary: string;
+	/**
+	 * Stock catalog block asset this block was built from (`block.<name>`), page-spec 1.1.0. The host checks it
+	 * against the pinned catalog; Preview and Code render its registry organism when the snapshot has one.
+	 */
+	catalogBlock?: string;
+	/** Catalog variant of catalogBlock (`block.<name>/<variant>` is the catalog asset id), page-spec 1.1.0. */
+	variant?: string;
 	copy?: PageBlockCopy;
 	children?: PageBlock[];
 };

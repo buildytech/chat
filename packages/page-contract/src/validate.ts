@@ -1,5 +1,6 @@
 import {
 	PAGE_BLOCK_KINDS,
+	PAGE_CATALOG_LIMITS,
 	PAGE_COPY_KEYS,
 	PAGE_LAYOUT_VERSION,
 	PAGE_LIMITS,
@@ -38,7 +39,7 @@ const PAGE_KEYS = new Set([
 	"updatedAt"
 ]);
 const LAYOUT_KEYS = new Set(["version", "blocks"]);
-const BLOCK_KEYS = new Set(["id", "kind", "title", "summary", "copy", "children"]);
+const BLOCK_KEYS = new Set(["id", "kind", "title", "summary", "catalogBlock", "variant", "copy", "children"]);
 const SEO_KEYS = new Set(["title", "description"]);
 const COPY_KEY_SET = new Set<string>(PAGE_COPY_KEYS);
 const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
@@ -52,6 +53,10 @@ const ALLOWED_URL_SCHEMES = new Set(["http:", "https:", "mailto:"]);
 const DANGEROUS_URL_SCHEMES = ["javascript:", "data:", "vbscript:", "file:"] as const;
 const MARKUP_PATTERN = /[<>{}]|<\?/;
 const URL_SHAPED_AT_START = /^[a-z][a-z0-9+.-]*:\/\//;
+const CATALOG_BLOCK_PATTERN = /^block\.[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const VARIANT_PATTERN = /^[A-Za-z][A-Za-z0-9-]*$/;
+const ICON_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const HREF_PATTERN = /^(?:#|\/|https?:\/\/|mailto:)/;
 
 function fail(code: string, path: string, message: string): never {
 	throw new PageContractError(code, path, message);
@@ -150,7 +155,13 @@ function parseCopy(value: unknown, path: string): PageBlockCopy {
 	const copy: PageBlockCopy = {};
 	for (const key of PAGE_COPY_KEYS) {
 		if (!(key in obj)) continue;
-		copy[key] = parseBoundedText(obj[key], `${path}.${key}`, PAGE_LIMITS.maxCopyLength);
+		if (key === "icon") {
+			copy.icon = parseBoundedText(obj.icon, `${path}.icon`, PAGE_CATALOG_LIMITS.maxIconLength, { pattern: ICON_PATTERN, patternCode: "invalid_icon" });
+		} else if (key === "href") {
+			copy.href = parseBoundedText(obj.href, `${path}.href`, PAGE_LIMITS.maxCopyLength, { pattern: HREF_PATTERN, patternCode: "invalid_href" });
+		} else {
+			copy[key] = parseBoundedText(obj[key], `${path}.${key}`, PAGE_LIMITS.maxCopyLength);
+		}
 	}
 	return copy;
 }
@@ -191,6 +202,20 @@ function parseBlock(
 
 	const block: PageBlock = { id, kind, title, summary };
 
+	if ("catalogBlock" in obj) {
+		block.catalogBlock = parseBoundedText(obj.catalogBlock, `${path}.catalogBlock`, PAGE_CATALOG_LIMITS.maxCatalogBlockLength, {
+			required: true,
+			pattern: CATALOG_BLOCK_PATTERN,
+			patternCode: "invalid_catalog_block"
+		});
+	}
+	if ("variant" in obj) {
+		block.variant = parseBoundedText(obj.variant, `${path}.variant`, PAGE_CATALOG_LIMITS.maxVariantLength, {
+			required: true,
+			pattern: VARIANT_PATTERN,
+			patternCode: "invalid_variant"
+		});
+	}
 	if ("copy" in obj) {
 		block.copy = parseCopy(obj.copy, `${path}.copy`);
 	}
