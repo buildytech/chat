@@ -16,8 +16,11 @@ function identFromBlockId(id: string): string {
 	return named[0]!.toUpperCase() + named.slice(1);
 }
 
-function textExpr(value: string | undefined | null): string {
-	return `{${JSON.stringify(value ?? "")}}`;
+/** Page-contract copy forbids `<>{}`. Emit that text as Svelte markup; fall back to a string expression if those chars appear. */
+function textContent(value: string | undefined | null): string {
+	const text = value ?? "";
+	if (/[<>{}]/.test(text)) return `{${JSON.stringify(text)}}`;
+	return text;
 }
 
 function selectedClass(selected: boolean, on: string, off: string): string {
@@ -50,9 +53,9 @@ export function svelteForBlock(block: PageBlock, selectedId: string | null = nul
 	const copy = block.copy;
 	const kind = block.kind;
 	const extra: string[] = [];
-	if (kind === "nav" || kind === "hero" || kind === "cta") extra.push('import Button from "$ui/button/Button.svelte";');
+	if (kind === "hero" || kind === "cta") extra.push('import Button from "$ui/button/Button.svelte";');
 	if (kind === "nav") extra.push('import Group from "$lib/compose/Group.svelte";');
-	extra.push('import Title from "$lib/compose/Title.svelte";');
+	if (kind !== "footer") extra.push('import Title from "$lib/compose/Title.svelte";');
 	const importLines = [...primitiveImports(extra), ...childImports(block)];
 	const imports = importLines.join("\n");
 	const border = selectedClass(
@@ -64,44 +67,44 @@ export function svelteForBlock(block: PageBlock, selectedId: string | null = nul
 	let body = "";
 	if (kind === "nav") {
 		body = `<Group class="flex-wrap justify-between gap-3">
-			<Title as={2} class="text-base font-semibold text-foreground">${textExpr(copy?.brand ?? block.title)}</Title>
+			<Title as={2} class="text-base font-semibold text-foreground">${textContent(copy?.brand ?? block.title)}</Title>
 			<Group class="flex-wrap gap-2">
 ${childTags(block)}
 			</Group>
 		</Group>`;
 	} else if (kind === "hero") {
 		body = `<Stack class="gap-2">
-			<Text tag="span" class="text-xs font-medium uppercase tracking-wide text-muted-foreground">${textExpr(copy?.eyebrow)}</Text>
-			<Title as={2} class="text-xl font-semibold text-foreground">${textExpr(copy?.headline ?? block.title)}</Title>
-			<Text tag="p" class="text-sm text-muted-foreground">${textExpr(copy?.lede)}</Text>
+			<Text tag="span" class="text-xs font-medium uppercase tracking-wide text-muted-foreground">${textContent(copy?.eyebrow)}</Text>
+			<Title as={2} class="text-xl font-semibold text-foreground">${textContent(copy?.headline ?? block.title)}</Title>
+			<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.lede)}</Text>
 			<Button class="inline-flex w-fit rounded-default bg-primary px-3 py-2 text-sm text-primary-foreground">
-				<Text tag="span">${textExpr(copy?.action)}</Text>
+				<Text tag="span">${textContent(copy?.action)}</Text>
 			</Button>
 		</Stack>`;
 	} else if (kind === "hours") {
 		body = `<Stack class="gap-2">
-			<Title as={2} class="text-lg font-semibold text-foreground">${textExpr(block.title)}</Title>
-			<Text tag="p" class="text-sm text-foreground">${textExpr(copy?.days)}</Text>
-			<Text tag="p" class="text-sm text-muted-foreground">${textExpr(copy?.address)}</Text>
+			<Title as={2} class="text-lg font-semibold text-foreground">${textContent(block.title)}</Title>
+			<Text tag="p" class="text-sm text-foreground">${textContent(copy?.days)}</Text>
+			<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.address)}</Text>
 		</Stack>`;
 	} else if (kind === "cta") {
 		body = `<Stack class="gap-2">
-			<Title as={2} class="text-lg font-semibold text-foreground">${textExpr(block.title)}</Title>
-			<Text tag="p" class="text-sm text-muted-foreground">${textExpr(copy?.lede)}</Text>
+			<Title as={2} class="text-lg font-semibold text-foreground">${textContent(block.title)}</Title>
+			<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.lede)}</Text>
 			<Button class="inline-flex w-fit rounded-default bg-primary px-3 py-2 text-sm text-primary-foreground">
-				<Text tag="span">${textExpr(copy?.action)}</Text>
+				<Text tag="span">${textContent(copy?.action)}</Text>
 			</Button>
-			<Text tag="p" class="text-xs text-muted-foreground">${textExpr(copy?.note)}</Text>
+			<Text tag="p" class="text-xs text-muted-foreground">${textContent(copy?.note)}</Text>
 		</Stack>`;
 	} else if (kind === "footer") {
 		body = `<Stack class="gap-1">
-			<Text tag="p" class="text-sm text-foreground">${textExpr(copy?.contact)}</Text>
-			<Text tag="p" class="text-xs text-muted-foreground">${textExpr(copy?.legal)}</Text>
+			<Text tag="p" class="text-sm text-foreground">${textContent(copy?.contact)}</Text>
+			<Text tag="p" class="text-xs text-muted-foreground">${textContent(copy?.legal)}</Text>
 		</Stack>`;
 	} else {
 		body = `<Stack class="gap-2">
-			<Title as={2} class="text-lg font-semibold text-foreground">${textExpr(block.title)}</Title>
-			<Text tag="p" class="text-sm text-muted-foreground">${textExpr(block.summary)}</Text>
+			<Title as={2} class="text-lg font-semibold text-foreground">${textContent(block.title)}</Title>
+			<Text tag="p" class="text-sm text-muted-foreground">${textContent(block.summary)}</Text>
 ${childTags(block)}
 		</Stack>`;
 	}
@@ -112,7 +115,7 @@ ${childTags(block)}
 
 <Block tag="article" class=${border} data-block-id=${JSON.stringify(block.id)} data-block-kind=${JSON.stringify(kind)}>
 	<Stack class="gap-3">
-		<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">${textExpr(kind)}</Text>
+		<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">${textContent(kind)}</Text>
 		${body}
 	</Stack>
 </Block>
