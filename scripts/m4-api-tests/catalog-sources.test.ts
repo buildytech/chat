@@ -120,6 +120,8 @@ test("unknown variant and non-Lucide icon are rejected with a code and path", ()
 	assert.equal(icon.ok, false);
 	assert.equal((icon as { code: string }).code, "unknown_icon");
 	assert.match((icon as { path: string }).path, /icon/);
+	// The allowed names travel with the error, so the model can retry without another tool call.
+	assert.match((icon as { message: string }).message, /Allowed names: .*\bzap\b/);
 });
 
 test("get_block_details keeps the requested variant and returns the registry presets", () => {

@@ -6,7 +6,7 @@ import {
 	type PageCopyKey
 } from "@buildytech/page-contract";
 import { rendererKindForLabel } from "./catalog/compatibility.ts";
-import { isLucideIcon, resolveCatalogChoice } from "./catalog/sources.ts";
+import { isLucideIcon, lucideIconHint, resolveCatalogChoice } from "./catalog/sources.ts";
 
 /**
  * Model-supplied page content for propose_layout.
@@ -325,7 +325,7 @@ export function checkContentCatalog(content: ModelPageContent): { ok: true } | {
 				return {
 					ok: false,
 					code: "unknown_icon",
-					message: `${item.icon} is not a Lucide icon of the pinned registry snapshot. Call get_block_details on the block for the allowed names.`,
+					message: `${item.icon} is not a Lucide icon of the pinned registry snapshot. Use one of the allowed names or omit icon. ${lucideIconHint()}`,
 					path: `blocks[${bi}].items[${ii}].icon`
 				};
 			}

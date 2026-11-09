@@ -29412,6 +29412,11 @@ const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/compat
 const catalogSources = raw as unknown as CatalogSources;
 const ICONS = new Set(catalogSources.icons);
 
+/** The model-facing hint of an unknown icon: the allowed names inline, so a retry needs no extra tool call. */
+function lucideIconHint(): string {
+	return `Allowed names: ${catalogSources.icons.join(", ")}.`;
+}
+
 function isLucideIcon(name: unknown): name is string {
 	return typeof name === "string" && ICONS.has(name);
 }
@@ -29539,6 +29544,7 @@ function modelCatalogSources(): Record<string, unknown> {
 }
 
 exports["catalogSources"] = catalogSources;
+exports["lucideIconHint"] = lucideIconHint;
 exports["isLucideIcon"] = isLucideIcon;
 exports["catalogSourceFor"] = catalogSourceFor;
 exports["catalogEntryBySpec"] = catalogEntryBySpec;
@@ -29987,7 +29993,7 @@ exports["displayTitleFromBrief"] = displayTitleFromBrief;
 __def("packages/builder-core/src/content.ts", function (exports) {
 const { PAGE_LIMITS } = __req("packages/page-contract/src/index.ts");
 const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/compatibility.ts");
-const { isLucideIcon, resolveCatalogChoice } = __req("packages/builder-core/src/catalog/sources.ts");
+const { isLucideIcon, lucideIconHint, resolveCatalogChoice } = __req("packages/builder-core/src/catalog/sources.ts");
 const DATA_KINDS: ReadonlySet<PageBlockKind> = new Set<PageBlockKind>(["overview", "metrics", "chart", "activity"]);
 
 /** Child kind and row limit per parent kind. */
@@ -30251,7 +30257,7 @@ function checkContentCatalog(content: ModelPageContent): { ok: true } | { ok: fa
 				return {
 					ok: false,
 					code: "unknown_icon",
-					message: `${item.icon} is not a Lucide icon of the pinned registry snapshot. Call get_block_details on the block for the allowed names.`,
+					message: `${item.icon} is not a Lucide icon of the pinned registry snapshot. Use one of the allowed names or omit icon. ${lucideIconHint()}`,
 					path: `blocks[${bi}].items[${ii}].icon`
 				};
 			}
@@ -30467,7 +30473,7 @@ const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts
 const { getBlockIndex, rendererKindForLabel } = __req("packages/builder-core/src/catalog/compatibility.ts");
 const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
 const { childKindFor } = __req("packages/builder-core/src/content.ts");
-const { catalogSourceFor, isLucideIcon, resolveCatalogChoice } = __req("packages/builder-core/src/catalog/sources.ts");
+const { catalogSourceFor, isLucideIcon, lucideIconHint, resolveCatalogChoice } = __req("packages/builder-core/src/catalog/sources.ts");
 const STOCK_APP_URL = "https://app.codegen-x.com/";
 
 function allowedChild(parent: PageBlockKind, child: PageBlockKind): boolean {
@@ -30651,7 +30657,7 @@ function validateCatalogProvenance(input: {
 				return {
 					ok: false,
 					code: "unknown_icon",
-					message: `Row ${child.id}: ${child.copy.icon} is not a Lucide icon of the pinned registry snapshot.`,
+					message: `Row ${child.id}: ${child.copy.icon} is not a Lucide icon of the pinned registry snapshot. Use one of the allowed names or omit icon. ${lucideIconHint()}`,
 					path: `${path}.children[${ci}].copy.icon`
 				};
 			}

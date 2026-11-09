@@ -4,7 +4,7 @@ import { getBlockIndex, rendererKindForLabel } from "./compatibility.ts";
 import { getScreenById } from "./search.ts";
 import { childKindFor } from "../content.ts";
 import type { CatalogScreen } from "./types.ts";
-import { catalogSourceFor, isLucideIcon, resolveCatalogChoice } from "./sources.ts";
+import { catalogSourceFor, isLucideIcon, lucideIconHint, resolveCatalogChoice } from "./sources.ts";
 
 /**
  * Program-level catalog provenance (deterministic code, never the model).
@@ -254,7 +254,7 @@ export function validateCatalogProvenance(input: {
 				return {
 					ok: false,
 					code: "unknown_icon",
-					message: `Row ${child.id}: ${child.copy.icon} is not a Lucide icon of the pinned registry snapshot.`,
+					message: `Row ${child.id}: ${child.copy.icon} is not a Lucide icon of the pinned registry snapshot. Use one of the allowed names or omit icon. ${lucideIconHint()}`,
 					path: `${path}.children[${ci}].copy.icon`
 				};
 			}

@@ -61,6 +61,11 @@ export type CatalogSourceBlock = {
 export const catalogSources = raw as unknown as CatalogSources;
 const ICONS = new Set(catalogSources.icons);
 
+/** The model-facing hint of an unknown icon: the allowed names inline, so a retry needs no extra tool call. */
+export function lucideIconHint(): string {
+	return `Allowed names: ${catalogSources.icons.join(", ")}.`;
+}
+
 export function isLucideIcon(name: unknown): name is string {
 	return typeof name === "string" && ICONS.has(name);
 }
