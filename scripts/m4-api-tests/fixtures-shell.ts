@@ -32,18 +32,14 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 			}
 		],
 		"propose": {
-			"screenId": "screen.theme-dashboard-console/home",
+			"screenId": "screen.theme-dashboard-console/layouts",
 			"locale": "ru",
 			"demoData": true,
 			"requireBlocks": [
 				"sidenav",
-				"kanban"
-			],
-			"remove": [
-				"bottomnav",
-				"footer"
-			],
-			"newPage": true
+				"kanban",
+				"dashshell"
+			]
 		}
 	},
 	{
@@ -57,8 +53,7 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 		],
 		"propose": {
 			"screenId": "screen.theme-dashboard-console/home",
-			"locale": "ru",
-			"demoData": false
+			"locale": "ru"
 		}
 	},
 	{
@@ -67,31 +62,26 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 		"brief": "Find a dashboard layout for tasks and projects that already has an app shell with a sidebar, and fill it with fake data in English.",
 		"search": [
 			{
-				"q": "dashboard tasks projects app shell sidebar",
+				"q": "dashboard tasks projects shell sidebar kanban",
 				"section": "dashboard",
 				"blocks": [
 					"dashshell",
 					"sidenav",
 					"kanban",
-					"projects",
 					"overview",
 					"metrics",
-					"chart",
 					"activity"
 				]
 			}
 		],
 		"propose": {
-			"screenId": "screen.theme-dashboard-console/home",
+			"screenId": "screen.theme-dashboard-console/layouts",
 			"locale": "en",
 			"demoData": true,
 			"requireBlocks": [
 				"sidenav",
-				"dashshell",
-				"kanban",
-				"projects"
-			],
-			"newPage": true
+				"dashshell"
+			]
 		}
 	},
 	{
@@ -110,18 +100,9 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 			}
 		],
 		"propose": {
-			"screenId": "screen.theme-dashboard-console/home",
+			"screenId": "screen.theme-dashboard-console/layouts",
 			"locale": "es",
-			"demoData": true,
-			"requireBlocks": [
-				"sidenav",
-				"kanban"
-			],
-			"remove": [
-				"bottomnav",
-				"footer"
-			],
-			"newPage": true
+			"demoData": true
 		}
 	},
 	{
@@ -130,26 +111,23 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 		"brief": "\u043d\u0430\u0439\u0434\u0438 \u0432 \u0431\u0438\u0431\u043b\u0438\u043e\u0442\u0435\u043a\u0435 \u043f\u043e\u0434\u0445\u043e\u0434\u044f\u0449\u0438\u0439 \u043c\u0430\u043a\u0435\u0442 \u0434\u043b\u044f dashboard \u043f\u0430\u043d\u0435\u043b\u0438 \u0437\u0430\u0434\u0430\u0447 \u0438 \u043f\u0440\u043e\u0435\u043a\u0442\u043e\u0432. \u0437\u0430\u043f\u043e\u043b\u043d\u0438 \u0435\u0435 \u0444\u0435\u0439\u043a\u043e\u0432\u044b\u043c\u0438 \u0434\u0430\u043d\u043d\u044b\u043c\u0438 \u043d\u0430 \u0440\u0443\u0441\u0441\u043a\u043e\u043c \u044f\u0437\u044b\u043a\u0435. \u0441\u043a\u043e\u0440\u0435\u0435 \u0432\u0441\u0435\u0433\u043e \u043d\u0443\u0436\u043d\u043e \u0432\u044b\u0431\u0438\u0440\u0430\u0442\u044c \u0438\u0437 \u0442\u0435\u0445, \u0433\u0434\u0435 \u0443\u0436\u0435 \u0432\u0441\u0442\u0440\u043e\u0435\u043d Shell \u0441\u0430\u0439\u0434\u0431\u0430\u0440",
 		"search": [
 			{
-				"q": "dashboard tasks projects kanban shell sidenav",
+				"q": "dashboard kanban projects tasks sidenav dashshell shell",
 				"section": "dashboard",
 				"blocks": [
-					"dashshell",
 					"sidenav",
+					"dashshell",
 					"kanban",
-					"projects"
+					"overview"
 				],
 				"page": 1
 			}
 		],
 		"propose": {
-			"screenId": "screen.theme-dashboard-console/home",
+			"screenId": "screen.theme-dashboard-console/layouts",
 			"locale": "ru",
 			"demoData": true,
 			"requireBlocks": [
-				"sidenav",
-				"dashshell",
-				"kanban",
-				"projects"
+				"sidenav"
 			],
 			"newPage": true
 		}
@@ -174,24 +152,18 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 		"brief": "Find a dashboard layout for tasks and projects that already has an app shell with a sidebar, and fill it with fake data in English.",
 		"search": [
 			{
-				"q": "dashboard tasks projects sidebar shell",
+				"q": "dashboard tasks projects kanban sidenav shell",
 				"section": "dashboard",
 				"blocks": [
-					"dashshell",
 					"sidenav",
-					"kanban"
+					"dashshell"
 				]
 			}
 		],
 		"propose": {
 			"screenId": "screen.theme-dashboard-console/layouts",
 			"locale": "en",
-			"demoData": true,
-			"requireBlocks": [
-				"sidenav",
-				"dashshell"
-			],
-			"newPage": true
+			"demoData": true
 		}
 	},
 	{
@@ -200,7 +172,7 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 		"brief": "Busca una plantilla de panel para tareas y proyectos que ya tenga barra lateral de navegaci\u00f3n y ll\u00e9nala con datos de ejemplo en espa\u00f1ol.",
 		"search": [
 			{
-				"q": "dashboard kanban sidenav tasks projects",
+				"q": "kanban dashboard sidenav tasks projects",
 				"section": "dashboard",
 				"job": "dashboard",
 				"blocks": [
@@ -210,13 +182,13 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 			}
 		],
 		"propose": {
-			"screenId": "screen.theme-dashboard-console/home",
+			"screenId": "screen.theme-dashboard-console/layouts",
 			"locale": "es",
 			"demoData": true,
 			"requireBlocks": [
-				"sidenav"
-			],
-			"newPage": true
+				"sidenav",
+				"kanban"
+			]
 		}
 	},
 	{
@@ -225,7 +197,7 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 		"brief": "\u043d\u0430\u0439\u0434\u0438 \u0432 \u0431\u0438\u0431\u043b\u0438\u043e\u0442\u0435\u043a\u0435 \u043f\u043e\u0434\u0445\u043e\u0434\u044f\u0449\u0438\u0439 \u043c\u0430\u043a\u0435\u0442 \u0434\u043b\u044f dashboard \u043f\u0430\u043d\u0435\u043b\u0438 \u0437\u0430\u0434\u0430\u0447 \u0438 \u043f\u0440\u043e\u0435\u043a\u0442\u043e\u0432. \u0437\u0430\u043f\u043e\u043b\u043d\u0438 \u0435\u0435 \u0444\u0435\u0439\u043a\u043e\u0432\u044b\u043c\u0438 \u0434\u0430\u043d\u043d\u044b\u043c\u0438 \u043d\u0430 \u0440\u0443\u0441\u0441\u043a\u043e\u043c \u044f\u0437\u044b\u043a\u0435. \u0441\u043a\u043e\u0440\u0435\u0435 \u0432\u0441\u0435\u0433\u043e \u043d\u0443\u0436\u043d\u043e \u0432\u044b\u0431\u0438\u0440\u0430\u0442\u044c \u0438\u0437 \u0442\u0435\u0445, \u0433\u0434\u0435 \u0443\u0436\u0435 \u0432\u0441\u0442\u0440\u043e\u0435\u043d Shell \u0441\u0430\u0439\u0434\u0431\u0430\u0440",
 		"search": [
 			{
-				"q": "dashboard shell sidenav kanban projects tasks overview metrics activity",
+				"q": "dashboard shell sidenav kanban projects tasks overview metrics chart activity",
 				"section": "dashboard",
 				"job": "dashboard",
 				"blocks": [
@@ -235,25 +207,19 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 					"projects",
 					"overview",
 					"metrics",
+					"chart",
 					"activity"
 				],
 				"page": 1
 			}
 		],
 		"propose": {
-			"screenId": "screen.theme-dashboard-console/home",
+			"screenId": "screen.theme-dashboard-console/layouts",
 			"locale": "ru",
 			"demoData": true,
 			"requireBlocks": [
-				"sidenav",
-				"overview",
-				"metrics",
-				"activity",
-				"dashshell",
-				"kanban",
-				"projects"
-			],
-			"newPage": true
+				"sidenav"
+			]
 		}
 	},
 	{
@@ -268,8 +234,7 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 		],
 		"propose": {
 			"screenId": "screen.theme-dashboard-console/home",
-			"locale": "ru",
-			"newPage": true
+			"locale": "ru"
 		}
 	},
 	{
@@ -278,15 +243,15 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 		"brief": "Find a dashboard layout for tasks and projects that already has an app shell with a sidebar, and fill it with fake data in English.",
 		"search": [
 			{
-				"q": "dashboard tasks projects shell sidenav kanban",
+				"q": "dashboard tasks projects shell sidenav kanban overview",
 				"section": "dashboard",
 				"job": "dashboard",
 				"blocks": [
-					"sidenav",
 					"dashshell",
-					"overview",
+					"sidenav",
 					"kanban",
-					"projects"
+					"projects",
+					"overview"
 				],
 				"page": 1
 			}
@@ -307,19 +272,22 @@ export const SHELL_FIXTURES: ShellFixture[] = [
 		"brief": "Busca una plantilla de panel para tareas y proyectos que ya tenga barra lateral de navegaci\u00f3n y ll\u00e9nala con datos de ejemplo en espa\u00f1ol.",
 		"search": [
 			{
-				"q": "dashboard tasks projects kanban sidenav",
+				"q": "dashboard tasks projects kanban sidenav shell activity overview",
 				"section": "dashboard",
 				"job": "dashboard",
 				"blocks": [
 					"sidenav",
+					"dashshell",
 					"kanban",
-					"projects"
+					"projects",
+					"activity",
+					"overview"
 				],
 				"page": 1
 			}
 		],
 		"propose": {
-			"screenId": "screen.theme-dashboard-console/home",
+			"screenId": "screen.theme-dashboard-console/layouts",
 			"locale": "es",
 			"demoData": true,
 			"requireBlocks": [

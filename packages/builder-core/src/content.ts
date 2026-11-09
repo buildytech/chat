@@ -423,7 +423,7 @@ export function proposeContentParameterSchema(): Record<string, unknown> {
 		demoData: {
 			type: "boolean",
 			description:
-				"true only when the author explicitly asked for demo, fake, sample, mock or test data (in any language); false when they asked to remove it or use real data; omit otherwise."
+				"Records whether the author explicitly asked for demo, fake, sample, mock or test data (in any language): true if asked, false if they asked to remove it or use real data, omit otherwise. The host never generates data: when true YOU must write the rows in blocks[].items (overview, metrics, chart, activity)."
 		},
 		requireBlocks: {
 			type: "array",
