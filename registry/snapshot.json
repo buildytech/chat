@@ -1,0 +1,5801 @@
+{
+	"format": "buildy-registry-snapshot",
+	"version": 1,
+	"cli": "ui8kit@3.4.1",
+	"registry": "https://registry.buildy.tw/svelte",
+	"index": {
+		"url": "https://registry.buildy.tw/svelte/index.json",
+		"sha256": "fc97e8d085cb405ad2661bb5a8f15a6e4bb44fa681ba5b3f580bd4a51aaa13dd",
+		"lastUpdated": "2026-11-09T23:42:50+03:00",
+		"version": "0.1.0"
+	},
+	"variants": {
+		"url": "https://registry.buildy.tw/variants/v0.json",
+		"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4"
+	},
+	"initItems": [
+		"presets",
+		"recipes",
+		"utils"
+	],
+	"npmDependencies": [
+		"clsx",
+		"tailwind-merge"
+	],
+	"items": {
+		"about-company": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"feature-grid",
+				"grid",
+				"group",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"stats-band",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/about-company.svelte"
+			]
+		},
+		"about-me": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"error-page",
+				"group",
+				"list",
+				"list-item",
+				"media-frame",
+				"product-info",
+				"progress",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/about-me.svelte",
+				"src/blocks/about-me.types.ts"
+			]
+		},
+		"action-group": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"group",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/action-group.svelte"
+			]
+		},
+		"activity-feed": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"container",
+				"empty-state",
+				"list",
+				"list-item",
+				"panel",
+				"stack",
+				"text",
+				"timeline",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/activity-feed.svelte",
+				"src/blocks/activity-feed.types.ts"
+			]
+		},
+		"add-icon": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/add-icon.svelte"
+			]
+		},
+		"add-qty": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"group",
+				"lucide-icon",
+				"number-field",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/add-qty.svelte"
+			]
+		},
+		"alert": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Alert.svelte"
+			]
+		},
+		"announcement-bar": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"button",
+				"container",
+				"group",
+				"inline",
+				"link-plain",
+				"lucide-icon",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/announcement-bar.svelte"
+			]
+		},
+		"app-main": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"activity-feed",
+				"bar-chart",
+				"box",
+				"chart-panel",
+				"dashboard-overview",
+				"grid",
+				"metric-row",
+				"panel",
+				"stack",
+				"stat-tile",
+				"timeline",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/app-main.svelte"
+			]
+		},
+		"app-shell": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"activity-feed",
+				"app-main",
+				"block",
+				"chart-panel",
+				"container",
+				"dashboard-overview",
+				"grid",
+				"list",
+				"list-item",
+				"metric-row",
+				"nav-bar",
+				"panel",
+				"sidebar-nav",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/app-shell.svelte",
+				"src/blocks/app-shell.types.ts"
+			]
+		},
+		"article-block": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/article-block.svelte"
+			]
+		},
+		"article-body": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"empty-state",
+				"grid",
+				"link",
+				"list",
+				"list-item",
+				"nav-block",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/article-body.svelte",
+				"src/blocks/article-body.types.ts"
+			]
+		},
+		"auth-card": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"auth-form",
+				"block",
+				"button",
+				"group",
+				"link",
+				"lucide-icon",
+				"separator",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/auth-card.svelte",
+				"src/blocks/auth-card.types.ts"
+			]
+		},
+		"auth-form": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"auth-card",
+				"button",
+				"checkbox",
+				"field",
+				"form",
+				"group",
+				"input",
+				"label",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/auth-form.svelte"
+			]
+		},
+		"auth-layout": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"auth-card",
+				"block",
+				"box",
+				"container",
+				"grid",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/auth-layout.svelte",
+				"src/blocks/auth-layout.types.ts"
+			]
+		},
+		"avatar": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"image",
+				"inline",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/avatar.svelte"
+			]
+		},
+		"backdrop": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"media-frame",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/backdrop.svelte"
+			]
+		},
+		"badge": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Badge.svelte"
+			]
+		},
+		"badge-square": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"inline",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/badge-square.svelte"
+			]
+		},
+		"bar-chart": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/bar-chart.svelte",
+				"src/components/bar-chart.types.ts"
+			]
+		},
+		"before-after": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"card",
+				"card-content",
+				"empty-state",
+				"grid",
+				"group",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/before-after.svelte",
+				"src/blocks/before-after.types.ts"
+			]
+		},
+		"bento-grid": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"card",
+				"card-content",
+				"empty-state",
+				"grid",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/bento-grid.svelte",
+				"src/blocks/bento-grid.types.ts"
+			]
+		},
+		"block": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Block.svelte"
+			]
+		},
+		"bottom-nav": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"menu-entry",
+				"nav-bar",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/bottom-nav.svelte"
+			]
+		},
+		"box": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Box.svelte"
+			]
+		},
+		"breadcrumb": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"kit-link",
+				"kit-text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Breadcrumb.svelte"
+			]
+		},
+		"bulk-bar": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"button",
+				"inline",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/bulk-bar.svelte"
+			]
+		},
+		"button": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-button",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Button.svelte"
+			]
+		},
+		"button-plain": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-button",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/ButtonPlain.svelte"
+			]
+		},
+		"card": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Card.svelte"
+			]
+		},
+		"card-content": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/CardContent.svelte"
+			]
+		},
+		"card-description": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/CardDescription.svelte"
+			]
+		},
+		"card-footer": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/CardFooter.svelte"
+			]
+		},
+		"card-header": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/CardHeader.svelte"
+			]
+		},
+		"card-title": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/CardTitle.svelte"
+			]
+		},
+		"cart-count": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"inline",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/cart-count.svelte"
+			]
+		},
+		"cart-drawer": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"box",
+				"button",
+				"cart-list",
+				"container",
+				"drawer-lines",
+				"empty-state",
+				"group",
+				"lucide-icon",
+				"order-summary",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/cart-drawer.svelte",
+				"src/blocks/cart-drawer.types.ts"
+			]
+		},
+		"cart-list": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"button",
+				"card",
+				"card-content",
+				"cart-table",
+				"empty-state",
+				"lucide-icon",
+				"media-frame",
+				"number-field",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/cart-list.svelte",
+				"src/blocks/cart-list.types.ts"
+			]
+		},
+		"cart-summary-card": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"button",
+				"cart-list",
+				"group",
+				"inline",
+				"input",
+				"list",
+				"list-item",
+				"media-frame",
+				"order-summary",
+				"progress",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/cart-summary-card.svelte",
+				"src/components/cart-summary-card.types.ts"
+			]
+		},
+		"cart-table": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"button",
+				"cart-list",
+				"group",
+				"inline",
+				"lucide-icon",
+				"media-frame",
+				"number-field",
+				"stack",
+				"table",
+				"table-body",
+				"table-caption",
+				"table-cell",
+				"table-head",
+				"table-head-cell",
+				"table-row",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/cart-table.svelte"
+			]
+		},
+		"category-nav": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"container",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"menu-entry",
+				"search-field",
+				"select",
+				"select-option",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/category-nav.svelte",
+				"src/blocks/category-nav.types.ts"
+			]
+		},
+		"chart-panel": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"bar-chart",
+				"block",
+				"container",
+				"empty-state",
+				"meter-row",
+				"panel",
+				"stack",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/chart-panel.svelte",
+				"src/blocks/chart-panel.types.ts"
+			]
+		},
+		"checkbox": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-checkbox",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Checkbox.svelte"
+			]
+		},
+		"checklist": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"disclosure",
+				"empty-state",
+				"icon-badge",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"progress",
+				"section-frame",
+				"stack",
+				"summary",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/checklist.svelte",
+				"src/blocks/checklist.types.ts"
+			]
+		},
+		"checkout-form": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"cart-list",
+				"cart-summary-card",
+				"checkout-step",
+				"checkout-submit",
+				"field",
+				"form",
+				"grid",
+				"input",
+				"order-summary",
+				"payment-options",
+				"section-frame",
+				"slot-grid",
+				"textarea",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/checkout-form.svelte",
+				"src/blocks/checkout-form.types.ts"
+			]
+		},
+		"checkout-step": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"group",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/checkout-step.svelte"
+			]
+		},
+		"checkout-submit": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"checkbox",
+				"group",
+				"label",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/checkout-submit.svelte"
+			]
+		},
+		"code-window": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"inline",
+				"list",
+				"list-item",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/code-window.svelte",
+				"src/components/code-window.types.ts"
+			]
+		},
+		"combo-builder": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"dish-showcase",
+				"group",
+				"inline",
+				"lucide-icon",
+				"option-chips",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/combo-builder.svelte"
+			]
+		},
+		"compare-mark": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"inline",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/compare-mark.svelte"
+			]
+		},
+		"comparison-table": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"compare-mark",
+				"empty-state",
+				"section-frame",
+				"table",
+				"table-body",
+				"table-caption",
+				"table-cell",
+				"table-head",
+				"table-head-cell",
+				"table-row",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/comparison-table.svelte",
+				"src/blocks/comparison-table.types.ts"
+			]
+		},
+		"compose": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"alert",
+				"badge",
+				"block",
+				"box",
+				"breadcrumb",
+				"button",
+				"button-plain",
+				"card",
+				"card-content",
+				"card-description",
+				"card-footer",
+				"card-header",
+				"card-title",
+				"checkbox",
+				"container",
+				"dialog",
+				"disclosure",
+				"fieldset",
+				"form",
+				"form-description",
+				"form-item",
+				"form-message",
+				"grid",
+				"grid-col",
+				"group",
+				"icon",
+				"icon-badge",
+				"image",
+				"inline",
+				"input",
+				"label",
+				"legend",
+				"link",
+				"link-plain",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"meter",
+				"opt-group",
+				"progress",
+				"prose",
+				"radio",
+				"range",
+				"recipes",
+				"select",
+				"select-option",
+				"separator",
+				"sheet",
+				"sheet-close",
+				"sheet-trigger",
+				"skeleton",
+				"stack",
+				"summary",
+				"switch",
+				"table",
+				"table-body",
+				"table-caption",
+				"table-cell",
+				"table-col",
+				"table-col-group",
+				"table-foot",
+				"table-head",
+				"table-head-cell",
+				"table-row",
+				"text",
+				"textarea",
+				"theme-toggle",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/index.ts"
+			]
+		},
+		"contact-form": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"button",
+				"checkbox",
+				"feature-grid",
+				"field",
+				"form",
+				"grid",
+				"group",
+				"input",
+				"label",
+				"lucide-icon",
+				"section-frame",
+				"stack",
+				"text",
+				"textarea",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/contact-form.svelte",
+				"src/blocks/contact-form.types.ts"
+			]
+		},
+		"container": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Container.svelte"
+			]
+		},
+		"cookie-banner": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"box",
+				"button",
+				"container",
+				"group",
+				"lucide-icon",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/cookie-banner.svelte"
+			]
+		},
+		"credit-packs": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"button",
+				"card",
+				"card-content",
+				"empty-state",
+				"grid",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/credit-packs.svelte",
+				"src/blocks/credit-packs.types.ts"
+			]
+		},
+		"cta-actions": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"action-group",
+				"button",
+				"form",
+				"group",
+				"input",
+				"label",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/cta-actions.svelte",
+				"src/components/cta-actions.types.ts"
+			]
+		},
+		"cta-band": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"card",
+				"card-content",
+				"container",
+				"cta-actions",
+				"cta-banner",
+				"media-frame",
+				"quote-proof",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/cta-band.svelte",
+				"src/blocks/cta-band.types.ts"
+			]
+		},
+		"cta-banner": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"box",
+				"button",
+				"presets",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/cta-banner.svelte"
+			]
+		},
+		"cta-proof": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"cta-proof-items",
+				"error-page",
+				"feature-grid",
+				"logo-cloud",
+				"media-frame",
+				"section-frame",
+				"stats-band",
+				"text",
+				"utils",
+				"zone-table"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/cta-proof.svelte",
+				"src/blocks/cta-proof.types.ts"
+			]
+		},
+		"cta-proof-items": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"cta-proof",
+				"group",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/cta-proof-items.svelte"
+			]
+		},
+		"cut-cards": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"dish-showcase",
+				"grid",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"media-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/cut-cards.svelte"
+			]
+		},
+		"dashboard-overview": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"activity-feed",
+				"bar-chart",
+				"box",
+				"chart-panel",
+				"grid",
+				"metric-row",
+				"panel",
+				"section-frame",
+				"stack",
+				"stat-tile",
+				"timeline",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/dashboard-overview.svelte",
+				"src/blocks/dashboard-overview.types.ts"
+			]
+		},
+		"dashboard-shell": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"box",
+				"nav-bar",
+				"shell-content",
+				"shell-footer",
+				"shell-sidebar",
+				"shell-topbar",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/dashboard-shell.svelte",
+				"src/blocks/dashboard-shell.types.ts"
+			]
+		},
+		"delivery-info": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"feature-grid",
+				"grid",
+				"group",
+				"lucide-icon",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils",
+				"zone-table"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/delivery-info.svelte",
+				"src/blocks/delivery-info.types.ts"
+			]
+		},
+		"dialog": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-dialog",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Dialog.svelte"
+			]
+		},
+		"disclosure": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-disclosure",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Disclosure.svelte"
+			]
+		},
+		"dish-bento": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"add-icon",
+				"badge",
+				"box",
+				"dish-showcase",
+				"empty-state",
+				"group",
+				"inline",
+				"link",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/dish-bento.svelte"
+			]
+		},
+		"dish-card": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"box",
+				"button",
+				"card-content",
+				"dish-showcase",
+				"group",
+				"link",
+				"media-frame",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/dish-card.svelte",
+				"src/blocks/dish-card.types.ts"
+			]
+		},
+		"dish-cart-grid": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"add-qty",
+				"box",
+				"cart-count",
+				"dish-showcase",
+				"empty-state",
+				"grid",
+				"group",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/dish-cart-grid.svelte"
+			]
+		},
+		"dish-compare": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"cut-cards",
+				"dish-showcase",
+				"empty-state",
+				"section-frame",
+				"table",
+				"table-body",
+				"table-caption",
+				"table-cell",
+				"table-head",
+				"table-head-cell",
+				"table-row",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/dish-compare.svelte"
+			]
+		},
+		"dish-showcase": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"empty-state",
+				"grid",
+				"group",
+				"inline",
+				"link",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/dish-showcase.svelte",
+				"src/blocks/dish-showcase.types.ts"
+			]
+		},
+		"dish-strip": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"add-icon",
+				"dish-showcase",
+				"empty-state",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"media-frame",
+				"section-frame",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/dish-strip.svelte"
+			]
+		},
+		"drawer-lines": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"cart-drawer",
+				"cart-list",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"media-frame",
+				"number-field",
+				"order-summary",
+				"progress",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/drawer-lines.svelte"
+			]
+		},
+		"dropdown-item": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button-plain",
+				"inline",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/dropdown-item.svelte"
+			]
+		},
+		"editor-tab": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"button",
+				"inline",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/editor-tab.svelte"
+			]
+		},
+		"empty-panel": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"button",
+				"container",
+				"empty-state",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/empty-panel.svelte"
+			]
+		},
+		"empty-state": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"icon-badge",
+				"lucide-icon",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/empty-state.svelte"
+			]
+		},
+		"error-page": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"media-frame",
+				"section-frame",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/error-page.svelte",
+				"src/blocks/error-page.types.ts"
+			]
+		},
+		"faq-cards": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"article-block",
+				"badge",
+				"box",
+				"button",
+				"faq-split",
+				"lucide-icon",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/faq-cards.svelte"
+			]
+		},
+		"faq-disclosures": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"disclosure",
+				"faq-split",
+				"stack",
+				"summary",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/faq-disclosures.svelte"
+			]
+		},
+		"faq-finder": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"faq-list",
+				"faq-split",
+				"group",
+				"list",
+				"list-item",
+				"menu-entry",
+				"search-field",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/faq-finder.svelte"
+			]
+		},
+		"faq-help": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"box",
+				"button",
+				"faq-split",
+				"feature-grid",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/faq-help.svelte"
+			]
+		},
+		"faq-list": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"disclosure",
+				"empty-state",
+				"grid",
+				"search-field",
+				"section-frame",
+				"stack",
+				"summary",
+				"switcher",
+				"switcher-item",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/faq-list.svelte",
+				"src/blocks/faq-list.types.ts"
+			]
+		},
+		"faq-split": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"faq-cards",
+				"faq-disclosures",
+				"faq-finder",
+				"faq-help",
+				"faq-list",
+				"feature-grid",
+				"media-frame",
+				"section-frame",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/faq-split.svelte",
+				"src/blocks/faq-split.types.ts"
+			]
+		},
+		"feature-accordion": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"disclosure",
+				"empty-state",
+				"feature-grid",
+				"inline",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"summary",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/feature-accordion.svelte"
+			]
+		},
+		"feature-cards": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"card",
+				"card-content",
+				"card-header",
+				"card-title",
+				"feature-grid",
+				"grid",
+				"group",
+				"icon-badge",
+				"lucide-icon",
+				"presets",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/feature-cards.svelte"
+			]
+		},
+		"feature-grid": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"empty-state",
+				"feature-cards",
+				"feature-rows",
+				"group",
+				"link",
+				"presets",
+				"section-frame",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/feature-grid.svelte",
+				"src/blocks/feature-grid.types.ts"
+			]
+		},
+		"feature-metric-cards": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"group",
+				"inline",
+				"lucide-icon",
+				"stack",
+				"stats-band",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/feature-metric-cards.svelte"
+			]
+		},
+		"feature-pairs": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"feature-grid",
+				"group",
+				"inline",
+				"lucide-icon",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/feature-pairs.svelte"
+			]
+		},
+		"feature-rows": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"feature-grid",
+				"grid",
+				"lucide-icon",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/feature-rows.svelte"
+			]
+		},
+		"feature-showcase": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"card",
+				"card-content",
+				"empty-state",
+				"feature-grid",
+				"lucide-icon",
+				"media-frame",
+				"menu-entry",
+				"section-frame",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/feature-showcase.svelte"
+			]
+		},
+		"feature-split": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"error-page",
+				"feature-cards",
+				"feature-grid",
+				"feature-metric-cards",
+				"feature-pairs",
+				"feature-stat-rows",
+				"media-frame",
+				"section-frame",
+				"stats-band",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/feature-split.svelte"
+			]
+		},
+		"feature-stat-rows": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"feature-grid",
+				"group",
+				"inline",
+				"lucide-icon",
+				"stack",
+				"stats-band",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/feature-stat-rows.svelte"
+			]
+		},
+		"feature-sticky": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"empty-state",
+				"feature-grid",
+				"grid",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/feature-sticky.svelte"
+			]
+		},
+		"feature-tabs": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"empty-state",
+				"feature-grid",
+				"grid",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"switcher",
+				"switcher-item",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/feature-tabs.svelte"
+			]
+		},
+		"field": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"label",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/field.svelte"
+			]
+		},
+		"fieldset": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Fieldset.svelte"
+			]
+		},
+		"figure-block": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/figure-block.svelte"
+			]
+		},
+		"file-tree": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/file-tree.svelte"
+			]
+		},
+		"file-tree-item": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button-plain",
+				"inline",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/file-tree-item.svelte"
+			]
+		},
+		"footer-brand": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"group",
+				"inline",
+				"lucide-icon",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-brand.svelte"
+			]
+		},
+		"footer-card": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"mega-menu",
+				"menu-entry",
+				"nav-block",
+				"presets",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-card.svelte"
+			]
+		},
+		"footer-channels": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"footer-split",
+				"inline",
+				"lucide-icon",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-channels.svelte"
+			]
+		},
+		"footer-columns": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"grid",
+				"list",
+				"list-item",
+				"mega-menu",
+				"menu-entry",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-columns.svelte"
+			]
+		},
+		"footer-contacts": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"footer-split",
+				"group",
+				"inline",
+				"lucide-icon",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-contacts.svelte"
+			]
+		},
+		"footer-figures": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"footer-split",
+				"group",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-figures.svelte"
+			]
+		},
+		"footer-group-cards": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"box",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"mega-menu",
+				"menu-entry",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-group-cards.svelte"
+			]
+		},
+		"footer-link-columns": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"box",
+				"list",
+				"list-item",
+				"mega-menu",
+				"menu-entry",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-link-columns.svelte"
+			]
+		},
+		"footer-points": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"footer-split",
+				"group",
+				"lucide-icon",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-points.svelte"
+			]
+		},
+		"footer-signup-card": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"footer-split",
+				"form",
+				"group",
+				"input",
+				"label",
+				"lucide-icon",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-signup-card.svelte"
+			]
+		},
+		"footer-sitemap": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"link",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/footer-sitemap.svelte"
+			]
+		},
+		"footer-split": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"block",
+				"box",
+				"container",
+				"feature-grid",
+				"footer-brand",
+				"footer-channels",
+				"footer-contacts",
+				"footer-figures",
+				"footer-group-cards",
+				"footer-link-columns",
+				"footer-points",
+				"footer-signup-card",
+				"footer-sitemap",
+				"group",
+				"media-frame",
+				"mega-menu",
+				"stack",
+				"stats-band",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/footer-split.svelte",
+				"src/blocks/footer-split.types.ts"
+			]
+		},
+		"form": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-form",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Form.svelte"
+			]
+		},
+		"form-description": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/FormDescription.svelte"
+			]
+		},
+		"form-item": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/FormItem.svelte"
+			]
+		},
+		"form-message": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/FormMessage.svelte"
+			]
+		},
+		"grid": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Grid.svelte"
+			]
+		},
+		"grid-col": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/GridCol.svelte"
+			]
+		},
+		"grill-builder": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"dish-showcase",
+				"group",
+				"inline",
+				"lucide-icon",
+				"meat-cards",
+				"option-chips",
+				"section-frame",
+				"side-checks",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/grill-builder.svelte"
+			]
+		},
+		"grocery-list": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"add-icon",
+				"dish-showcase",
+				"empty-state",
+				"inline",
+				"list",
+				"list-item",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/grocery-list.svelte"
+			]
+		},
+		"group": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Group.svelte"
+			]
+		},
+		"hero-badge": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"group",
+				"presets",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/hero-badge.svelte"
+			]
+		},
+		"hero-classic": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"backdrop",
+				"box",
+				"button",
+				"code-window",
+				"cta-actions",
+				"grid",
+				"group",
+				"input",
+				"label",
+				"media-frame",
+				"section-frame",
+				"topic-chips",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/hero-classic.svelte",
+				"src/blocks/hero-classic.types.ts"
+			]
+		},
+		"hero-head": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"button",
+				"group",
+				"inline",
+				"link",
+				"link-plain",
+				"menu-entry",
+				"nav-bar",
+				"nav-block",
+				"presets",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/hero-head.svelte"
+			]
+		},
+		"hero-prompt": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"block",
+				"container",
+				"cta-actions",
+				"hero-badge",
+				"hero-head",
+				"nav-bar",
+				"presets",
+				"prompt-composer",
+				"stack",
+				"topic-chips",
+				"utils",
+				"weighted-title"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/hero-prompt.svelte",
+				"src/blocks/hero-prompt.types.ts"
+			]
+		},
+		"hero-split": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"error-page",
+				"feature-grid",
+				"hero-split-extras",
+				"hero-split-media",
+				"pricing-card",
+				"section-frame",
+				"stats-band",
+				"store-hero",
+				"testimonial-grid",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/hero-split.svelte",
+				"src/blocks/hero-split.types.ts"
+			]
+		},
+		"hero-split-extras": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"figure-block",
+				"group",
+				"hero-split",
+				"lucide-icon",
+				"media-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/hero-split-extras.svelte"
+			]
+		},
+		"hero-split-media": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"figure-block",
+				"group",
+				"hero-split",
+				"lucide-icon",
+				"media-frame",
+				"offer-media",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/hero-split-media.svelte"
+			]
+		},
+		"icon": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-icon",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Icon.svelte"
+			]
+		},
+		"icon-badge": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/IconBadge.svelte"
+			]
+		},
+		"icon-tab": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button-plain",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/icon-tab.svelte"
+			]
+		},
+		"icon-tabs": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/icon-tabs.svelte"
+			]
+		},
+		"icon-wall": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"empty-state",
+				"feature-grid",
+				"grid",
+				"lucide-icon",
+				"section-frame",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/icon-wall.svelte"
+			]
+		},
+		"image": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-image",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Image.svelte"
+			]
+		},
+		"inline": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Inline.svelte"
+			]
+		},
+		"input": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-input",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Input.svelte"
+			]
+		},
+		"job-board": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"empty-state",
+				"group",
+				"job-cards",
+				"list",
+				"list-item",
+				"menu-entry",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/job-board.svelte",
+				"src/blocks/job-board.types.ts"
+			]
+		},
+		"job-cards": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"grid",
+				"group",
+				"inline",
+				"job-board",
+				"lucide-icon",
+				"menu-entry",
+				"stack",
+				"table",
+				"table-body",
+				"table-caption",
+				"table-cell",
+				"table-head",
+				"table-head-cell",
+				"table-row",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/job-cards.svelte"
+			]
+		},
+		"kanban-board": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"empty-state",
+				"grid",
+				"group",
+				"list",
+				"list-item",
+				"pill",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/kanban-board.svelte",
+				"src/blocks/kanban-board.types.ts"
+			]
+		},
+		"kit-box": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/box/Box.svelte",
+				"src/kit/ui/box/box.shared.ts"
+			]
+		},
+		"kit-button": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/button/Button.svelte",
+				"src/kit/ui/button/button.shared.ts"
+			]
+		},
+		"kit-checkbox": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/checkbox/Checkbox.svelte",
+				"src/kit/ui/checkbox/checkbox.shared.ts"
+			]
+		},
+		"kit-dialog": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/dialog/Dialog.svelte",
+				"src/kit/ui/dialog/dialog.shared.ts"
+			]
+		},
+		"kit-disclosure": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/disclosure/Disclosure.svelte",
+				"src/kit/ui/disclosure/Summary.svelte",
+				"src/kit/ui/disclosure/disclosure.shared.ts"
+			]
+		},
+		"kit-form": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/form/Form.svelte",
+				"src/kit/ui/form/form.shared.ts"
+			]
+		},
+		"kit-icon": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/icon/Icon.svelte",
+				"src/kit/ui/icon/icon.shared.ts",
+				"src/kit/ui/icon/icon.variants.json"
+			]
+		},
+		"kit-image": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/image/Image.svelte",
+				"src/kit/ui/image/Picture.svelte",
+				"src/kit/ui/image/Source.svelte",
+				"src/kit/ui/image/image.shared.ts"
+			]
+		},
+		"kit-input": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/input/Input.svelte",
+				"src/kit/ui/input/input.shared.ts"
+			]
+		},
+		"kit-label": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/label/Label.svelte",
+				"src/kit/ui/label/label.shared.ts"
+			]
+		},
+		"kit-link": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/link/Link.svelte",
+				"src/kit/ui/link/link.shared.ts"
+			]
+		},
+		"kit-meter": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/meter/Meter.svelte",
+				"src/kit/ui/meter/meter.shared.ts"
+			]
+		},
+		"kit-progress": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/progress/Progress.svelte",
+				"src/kit/ui/progress/progress.shared.ts"
+			]
+		},
+		"kit-radio": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/radio/Radio.svelte",
+				"src/kit/ui/radio/radio.shared.ts"
+			]
+		},
+		"kit-select": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/select/Select.svelte",
+				"src/kit/ui/select/SelectOptGroup.svelte",
+				"src/kit/ui/select/SelectOption.svelte",
+				"src/kit/ui/select/select.shared.ts"
+			]
+		},
+		"kit-separator": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/separator/Separator.svelte",
+				"src/kit/ui/separator/separator.shared.ts"
+			]
+		},
+		"kit-switch": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/switch/Switch.svelte",
+				"src/kit/ui/switch/switch.shared.ts"
+			]
+		},
+		"kit-text": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/text/Text.svelte",
+				"src/kit/ui/text/text.shared.ts"
+			]
+		},
+		"kit-textarea": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/kit/ui/textarea/Textarea.svelte",
+				"src/kit/ui/textarea/textarea.shared.ts"
+			]
+		},
+		"label": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-label",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Label.svelte"
+			]
+		},
+		"legend": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Legend.svelte"
+			]
+		},
+		"lightbox-gallery": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"empty-state",
+				"figure-block",
+				"group",
+				"lightbox-stage",
+				"lucide-icon",
+				"media-frame",
+				"photo-gallery",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/lightbox-gallery.svelte",
+				"src/blocks/lightbox-gallery.types.ts"
+			]
+		},
+		"lightbox-stage": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"dialog",
+				"group",
+				"lightbox-gallery",
+				"lucide-icon",
+				"media-frame",
+				"photo-gallery",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/lightbox-stage.svelte"
+			]
+		},
+		"link": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-link",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Link.svelte"
+			]
+		},
+		"link-plain": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-link",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/LinkPlain.svelte"
+			]
+		},
+		"list": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/List.svelte"
+			]
+		},
+		"list-item": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/ListItem.svelte"
+			]
+		},
+		"logo-cloud": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"empty-state",
+				"grid",
+				"group",
+				"logo-ribbon",
+				"lucide-icon",
+				"section-frame",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/logo-cloud.svelte",
+				"src/blocks/logo-cloud.types.ts"
+			]
+		},
+		"logo-ribbon": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"group",
+				"logo-cloud",
+				"logo-slot",
+				"presets",
+				"section-frame",
+				"stack",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/logo-ribbon.svelte"
+			]
+		},
+		"logo-sidebar": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"inline",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/logo-sidebar.svelte"
+			]
+		},
+		"logo-slot": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"lucide-icon",
+				"presets",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/logo-slot.svelte"
+			]
+		},
+		"lucide-icon": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-icon",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/LucideIcon.svelte",
+				"src/icons/LucideIcon.svelte",
+				"src/icons/lucide-icons.ts"
+			]
+		},
+		"meat-cards": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"fieldset",
+				"inline",
+				"label",
+				"legend",
+				"media-frame",
+				"option-chips",
+				"radio",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/meat-cards.svelte"
+			]
+		},
+		"media-contacts": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"group",
+				"lucide-icon",
+				"media-list",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/media-contacts.svelte"
+			]
+		},
+		"media-figures": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"media-list",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/media-figures.svelte"
+			]
+		},
+		"media-frame": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"image",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/media-frame.assets.ts",
+				"src/components/media-frame.svelte"
+			]
+		},
+		"media-list": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"category-nav",
+				"error-page",
+				"feature-grid",
+				"media-contacts",
+				"media-figures",
+				"media-frame",
+				"media-posts",
+				"media-review",
+				"media-steps",
+				"media-topics",
+				"post-card",
+				"review-list",
+				"section-frame",
+				"stats-band",
+				"steps-list",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/media-list.svelte",
+				"src/blocks/media-list.types.ts"
+			]
+		},
+		"media-posts": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"group",
+				"inline",
+				"media-list",
+				"menu-entry",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/media-posts.svelte"
+			]
+		},
+		"media-review": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"group",
+				"media-list",
+				"rating",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/media-review.svelte"
+			]
+		},
+		"media-steps": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"group",
+				"inline",
+				"lucide-icon",
+				"media-list",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/media-steps.svelte"
+			]
+		},
+		"media-topics": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"inline",
+				"lucide-icon",
+				"media-list",
+				"menu-entry",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/media-topics.svelte"
+			]
+		},
+		"mega-menu": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"box",
+				"button-plain",
+				"container",
+				"grid",
+				"group",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"media-frame",
+				"menu-entry",
+				"nav-bar",
+				"nav-block",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/mega-menu.svelte",
+				"src/blocks/mega-menu.types.ts"
+			]
+		},
+		"member-row": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"group",
+				"inline",
+				"lucide-icon",
+				"media-frame",
+				"stack",
+				"team-grid",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/member-row.svelte"
+			]
+		},
+		"menu-board": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"dish-card",
+				"dish-showcase",
+				"empty-state",
+				"grid",
+				"list",
+				"menu-row",
+				"menu-section-nav",
+				"restaurant-menu",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/menu-board.svelte"
+			]
+		},
+		"menu-entry": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"inline",
+				"link",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/menu-entry.svelte"
+			]
+		},
+		"menu-row": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"dish-showcase",
+				"inline",
+				"list-item",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/menu-row.svelte"
+			]
+		},
+		"menu-section-nav": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"link",
+				"list",
+				"list-item",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/menu-section-nav.svelte"
+			]
+		},
+		"meter": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-meter",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Meter.svelte"
+			]
+		},
+		"meter-row": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"link",
+				"progress",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/meter-row.svelte"
+			]
+		},
+		"metric-row": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"empty-state",
+				"grid",
+				"group",
+				"lucide-icon",
+				"section-frame",
+				"stack",
+				"stat-tile",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/metric-row.svelte",
+				"src/blocks/metric-row.types.ts"
+			]
+		},
+		"milestone-timeline": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"empty-state",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"media-frame",
+				"section-frame",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/milestone-timeline.svelte",
+				"src/blocks/milestone-timeline.types.ts"
+			]
+		},
+		"nav-actions": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/nav-actions.svelte"
+			]
+		},
+		"nav-bar": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"grid",
+				"group",
+				"link-plain",
+				"menu-entry",
+				"nav-actions",
+				"nav-bar-menu",
+				"nav-block",
+				"nav-links",
+				"over-media",
+				"search-palette",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/nav-bar.svelte",
+				"src/blocks/nav-bar.types.ts"
+			]
+		},
+		"nav-bar-menu": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"nav-bar",
+				"nav-block",
+				"nav-links",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/nav-bar-menu.svelte"
+			]
+		},
+		"nav-block": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/nav-block.svelte"
+			]
+		},
+		"nav-item": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"button-plain",
+				"link-plain",
+				"nav-item-row",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/nav-item.svelte"
+			]
+		},
+		"nav-item-row": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"inline",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/nav-item-row.svelte"
+			]
+		},
+		"nav-links": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"group",
+				"menu-entry",
+				"nav-bar",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/nav-links.svelte"
+			]
+		},
+		"newsletter-form": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"button",
+				"form",
+				"group",
+				"input",
+				"label",
+				"media-frame",
+				"section-frame",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/newsletter-form.svelte"
+			]
+		},
+		"notice": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"lucide-icon",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/notice.svelte"
+			]
+		},
+		"number-field": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"button",
+				"input",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/number-field.svelte"
+			]
+		},
+		"offer-media": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"group",
+				"lucide-icon",
+				"media-frame",
+				"stack",
+				"store-hero",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/offer-media.svelte"
+			]
+		},
+		"opt-group": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-select",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/OptGroup.svelte"
+			]
+		},
+		"option-chips": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"fieldset",
+				"inline",
+				"label",
+				"legend",
+				"radio",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/option-chips.svelte",
+				"src/components/option-chips.types.ts"
+			]
+		},
+		"order-rows": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"order-table",
+				"pill",
+				"table",
+				"table-body",
+				"table-caption",
+				"table-cell",
+				"table-head",
+				"table-head-cell",
+				"table-row",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/order-rows.svelte"
+			]
+		},
+		"order-summary": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"empty-state",
+				"inline",
+				"list",
+				"list-item",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/order-summary.svelte",
+				"src/blocks/order-summary.types.ts"
+			]
+		},
+		"order-table": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"card",
+				"card-content",
+				"empty-state",
+				"order-rows",
+				"pager",
+				"pill",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/order-table.svelte",
+				"src/blocks/order-table.types.ts"
+			]
+		},
+		"over-media": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"media-frame",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/over-media.svelte"
+			]
+		},
+		"page-aside": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"group",
+				"lucide-icon",
+				"page-trail",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/page-aside.svelte"
+			]
+		},
+		"page-crumbs": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"inline",
+				"link",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"nav-bar",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/page-crumbs.svelte"
+			]
+		},
+		"page-header": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/page-header.svelte"
+			]
+		},
+		"page-intro": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"section-frame",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/page-intro.svelte"
+			]
+		},
+		"page-trail": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"nav-bar",
+				"page-aside",
+				"page-crumbs",
+				"section-header",
+				"stack",
+				"stats-band",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/page-trail.svelte",
+				"src/blocks/page-trail.types.ts"
+			]
+		},
+		"pager": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"button",
+				"inline",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/pager.svelte"
+			]
+		},
+		"panel": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/panel.svelte"
+			]
+		},
+		"payment-options": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"grid",
+				"inline",
+				"label",
+				"lucide-icon",
+				"radio",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/payment-options.svelte",
+				"src/components/payment-options.types.ts"
+			]
+		},
+		"photo-gallery": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"button",
+				"empty-state",
+				"figure-block",
+				"group",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/photo-gallery.svelte",
+				"src/blocks/photo-gallery.types.ts"
+			]
+		},
+		"pill": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"inline",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/pill.svelte"
+			]
+		},
+		"pizza-picker": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"dish-showcase",
+				"empty-state",
+				"group",
+				"inline",
+				"media-frame",
+				"option-chips",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/pizza-picker.svelte"
+			]
+		},
+		"post-actions": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"group",
+				"lucide-icon",
+				"post-card",
+				"post-split",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/post-actions.svelte"
+			]
+		},
+		"post-author": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"button",
+				"group",
+				"lucide-icon",
+				"media-frame",
+				"post-card",
+				"post-split",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/post-author.svelte"
+			]
+		},
+		"post-card": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"box",
+				"card-content",
+				"group",
+				"link",
+				"lucide-icon",
+				"media-frame",
+				"presets",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/post-card.svelte",
+				"src/blocks/post-card.types.ts"
+			]
+		},
+		"post-feature": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"button",
+				"group",
+				"lucide-icon",
+				"media-frame",
+				"post-card",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/post-feature.svelte"
+			]
+		},
+		"post-grid": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"grid",
+				"pager",
+				"post-card",
+				"section-frame",
+				"stack",
+				"switcher",
+				"switcher-item",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/post-grid.svelte",
+				"src/blocks/post-grid.types.ts"
+			]
+		},
+		"post-header": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"empty-state",
+				"group",
+				"media-frame",
+				"pill",
+				"post-card",
+				"section-frame",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/post-header.svelte"
+			]
+		},
+		"post-mini-card": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"media-frame",
+				"post-card",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/post-mini-card.svelte"
+			]
+		},
+		"post-outline": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"group",
+				"lucide-icon",
+				"menu-entry",
+				"post-card",
+				"post-split",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/post-outline.svelte"
+			]
+		},
+		"post-overlay-card": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"group",
+				"lucide-icon",
+				"media-frame",
+				"menu-entry",
+				"post-card",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/post-overlay-card.svelte"
+			]
+		},
+		"post-showcase": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"empty-state",
+				"link",
+				"lucide-icon",
+				"media-frame",
+				"post-card",
+				"post-feature",
+				"post-mini-card",
+				"post-overlay-card",
+				"section-frame",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/post-showcase.svelte"
+			]
+		},
+		"post-split": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"media-frame",
+				"nav-bar",
+				"post-actions",
+				"post-author",
+				"post-card",
+				"post-outline",
+				"post-stats",
+				"post-tags",
+				"section-frame",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/post-split.svelte",
+				"src/blocks/post-split.types.ts"
+			]
+		},
+		"post-stats": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"group",
+				"lucide-icon",
+				"post-card",
+				"post-split",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/post-stats.svelte"
+			]
+		},
+		"post-tags": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"group",
+				"nav-bar",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/post-tags.svelte"
+			]
+		},
+		"presets": {
+			"type": "registry:lib",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/presets/defaults.ts"
+			]
+		},
+		"pricing-card": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"box",
+				"button",
+				"card-content",
+				"card-description",
+				"card-footer",
+				"card-header",
+				"card-title",
+				"group",
+				"list",
+				"list-item",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/pricing-card.svelte",
+				"src/blocks/pricing-card.types.ts"
+			]
+		},
+		"pricing-tiers": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"empty-state",
+				"grid",
+				"group",
+				"pricing-card",
+				"section-frame",
+				"switcher",
+				"switcher-item",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/pricing-tiers.svelte",
+				"src/blocks/pricing-tiers.types.ts"
+			]
+		},
+		"product-card": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"box",
+				"button",
+				"card-content",
+				"group",
+				"inline",
+				"link",
+				"media-frame",
+				"rating",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/product-card.svelte",
+				"src/blocks/product-card.types.ts"
+			]
+		},
+		"product-detail": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"button",
+				"empty-state",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"number-field",
+				"product-card",
+				"product-gallery",
+				"product-price",
+				"rating",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/product-detail.svelte",
+				"src/blocks/product-detail.types.ts"
+			]
+		},
+		"product-gallery": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"grid",
+				"media-frame",
+				"stack",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/product-gallery.svelte"
+			]
+		},
+		"product-grid": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"empty-state",
+				"grid",
+				"product-card",
+				"section-frame",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/product-grid.svelte"
+			]
+		},
+		"product-info": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"disclosure",
+				"inline",
+				"list",
+				"list-item",
+				"section-frame",
+				"stack",
+				"summary",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/product-info.svelte",
+				"src/blocks/product-info.types.ts"
+			]
+		},
+		"product-price": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"group",
+				"inline",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/product-price.svelte"
+			]
+		},
+		"profile-form": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"button",
+				"container",
+				"field",
+				"form",
+				"grid",
+				"group",
+				"input",
+				"label",
+				"media-frame",
+				"panel",
+				"stack",
+				"switch",
+				"textarea",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/profile-form.svelte",
+				"src/blocks/profile-form.types.ts"
+			]
+		},
+		"progress": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-progress",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Progress.svelte"
+			]
+		},
+		"project-grid": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"empty-state",
+				"group",
+				"media-frame",
+				"project-tiles",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/project-grid.svelte",
+				"src/blocks/project-grid.types.ts"
+			]
+		},
+		"project-tiles": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"article-block",
+				"badge",
+				"box",
+				"group",
+				"lucide-icon",
+				"media-frame",
+				"menu-entry",
+				"project-grid",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/project-tiles.svelte"
+			]
+		},
+		"prompt-composer": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"button",
+				"group",
+				"lucide-icon",
+				"presets",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/prompt-composer.svelte"
+			]
+		},
+		"proof-band": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"empty-state",
+				"grid",
+				"group",
+				"logo-cloud",
+				"lucide-icon",
+				"section-frame",
+				"stack",
+				"stats-band",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/proof-band.svelte"
+			]
+		},
+		"prose": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Prose.svelte"
+			]
+		},
+		"quick-order": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"button",
+				"dish-showcase",
+				"empty-state",
+				"field",
+				"group",
+				"inline",
+				"input",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/quick-order.svelte"
+			]
+		},
+		"quote-card": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"figure-block",
+				"group",
+				"inline",
+				"lucide-icon",
+				"media-frame",
+				"rating",
+				"stack",
+				"testimonial-grid",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/quote-card.svelte"
+			]
+		},
+		"quote-figures": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"quote-split",
+				"stack",
+				"testimonial-grid",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/quote-figures.svelte"
+			]
+		},
+		"quote-logo-tiles": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"group",
+				"lucide-icon",
+				"quote-split",
+				"testimonial-grid",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/quote-logo-tiles.svelte"
+			]
+		},
+		"quote-proof": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/quote-proof.svelte"
+			]
+		},
+		"quote-rating-panel": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"quote-split",
+				"rating",
+				"stack",
+				"testimonial-grid",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/quote-rating-panel.svelte"
+			]
+		},
+		"quote-slot": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"quote-card",
+				"testimonial-grid",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/quote-slot.svelte"
+			]
+		},
+		"quote-split": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"box",
+				"empty-state",
+				"error-page",
+				"logo-cloud",
+				"media-frame",
+				"quote-figures",
+				"quote-logo-tiles",
+				"quote-rating-panel",
+				"quote-slot",
+				"section-frame",
+				"stack",
+				"stats-band",
+				"testimonial-grid",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/quote-split.svelte",
+				"src/blocks/quote-split.types.ts"
+			]
+		},
+		"radio": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-radio",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Radio.svelte"
+			]
+		},
+		"range": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-input",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Range.svelte"
+			]
+		},
+		"range-field": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"inline",
+				"input",
+				"range",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/range-field.svelte"
+			]
+		},
+		"rating": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/rating.svelte"
+			]
+		},
+		"recipe-kits": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"button",
+				"dish-showcase",
+				"empty-state",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"media-frame",
+				"option-chips",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/recipe-kits.svelte"
+			]
+		},
+		"recipes": {
+			"type": "registry:lib",
+			"registryDependencies": [
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/recipes.ts"
+			]
+		},
+		"region": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/region.svelte"
+			]
+		},
+		"reservation-form": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"checkbox",
+				"feature-grid",
+				"field",
+				"form",
+				"grid",
+				"group",
+				"input",
+				"label",
+				"lucide-icon",
+				"number-field",
+				"section-frame",
+				"stack",
+				"text",
+				"textarea",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/reservation-form.svelte",
+				"src/blocks/reservation-form.types.ts"
+			]
+		},
+		"restaurant-menu": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"dish-showcase",
+				"empty-state",
+				"inline",
+				"list",
+				"list-item",
+				"menu-section-nav",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/restaurant-menu.svelte",
+				"src/blocks/restaurant-menu.types.ts"
+			]
+		},
+		"review-list": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"article-block",
+				"empty-state",
+				"grid",
+				"group",
+				"media-frame",
+				"rating",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/review-list.svelte",
+				"src/blocks/review-list.types.ts"
+			]
+		},
+		"rich-text": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"card",
+				"grid",
+				"group",
+				"media-frame",
+				"pill",
+				"prose",
+				"section-frame",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/rich-text.svelte",
+				"src/blocks/rich-text.types.ts"
+			]
+		},
+		"search-field": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"input",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/search-field.svelte"
+			]
+		},
+		"search-palette": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"inline",
+				"input",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/search-palette.svelte"
+			]
+		},
+		"section-box": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"card",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/section-box.svelte"
+			]
+		},
+		"section-column": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"stack",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/section-column.svelte"
+			]
+		},
+		"section-frame": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"grid",
+				"presets",
+				"section-box",
+				"section-column",
+				"section-header",
+				"stack",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/section-frame.svelte",
+				"src/components/section-frame.types.ts"
+			]
+		},
+		"section-head": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"button-plain",
+				"inline",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/section-head.svelte"
+			]
+		},
+		"section-header": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"group",
+				"link",
+				"presets",
+				"section-frame",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/section-header.svelte"
+			]
+		},
+		"select": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-select",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Select.svelte"
+			]
+		},
+		"select-option": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-select",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/SelectOption.svelte"
+			]
+		},
+		"separator": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-separator",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Separator.svelte"
+			]
+		},
+		"sheet": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-dialog",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Sheet.svelte"
+			]
+		},
+		"sheet-close": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-button",
+				"kit-icon",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/SheetClose.svelte"
+			]
+		},
+		"sheet-trigger": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-button",
+				"kit-icon",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/SheetTrigger.svelte"
+			]
+		},
+		"shell-content": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"group",
+				"stack",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/shell-content.svelte"
+			]
+		},
+		"shell-footer": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"dashboard-shell",
+				"list",
+				"list-item",
+				"menu-entry",
+				"nav-block",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/shell-footer.svelte"
+			]
+		},
+		"shell-sidebar": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"box",
+				"button-plain",
+				"dashboard-shell",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"menu-entry",
+				"nav-block",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/shell-sidebar.svelte"
+			]
+		},
+		"shell-topbar": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"box",
+				"dashboard-shell",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"media-frame",
+				"menu-entry",
+				"nav-block",
+				"search-palette",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/shell-topbar.svelte"
+			]
+		},
+		"shopping-cart": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"cart-list",
+				"cart-summary-card",
+				"empty-state",
+				"group",
+				"lucide-icon",
+				"media-frame",
+				"number-field",
+				"order-summary",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/shopping-cart.svelte",
+				"src/blocks/shopping-cart.types.ts"
+			]
+		},
+		"side-checks": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"checkbox",
+				"fieldset",
+				"inline",
+				"label",
+				"legend",
+				"option-chips",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/side-checks.svelte"
+			]
+		},
+		"sidebar-nav": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"media-frame",
+				"menu-entry",
+				"nav-bar",
+				"nav-block",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/sidebar-nav.svelte"
+			]
+		},
+		"sidebar-panel": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"block",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/sidebar-panel.svelte"
+			]
+		},
+		"signup-wizard": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"box",
+				"button",
+				"field",
+				"group",
+				"input",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"progress",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/signup-wizard.svelte",
+				"src/blocks/signup-wizard.types.ts"
+			]
+		},
+		"site-footer": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"container",
+				"group",
+				"menu-entry",
+				"nav-block",
+				"site-header",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/site-footer.svelte",
+				"src/blocks/site-footer.types.ts"
+			]
+		},
+		"site-header": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"button",
+				"container",
+				"group",
+				"link-plain",
+				"menu-entry",
+				"nav-block",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/site-header.svelte",
+				"src/blocks/site-header.types.ts"
+			]
+		},
+		"sitemap-footer": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"box",
+				"button",
+				"container",
+				"footer-card",
+				"footer-columns",
+				"form",
+				"group",
+				"input",
+				"label",
+				"mega-menu",
+				"menu-entry",
+				"nav-block",
+				"pill",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/sitemap-footer.svelte",
+				"src/blocks/sitemap-footer.types.ts"
+			]
+		},
+		"skeleton": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Skeleton.svelte"
+			]
+		},
+		"skeleton-layout": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"grid",
+				"group",
+				"section-frame",
+				"skeleton",
+				"stack",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/skeleton-layout.svelte",
+				"src/blocks/skeleton-layout.types.ts"
+			]
+		},
+		"slot-board": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"empty-state",
+				"field",
+				"inline",
+				"list",
+				"list-item",
+				"section-frame",
+				"select",
+				"select-option",
+				"slot-grid",
+				"stack",
+				"text",
+				"utils",
+				"zone-table"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/slot-board.svelte",
+				"src/blocks/slot-board.types.ts"
+			]
+		},
+		"slot-grid": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"group",
+				"inline",
+				"label",
+				"radio",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/slot-grid.svelte",
+				"src/components/slot-grid.types.ts"
+			]
+		},
+		"stack": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Stack.svelte"
+			]
+		},
+		"stat-figure": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"lucide-icon",
+				"presets",
+				"stack",
+				"stat-tile",
+				"stats-band",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/stat-figure.svelte"
+			]
+		},
+		"stat-tile": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"icon-badge",
+				"link",
+				"lucide-icon",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/stat-tile.svelte"
+			]
+		},
+		"stats-band": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"backdrop",
+				"empty-state",
+				"grid",
+				"presets",
+				"section-frame",
+				"stat-figure",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/stats-band.svelte",
+				"src/blocks/stats-band.types.ts"
+			]
+		},
+		"stepper": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"button",
+				"group",
+				"icon-badge",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"section-frame",
+				"stack",
+				"steps-list",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/stepper.svelte"
+			]
+		},
+		"steps-list": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"empty-state",
+				"icon-badge",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/steps-list.svelte",
+				"src/blocks/steps-list.types.ts"
+			]
+		},
+		"store-hero": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"action-group",
+				"backdrop",
+				"box",
+				"error-page",
+				"feature-grid",
+				"grid",
+				"group",
+				"lucide-icon",
+				"offer-media",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/store-hero.svelte",
+				"src/blocks/store-hero.types.ts"
+			]
+		},
+		"store-locations": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"empty-state",
+				"group",
+				"inline",
+				"link",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/store-locations.svelte",
+				"src/blocks/store-locations.types.ts"
+			]
+		},
+		"story-dots": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"group",
+				"inline",
+				"milestone-timeline",
+				"story-tabs",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/story-dots.svelte"
+			]
+		},
+		"story-panel": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"group",
+				"milestone-timeline",
+				"stack",
+				"story-tabs",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/story-panel.svelte"
+			]
+		},
+		"story-tabs": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"empty-state",
+				"group",
+				"inline",
+				"lucide-icon",
+				"media-frame",
+				"milestone-timeline",
+				"section-frame",
+				"stack",
+				"story-dots",
+				"story-panel",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/story-tabs.svelte",
+				"src/blocks/story-tabs.types.ts"
+			]
+		},
+		"summary": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-disclosure",
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Summary.svelte"
+			]
+		},
+		"support-channels": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"card",
+				"card-content",
+				"empty-state",
+				"feature-grid",
+				"grid",
+				"lucide-icon",
+				"menu-entry",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/support-channels.svelte"
+			]
+		},
+		"sushi-sets": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"add-icon",
+				"badge",
+				"box",
+				"dish-showcase",
+				"empty-state",
+				"grid",
+				"group",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/sushi-sets.svelte"
+			]
+		},
+		"switch": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-switch",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Switch.svelte"
+			]
+		},
+		"switcher": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/switcher.svelte"
+			]
+		},
+		"switcher-item": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button-plain",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/switcher-item.svelte"
+			]
+		},
+		"table": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Table.svelte"
+			]
+		},
+		"table-body": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/TableBody.svelte"
+			]
+		},
+		"table-caption": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/TableCaption.svelte"
+			]
+		},
+		"table-cell": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/TableCell.svelte"
+			]
+		},
+		"table-col": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/TableCol.svelte"
+			]
+		},
+		"table-col-group": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/TableColGroup.svelte"
+			]
+		},
+		"table-foot": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/TableFoot.svelte"
+			]
+		},
+		"table-head": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/TableHead.svelte"
+			]
+		},
+		"table-head-cell": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/TableHeadCell.svelte"
+			]
+		},
+		"table-row": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/TableRow.svelte"
+			]
+		},
+		"table-toolbar": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"inline",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/table-toolbar.svelte"
+			]
+		},
+		"team-grid": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"empty-state",
+				"media-frame",
+				"member-row",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/team-grid.svelte",
+				"src/blocks/team-grid.types.ts"
+			]
+		},
+		"template-grid": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"empty-state",
+				"grid",
+				"group",
+				"icon-badge",
+				"inline",
+				"lucide-icon",
+				"media-frame",
+				"presets",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/template-grid.svelte",
+				"src/blocks/template-grid.types.ts"
+			]
+		},
+		"testimonial-grid": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"empty-state",
+				"grid",
+				"quote-card",
+				"section-frame",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/testimonial-grid.svelte",
+				"src/blocks/testimonial-grid.types.ts"
+			]
+		},
+		"text": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Text.svelte"
+			]
+		},
+		"textarea": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-textarea",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Textarea.svelte"
+			]
+		},
+		"theme-toggle": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-button",
+				"kit-icon",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/ThemeToggle.svelte"
+			]
+		},
+		"timeline": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"box",
+				"inline",
+				"list",
+				"list-item",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/timeline.svelte",
+				"src/components/timeline.types.ts"
+			]
+		},
+		"title": {
+			"type": "registry:ui",
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/compose/Title.svelte"
+			]
+		},
+		"topic-chips": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"button",
+				"group",
+				"lucide-icon",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/topic-chips.svelte",
+				"src/components/topic-chips.types.ts"
+			]
+		},
+		"tour-callout": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"block",
+				"button",
+				"group",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/tour-callout.svelte"
+			]
+		},
+		"usage-calculator": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"button",
+				"group",
+				"range",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/usage-calculator.svelte",
+				"src/blocks/usage-calculator.types.ts"
+			]
+		},
+		"usp-strip": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"empty-state",
+				"feature-grid",
+				"grid",
+				"inline",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/usp-strip.svelte"
+			]
+		},
+		"utils": {
+			"type": "registry:utils",
+			"registryDependencies": [],
+			"dependencies": [
+				"clsx",
+				"tailwind-merge"
+			],
+			"files": [
+				"src/kit/utils/cn.ts",
+				"src/kit/utils/env.ts",
+				"src/kit/utils/expr.ts",
+				"src/kit/utils/index.ts",
+				"src/kit/utils/recipe-types.ts",
+				"src/kit/utils/tags.ts",
+				"src/kit/utils/variants.ts",
+				"src/styles/index.css",
+				"src/styles/kit.css",
+				"src/styles/theme.css",
+				"src/utils/a11y/dismiss.ts",
+				"src/utils/a11y/focus-trap.ts",
+				"src/utils/a11y/focusable.ts",
+				"src/utils/a11y/index.ts",
+				"src/utils/a11y/roving.ts",
+				"src/utils/a11y/scroll-lock.ts",
+				"src/utils/cn.ts",
+				"src/utils/env.ts",
+				"src/utils/expr.ts",
+				"src/utils/format.ts",
+				"src/utils/html.ts",
+				"src/utils/index.ts",
+				"src/utils/safe.ts",
+				"src/utils/tags.ts",
+				"src/utils/variants.ts"
+			]
+		},
+		"veggie-box": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"dish-showcase",
+				"empty-state",
+				"group",
+				"inline",
+				"label",
+				"lucide-icon",
+				"media-frame",
+				"meter",
+				"number-field",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/veggie-box.svelte"
+			]
+		},
+		"video-grid": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"empty-state",
+				"figure-block",
+				"grid",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"testimonial-grid",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/video-grid.svelte"
+			]
+		},
+		"video-modal": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"button",
+				"group",
+				"list",
+				"list-item",
+				"lucide-icon",
+				"media-frame",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/video-modal.svelte",
+				"src/blocks/video-modal.types.ts"
+			]
+		},
+		"week-menu": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"box",
+				"dish-showcase",
+				"empty-state",
+				"group",
+				"inline",
+				"media-frame",
+				"restaurant-menu",
+				"section-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/week-menu.svelte"
+			]
+		},
+		"weighted-title": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"inline",
+				"presets",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/weighted-title.svelte"
+			]
+		},
+		"zone-rows": {
+			"type": "registry:component",
+			"registryDependencies": [
+				"badge",
+				"box",
+				"stack",
+				"table",
+				"table-body",
+				"table-caption",
+				"table-cell",
+				"table-head",
+				"table-head-cell",
+				"table-row",
+				"text",
+				"utils",
+				"zone-table"
+			],
+			"dependencies": [],
+			"files": [
+				"src/components/zone-rows.svelte"
+			]
+		},
+		"zone-table": {
+			"type": "registry:block",
+			"registryDependencies": [
+				"badge",
+				"empty-state",
+				"grid",
+				"inline",
+				"list",
+				"list-item",
+				"section-frame",
+				"stack",
+				"text",
+				"title",
+				"utils",
+				"zone-rows"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/zone-table.svelte",
+				"src/blocks/zone-table.types.ts"
+			]
+		}
+	}
+}

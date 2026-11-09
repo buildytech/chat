@@ -1,0 +1,22 @@
+{
+  "$schema": "https://registry.buildy.tw/schema/config.json",
+  "contractVersion": "2.0.0",
+  "framework": "svelte",
+  "runtime": "svelte",
+  "typescript": true,
+  "globalCss": "src/styles/index.css",
+  "dir": "src",
+  "aliases": {
+    "@": "./src",
+    "@/lib": "./src/presets",
+    "@/utils": "./src/utils",
+    "@/components": "./src/components",
+    "@/ui": "./src/primitives",
+    "@/blocks": "./src/blocks",
+    "@/layouts": "./src/layouts",
+    "@/variants": "./src/variants",
+    "@/widgets": "./src/widgets"
+  },
+  "registry": "@ui8kit",
+  "importStyle": "alias"
+}
