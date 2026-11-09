@@ -13,7 +13,7 @@ import {
 } from "./assemble.ts";
 import { isScenarioId } from "./brief.ts";
 import { parseLayoutCopyEdits } from "./edits.ts";
-import { parseModelContent } from "./content.ts";
+import { checkContentCatalog, parseModelContent } from "./content.ts";
 import { editPage, normalizePatch } from "./patch.ts";
 import { OWNER_FILTERS, type ScenarioId } from "./copy.ts";
 import type { Page } from "@buildytech/page-contract";
@@ -281,6 +281,10 @@ export function executeTool(
 		const brief = String(args.brief ?? "");
 		const scenarioRaw = args.scenarioId;
 		const content = parseModelContent(args);
+		const catalogCheck = checkContentCatalog(content);
+		if (!catalogCheck.ok) {
+			return { ok: false, code: catalogCheck.code, message: catalogCheck.message, path: catalogCheck.path, result: { path: catalogCheck.path } };
+		}
 		const scenarioId = isScenarioId(scenarioRaw) ? scenarioRaw : (host?.scenarioId ?? null);
 		const editing = Boolean(host?.currentPage) && content.newPage !== true;
 		const currentPage = host?.currentPage ?? undefined;

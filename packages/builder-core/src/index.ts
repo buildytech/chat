@@ -21,6 +21,19 @@ export {
 } from "./catalog/search.ts";
 export { compatibilityFor, getBlockIndex, rendererKindForLabel, sendBlockedByScreen, screenSupport, compareScreenSupport } from "./catalog/compatibility.ts";
 export { getBlockDetails, screenCanonicalJson } from "./catalog/details.ts";
+export {
+	catalogEntryBySpec,
+	catalogSourceFor,
+	catalogSources,
+	catalogVariantsFor,
+	isLucideIcon,
+	modelCatalogSources,
+	resolveCatalogChoice,
+	variantProps,
+	type CatalogSourceBlock,
+	type CatalogSources
+} from "./catalog/sources.ts";
+export { organismFor, registryNpmDependencies, type OrganismRender } from "./catalog/organism.ts";
 export { contractFingerprint } from "./catalog/fingerprint.ts";
 export { clientProposalGate } from "./client-gate.ts";
 export {
@@ -69,6 +82,7 @@ export {
 } from "./catalog/text-search.ts";
 export {
 	STOCK_APP_URL,
+	attachCatalogSources,
 	familyLabelForKind,
 	sameCatalogRefs,
 	screenFamily,

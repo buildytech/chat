@@ -6,6 +6,7 @@ import {
 	type PageCopyKey
 } from "@buildytech/page-contract";
 import { rendererKindForLabel } from "./catalog/compatibility.ts";
+import { isLucideIcon, resolveCatalogChoice } from "./catalog/sources.ts";
 
 /**
  * Model-supplied page content for propose_layout.
@@ -24,6 +25,8 @@ export type ModelContentItem = {
 	detail?: string;
 	/** Sidebar group heading for a nav link (stored as nav-link copy.eyebrow). */
 	group?: string;
+	/** Lucide icon name of a feature row (copy.icon); checked against the pinned registry snapshot. */
+	icon?: string;
 };
 
 export type ModelBlockContent = {
@@ -33,6 +36,9 @@ export type ModelBlockContent = {
 	items: ModelContentItem[];
 	/** Follow-up turns: true only on blocks the author asked to change. */
 	edit?: boolean;
+	/** Stock catalog block (spec, label or asset id) and catalog variant the model picked; checked by the program. */
+	catalogBlock?: string;
+	variant?: string;
 };
 
 export type ModelPageContent = {
@@ -107,8 +113,19 @@ const COPY_FIELDS: readonly PageCopyKey[] = [
 	"contact",
 	"legal",
 	"days",
-	"address"
+	"address",
+	"href"
 ];
+
+const HREF_PATTERN = /^(?:#|\/|https?:\/\/|mailto:)/;
+const TOKEN_PATTERN = /^[A-Za-z0-9][A-Za-z0-9./-]*$/;
+
+/** A catalog token (icon name, variant, catalog block) as the model sent it, trimmed; never free text. */
+function cleanToken(value: unknown, max: number): string | undefined {
+	if (typeof value !== "string") return undefined;
+	const token = value.trim();
+	return token && token.length <= max && TOKEN_PATTERN.test(token) ? token : undefined;
+}
 
 const LOCALE_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 
@@ -209,6 +226,8 @@ function parseItem(raw: unknown): ModelContentItem | null {
 	if (detail) item.detail = detail;
 	const group = cleanText(rec.group ?? rec.section, 40);
 	if (group) item.group = group;
+	// The icon is kept as sent (a malformed one too) so the catalog gate can reject it with its path.
+	if (typeof rec.icon === "string" && rec.icon.trim()) item.icon = rec.icon.trim().slice(0, 64);
 	return item;
 }
 
@@ -228,12 +247,19 @@ export function parseModelContent(args: Record<string, unknown>): ModelPageConte
 		const kind = normalizeKind(rec.kind);
 		if (!kind || seen.has(kind)) continue;
 		seen.add(kind);
-		const copySource =
-			rec.copy && typeof rec.copy === "object" ? { ...rec, ...(rec.copy as Record<string, unknown>) } : rec;
+		const copySource: Record<string, unknown> =
+			rec.copy && typeof rec.copy === "object" ? { ...rec, ...(rec.copy as Record<string, unknown>) } : { ...rec };
+		// An action may come as { label, href } (organism prop shape).
+		const action = copySource.action;
+		if (action && typeof action === "object" && !Array.isArray(action)) {
+			const link = action as Record<string, unknown>;
+			copySource.action = link.label;
+			if (copySource.href === undefined) copySource.href = link.href;
+		}
 		const copy: PageBlockCopy = {};
 		for (const field of COPY_FIELDS) {
 			const text = cleanText(copySource[field], field === "lede" ? 400 : 160);
-			if (text) copy[field] = text;
+			if (text && (field !== "href" || HREF_PATTERN.test(text))) copy[field] = text;
 		}
 		const rule = ITEM_RULES[kind];
 		const items = rule && Array.isArray(rec.items)
@@ -245,7 +271,17 @@ export function parseModelContent(args: Record<string, unknown>): ModelPageConte
 					.slice(0, rule.max)
 			: [];
 		const blockTitle = cleanText(rec.title, 80);
-		out.blocks.push({ kind, ...(blockTitle ? { title: blockTitle } : {}), copy, items, ...(rec.edit === true ? { edit: true } : {}) });
+		const catalogBlock = cleanToken(rec.catalogBlock, 120);
+		const variant = typeof rec.variant === "string" && rec.variant.trim() ? rec.variant.trim().slice(0, 60) : undefined;
+		out.blocks.push({
+			kind,
+			...(blockTitle ? { title: blockTitle } : {}),
+			copy,
+			items,
+			...(rec.edit === true ? { edit: true } : {}),
+			...(catalogBlock ? { catalogBlock } : {}),
+			...(variant ? { variant } : {})
+		});
 	}
 	if (typeof args.demoData === "boolean") out.demoData = args.demoData;
 	if (args.newPage === true) out.newPage = true;
@@ -268,6 +304,36 @@ export function parseModelContent(args: Record<string, unknown>): ModelPageConte
 	return out;
 }
 
+/**
+ * Catalog checks of the model content before assembly: an explicit catalogBlock (and its variant) must be a block of
+ * the pinned catalog for that kind, and every row icon a Lucide name of the registry snapshot. A variant without a
+ * catalogBlock is checked after assembly against the block of the chosen screen. Catalog blocks are normalized
+ * (label or asset id -> block spec).
+ */
+export function checkContentCatalog(content: ModelPageContent): { ok: true } | { ok: false; code: string; message: string; path: string } {
+	for (const [bi, entry] of content.blocks.entries()) {
+		if (entry.catalogBlock) {
+			const choice = resolveCatalogChoice({ kind: entry.kind, catalogBlock: entry.catalogBlock, variant: entry.variant });
+			if (!choice.ok) {
+				return { ok: false, code: choice.code, message: choice.message, path: `blocks[${bi}].${choice.code === "unknown_variant" ? "variant" : "catalogBlock"}` };
+			}
+			entry.catalogBlock = choice.catalogBlock;
+			if (choice.variant) entry.variant = choice.variant;
+		}
+		for (const [ii, item] of entry.items.entries()) {
+			if (item.icon !== undefined && !isLucideIcon(item.icon)) {
+				return {
+					ok: false,
+					code: "unknown_icon",
+					message: `${item.icon} is not a Lucide icon of the pinned registry snapshot. Call get_block_details on the block for the allowed names.`,
+					path: `blocks[${bi}].items[${ii}].icon`
+				};
+			}
+		}
+	}
+	return { ok: true };
+}
+
 export function hasModelContent(content: ModelPageContent | undefined): boolean {
 	return Boolean(content && (content.title || content.blocks.length));
 }
@@ -283,6 +349,7 @@ function childBlock(parent: PageBlock, child: PageBlockKind, item: ModelContentI
 	if (item.value && (demo || child === "nav-link" || child === "feature")) copy.value = item.value;
 	if (item.note) copy.note = item.note;
 	if (item.group && child === "nav-link") copy.eyebrow = item.group;
+	if (item.icon && child === "feature") copy.icon = item.icon;
 	if (Object.keys(copy).length) node.copy = copy;
 	return node;
 }
@@ -337,6 +404,11 @@ export function mergeModelContent(
 			changed.push(`${node.kind}.${field}`);
 		}
 		const updated: PageBlock = { ...node };
+		if (entry.catalogBlock) updated.catalogBlock = entry.catalogBlock;
+		if (entry.variant) {
+			updated.variant = entry.variant;
+			changed.push(`${node.kind}.variant`);
+		}
 		if (entry.title) {
 			updated.title = entry.title;
 			changed.push(`${node.kind}.title`);
@@ -384,7 +456,11 @@ export function proposeContentParameterSchema(): Record<string, unknown> {
 			value: { type: "string", description: "Display figure, e.g. 128 or 94%. Metrics, overview, chart, menu only." },
 			note: { type: "string", description: "Delta, status, or time, e.g. +12% or 2 h ago." },
 			detail: { type: "string", description: "Secondary line, e.g. who and which project." },
-			group: { type: "string", description: "Sidenav only: group heading for this link, e.g. Workspace." }
+			group: { type: "string", description: "Sidenav only: group heading for this link, e.g. Workspace." },
+			icon: {
+				type: "string",
+				description: "Features only: a Lucide icon name for this feature card. get_block_details on the features block lists the allowed names; unknown names are rejected."
+			}
 		},
 		required: ["label"]
 	};
@@ -411,6 +487,15 @@ export function proposeContentParameterSchema(): Record<string, unknown> {
 					title: { type: "string", description: "Visible section heading in the page language. Required." },
 					...copyProps,
 					items: { type: "array", items: item },
+					variant: {
+						type: "string",
+						description:
+							"Catalog variant of this block, one of get_block_details variants for its catalog block. The host rejects unknown variants; omit for the catalog default."
+					},
+					catalogBlock: {
+						type: "string",
+						description: "Optional Stock catalog block (block.<label> or a catalog asset id). Default: the block of this kind on the chosen screen."
+					},
 					edit: {
 						type: "boolean",
 						description:

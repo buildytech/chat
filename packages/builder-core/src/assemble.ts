@@ -16,7 +16,7 @@ import { filterScreens, getScreenById, searchCatalog } from "./catalog/search.ts
 import { OWNER_FILTERS } from "./copy.ts";
 import type { CatalogScreen } from "./catalog/types.ts";
 import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } from "./policy.ts";
-import { familyLabelForKind, validateCatalogProvenance, type CatalogRefs } from "./catalog/provenance.ts";
+import { attachCatalogSources, familyLabelForKind, validateCatalogProvenance, type CatalogRefs } from "./catalog/provenance.ts";
 import {
 	DATA_KINDS,
 	defaultDemoLabel,
@@ -1261,13 +1261,16 @@ function finishProposal(
 	const seoDescription = demo
 		? `${title}. ${identity?.demoLabel ?? "Demo data"}. Draft, not published.`
 		: `${title} draft. Not published. Catalog blocks only.`;
+	// Catalog source of each top-level block (catalogBlock, default variant of a registry organism).
+	const sourceScreen = screen ?? (inheritedScreenId(ctx) ? getScreenById(inheritedScreenId(ctx)!) : null);
+	const sourced = attachCatalogSources(blocks, sourceScreen);
 	try {
 		const raw = {
 			id,
 			slug,
 			status,
 			title,
-			layout: { version: PAGE_LAYOUT_VERSION, blocks },
+			layout: { version: PAGE_LAYOUT_VERSION, blocks: sourced },
 			seo: {
 				title: title.slice(0, 200),
 				description: seoDescription.slice(0, 200)

@@ -1,9 +1,10 @@
-import type { Page, PageBlockKind } from "@buildytech/page-contract";
+import type { Page, PageBlock, PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, rendererKindForLabel } from "./compatibility.ts";
 import { getScreenById } from "./search.ts";
 import { childKindFor } from "../content.ts";
 import type { CatalogScreen } from "./types.ts";
+import { catalogSourceFor, isLucideIcon, resolveCatalogChoice } from "./sources.ts";
 
 /**
  * Program-level catalog provenance (deterministic code, never the model).
@@ -41,6 +42,10 @@ export type CatalogBlockRef = {
 	rows: number;
 	/** Stock screen the block label comes from (the selected screen or a same-spec sibling). */
 	sourceScreenId: string;
+	/** Catalog variant the block renders (page-spec 1.1.0), when set. */
+	variant?: string;
+	/** Pinned registry item the block renders with (`npx ui8kit add <item>`), when the snapshot has one. */
+	registryItem?: string;
 };
 
 export type CatalogRefs = {
@@ -58,7 +63,12 @@ export type CatalogValidationError = {
 		| "catalog_block_unknown"
 		| "catalog_block_not_in_screen"
 		| "catalog_child_kind_invalid"
-		| "catalog_ref_mismatch";
+		| "catalog_ref_mismatch"
+		| "unknown_catalog_block"
+		| "catalog_block_kind_mismatch"
+		| "unknown_variant"
+		| "variant_without_catalog_block"
+		| "unknown_icon";
 	message: string;
 	path?: string;
 };
@@ -73,6 +83,25 @@ export function screenFamily(screen: CatalogScreen): CatalogScreen[] {
 		.filter((row) => row.spec === screen.spec && row.screenId !== screen.screenId)
 		.sort((a, b) => a.order - b.order);
 	return [screen, ...siblings];
+}
+
+/**
+ * Catalog source of top-level blocks (page-spec 1.1.0): a block without catalogBlock gets the Stock catalog block of
+ * its kind in the screen family; a block whose catalog block has a pinned registry organism gets the catalog default
+ * variant when none is set. Explicit values (the model's, the author's) are kept; validateCatalogProvenance checks them.
+ */
+export function attachCatalogSources(blocks: PageBlock[], screen: CatalogScreen | null): PageBlock[] {
+	return blocks.map((node) => {
+		let next = node;
+		if (!next.catalogBlock && screen) {
+			const found = familyLabelForKind(screen, next.kind);
+			const entry = found ? getBlockIndex(found.label) : null;
+			if (entry?.available) next = { ...next, catalogBlock: entry.spec };
+		}
+		const source = catalogSourceFor(next.catalogBlock);
+		if (source && !next.variant) next = { ...next, variant: source.defaultVariant };
+		return next;
+	});
 }
 
 /** Stock label for a renderer kind in the screen, else in its spec family. */
@@ -193,7 +222,42 @@ export function validateCatalogProvenance(input: {
 			};
 		}
 		const entry = getBlockIndex(label)!;
+		if (node.variant && !node.catalogBlock) {
+			return {
+				ok: false,
+				code: "variant_without_catalog_block",
+				message: `Block ${node.id} names variant ${node.variant} without its catalogBlock. Nothing was rendered.`,
+				path: `${path}.variant`
+			};
+		}
+		if (node.catalogBlock) {
+			const choice = resolveCatalogChoice({ kind: node.kind, catalogBlock: node.catalogBlock, variant: node.variant });
+			if (!choice.ok || choice.catalogBlock !== node.catalogBlock) {
+				return {
+					ok: false,
+					code: choice.ok ? "unknown_catalog_block" : choice.code,
+					message: `${choice.ok ? `${node.catalogBlock} is not a catalog block spec.` : choice.message} Nothing was rendered.`,
+					path: `${path}.${!choice.ok && choice.code === "unknown_variant" ? "variant" : "catalogBlock"}`
+				};
+			}
+		}
 		for (const [ci, child] of (node.children ?? []).entries()) {
+			if (child.catalogBlock || child.variant) {
+				return {
+					ok: false,
+					code: "catalog_child_kind_invalid",
+					message: `Row ${child.id} cannot carry its own catalog block or variant. Nothing was rendered.`,
+					path: `${path}.children[${ci}]`
+				};
+			}
+			if (child.copy?.icon !== undefined && !isLucideIcon(child.copy.icon)) {
+				return {
+					ok: false,
+					code: "unknown_icon",
+					message: `Row ${child.id}: ${child.copy.icon} is not a Lucide icon of the pinned registry snapshot.`,
+					path: `${path}.children[${ci}].copy.icon`
+				};
+			}
 			if (!allowedChild(node.kind, child.kind) || (child.children?.length ?? 0) > 0) {
 				return {
 					ok: false,
@@ -225,7 +289,9 @@ export function validateCatalogProvenance(input: {
 				industry: screen.labels.industry
 			},
 			rows: node.children?.length ?? 0,
-			sourceScreenId: found.screenId
+			sourceScreenId: found.screenId,
+			...(node.variant ? { variant: node.variant } : {}),
+			...(catalogSourceFor(node.catalogBlock) ? { registryItem: catalogSourceFor(node.catalogBlock)!.item } : {})
 		});
 	}
 	return {

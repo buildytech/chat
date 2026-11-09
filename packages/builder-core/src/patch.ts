@@ -23,7 +23,8 @@ import {
 } from "./assemble.ts";
 import { catalogProvenance } from "./catalog/snapshot.ts";
 import { getScreenById } from "./catalog/search.ts";
-import { familyLabelForKind, validateCatalogProvenance } from "./catalog/provenance.ts";
+import { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } from "./catalog/provenance.ts";
+import { catalogSourceFor, resolveCatalogChoice } from "./catalog/sources.ts";
 import { DATA_KINDS, defaultDemoLabel, demoLabelForLocale } from "./content.ts";
 import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } from "./policy.ts";
 
@@ -88,7 +89,7 @@ function checkCopy(kind: PageBlockKind, copy: Record<string, unknown>, path: str
 	return null;
 }
 
-type Item = { label: string; detail?: string; value?: string; note?: string; group?: string };
+type Item = { label: string; detail?: string; value?: string; note?: string; group?: string; icon?: string };
 
 function rowsFor(block: PageBlock, items: Item[], path: string): PageBlock[] | Failure {
 	const slot = slotOf(block.kind).items;
@@ -111,6 +112,7 @@ function rowsFor(block: PageBlock, items: Item[], path: string): PageBlock[] | F
 		if (item.value) copy.value = item.value;
 		if (item.note) copy.note = item.note;
 		if (item.group) copy.eyebrow = item.group;
+		if (item.icon) copy.icon = item.icon;
 		if (Object.keys(copy).length) row.copy = copy;
 		rows.push(row);
 	}
@@ -170,7 +172,7 @@ export function normalizePatch(raw: unknown): unknown {
 				if (Object.keys(copy).length) clean.copy = copy;
 				continue;
 			}
-			if (key !== "value" && key !== "items" && empty) continue;
+			if (key !== "value" && key !== "items" && !(key === "variant" && row.op === "set_variant") && empty) continue;
 			clean[key] = value;
 		}
 		return clean;
@@ -183,7 +185,7 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 	const issues = pagePatchIssues(ctx.patch);
 	if (issues.length) {
 		const first = issues[0]!;
-		return fail("page_patch_invalid", `page-patch/v1 ${first.keyword} failed. Send ops only (set, set_items, add, replace, remove, move, set_page).`, first.path);
+		return fail("page_patch_invalid", `page-patch/v1 ${first.keyword} failed. Send ops only (set, set_items, add, replace, remove, move, set_page, set_variant).`, first.path);
 	}
 	const patch = ctx.patch as { baseRevision?: number; ops: PatchOp[] };
 	if (typeof patch.baseRevision === "number" && patch.baseRevision !== ctx.expectedRevision) {
@@ -215,7 +217,12 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 		if (!english && typeof op.title !== "string") {
 			return fail("slot_required", `The page language is ${base.locale}: send title (and copy) for the new ${kind} block.`, `${at}.title`);
 		}
-		let node = stockBlockFor(kind, { screen, scenarioId, brief: ctx.brief ?? title, pageTitle: title });
+		let node = attachCatalogSources([stockBlockFor(kind, { screen, scenarioId, brief: ctx.brief ?? title, pageTitle: title })], screen)[0]!;
+		if (typeof op.variant === "string") {
+			const choice = resolveCatalogChoice({ kind, catalogBlock: node.catalogBlock, variant: op.variant });
+			if (!choice.ok) return fail(choice.code, choice.message, `${at}.variant`);
+			node = { ...node, variant: op.variant };
+		}
 		const copy = op.copy as Record<string, string> | undefined;
 		if (copy) {
 			const bad = checkCopy(kind, copy, `${at}.copy`);
@@ -310,6 +317,23 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 			found.list.splice(found.index, 1);
 			found.list.splice(to, 0, target);
 			changed.add(found.parent ? found.parent.kind : "order");
+		} else if (op.op === "set_variant" && target && found) {
+			if (found.parent) return fail("not_top_level", "set_variant works on top-level blocks.", `${at}.blockId`);
+			const sourced = attachCatalogSources([target], screen)[0]!;
+			if (!sourced.catalogBlock) return fail("unknown_catalog_block", `${target.kind} has no Stock catalog block on this page's screen.`, `${at}.blockId`);
+			const variant = op.variant as string | null;
+			const next: PageBlock = { ...sourced };
+			if (variant === null) {
+				const source = catalogSourceFor(sourced.catalogBlock);
+				if (source) next.variant = source.defaultVariant;
+				else delete next.variant;
+			} else {
+				const choice = resolveCatalogChoice({ kind: target.kind, catalogBlock: sourced.catalogBlock, variant });
+				if (!choice.ok) return fail(choice.code, choice.message, `${at}.variant`);
+				next.variant = variant;
+			}
+			found.list[found.index] = next;
+			changed.add(target.kind);
 		} else if (op.op === "set_page") {
 			const value = String(op.value);
 			if (op.field === "title") title = value.slice(0, PAGE_LIMITS.maxTitleLength);
@@ -323,6 +347,7 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 	}
 
 	if (shellAdded) blocks = arrangeShell(blocks, base.locale).blocks;
+	blocks = attachCatalogSources(blocks, screen);
 	const stamp = ctx.now ?? new Date().toISOString();
 	const raw = { ...base, title, seo, layout: { version: base.layout.version, blocks }, updatedAt: stamp };
 	let page: Page;
@@ -387,7 +412,8 @@ export function editPageParameterSchema(): Record<string, unknown> {
 			detail: { type: "string" },
 			value: { type: "string" },
 			note: { type: "string" },
-			group: { type: "string" }
+			group: { type: "string" },
+			icon: { type: "string", description: "Feature rows: a Lucide icon name (get_block_details lists them)." }
 		},
 		required: ["label"]
 	};
@@ -396,11 +422,11 @@ export function editPageParameterSchema(): Record<string, unknown> {
 		ops: {
 			type: "array",
 			description:
-				"page-patch/v1 operations, applied in order, all or nothing. set {blockId, field: title|summary|copy key, value (null removes a copy key)}; set_items {blockId, items} replaces rows; add {kind, at?, title, copy?, items?}; replace {blockId, kind, title, copy?, items?}; remove {blockId}; move {blockId, to}; set_page {field: title|seo.title|seo.description, value}. Use block ids from currentPage.blocks and only the slots listed there.",
+				"page-patch/v1 operations, applied in order, all or nothing. set {blockId, field: title|summary|copy key, value (null removes a copy key)}; set_items {blockId, items} replaces rows; add {kind, at?, title, variant?, copy?, items?}; replace {blockId, kind, title, variant?, copy?, items?}; remove {blockId}; move {blockId, to}; set_page {field: title|seo.title|seo.description, value}; set_variant {blockId, variant (a catalog variant of the block from get_block_details; null = catalog default)}. Use block ids from currentPage.blocks and only the slots listed there.",
 			items: {
 				type: "object",
 				properties: {
-					op: { type: "string", enum: ["set", "set_items", "add", "replace", "remove", "move", "set_page"] },
+					op: { type: "string", enum: ["set", "set_items", "add", "replace", "remove", "move", "set_page", "set_variant"] },
 					blockId: { type: "string" },
 					field: { type: "string" },
 					value: { type: ["string", "null"] },
@@ -408,6 +434,7 @@ export function editPageParameterSchema(): Record<string, unknown> {
 					at: { type: "integer" },
 					to: { type: "integer" },
 					title: { type: "string" },
+					variant: { type: ["string", "null"] },
 					copy,
 					items: { type: "array", items: item }
 				},
