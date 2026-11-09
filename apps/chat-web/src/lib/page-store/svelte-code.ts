@@ -1,5 +1,5 @@
 import { blocksOf, type CreatorPage, type PageBlock } from "@buildytech/page-contract";
-import { organismFor, registryNpmDependencies, type OrganismRender } from "@buildytech/builder-core";
+import { organismFor, registryClosure, registryNpmDependencies, type OrganismRender } from "@buildytech/builder-core";
 import registryFiles from "../../registry/files.json" with { type: "json" };
 import { barHeightClass, itemViewFor, type ItemView } from "./data-view.ts";
 
@@ -370,13 +370,21 @@ export function sveltePackFiles(
 			content: svelteForBlock(block, selectedId, item)
 		});
 	}
-	if (packNpmDependencies(page).length) {
-		// The pinned registry snapshot (sha256 in registry/registry.lock.json): organisms, their deps and styles/.
-		for (const [path, content] of Object.entries(registryFiles as Record<string, string>)) {
-			files.push({ path: `${REGISTRY_DIR}/${path}`, content });
-		}
-	}
+	// The registry items the page uses with their registryDependencies (sha256-pinned snapshot).
+	files.push(...registryFilesFor(registryItemsOf(page)));
 	return files;
+}
+
+/** Registry items the page's blocks render (empty when every block uses the generic renderer). */
+export function registryItemsOf(page: CreatorPage): string[] {
+	return [...new Set(blocksOf(page).map((block) => organismFor(block)?.item).filter((item): item is string => Boolean(item)))];
+}
+
+/** Files of registry items and their transitive registryDependencies, under REGISTRY_DIR. */
+export function registryFilesFor(items: readonly string[]): { path: string; content: string }[] {
+	if (!items.length) return [];
+	const all = registryFiles as Record<string, string>;
+	return registryClosure(items).map((path) => ({ path: `${REGISTRY_DIR}/${path}`, content: all[path]! }));
 }
 
 export { identFromBlockId };

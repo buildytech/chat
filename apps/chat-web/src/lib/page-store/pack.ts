@@ -1,6 +1,6 @@
 import { parsePage, type CreatorPage } from "./page.ts";
-import { packNpmDependencies, svelteFromPage, sveltePackFiles, REGISTRY_DIR } from "./svelte-code.ts";
-import chatWebPackage from "../../../package.json" with { type: "json" };
+import { registryFilesFor, svelteFromPage, sveltePackFiles, REGISTRY_DIR } from "./svelte-code.ts";
+import packKit from "./pack-kit.json" with { type: "json" };
 
 export type PackFile = {
 	path: string;
@@ -176,31 +176,19 @@ export function packFilesFromPage(
 	const valid = parsePage(page);
 	const svelteFiles = sveltePackFiles(valid, selectedId);
 	const pageSvelte = svelteFromPage(valid, selectedId);
-	const files: PackFile[] = [...svelteFiles];
+	// Self-contained Vite project: page code under src/, the registry items it uses, the chat components the generic
+	// blocks import (vendored), and the scaffold (index.html, main.ts, app.css, vite.config.ts, package.json, README).
+	const files: PackFile[] = svelteFiles.map((file) => ({ path: `src/${file.path}`, content: file.content }));
+	if (!files.some((file) => file.path.startsWith(`src/${REGISTRY_DIR}/styles/`))) {
+		// No registry block on this page: still ship the kit styles (theme tokens) the generic blocks use.
+		files.push(...registryFilesFor(["utils"]).map((file) => ({ path: `src/${file.path}`, content: file.content })));
+	}
+	files.push(...vendoredKit(files));
+	files.push(...scaffold(valid.slug || "page", valid.title));
 	files.push({
 		path: "page.json",
 		content: `${JSON.stringify(valid, null, 2)}\n`
 	});
-	const npm = packNpmDependencies(valid);
-	if (npm.length) {
-		const versions: Record<string, string> = { ...chatWebPackage.dependencies, ...chatWebPackage.devDependencies };
-		const pick = (names: string[]) => Object.fromEntries(names.filter((name) => versions[name]).map((name) => [name, versions[name]!]));
-		files.push({
-			path: "package.json",
-			content: `${JSON.stringify(
-				{
-					name: `${valid.slug || "page"}-pack`,
-					private: true,
-					type: "module",
-					description: `Svelte 5 page. Registry organisms under ${REGISTRY_DIR}/ (styles: ${REGISTRY_DIR}/styles/index.css).`,
-					dependencies: pick(npm),
-					devDependencies: pick(["@sveltejs/vite-plugin-svelte", "@tailwindcss/vite", "tailwindcss", "typescript", "vite"])
-				},
-				null,
-				2
-			)}\n`
-		});
-	}
 	const generator = {
 		name: "@buildytech/chat-web/svelte-pack",
 		emitter: "svelteFromPage",
@@ -208,7 +196,7 @@ export function packFilesFromPage(
 		packageVersion: "0.0.0",
 		pageSvelteSha256: sha256Text(pageSvelte),
 		contract:
-			"Svelte 5 UI8Kit page.svelte composing blocks/*.svelte; imports from $lib/compose and $ui"
+			"Vite + Svelte 5 project: src/page.svelte composing src/blocks/*.svelte; UI8Kit registry items under src/ui8kit, chat components under src/lib and src/ui ($lib, $ui aliases)"
 	};
 	files.push({
 		path: "GENERATOR.json",
@@ -250,4 +238,140 @@ export function downloadPageZip(page: CreatorPage, selectedId: string | null = n
 	anchor.click();
 	anchor.remove();
 	URL.revokeObjectURL(href);
+}
+
+type KitFiles = Record<string, string>;
+
+/** `$lib/...`, `$ui/...` and relative imports of a src/ file, resolved to src/ paths of the vendored kit. */
+function kitImports(path: string, content: string, kit: KitFiles): string[] {
+	const code = content.replace(/\/\*[\s\S]*?\*\/|^\s*\/\/.*$|<!--[\s\S]*?-->/gm, "");
+	const out: string[] = [];
+	for (const match of code.matchAll(/(?:from\s+|import\s+)"([^"]+)"/g)) {
+		const specifier = match[1]!;
+		let target: string | null = null;
+		if (specifier.startsWith("$lib/")) target = `lib/${specifier.slice(5)}`;
+		else if (specifier.startsWith("$ui/")) target = `ui/${specifier.slice(4)}`;
+		else if (specifier.startsWith(".") && !path.startsWith(`src/${REGISTRY_DIR}/`) && !path.startsWith("src/blocks/") && path !== "src/page.svelte") {
+			target = joinPath(path.slice(4), specifier);
+		}
+		if (!target) continue;
+		const found = [target, `${target}.ts`, `${target}.js`, `${target}/index.ts`].find((candidate) => kit[candidate] !== undefined);
+		if (found) out.push(found);
+	}
+	return out;
+}
+
+function joinPath(from: string, specifier: string): string {
+	const parts = from.split("/").slice(0, -1);
+	for (const segment of specifier.split("/")) {
+		if (segment === "..") parts.pop();
+		else if (segment !== ".") parts.push(segment);
+	}
+	return parts.join("/");
+}
+
+/** Chat components the page's generic blocks import, transitively (from pack-kit.json, generated at build time). */
+function vendoredKit(pageFiles: PackFile[]): PackFile[] {
+	const kit = packKit.files as KitFiles;
+	const seen = new Set<string>();
+	const queue = pageFiles.filter((file) => file.path.endsWith(".svelte")).flatMap((file) => kitImports(file.path, file.content, kit));
+	while (queue.length) {
+		const path = queue.shift()!;
+		if (seen.has(path)) continue;
+		seen.add(path);
+		queue.push(...kitImports(`src/${path}`, kit[path]!, kit));
+	}
+	return [...seen].sort().map((path) => ({ path: `src/${path}`, content: kit[path]! }));
+}
+
+function scaffold(slug: string, title: string): PackFile[] {
+	const safeTitle = title.replace(/[<>&"]/g, "");
+	const pkg = {
+		name: `${slug.replace(/[^a-z0-9-]/gi, "-").toLowerCase() || "page"}-site`,
+		private: true,
+		version: "0.0.0",
+		type: "module",
+		scripts: { dev: "vite", build: "vite build", preview: "vite preview" },
+		dependencies: packKit.dependencies,
+		devDependencies: packKit.devDependencies
+	};
+	return [
+		{
+			path: "index.html",
+			content: `<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>${safeTitle}</title>
+		<script>
+			// Dark theme follows the system; set class="dark" (or data-theme="dark") on <html> to force it.
+			if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("dark");
+		</script>
+	</head>
+	<body>
+		<div id="app"></div>
+		<script type="module" src="/src/main.ts"></script>
+	</body>
+</html>
+`
+		},
+		{
+			path: "src/main.ts",
+			content: `import { mount } from "svelte";
+import "./app.css";
+import Page from "./page.svelte";
+
+mount(Page, { target: document.getElementById("app")! });
+`
+		},
+		{
+			path: "src/app.css",
+			content: `/* UI8Kit theme and kit CSS from the registry snapshot; Tailwind scans src/. */
+@import "./${REGISTRY_DIR}/styles/index.css";
+@source "./";
+
+@utility rounded-default {
+	border-radius: var(--radius);
+}
+`
+		},
+		{
+			path: "vite.config.ts",
+			content: `import { fileURLToPath } from "node:url";
+import { defineConfig } from "vite";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+	plugins: [tailwindcss(), svelte()],
+	resolve: {
+		alias: {
+			$lib: fileURLToPath(new URL("./src/lib", import.meta.url)),
+			$ui: fileURLToPath(new URL("./src/ui", import.meta.url))
+		}
+	}
+});
+`
+		},
+		{ path: "package.json", content: `${JSON.stringify(pkg, null, 2)}\n` },
+		{
+			path: "README.md",
+			content: `# ${safeTitle}
+
+Svelte 5 + Vite + Tailwind CSS 4 page exported from BuildY.
+
+\`\`\`sh
+npm i && npm run dev
+\`\`\`
+
+\`npm run build\` writes the static site to \`dist/\`.
+
+- \`src/page.svelte\` composes the sections in \`src/blocks/\`.
+- \`src/${REGISTRY_DIR}/\` holds the UI8Kit registry items this page uses (same files as \`npx ui8kit add <item>\`, pinned by sha256 in BuildY).
+- \`src/lib\` and \`src/ui\` hold the BuildY components the other sections use (\`$lib\`, \`$ui\` aliases in \`vite.config.ts\`).
+- Dark theme: \`class="dark"\` or \`data-theme="dark"\` on \`<html>\`.
+`
+		}
+	];
 }
