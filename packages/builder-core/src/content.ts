@@ -465,7 +465,12 @@ export function proposeContentParameterSchema(): Record<string, unknown> {
 		required: ["label"]
 	};
 	const copyProps: Record<string, unknown> = {};
-	for (const field of COPY_FIELDS) copyProps[field] = { type: "string" };
+	const copyHints: Record<string, string> = {
+		action:
+			"Label of the block's button or link. On features it is the section link next to the heading (e.g. View all) and needs href on the same block.",
+		href: "Target of this block's action: #fragment, /path or https URL. A link the author names for a section goes on that section's block."
+	};
+	for (const field of COPY_FIELDS) copyProps[field] = copyHints[field] ? { type: "string", description: copyHints[field] } : { type: "string" };
 	return {
 		title: { type: "string", description: "Page title in the page language." },
 		locale: { type: "string", description: "BCP 47 language of the author's request, e.g. ru or en. All copy uses it." },
