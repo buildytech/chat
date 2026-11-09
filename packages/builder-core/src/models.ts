@@ -1,6 +1,5 @@
 import { parsePage, type Page } from "@buildytech/page-contract";
 import { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } from "./xai-env.ts";
-import { inferScenarioId } from "./brief.ts";
 
 /**
  * Readable labels for the five parent-verified TEXT models.
@@ -246,7 +245,7 @@ export function mapChatRunRequest(
 	const scenarioId =
 		body.scenarioId === "dashboard" || body.scenarioId === "landing" || body.scenarioId === "website"
 			? body.scenarioId
-			: inferScenarioId(brief);
+			: null;
 	let currentPage: Page | undefined;
 	if (body.currentPage != null) {
 		try {

@@ -2,6 +2,12 @@ export type CatalogFacetFilter = {
 	type?: "screen" | "block";
 	section?: string;
 	job?: string;
+	/** Industry facet value from the catalog vocabulary. */
+	industry?: string;
+	/** Block labels every hit must contain (catalog vocabulary, e.g. sidenav). */
+	blocks?: string[];
+	/** Free text, matched against the catalog-generated search index. */
+	q?: string;
 };
 
 export type CatalogScreen = {
@@ -71,10 +77,14 @@ export type SearchResult = {
 	pageSize: number;
 	total: number;
 	pageCount: number;
-	items: Array<CatalogScreen & { compatibility: ScreenCompatibility }>;
+	items: Array<CatalogScreen & { compatibility: ScreenCompatibility; score?: number; matched?: string[]; via?: string; missingBlocks?: string[] }>;
 	vocabulary: { type: string[]; section: string[]; job: string[] };
 	noFit: boolean;
 	code?: "catalog_facet_unknown";
+	/** Unsupported Stock screens that matched (exist in Stock, not renderable here). */
+	unrenderable?: Array<{ screenId: string; missing: string[] }>;
+	/** Query tokens that matched no catalog term, with the nearest catalog terms. */
+	nearest?: Record<string, string[]>;
 	clarification?: string;
 	suggested?: Array<{ section?: string; job?: string; reason: string }>;
 	misplaced?: { used: "section" | "job"; value: string; tryFacet: "section" | "job" };

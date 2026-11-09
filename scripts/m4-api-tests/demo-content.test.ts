@@ -3,10 +3,7 @@ import { test } from "node:test";
 import { parsePage, type Page } from "../../packages/page-contract/src/index.ts";
 import {
 	catalogProvenance,
-	detectBriefLocale,
-	detectDemoDataRequest,
 	executeTool,
-	explicitLocaleRequest,
 	parseModelContent,
 	proposeLayout,
 	resolvePageLocale,
@@ -15,7 +12,13 @@ import {
 	type LayoutProposal
 } from "../../packages/builder-core/src/index.ts";
 import { revalidateProposal } from "../../apps/xai-runtime/src/chat-tools.ts";
-import { RU, RU_DEMO_DATA, RU_DEMO_PROMPT, RU_FOR_TESTS, RU_PLAIN_PROMPT, RU_TEST_DATA, ruDashboardArgs } from "./fixtures-demo.ts";
+import { RU, RU_DEMO_PROMPT, RU_PLAIN_PROMPT, RU_TEST_DATA, ruDashboardArgs } from "./fixtures-demo.ts";
+
+function plainArgs(): Record<string, unknown> {
+	const args = ruDashboardArgs();
+	delete args.demoData;
+	return args;
+}
 
 const CYRILLIC = /\p{Script=Cyrillic}/u;
 const DASH = "screen.theme-dashboard-console/home";
@@ -31,31 +34,11 @@ function find(page: Page, kind: string) {
 	return page.layout.blocks.find((block) => block.kind === kind);
 }
 
-test("demo-data detection: explicit requests in Russian and English only", () => {
-	assert.equal(detectDemoDataRequest(RU_DEMO_PROMPT), true);
-	assert.equal(detectDemoDataRequest(RU_TEST_DATA), true);
-	assert.equal(detectDemoDataRequest(RU_DEMO_DATA), true);
-	assert.equal(detectDemoDataRequest("Fill the dashboard with fake data"), true);
-	assert.equal(detectDemoDataRequest("use sample data for tasks"), true);
-	assert.equal(detectDemoDataRequest("populate with mock data"), true);
-	assert.equal(detectDemoDataRequest("Create a demo dashboard with dummy numbers"), true);
-	assert.equal(detectDemoDataRequest(RU_PLAIN_PROMPT), false);
-	assert.equal(detectDemoDataRequest(RU_FOR_TESTS), false);
-	assert.equal(detectDemoDataRequest("Create a responsive dashboard using UI8Kit rules."), false);
-	assert.equal(detectDemoDataRequest("Find a mockup for a landing page"), false);
-	assert.equal(detectDemoDataRequest("Create a demo landing page"), false);
-});
-
-test("locale detection follows the request language", () => {
-	assert.equal(detectBriefLocale(RU_DEMO_PROMPT), "ru");
-	assert.equal(detectBriefLocale("Create a dashboard for tasks"), "en");
-	assert.equal(explicitLocaleRequest(RU_DEMO_PROMPT), "ru");
-	assert.equal(explicitLocaleRequest("Create a landing in English"), "en");
-	assert.equal(resolvePageLocale({ brief: RU_PLAIN_PROMPT }), "ru");
-	assert.equal(resolvePageLocale({ brief: RU_PLAIN_PROMPT, modelLocale: "en" }), "ru");
-	assert.equal(resolvePageLocale({ brief: "Create a landing", modelLocale: "de" }), "de");
-	assert.equal(resolvePageLocale({ brief: "Create a landing", modelLocale: "not a locale!" }), "en");
-	assert.equal(resolvePageLocale({ brief: "Create a dashboard in Russian" }), "ru");
+test("locale is the model's typed field, validated; no language guessing from text", () => {
+	assert.deepEqual(resolvePageLocale({ modelLocale: "ru" }), { locale: "ru", source: "model" });
+	assert.deepEqual(resolvePageLocale({ modelLocale: "de" }), { locale: "de", source: "model" });
+	assert.deepEqual(resolvePageLocale({ modelLocale: "not a locale!" }), { locale: "en", source: "default" });
+	assert.deepEqual(resolvePageLocale({ modelLocale: undefined, fallback: "ru" }), { locale: "ru", source: "page" });
 });
 
 test("model content parser drops unknown kinds and markup", () => {
@@ -126,10 +109,11 @@ test("Russian page never mixes in English catalog fallbacks on model-written blo
 });
 
 test("without a demo request data rows are dropped but model copy is kept", () => {
-	const proposal = propose(ruDashboardArgs(), RU_PLAIN_PROMPT);
+	const proposal = propose(plainArgs(), RU_PLAIN_PROMPT);
 	const page = proposal.page;
 	assert.equal(page.locale, "ru");
 	assert.equal(proposal.demoData, false);
+	assert.equal(proposal.provenance.intent?.demoDataSource, "none");
 	assert.equal(find(page, "pagehead")?.copy?.headline, RU.title);
 	assert.equal(find(page, "pagehead")?.copy?.badge, undefined);
 	assert.equal(find(page, "metrics")?.children, undefined);
@@ -140,8 +124,8 @@ test("without a demo request data rows are dropped but model copy is kept", () =
 	assert.equal(find(page, "sidenav")?.children?.length, 3);
 });
 
-test("the model's own brief cannot unlock demo data; only the author's message can", () => {
-	const args = { ...ruDashboardArgs(), brief: "fill it with fake data" };
+test("demo data needs the typed demoData flag; brief text alone never unlocks it", () => {
+	const args = { ...plainArgs(), brief: "fill it with fake data" };
 	const proposal = propose(args, "Create a dashboard for tasks and projects");
 	assert.equal(proposal.demoData, false);
 	assert.equal(find(proposal.page, "metrics")?.children, undefined);
@@ -194,7 +178,7 @@ test("local assembler without model content keeps the honest empty dashboard", (
 });
 
 test("follow-up on a saved page can add demo rows and keeps ids", () => {
-	const first = propose({ ...ruDashboardArgs(), blocks: [] }, RU_PLAIN_PROMPT);
+	const first = propose({ ...plainArgs(), blocks: [] }, RU_PLAIN_PROMPT);
 	const saved = { ...first.page, id: "page-saved" };
 	const result = executeTool(
 		{ name: "propose_layout", arguments: { ...ruDashboardArgs(), brief: "fill with fake data" } },

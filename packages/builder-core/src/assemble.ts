@@ -7,9 +7,10 @@ import {
 	type PageBlockKind
 } from "@buildytech/page-contract";
 import { SCENARIO_PROMPTS, type ScenarioId } from "./copy.ts";
-import { displayTitleFromBrief, inferScenarioId, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
-import { extractCopyEditsFromBrief, type LayoutCopyEdit } from "./edits.ts";
-import { catalogProvenance } from "./catalog/snapshot.ts";
+import { displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
+import type { LayoutCopyEdit } from "./edits.ts";
+import { catalogProvenance, catalogSnapshot } from "./catalog/snapshot.ts";
+import { blockLabelVocabulary } from "./catalog/text-search.ts";
 import { compareScreenSupport, compatibilityFor, rendererKindForLabel, screenSupport } from "./catalog/compatibility.ts";
 import { getBlockDetails } from "./catalog/details.ts";
 import { filterScreens, getScreenById, searchCatalog } from "./catalog/search.ts";
@@ -21,24 +22,13 @@ import {
 	DATA_KINDS,
 	defaultDemoLabel,
 	demoLabelForLocale,
-	detectDemoDataRequest,
-	explicitLocaleRequest,
 	isShellDefaultTitle,
 	mergeModelContent,
 	resolvePageLocale,
 	shellTitle,
 	type ModelPageContent
 } from "./content.ts";
-import {
-	detectBottomNavRemoval,
-	detectDemoOptOut,
-	detectFooterRemoval,
-	detectFooterRequest,
-	detectSidebarRemoval,
-	detectSidebarRequest,
-	isShellOnlyRequest,
-	stripInventedFooterYears
-} from "./intents.ts";
+import { stripInventedFooterYears } from "./intents.ts";
 
 export type ProposalContext = {
 	brief: string;
@@ -103,7 +93,21 @@ export type LayoutProposal = {
 		scenarioId: ScenarioId | null;
 		screenId: string | null;
 		assembler: string;
+		/** Typed intent the model set on propose_layout (the host does not parse author words). */
+		intent?: ProposalIntent;
 	};
+};
+
+export type ProposalIntent = {
+	locale: string;
+	localeSource: "model" | "page" | "default";
+	/** demoData as the model set it (undefined = not mentioned), and where the final flag came from. */
+	demoData?: boolean;
+	demoDataSource: "model" | "session" | "page" | "none";
+	requireBlocks: string[];
+	unknownBlocks: string[];
+	remove: string[];
+	newPage: boolean;
 };
 
 export type LayoutProposalError = {
@@ -204,20 +208,6 @@ export function isClearPageCommand(brief: string): boolean {
 	return /^(?:please\s+)?(?:create\s+(?:an?\s+)?)?(?:clear|empty|blank)(?:\s+the)?\s+(?:page|layout|canvas)\.?$/.test(
 		text
 	);
-}
-
-/** New page from the brief itself — not a leftover scenario badge, not "create a stronger CTA". */
-export function isNewPageCommand(brief: string): boolean {
-	const text = brief.trim();
-	if (!text) return false;
-	if (/\b(?:start over|from scratch)\b/i.test(text)) return true;
-	if (/\breplace (?:the )?(?:entire )?(?:page|layout)\b/i.test(text)) return true;
-	if (!/\b(?:create|build|make|start)\b/i.test(text)) return false;
-	if (inferScenarioId(text) == null) return false;
-	const namesScenario = /\b(?:landing(?:\s+pages?)?|dashboard|website|web site)\b/i.test(text);
-	const namesBlock = /\b(cta|call to action|headline|hero|footer|nav(?:igation)?|button)\b/i.test(text);
-	if (namesBlock && !namesScenario) return false;
-	return true;
 }
 
 function briefMentionsGrill(brief: string): boolean {
@@ -500,11 +490,17 @@ function screenInPool(screen: CatalogScreen, pool: CatalogScreen[]): boolean {
 
 function pickSupportedScreen(
 	pool: CatalogScreen[],
-	brief: string,
+	required: PageBlockKind[],
 	scenarioId: ScenarioId | null
 ): CatalogScreen | null {
 	if (!pool.length) return null;
-	const wantsMenu = /\bmenus?\b/i.test(brief) || briefMentionsGrill(brief) || briefMentionsDelivery(brief);
+	if (required.length) {
+		const covering = pool
+			.filter((screen) => screenSupport(screen).supported && uncoveredKinds(screen, required).length === 0)
+			.sort(compareScreenSupport);
+		if (covering[0]) return covering[0];
+	}
+	const wantsMenu = required.includes("menu");
 	if (wantsMenu && scenarioId === "website") {
 		const menuPool = pool
 			.filter((screen) => screenSupport(screen).mappedKinds.includes("menu"))
@@ -531,24 +527,32 @@ function pickSupportedScreen(
  */
 function kindsForPage(
 	screen: CatalogScreen,
-	brief: string,
 	scenarioId: ScenarioId | null,
-	author = brief
+	ctx: ProposalContext
 ): { kinds: PageBlockKind[]; unavailable: string[]; notes: string[] } {
 	let kinds = uniqueKindsFromScreen(screen);
 	const unavailable: string[] = [];
 	const notes: string[] = [];
+	const required = requiredKinds(ctx);
+	const removed = removedKinds(ctx);
 	if (scenarioId === "dashboard") {
-		const shaped = dashboardShell(screen, kinds, author);
+		const shaped = dashboardShell(screen, kinds, required, removed);
 		kinds = shaped.kinds;
 		notes.push(...shaped.notes);
 	}
-	if (scenarioId !== "website") return { kinds, unavailable, notes };
-	const wantsMenu = /\bmenus?\b/i.test(brief) || briefMentionsGrill(brief);
-	const wantsContact = /\bcontact\b/i.test(brief) || /\bhours\b/i.test(brief) || briefMentionsDelivery(brief);
-	if (wantsMenu && !kinds.includes("menu")) unavailable.push("menu");
-	if (wantsContact && !kinds.includes("hours")) unavailable.push("hours");
-	return { kinds, unavailable, notes };
+	for (const kind of required) {
+		if (kinds.includes(kind)) continue;
+		const found = familyLabelForKind(screen, kind);
+		if (!found) {
+			unavailable.push(kind);
+			continue;
+		}
+		inspectKind(kind, found.label);
+		kinds.push(kind);
+		notes.push(`Requested ${kind} from Stock screen ${found.screenId}.`);
+	}
+	if (removed.length) kinds = kinds.filter((kind) => !removed.includes(kind));
+	return { kinds: sortKinds(kinds), unavailable, notes };
 }
 
 function sortKinds(kinds: PageBlockKind[]): PageBlockKind[] {
@@ -564,28 +568,37 @@ function sortKinds(kinds: PageBlockKind[]): PageBlockKind[] {
 function dashboardShell(
 	screen: CatalogScreen,
 	kinds: PageBlockKind[],
-	author: string
+	required: PageBlockKind[],
+	removed: PageBlockKind[]
 ): { kinds: PageBlockKind[]; notes: string[] } {
 	const notes: string[] = [];
 	let next = kinds.slice();
-	if (next.includes("footer") && !detectFooterRequest(author)) {
+	if (next.includes("footer") && !required.includes("footer")) {
 		next = next.filter((kind) => kind !== "footer");
 		notes.push("Optional sitemap footer omitted on this Dashboard. Ask for a footer to add it.");
 	}
-	if (!detectSidebarRemoval(author)) {
-		for (const kind of ["sidenav", "bottomnav"] as const) {
-			if (next.includes(kind)) continue;
-			if (kind === "bottomnav" && detectBottomNavRemoval(author)) continue;
-			const found = familyLabelForKind(screen, kind);
-			if (!found) continue;
-			inspectKind(kind, found.label);
-			next.push(kind);
-			notes.push(`App shell: ${kind} from Stock screen ${found.screenId}.`);
-		}
-	} else {
-		next = next.filter((kind) => kind !== "sidenav" && kind !== "bottomnav");
+	for (const kind of ["sidenav", "bottomnav"] as const) {
+		if (next.includes(kind) || removed.includes(kind)) continue;
+		if (kind === "bottomnav" && removed.includes("sidenav")) continue;
+		// Only from a Stock screen of this family that actually contains the block.
+		const found = familyLabelForKind(screen, kind);
+		if (!found) continue;
+		inspectKind(kind, found.label);
+		next.push(kind);
+		notes.push(`App shell: ${kind} from Stock screen ${found.screenId}.`);
 	}
 	return { kinds: sortKinds(next), notes };
+}
+
+function requiredBlocksPick(ctx: ProposalContext): CatalogScreen | null {
+	const required = requiredKinds(ctx);
+	if (!required.length) return null;
+	const ranked = catalogSnapshot.screens
+		.filter((screen) => screenSupport(screen).supported)
+		.map((screen) => ({ screen, covered: required.length - uncoveredKinds(screen, required).length }))
+		.filter((entry) => entry.covered > 0)
+		.sort((a, b) => b.covered - a.covered || compareScreenSupport(a.screen, b.screen));
+	return ranked[0]?.screen ?? null;
 }
 
 function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutProposalError | null {
@@ -600,7 +613,7 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 				suggestedScreenIds: suggestedFrom(pool)
 			};
 		}
-		const best = pickSupportedScreen(pool.length ? pool : [screen], ctx.brief, ctx.scenarioId);
+		const best = pickSupportedScreen(pool.length ? pool : [screen], requiredKinds(ctx), ctx.scenarioId);
 		if (ctx.scenarioId && pool.length && !screenInPool(screen, pool)) {
 			return {
 				ok: false,
@@ -627,9 +640,11 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 				suggestedScreenIds: suggestedFrom(best ? [best, ...pool] : pool)
 			};
 		}
-		return screen;
+		return withRequiredBlocks(screen, pool, ctx);
 	}
-	if (!ctx.scenarioId) return null;
+	// No scenario and no screen: the host does not guess from words. Typed requireBlocks still
+	// pick the renderable screen whose Stock family covers the most of them.
+	if (!ctx.scenarioId) return requiredBlocksPick(ctx);
 	if (!pool.length) {
 		return {
 			ok: false,
@@ -638,7 +653,7 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 				"No Stock screens match that scenario filter. Re-search with a bounded section or job, or pick another scenario."
 		};
 	}
-	const picked = pickSupportedScreen(pool, ctx.brief, ctx.scenarioId);
+	const picked = pickSupportedScreen(pool, requiredKinds(ctx), ctx.scenarioId);
 	if (!picked) {
 		return {
 			ok: false,
@@ -649,8 +664,51 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 	return picked;
 }
 
-function resolvedScenario(ctx: ProposalContext, brief: string): ScenarioId | null {
-	return inferScenarioId(brief) ?? ctx.scenarioId;
+/** Notes from screen resolution (switches made for required blocks), read by proposeLayout. */
+let SCREEN_NOTES: string[] = [];
+
+/**
+ * The author required blocks this screen's Stock family does not contain: switch to a renderable
+ * screen of the same scenario pool that has them (honest note), else keep the screen; the missing
+ * kinds are reported, never invented.
+ */
+function withRequiredBlocks(screen: CatalogScreen, pool: CatalogScreen[], ctx: ProposalContext): CatalogScreen {
+	const required = requiredKinds(ctx);
+	if (!required.length || uncoveredKinds(screen, required).length === 0) return screen;
+	const candidates = (pool.length ? pool : catalogSnapshot.screens.filter((item) => item.spec === screen.spec))
+		.filter((item) => screenSupport(item).supported && uncoveredKinds(item, required).length === 0)
+		.sort(compareScreenSupport);
+	const better = candidates.find((item) => item.spec === screen.spec) ?? candidates[0];
+	if (!better) return screen;
+	SCREEN_NOTES.push(
+		`Switched from Stock screen ${screen.screenId} to ${better.screenId}: it contains ${required.join(", ")}, which ${screen.screenId} and its family do not.`
+	);
+	return better;
+}
+
+/** Scenario: attached by the author or set by the model; else the first scenario whose Stock filter holds the screen. */
+function resolvedScenario(ctx: ProposalContext): ScenarioId | null {
+	if (ctx.scenarioId) return ctx.scenarioId;
+	const screen = ctx.screenId ? getScreenById(ctx.screenId) : null;
+	if (!screen) return null;
+	for (const id of ["dashboard", "landing", "website"] as const) {
+		if (filterScreens(OWNER_FILTERS[id]).some((item) => item.screenId === screen.screenId)) return id;
+	}
+	return null;
+}
+
+function requiredKinds(ctx: ProposalContext): PageBlockKind[] {
+	return ctx.content?.requireBlocks ?? [];
+}
+
+function removedKinds(ctx: ProposalContext): PageBlockKind[] {
+	const required = requiredKinds(ctx);
+	return (ctx.content?.remove ?? []).filter((kind) => !required.includes(kind));
+}
+
+/** Required kinds this screen's Stock family cannot provide (never invented). */
+function uncoveredKinds(screen: CatalogScreen, kinds: PageBlockKind[]): PageBlockKind[] {
+	return kinds.filter((kind) => !familyLabelForKind(screen, kind));
 }
 
 function applyCopyEdits(blocks: PageBlock[], edits: LayoutCopyEdit[]): { blocks: PageBlock[]; changed: string[] } {
@@ -698,10 +756,6 @@ export function inheritedScreenId(ctx: Pick<ProposalContext, "screenId" | "curre
 	);
 }
 
-function hasRemovalIntent(text: string): boolean {
-	return /\b(?:remove|delete|drop|hide|without|no)\b/i.test(text) || /(?:\u0431\u0435\u0437|\u0443\u0431\u0435\u0440|\u0443\u0434\u0430\u043b)/iu.test(text);
-}
-
 function sameFamily(a: CatalogScreen | null, b: CatalogScreen | null): boolean {
 	return Boolean(a && b && a.spec === b.spec);
 }
@@ -724,28 +778,25 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 	const target = requested ? getScreenById(requested) : null;
 	const screen = target && (sameFamily(target, baseScreen) || !baseScreen) ? target : baseScreen;
 	const screenId = screen?.screenId ?? inherited;
-	const scenarioId = resolvedScenario({ ...ctx, screenId }, brief) ?? ctx.currentProvenance?.scenarioId ?? null;
+	const scenarioId = ctx.currentProvenance?.scenarioId ?? resolvedScenario({ ...ctx, screenId });
 	const missing = ctx.currentProvenance?.missing ?? [];
-	const edits = ctx.edits?.length ? ctx.edits : extractCopyEditsFromBrief(brief);
+	const edits = ctx.edits ?? [];
 	const working: ProposalContext = { ...ctx, pageId: current.id, scenarioId, screenId };
 	const author = authorText(working);
-	const locale = explicitLocaleRequest(author) ?? current.locale;
+	// Follow-ups keep the page language (continuity); the model's locale is recorded in intent only.
+	const resolvedLocale = { locale: current.locale, source: "page" as const };
+	const locale = resolvedLocale.locale;
 	const warnings: string[] = [];
 	const baseKinds = current.layout.blocks.map((node) => node.kind);
+	const required = requiredKinds(working);
 
-	// Removals: explicit author intent only.
-	const remove = new Set<PageBlockKind>();
-	if (hasRemovalIntent(author)) for (const kind of working.content?.remove ?? []) remove.add(kind);
-	if (detectSidebarRemoval(author)) {
-		remove.add("sidenav");
-		remove.add("bottomnav");
-	}
-	if (detectBottomNavRemoval(author)) remove.add("bottomnav");
-	if (detectFooterRemoval(author)) remove.add("footer");
+	// Removals: the model's typed remove list (it reads the author's words); never a required kind.
+	const remove = new Set<PageBlockKind>(removedKinds(working));
+	if (remove.has("sidenav")) remove.add("bottomnav");
 
-	// Additions: requested shell, sibling-screen kinds, and kinds the model wrote content for.
+	// Additions: required kinds, sibling-screen kinds, and kinds the model wrote content for.
 	const add: PageBlockKind[] = [];
-	const wantsFooter = detectFooterRequest(author);
+	const wantsFooter = required.includes("footer");
 	const consider = (kind: PageBlockKind) => {
 		if (remove.has(kind) || baseKinds.includes(kind) || add.includes(kind)) return;
 		if (kind === "nav-link" || kind === "feature" || kind === "dish" || kind === "metric" || kind === "activity-item") return;
@@ -753,11 +804,15 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 		if (!screen || !familyLabelForKind(screen, kind)) return;
 		add.push(kind);
 	};
-	if (detectSidebarRequest(author)) {
-		consider("sidenav");
-		if (!detectBottomNavRemoval(author)) consider("bottomnav");
+	for (const kind of required) consider(kind);
+	if (required.includes("sidenav") && !remove.has("bottomnav")) consider("bottomnav");
+	const unavailable = required.filter((kind) => !baseKinds.includes(kind) && !add.includes(kind) && !remove.has(kind));
+	if (unavailable.length) {
+		warnings.push(
+			`Requested ${unavailable.join(", ")} but Stock screen ${screen?.screenId ?? "(none)"} and its family have no such block. Not invented.`
+		);
 	}
-	if (wantsFooter) consider("footer");
+	warnings.push(...unknownBlockNotes(working));
 	if (target && baseScreen && target.screenId !== baseScreen.screenId && sameFamily(target, baseScreen)) {
 		for (const kind of uniqueKindsFromScreen(target)) consider(kind);
 	}
@@ -780,14 +835,20 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 	const combined = [...kept, ...fresh].sort((a, b) => pageSlot(a.kind, rank) - pageSlot(b.kind, rank));
 
 	// Demo data is sticky for the session unless the author opts out.
-	const optOut = detectDemoOptOut(author);
-	const sticky = !optOut && (detectDemoDataRequest(author) || Boolean(ctx.sessionDemoData) || hasDemoBadge(current.layout.blocks));
-	const modelFlagged = (working.content?.blocks ?? []).filter((entry) => entry.edit).map((entry) => entry.kind);
-	// "Add a sidebar" is not a request to rewrite other blocks: ignore model edit flags on shell-only turns.
-	const shellOnly = isShellOnlyRequest(author);
-	const ignoredEdits = shellOnly ? modelFlagged.filter((kind) => !add.includes(kind)) : [];
-	if (ignoredEdits.length) warnings.push(`Ignored model rewrites of ${ignoredEdits.join(", ")}: this request only changed the app shell.`);
-	const flagged = new Set<PageBlockKind>(shellOnly ? [] : modelFlagged);
+	// Demo data: the model's typed flag (false = the author declined it), else sticky for the session.
+	const optOut = working.content?.demoData === false;
+	const demoSource: ProposalIntent["demoDataSource"] =
+		working.content?.demoData === true
+			? "model"
+			: optOut
+				? "none"
+				: ctx.sessionDemoData
+					? "session"
+					: hasDemoBadge(current.layout.blocks)
+						? "page"
+						: "none";
+	const sticky = demoSource !== "none";
+	const flagged = new Set<PageBlockKind>((working.content?.blocks ?? []).filter((entry) => entry.edit).map((entry) => entry.kind));
 	const onlyKinds = new Set<PageBlockKind>([...add, ...flagged]);
 	// Demo on and a data block is still empty: fill it from the model rows (nothing is lost).
 	if (sticky) {
@@ -835,7 +896,8 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 		locale,
 		demoData,
 		demoLabel: overlay.demoLabel,
-		diff: { added: add, removed, kept: keptKinds, changed: [...new Set(changed)] }
+		diff: { added: add, removed, kept: keptKinds, changed: [...new Set(changed)] },
+		intent: intentRecord(working, resolvedLocale, demoSource)
 	});
 }
 
@@ -933,14 +995,14 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		return finishProposal(ctx, brief, null, [], [], []);
 	}
 
-	const scenarioId = resolvedScenario(ctx, brief);
-	const working: ProposalContext = { ...ctx, scenarioId };
+	const scenarioId = resolvedScenario(ctx);
+	let working: ProposalContext = { ...ctx, scenarioId };
 
-	const looksNewPage = isNewPageCommand(brief);
-	if (ctx.currentPage && !looksNewPage) {
+	if (ctx.currentPage && ctx.content?.newPage !== true) {
 		return editExistingPage(working, brief);
 	}
 
+	SCREEN_NOTES = [];
 	const resolved = resolveCatalogScreen(working);
 	if (resolved !== null && "ok" in resolved) return resolved;
 	const screen = resolved;
@@ -949,13 +1011,20 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 			ok: false,
 			code: "needs_clarification",
 			message:
-				"Say that you want a landing, dashboard, or website, attach that scenario, or pick a Stock screen. Unsolicited empty or invented layouts are rejected."
+				"No screen to assemble. Pass screenId from a search_catalog item (or scenarioId dashboard, landing or website). Unsolicited empty or invented layouts are rejected.",
+			suggestedScreenIds: suggestedFrom(catalogSnapshot.screens.filter((item) => screenSupport(item).supported).sort(compareScreenSupport))
 		};
 	}
+	if (!working.scenarioId || working.screenId !== screen.screenId) {
+		working = { ...working, scenarioId: working.scenarioId ?? resolvedScenario({ ...working, scenarioId: null, screenId: screen.screenId }) };
+	}
 
-	const { kinds, unavailable, notes } = kindsForPage(screen, brief, working.scenarioId, authorText(working));
-	const warnings: string[] = [...notes];
+	const { kinds, unavailable, notes } = kindsForPage(screen, working.scenarioId, working);
+	const warnings: string[] = [...SCREEN_NOTES, ...notes];
+	warnings.push(...unknownBlockNotes(working));
 	const missing: string[] = [];
+	const catalogLabels = new Set(blockLabelVocabulary());
+	missing.push(...(working.content?.unknownBlocks ?? []).filter((label) => catalogLabels.has(label)));
 	if (unavailable.length) {
 		missing.push(...unavailable);
 		warnings.push(
@@ -990,15 +1059,18 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		};
 	}
 
-	const locale = resolvePageLocale({ brief: authorText(working), modelLocale: working.content?.locale });
-	const overlay = overlayModelContent(working, blocks, locale, warnings);
+	const resolvedLocale = resolvePageLocale({ modelLocale: working.content?.locale });
+	const locale = resolvedLocale.locale;
+	if (resolvedLocale.source === "default") warnings.push("No locale was set on propose_layout; the page uses en.");
+	const demoRequested = working.content?.demoData === true;
+	const overlay = overlayModelContent(working, blocks, locale, warnings, { demo: demoRequested });
 	const shell = arrangeShell(localizeEmptyLedes(overlay.blocks, locale), locale);
 	const years = stripInventedFooterYears(shell.blocks, authorText(working));
 	if (years.stripped.length) {
 		warnings.push(`Removed invented years from ${years.stripped.join(", ")}. Add a year in the request to keep one.`);
 	}
 	let assembled = years.blocks;
-	const edits = working.edits?.length ? working.edits : extractCopyEditsFromBrief(brief);
+	const edits = working.edits ?? [];
 	if (edits.length) {
 		const patched = applyCopyEdits(assembled, edits);
 		if (patched.changed.length) {
@@ -1011,7 +1083,8 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		locale,
 		title: working.content?.title,
 		demoData: overlay.demo,
-		demoLabel: overlay.demoLabel
+		demoLabel: overlay.demoLabel,
+		intent: intentRecord(working, resolvedLocale, demoRequested ? "model" : "none")
 	});
 }
 
@@ -1088,6 +1161,36 @@ export function localizeEmptyLedes(blocks: PageBlock[], locale: string): PageBlo
 	});
 }
 
+/** requireBlocks the renderer cannot place: catalog labels without a renderer, or not catalog labels at all. */
+function unknownBlockNotes(ctx: ProposalContext): string[] {
+	const unknown = ctx.content?.unknownBlocks ?? [];
+	if (!unknown.length) return [];
+	const labels = new Set(blockLabelVocabulary());
+	const noRenderer = unknown.filter((label) => labels.has(label));
+	const notCatalog = unknown.filter((label) => !labels.has(label));
+	const notes: string[] = [];
+	if (noRenderer.length) notes.push(`Stock block ${noRenderer.join(", ")} exists in the catalog but has no Browser renderer yet; not rendered.`);
+	if (notCatalog.length) notes.push(`Not Stock block labels, ignored: ${notCatalog.join(", ")}.`);
+	return notes;
+}
+
+function intentRecord(
+	ctx: ProposalContext,
+	locale: { locale: string; source: ProposalIntent["localeSource"] },
+	demoSource: ProposalIntent["demoDataSource"]
+): ProposalIntent {
+	return {
+		locale: locale.locale,
+		localeSource: locale.source,
+		...(typeof ctx.content?.demoData === "boolean" ? { demoData: ctx.content.demoData } : {}),
+		demoDataSource: demoSource,
+		requireBlocks: ctx.content?.requireBlocks ?? [],
+		unknownBlocks: ctx.content?.unknownBlocks ?? [],
+		remove: ctx.content?.remove ?? [],
+		newPage: ctx.content?.newPage === true
+	};
+}
+
 function authorText(ctx: ProposalContext): string {
 	return (ctx.authorBrief ?? ctx.brief).trim();
 }
@@ -1101,7 +1204,7 @@ function overlayModelContent(
 	opts: { demo?: boolean; onlyKinds?: ReadonlySet<PageBlockKind> } = {}
 ): { blocks: PageBlock[]; demo: boolean; demoLabel: string; changedKinds: PageBlockKind[] } {
 	const author = authorText(ctx);
-	const wantsDemo = opts.demo ?? (detectDemoDataRequest(author) && !detectDemoOptOut(author));
+	const wantsDemo = opts.demo ?? ctx.content?.demoData === true;
 	const existingLabel = blocks.find((node) => typeof node.copy?.badge === "string")?.copy?.badge;
 	const demoLabel = existingLabel ?? demoLabelForLocale(ctx.content?.demoLabel, locale) ?? defaultDemoLabel(locale);
 	const merged = mergeModelContent(blocks, ctx.content, { demo: wantsDemo, demoLabel, locale, onlyKinds: opts.onlyKinds });
@@ -1131,6 +1234,7 @@ type FinishIdentity = {
 	status?: Page["status"];
 	slug?: string;
 	diff?: LayoutProposal["diff"];
+	intent?: ProposalIntent;
 };
 
 function finishProposal(
@@ -1203,7 +1307,8 @@ function finishProposal(
 			catalog: catalogProvenance(),
 			scenarioId: ctx.scenarioId,
 			screenId,
-			assembler: "local-catalog-assembler"
+			assembler: "local-catalog-assembler",
+			...(identity?.intent ? { intent: identity.intent } : {})
 		}
 		};
 	} catch (err) {

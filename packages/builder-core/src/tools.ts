@@ -1,6 +1,7 @@
 import { searchCatalog } from "./catalog/search.ts";
 import { screenSupport } from "./catalog/compatibility.ts";
 import { getBlockDetails } from "./catalog/details.ts";
+import { blockLabelVocabulary, vocabularyValues } from "./catalog/text-search.ts";
 import { getSkill, ALLOWED_TOOLS, RUN_BUDGET, type AllowedTool } from "./policy.ts";
 import {
 	inheritedScreenId,
@@ -10,7 +11,7 @@ import {
 	type LayoutProposalError,
 	type ProposalContext
 } from "./assemble.ts";
-import { inferScenarioId, isScenarioId } from "./brief.ts";
+import { isScenarioId } from "./brief.ts";
 import { parseLayoutCopyEdits } from "./edits.ts";
 import { parseModelContent } from "./content.ts";
 import { OWNER_FILTERS, type ScenarioId } from "./copy.ts";
@@ -41,7 +42,14 @@ export type CompactSearchItem = {
 	mappedKinds: string[];
 	supported: boolean;
 	missing: string[];
-	labels: { section: string[]; job: string[] };
+	labels: { section: string[]; job: string[]; blocks: string[] };
+	/** Text-match score and the query tokens that matched (q searches only). */
+	score?: number;
+	matched?: string[];
+	/** Renderable sibling suggested because this unrenderable screen matched. */
+	via?: string;
+	/** Requested block labels this screen does not have (blocks is a soft facet). */
+	missingBlocks?: string[];
 };
 
 export type CompactSearchPayload = {
@@ -55,7 +63,9 @@ export type CompactSearchPayload = {
 	clarification?: string;
 	suggested?: SearchResult["suggested"];
 	misplaced?: SearchResult["misplaced"];
-	vocabulary?: SearchResult["vocabulary"];
+	vocabulary?: SearchResult["vocabulary"] & { blocks: string[]; industry: string[] };
+	unrenderable?: SearchResult["unrenderable"];
+	nearest?: SearchResult["nearest"];
 	items: CompactSearchItem[];
 	pick: CompactSearchItem | null;
 	next: "propose_layout";
@@ -71,7 +81,10 @@ function compactItem(item: SearchResult["items"][number]): CompactSearchItem {
 		mappedKinds: support.mappedKinds,
 		supported: support.supported,
 		missing: support.missing,
-		labels: { section: item.labels.section, job: item.labels.job }
+		labels: { section: item.labels.section, job: item.labels.job, blocks: item.labels.blocks },
+		...(item.score ? { score: Math.round(item.score * 10) / 10, matched: item.matched } : {}),
+		...(item.via ? { via: item.via } : {}),
+		...(item.missingBlocks?.length ? { missingBlocks: item.missingBlocks } : {})
 	};
 }
 
@@ -89,7 +102,11 @@ export function compactSearchResult(result: SearchResult): CompactSearchPayload 
 		clarification: result.clarification,
 		suggested: result.suggested,
 		misplaced: result.misplaced,
-		...(result.noFit ? { vocabulary: result.vocabulary } : {}),
+		...(result.noFit
+			? { vocabulary: { ...result.vocabulary, blocks: blockLabelVocabulary(), industry: vocabularyValues("industry") } }
+			: {}),
+		...(result.unrenderable ? { unrenderable: result.unrenderable } : {}),
+		...(result.nearest ? { nearest: result.nearest } : {}),
 		items,
 		pick: items.find((item) => item.supported) ?? items[0] ?? null,
 		next: "propose_layout"
@@ -106,9 +123,15 @@ export function scenarioCatalogContext(scenarioId: ScenarioId | null): {
 } | null {
 	if (!scenarioId) return null;
 	const filter = OWNER_FILTERS[scenarioId];
-	const result = compactSearchResult(
-		searchCatalog({ ...filter, page: 1, pageSize: RUN_BUDGET.toolPageSize, supportedOnly: true })
+	// The scenario id is itself a catalog term: rank the facet pool with the generated text index
+	// (a marketing-tagged dashboard screen no longer outranks real landing screens). If the
+	// catalog has no such word, keep the plain facet order.
+	const ranked = compactSearchResult(
+		searchCatalog({ ...filter, q: scenarioId, page: 1, pageSize: RUN_BUDGET.toolPageSize, supportedOnly: true })
 	);
+	const result = ranked.pick
+		? ranked
+		: compactSearchResult(searchCatalog({ ...filter, page: 1, pageSize: RUN_BUDGET.toolPageSize, supportedOnly: true }));
 	return {
 		scenarioId,
 		filter,
@@ -169,10 +192,14 @@ export function executeTool(
 	}
 	const args = call.arguments ?? {};
 	if (call.name === "search_catalog") {
+		const blocks = Array.isArray(args.blocks) ? args.blocks.filter((b): b is string => typeof b === "string" && b.length > 0).slice(0, 6) : undefined;
 		const result = searchCatalog({
 			type: "screen",
-			section: typeof args.section === "string" ? args.section : undefined,
-			job: typeof args.job === "string" ? args.job : undefined,
+			section: typeof args.section === "string" && args.section ? args.section : undefined,
+			job: typeof args.job === "string" && args.job ? args.job : undefined,
+			industry: typeof args.industry === "string" && args.industry ? args.industry : undefined,
+			blocks: blocks?.length ? blocks : undefined,
+			q: typeof args.q === "string" && args.q.trim() ? args.q.trim().slice(0, 200) : undefined,
 			page: typeof args.page === "number" ? args.page : 1,
 			pageSize: RUN_BUDGET.toolPageSize,
 			supportedOnly: true
@@ -221,10 +248,12 @@ export function executeTool(
 		}
 		const brief = String(args.brief ?? "");
 		const scenarioRaw = args.scenarioId;
-		const scenarioId = isScenarioId(scenarioRaw) ? scenarioRaw : inferScenarioId(brief);
+		const content = parseModelContent(args);
+		const scenarioId = isScenarioId(scenarioRaw) ? scenarioRaw : (host?.scenarioId ?? null);
+		const editing = Boolean(host?.currentPage) && content.newPage !== true;
 		const currentPage = host?.currentPage ?? undefined;
 		const currentProvenance = host?.currentProvenance;
-		const screenId = currentPage
+		const screenId = editing
 			? inheritedScreenId({
 					screenId: recordedScreenId(args.screenId),
 					currentPage,
@@ -243,10 +272,10 @@ export function executeTool(
 			edits: parseLayoutCopyEdits(args.edits),
 			authorBrief: host?.authorBrief,
 			sessionDemoData: Boolean(host?.sessionDemoData),
-			targetScreenId: currentPage
+			targetScreenId: editing
 				? (recordedScreenId(args.targetScreenId) ?? recordedScreenId(args.screenId))
 				: null,
-			content: parseModelContent(args)
+			content
 		});
 		if (!result.ok) {
 			return {
@@ -266,7 +295,7 @@ export function executeTool(
 }
 
 export function runConstructorTools(ctx: ProposalContext): LayoutProposal | LayoutProposalError {
-	const scenarioId = ctx.scenarioId ?? inferScenarioId(ctx.brief);
+	const scenarioId = ctx.scenarioId;
 	const host = {
 		currentPage: ctx.currentPage,
 		currentProvenance: ctx.currentProvenance,

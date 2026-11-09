@@ -1,18 +1,5 @@
 import { SCENARIO_IDS, type ScenarioId } from "./copy.ts";
 
-/** Infer a scenario from author text. Returns null when the brief is ambiguous — do not invent. */
-export function inferScenarioId(brief: string): ScenarioId | null {
-	const text = brief.toLowerCase();
-	const landing = /\blanding(?:\s+pages?)?\b/.test(text);
-	const dashboard = /\bdashboard\b/.test(text);
-	const website = /\bwebsites?\b/.test(text) || /\bweb site\b/.test(text);
-	if (landing) return "landing";
-	if (dashboard && !website) return "dashboard";
-	if (website && !dashboard) return "website";
-	if (dashboard) return "dashboard";
-	return null;
-}
-
 export function isScenarioId(value: unknown): value is ScenarioId {
 	return typeof value === "string" && (SCENARIO_IDS as readonly string[]).includes(value);
 }

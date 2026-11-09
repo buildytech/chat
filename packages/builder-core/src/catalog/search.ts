@@ -2,6 +2,7 @@ import { catalogSnapshot } from "./snapshot.ts";
 import type { CatalogFacetFilter, CatalogScreen, SearchQuery, SearchResult } from "./types.ts";
 import { compareScreenSupport, compatibilityFor, screenSupport } from "./compatibility.ts";
 import { OWNER_FILTERS } from "../copy.ts";
+import { blockLabelVocabulary, nearestTerms, scoreScreens, vocabularyValues } from "./text-search.ts";
 
 export const DEFAULT_PAGE_SIZE = catalogSnapshot.pageSize;
 
@@ -44,6 +45,8 @@ export function filterScreens(query: CatalogFacetFilter): CatalogScreen[] {
 	return catalogSnapshot.screens.filter((screen) => {
 		if (query.section && !screen.labels.section.includes(query.section)) return false;
 		if (query.job && !screen.labels.job.includes(query.job)) return false;
+		if (query.industry && !screen.labels.industry.includes(query.industry)) return false;
+		if (query.blocks?.length && !query.blocks.every((label) => screen.labels.blocks.includes(label))) return false;
 		return true;
 	});
 }
@@ -84,8 +87,71 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 		};
 	}
 
-	let items = filterScreens(query).slice().sort(compareScreenSupport);
-	if (query.supportedOnly) items = items.filter((screen) => screenSupport(screen).supported);
+	const unknownBlocks = (query.blocks ?? []).filter((label) => !blockLabelVocabulary().includes(label));
+	const unknownIndustry = query.industry && !vocabularyValues("industry").includes(query.industry) ? [query.industry] : [];
+	if (unknownBlocks.length || unknownIndustry.length) {
+		const facet = unknownBlocks.length ? "blocks" : "industry";
+		const value = unknownBlocks[0] ?? unknownIndustry[0]!;
+		return {
+			query: { type: query.type ?? "screen", section: query.section, job: query.job, industry: query.industry, blocks: query.blocks, q: query.q },
+			page: 1,
+			pageSize,
+			total: 0,
+			pageCount: 1,
+			items: [],
+			vocabulary,
+			noFit: true,
+			code: "catalog_facet_unknown",
+			clarification: `Unknown catalog ${facet} value ${value}. Use values from the catalog vocabulary.`,
+			nearest: nearestTerms([value.toLowerCase()])
+		};
+	}
+
+	type Hit = CatalogScreen & { score?: number; matched?: string[]; via?: string; missingBlocks?: string[] };
+	// blocks is a soft facet: rank by how many requested block labels a screen has (all first),
+	// and say which are missing, so an over-specified list still returns the closest screens.
+	const wanted = query.blocks ?? [];
+	const base = filterScreens({ ...query, blocks: undefined });
+	const coverage = (screen: CatalogScreen) => wanted.filter((label) => screen.labels.blocks.includes(label)).length;
+	let items: Hit[] = (wanted.length ? base.filter((screen) => coverage(screen) > 0) : base)
+		.map((screen) => {
+			const missingBlocks = wanted.filter((label) => !screen.labels.blocks.includes(label));
+			return missingBlocks.length ? { ...screen, missingBlocks } : screen;
+		})
+		.sort((a, b) => coverage(b) - coverage(a) || compareScreenSupport(a, b));
+	let nearest: Record<string, string[]> | undefined;
+	if (query.q?.trim()) {
+		const text = scoreScreens(query.q);
+		items = items
+			.filter((screen) => text.scores.has(screen.screenId))
+			.map((screen) => ({ ...screen, score: text.scores.get(screen.screenId)!.score, matched: text.scores.get(screen.screenId)!.matched }))
+			.sort((a, b) => coverage(b) - coverage(a) || (b.score ?? 0) - (a.score ?? 0) || compareScreenSupport(a, b));
+		if (text.unmatched.length) nearest = nearestTerms(text.unmatched);
+	}
+	let unrenderable: SearchResult["unrenderable"];
+	if (query.supportedOnly) {
+		const unsupported = items.filter((screen) => !screenSupport(screen).supported);
+		const supported = items.filter((screen) => screenSupport(screen).supported);
+		// A matching screen we cannot render points at renderable screens of the same Stock family.
+		for (const miss of unsupported) {
+			for (const sibling of catalogSnapshot.screens) {
+				if (sibling.spec !== miss.spec || sibling.screenId === miss.screenId) continue;
+				if (!screenSupport(sibling).supported || supported.some((s) => s.screenId === sibling.screenId)) continue;
+				if (!base.some((s) => s.screenId === sibling.screenId)) continue;
+				const missingBlocks = wanted.filter((label) => !sibling.labels.blocks.includes(label));
+				supported.push({
+					...sibling,
+					score: (miss.score ?? 0) * 0.8,
+					matched: miss.matched,
+					via: miss.screenId,
+					...(missingBlocks.length ? { missingBlocks } : {})
+				});
+			}
+		}
+		supported.sort((a, b) => coverage(b) - coverage(a) || (b.score ?? 0) - (a.score ?? 0) || compareScreenSupport(a, b));
+		unrenderable = unsupported.slice(0, 4).map((screen) => ({ screenId: screen.screenId, missing: screenSupport(screen).missing }));
+		items = supported;
+	}
 	const total = items.length;
 	const pageCount = total === 0 ? 1 : Math.ceil(total / pageSize);
 	let page = query.page ?? 1;
@@ -95,7 +161,7 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 	const slice = items.slice(start, start + pageSize);
 	const noFit = total === 0;
 	return {
-		query: { type: query.type ?? "screen", section: query.section, job: query.job },
+		query: { type: query.type ?? "screen", section: query.section, job: query.job, industry: query.industry, blocks: query.blocks, q: query.q },
 		page,
 		pageSize,
 		total,
@@ -106,6 +172,8 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 		})),
 		vocabulary,
 		noFit,
+		...(unrenderable?.length ? { unrenderable } : {}),
+		...(nearest || noFit ? { nearest: nearest ?? (query.q ? nearestTerms(scoreScreens(query.q).tokens) : undefined) } : {}),
 		clarification: noFit
 			? query.supportedOnly
 				? "No renderer-supported Stock screens match that filter. Attach a different scenario or a supported screen."
@@ -124,15 +192,22 @@ export function getScreenById(screenId: string): CatalogScreen | null {
 	return catalogSnapshot.screens.find((s) => s.screenId === screenId) ?? null;
 }
 
-export function catalogToolParameterSchema(): {
-	section: { type: "string"; enum: string[] };
-	job: { type: "string"; enum: string[] };
-	page: { type: "integer"; minimum: number };
-} {
+export function catalogToolParameterSchema(): Record<string, unknown> {
 	const vocab = facetVocabulary();
 	return {
+		q: {
+			type: "string",
+			description:
+				"Free text in catalog terms (English catalog words work best, e.g. sidebar, shell, kanban, pricing). Matched against Stock titles, subtitles, block names and facet labels."
+		},
 		section: { type: "string", enum: [...vocab.section] },
 		job: { type: "string", enum: [...vocab.job] },
+		industry: { type: "string", enum: vocabularyValues("industry") },
+		blocks: {
+			type: "array",
+			items: { type: "string", enum: blockLabelVocabulary() },
+			description: "Block labels every screen must contain, e.g. [\"sidenav\"] for a built-in sidebar."
+		},
 		page: { type: "integer", minimum: 1 }
 	};
 }

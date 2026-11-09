@@ -44,6 +44,7 @@ export function ruDashboardArgs(): Record<string, unknown> {
 		screenId: "screen.theme-dashboard-console/home",
 		title: RU.title,
 		locale: "ru",
+		demoData: true,
 		demoLabel: RU.demo,
 		blocks: [
 			{

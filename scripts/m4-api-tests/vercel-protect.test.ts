@@ -15,6 +15,7 @@ import {
 	VERCEL_RUN_MAX_DURATION_SEC
 } from "../../packages/builder-core/src/index.ts";
 import { handleRuntimeFetch } from "../../apps/xai-runtime/src/http.ts";
+import { contractFingerprint } from "../../packages/builder-core/src/index.ts";
 import middleware, { config as middlewareConfig } from "../../middleware.js";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -205,6 +206,7 @@ test("XAI_API_KEY absent returns 503 and does not call the provider", async () =
 				headers: { Authorization: AUTH, "content-type": "application/json" },
 				body: JSON.stringify({
 					modelId: "grok-4.20-0309-non-reasoning",
+					contract: contractFingerprint(),
 					brief: "Create a dashboard"
 				})
 			}),
@@ -215,6 +217,24 @@ test("XAI_API_KEY absent returns 503 and does not call the provider", async () =
 		const runBody = await asJson(run);
 		const err = runBody.error as { code?: string } | undefined;
 		assert.equal(err?.code, "xai_api_key_missing");
+		assert.equal(calls.length, 0);
+
+		// A tab built from another deploy (other or missing contract) is told to reload; no model call.
+		for (const contract of [undefined, "cf1-stale"]) {
+			const stale = await handleRuntimeFetch(
+				new Request("https://example.vercel.app/api/runtime/v1/run", {
+					method: "POST",
+					headers: { Authorization: AUTH, "content-type": "application/json" },
+					body: JSON.stringify({ modelId: "grok-4.20-0309-non-reasoning", contract, brief: "Create a dashboard" })
+				}),
+				env,
+				{ surface: "vercel" }
+			);
+			assert.equal(stale.status, 409);
+			const staleBody = await asJson(stale);
+			assert.equal(staleBody.code, "client_outdated");
+			assert.equal(staleBody.ok, false);
+		}
 		assert.equal(calls.length, 0);
 	} finally {
 		globalThis.fetch = original;

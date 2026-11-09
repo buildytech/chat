@@ -1,5 +1,6 @@
 import {
 	clampRunBudgetMs,
+	contractFingerprint,
 	gateRequest,
 	isSharedPublicSurface,
 	mapChatRunRequest,
@@ -68,7 +69,7 @@ export async function handleRuntimeFetch(
 		}
 		if (method === "GET" && (path === "/v1/status" || path === "/v1/runtime")) {
 			const status = await runtimeStatus(env);
-			return jsonResponse(status.key.present ? 200 : 503, status);
+			return jsonResponse(status.key.present ? 200 : 503, { ...status, contract: contractFingerprint() });
 		}
 		if (method === "POST" && path === "/v1/run") {
 			const status = await runtimeStatus(env);
@@ -83,6 +84,19 @@ export async function handleRuntimeFetch(
 				} catch {
 					return jsonResponse(400, { error: { code: "invalid_json", message: "invalid json" }, liveModel: false });
 				}
+			}
+			// Version skew: a tab built from another deploy validates with another contract and would
+			// reject proposals it cannot render. Refuse before spending a model call.
+			if (body.contract !== contractFingerprint()) {
+				const modelId = typeof body.modelId === "string" ? body.modelId : "";
+				return jsonResponse(409, {
+					ok: false,
+					code: "client_outdated",
+					message: "This tab runs an older version of the app. Reload the page to continue.",
+					modelId,
+					requestedModelId: modelId,
+					liveModel: false
+				});
 			}
 			const mapped = mapChatRunRequest(body, {
 				discoveredChatIds: status.models.listed ? status.models.chatIds : undefined,

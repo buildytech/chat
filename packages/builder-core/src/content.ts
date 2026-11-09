@@ -5,6 +5,7 @@ import {
 	type PageBlockKind,
 	type PageCopyKey
 } from "@buildytech/page-contract";
+import { rendererKindForLabel } from "./catalog/compatibility.ts";
 
 /**
  * Model-supplied page content for propose_layout.
@@ -41,6 +42,17 @@ export type ModelPageContent = {
 	blocks: ModelBlockContent[];
 	/** Follow-up turns: Stock block kinds the author asked to remove. */
 	remove?: PageBlockKind[];
+	/**
+	 * Typed intent set by the model from the author's words (the host does not parse words):
+	 * demo data requested (true), explicitly declined (false), or not mentioned (undefined).
+	 */
+	demoData?: boolean;
+	/** Block kinds the author explicitly wants (from catalog block labels such as sidenav, sitemap). */
+	requireBlocks?: PageBlockKind[];
+	/** requireBlocks values that are not catalog block labels or page kinds (reported, never invented). */
+	unknownBlocks?: string[];
+	/** The author asked for a brand-new page instead of editing the current one. */
+	newPage?: boolean;
 };
 
 /** Kinds whose rows are figures or events. Rows are kept only when the author asked for demo data. */
@@ -100,59 +112,6 @@ const COPY_FIELDS: readonly PageCopyKey[] = [
 
 const LOCALE_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 
-// Cyrillic stems (lowercase). See module comment.
-const RU = {
-	fake: "\u0444\u0435\u0439\u043a", // fake-
-	fictional: "\u0432\u044b\u043c\u044b\u0448\u043b", // fictional-
-	madeUp: "\u0432\u044b\u0434\u0443\u043c\u0430\u043d", // made-up-
-	test: "\u0442\u0435\u0441\u0442\u043e\u0432", // test (adj.)
-	demo: "\u0434\u0435\u043c\u043e", // demo
-	mock: "\u043c\u043e\u043a\u043e\u0432", // mock (adj.)
-	random: "\u0441\u043b\u0443\u0447\u0430\u0439\u043d", // random-
-	sample: "\u043f\u0440\u0438\u043c\u0435\u0440\u043d", // sample-/approximate
-	data: "\u0434\u0430\u043d\u043d", // data
-	figures: "\u0446\u0438\u0444\u0440", // figures
-	metrics: "\u043f\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b", // indicators
-	content: "\u043a\u043e\u043d\u0442\u0435\u043d\u0442", // content
-	values: "\u0437\u043d\u0430\u0447\u0435\u043d\u0438", // values
-	records: "\u0437\u0430\u043f\u0438\u0441", // records
-	russian: "\u0440\u0443\u0441\u0441\u043a", // russian
-	english: "\u0430\u043d\u0433\u043b\u0438\u0439\u0441\u043a" // english
-} as const;
-
-const RU_ALWAYS = new RegExp(`(?:${RU.fake}|${RU.fictional}|${RU.madeUp})`, "u");
-const RU_QUALIFIED = new RegExp(
-	`(?:${RU.test}|${RU.demo}|${RU.mock}|${RU.random}|${RU.sample})[\\p{L}]*(?:[\\s-]+[\\p{L}]+)?[\\s-]+(?:${RU.data}|${RU.figures}|${RU.metrics}|${RU.content}|${RU.values}|${RU.records})`,
-	"u"
-);
-const EN_ALWAYS = /\b(?:fake|dummy|lorem ipsum|made[- ]up)\b/i;
-const EN_QUALIFIED =
-	/\b(?:mock(?:ed)?|sample|demo|placeholder|test|fictional|synthetic|example)\s+(?:\w+\s+)?(?:data|content|figures|numbers|values|metrics|stats|records|rows|entries)\b/i;
-
-/** True only when the author explicitly asked for demo, fake, sample, or mock data. */
-export function detectDemoDataRequest(brief: string): boolean {
-	const text = brief.toLowerCase();
-	if (!text.trim()) return false;
-	return EN_ALWAYS.test(text) || EN_QUALIFIED.test(text) || RU_ALWAYS.test(text) || RU_QUALIFIED.test(text);
-}
-
-/** Explicit "in Russian" / "in English" request, in either language. */
-export function explicitLocaleRequest(brief: string): string | null {
-	const text = brief.toLowerCase();
-	// "na russkom" / "na angliiskom" ("in Russian" / "in English").
-	if (/\bin russian\b/.test(text) || new RegExp(`\u043d\u0430\\s+${RU.russian}`, "u").test(text)) return "ru";
-	if (/\bin english\b/.test(text) || new RegExp(`\u043d\u0430\\s+${RU.english}`, "u").test(text)) return "en";
-	return null;
-}
-
-/** Script-based guess. Cyrillic-majority text is Russian; everything else defaults to English. */
-export function detectBriefLocale(brief: string): string {
-	const letters = brief.match(/\p{L}/gu) ?? [];
-	if (!letters.length) return "en";
-	const cyrillic = letters.filter((ch) => /\p{Script=Cyrillic}/u.test(ch)).length;
-	return cyrillic * 2 >= letters.length ? "ru" : "en";
-}
-
 export function isPageLocale(value: unknown): value is string {
 	return (
 		typeof value === "string" &&
@@ -161,18 +120,14 @@ export function isPageLocale(value: unknown): value is string {
 	);
 }
 
-/** Page locale: explicit author request, then the model's locale, then the brief's script. */
-export function resolvePageLocale(input: { brief: string; modelLocale?: string; fallback?: string }): string {
-	const explicit = explicitLocaleRequest(input.brief);
-	if (explicit) return explicit;
-	const detected = detectBriefLocale(input.brief);
-	if (isPageLocale(input.modelLocale)) {
-		// A Cyrillic brief cannot produce an English page unless the author asked for English.
-		if (detected === "ru" && input.modelLocale.split("-")[0] !== "ru") return "ru";
-		return input.modelLocale;
-	}
-	if (input.fallback && isPageLocale(input.fallback) && detected === "en") return input.fallback;
-	return detected;
+/**
+ * Page locale: the model's typed locale (it reads the author's language), else the current page's
+ * locale, else English. The host does not guess the language from words.
+ */
+export function resolvePageLocale(input: { modelLocale?: string; fallback?: string }): { locale: string; source: "model" | "page" | "default" } {
+	if (isPageLocale(input.modelLocale)) return { locale: input.modelLocale, source: "model" };
+	if (input.fallback && isPageLocale(input.fallback)) return { locale: input.fallback, source: "page" };
+	return { locale: "en", source: "default" };
 }
 
 const DEMO_LABELS: Record<string, string> = {
@@ -226,15 +181,12 @@ export function cleanText(value: unknown, max: number): string | undefined {
 	return text.slice(0, max);
 }
 
+/** Page kind for a catalog block label or page kind, via the catalog renderer map (no alias lists). */
 function normalizeKind(raw: unknown): PageBlockKind | null {
 	const key = String(raw ?? "").trim().toLowerCase();
 	if (CONTENT_KINDS.has(key)) return key as PageBlockKind;
-	if (key === "header" || key === "navigation" || key === "navbar" || key === "topbar") return "nav";
-	if (key === "sidebar" || key === "side-nav" || key === "side_nav" || key === "sidebar-nav") return "sidenav";
-	if (key === "tabbar" || key === "tab-bar" || key === "bottom-nav" || key === "bottom_nav" || key === "bottombar") return "bottomnav";
-	if (key === "kpis" || key === "kpi" || key === "stats") return "metrics";
-	if (key === "feed" || key === "events" || key === "timeline") return "activity";
-	return null;
+	const mapped = rendererKindForLabel(key);
+	return mapped && CONTENT_KINDS.has(mapped) ? mapped : null;
 }
 
 function parseItem(raw: unknown): ModelContentItem | null {
@@ -294,6 +246,20 @@ export function parseModelContent(args: Record<string, unknown>): ModelPageConte
 			: [];
 		const blockTitle = cleanText(rec.title, 80);
 		out.blocks.push({ kind, ...(blockTitle ? { title: blockTitle } : {}), copy, items, ...(rec.edit === true ? { edit: true } : {}) });
+	}
+	if (typeof args.demoData === "boolean") out.demoData = args.demoData;
+	if (args.newPage === true) out.newPage = true;
+	if (Array.isArray(args.requireBlocks)) {
+		const kinds: PageBlockKind[] = [];
+		const unknown: string[] = [];
+		for (const raw of args.requireBlocks.slice(0, 12)) {
+			const kind = normalizeKind(raw);
+			if (kind) {
+				if (!kinds.includes(kind)) kinds.push(kind);
+			} else if (typeof raw === "string" && raw.trim()) unknown.push(raw.trim().slice(0, 40));
+		}
+		if (kinds.length) out.requireBlocks = kinds;
+		if (unknown.length) out.unknownBlocks = unknown;
 	}
 	if (Array.isArray(args.remove)) {
 		const remove = args.remove.map(normalizeKind).filter((kind): kind is PageBlockKind => Boolean(kind));
@@ -454,6 +420,18 @@ export function proposeContentParameterSchema(): Record<string, unknown> {
 				required: ["kind", "title"]
 			}
 		},
+		demoData: {
+			type: "boolean",
+			description:
+				"true only when the author explicitly asked for demo, fake, sample, mock or test data (in any language); false when they asked to remove it or use real data; omit otherwise."
+		},
+		requireBlocks: {
+			type: "array",
+			description:
+				"Catalog block labels the author explicitly asked for (search_catalog labels.blocks, e.g. sidenav for a sidebar or app shell, bottomnav, sitemap for a footer). The host only adds them from Stock screens that contain them.",
+			items: { type: "string" }
+		},
+		newPage: { type: "boolean", description: "true only when the author asked for a new page instead of editing currentPage." },
 		remove: {
 			type: "array",
 			description: "Follow-up turns only: block kinds the author explicitly asked to remove. Never remove anything else.",

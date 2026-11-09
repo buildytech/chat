@@ -4,6 +4,7 @@ import type {
 	ProposalContext,
 	RunUsage
 } from "@buildytech/builder-core";
+import { contractFingerprint } from "@buildytech/builder-core";
 
 export type XaiClientStatus = {
 	runtime: string;
@@ -70,6 +71,7 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 /** Error codes this app's runtime emits itself (http.ts). Anything else is platform text. */
 const OWN_RUNTIME_CODES = new Set([
 	"model_too_slow",
+	"client_outdated",
 	"xai_api_key_missing",
 	"xai_runtime_not_ready",
 	"invalid_json",
@@ -112,6 +114,7 @@ export async function runXaiProposal(
 			headers: { "Content-Type": "application/json", Accept: "application/json" },
 			body: JSON.stringify({
 				modelId: ctx.modelId,
+				contract: contractFingerprint(),
 				brief: ctx.brief,
 				scenarioId: ctx.scenarioId,
 				screenId: ctx.screenId,

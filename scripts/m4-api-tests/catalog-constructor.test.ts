@@ -10,17 +10,14 @@ import {
 	compatibilityFor,
 	catalogToolParameterSchema,
 	executeTool,
-	extractCopyEditsFromBrief,
 	parseLayoutCopyEdits,
 	toolLoopProposalFailure,
 	getBlockDetails,
 	isClearPageCommand,
-	isNewPageCommand,
 	parseCatalogSnapshot,
 	proposeLayout,
 	rejectFabricatedLayout,
 	displayTitleFromBrief,
-	inferScenarioId,
 	runConstructorTools,
 	scenarioCatalogContext,
 	searchCatalog
@@ -270,13 +267,12 @@ test("constructor integration uses real Stock screens for all three ideas", () =
 	}
 });
 
-test("natural language landing request does not require a scenario badge", () => {
-	assert.equal(inferScenarioId("Create a New Year landing page for Barbecue at Home, a grill food delivery restaurant."), "landing");
+test("natural language landing request: the model sets scenarioId, no scenario badge needed", () => {
 	assert.equal(displayTitleFromBrief("Create a New Year landing page for Barbecue at Home, a grill food delivery restaurant."), "Barbecue at Home");
 	const run = runConstructorTools({
 		brief:
 			"Create a New Year landing page for Barbecue at Home, a grill food delivery restaurant. Include a hero, menu and contact section using existing Stock blocks. Use no invented reviews or discounts.",
-		scenarioId: null,
+		scenarioId: "landing",
 		screenId: null,
 		expectedRevision: 0,
 		now: "2026-11-08T00:00:00.000Z"
@@ -321,7 +317,8 @@ test("search_catalog tool payload is a compact shortlist without preview or snap
 		assert.equal("group" in item, false);
 		assert.ok(item.screenId);
 		assert.ok(item.labels);
-		assert.equal("blocks" in (item.labels as object), false);
+		// Block labels (catalog words such as sidenav) let the model check requireBlocks coverage.
+		assert.ok(Array.isArray((item.labels as { blocks?: unknown }).blocks));
 	}
 	const details = executeTool({ name: "get_block_details", arguments: { id: "hero" } });
 	assert.equal(details.ok, true);
@@ -385,12 +382,10 @@ test("search ranks supported screens and rejects hollow commerce shop for websit
 });
 
 test("dashboard and website natural language use renderable Stock coverage", () => {
-	assert.equal(inferScenarioId("Create a Dashboard for Orders"), "dashboard");
 	assert.equal(displayTitleFromBrief("Create a Dashboard for Orders. No invented figures."), "Orders");
-	assert.equal(inferScenarioId("Create a Website with menu, overview and contact"), "website");
 	const dash = proposeLayout({
 		brief: "Create a Dashboard for Orders. No invented figures.",
-		scenarioId: null,
+		scenarioId: "dashboard",
 		screenId: null,
 		expectedRevision: 0,
 		now: "2026-11-08T00:00:00.000Z"
@@ -485,7 +480,8 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 	}
 	const site = proposeLayout({
 		brief: "Create a Website with menu, overview and contact using existing Stock blocks.",
-		scenarioId: null,
+		scenarioId: "website",
+		content: { blocks: [], requireBlocks: ["menu", "hours"] },
 		screenId: null,
 		expectedRevision: 0,
 		now: "2026-11-08T00:00:00.000Z"
@@ -524,13 +520,7 @@ test("site.home layout is nav, hero, features, cta, footer", () => {
 	}
 });
 
-test("follow-up extracts headline value and keeps other blocks", () => {
-	assert.equal(isNewPageCommand("create a stronger CTA"), false);
-	assert.equal(isNewPageCommand("Create a landing page for Harbor"), true);
-	const edits = extractCopyEditsFromBrief(
-		"Change only the hero headline to New Year Grill Delivery. Keep all other sections and their content unchanged."
-	);
-	assert.deepEqual(edits, [{ kind: "hero", field: "headline", value: "New Year Grill Delivery" }]);
+test("follow-up applies the model's typed headline edit and keeps other blocks", () => {
 	const first = proposeLayout({
 		brief: "Create a New Year landing page for Barbecue at Home, a grill food delivery restaurant.",
 		scenarioId: "landing",
@@ -547,6 +537,7 @@ test("follow-up extracts headline value and keeps other blocks", () => {
 		screenId: "screen.site/home",
 		expectedRevision: 1,
 		currentPage: first.page,
+		edits: [{ kind: "hero", field: "headline", value: "New Year Grill Delivery" }],
 		now: "2026-11-08T00:00:00.000Z"
 	});
 	assert.equal(follow.ok, true);

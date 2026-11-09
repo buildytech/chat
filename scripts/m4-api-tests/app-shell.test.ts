@@ -2,14 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parsePage, type Page } from "../../packages/page-contract/src/index.ts";
 import {
-	detectBottomNavRemoval,
-	detectDemoOptOut,
-	detectFooterRequest,
-	detectSidebarRemoval,
-	detectSidebarRequest,
 	executeTool,
-	isShellOnlyRequest,
-	sessionDemoFlag,
+	parseModelContent,
 	stripInventedFooterYears,
 	validateCatalogProvenance,
 	type LayoutProposal
@@ -24,7 +18,6 @@ import {
 	RU_HOME,
 	RU_NAV_SIDE,
 	RU_NO_DEMO,
-	RU_PLAIN_PROMPT,
 	RU_REMOVE_BOTTOM,
 	RU_RENAMED,
 	RU_REPORTS,
@@ -77,28 +70,24 @@ function legacyTurnOnePage(): Page {
 	});
 }
 
-test("author intents: sidebar, bottom nav, footer, and demo opt-out in Russian and English", () => {
-	assert.equal(detectSidebarRequest(RU_ADD_SIDEBAR), true);
-	assert.equal(detectSidebarRequest("There is no sidebar, add one"), true);
-	assert.equal(detectSidebarRequest("add a side nav"), true);
-	assert.equal(detectSidebarRequest("remove the sidebar"), false);
-	assert.equal(detectSidebarRemoval("remove the sidebar"), true);
-	assert.equal(detectSidebarRemoval(RU_ADD_SIDEBAR), false);
-	assert.equal(detectBottomNavRemoval(RU_REMOVE_BOTTOM), true);
-	assert.equal(detectSidebarRemoval("piano sidebar theme"), false);
-	assert.equal(detectFooterRequest("remove the footer and add a sidebar"), false);
-	assert.equal(detectSidebarRequest("remove the footer and add a sidebar"), true);
-	assert.equal(detectBottomNavRemoval("hide the bottom tab bar"), true);
-	assert.equal(detectFooterRequest(RU_ADD_FOOTER), true);
-	assert.equal(detectFooterRequest("add a footer"), true);
-	assert.equal(detectFooterRequest("no footer"), false);
-	assert.equal(detectFooterRequest(RU_DEMO_PROMPT), false);
-	assert.equal(detectDemoOptOut(RU_NO_DEMO), true);
-	assert.equal(detectDemoOptOut("no demo data please"), true);
-	assert.equal(detectDemoOptOut(RU_DEMO_PROMPT), false);
-	assert.equal(sessionDemoFlag([RU_DEMO_PROMPT, RU_ADD_SIDEBAR]), true);
-	assert.equal(sessionDemoFlag([RU_DEMO_PROMPT, RU_NO_DEMO]), false);
-	assert.equal(sessionDemoFlag([RU_PLAIN_PROMPT]), false);
+test("intent is typed tool args: requireBlocks, remove, demoData, newPage validated against the catalog", () => {
+	const parsed = parseModelContent({
+		locale: "ru",
+		demoData: true,
+		newPage: true,
+		requireBlocks: ["sidenav", "footer", "shell", "made-up"],
+		remove: ["bottomnav"]
+	});
+	assert.equal(parsed?.locale, "ru");
+	assert.equal(parsed?.demoData, true);
+	assert.equal(parsed?.newPage, true);
+	assert.deepEqual(parsed?.requireBlocks, ["sidenav", "footer"]);
+	assert.deepEqual(parsed?.unknownBlocks, ["shell", "made-up"]);
+	assert.deepEqual(parsed?.remove, ["bottomnav"]);
+	// No flag from words: the host never reads intent out of the author's text.
+	const none = parseModelContent({ brief: RU_DEMO_PROMPT });
+	assert.equal(none?.demoData, undefined);
+	assert.equal(none?.requireBlocks, undefined);
 });
 
 test("Dashboard is an app shell: Stock sidenav and bottomnav, no sitemap footer by default", () => {
@@ -151,6 +140,7 @@ test("footer only when asked; invented footer years are stripped", () => {
 	const withFooter = propose(
 		{
 			...ruDashboardArgs(),
+			requireBlocks: ["footer"],
 			blocks: [...(ruDashboardArgs().blocks as unknown[]), { kind: "footer", title: "F", legal: "\u00a9 2024 TaskFlow. All rights reserved." }]
 		},
 		`${RU_DEMO_PROMPT}. ${RU_ADD_FOOTER}`
@@ -176,6 +166,7 @@ test("follow-up 'add a sidebar' edits the turn-one page: minimal diff, demo, loc
 			brief: "add a sidebar",
 			screenId: LAYOUTS,
 			locale: "en",
+			requireBlocks: ["sidenav"],
 			blocks: [
 				{ kind: "sidenav", title: RU_NAV_SIDE, brand: RU.title, items: [{ label: RU.projects }, { label: RU.tasks }], edit: true },
 				{ kind: "metrics", title: "Overwritten", items: [{ label: "x", value: "1" }] },
@@ -231,17 +222,19 @@ test("follow-up without a sidebar request on a legacy page moves nothing and kee
 	assert.equal(find(next.page, "activity")?.children?.length, find(base, "activity")?.children?.length);
 });
 
-test("removals need explicit author intent; demo opt-out strips demo rows and badges", () => {
+test("removals come from the model's typed remove list, never a required kind; demoData=false strips demo rows", () => {
 	const shell = propose(ruDashboardArgs(), RU_DEMO_PROMPT).page;
 	const noBottom = propose({ brief: "remove bottom nav", remove: ["bottomnav"] }, RU_REMOVE_BOTTOM, { page: shell, screenId: HOME });
 	assert.deepEqual(noBottom.diff.removed, ["bottomnav"]);
 	assert.equal(find(noBottom.page, "bottomnav"), undefined);
 	assert.ok(find(noBottom.page, "sidenav"));
-	// A model "remove" list without any removal words from the author is ignored.
-	const ignored = propose({ brief: "x", remove: ["activity", "chart"] }, RU_ADD_SIDEBAR, { page: shell, screenId: HOME });
-	assert.deepEqual(ignored.diff.removed, []);
-	assert.ok(find(ignored.page, "activity"));
-	const real = propose({ brief: "no demo" }, RU_NO_DEMO, { page: shell, screenId: HOME, sessionDemoData: true });
+	// A kind the model both requires and removes is kept (required wins); the rest is removed.
+	const partial = propose({ brief: "x", remove: ["activity", "chart"], requireBlocks: ["activity"] }, RU_ADD_SIDEBAR, { page: shell, screenId: HOME });
+	assert.deepEqual(partial.diff.removed, ["chart"]);
+	assert.ok(find(partial.page, "activity"));
+	assert.deepEqual(partial.provenance.intent?.remove, ["activity", "chart"]);
+	const real = propose({ brief: "no demo", demoData: false }, RU_NO_DEMO, { page: shell, screenId: HOME, sessionDemoData: true });
+	assert.equal(real.provenance.intent?.demoDataSource, "none");
 	assert.equal(real.demoData, false);
 	assert.equal(find(real.page, "metrics")?.children, undefined);
 	assert.ok(!real.page.layout.blocks.some((block) => block.copy?.badge));
@@ -284,16 +277,16 @@ test("demo badge follows the page language; metric items need a figure", async (
 	assert.deepEqual(parsed?.blocks[0].items.map((item) => item.label), ["Jan"]);
 });
 
-test("shell-only follow-up ignores model rewrites of other blocks; copy edits are reported as edited", () => {
+test("follow-up: blocks without edit=true are not rewritten; an explicit edit is applied and reported", () => {
 	const shell = propose(ruDashboardArgs(), RU_DEMO_PROMPT).page;
 	const activityBefore = find(shell, "activity");
-	// "There is no sidebar, add one" while the model also flags activity and metrics as edited.
 	const next = propose(
 		{
 			brief: "add a sidebar",
+			requireBlocks: ["sidenav"],
 			blocks: [
-				{ kind: "activity", lede: "Rewritten lede", edit: true, items: [{ label: "Other" }] },
-				{ kind: "metrics", title: "Overwritten", edit: true, items: [{ label: "x", value: "1" }] }
+				{ kind: "activity", lede: "Rewritten lede", items: [{ label: "Other" }] },
+				{ kind: "metrics", title: "Overwritten", items: [{ label: "x", value: "1" }] }
 			]
 		},
 		RU_ADD_SIDEBAR,
@@ -302,8 +295,7 @@ test("shell-only follow-up ignores model rewrites of other blocks; copy edits ar
 	assert.deepEqual(find(next.page, "activity"), activityBefore);
 	assert.equal(find(next.page, "metrics")?.title, find(shell, "metrics")?.title);
 	assert.deepEqual(next.diff.changed.filter((entry) => entry.endsWith(" copy")), []);
-	assert.ok(next.warnings.some((line) => /Ignored model rewrites of activity, metrics/.test(line)));
-	// An explicit rename is applied and reported as an edit, not as "kept with their copy".
+	assert.equal(next.provenance.intent?.demoDataSource, "session");
 	const renamed = propose(
 		{ brief: "rename activity", blocks: [{ kind: "activity", title: RU_RENAMED, edit: true }] },
 		"rename the activity block",
@@ -312,6 +304,4 @@ test("shell-only follow-up ignores model rewrites of other blocks; copy edits ar
 	assert.equal(find(renamed.page, "activity")?.title, RU_RENAMED);
 	assert.ok(renamed.diff.changed.includes("activity copy"));
 	assert.ok(!/\(.*activity.*\) with their copy/.test(renamed.warnings[0]!));
-	assert.equal(isShellOnlyRequest(RU_ADD_SIDEBAR), true);
-	assert.equal(isShellOnlyRequest("add a sidebar and rename the chart"), false);
 });

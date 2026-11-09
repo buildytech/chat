@@ -21,17 +21,18 @@ export {
 } from "./catalog/search.ts";
 export { compatibilityFor, getBlockIndex, rendererKindForLabel, sendBlockedByScreen, screenSupport, compareScreenSupport } from "./catalog/compatibility.ts";
 export { getBlockDetails, screenCanonicalJson } from "./catalog/details.ts";
+export { contractFingerprint } from "./catalog/fingerprint.ts";
+export { clientProposalGate } from "./client-gate.ts";
 export {
 	proposeLayout,
 	applyProposal,
 	rejectFabricatedLayout,
 	isClearPageCommand,
-	isNewPageCommand,
 	recordedScreenId,
 	screenIdFromPage,
 	inheritedScreenId
 } from "./assemble.ts";
-export type { ProposalContext, LayoutProposal, LayoutProposalError } from "./assemble.ts";
+export type { ProposalContext, LayoutProposal, LayoutProposalError, ProposalIntent } from "./assemble.ts";
 export {
 	executeTool,
 	runConstructorTools,
@@ -41,15 +42,12 @@ export {
 	toolLoopProposalFailure
 } from "./tools.ts";
 export type { ToolHost, CompactSearchItem, CompactSearchPayload, ToolLoopRejection } from "./tools.ts";
-export { inferScenarioId, isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
-export { parseLayoutCopyEdits, extractCopyEditsFromBrief } from "./edits.ts";
+export { isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
+export { parseLayoutCopyEdits } from "./edits.ts";
 export {
 	DATA_KINDS,
 	cleanText,
 	defaultDemoLabel,
-	detectBriefLocale,
-	detectDemoDataRequest,
-	explicitLocaleRequest,
 	hasModelContent,
 	isPageLocale,
 	mergeModelContent,
@@ -58,18 +56,15 @@ export {
 	resolvePageLocale
 } from "./content.ts";
 export type { ModelBlockContent, ModelContentItem, ModelPageContent, MergeResult } from "./content.ts";
+export { stripInventedFooterYears } from "./intents.ts";
 export {
-	detectBottomNavRemoval,
-	detectCopyEditIntent,
-	detectDemoOptOut,
-	detectFooterRemoval,
-	detectFooterRequest,
-	detectSidebarRemoval,
-	detectSidebarRequest,
-	isShellOnlyRequest,
-	sessionDemoFlag,
-	stripInventedFooterYears
-} from "./intents.ts";
+	blockLabelVocabulary,
+	nearestTerms,
+	scoreScreens,
+	searchVocabulary,
+	vocabularyValues,
+	SEARCH_INDEX_SOURCES
+} from "./catalog/text-search.ts";
 export {
 	STOCK_APP_URL,
 	familyLabelForKind,

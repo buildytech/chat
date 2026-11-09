@@ -15,12 +15,11 @@ import {
 	isScenarioId,
 	recordedScreenId,
 	screenIdFromPage,
-	sessionDemoFlag,
 	getChatModel,
 	mapChatRunRequest,
 	runConstructorTools,
 	unknownUsage,
-	validateCatalogProvenance,
+	clientProposalGate,
 	type ProposalContext,
 	type RunUsage
 } from "@buildytech/builder-core";
@@ -324,11 +323,15 @@ type EditBaseSource = "candidate" | "applied" | "last-proposal" | null;
 let lastEditBase: EditBaseSource = null;
 let lastSessionDemo = false;
 
-/** Author messages before the current one (sticky demo-data intent for this chat). */
-function earlierAuthorTexts(): string[] {
+/**
+ * Sticky demo-data state for this chat: the latest proposal's demoData (set from the model's typed
+ * propose_layout.demoData flag). No author text is parsed here.
+ */
+function sessionDemoFromProposals(): boolean {
 	const session = getSelectedSession();
-	const users = (session?.messages ?? []).filter((message) => message.role === "user").map((message) => message.text);
-	return users.slice(0, -1);
+	const proposals = (session?.messages ?? []).filter((message) => message.proposal);
+	const last = proposals[proposals.length - 1];
+	return Boolean(last?.proposal?.demoData);
 }
 
 function constructorContext(brief: string): ProposalContext & { sessionDemoData: boolean } {
@@ -342,7 +345,7 @@ function constructorContext(brief: string): ProposalContext & { sessionDemoData:
 		recordedScreenId(provenance?.screenId) ?? recordedScreenId(getScreenId()) ?? screenIdFromPage(page);
 	const storedScenario = provenance?.scenarioId;
 	const scenarioId = isScenarioId(storedScenario) ? storedScenario : getScenarioId();
-	const sessionDemoData = sessionDemoFlag(earlierAuthorTexts());
+	const sessionDemoData = sessionDemoFromProposals();
 	lastSessionDemo = sessionDemoData;
 	return {
 		brief,
@@ -486,6 +489,7 @@ function localizedRunError(code: string | undefined, message: string, modelId: s
 	if (code === "model_tools_unavailable" || code === "multi_agent_tools_unavailable") {
 		return t("runtime.modelToolsUnavailable").replace("{label}", label);
 	}
+	if (code === "client_outdated") return t("runtime.clientOutdated");
 	if (code === "model_too_slow") return t("runtime.modelTooSlow").replace("{label}", label);
 	if (code === "tools_unsupported") return t("runtime.toolsUnsupported");
 	if (code === "xai_runtime_unreachable") return t("runtime.unreachable");
@@ -532,11 +536,7 @@ function proposalMessage(
 		};
 	}
 	// Program-level catalog gate (never the model): recompute refs from the bundled Stock catalog.
-	const catalog = validateCatalogProvenance({
-		page: result.page,
-		screenId: recordedScreenId(result.provenance.screenId),
-		catalogDigest: result.provenance.catalog?.sourceDigest ?? null
-	});
+	const catalog = clientProposalGate(result);
 	if (!catalog.ok) {
 		return {
 			id: uid("msg"),
