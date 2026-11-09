@@ -11,6 +11,6 @@
 		"./fixtures/north-harbor-kitchen.json": "./fixtures/north-harbor-kitchen.json"
 	},
 	"scripts": {
-		"test": "node --experimental-strip-types --test src/validate.test.ts"
+		"test": "node --experimental-strip-types --test src/validate.test.ts src/spec.test.ts"
 	}
 }

@@ -17,3 +17,18 @@ export {
 	type PageSummary
 } from "./types.ts";
 export { isPage, PageContractError, parseDraftPage, parsePage } from "./validate.ts";
+export {
+	PAGE_PATCH_SCHEMA_URL,
+	PAGE_SLOTS,
+	PAGE_SPEC_SCHEMA_SOURCE,
+	PAGE_SPEC_SCHEMA_URL,
+	pagePatchIssues,
+	pagePatchSchema,
+	pageSpecDefIssues,
+	pageSpecIssues,
+	pageSpecSchema,
+	parsePageSpec,
+	type PageSlot,
+	type SchemaIssue
+} from "./spec.ts";
+export { SchemaRegistry } from "./json-schema.ts";

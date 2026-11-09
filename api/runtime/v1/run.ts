@@ -6629,6 +6629,1379 @@ exports["isPage"] = isPage;
 
 });
 
+__def("packages/page-contract/schema/page-spec.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.buildy.tw/page-spec.schema.json",
+  "title": "Page spec page-spec/v1 — a page as Stock catalog blocks with their copy",
+  "x-page-spec-profile": "page-spec/v1",
+  "x-page-spec-version": "1.0.0",
+  "description": "The primary artifact of a BuildY page: an agent proposes it (propose_layout), the host validates it against the Stock catalog, saves it, and regenerates code from it for a UI8Kit target (Svelte today). History, edits (page-patch/v1) and rollback work on this JSON; code is never the source. Root: the page (identical to buildytech/chat Page DTO, layout.version 1: every saved page validates unchanged). $defs: provenance, record and store describe the browser page store. Not a Codex v0.4 entry. After the schema, consumers run x-program-checks (duplicate ids, block count, payload size). x-page-slots lists the copy keys each kind renders and the rows of list kinds; a saved page may hold other copy keys, a patch may only write slots.",
+  "x-program-checks": [
+    "duplicate_id",
+    "too_many_blocks",
+    "too_large"
+  ],
+  "x-limits": {
+    "maxBlocks": 64,
+    "maxDepth": 4,
+    "maxIdLength": 63,
+    "maxSlugLength": 48,
+    "maxTitleLength": 160,
+    "maxSummaryLength": 500,
+    "maxCopyLength": 2000,
+    "maxSeoLength": 200,
+    "maxLocaleLength": 16,
+    "maxJsonChars": 65536,
+    "maxDatetimeLength": 40
+  },
+  "x-page-slots": {
+    "nav": {
+      "copy": [
+        "brand",
+        "badge"
+      ],
+      "items": {
+        "kind": "nav-link",
+        "max": 6,
+        "fields": [
+          "label",
+          "group"
+        ]
+      }
+    },
+    "sidenav": {
+      "copy": [
+        "brand",
+        "badge"
+      ],
+      "items": {
+        "kind": "nav-link",
+        "max": 8,
+        "fields": [
+          "label",
+          "group"
+        ]
+      }
+    },
+    "bottomnav": {
+      "copy": [
+        "badge"
+      ],
+      "items": {
+        "kind": "nav-link",
+        "max": 5,
+        "fields": [
+          "label",
+          "group"
+        ]
+      }
+    },
+    "hero": {
+      "copy": [
+        "eyebrow",
+        "headline",
+        "lede",
+        "action",
+        "badge"
+      ]
+    },
+    "pagehead": {
+      "copy": [
+        "headline",
+        "lede",
+        "badge"
+      ]
+    },
+    "overview": {
+      "copy": [
+        "lede",
+        "badge"
+      ],
+      "items": {
+        "kind": "metric",
+        "max": 4,
+        "fields": [
+          "label",
+          "value",
+          "note"
+        ]
+      }
+    },
+    "metrics": {
+      "copy": [
+        "lede",
+        "badge"
+      ],
+      "items": {
+        "kind": "metric",
+        "max": 6,
+        "fields": [
+          "label",
+          "value",
+          "note"
+        ]
+      }
+    },
+    "chart": {
+      "copy": [
+        "lede",
+        "badge"
+      ],
+      "items": {
+        "kind": "metric",
+        "max": 12,
+        "fields": [
+          "label",
+          "value",
+          "note"
+        ]
+      }
+    },
+    "activity": {
+      "copy": [
+        "lede",
+        "badge"
+      ],
+      "items": {
+        "kind": "activity-item",
+        "max": 8,
+        "fields": [
+          "label",
+          "detail",
+          "note"
+        ]
+      }
+    },
+    "features": {
+      "copy": [
+        "badge"
+      ],
+      "items": {
+        "kind": "feature",
+        "max": 6,
+        "fields": [
+          "label",
+          "detail"
+        ]
+      }
+    },
+    "menu": {
+      "copy": [
+        "badge"
+      ],
+      "items": {
+        "kind": "dish",
+        "max": 8,
+        "fields": [
+          "label",
+          "detail"
+        ]
+      }
+    },
+    "hours": {
+      "copy": [
+        "days",
+        "address",
+        "badge"
+      ]
+    },
+    "cta": {
+      "copy": [
+        "lede",
+        "action",
+        "note",
+        "badge"
+      ]
+    },
+    "footer": {
+      "copy": [
+        "contact",
+        "legal",
+        "badge"
+      ]
+    },
+    "nav-link": {
+      "copy": [
+        "eyebrow",
+        "badge"
+      ]
+    },
+    "feature": {
+      "copy": [
+        "badge"
+      ]
+    },
+    "dish": {
+      "copy": [
+        "badge"
+      ]
+    },
+    "metric": {
+      "copy": [
+        "value",
+        "note",
+        "badge"
+      ]
+    },
+    "activity-item": {
+      "copy": [
+        "note",
+        "badge"
+      ]
+    }
+  },
+  "$ref": "#/$defs/page",
+  "$defs": {
+    "safeText": {
+      "type": "string",
+      "description": "Plain text. Rejected (parsePage codes): control characters other than tab, LF and CR, and any of < > { } (unsafe_text); a value that starts with javascript:, data:, vbscript: or file: even with whitespace or control characters between the letters (unsafe_url); a value that starts with <scheme>:// other than http(s) (unsafe_url). mailto: is allowed. Prose with a colon (`Hours: 11:00`) is not a URL.",
+      "pattern": "^[^<>{}\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]*$",
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^[\\u0000-\\u0020]*[jJ][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[dD][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[bB][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[fF][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[lL][\\u0000-\\u0020]*[eE][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^\\s*(?![hH][tT][tT][pP][sS]?://)[A-Za-z][A-Za-z0-9+.\\-]*://"
+          }
+        ]
+      }
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,62}$",
+      "maxLength": 63,
+      "description": "Lowercase ASCII id, unique in the whole page (page id included; checked by the program: duplicate_id). Safe in generated code (data-block-id)."
+    },
+    "kind": {
+      "enum": [
+        "nav",
+        "nav-link",
+        "hero",
+        "features",
+        "feature",
+        "menu",
+        "dish",
+        "hours",
+        "cta",
+        "footer",
+        "pagehead",
+        "overview",
+        "metrics",
+        "metric",
+        "chart",
+        "activity",
+        "activity-item",
+        "sidenav",
+        "bottomnav"
+      ],
+      "description": "Renderer kind a Stock catalog block maps onto."
+    },
+    "copy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eyebrow": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "headline": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "lede": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "action": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "note": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "brand": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "contact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "legal": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "days": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "address": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "value": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "badge": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        }
+      },
+      "description": "Copy of a block by closed key. Which keys a kind renders: x-page-slots."
+    },
+    "block1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "summary"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "summary": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "copy": {
+          "$ref": "#/$defs/copy"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block2"
+          },
+          "maxItems": 64
+        }
+      }
+    },
+    "block2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "summary"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "summary": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "copy": {
+          "$ref": "#/$defs/copy"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block3"
+          },
+          "maxItems": 64
+        }
+      }
+    },
+    "block3": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "summary"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "summary": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "copy": {
+          "$ref": "#/$defs/copy"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block4"
+          },
+          "maxItems": 64
+        }
+      }
+    },
+    "block4": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "summary"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "summary": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "copy": {
+          "$ref": "#/$defs/copy"
+        },
+        "children": {
+          "type": "array",
+          "maxItems": 0,
+          "description": "Depth 4 is the deepest level (too_deep)."
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "slug",
+        "status",
+        "title",
+        "layout",
+        "seo",
+        "locale",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 48,
+          "description": "Ordinary page slug, no query or UTM variants."
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "pending",
+            "scheduled",
+            "published",
+            "archived",
+            "trashed"
+          ],
+          "description": "Lifecycle. A new draft has status draft."
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "layout": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "version",
+            "blocks"
+          ],
+          "properties": {
+            "version": {
+              "const": 1
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/block1"
+              },
+              "maxItems": 64,
+              "description": "Blocks in render order. Code (page.svelte + one file per block) is generated from this tree."
+            }
+          }
+        },
+        "seo": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/safeText"
+                }
+              ],
+              "maxLength": 200
+            },
+            "description": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/safeText"
+                }
+              ],
+              "maxLength": 200
+            }
+          }
+        },
+        "locale": {
+          "type": "string",
+          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+          "maxLength": 16,
+          "description": "BCP 47 language of all copy."
+        },
+        "createdAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+          "maxLength": 40
+        },
+        "updatedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+          "maxLength": 40
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Where a saved spec came from. screenId is the Stock catalog screen the blocks were assembled from (null = not recorded).",
+      "properties": {
+        "screenId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "scenarioId": {
+          "enum": [
+            "dashboard",
+            "landing",
+            "website",
+            null
+          ]
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": "Catalog block labels of the screen that the host cannot render."
+        },
+        "assembler": {
+          "type": "string",
+          "maxLength": 80
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One chat's pages in the browser store: the applied page, the pending candidate and the last proposal, each with its provenance.",
+      "properties": {
+        "applied": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastProposed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "appliedProvenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidateProvenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastProposedProvenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectedBlockId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 63
+        },
+        "revision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "store": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "pages"
+      ],
+      "description": "The browser page store blob (localStorage key buildytech-creator-pages-v1): pages by chat id.",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/record"
+          }
+        }
+      }
+    }
+  }
+};
+});
+
+__def("packages/page-contract/schema/page-patch.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.buildy.tw/page-patch.schema.json",
+  "title": "Page patch page-patch/v1 — edit operations on a page spec",
+  "x-page-patch-profile": "page-patch/v1",
+  "x-page-spec-version": "1.0.0",
+  "description": "An edit of a page-spec/v1 page as an ordered list of operations, applied in order to a copy of the base page; the whole patch is rejected if any operation fails. Unchanged blocks keep their content. Slot validation: set / add / replace may only write copy keys and row fields the target kind renders (page-spec x-page-slots); rows beyond the kind's limit are rejected. The result must be a valid page-spec/v1 page. baseRevision, when sent, must equal the page revision the patch was made for.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ops"
+  ],
+  "properties": {
+    "baseRevision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ops": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "items": {
+        "$ref": "#/$defs/op"
+      }
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 80,
+          "description": "Row title.",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "detail": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 200,
+          "description": "Row summary."
+        },
+        "value": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 24,
+          "description": "Row copy.value."
+        },
+        "note": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 120,
+          "description": "Row copy.note."
+        },
+        "group": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 40,
+          "description": "Row copy.eyebrow."
+        }
+      }
+    },
+    "op": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId",
+            "field",
+            "value"
+          ],
+          "description": "Set one slot of a block. null removes a copy key; title and summary cannot be removed.",
+          "properties": {
+            "op": {
+              "const": "set"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            },
+            "field": {
+              "enum": [
+                "title",
+                "summary",
+                "eyebrow",
+                "headline",
+                "lede",
+                "action",
+                "note",
+                "brand",
+                "contact",
+                "legal",
+                "days",
+                "address",
+                "value",
+                "badge"
+              ]
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "allOf": [
+                    {
+                      "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+                    }
+                  ],
+                  "maxLength": 2000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId",
+            "items"
+          ],
+          "description": "Replace the rows of a list block.",
+          "properties": {
+            "op": {
+              "const": "set_items"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/item"
+              },
+              "maxItems": 12,
+              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "kind"
+          ],
+          "description": "Add a Stock block at a top-level index (default: its natural place). Optional copy and rows overlay the catalog defaults.",
+          "properties": {
+            "op": {
+              "const": "add"
+            },
+            "kind": {
+              "enum": [
+                "nav",
+                "hero",
+                "features",
+                "menu",
+                "hours",
+                "cta",
+                "footer",
+                "pagehead",
+                "overview",
+                "metrics",
+                "chart",
+                "activity",
+                "sidenav",
+                "bottomnav"
+              ],
+              "description": "A top-level kind. The host builds the block from the page's Stock screen family; a kind the family does not have is rejected."
+            },
+            "at": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "title": {
+              "allOf": [
+                {
+                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+                }
+              ],
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "copy": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/copy"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/item"
+              },
+              "maxItems": 12,
+              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId",
+            "kind"
+          ],
+          "description": "Replace a top-level block by another Stock block in the same place.",
+          "properties": {
+            "op": {
+              "const": "replace"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            },
+            "kind": {
+              "enum": [
+                "nav",
+                "hero",
+                "features",
+                "menu",
+                "hours",
+                "cta",
+                "footer",
+                "pagehead",
+                "overview",
+                "metrics",
+                "chart",
+                "activity",
+                "sidenav",
+                "bottomnav"
+              ],
+              "description": "A top-level kind. The host builds the block from the page's Stock screen family; a kind the family does not have is rejected."
+            },
+            "title": {
+              "allOf": [
+                {
+                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+                }
+              ],
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "copy": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/copy"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/item"
+              },
+              "maxItems": 12,
+              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId"
+          ],
+          "description": "Remove a block and its rows.",
+          "properties": {
+            "op": {
+              "const": "remove"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId",
+            "to"
+          ],
+          "description": "Move a block to an index among its siblings.",
+          "properties": {
+            "op": {
+              "const": "move"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            },
+            "to": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "field",
+            "value"
+          ],
+          "description": "Set the page title or an SEO field.",
+          "properties": {
+            "op": {
+              "const": "set_page"
+            },
+            "field": {
+              "enum": [
+                "title",
+                "seo.title",
+                "seo.description"
+              ]
+            },
+            "value": {
+              "allOf": [
+                {
+                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+                }
+              ],
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          }
+        }
+      ]
+    }
+  }
+};
+});
+
+__def("packages/page-contract/src/json-schema.ts", function (exports) {
+
+type Schema = Record<string, unknown> | boolean;
+
+const ANNOTATIONS = new Set(["$schema", "$id", "$defs", "title", "description", "default", "examples"]);
+const ASSERTIONS = new Set([
+	"$ref", "allOf", "anyOf", "oneOf", "not", "type", "enum", "const", "pattern", "minLength", "maxLength",
+	"minimum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties"
+]);
+
+function typeOf(value: unknown): string {
+	if (value === null) return "null";
+	if (Array.isArray(value)) return "array";
+	if (typeof value === "number") return Number.isInteger(value) ? "integer" : "number";
+	return typeof value;
+}
+
+function typeMatches(value: unknown, type: string): boolean {
+	const actual = typeOf(value);
+	return actual === type || (type === "number" && actual === "integer");
+}
+
+function equal(a: unknown, b: unknown): boolean {
+	return JSON.stringify(a) === JSON.stringify(b);
+}
+
+class SchemaRegistry {
+	private roots = new Map<string, Record<string, unknown>>();
+	private regex = new Map<string, RegExp>();
+
+	add(schema: Record<string, unknown>): void {
+		const id = schema.$id;
+		if (typeof id !== "string" || !id) throw new Error("schema needs an $id");
+		this.roots.set(id, schema);
+	}
+
+	/** Issues of `value` against `ref` (an $id, optionally with a #/json/pointer). Empty = valid. */
+	check(value: unknown, ref: string): SchemaIssue[] {
+		const out: SchemaIssue[] = [];
+		const [base, schema] = this.resolve(ref, "");
+		this.walk(value, schema, base, "$", out);
+		return out;
+	}
+
+	private resolve(ref: string, currentBase: string): [string, Schema] {
+		const hash = ref.indexOf("#");
+		const base = hash === 0 ? currentBase : hash > 0 ? ref.slice(0, hash) : ref;
+		const pointer = hash >= 0 ? ref.slice(hash + 1) : "";
+		const root = this.roots.get(base);
+		if (!root) throw new Error(`unknown schema ${base}`);
+		let node: unknown = root;
+		for (const raw of pointer.split("/").filter(Boolean)) {
+			const key = raw.replace(/~1/g, "/").replace(/~0/g, "~");
+			node = node && typeof node === "object" ? (node as Record<string, unknown>)[key] : undefined;
+		}
+		if (node === undefined) throw new Error(`unresolved $ref ${ref}`);
+		return [base, node as Schema];
+	}
+
+	private pattern(source: string): RegExp {
+		let re = this.regex.get(source);
+		if (!re) {
+			re = new RegExp(source, "u");
+			this.regex.set(source, re);
+		}
+		return re;
+	}
+
+	private walk(value: unknown, schema: Schema, base: string, path: string, out: SchemaIssue[]): void {
+		if (schema === true) return;
+		if (schema === false) {
+			out.push({ path, keyword: "false" });
+			return;
+		}
+		const fail = (keyword: string, at = path) => out.push({ path: at, keyword });
+		const sub = (v: unknown, s: unknown, at: string): SchemaIssue[] => {
+			const issues: SchemaIssue[] = [];
+			this.walk(v, s as Schema, base, at, issues);
+			return issues;
+		};
+		for (const key of Object.keys(schema)) {
+			if (!ASSERTIONS.has(key) && !ANNOTATIONS.has(key) && !key.startsWith("x-")) {
+				throw new Error(`unsupported schema keyword ${key}`);
+			}
+		}
+		if (typeof schema.$ref === "string") {
+			const [refBase, target] = this.resolve(schema.$ref, base);
+			this.walk(value, target, refBase, path, out);
+		}
+		if (Array.isArray(schema.allOf)) for (const s of schema.allOf) out.push(...sub(value, s, path));
+		if (Array.isArray(schema.anyOf) && !schema.anyOf.some((s) => sub(value, s, path).length === 0)) fail("anyOf");
+		if (Array.isArray(schema.oneOf)) {
+			const branches = schema.oneOf.map((s) => sub(value, s, path));
+			const passing = branches.filter((issues) => issues.length === 0).length;
+			if (passing !== 1) {
+				// Report the issues of the closest branch so the caller gets a useful path.
+				const closest = [...branches].sort((a, b) => a.length - b.length)[0] ?? [];
+				out.push(...(passing === 0 ? closest : []), { path, keyword: "oneOf" });
+			}
+		}
+		if (schema.not !== undefined && sub(value, schema.not, path).length === 0) fail("not");
+		if (schema.type !== undefined) {
+			const types = Array.isArray(schema.type) ? schema.type : [schema.type];
+			if (!types.some((t) => typeMatches(value, String(t)))) {
+				fail("type");
+				return;
+			}
+		}
+		if (Array.isArray(schema.enum) && !schema.enum.some((e) => equal(e, value))) fail("enum");
+		if ("const" in schema && !equal(schema.const, value)) fail("const");
+		if (typeof value === "string") {
+			const length = [...value].length;
+			if (typeof schema.minLength === "number" && length < schema.minLength) fail("minLength");
+			if (typeof schema.maxLength === "number" && length > schema.maxLength) fail("maxLength");
+			if (typeof schema.pattern === "string" && !this.pattern(schema.pattern).test(value)) fail("pattern");
+		}
+		if (typeof value === "number" && typeof schema.minimum === "number" && value < schema.minimum) fail("minimum");
+		if (Array.isArray(value)) {
+			if (typeof schema.minItems === "number" && value.length < schema.minItems) fail("minItems");
+			if (typeof schema.maxItems === "number" && value.length > schema.maxItems) fail("maxItems");
+			if (schema.items !== undefined) value.forEach((item, i) => out.push(...sub(item, schema.items, `${path}[${i}]`)));
+		}
+		if (value && typeof value === "object" && !Array.isArray(value)) {
+			const obj = value as Record<string, unknown>;
+			const props = (schema.properties ?? {}) as Record<string, unknown>;
+			if (Array.isArray(schema.required)) {
+				for (const key of schema.required) if (!(String(key) in obj)) fail("required", `${path}.${String(key)}`);
+			}
+			for (const [key, v] of Object.entries(obj)) {
+				if (key in props) out.push(...sub(v, props[key], `${path}.${key}`));
+				else if (schema.additionalProperties === false) fail("additionalProperties", `${path}.${key}`);
+				else if (schema.additionalProperties && typeof schema.additionalProperties === "object") {
+					out.push(...sub(v, schema.additionalProperties, `${path}.${key}`));
+				}
+			}
+		}
+	}
+}
+
+exports["SchemaRegistry"] = SchemaRegistry;
+
+});
+
+__def("packages/page-contract/src/spec.ts", function (exports) {
+const pageSpecSchema = __req("packages/page-contract/schema/page-spec.schema.json").default;
+const pagePatchSchema = __req("packages/page-contract/schema/page-patch.schema.json").default;
+const { SchemaRegistry } = __req("packages/page-contract/src/json-schema.ts");
+const { PageContractError, parseDraftPage, parsePage } = __req("packages/page-contract/src/validate.ts");
+const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
+const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
+/** ui8kit/contract commit the vendored schemas come from. */
+const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "fa2f15e" } as const;
+
+const registry = new SchemaRegistry();
+registry.add(pageSpecSchema as Record<string, unknown>);
+registry.add(pagePatchSchema as Record<string, unknown>);
+
+const PAGE_SLOTS = (pageSpecSchema as { "x-page-slots": Record<PageBlockKind, PageSlot> })["x-page-slots"];
+
+/** Schema issues of a page (root of page-spec). Empty = the shape is valid; run parsePage for program checks. */
+function pageSpecIssues(input: unknown): SchemaIssue[] {
+	return registry.check(input, PAGE_SPEC_SCHEMA_URL);
+}
+
+/** Schema issues against a page-spec $def (provenance, record, store). */
+function pageSpecDefIssues(input: unknown, def: "provenance" | "record" | "store"): SchemaIssue[] {
+	return registry.check(input, `${PAGE_SPEC_SCHEMA_URL}#/$defs/${def}`);
+}
+
+function pagePatchIssues(input: unknown): SchemaIssue[] {
+	return registry.check(input, PAGE_PATCH_SCHEMA_URL);
+}
+
+/**
+ * Page spec gate: the published schema first (code page_spec_invalid with the first schema path),
+ * then parsePage for the program checks (duplicate ids, block count, size) and the normalized copy.
+ */
+function parsePageSpec(input: unknown, options: { draft?: boolean } = {}): Page {
+	const issues = pageSpecIssues(input);
+	if (issues.length) {
+		const first = issues[0]!;
+		throw new PageContractError("page_spec_invalid", first.path, `page-spec/v1 ${first.keyword} failed`);
+	}
+	return options.draft ? parseDraftPage(input) : parsePage(input);
+}
+
+exports["PAGE_SPEC_SCHEMA_URL"] = PAGE_SPEC_SCHEMA_URL;
+exports["PAGE_PATCH_SCHEMA_URL"] = PAGE_PATCH_SCHEMA_URL;
+exports["PAGE_SPEC_SCHEMA_SOURCE"] = PAGE_SPEC_SCHEMA_SOURCE;
+exports["pagePatchSchema"] = pagePatchSchema;
+exports["pageSpecSchema"] = pageSpecSchema;
+exports["PAGE_SLOTS"] = PAGE_SLOTS;
+exports["pageSpecIssues"] = pageSpecIssues;
+exports["pageSpecDefIssues"] = pageSpecDefIssues;
+exports["pagePatchIssues"] = pagePatchIssues;
+exports["parsePageSpec"] = parsePageSpec;
+
+});
+
 __def("packages/page-contract/src/index.ts", function (exports) {
 exports["PAGE_BLOCK_KINDS"] = __req("packages/page-contract/src/types.ts")["PAGE_BLOCK_KINDS"];
 exports["PAGE_COPY_KEYS"] = __req("packages/page-contract/src/types.ts")["PAGE_COPY_KEYS"];
@@ -6640,6 +8013,17 @@ exports["isPage"] = __req("packages/page-contract/src/validate.ts")["isPage"];
 exports["PageContractError"] = __req("packages/page-contract/src/validate.ts")["PageContractError"];
 exports["parseDraftPage"] = __req("packages/page-contract/src/validate.ts")["parseDraftPage"];
 exports["parsePage"] = __req("packages/page-contract/src/validate.ts")["parsePage"];
+exports["PAGE_PATCH_SCHEMA_URL"] = __req("packages/page-contract/src/spec.ts")["PAGE_PATCH_SCHEMA_URL"];
+exports["PAGE_SLOTS"] = __req("packages/page-contract/src/spec.ts")["PAGE_SLOTS"];
+exports["PAGE_SPEC_SCHEMA_SOURCE"] = __req("packages/page-contract/src/spec.ts")["PAGE_SPEC_SCHEMA_SOURCE"];
+exports["PAGE_SPEC_SCHEMA_URL"] = __req("packages/page-contract/src/spec.ts")["PAGE_SPEC_SCHEMA_URL"];
+exports["pagePatchIssues"] = __req("packages/page-contract/src/spec.ts")["pagePatchIssues"];
+exports["pagePatchSchema"] = __req("packages/page-contract/src/spec.ts")["pagePatchSchema"];
+exports["pageSpecDefIssues"] = __req("packages/page-contract/src/spec.ts")["pageSpecDefIssues"];
+exports["pageSpecIssues"] = __req("packages/page-contract/src/spec.ts")["pageSpecIssues"];
+exports["pageSpecSchema"] = __req("packages/page-contract/src/spec.ts")["pageSpecSchema"];
+exports["parsePageSpec"] = __req("packages/page-contract/src/spec.ts")["parsePageSpec"];
+exports["SchemaRegistry"] = __req("packages/page-contract/src/json-schema.ts")["SchemaRegistry"];
 
 
 
@@ -7208,7 +8592,7 @@ const ENABLED_SKILLS = [
 	{
 		id: "ui8kit-strict-catalog",
 		version: "1",
-		purpose: "Use the host scenario seed or one search_catalog shortlist, then call propose_layout. get_block_details is optional for a single unknown id. Never spend the last tool step on search or details.",
+		purpose: "Use the host scenario seed or one search_catalog shortlist, then call propose_layout. On a current page, edit with edit_page (page-patch/v1 ops) and keep everything else. get_block_details is optional for a single unknown id. Never spend the last tool step on search or details.",
 		triggers: ["catalog", "screen", "block", "layout"],
 		requiredTools: ["search_catalog", "propose_layout"]
 	},
@@ -7225,6 +8609,7 @@ const ALLOWED_TOOLS = [
 	"search_catalog",
 	"get_block_details",
 	"propose_layout",
+	"edit_page",
 	"get_skill"
 ] as const;
 
@@ -8008,7 +9393,7 @@ exports["stripInventedFooterYears"] = stripInventedFooterYears;
 });
 
 __def("packages/builder-core/src/assemble.ts", function (exports) {
-const { PAGE_LAYOUT_VERSION, parseDraftPage, parsePage } = __req("packages/page-contract/src/index.ts");
+const { PAGE_LAYOUT_VERSION, parsePageSpec } = __req("packages/page-contract/src/index.ts");
 const { SCENARIO_PROMPTS } = __req("packages/builder-core/src/copy.ts");
 const { displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } = __req("packages/builder-core/src/brief.ts");
 const { catalogProvenance, catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
@@ -9178,7 +10563,8 @@ function finishProposal(
 			createdAt: identity?.createdAt ?? stamp,
 			updatedAt: stamp
 		};
-		const page = status === "draft" ? parseDraftPage(raw) : parsePage(raw);
+		// Page spec gate: the published page-spec/v1 schema, then the parsePage program checks.
+		const page = parsePageSpec(raw, { draft: status === "draft" });
 		const screenId = recordedScreenId(screen?.screenId) ?? inheritedScreenId(ctx);
 		const checked = validateCatalogProvenance({ page, screenId, catalogDigest: catalogProvenance().sourceDigest });
 		if (!checked.ok) return checked;
@@ -9235,7 +10621,7 @@ function applyProposal(
 		};
 	}
 	try {
-		const page = parsePage(proposal.page);
+		const page = parsePageSpec(proposal.page);
 		for (const node of walk(page.layout.blocks)) {
 			const details = getBlockDetails({ id: node.kind });
 			if ("ok" in details && details.ok === false) {
@@ -9260,7 +10646,7 @@ function walk(blocks: PageBlock[]): PageBlock[] {
 
 function rejectFabricatedLayout(input: unknown): LayoutProposalError | { ok: true; page: Page } {
 	try {
-		const page = parsePage(input);
+		const page = parsePageSpec(input);
 		return { ok: true, page };
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "invalid layout";
@@ -9269,21 +10655,54 @@ function rejectFabricatedLayout(input: unknown): LayoutProposalError | { ok: tru
 	}
 }
 
+/**
+ * One Stock block of `kind` from the page's Stock screen, with catalog fallback copy
+ * (page-patch add / replace). The caller checks that the screen family has the kind.
+ */
+function stockBlockFor(
+	kind: PageBlockKind,
+	input: { screen: CatalogScreen | null; scenarioId: ScenarioId | null; brief: string; pageTitle: string }
+): PageBlock {
+	const ctx: ProposalContext = { brief: input.brief, scenarioId: input.scenarioId, screenId: input.screen?.screenId ?? null, expectedRevision: 0 };
+	return buildStockBlock(kind, ctx, input.screen, input.brief, input.pageTitle);
+}
+
+/** Natural index of a new top-level kind among `blocks` (the assembler's page order). */
+function naturalIndexFor(kind: PageBlockKind, blocks: PageBlock[]): number {
+	const rank = new Map<PageBlockKind, number>();
+	const slot = pageSlot(kind, rank);
+	const index = blocks.findIndex((node) => pageSlot(node.kind, rank) > slot);
+	return index < 0 ? blocks.length : index;
+}
+
+
 exports["isClearPageCommand"] = isClearPageCommand;
 exports["recordedScreenId"] = recordedScreenId;
 exports["screenIdFromPage"] = screenIdFromPage;
 exports["inheritedScreenId"] = inheritedScreenId;
+exports["arrangeShell"] = arrangeShell;
 exports["proposeLayout"] = proposeLayout;
 exports["localizeEmptyLedes"] = localizeEmptyLedes;
 exports["applyProposal"] = applyProposal;
 exports["rejectFabricatedLayout"] = rejectFabricatedLayout;
+exports["stockBlockFor"] = stockBlockFor;
+exports["naturalIndexFor"] = naturalIndexFor;
+exports["CHILD_ONLY_KINDS"] = CHILD_ONLY_KINDS;
 
 });
 
 __def("packages/builder-core/src/client-gate.ts", function (exports) {
+const { pageSpecIssues } = __req("packages/page-contract/src/index.ts");
 const { recordedScreenId } = __req("packages/builder-core/src/assemble.ts");
 const { validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
-function clientProposalGate(proposal: Pick<LayoutProposal, "page" | "provenance">) {
+function clientProposalGate(
+	proposal: Pick<LayoutProposal, "page" | "provenance">
+): ReturnType<typeof validateCatalogProvenance> | PageSpecGateError | CatalogValidationError {
+	const issues = pageSpecIssues(proposal.page);
+	if (issues.length) {
+		const first = issues[0]!;
+		return { ok: false, code: "page_spec_invalid", message: `page-spec/v1 ${first.keyword} failed at ${first.path}`, path: first.path };
+	}
 	return validateCatalogProvenance({
 		page: proposal.page,
 		screenId: recordedScreenId(proposal.provenance.screenId),
@@ -9378,6 +10797,385 @@ exports["parseLayoutCopyEdits"] = parseLayoutCopyEdits;
 
 });
 
+__def("packages/builder-core/src/patch.ts", function (exports) {
+const { PAGE_LIMITS, PAGE_SLOTS, pagePatchIssues, pagePatchSchema, parsePageSpec } = __req("packages/page-contract/src/index.ts");
+const { arrangeShell, CHILD_ONLY_KINDS, localizeEmptyLedes, naturalIndexFor, stockBlockFor } = __req("packages/builder-core/src/assemble.ts");
+const { catalogProvenance } = __req("packages/builder-core/src/catalog/snapshot.ts");
+const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
+const { familyLabelForKind, validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { DATA_KINDS, defaultDemoLabel, demoLabelForLocale } = __req("packages/builder-core/src/content.ts");
+const { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } = __req("packages/builder-core/src/policy.ts");
+type Failure = { ok: false; code: string; message: string; path?: string };
+const fail = (code: string, message: string, path?: string): Failure => ({ ok: false, code, message, path });
+
+function walk(blocks: PageBlock[]): PageBlock[] {
+	return blocks.flatMap((node) => [node, ...walk(node.children ?? [])]);
+}
+
+/** The sibling array that holds `id`, and its index. */
+function locate(blocks: PageBlock[], id: string): { list: PageBlock[]; index: number; parent: PageBlock | null } | null {
+	const stack: Array<{ list: PageBlock[]; parent: PageBlock | null }> = [{ list: blocks, parent: null }];
+	while (stack.length) {
+		const { list, parent } = stack.pop()!;
+		const index = list.findIndex((node) => node.id === id);
+		if (index >= 0) return { list, index, parent };
+		for (const node of list) if (node.children?.length) stack.push({ list: node.children, parent: node });
+	}
+	return null;
+}
+
+function slotOf(kind: PageBlockKind) {
+	return PAGE_SLOTS[kind];
+}
+
+function checkCopy(kind: PageBlockKind, copy: Record<string, unknown>, path: string): Failure | null {
+	const allowed = slotOf(kind).copy as string[];
+	for (const key of Object.keys(copy)) {
+		if (!allowed.includes(key)) {
+			return fail("slot_not_rendered", `${kind} does not render copy.${key}. Slots: ${allowed.join(", ")}.`, `${path}.${key}`);
+		}
+	}
+	return null;
+}
+
+type Item = { label: string; detail?: string; value?: string; note?: string; group?: string };
+
+function rowsFor(block: PageBlock, items: Item[], path: string): PageBlock[] | Failure {
+	const slot = slotOf(block.kind).items;
+	if (!slot) return fail("slot_no_rows", `${block.kind} has no rows.`, path);
+	if (items.length > slot.max) return fail("rows_over_limit", `${block.kind} renders at most ${slot.max} rows.`, path);
+	const rows: PageBlock[] = [];
+	for (const [index, item] of items.entries()) {
+		for (const key of Object.keys(item)) {
+			if (!slot.fields.includes(key)) {
+				return fail("row_field_not_rendered", `${slot.kind} rows render ${slot.fields.join(", ")}, not ${key}.`, `${path}[${index}].${key}`);
+			}
+		}
+		const row: PageBlock = {
+			id: `${block.id}-item-${index + 1}`.slice(0, PAGE_LIMITS.maxIdLength),
+			kind: slot.kind,
+			title: item.label.slice(0, PAGE_LIMITS.maxTitleLength),
+			summary: (item.detail ?? item.note ?? item.label).slice(0, PAGE_LIMITS.maxSummaryLength)
+		};
+		const copy: PageBlockCopy = {};
+		if (item.value) copy.value = item.value;
+		if (item.note) copy.note = item.note;
+		if (item.group) copy.eyebrow = item.group;
+		if (Object.keys(copy).length) row.copy = copy;
+		rows.push(row);
+	}
+	return rows;
+}
+
+function withCopy(block: PageBlock, copy: Record<string, string> | undefined): PageBlock {
+	if (!copy || !Object.keys(copy).length) return block;
+	const next = { ...block, copy: { ...block.copy, ...copy } };
+	if (copy.lede) next.summary = copy.lede.slice(0, PAGE_LIMITS.maxSummaryLength);
+	return next;
+}
+
+function hasDemoBadge(blocks: PageBlock[]): boolean {
+	return walk(blocks).some((node) => typeof node.copy?.badge === "string" && node.copy.badge.length > 0);
+}
+
+const OP_KEYS: Record<string, string[]> = Object.fromEntries(
+	(pagePatchSchema.$defs.op.oneOf as unknown as Array<{ properties: Record<string, { const?: string }> }>).map((branch) => [
+		String(branch.properties.op?.const),
+		Object.keys(branch.properties)
+	])
+);
+const UNION_KEYS = new Set(Object.values(OP_KEYS).flat());
+
+/**
+ * Tool-call hygiene before the strict schema: a model fills unused union fields with null or "".
+ * Those empty fields are dropped; any other key stays, so the schema still rejects it.
+ */
+function normalizePatch(raw: unknown): unknown {
+	if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+	const rec = raw as Record<string, unknown>;
+	if (!Array.isArray(rec.ops)) return raw;
+	const out: Record<string, unknown> = { ...rec };
+	for (const key of ["demoData", "demoLabel"]) delete out[key];
+	if (out.baseRevision == null) delete out.baseRevision;
+	out.ops = rec.ops.map((op) => {
+		if (!op || typeof op !== "object" || Array.isArray(op)) return op;
+		const row = op as Record<string, unknown>;
+		const allowed = OP_KEYS[String(row.op)];
+		if (!allowed) return op;
+		const clean: Record<string, unknown> = {};
+		for (const [key, value] of Object.entries(row)) {
+			const empty =
+				value === null ||
+				value === undefined ||
+				value === "" ||
+				(Array.isArray(value) && value.length === 0) ||
+				(typeof value === "object" && value !== null && !Array.isArray(value) && Object.keys(value).length === 0);
+			if (!allowed.includes(key)) {
+				if (UNION_KEYS.has(key) && empty) continue;
+				clean[key] = value;
+				continue;
+			}
+			if (key === "copy" && value && typeof value === "object" && !Array.isArray(value)) {
+				const copy = Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null && v !== undefined && v !== ""));
+				if (Object.keys(copy).length) clean.copy = copy;
+				continue;
+			}
+			if (key !== "value" && key !== "items" && empty) continue;
+			clean[key] = value;
+		}
+		return clean;
+	});
+	return out;
+}
+
+/** Apply page-patch/v1 to the current page and return an unapplied proposal (Apply stays with the author). */
+function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposalError {
+	const issues = pagePatchIssues(ctx.patch);
+	if (issues.length) {
+		const first = issues[0]!;
+		return fail("page_patch_invalid", `page-patch/v1 ${first.keyword} failed. Send ops only (set, set_items, add, replace, remove, move, set_page).`, first.path);
+	}
+	const patch = ctx.patch as { baseRevision?: number; ops: PatchOp[] };
+	if (typeof patch.baseRevision === "number" && patch.baseRevision !== ctx.expectedRevision) {
+		return fail("revision_conflict", "The page changed since this patch was made. Read currentPage again.", "$.baseRevision");
+	}
+	const base = ctx.page;
+	const screenId = ctx.provenance?.screenId ?? null;
+	const screen = screenId ? getScreenById(screenId) : null;
+	const scenarioId = ctx.provenance?.scenarioId ?? null;
+	const demoAllowed = ctx.demoData === true || (ctx.demoData !== false && (Boolean(ctx.sessionDemoData) || hasDemoBadge(base.layout.blocks)));
+	const demoLabel = base.layout.blocks.map((node) => node.copy?.badge).find(Boolean) ?? demoLabelForLocale(ctx.demoLabel, base.locale) ?? defaultDemoLabel(base.locale);
+	const english = base.locale.toLowerCase().split("-")[0] === "en";
+
+	let blocks: PageBlock[] = structuredClone(base.layout.blocks);
+	let title = base.title;
+	const seo = { ...base.seo };
+	const changed = new Set<string>();
+	const added: string[] = [];
+	const removed: string[] = [];
+	const applied: string[] = [];
+	let shellAdded = false;
+
+	const fromCatalog = (kind: PageBlockKind, at: string, op: PatchOp): PageBlock | Failure => {
+		if (CHILD_ONLY_KINDS.has(kind)) return fail("slot_no_rows", `${kind} is a row kind; use set_items on its list block.`, `${at}.kind`);
+		if (!screen) return fail("screen_unknown", "The page has no recorded Stock screen, so blocks cannot be added. Use propose_layout.", `${at}.kind`);
+		if (!familyLabelForKind(screen, kind)) {
+			return fail("block_not_in_catalog", `Stock screen ${screen.screenId} and its family have no ${kind} block. Not invented.`, `${at}.kind`);
+		}
+		if (!english && typeof op.title !== "string") {
+			return fail("slot_required", `The page language is ${base.locale}: send title (and copy) for the new ${kind} block.`, `${at}.title`);
+		}
+		let node = stockBlockFor(kind, { screen, scenarioId, brief: ctx.brief ?? title, pageTitle: title });
+		const copy = op.copy as Record<string, string> | undefined;
+		if (copy) {
+			const bad = checkCopy(kind, copy, `${at}.copy`);
+			if (bad) return bad;
+			node = withCopy(node, copy);
+		}
+		if (typeof op.title === "string") node = { ...node, title: op.title };
+		if (Array.isArray(op.items)) {
+			if (DATA_KINDS.has(kind) && op.items.length && !demoAllowed) {
+				return fail("demo_data_not_requested", `${kind} rows are figures; the author did not ask for demo data.`, `${at}.items`);
+			}
+			const rows = rowsFor(node, op.items as Item[], `${at}.items`);
+			if (!Array.isArray(rows)) return rows;
+			node = { ...node, children: rows };
+			if (DATA_KINDS.has(kind) && rows.length) node = { ...node, copy: { ...node.copy, badge: demoLabel } };
+		}
+		return localizeEmptyLedes([node], base.locale)[0]!;
+	};
+
+	for (const [i, op] of patch.ops.entries()) {
+		const at = `$.ops[${i}]`;
+		const blockId = typeof op.blockId === "string" ? op.blockId : null;
+		const found = blockId ? locate(blocks, blockId) : null;
+		if (blockId && !found) return fail("block_not_found", `No block ${blockId} on the current page.`, `${at}.blockId`);
+		const target = found ? found.list[found.index]! : null;
+
+		if (op.op === "set" && target && found) {
+			const field = String(op.field);
+			const value = op.value as string | null;
+			if (field === "title" || field === "summary") {
+				if (value === null || !value.trim()) return fail("slot_required", `${field} cannot be empty.`, `${at}.value`);
+				const max = field === "title" ? PAGE_LIMITS.maxTitleLength : PAGE_LIMITS.maxSummaryLength;
+				found.list[found.index] = { ...target, [field]: value.slice(0, max) };
+			} else {
+				if (!(slotOf(target.kind).copy as string[]).includes(field)) {
+					return fail("slot_not_rendered", `${target.kind} does not render copy.${field}. Slots: ${(slotOf(target.kind).copy as string[]).join(", ")}.`, `${at}.field`);
+				}
+				const copy: PageBlockCopy = { ...target.copy };
+				if (value === null) delete copy[field as PageCopyKey];
+				else copy[field as PageCopyKey] = value;
+				const next: PageBlock = { ...target, copy };
+				if (!Object.keys(copy).length) delete next.copy;
+				found.list[found.index] = next;
+			}
+			changed.add(target.kind);
+		} else if (op.op === "set_items" && target && found) {
+			const items = op.items as Item[];
+			if (DATA_KINDS.has(target.kind) && items.length && !demoAllowed) {
+				return fail("demo_data_not_requested", `${target.kind} rows are figures; the author did not ask for demo data.`, `${at}.items`);
+			}
+			const rows = rowsFor(target, items, `${at}.items`);
+			if (!Array.isArray(rows)) return rows;
+			const next: PageBlock = { ...target, children: rows };
+			if (!rows.length) delete next.children;
+			if (DATA_KINDS.has(target.kind) && rows.length) next.copy = { ...next.copy, badge: demoLabel };
+			found.list[found.index] = next;
+			changed.add(target.kind);
+		} else if (op.op === "add") {
+			const kind = op.kind as PageBlockKind;
+			if (walk(blocks).some((node) => node.kind === kind)) {
+				return fail("block_exists", `The page already has a ${kind} block. Use set or replace.`, `${at}.kind`);
+			}
+			const node = fromCatalog(kind, at, op);
+			if ("ok" in node) return node;
+			const index = typeof op.at === "number" ? Math.min(op.at, blocks.length) : naturalIndexFor(kind, blocks);
+			blocks.splice(index, 0, node);
+			added.push(kind);
+			if (kind === "sidenav" || kind === "bottomnav") shellAdded = true;
+		} else if (op.op === "replace" && target && found) {
+			if (found.parent) return fail("not_top_level", "replace works on top-level blocks; use set_items for rows.", `${at}.blockId`);
+			const kind = op.kind as PageBlockKind;
+			if (kind !== target.kind && walk(blocks).some((node) => node.kind === kind)) {
+				return fail("block_exists", `The page already has a ${kind} block.`, `${at}.kind`);
+			}
+			const node = fromCatalog(kind, at, op);
+			if ("ok" in node) return node;
+			// Ids of the outgoing block are free once it is gone; every other id must stay unique.
+			const outgoing = new Set(walk([target]).map((n) => n.id));
+			const others = new Set(walk(blocks).map((n) => n.id).filter((id) => !outgoing.has(id)));
+			if (walk([node]).some((n) => others.has(n.id))) return fail("duplicate_id", "Replacement block ids collide with the page.", at);
+			found.list[found.index] = node;
+			removed.push(target.kind);
+			added.push(kind);
+			if (kind === "sidenav" || kind === "bottomnav") shellAdded = true;
+		} else if (op.op === "remove" && target && found) {
+			found.list.splice(found.index, 1);
+			if (found.parent) changed.add(found.parent.kind);
+			else removed.push(target.kind);
+		} else if (op.op === "move" && target && found) {
+			const to = op.to as number;
+			if (to >= found.list.length) return fail("index_out_of_range", `to must be below ${found.list.length}.`, `${at}.to`);
+			found.list.splice(found.index, 1);
+			found.list.splice(to, 0, target);
+			changed.add(found.parent ? found.parent.kind : "order");
+		} else if (op.op === "set_page") {
+			const value = String(op.value);
+			if (op.field === "title") title = value.slice(0, PAGE_LIMITS.maxTitleLength);
+			else if (op.field === "seo.title") seo.title = value.slice(0, PAGE_LIMITS.maxSeoLength);
+			else seo.description = value.slice(0, PAGE_LIMITS.maxSeoLength);
+			changed.add("page");
+		} else {
+			return fail("page_patch_invalid", `Unsupported operation ${op.op}.`, `${at}.op`);
+		}
+		applied.push(`${op.op}${blockId ? ` ${blockId}` : typeof op.kind === "string" ? ` ${op.kind}` : ""}`);
+	}
+
+	if (shellAdded) blocks = arrangeShell(blocks, base.locale).blocks;
+	const stamp = ctx.now ?? new Date().toISOString();
+	const raw = { ...base, title, seo, layout: { version: base.layout.version, blocks }, updatedAt: stamp };
+	let page: Page;
+	try {
+		page = parsePageSpec(raw, { draft: base.status === "draft" });
+	} catch (err) {
+		const rec = err as { code?: string; path?: string; message?: string };
+		return fail(rec.code ?? "invalid_proposal", rec.message ?? "patched page failed validation", rec.path);
+	}
+	const checked = validateCatalogProvenance({ page, screenId, catalogDigest: catalogProvenance().sourceDigest });
+	if (!checked.ok) return checked;
+	const topKinds = page.layout.blocks.map((node) => node.kind);
+	const demo = hasDemoBadge(page.layout.blocks);
+	const intent: ProposalIntent = {
+		locale: page.locale,
+		localeSource: "page",
+		...(typeof ctx.demoData === "boolean" ? { demoData: ctx.demoData } : {}),
+		demoDataSource: ctx.demoData === true ? "model" : ctx.sessionDemoData ? "session" : demo ? "page" : "none",
+		requireBlocks: [],
+		unknownBlocks: [],
+		remove: removed,
+		newPage: false
+	};
+	return {
+		ok: true,
+		status: "proposal",
+		applied: false,
+		source: ctx.liveTurn ? "xai-runtime" : "local-catalog-assembler",
+		liveModel: Boolean(ctx.liveTurn),
+		page,
+		baseRevision: ctx.expectedRevision,
+		warnings: [`page-patch/v1 applied: ${applied.join("; ")}.`],
+		inspected: [],
+		missing: ctx.provenance?.missing ?? [],
+		diff: {
+			added,
+			removed,
+			changed: [...changed].filter((kind) => !added.includes(kind)),
+			kept: topKinds.filter((kind) => !added.includes(kind) && !changed.has(kind))
+		},
+		demoData: demo,
+		catalogRefs: checked.refs,
+		provenance: {
+			policyVersion: POLICY_VERSION,
+			modelCatalogVersion: MODEL_CATALOG_VERSION,
+			trialPolicyVersion: TRIAL_POLICY_VERSION,
+			catalog: catalogProvenance(),
+			scenarioId,
+			screenId,
+			assembler: "page-patch/v1",
+			intent
+		}
+	};
+}
+
+/** Tool parameters of edit_page: the published page-patch/v1 schema inlined for the model (no external $ref). */
+function editPageParameterSchema(): Record<string, unknown> {
+	const item = {
+		type: "object",
+		properties: {
+			label: { type: "string" },
+			detail: { type: "string" },
+			value: { type: "string" },
+			note: { type: "string" },
+			group: { type: "string" }
+		},
+		required: ["label"]
+	};
+	const copy = { type: "object", description: "Copy keys the kind renders (slots).", additionalProperties: { type: "string" } };
+	return {
+		ops: {
+			type: "array",
+			description:
+				"page-patch/v1 operations, applied in order, all or nothing. set {blockId, field: title|summary|copy key, value (null removes a copy key)}; set_items {blockId, items} replaces rows; add {kind, at?, title, copy?, items?}; replace {blockId, kind, title, copy?, items?}; remove {blockId}; move {blockId, to}; set_page {field: title|seo.title|seo.description, value}. Use block ids from currentPage.blocks and only the slots listed there.",
+			items: {
+				type: "object",
+				properties: {
+					op: { type: "string", enum: ["set", "set_items", "add", "replace", "remove", "move", "set_page"] },
+					blockId: { type: "string" },
+					field: { type: "string" },
+					value: { type: ["string", "null"] },
+					kind: { type: "string" },
+					at: { type: "integer" },
+					to: { type: "integer" },
+					title: { type: "string" },
+					copy,
+					items: { type: "array", items: item }
+				},
+				required: ["op"]
+			}
+		},
+		baseRevision: { type: "integer" },
+		demoData: { type: "boolean", description: "Same typed intent as propose_layout: true only when the author asked for demo data." },
+		demoLabel: { type: "string" }
+	};
+}
+
+exports["normalizePatch"] = normalizePatch;
+exports["editPage"] = editPage;
+exports["editPageParameterSchema"] = editPageParameterSchema;
+
+});
+
 __def("packages/builder-core/src/tools.ts", function (exports) {
 const { searchCatalog } = __req("packages/builder-core/src/catalog/search.ts");
 const { screenSupport } = __req("packages/builder-core/src/catalog/compatibility.ts");
@@ -9388,6 +11186,7 @@ const { inheritedScreenId, proposeLayout, recordedScreenId } = __req("packages/b
 const { isScenarioId } = __req("packages/builder-core/src/brief.ts");
 const { parseLayoutCopyEdits } = __req("packages/builder-core/src/edits.ts");
 const { parseModelContent } = __req("packages/builder-core/src/content.ts");
+const { editPage, normalizePatch } = __req("packages/builder-core/src/patch.ts");
 const { OWNER_FILTERS } = __req("packages/builder-core/src/copy.ts");
 function compactItem(item: SearchResult["items"][number]): CompactSearchItem {
 	const support = screenSupport(item);
@@ -9463,11 +11262,18 @@ function isAllowedTool(name: string): name is AllowedTool {
 	return (ALLOWED_TOOLS as string[]).includes(name);
 }
 
+function proposeLabel(toolsCalled: string[]): string {
+	const edit = toolsCalled.includes("edit_page");
+	const propose = toolsCalled.includes("propose_layout");
+	return edit && propose ? "propose_layout / edit_page" : edit ? "edit_page" : "propose_layout";
+}
+
+/** User-facing tool-loop miss. Codes and schema paths only — no author text. */
 function toolLoopProposalFailure(input: {
 	toolsCalled: string[];
 	rejections: ToolLoopRejection[];
 }): LayoutProposalError {
-	const proposeCount = input.toolsCalled.filter((name) => name === "propose_layout").length;
+	const proposeCount = input.toolsCalled.filter((name) => name === "propose_layout" || name === "edit_page").length;
 	if (proposeCount > 0) {
 		const codes = [...new Set(input.rejections.map((row) => row.code).filter(Boolean))];
 		const paths = [...new Set(input.rejections.map((row) => row.path).filter((path): path is string => Boolean(path)))];
@@ -9480,7 +11286,7 @@ function toolLoopProposalFailure(input: {
 		return {
 			ok: false,
 			code: "propose_layout_rejected",
-			message: `propose_layout was called ${proposeCount} time(s) and rejected (${detail}). No local layout was substituted.`,
+			message: `${proposeLabel(input.toolsCalled)} was called ${proposeCount} time(s) and rejected (${detail}). No local layout was substituted.`,
 			path: paths[0]
 		};
 	}
@@ -9502,7 +11308,7 @@ function executeTool(
 		return {
 			ok: false,
 			code: "unknown_tool",
-			message: `Tool "${call.name}" is not on the allowlist. Production tools are search_catalog, get_block_details, propose_layout, get_skill.`
+			message: `Tool "${call.name}" is not on the allowlist. Production tools are search_catalog, get_block_details, propose_layout, edit_page, get_skill.`
 		};
 	}
 	const args = call.arguments ?? {};
@@ -9552,6 +11358,29 @@ function executeTool(
 		const skill = getSkill(String(args.id ?? ""));
 		if (!skill.ok) return { ok: false, code: skill.code, message: `Skill ${skill.id} is not available.` };
 		return { ok: true, name: call.name, result: skill.skill };
+	}
+	if (call.name === "edit_page") {
+		if (args.layout != null || args.page != null) {
+			return { ok: false, code: "untrusted_layout", message: "edit_page takes page-patch/v1 ops, never a layout or page." };
+		}
+		if (!host?.currentPage) {
+			return { ok: false, code: "missing_page", message: "edit_page needs a current page. Use propose_layout for a new page." };
+		}
+		const result = editPage({
+			page: host.currentPage,
+			provenance: host.currentProvenance,
+			patch: normalizePatch({ ops: args.ops, baseRevision: args.baseRevision }),
+			expectedRevision: typeof args.expectedRevision === "number" ? args.expectedRevision : (host.expectedRevision ?? 0),
+			demoData: typeof args.demoData === "boolean" ? args.demoData : undefined,
+			sessionDemoData: Boolean(host.sessionDemoData),
+			demoLabel: typeof args.demoLabel === "string" ? args.demoLabel : undefined,
+			liveTurn: Boolean(host.liveTurn),
+			brief: host.authorBrief
+		});
+		if (!result.ok) {
+			return { ok: false, code: result.code, message: result.message, path: result.path, result: result.path ? { path: result.path } : {} };
+		}
+		return { ok: true, name: call.name, result };
 	}
 	if (call.name === "propose_layout") {
 		if (args.layout != null) {
@@ -9779,7 +11608,7 @@ exports["pickChatModel"] = pickChatModel;
 });
 
 __def("packages/builder-core/src/models.ts", function (exports) {
-const { parsePage } = __req("packages/page-contract/src/index.ts");
+const { parsePageSpec } = __req("packages/page-contract/src/index.ts");
 const { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } = __req("packages/builder-core/src/xai-env.ts");
 const GROK_CHAT_MODELS = [
 	{
@@ -9980,7 +11809,7 @@ function mapChatRunRequest(
 	let currentPage: Page | undefined;
 	if (body.currentPage != null) {
 		try {
-			currentPage = parsePage(body.currentPage);
+			currentPage = parsePageSpec(body.currentPage);
 		} catch {
 			currentPage = undefined;
 		}
@@ -10439,6 +12268,9 @@ exports["displayTitleFromBrief"] = __req("packages/builder-core/src/brief.ts")["
 exports["occasionFromBrief"] = __req("packages/builder-core/src/brief.ts")["occasionFromBrief"];
 exports["titleFromSavedEdit"] = __req("packages/builder-core/src/brief.ts")["titleFromSavedEdit"];
 exports["parseLayoutCopyEdits"] = __req("packages/builder-core/src/edits.ts")["parseLayoutCopyEdits"];
+exports["editPage"] = __req("packages/builder-core/src/patch.ts")["editPage"];
+exports["editPageParameterSchema"] = __req("packages/builder-core/src/patch.ts")["editPageParameterSchema"];
+exports["normalizePatch"] = __req("packages/builder-core/src/patch.ts")["normalizePatch"];
 exports["DATA_KINDS"] = __req("packages/builder-core/src/content.ts")["DATA_KINDS"];
 exports["cleanText"] = __req("packages/builder-core/src/content.ts")["cleanText"];
 exports["defaultDemoLabel"] = __req("packages/builder-core/src/content.ts")["defaultDemoLabel"];
@@ -10521,11 +12353,12 @@ exports["readEnv"] = __req("packages/builder-core/src/env-map.ts")["readEnv"];
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, aggregateStepUsage, assertNoFallback, catalogProvenance, catalogToolParameterSchema, executeTool, facetVocabulary, inheritedScreenId, isScenarioId, searchVocabulary, proposeContentParameterSchema, readProviderUsage, recordedScreenId, rejectFabricatedLayout, safeErrorMessage, scenarioCatalogContext, toolLoopProposalFailure, unknownUsage, validateCatalogProvenance } = __req("packages/builder-core/src/index.ts");
+const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, aggregateStepUsage, assertNoFallback, catalogProvenance, catalogToolParameterSchema, editPageParameterSchema, executeTool, facetVocabulary, inheritedScreenId, isScenarioId, searchVocabulary, proposeContentParameterSchema, readProviderUsage, recordedScreenId, rejectFabricatedLayout, safeErrorMessage, scenarioCatalogContext, toolLoopProposalFailure, unknownUsage, validateCatalogProvenance } = __req("packages/builder-core/src/index.ts");
+const { PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
 const SYSTEM = [
 	"You are the BuildY page builder.",
 	`Policy ${POLICY_VERSION}.`,
-	"Use only these application tools: search_catalog, get_block_details, propose_layout, get_skill. Do not call search_blocks or propose_page.",
+	"Use only these application tools: search_catalog, get_block_details, propose_layout, edit_page, get_skill. Do not call search_blocks or propose_page.",
 	"The author may write in any language. You translate their words into the Stock catalog vocabulary yourself; the host never guesses intent from words.",
 	"search_catalog: q is free text in catalog terms (English words from catalog titles, labels and facet values, e.g. shell, sidenav, console, tasks); section, job, industry are facet enums; blocks lists catalog block labels a screen must contain. The payload field catalogVocabulary lists sections, jobs, industries and block labels with titles.",
 	"Pick from the returned items (pick, score, matched, via). unrenderable lists matching screens the renderer cannot show yet; via names the renderable sibling that was offered instead.",
@@ -10534,7 +12367,7 @@ const SYSTEM = [
 	"propose_layout typed intent (you set these from the author's words, in any language): locale (required, BCP 47 of the author's language); demoData (true only when the author explicitly asked for demo, fake, sample, mock or test data; false when they asked to drop it or use real data; omit otherwise); requireBlocks (catalog block labels the author explicitly asked for, e.g. a sidebar, side navigation or app shell = sidenav, a footer = footer); remove (follow-ups: kinds the author asked to remove); newPage (true only when the author asked for a new page while currentPage exists).",
 	"propose_layout assembles from the pinned Stock catalog and adds required blocks only from Stock screens that contain them (it may switch to a sibling that has them and says so in warnings). It never accepts a caller layout.",
 	"If propose_layout returns screen_not_renderable or scenario_screen_mismatch, call it once more with a suggestedScreenId. Do not retry the same screenId.",
-	"If currentPage is present, edit that page: call propose_layout directly (no search), keep its id, slug and block ids. Send blocks only for blocks you add or the author asked to change, with edit=true. Never remove anything the author did not ask to remove.",
+	"If currentPage is present, edit it with edit_page (no search): page-patch/v1 ops on currentPage block ids, writing only the slots listed on each block (slots.copy, slots.rows). set changes one slot (null removes a copy key); set_items replaces all rows of a list block (send the full new list, existing rows are in rows); add / replace name a Stock kind of the page's screen family with title and copy in the page language; remove; move; set_page. Everything you do not touch stays exactly as it is. Never remove anything the author did not ask to remove. Use propose_layout on a current page only when the author asks for a new page (newPage=true) or a different Stock screen.",
 	"Always pass propose_layout.blocks with one entry per block kind of the picked screen (pick.mappedKinds plus sidenav and bottomnav on dashboards): a visible title (page language) and a lede, nav brand plus 3-5 items naming the page sections, sidenav title, brand and 3-7 items, bottomnav 3-5 short items. Keep copy about the author's topic. Kinds the screen does not contain are not rendered; never invent blocks.",
 	"Only when demoData is true: fill overview, metrics, chart and activity items with plausible rows about the request (metrics: label + value + note; chart: 5-8 points label + numeric value; activity: 4-6 events label + detail + note) and set demoLabel in the page language. Otherwise leave data items empty and do not invent figures, reviews, prices or contacts.",
 	"Never invent years, founding dates, legal entities, addresses, phones or emails. For follow-up copy changes pass edits as {kind, field, value} with only the new string.",
@@ -10612,6 +12445,18 @@ const OPENAI_TOOLS: OpenAiTool[] = [
 	{
 		type: "function",
 		function: {
+			name: "edit_page",
+			description: "Edit currentPage with page-patch/v1 operations (https://schema.buildy.tw/page-patch.schema.json). The host validates every op against the block slots and the Stock catalog and returns an unapplied proposal; a rejected op returns code and path, fix that op and call again. Never send a layout.",
+			parameters: {
+				type: "object",
+				properties: editPageParameterSchema(),
+				required: ["ops"]
+			}
+		}
+	},
+	{
+		type: "function",
+		function: {
 			name: "get_skill",
 			description: "Read an enabled allowlisted skill by id.",
 			parameters: {
@@ -10622,6 +12467,8 @@ const OPENAI_TOOLS: OpenAiTool[] = [
 		}
 	}
 ];
+
+const EDIT_TOOLS = OPENAI_TOOLS.filter((tool) => tool.function.name === "edit_page" || tool.function.name === "propose_layout");
 
 type ChatMessage = {
 	role: "system" | "user" | "assistant" | "tool";
@@ -10691,13 +12538,24 @@ function userPrompt(ctx: ProposalContext): string {
 					title: current.title,
 					status: current.status,
 					locale: current.locale,
-					blocks: current.layout.blocks.map((block) => ({
-						id: block.id,
-						kind: block.kind,
-						title: block.title,
-						copy: block.copy ?? null,
-						rows: (block.children ?? []).slice(0, 8).map((child) => child.title)
-					}))
+					revision: ctx.expectedRevision,
+					blocks: current.layout.blocks.map((block) => {
+						const slot = PAGE_SLOTS[block.kind];
+						return {
+							id: block.id,
+							kind: block.kind,
+							title: block.title,
+							copy: block.copy ?? null,
+							slots: { copy: ["title", ...slot.copy], ...(slot.items ? { rows: { kind: slot.items.kind, max: slot.items.max, fields: slot.items.fields } } : {}) },
+							rows: (block.children ?? []).slice(0, slot.items?.max ?? 8).map((child) => ({
+								label: child.title,
+								...(child.summary !== child.title ? { detail: child.summary } : {}),
+								...(child.copy?.value ? { value: child.copy.value } : {}),
+								...(child.copy?.note ? { note: child.copy.note } : {}),
+								...(child.copy?.eyebrow ? { group: child.copy.eyebrow } : {})
+							}))
+						};
+					})
 				}
 			: null,
 		scenarioSeed: seed
@@ -10728,7 +12586,8 @@ function toolHost(ctx: ProposalContext) {
 		scenarioId: ctx.scenarioId,
 		liveTurn: true as const,
 		authorBrief: ctx.authorBrief ?? ctx.brief,
-		sessionDemoData: Boolean(ctx.sessionDemoData)
+		sessionDemoData: Boolean(ctx.sessionDemoData),
+		expectedRevision: ctx.expectedRevision
 	};
 }
 
@@ -10737,7 +12596,7 @@ function markLiveProposal(proposal: LayoutProposal): LayoutProposal {
 		...proposal,
 		source: "xai-runtime",
 		liveModel: true,
-		provenance: { ...proposal.provenance, assembler: "local-catalog-assembler" }
+		provenance: { ...proposal.provenance, assembler: proposal.provenance.assembler || "local-catalog-assembler" }
 	};
 }
 
@@ -10745,7 +12604,7 @@ function compactToolPayload(
 	name: string,
 	result: ReturnType<typeof executeTool>
 ): unknown {
-	if (name === "propose_layout" && result.ok) {
+	if ((name === "propose_layout" || name === "edit_page") && result.ok) {
 		const proposal = result.result as LayoutProposal;
 		return {
 			ok: true,
@@ -10853,10 +12712,10 @@ async function completionsToolLoop(
 	while (steps < RUN_BUDGET.maxToolCalls) {
 		steps += 1;
 		// Edits go straight to propose_layout; fresh pages search until a hit (max two), then must propose.
+		const editTurn = !lastProposal && Boolean(ctx.currentPage);
 		const forcePropose =
 			!lastProposal &&
-			(Boolean(ctx.currentPage) ||
-				searchHit ||
+			(searchHit ||
 				toolsCalled.filter((name) => name === "search_catalog").length >= 2 ||
 				steps >= RUN_BUDGET.maxToolCalls - RUN_BUDGET.reserveProposeSteps);
 		const requestStarted = Date.now();
@@ -10870,11 +12729,14 @@ async function completionsToolLoop(
 			body: JSON.stringify({
 				model: modelId,
 				messages,
-				tools: OPENAI_TOOLS,
+				tools: editTurn ? EDIT_TOOLS : OPENAI_TOOLS,
 				// "required": some models (grok-4.7) answer in prose on "auto" and never call a tool.
-				tool_choice: forcePropose
-					? { type: "function", function: { name: "propose_layout" } }
-					: "required",
+				// Edit turns: edit_page or propose_layout (new page / other screen), nothing else.
+				tool_choice: editTurn
+					? "required"
+					: forcePropose
+						? { type: "function", function: { name: "propose_layout" } }
+						: "required",
 				stream: false,
 				max_tokens: 3200,
 				temperature: 0
@@ -10955,7 +12817,9 @@ async function completionsToolLoop(
 			const result = executeTool({ name, arguments: args }, host);
 			if (searchFound(name, result)) searchHit = true;
 			let reply: unknown = compactToolPayload(name, result);
-			if (name === "propose_layout" && result.ok) {
+			if (name === "edit_page" && result.ok) {
+				lastProposal = markLiveProposal(result.result as LayoutProposal);
+			} else if (name === "propose_layout" && result.ok) {
 				const proposal = markLiveProposal(result.result as LayoutProposal);
 				const gap = !fallback && steps < RUN_BUDGET.maxToolCalls ? demoRowsGap(proposal) : null;
 				if (gap) {
@@ -10964,7 +12828,7 @@ async function completionsToolLoop(
 				} else {
 					lastProposal = proposal;
 				}
-			} else if (name === "propose_layout") {
+			} else if (name === "propose_layout" || name === "edit_page") {
 				rejections.push({ code: result.code, path: result.path });
 			}
 			messages.push({
@@ -11038,7 +12902,9 @@ async function sdkStreamTextLoop(
 				const payload = name === "propose_layout" ? bindProposeArgs({ ...args }, ctx) : { ...args };
 				const result = executeTool({ name, arguments: payload }, host);
 				if (searchFound(name, result)) searchHit = true;
-				if (name === "propose_layout" && result.ok) {
+				if (name === "edit_page" && result.ok) {
+					lastProposal = markLiveProposal(result.result as LayoutProposal);
+				} else if (name === "propose_layout" && result.ok) {
 					const proposal = markLiveProposal(result.result as LayoutProposal);
 					const gap = !fallback && toolsCalled.length < RUN_BUDGET.maxToolCalls ? demoRowsGap(proposal) : null;
 					if (gap) {
@@ -11046,7 +12912,7 @@ async function sdkStreamTextLoop(
 						return gap;
 					}
 					lastProposal = proposal;
-				} else if (name === "propose_layout") rejections.push({ code: result.code, path: result.path });
+				} else if (name === "propose_layout" || name === "edit_page") rejections.push({ code: result.code, path: result.path });
 				return compactToolPayload(name, result);
 			};
 			try {
@@ -11067,8 +12933,8 @@ async function sdkStreamTextLoop(
 			prepareStep: ({ steps }: { steps?: unknown[] }) => {
 				if (lastProposal) return {};
 				const n = Array.isArray(steps) ? steps.length : 0;
+				if (ctx.currentPage) return { toolChoice: "required", activeTools: ["edit_page", "propose_layout"] };
 				if (
-					Boolean(ctx.currentPage) ||
 					searchHit ||
 					toolsCalled.filter((name) => name === "search_catalog").length >= 2 ||
 					n >= RUN_BUDGET.maxToolCalls - RUN_BUDGET.reserveProposeSteps - 1
@@ -11156,6 +13022,39 @@ async function sdkStreamTextLoop(
 								})
 							)
 							.optional()
+					})
+				),
+				edit_page: toolDef(
+					"edit_page",
+					"Edit currentPage with page-patch/v1 operations on its block ids and slots. Returns an unapplied proposal or a code and path to fix.",
+					z.object({
+						ops: z.array(
+							z.object({
+								op: z.enum(["set", "set_items", "add", "replace", "remove", "move", "set_page"]),
+								blockId: z.string().optional(),
+								field: z.string().optional(),
+								value: (z.string() as unknown as { nullable: () => { optional: () => unknown } }).nullable().optional(),
+								kind: z.string().optional(),
+								at: z.number().optional(),
+								to: z.number().optional(),
+								title: z.string().optional(),
+								copy: (z as unknown as { record: (k: unknown, v: unknown) => { optional: () => unknown } }).record(z.string(), z.string()).optional(),
+								items: z
+									.array(
+										z.object({
+											label: z.string(),
+											detail: z.string().optional(),
+											value: z.string().optional(),
+											note: z.string().optional(),
+											group: z.string().optional()
+										})
+									)
+									.optional()
+							})
+						),
+						baseRevision: z.number().optional(),
+						demoData: z.boolean().optional(),
+						demoLabel: z.string().optional()
 					})
 				),
 				get_skill: toolDef("get_skill", "Read an enabled allowlisted skill.", z.object({ id: z.string() }))

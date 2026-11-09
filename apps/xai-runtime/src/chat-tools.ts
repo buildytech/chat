@@ -7,6 +7,7 @@ import {
 	assertNoFallback,
 	catalogProvenance,
 	catalogToolParameterSchema,
+	editPageParameterSchema,
 	executeTool,
 	facetVocabulary,
 	inheritedScreenId,
@@ -28,11 +29,12 @@ import {
 	type StepUsage,
 	type ToolLoopRejection
 } from "@buildytech/builder-core";
+import { PAGE_SLOTS } from "@buildytech/page-contract";
 
 const SYSTEM = [
 	"You are the BuildY page builder.",
 	`Policy ${POLICY_VERSION}.`,
-	"Use only these application tools: search_catalog, get_block_details, propose_layout, get_skill. Do not call search_blocks or propose_page.",
+	"Use only these application tools: search_catalog, get_block_details, propose_layout, edit_page, get_skill. Do not call search_blocks or propose_page.",
 	"The author may write in any language. You translate their words into the Stock catalog vocabulary yourself; the host never guesses intent from words.",
 	"search_catalog: q is free text in catalog terms (English words from catalog titles, labels and facet values, e.g. shell, sidenav, console, tasks); section, job, industry are facet enums; blocks lists catalog block labels a screen must contain. The payload field catalogVocabulary lists sections, jobs, industries and block labels with titles.",
 	"Pick from the returned items (pick, score, matched, via). unrenderable lists matching screens the renderer cannot show yet; via names the renderable sibling that was offered instead.",
@@ -41,7 +43,7 @@ const SYSTEM = [
 	"propose_layout typed intent (you set these from the author's words, in any language): locale (required, BCP 47 of the author's language); demoData (true only when the author explicitly asked for demo, fake, sample, mock or test data; false when they asked to drop it or use real data; omit otherwise); requireBlocks (catalog block labels the author explicitly asked for, e.g. a sidebar, side navigation or app shell = sidenav, a footer = footer); remove (follow-ups: kinds the author asked to remove); newPage (true only when the author asked for a new page while currentPage exists).",
 	"propose_layout assembles from the pinned Stock catalog and adds required blocks only from Stock screens that contain them (it may switch to a sibling that has them and says so in warnings). It never accepts a caller layout.",
 	"If propose_layout returns screen_not_renderable or scenario_screen_mismatch, call it once more with a suggestedScreenId. Do not retry the same screenId.",
-	"If currentPage is present, edit that page: call propose_layout directly (no search), keep its id, slug and block ids. Send blocks only for blocks you add or the author asked to change, with edit=true. Never remove anything the author did not ask to remove.",
+	"If currentPage is present, edit it with edit_page (no search): page-patch/v1 ops on currentPage block ids, writing only the slots listed on each block (slots.copy, slots.rows). set changes one slot (null removes a copy key); set_items replaces all rows of a list block (send the full new list, existing rows are in rows); add / replace name a Stock kind of the page's screen family with title and copy in the page language; remove; move; set_page. Everything you do not touch stays exactly as it is. Never remove anything the author did not ask to remove. Use propose_layout on a current page only when the author asks for a new page (newPage=true) or a different Stock screen.",
 	"Always pass propose_layout.blocks with one entry per block kind of the picked screen (pick.mappedKinds plus sidenav and bottomnav on dashboards): a visible title (page language) and a lede, nav brand plus 3-5 items naming the page sections, sidenav title, brand and 3-7 items, bottomnav 3-5 short items. Keep copy about the author's topic. Kinds the screen does not contain are not rendered; never invent blocks.",
 	"Only when demoData is true: fill overview, metrics, chart and activity items with plausible rows about the request (metrics: label + value + note; chart: 5-8 points label + numeric value; activity: 4-6 events label + detail + note) and set demoLabel in the page language. Otherwise leave data items empty and do not invent figures, reviews, prices or contacts.",
 	"Never invent years, founding dates, legal entities, addresses, phones or emails. For follow-up copy changes pass edits as {kind, field, value} with only the new string.",
@@ -119,6 +121,18 @@ const OPENAI_TOOLS: OpenAiTool[] = [
 	{
 		type: "function",
 		function: {
+			name: "edit_page",
+			description: "Edit currentPage with page-patch/v1 operations (https://schema.buildy.tw/page-patch.schema.json). The host validates every op against the block slots and the Stock catalog and returns an unapplied proposal; a rejected op returns code and path, fix that op and call again. Never send a layout.",
+			parameters: {
+				type: "object",
+				properties: editPageParameterSchema(),
+				required: ["ops"]
+			}
+		}
+	},
+	{
+		type: "function",
+		function: {
 			name: "get_skill",
 			description: "Read an enabled allowlisted skill by id.",
 			parameters: {
@@ -129,6 +143,8 @@ const OPENAI_TOOLS: OpenAiTool[] = [
 		}
 	}
 ];
+
+const EDIT_TOOLS = OPENAI_TOOLS.filter((tool) => tool.function.name === "edit_page" || tool.function.name === "propose_layout");
 
 type ChatMessage = {
 	role: "system" | "user" | "assistant" | "tool";
@@ -198,13 +214,24 @@ function userPrompt(ctx: ProposalContext): string {
 					title: current.title,
 					status: current.status,
 					locale: current.locale,
-					blocks: current.layout.blocks.map((block) => ({
-						id: block.id,
-						kind: block.kind,
-						title: block.title,
-						copy: block.copy ?? null,
-						rows: (block.children ?? []).slice(0, 8).map((child) => child.title)
-					}))
+					revision: ctx.expectedRevision,
+					blocks: current.layout.blocks.map((block) => {
+						const slot = PAGE_SLOTS[block.kind];
+						return {
+							id: block.id,
+							kind: block.kind,
+							title: block.title,
+							copy: block.copy ?? null,
+							slots: { copy: ["title", ...slot.copy], ...(slot.items ? { rows: { kind: slot.items.kind, max: slot.items.max, fields: slot.items.fields } } : {}) },
+							rows: (block.children ?? []).slice(0, slot.items?.max ?? 8).map((child) => ({
+								label: child.title,
+								...(child.summary !== child.title ? { detail: child.summary } : {}),
+								...(child.copy?.value ? { value: child.copy.value } : {}),
+								...(child.copy?.note ? { note: child.copy.note } : {}),
+								...(child.copy?.eyebrow ? { group: child.copy.eyebrow } : {})
+							}))
+						};
+					})
 				}
 			: null,
 		scenarioSeed: seed
@@ -250,7 +277,8 @@ function toolHost(ctx: ProposalContext) {
 		scenarioId: ctx.scenarioId,
 		liveTurn: true as const,
 		authorBrief: ctx.authorBrief ?? ctx.brief,
-		sessionDemoData: Boolean(ctx.sessionDemoData)
+		sessionDemoData: Boolean(ctx.sessionDemoData),
+		expectedRevision: ctx.expectedRevision
 	};
 }
 
@@ -259,7 +287,7 @@ function markLiveProposal(proposal: LayoutProposal): LayoutProposal {
 		...proposal,
 		source: "xai-runtime",
 		liveModel: true,
-		provenance: { ...proposal.provenance, assembler: "local-catalog-assembler" }
+		provenance: { ...proposal.provenance, assembler: proposal.provenance.assembler || "local-catalog-assembler" }
 	};
 }
 
@@ -267,7 +295,7 @@ function compactToolPayload(
 	name: string,
 	result: ReturnType<typeof executeTool>
 ): unknown {
-	if (name === "propose_layout" && result.ok) {
+	if ((name === "propose_layout" || name === "edit_page") && result.ok) {
 		const proposal = result.result as LayoutProposal;
 		return {
 			ok: true,
@@ -375,10 +403,10 @@ async function completionsToolLoop(
 	while (steps < RUN_BUDGET.maxToolCalls) {
 		steps += 1;
 		// Edits go straight to propose_layout; fresh pages search until a hit (max two), then must propose.
+		const editTurn = !lastProposal && Boolean(ctx.currentPage);
 		const forcePropose =
 			!lastProposal &&
-			(Boolean(ctx.currentPage) ||
-				searchHit ||
+			(searchHit ||
 				toolsCalled.filter((name) => name === "search_catalog").length >= 2 ||
 				steps >= RUN_BUDGET.maxToolCalls - RUN_BUDGET.reserveProposeSteps);
 		const requestStarted = Date.now();
@@ -392,11 +420,14 @@ async function completionsToolLoop(
 			body: JSON.stringify({
 				model: modelId,
 				messages,
-				tools: OPENAI_TOOLS,
+				tools: editTurn ? EDIT_TOOLS : OPENAI_TOOLS,
 				// "required": some models (grok-4.7) answer in prose on "auto" and never call a tool.
-				tool_choice: forcePropose
-					? { type: "function", function: { name: "propose_layout" } }
-					: "required",
+				// Edit turns: edit_page or propose_layout (new page / other screen), nothing else.
+				tool_choice: editTurn
+					? "required"
+					: forcePropose
+						? { type: "function", function: { name: "propose_layout" } }
+						: "required",
 				stream: false,
 				max_tokens: 3200,
 				temperature: 0
@@ -477,7 +508,9 @@ async function completionsToolLoop(
 			const result = executeTool({ name, arguments: args }, host);
 			if (searchFound(name, result)) searchHit = true;
 			let reply: unknown = compactToolPayload(name, result);
-			if (name === "propose_layout" && result.ok) {
+			if (name === "edit_page" && result.ok) {
+				lastProposal = markLiveProposal(result.result as LayoutProposal);
+			} else if (name === "propose_layout" && result.ok) {
 				const proposal = markLiveProposal(result.result as LayoutProposal);
 				const gap = !fallback && steps < RUN_BUDGET.maxToolCalls ? demoRowsGap(proposal) : null;
 				if (gap) {
@@ -486,7 +519,7 @@ async function completionsToolLoop(
 				} else {
 					lastProposal = proposal;
 				}
-			} else if (name === "propose_layout") {
+			} else if (name === "propose_layout" || name === "edit_page") {
 				rejections.push({ code: result.code, path: result.path });
 			}
 			messages.push({
@@ -560,7 +593,9 @@ async function sdkStreamTextLoop(
 				const payload = name === "propose_layout" ? bindProposeArgs({ ...args }, ctx) : { ...args };
 				const result = executeTool({ name, arguments: payload }, host);
 				if (searchFound(name, result)) searchHit = true;
-				if (name === "propose_layout" && result.ok) {
+				if (name === "edit_page" && result.ok) {
+					lastProposal = markLiveProposal(result.result as LayoutProposal);
+				} else if (name === "propose_layout" && result.ok) {
 					const proposal = markLiveProposal(result.result as LayoutProposal);
 					const gap = !fallback && toolsCalled.length < RUN_BUDGET.maxToolCalls ? demoRowsGap(proposal) : null;
 					if (gap) {
@@ -568,7 +603,7 @@ async function sdkStreamTextLoop(
 						return gap;
 					}
 					lastProposal = proposal;
-				} else if (name === "propose_layout") rejections.push({ code: result.code, path: result.path });
+				} else if (name === "propose_layout" || name === "edit_page") rejections.push({ code: result.code, path: result.path });
 				return compactToolPayload(name, result);
 			};
 			try {
@@ -589,8 +624,8 @@ async function sdkStreamTextLoop(
 			prepareStep: ({ steps }: { steps?: unknown[] }) => {
 				if (lastProposal) return {};
 				const n = Array.isArray(steps) ? steps.length : 0;
+				if (ctx.currentPage) return { toolChoice: "required", activeTools: ["edit_page", "propose_layout"] };
 				if (
-					Boolean(ctx.currentPage) ||
 					searchHit ||
 					toolsCalled.filter((name) => name === "search_catalog").length >= 2 ||
 					n >= RUN_BUDGET.maxToolCalls - RUN_BUDGET.reserveProposeSteps - 1
@@ -678,6 +713,39 @@ async function sdkStreamTextLoop(
 								})
 							)
 							.optional()
+					})
+				),
+				edit_page: toolDef(
+					"edit_page",
+					"Edit currentPage with page-patch/v1 operations on its block ids and slots. Returns an unapplied proposal or a code and path to fix.",
+					z.object({
+						ops: z.array(
+							z.object({
+								op: z.enum(["set", "set_items", "add", "replace", "remove", "move", "set_page"]),
+								blockId: z.string().optional(),
+								field: z.string().optional(),
+								value: (z.string() as unknown as { nullable: () => { optional: () => unknown } }).nullable().optional(),
+								kind: z.string().optional(),
+								at: z.number().optional(),
+								to: z.number().optional(),
+								title: z.string().optional(),
+								copy: (z as unknown as { record: (k: unknown, v: unknown) => { optional: () => unknown } }).record(z.string(), z.string()).optional(),
+								items: z
+									.array(
+										z.object({
+											label: z.string(),
+											detail: z.string().optional(),
+											value: z.string().optional(),
+											note: z.string().optional(),
+											group: z.string().optional()
+										})
+									)
+									.optional()
+							})
+						),
+						baseRevision: z.number().optional(),
+						demoData: z.boolean().optional(),
+						demoLabel: z.string().optional()
 					})
 				),
 				get_skill: toolDef("get_skill", "Read an enabled allowlisted skill.", z.object({ id: z.string() }))

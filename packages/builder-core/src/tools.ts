@@ -14,6 +14,7 @@ import {
 import { isScenarioId } from "./brief.ts";
 import { parseLayoutCopyEdits } from "./edits.ts";
 import { parseModelContent } from "./content.ts";
+import { editPage, normalizePatch } from "./patch.ts";
 import { OWNER_FILTERS, type ScenarioId } from "./copy.ts";
 import type { Page } from "@buildytech/page-contract";
 import type { CatalogFacetFilter, SearchResult } from "./catalog/types.ts";
@@ -32,6 +33,8 @@ export type ToolHost = {
 	authorBrief?: string;
 	/** Host flag: demo data was requested earlier in this chat (from the author's own messages). */
 	sessionDemoData?: boolean;
+	/** Revision of currentPage (edit_page baseRevision check). */
+	expectedRevision?: number;
 };
 
 export type CompactSearchItem = {
@@ -147,12 +150,18 @@ export function isAllowedTool(name: string): name is AllowedTool {
 
 export type ToolLoopRejection = { code: string; path?: string };
 
+function proposeLabel(toolsCalled: string[]): string {
+	const edit = toolsCalled.includes("edit_page");
+	const propose = toolsCalled.includes("propose_layout");
+	return edit && propose ? "propose_layout / edit_page" : edit ? "edit_page" : "propose_layout";
+}
+
 /** User-facing tool-loop miss. Codes and schema paths only — no author text. */
 export function toolLoopProposalFailure(input: {
 	toolsCalled: string[];
 	rejections: ToolLoopRejection[];
 }): LayoutProposalError {
-	const proposeCount = input.toolsCalled.filter((name) => name === "propose_layout").length;
+	const proposeCount = input.toolsCalled.filter((name) => name === "propose_layout" || name === "edit_page").length;
 	if (proposeCount > 0) {
 		const codes = [...new Set(input.rejections.map((row) => row.code).filter(Boolean))];
 		const paths = [...new Set(input.rejections.map((row) => row.path).filter((path): path is string => Boolean(path)))];
@@ -165,7 +174,7 @@ export function toolLoopProposalFailure(input: {
 		return {
 			ok: false,
 			code: "propose_layout_rejected",
-			message: `propose_layout was called ${proposeCount} time(s) and rejected (${detail}). No local layout was substituted.`,
+			message: `${proposeLabel(input.toolsCalled)} was called ${proposeCount} time(s) and rejected (${detail}). No local layout was substituted.`,
 			path: paths[0]
 		};
 	}
@@ -187,7 +196,7 @@ export function executeTool(
 		return {
 			ok: false,
 			code: "unknown_tool",
-			message: `Tool "${call.name}" is not on the allowlist. Production tools are search_catalog, get_block_details, propose_layout, get_skill.`
+			message: `Tool "${call.name}" is not on the allowlist. Production tools are search_catalog, get_block_details, propose_layout, edit_page, get_skill.`
 		};
 	}
 	const args = call.arguments ?? {};
@@ -237,6 +246,29 @@ export function executeTool(
 		const skill = getSkill(String(args.id ?? ""));
 		if (!skill.ok) return { ok: false, code: skill.code, message: `Skill ${skill.id} is not available.` };
 		return { ok: true, name: call.name, result: skill.skill };
+	}
+	if (call.name === "edit_page") {
+		if (args.layout != null || args.page != null) {
+			return { ok: false, code: "untrusted_layout", message: "edit_page takes page-patch/v1 ops, never a layout or page." };
+		}
+		if (!host?.currentPage) {
+			return { ok: false, code: "missing_page", message: "edit_page needs a current page. Use propose_layout for a new page." };
+		}
+		const result = editPage({
+			page: host.currentPage,
+			provenance: host.currentProvenance,
+			patch: normalizePatch({ ops: args.ops, baseRevision: args.baseRevision }),
+			expectedRevision: typeof args.expectedRevision === "number" ? args.expectedRevision : (host.expectedRevision ?? 0),
+			demoData: typeof args.demoData === "boolean" ? args.demoData : undefined,
+			sessionDemoData: Boolean(host.sessionDemoData),
+			demoLabel: typeof args.demoLabel === "string" ? args.demoLabel : undefined,
+			liveTurn: Boolean(host.liveTurn),
+			brief: host.authorBrief
+		});
+		if (!result.ok) {
+			return { ok: false, code: result.code, message: result.message, path: result.path, result: result.path ? { path: result.path } : {} };
+		}
+		return { ok: true, name: call.name, result };
 	}
 	if (call.name === "propose_layout") {
 		if (args.layout != null) {

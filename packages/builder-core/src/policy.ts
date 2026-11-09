@@ -7,7 +7,7 @@ export const ENABLED_SKILLS = [
 	{
 		id: "ui8kit-strict-catalog",
 		version: "1",
-		purpose: "Use the host scenario seed or one search_catalog shortlist, then call propose_layout. get_block_details is optional for a single unknown id. Never spend the last tool step on search or details.",
+		purpose: "Use the host scenario seed or one search_catalog shortlist, then call propose_layout. On a current page, edit with edit_page (page-patch/v1 ops) and keep everything else. get_block_details is optional for a single unknown id. Never spend the last tool step on search or details.",
 		triggers: ["catalog", "screen", "block", "layout"],
 		requiredTools: ["search_catalog", "propose_layout"]
 	},
@@ -24,6 +24,7 @@ export const ALLOWED_TOOLS = [
 	"search_catalog",
 	"get_block_details",
 	"propose_layout",
+	"edit_page",
 	"get_skill"
 ] as const;
 

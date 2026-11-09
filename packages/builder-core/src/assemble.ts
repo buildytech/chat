@@ -1,7 +1,6 @@
 import {
 	PAGE_LAYOUT_VERSION,
-	parseDraftPage,
-	parsePage,
+	parsePageSpec,
 	type Page,
 	type PageBlock,
 	type PageBlockKind
@@ -921,7 +920,7 @@ function stripDemo(blocks: PageBlock[]): PageBlock[] {
  * App shell wiring: section links live in the sidenav (top navbar keeps brand only);
  * the mobile bottomnav mirrors the first sidenav links. Labels come from the page itself.
  */
-function arrangeShell(blocks: PageBlock[], locale: string): { blocks: PageBlock[]; changed: string[] } {
+export function arrangeShell(blocks: PageBlock[], locale: string): { blocks: PageBlock[]; changed: string[] } {
 	const changed: string[] = [];
 	const side = blocks.find((node) => node.kind === "sidenav");
 	if (!side) return { blocks, changed };
@@ -1277,7 +1276,8 @@ function finishProposal(
 			createdAt: identity?.createdAt ?? stamp,
 			updatedAt: stamp
 		};
-		const page = status === "draft" ? parseDraftPage(raw) : parsePage(raw);
+		// Page spec gate: the published page-spec/v1 schema, then the parsePage program checks.
+		const page = parsePageSpec(raw, { draft: status === "draft" });
 		const screenId = recordedScreenId(screen?.screenId) ?? inheritedScreenId(ctx);
 		const checked = validateCatalogProvenance({ page, screenId, catalogDigest: catalogProvenance().sourceDigest });
 		if (!checked.ok) return checked;
@@ -1334,7 +1334,7 @@ export function applyProposal(
 		};
 	}
 	try {
-		const page = parsePage(proposal.page);
+		const page = parsePageSpec(proposal.page);
 		for (const node of walk(page.layout.blocks)) {
 			const details = getBlockDetails({ id: node.kind });
 			if ("ok" in details && details.ok === false) {
@@ -1359,7 +1359,7 @@ function walk(blocks: PageBlock[]): PageBlock[] {
 
 export function rejectFabricatedLayout(input: unknown): LayoutProposalError | { ok: true; page: Page } {
 	try {
-		const page = parsePage(input);
+		const page = parsePageSpec(input);
 		return { ok: true, page };
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "invalid layout";
@@ -1367,3 +1367,25 @@ export function rejectFabricatedLayout(input: unknown): LayoutProposalError | { 
 		return { ok: false, code, message };
 	}
 }
+
+/**
+ * One Stock block of `kind` from the page's Stock screen, with catalog fallback copy
+ * (page-patch add / replace). The caller checks that the screen family has the kind.
+ */
+export function stockBlockFor(
+	kind: PageBlockKind,
+	input: { screen: CatalogScreen | null; scenarioId: ScenarioId | null; brief: string; pageTitle: string }
+): PageBlock {
+	const ctx: ProposalContext = { brief: input.brief, scenarioId: input.scenarioId, screenId: input.screen?.screenId ?? null, expectedRevision: 0 };
+	return buildStockBlock(kind, ctx, input.screen, input.brief, input.pageTitle);
+}
+
+/** Natural index of a new top-level kind among `blocks` (the assembler's page order). */
+export function naturalIndexFor(kind: PageBlockKind, blocks: PageBlock[]): number {
+	const rank = new Map<PageBlockKind, number>();
+	const slot = pageSlot(kind, rank);
+	const index = blocks.findIndex((node) => pageSlot(node.kind, rank) > slot);
+	return index < 0 ? blocks.length : index;
+}
+
+export { CHILD_ONLY_KINDS };

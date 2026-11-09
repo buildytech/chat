@@ -1,4 +1,4 @@
-import { parsePage, type Page } from "@buildytech/page-contract";
+import { parsePageSpec, type Page } from "@buildytech/page-contract";
 import { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } from "./xai-env.ts";
 
 /**
@@ -249,7 +249,7 @@ export function mapChatRunRequest(
 	let currentPage: Page | undefined;
 	if (body.currentPage != null) {
 		try {
-			currentPage = parsePage(body.currentPage);
+			currentPage = parsePageSpec(body.currentPage);
 		} catch {
 			currentPage = undefined;
 		}

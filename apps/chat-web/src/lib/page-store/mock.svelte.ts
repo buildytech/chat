@@ -1,4 +1,4 @@
-import { parsePage, type Page, type PageBlock } from "@buildytech/page-contract";
+import { parsePageSpec, type Page, type PageBlock } from "@buildytech/page-contract";
 import { mockLandingPage } from "./fixture";
 import { findBlock, firstBlockId, hasBlock } from "./tree";
 import {
@@ -24,10 +24,11 @@ let selectedBlockId = $state<string | null>(null);
 let pageRevision = $state<number | null>(null);
 let boundSessionId: string | null = null;
 
+/** Saved pages are page-spec/v1 documents: the published schema, then the parsePage program checks. */
 function parseStored(raw: unknown): Page | null {
 	if (raw == null) return null;
 	try {
-		return parsePage(raw);
+		return parsePageSpec(raw);
 	} catch {
 		return null;
 	}
@@ -162,7 +163,7 @@ export function selectBlock(id: string): void {
  * Malformed input must not call this — callers parse first and keep the previous page on failure.
  */
 export function setCurrentPage(page: Page, revision: number | null = null): void {
-	const next = parsePage(page);
+	const next = parsePageSpec(page);
 	currentPage = next;
 	candidatePage = null;
 	appliedProvenance = null;
@@ -175,7 +176,7 @@ export function setCurrentPage(page: Page, revision: number | null = null): void
 }
 
 export function setCandidatePage(page: Page, provenance?: StoredPageProvenance | null): void {
-	candidatePage = parsePage(page);
+	candidatePage = parsePageSpec(page);
 	candidateProvenance = provenance ?? null;
 	lastProposedPage = candidatePage;
 	lastProposedProvenance = candidateProvenance;

@@ -44,6 +44,8 @@ export {
 export type { ToolHost, CompactSearchItem, CompactSearchPayload, ToolLoopRejection } from "./tools.ts";
 export { isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
 export { parseLayoutCopyEdits } from "./edits.ts";
+export { editPage, editPageParameterSchema, normalizePatch } from "./patch.ts";
+export type { PagePatchContext, PatchOp } from "./patch.ts";
 export {
 	DATA_KINDS,
 	cleanText,
