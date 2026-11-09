@@ -398,15 +398,24 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 	assert.equal(dash.ok, true);
 	if (dash.ok) {
 		assert.equal(dash.provenance.screenId, "screen.theme-dashboard-console/home");
+		// App shell: Stock sidenav + mobile bottomnav from the dashboard-console family; the
+		// marketing sitemap footer is omitted unless the author asks for a footer.
 		assert.deepEqual(
 			dash.page.layout.blocks.map((block) => block.kind),
-			["nav", "pagehead", "overview", "metrics", "chart", "activity", "footer"]
+			["sidenav", "nav", "pagehead", "overview", "metrics", "chart", "activity", "bottomnav"]
 		);
 		assert.deepEqual(dash.missing, []);
+		assert.ok(dash.warnings.some((line) => /sitemap footer omitted/.test(line)));
 		assert.equal(dash.page.title, "Orders");
 		assert.equal(dash.page.layout.blocks.find((block) => block.kind === "nav")?.copy?.brand, "Orders");
+		assert.equal(dash.page.layout.blocks.find((block) => block.kind === "sidenav")?.copy?.brand, "Orders");
 		assert.deepEqual(
-			(dash.page.layout.blocks.find((block) => block.kind === "nav")?.children ?? []).map((child) => child.title),
+			(dash.page.layout.blocks.find((block) => block.kind === "sidenav")?.children ?? []).map((child) => child.title),
+			["Overview", "Orders", "Activity"]
+		);
+		assert.equal(dash.page.layout.blocks.find((block) => block.kind === "nav")?.children, undefined);
+		assert.deepEqual(
+			(dash.page.layout.blocks.find((block) => block.kind === "bottomnav")?.children ?? []).map((child) => child.title),
 			["Overview", "Orders", "Activity"]
 		);
 		assert.equal(dash.page.layout.blocks.find((block) => block.kind === "activity")?.title, "Orders");
@@ -469,10 +478,10 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 	assert.equal(mixed.ok, true);
 	if (mixed.ok) {
 		assert.deepEqual(
-			(mixed.page.layout.blocks.find((block) => block.kind === "nav")?.children ?? []).map((child) => child.title),
+			(mixed.page.layout.blocks.find((block) => block.kind === "sidenav")?.children ?? []).map((child) => child.title),
 			["Overview", "Orders", "Activity"]
 		);
-		assert.doesNotMatch(JSON.stringify(mixed.page.layout.blocks.find((block) => block.kind === "nav")), /"Home"|"Menu"|"Delivery"/);
+		assert.doesNotMatch(JSON.stringify(mixed.page.layout.blocks.find((block) => block.kind === "sidenav")), /"Home"|"Menu"|"Delivery"/);
 	}
 	const site = proposeLayout({
 		brief: "Create a Website with menu, overview and contact using existing Stock blocks.",

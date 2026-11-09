@@ -122,7 +122,7 @@ export async function handleRuntimeFetch(
 			const ms = clampRunBudgetMs(body.abortMs, env);
 			const signal = combinedAbort(request, ms);
 			try {
-				const { proposal, meta } = await runXaiCatalogTurn(
+				const turn = await runXaiCatalogTurn(
 					env.XAI_API_KEY!.trim(),
 					mapped.request.modelId,
 					{
@@ -133,10 +133,22 @@ export async function handleRuntimeFetch(
 						pageId: mapped.request.pageId,
 						currentPage: mapped.request.currentPage,
 						currentProvenance: mapped.request.currentProvenance,
+						sessionDemoData: mapped.request.sessionDemoData,
+						authorBrief: mapped.request.brief,
 						liveTurn: true
 					},
 					signal
 				);
+				const { meta } = turn;
+				// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
+				const proposal =
+					!turn.proposal.ok && turn.proposal.code === "aborted" && !request.signal.aborted
+						? {
+								ok: false as const,
+								code: "runtime_timeout",
+								message: `The model did not finish within ${Math.round(ms / 1000)} s. Try again or pick a faster model. No other model was substituted.`
+							}
+						: turn.proposal;
 				const checked = revalidateProposal(proposal);
 				const live = Boolean(checked.ok && meta.toolCallingWorked);
 				logSanitizedRun({
@@ -151,6 +163,7 @@ export async function handleRuntimeFetch(
 					liveXai: live,
 					toolCallingProven: meta.toolCallingWorked,
 					steps: meta.steps,
+					...(meta.providerStatus ? { providerStatus: meta.providerStatus, providerMs: meta.providerMs ?? null } : {}),
 					tools: toolCounts(meta.toolsCalled),
 					usage: {
 						reportedBy: meta.usage.reportedBy,

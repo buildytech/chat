@@ -67,8 +67,41 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 	}
 }
 
+/** Error codes this app's runtime emits itself (http.ts). Anything else is platform text. */
+const OWN_RUNTIME_CODES = new Set([
+	"model_too_slow",
+	"xai_api_key_missing",
+	"xai_runtime_not_ready",
+	"invalid_json",
+	"too_large",
+	"not_found",
+	"basic_auth_required",
+	"basic_auth_required_before_shared_bind",
+	"unauthorized"
+]);
+
+type RuntimeBody = (XaiRunResponse | { error?: { code?: string; message?: string }; ok?: boolean }) | null;
+
+async function readRuntimeBody(res: Response): Promise<RuntimeBody> {
+	const text = await res.text().catch(() => "");
+	if (!text) return null;
+	try {
+		const parsed = JSON.parse(text) as unknown;
+		return parsed && typeof parsed === "object" ? (parsed as RuntimeBody) : null;
+	} catch {
+		return null;
+	}
+}
+
+/** Map a non-runtime failure to a stable code. 504 / FUNCTION_INVOCATION_TIMEOUT means the host timed out. */
+export function platformCode(status: number, code?: string): string {
+	if (status === 504 || /TIMEOUT/i.test(code ?? "")) return "runtime_timeout";
+	if (status === 404) return "xai_runtime_unreachable";
+	return "runtime_platform_error";
+}
+
 export async function runXaiProposal(
-	ctx: ProposalContext & { modelId: string },
+	ctx: ProposalContext & { modelId: string; sessionDemoData?: boolean },
 	signal?: AbortSignal
 ): Promise<XaiRunResponse> {
 	try {
@@ -85,16 +118,21 @@ export async function runXaiProposal(
 				expectedRevision: ctx.expectedRevision,
 				pageId: ctx.pageId ?? ctx.currentPage?.id,
 				currentPage: ctx.currentPage ?? null,
-				currentProvenance: ctx.currentProvenance ?? null
+				currentProvenance: ctx.currentProvenance ?? null,
+				sessionDemoData: Boolean(ctx.sessionDemoData)
 			}),
 			signal
 		});
-		const body = (await res.json()) as XaiRunResponse | { error?: { code?: string; message?: string }; ok?: boolean };
-		if (body && "ok" in body) return body as XaiRunResponse;
+		const body = await readRuntimeBody(res);
+		if (body && "ok" in body && typeof body.ok === "boolean") return body as XaiRunResponse;
+		const runtimeError = body && "error" in body ? body.error : undefined;
+		// Only this app's runtime codes pass through. Platform errors (Vercel timeouts,
+		// "An error occurred with your deployment") become a stable code, never raw text.
+		const own = runtimeError?.code && OWN_RUNTIME_CODES.has(runtimeError.code);
 		return {
 			ok: false,
-			code: (body as { error?: { code?: string } }).error?.code || "xai_run_failed",
-			message: (body as { error?: { message?: string } }).error?.message || "The xAI run could not be completed.",
+			code: own ? runtimeError!.code! : platformCode(res.status, runtimeError?.code),
+			message: own ? runtimeError?.message || "The xAI run could not be completed." : "The app host returned an error.",
 			modelId: ctx.modelId,
 			requestedModelId: ctx.modelId
 		};

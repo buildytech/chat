@@ -35,6 +35,10 @@
 		return last?.proposal && proposalStatus(last.proposal) === "applied" && !unapplied ? t("proposal.applied") : "";
 	});
 	const blocks = $derived(page ? blocksOf(page) : []);
+	// App shell (Dashboard): sidenav column + main; bottomnav only in narrow (mobile) frames.
+	const sidenav = $derived(blocks.find((block) => block.kind === "sidenav") ?? null);
+	const bottomnav = $derived(blocks.find((block) => block.kind === "bottomnav") ?? null);
+	const mainBlocks = $derived(blocks.filter((block) => block.kind !== "sidenav" && block.kind !== "bottomnav"));
 	const selectedId = $derived(getSelectedBlockId());
 	const slugUrl = $derived(page ? `/${page.slug}` : "/");
 	const lastProposal = $derived.by(() => {
@@ -242,6 +246,24 @@
 				{/if}
 				{#if blocks.length === 0}
 					<Text tag="p" class="text-sm text-muted-foreground">{t("workspace.empty")}</Text>
+				{:else if sidenav || bottomnav}
+					<Box class="@container" data-slot="app-shell">
+						<Box class="grid gap-3 @xl:grid-cols-[13rem_minmax(0,1fr)]">
+							{#if sidenav}
+								<PreviewBlock block={sidenav} {selectedId} />
+							{/if}
+							<Stack class="min-w-0 gap-3" data-slot="app-main" aria-label={t("preview.appMain")}>
+								{#each mainBlocks as block (block.id)}
+									<PreviewBlock {block} {selectedId} />
+								{/each}
+							</Stack>
+						</Box>
+						{#if bottomnav}
+							<Box class="mt-3 @xl:hidden" data-slot="app-bottomnav">
+								<PreviewBlock block={bottomnav} {selectedId} />
+							</Box>
+						{/if}
+					</Box>
 				{:else}
 					{#each blocks as block (block.id)}
 						<PreviewBlock {block} {selectedId} />

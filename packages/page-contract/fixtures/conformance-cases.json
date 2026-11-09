@@ -18,7 +18,9 @@
 			"metric",
 			"chart",
 			"activity",
-			"activity-item"
+			"activity-item",
+			"sidenav",
+			"bottomnav"
 		],
 		"copyKeys": [
 			"eyebrow",

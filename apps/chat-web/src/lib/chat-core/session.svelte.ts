@@ -15,6 +15,7 @@ import {
 	isScenarioId,
 	recordedScreenId,
 	screenIdFromPage,
+	sessionDemoFlag,
 	getChatModel,
 	mapChatRunRequest,
 	runConstructorTools,
@@ -45,6 +46,7 @@ import {
 	clearCurrentPage,
 	discardCandidate,
 	getAppliedProvenance,
+	getEditBase,
 	getLastAppliedPage,
 	getPageRevision,
 	setCandidatePage
@@ -317,21 +319,40 @@ export function abortInflightRun(): void {
 	lastError = t("runtime.cancelled");
 }
 
-function constructorContext(brief: string): ProposalContext {
-	const applied = getLastAppliedPage();
-	const provenance = getAppliedProvenance();
+type EditBaseSource = "candidate" | "applied" | "last-proposal" | null;
+
+let lastEditBase: EditBaseSource = null;
+let lastSessionDemo = false;
+
+/** Author messages before the current one (sticky demo-data intent for this chat). */
+function earlierAuthorTexts(): string[] {
+	const session = getSelectedSession();
+	const users = (session?.messages ?? []).filter((message) => message.role === "user").map((message) => message.text);
+	return users.slice(0, -1);
+}
+
+function constructorContext(brief: string): ProposalContext & { sessionDemoData: boolean } {
+	// Follow-ups start from what the author sees: pending proposal, else applied page,
+	// else the last proposal (kept after Discard). Never from scratch unless asked.
+	const base = getEditBase();
+	const page = base?.page ?? null;
+	const provenance = base?.provenance ?? getAppliedProvenance();
+	lastEditBase = base?.source ?? null;
 	const screenId =
-		recordedScreenId(provenance?.screenId) ?? recordedScreenId(getScreenId()) ?? screenIdFromPage(applied);
+		recordedScreenId(provenance?.screenId) ?? recordedScreenId(getScreenId()) ?? screenIdFromPage(page);
 	const storedScenario = provenance?.scenarioId;
 	const scenarioId = isScenarioId(storedScenario) ? storedScenario : getScenarioId();
+	const sessionDemoData = sessionDemoFlag(earlierAuthorTexts());
+	lastSessionDemo = sessionDemoData;
 	return {
 		brief,
 		authorBrief: brief,
 		scenarioId,
 		screenId,
 		expectedRevision: getPageRevision() ?? 0,
-		pageId: applied?.id,
-		currentPage: applied ?? undefined,
+		pageId: page?.id,
+		currentPage: page ?? undefined,
+		sessionDemoData,
 		currentProvenance: provenance
 			? {
 					screenId: recordedScreenId(provenance.screenId),
@@ -457,6 +478,42 @@ function runtimeNoteFor(status: { ready?: boolean; code?: string }): string {
 	return t("runtime.unreachable");
 }
 
+/** Never show platform text (for example Vercel's "An error occurred with your deployment"). */
+function localizedRunError(code: string | undefined, message: string, modelId: string): string {
+	const label = getChatModel(modelId)?.label ?? modelId;
+	if (code === "runtime_timeout") return t("runtime.timeout").replace("{code}", code);
+	if (code === "runtime_platform_error") return t("runtime.platformError").replace("{code}", code);
+	if (code === "model_tools_unavailable" || code === "multi_agent_tools_unavailable") {
+		return t("runtime.modelToolsUnavailable").replace("{label}", label);
+	}
+	if (code === "model_too_slow") return t("runtime.modelTooSlow").replace("{label}", label);
+	if (code === "tools_unsupported") return t("runtime.toolsUnsupported");
+	if (code === "xai_runtime_unreachable") return t("runtime.unreachable");
+	if (code === "aborted") return t("runtime.cancelled");
+	return message;
+}
+
+/** What a follow-up changed versus its base page (added / kept / removed), localized. */
+function changeSummary(result: { diff?: { added: string[]; removed: string[]; kept?: string[] } }): string {
+	const diff = result.diff;
+	if (!lastEditBase || !diff) return "";
+	const parts: string[] = [];
+	parts.push(
+		lastEditBase === "candidate"
+			? t("assistant.baseCandidate")
+			: lastEditBase === "applied"
+				? t("assistant.baseApplied")
+				: t("assistant.baseLastProposal")
+	);
+	if (diff.added.length) parts.push(t("assistant.changesAdded").replace("{list}", diff.added.join(", ")));
+	const kept = diff.kept ?? [];
+	if (kept.length) parts.push(t("assistant.changesKept").replace("{n}", String(kept.length)).replace("{list}", kept.join(", ")));
+	if (diff.removed.length) parts.push(t("assistant.changesRemoved").replace("{list}", diff.removed.join(", ")));
+	if (!diff.added.length && !diff.removed.length) parts.push(t("assistant.changesNone"));
+	if (lastSessionDemo) parts.push(t("assistant.demoSticky"));
+	return parts.join(" ");
+}
+
 function proposalMessage(
 	result: Awaited<ReturnType<typeof runConstructor>>["result"],
 	modelId: string,
@@ -469,7 +526,7 @@ function proposalMessage(
 		return {
 			id: uid("msg"),
 			role: "assistant",
-			text: result.message,
+			text: localizedRunError(result.code, result.message, modelId),
 			createdAt: nowIso(),
 			run
 		};
@@ -499,10 +556,11 @@ function proposalMessage(
 	const missing = result.missing.length
 		? ` ${t("assistant.missingBlocks").replace("{list}", result.missing.join(", "))}`
 		: "";
+	const changes = changeSummary(result);
 	return {
 		id: uid("msg"),
 		role: "assistant",
-		text: `${via} ${t("assistant.proposalReady").replace("{title}", result.page.title)}${missing}`,
+		text: `${via} ${t("assistant.proposalReady").replace("{title}", result.page.title)}${changes ? ` ${changes}` : ""}${missing}`,
 		createdAt: nowIso(),
 		proposal: {
 			applied: false,
@@ -516,7 +574,8 @@ function proposalMessage(
 			screenId: recordedScreenId(result.provenance.screenId),
 			locale: result.page.locale,
 			demoData: Boolean(result.demoData),
-			catalogRefs: catalog.refs
+			catalogRefs: catalog.refs,
+			changes: lastEditBase && result.diff ? { added: result.diff.added, kept: result.diff.kept ?? [], removed: result.diff.removed } : undefined
 		},
 		run
 	};

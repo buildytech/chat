@@ -20,6 +20,7 @@ export {
 	getAppliedProvenance,
 	getCurrentPage,
 	getCurrentProvenance,
+	getEditBase,
 	getLastAppliedPage,
 	getPageRevision,
 	getSelectedBlock,

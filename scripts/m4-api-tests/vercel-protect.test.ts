@@ -11,7 +11,8 @@ import {
 	isSharedPublicSurface,
 	stripRuntimePrefix,
 	timingSafeEqualString,
-	VERCEL_HOBBY_SAFE_MAX_DURATION_SEC
+	VERCEL_HOBBY_SAFE_MAX_DURATION_SEC,
+	VERCEL_RUN_MAX_DURATION_SEC
 } from "../../packages/builder-core/src/index.ts";
 import { handleRuntimeFetch } from "../../apps/xai-runtime/src/http.ts";
 import middleware, { config as middlewareConfig } from "../../middleware.js";
@@ -98,7 +99,8 @@ test("vercel.json is Other + static SPA output + hobby-safe Node function, no ma
 	assert.equal(cfg.functions["api/runtime/v1/status.js"], undefined);
 	assert.equal(cfg.functions["api/runtime/v1/run.js"], undefined);
 	assert.equal(cfg.functions["api/runtime/v1/status.ts"]?.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
-	assert.equal(cfg.functions["api/runtime/v1/run.ts"]?.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
+	assert.equal(cfg.functions["api/runtime/v1/run.ts"]?.maxDuration, VERCEL_RUN_MAX_DURATION_SEC);
+	assert.ok(VERCEL_RUN_MAX_DURATION_SEC <= 300, "Hobby + fluid compute max is 300 s");
 	assert.equal(cfg.functions["api/runtime/v1/status.ts"]?.runtime, undefined);
 	assert.equal(cfg.functions["api/runtime/v1/run.ts"]?.runtime, undefined);
 	for (const fn of Object.values(cfg.functions)) {
@@ -128,8 +130,11 @@ test("Vercel is a shared public surface even when BIND looks like loopback", () 
 	assert.equal(isSharedPublicSurface({ VERCEL: "1", BUILDY_RUNTIME_BIND: "127.0.0.1" }), true);
 	assert.equal(isSharedPublicSurface({ VERCEL_ENV: "preview" }), true);
 	assert.equal(isSharedPublicSurface({ BUILDY_RUNTIME_BIND: "127.0.0.1" }), false);
-	assert.equal(clampRunBudgetMs(90_000, { VERCEL: "1" }), 60_000);
+	assert.equal(clampRunBudgetMs(90_000, { VERCEL: "1" }), 90_000);
+	assert.equal(clampRunBudgetMs(999_999, { VERCEL: "1" }), (VERCEL_RUN_MAX_DURATION_SEC - 15) * 1000);
+	assert.equal(clampRunBudgetMs(undefined, { VERCEL: "1" }), (VERCEL_RUN_MAX_DURATION_SEC - 15) * 1000);
 	assert.equal(clampRunBudgetMs(90_000, { BUILDY_RUNTIME_BIND: "127.0.0.1" }), 90_000);
+	assert.equal(clampRunBudgetMs(999_999, { BUILDY_RUNTIME_BIND: "127.0.0.1" }), 240_000);
 });
 
 test("missing Basic Auth config denies shared surfaces (does not expose)", () => {
@@ -276,7 +281,7 @@ test("Vercel functions are bundled JS artifacts, not workspace TypeScript export
 			config: { maxDuration: number };
 		};
 		assert.equal(typeof mod.default.fetch, "function");
-		assert.equal(mod.config.maxDuration, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
+		assert.equal(mod.config.maxDuration, VERCEL_RUN_MAX_DURATION_SEC);
 		const res = await withProcessEnv(withAuth(), () =>
 			mod.default.fetch(
 				new Request("https://example.vercel.app/runtime/v1/status", { headers: { Authorization: AUTH } })

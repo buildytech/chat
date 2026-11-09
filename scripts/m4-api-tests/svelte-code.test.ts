@@ -149,3 +149,31 @@ test("demo dashboard Code renders values, bars, rows, and the demo badge", () =>
 	assert.match(byPath("blocks/block-chart-item-3.svelte"), /bg-primary h-(?:8|12)"/);
 	assert.doesNotMatch(files.map((file) => file.content).join("\n"), /style=/);
 });
+
+test("app shell pack: aside sidenav, main, mobile-only bottomnav, nav landmarks with aria-current", () => {
+	const page = demoDashboardPage();
+	const files = sveltePackFiles(page, null);
+	const root = files.find((file) => file.path === "page.svelte")!.content;
+	assert.match(root, /data-slot="app-shell"/);
+	assert.match(root, /md:grid-cols-\[16rem_minmax\(0,1fr\)\]/);
+	assert.match(root, /<Box tag="main"[^>]*data-slot="app-main"/);
+	// Sidenav first, then main blocks, bottomnav last.
+	assert.ok(root.indexOf("<Block_sidenav />") < root.indexOf('<Box tag="main"'));
+	assert.ok(root.indexOf("<Block_bottomnav />") > root.indexOf("</Box>"));
+	const side = files.find((file) => file.path === "blocks/block-sidenav.svelte")!.content;
+	assert.match(side, /<Block tag="aside"/);
+	assert.match(side, /<Box tag="nav" id="block-sidenav-links" aria-label="[^"]+"/);
+	assert.match(side, /aria-expanded=\{open \? "true" : "false"\}/);
+	assert.match(side, /aria-controls="block-sidenav-links"/);
+	assert.match(side, /hidden md:block/);
+	assert.equal([...side.matchAll(/<Block /g)].length, 1, "one Block per render path");
+	const bottom = files.find((file) => file.path === "blocks/block-bottomnav.svelte")!.content;
+	assert.match(bottom, /<Block tag="nav" class="[^"]*md:hidden[^"]*" aria-label="[^"]+"/);
+	const firstLink = files.find((file) => file.path === "blocks/block-sidenav-link-1.svelte")!.content;
+	assert.match(firstLink, /<Block tag="li"/);
+	assert.match(firstLink, /<Link href="#block-sidenav-link-1"[^>]*aria-current="page"/);
+	const secondLink = files.find((file) => file.path === "blocks/block-sidenav-link-2.svelte")!.content;
+	assert.doesNotMatch(secondLink, /aria-current/);
+	assertPackCompiles("app-shell", files);
+	assertPackImports("app-shell", files);
+});

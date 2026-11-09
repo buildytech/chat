@@ -2,12 +2,16 @@ import type { Page, PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, rendererKindForLabel } from "./compatibility.ts";
 import { getScreenById } from "./search.ts";
+import { childKindFor } from "../content.ts";
+import type { CatalogScreen } from "./types.ts";
 
 /**
  * Program-level catalog provenance (deterministic code, never the model).
  *
  * Every top-level Page block must map to a Stock block label of the selected Stock
- * screen and to an available block in the pinned catalog blockIndex. Child rows are
+ * screen (or, for app-shell edits, of a sibling screen in the same Stock spec family,
+ * e.g. screen.theme-dashboard-console/home and /layouts) and to an available block in
+ * the pinned catalog blockIndex. Child rows are
  * content inside that catalog block and must use the child kind the parent renders.
  * Catalog refs (titles, ids, links, facets) are generated from the bundled snapshot only.
  */
@@ -35,6 +39,8 @@ export type CatalogBlockRef = {
 	url: string;
 	filters: CatalogFilters;
 	rows: number;
+	/** Stock screen the block label comes from (the selected screen or a same-spec sibling). */
+	sourceScreenId: string;
 };
 
 export type CatalogRefs = {
@@ -57,15 +63,29 @@ export type CatalogValidationError = {
 	path?: string;
 };
 
-const CHILD_KINDS: Partial<Record<PageBlockKind, ReadonlySet<PageBlockKind>>> = {
-	nav: new Set<PageBlockKind>(["nav-link"]),
-	features: new Set<PageBlockKind>(["feature"]),
-	menu: new Set<PageBlockKind>(["dish"]),
-	overview: new Set<PageBlockKind>(["metric"]),
-	metrics: new Set<PageBlockKind>(["metric"]),
-	chart: new Set<PageBlockKind>(["metric"]),
-	activity: new Set<PageBlockKind>(["activity-item"])
-};
+function allowedChild(parent: PageBlockKind, child: PageBlockKind): boolean {
+	return childKindFor(parent) === child;
+}
+
+/** Sibling Stock screens sharing the spec (theme family), selected screen first. */
+export function screenFamily(screen: CatalogScreen): CatalogScreen[] {
+	const siblings = catalogSnapshot.screens
+		.filter((row) => row.spec === screen.spec && row.screenId !== screen.screenId)
+		.sort((a, b) => a.order - b.order);
+	return [screen, ...siblings];
+}
+
+/** Stock label for a renderer kind in the screen, else in its spec family. */
+export function familyLabelForKind(
+	screen: CatalogScreen,
+	kind: PageBlockKind
+): { label: string; screenId: string } | null {
+	for (const row of screenFamily(screen)) {
+		const label = labelForKind(row.labels.blocks, kind);
+		if (label) return { label, screenId: row.screenId };
+	}
+	return null;
+}
 
 function enc(value: string): string {
 	return encodeURIComponent(value).replace(/%2C/gi, ",");
@@ -157,8 +177,9 @@ export function validateCatalogProvenance(input: {
 	const refs: CatalogBlockRef[] = [];
 	for (const [index, node] of blocks.entries()) {
 		const path = `layout.blocks[${index}]`;
-		const label = labelForKind(screen.labels.blocks, node.kind);
-		if (!label) {
+		const found = familyLabelForKind(screen, node.kind);
+		const label = found?.label ?? null;
+		if (!found || !label) {
 			const anywhere = catalogSnapshot.blockIndex.some(
 				(entry) => entry.available && rendererKindForLabel(entry.blockId) === node.kind
 			);
@@ -166,15 +187,14 @@ export function validateCatalogProvenance(input: {
 				ok: false,
 				code: anywhere ? "catalog_block_not_in_screen" : "catalog_block_unknown",
 				message: anywhere
-					? `Block ${node.id} (${node.kind}) is not part of Stock screen ${screen.screenId}. Nothing was rendered.`
+					? `Block ${node.id} (${node.kind}) is not part of Stock screen ${screen.screenId} or its ${screen.spec} family. Nothing was rendered.`
 					: `Block ${node.id} (${node.kind}) has no Stock catalog block. Invented blocks are rejected. Nothing was rendered.`,
 				path
 			};
 		}
 		const entry = getBlockIndex(label)!;
-		const allowed = CHILD_KINDS[node.kind];
 		for (const [ci, child] of (node.children ?? []).entries()) {
-			if (!allowed?.has(child.kind) || (child.children?.length ?? 0) > 0) {
+			if (!allowedChild(node.kind, child.kind) || (child.children?.length ?? 0) > 0) {
 				return {
 					ok: false,
 					code: "catalog_child_kind_invalid",
@@ -199,12 +219,13 @@ export function validateCatalogProvenance(input: {
 				type: "block",
 				spec: entry.spec,
 				kind: node.kind,
-				screen: screen.screenId,
+				screen: found.screenId,
 				section: screen.labels.section,
 				job: screen.labels.job,
 				industry: screen.labels.industry
 			},
-			rows: node.children?.length ?? 0
+			rows: node.children?.length ?? 0,
+			sourceScreenId: found.screenId
 		});
 	}
 	return {

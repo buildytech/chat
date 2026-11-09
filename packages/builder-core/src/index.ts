@@ -59,8 +59,22 @@ export {
 } from "./content.ts";
 export type { ModelBlockContent, ModelContentItem, ModelPageContent, MergeResult } from "./content.ts";
 export {
+	detectBottomNavRemoval,
+	detectCopyEditIntent,
+	detectDemoOptOut,
+	detectFooterRemoval,
+	detectFooterRequest,
+	detectSidebarRemoval,
+	detectSidebarRequest,
+	isShellOnlyRequest,
+	sessionDemoFlag,
+	stripInventedFooterYears
+} from "./intents.ts";
+export {
 	STOCK_APP_URL,
+	familyLabelForKind,
 	sameCatalogRefs,
+	screenFamily,
 	stockAssetUrl,
 	stockSearchUrl,
 	validateCatalogProvenance
@@ -87,6 +101,8 @@ export {
 	DEFAULT_CHAT_MODEL_ID,
 	getChatModel,
 	formatChatModelChoice,
+	modelRunsToolLoop,
+	modelUnavailableCode,
 	resolveChatModelRequest,
 	assertNoFallback,
 	mapChatRunRequest
@@ -119,6 +135,9 @@ export {
 } from "./xai-env.ts";
 export {
 	VERCEL_HOBBY_SAFE_MAX_DURATION_SEC,
+	VERCEL_RUN_MAX_DURATION_SEC,
+	RUN_BUDGET_SHARED_MS,
+	RUN_BUDGET_LOCAL_MS,
 	isLoopbackBind,
 	isSharedPublicSurface,
 	readBasicAuthConfig,

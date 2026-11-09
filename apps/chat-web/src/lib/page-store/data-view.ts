@@ -24,11 +24,12 @@ export function barHeightClass(child: PageBlock, siblings: PageBlock[]): string 
 	return BAR_HEIGHTS[Math.min(step, BAR_HEIGHTS.length - 1)]!;
 }
 
-export type ItemView = "tile" | "row" | "bar" | "plain";
+export type ItemView = "tile" | "row" | "bar" | "link" | "plain";
 
 export function itemViewFor(parentKind: PageBlock["kind"]): ItemView {
 	if (parentKind === "overview" || parentKind === "metrics") return "tile";
 	if (parentKind === "activity") return "row";
 	if (parentKind === "chart") return "bar";
+	if (parentKind === "sidenav" || parentKind === "bottomnav") return "link";
 	return "plain";
 }

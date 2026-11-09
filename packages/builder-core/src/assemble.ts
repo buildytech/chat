@@ -16,15 +16,29 @@ import { filterScreens, getScreenById, searchCatalog } from "./catalog/search.ts
 import { OWNER_FILTERS } from "./copy.ts";
 import type { CatalogScreen } from "./catalog/types.ts";
 import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } from "./policy.ts";
-import { validateCatalogProvenance, type CatalogRefs } from "./catalog/provenance.ts";
+import { familyLabelForKind, validateCatalogProvenance, type CatalogRefs } from "./catalog/provenance.ts";
 import {
+	DATA_KINDS,
 	defaultDemoLabel,
+	demoLabelForLocale,
 	detectDemoDataRequest,
 	explicitLocaleRequest,
+	isShellDefaultTitle,
 	mergeModelContent,
 	resolvePageLocale,
+	shellTitle,
 	type ModelPageContent
 } from "./content.ts";
+import {
+	detectBottomNavRemoval,
+	detectDemoOptOut,
+	detectFooterRemoval,
+	detectFooterRequest,
+	detectSidebarRemoval,
+	detectSidebarRequest,
+	isShellOnlyRequest,
+	stripInventedFooterYears
+} from "./intents.ts";
 
 export type ProposalContext = {
 	brief: string;
@@ -49,6 +63,13 @@ export type ProposalContext = {
 	authorBrief?: string;
 	/** Model copy per Stock block kind from propose_layout. Parsed and bounded; never a layout. */
 	content?: ModelPageContent;
+	/**
+	 * Host flag: the author asked for demo data earlier in this chat (sticky until they opt out).
+	 * Computed by the client from the author's own messages, never from model text.
+	 */
+	sessionDemoData?: boolean;
+	/** Stock screen the model picked on a follow-up turn (sibling switch, e.g. home to layouts). */
+	targetScreenId?: string | null;
 	/** Saved page metadata for content-only edits. Not accepted from tool JSON layouts. */
 	currentProvenance?: {
 		screenId: string | null;
@@ -68,7 +89,8 @@ export type LayoutProposal = {
 	warnings: string[];
 	inspected: string[];
 	missing: string[];
-	diff: { added: string[]; removed: string[]; changed: string[] };
+	/** Block kinds added, kept, and removed versus the base page (all added on a fresh page). */
+	diff: { added: string[]; removed: string[]; changed: string[]; kept: string[] };
 	/** True when the author explicitly asked for demo data and the model supplied rows. */
 	demoData: boolean;
 	/** Program-generated from the pinned catalog after validation. Never model text. */
@@ -138,6 +160,7 @@ function block(
 }
 
 function pageSlot(kind: PageBlockKind, jobRank: Map<PageBlockKind, number>): number {
+	if (kind === "sidenav") return -10;
 	if (kind === "nav") return 0;
 	if (kind === "pagehead") return 5;
 	if (kind === "hero") return 10;
@@ -147,6 +170,7 @@ function pageSlot(kind: PageBlockKind, jobRank: Map<PageBlockKind, number>): num
 	if (kind === "activity") return 30;
 	if (kind === "cta") return 90;
 	if (kind === "footer") return 100;
+	if (kind === "bottomnav") return 110;
 	if (kind === "nav-link" || kind === "feature" || kind === "dish" || kind === "metric") return 200;
 	const job = jobRank.get(kind);
 	if (job != null) return 20 + job;
@@ -508,16 +532,60 @@ function pickSupportedScreen(
 function kindsForPage(
 	screen: CatalogScreen,
 	brief: string,
-	scenarioId: ScenarioId | null
-): { kinds: PageBlockKind[]; unavailable: string[] } {
-	const kinds = uniqueKindsFromScreen(screen);
+	scenarioId: ScenarioId | null,
+	author = brief
+): { kinds: PageBlockKind[]; unavailable: string[]; notes: string[] } {
+	let kinds = uniqueKindsFromScreen(screen);
 	const unavailable: string[] = [];
-	if (scenarioId !== "website") return { kinds, unavailable };
+	const notes: string[] = [];
+	if (scenarioId === "dashboard") {
+		const shaped = dashboardShell(screen, kinds, author);
+		kinds = shaped.kinds;
+		notes.push(...shaped.notes);
+	}
+	if (scenarioId !== "website") return { kinds, unavailable, notes };
 	const wantsMenu = /\bmenus?\b/i.test(brief) || briefMentionsGrill(brief);
 	const wantsContact = /\bcontact\b/i.test(brief) || /\bhours\b/i.test(brief) || briefMentionsDelivery(brief);
 	if (wantsMenu && !kinds.includes("menu")) unavailable.push("menu");
 	if (wantsContact && !kinds.includes("hours")) unavailable.push("hours");
-	return { kinds, unavailable };
+	return { kinds, unavailable, notes };
+}
+
+function sortKinds(kinds: PageBlockKind[]): PageBlockKind[] {
+	const rank = new Map<PageBlockKind, number>();
+	return kinds.slice().sort((a, b) => pageSlot(a, rank) - pageSlot(b, rank));
+}
+
+/**
+ * Dashboard app shell from the Stock family: sidenav (+ mobile bottomnav) when the
+ * spec family has them, and no marketing sitemap footer unless the author asked for one.
+ * Optional blocks may be omitted; nothing outside the catalog family is added.
+ */
+function dashboardShell(
+	screen: CatalogScreen,
+	kinds: PageBlockKind[],
+	author: string
+): { kinds: PageBlockKind[]; notes: string[] } {
+	const notes: string[] = [];
+	let next = kinds.slice();
+	if (next.includes("footer") && !detectFooterRequest(author)) {
+		next = next.filter((kind) => kind !== "footer");
+		notes.push("Optional sitemap footer omitted on this Dashboard. Ask for a footer to add it.");
+	}
+	if (!detectSidebarRemoval(author)) {
+		for (const kind of ["sidenav", "bottomnav"] as const) {
+			if (next.includes(kind)) continue;
+			if (kind === "bottomnav" && detectBottomNavRemoval(author)) continue;
+			const found = familyLabelForKind(screen, kind);
+			if (!found) continue;
+			inspectKind(kind, found.label);
+			next.push(kind);
+			notes.push(`App shell: ${kind} from Stock screen ${found.screenId}.`);
+		}
+	} else {
+		next = next.filter((kind) => kind !== "sidenav" && kind !== "bottomnav");
+	}
+	return { kinds: sortKinds(next), notes };
 }
 
 function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutProposalError | null {
@@ -630,6 +698,19 @@ export function inheritedScreenId(ctx: Pick<ProposalContext, "screenId" | "curre
 	);
 }
 
+function hasRemovalIntent(text: string): boolean {
+	return /\b(?:remove|delete|drop|hide|without|no)\b/i.test(text) || /(?:\u0431\u0435\u0437|\u0443\u0431\u0435\u0440|\u0443\u0434\u0430\u043b)/iu.test(text);
+}
+
+function sameFamily(a: CatalogScreen | null, b: CatalogScreen | null): boolean {
+	return Boolean(a && b && a.spec === b.spec);
+}
+
+/**
+ * Follow-up turn on an existing page: minimal diff from the base page.
+ * Existing blocks keep their copy and rows; the author's adds/removes and the model's
+ * flagged edits are applied; demo data and locale stay sticky for the session.
+ */
 function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal | LayoutProposalError {
 	const current = ctx.currentPage;
 	if (!current) {
@@ -637,55 +718,203 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 	}
 	const title = titleFromSavedEdit(brief, current.title);
 	const stamp = iso(ctx.now);
-	const screenId = inheritedScreenId(ctx);
-	const screen = screenId ? getScreenById(screenId) : null;
+	const inherited = inheritedScreenId(ctx);
+	const baseScreen = inherited ? getScreenById(inherited) : null;
+	const requested = recordedScreenId(ctx.targetScreenId);
+	const target = requested ? getScreenById(requested) : null;
+	const screen = target && (sameFamily(target, baseScreen) || !baseScreen) ? target : baseScreen;
+	const screenId = screen?.screenId ?? inherited;
 	const scenarioId = resolvedScenario({ ...ctx, screenId }, brief) ?? ctx.currentProvenance?.scenarioId ?? null;
 	const missing = ctx.currentProvenance?.missing ?? [];
 	const edits = ctx.edits?.length ? ctx.edits : extractCopyEditsFromBrief(brief);
 	const working: ProposalContext = { ...ctx, pageId: current.id, scenarioId, screenId };
 	const author = authorText(working);
-	const locale =
-		explicitLocaleRequest(author) ??
-		(working.content?.locale ? resolvePageLocale({ brief: author, modelLocale: working.content.locale }) : current.locale);
+	const locale = explicitLocaleRequest(author) ?? current.locale;
 	const warnings: string[] = [];
-	const overlay = overlayModelContent(working, current.layout.blocks, locale, warnings);
-	const identity = {
-		title: working.content?.title ?? title,
+	const baseKinds = current.layout.blocks.map((node) => node.kind);
+
+	// Removals: explicit author intent only.
+	const remove = new Set<PageBlockKind>();
+	if (hasRemovalIntent(author)) for (const kind of working.content?.remove ?? []) remove.add(kind);
+	if (detectSidebarRemoval(author)) {
+		remove.add("sidenav");
+		remove.add("bottomnav");
+	}
+	if (detectBottomNavRemoval(author)) remove.add("bottomnav");
+	if (detectFooterRemoval(author)) remove.add("footer");
+
+	// Additions: requested shell, sibling-screen kinds, and kinds the model wrote content for.
+	const add: PageBlockKind[] = [];
+	const wantsFooter = detectFooterRequest(author);
+	const consider = (kind: PageBlockKind) => {
+		if (remove.has(kind) || baseKinds.includes(kind) || add.includes(kind)) return;
+		if (kind === "nav-link" || kind === "feature" || kind === "dish" || kind === "metric" || kind === "activity-item") return;
+		if (kind === "footer" && scenarioId === "dashboard" && !wantsFooter) return;
+		if (!screen || !familyLabelForKind(screen, kind)) return;
+		add.push(kind);
+	};
+	if (detectSidebarRequest(author)) {
+		consider("sidenav");
+		if (!detectBottomNavRemoval(author)) consider("bottomnav");
+	}
+	if (wantsFooter) consider("footer");
+	if (target && baseScreen && target.screenId !== baseScreen.screenId && sameFamily(target, baseScreen)) {
+		for (const kind of uniqueKindsFromScreen(target)) consider(kind);
+	}
+	for (const entry of working.content?.blocks ?? []) {
+		if (entry.edit || !baseKinds.includes(entry.kind)) consider(entry.kind);
+	}
+	if (add.includes("sidenav") && !add.includes("bottomnav") && !baseKinds.includes("bottomnav") && !remove.has("bottomnav")) {
+		consider("bottomnav");
+	}
+	if (requested && !target) warnings.push(`Unknown Stock screen ${requested}; kept ${inherited ?? "the current screen"}.`);
+	if (target && baseScreen && !sameFamily(target, baseScreen)) {
+		warnings.push(`Stock screen ${target.screenId} is not in the ${baseScreen.spec} family; kept ${baseScreen.screenId}. Ask for a new page to switch themes.`);
+	}
+
+	const pageTitle = current.title;
+	const kept = current.layout.blocks.filter((node) => !remove.has(node.kind));
+	const removed = current.layout.blocks.filter((node) => remove.has(node.kind)).map((node) => node.kind);
+	const fresh = add.map((kind) => buildStockBlock(kind, working, screen, brief, pageTitle));
+	const rank = new Map<PageBlockKind, number>();
+	const combined = [...kept, ...fresh].sort((a, b) => pageSlot(a.kind, rank) - pageSlot(b.kind, rank));
+
+	// Demo data is sticky for the session unless the author opts out.
+	const optOut = detectDemoOptOut(author);
+	const sticky = !optOut && (detectDemoDataRequest(author) || Boolean(ctx.sessionDemoData) || hasDemoBadge(current.layout.blocks));
+	const modelFlagged = (working.content?.blocks ?? []).filter((entry) => entry.edit).map((entry) => entry.kind);
+	// "Add a sidebar" is not a request to rewrite other blocks: ignore model edit flags on shell-only turns.
+	const shellOnly = isShellOnlyRequest(author);
+	const ignoredEdits = shellOnly ? modelFlagged.filter((kind) => !add.includes(kind)) : [];
+	if (ignoredEdits.length) warnings.push(`Ignored model rewrites of ${ignoredEdits.join(", ")}: this request only changed the app shell.`);
+	const flagged = new Set<PageBlockKind>(shellOnly ? [] : modelFlagged);
+	const onlyKinds = new Set<PageBlockKind>([...add, ...flagged]);
+	// Demo on and a data block is still empty: fill it from the model rows (nothing is lost).
+	if (sticky) {
+		for (const entry of working.content?.blocks ?? []) {
+			const existing = combined.find((node) => node.kind === entry.kind);
+			if (existing && DATA_KINDS.has(entry.kind) && !existing.children?.length && entry.items.length) onlyKinds.add(entry.kind);
+		}
+	}
+	const overlay = overlayModelContent(working, optOut ? stripDemo(combined) : combined, locale, warnings, {
+		demo: sticky,
+		onlyKinds
+	});
+	const shell = arrangeShell(localizeEmptyLedes(overlay.blocks, locale), locale);
+	const years = stripInventedFooterYears(shell.blocks, author);
+	if (years.stripped.length) warnings.push(`Removed invented years from ${years.stripped.join(", ")}. Add a year in the request to keep one.`);
+	let blocks = years.blocks;
+	const changed = [...shell.changed];
+	if (edits.length) {
+		const patched = applyCopyEdits(blocks, edits);
+		blocks = patched.blocks;
+		changed.push(...patched.changed);
+	}
+	if (optOut) warnings.push("Demo data removed at the author's request.");
+	const keptKinds = kept.map((node) => node.kind);
+	// Kept blocks whose copy or rows the model rewrote are reported as edited, not as kept as-is.
+	const rewritten = overlay.changedKinds.filter((kind) => keptKinds.includes(kind) && !add.includes(kind));
+	for (const kind of rewritten) changed.push(`${kind} copy`);
+	const untouched = keptKinds.filter((kind) => !rewritten.includes(kind));
+	const summary = [
+		add.length ? `Added ${add.join(", ")}.` : "",
+		`Kept ${untouched.length} block${untouched.length === 1 ? "" : "s"}${untouched.length ? ` (${untouched.join(", ")})` : ""} with their copy${sticky ? " and demo data" : ""}.`,
+		removed.length ? `Removed ${removed.join(", ")}.` : "",
+		changed.length ? `Edited ${[...new Set(changed)].join(", ")}.` : ""
+	]
+		.filter(Boolean)
+		.join(" ");
+	const demoData = sticky && hasDemoBadge(blocks);
+	return finishProposal(working, brief, screen, blocks, [summary, ...warnings], missing, {
+		title: flagged.size || !current.title ? (working.content?.title ?? title) : title,
 		id: current.id,
 		createdAt: current.createdAt,
 		stamp,
 		status: current.status,
 		slug: current.slug,
 		locale,
-		demoData: overlay.demo || hasDemoBadge(current.layout.blocks),
-		demoLabel: overlay.demoLabel
-	};
-	if (edits.length) {
-		const patched = applyCopyEdits(overlay.blocks, edits);
-		return finishProposal(
-			working,
-			brief,
-			screen,
-			patched.blocks,
-			[
-				patched.changed.length
-					? `Edited ${patched.changed.join(", ")} on the saved page. Other blocks are unchanged.`
-					: "No matching block to edit. Other blocks are unchanged.",
-				...warnings
-			],
-			missing,
-			identity
-		);
-	}
-	return finishProposal(
-		working,
-		brief,
-		screen,
-		overlay.blocks,
-		warnings.length ? warnings : ["No structured copy edit in that message. Other blocks are unchanged."],
-		missing,
-		identity
-	);
+		demoData,
+		demoLabel: overlay.demoLabel,
+		diff: { added: add, removed, kept: keptKinds, changed: [...new Set(changed)] }
+	});
+}
+
+/** Remove demo rows and badges (author opted out of demo data). */
+function stripDemo(blocks: PageBlock[]): PageBlock[] {
+	return blocks.map((node) => {
+		if (!node.copy?.badge && !(DATA_KINDS.has(node.kind) && node.children?.length)) return node;
+		const next: PageBlock = { ...node };
+		if (next.copy) {
+			const copy = { ...next.copy };
+			delete copy.badge;
+			if (Object.keys(copy).length) next.copy = copy;
+			else delete next.copy;
+		}
+		if (DATA_KINDS.has(node.kind)) delete next.children;
+		return next;
+	});
+}
+
+/**
+ * App shell wiring: section links live in the sidenav (top navbar keeps brand only);
+ * the mobile bottomnav mirrors the first sidenav links. Labels come from the page itself.
+ */
+function arrangeShell(blocks: PageBlock[], locale: string): { blocks: PageBlock[]; changed: string[] } {
+	const changed: string[] = [];
+	const side = blocks.find((node) => node.kind === "sidenav");
+	if (!side) return { blocks, changed };
+	const nav = blocks.find((node) => node.kind === "nav");
+	const foreign = locale.split("-")[0] !== "en";
+	const sectionLinks = (prefix: string): PageBlock[] =>
+		blocks
+			.filter((node) => DATA_KINDS.has(node.kind) || node.kind === "pagehead")
+			.slice(0, 6)
+			.map((node, index) => ({
+				id: `${prefix}-${index + 1}`,
+				kind: "nav-link" as const,
+				title: node.kind === "pagehead" ? (node.copy?.headline ?? node.title) : node.title,
+				summary: node.title
+			}));
+	const next = blocks.map((node) => {
+		if (node.kind === "sidenav") {
+			const updated: PageBlock = { ...node };
+			if (!updated.children?.length) {
+				const fromNav = (nav?.children ?? []).map((link, index) => ({ ...link, id: `${node.id}-link-${index + 1}` }));
+				updated.children = fromNav.length ? fromNav : sectionLinks(`${node.id}-link`);
+				changed.push(fromNav.length ? "nav.items moved to sidenav" : "sidenav.items");
+			}
+			if (foreign && isShellDefaultTitle(updated.title)) updated.title = shellTitle("sidenav", locale);
+			if (!updated.copy?.brand) {
+				const brand = nav?.copy?.brand ?? nav?.title;
+				if (brand) updated.copy = { ...updated.copy, brand };
+			}
+			return updated;
+		}
+		if (node.kind === "nav" && node.children?.length) {
+			const updated = { ...node };
+			delete updated.children;
+			return updated;
+		}
+		return node;
+	});
+	const sideLinks = next.find((node) => node.kind === "sidenav")?.children ?? [];
+	const final = next.map((node) => {
+		if (node.kind !== "bottomnav") return node;
+		const updated: PageBlock = { ...node };
+		if (!updated.children?.length && sideLinks.length) {
+			updated.children = sideLinks.slice(0, 4).map((link, index) => {
+				const copy = link.copy ? { ...link.copy } : undefined;
+				if (copy) delete copy.eyebrow;
+				const row: PageBlock = { id: `${node.id}-link-${index + 1}`, kind: "nav-link", title: link.title, summary: link.summary };
+				if (copy && Object.keys(copy).length) row.copy = copy;
+				return row;
+			});
+			changed.push("bottomnav.items");
+		}
+		if (foreign && isShellDefaultTitle(updated.title)) updated.title = shellTitle("bottomnav", locale);
+		return updated;
+	});
+	return { blocks: final, changed };
 }
 
 function hasDemoBadge(blocks: PageBlock[]): boolean {
@@ -724,8 +953,8 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		};
 	}
 
-	const { kinds, unavailable } = kindsForPage(screen, brief, working.scenarioId);
-	const warnings: string[] = [];
+	const { kinds, unavailable, notes } = kindsForPage(screen, brief, working.scenarioId, authorText(working));
+	const warnings: string[] = [...notes];
 	const missing: string[] = [];
 	if (unavailable.length) {
 		missing.push(...unavailable);
@@ -734,8 +963,9 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		);
 	}
 	const support = screenSupport(screen);
+	const renderedKinds = kinds.filter((kind) => !CHILD_ONLY_KINDS.has(kind));
 	warnings.push(
-		`Stock screen ${screen.screenId}. Browser renders ${support.mappedKinds.join(", ") || "no sections"}.`
+		`Stock screen ${screen.screenId}. Browser renders ${renderedKinds.join(", ") || "no sections"}.`
 	);
 	if (support.missing.length) {
 		missing.push(...support.missing);
@@ -747,62 +977,8 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 	const pageTitle = titleWho(brief, screen);
 	const blocks: PageBlock[] = [];
 	for (const kind of kinds) {
-		if (kind === "nav-link" || kind === "feature" || kind === "dish" || kind === "metric") continue;
-		if (kind === "nav") {
-			blocks.push(
-				block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", working.scenarioId, screen, brief, pageTitle), navLinks(working.scenarioId, brief))
-			);
-			continue;
-		}
-		if (kind === "features") {
-			blocks.push(
-				block(
-					"block-features",
-					"features",
-					titleFor("features", screen),
-					summaryFor("features"),
-					undefined,
-					featuresFor(working.scenarioId, screen, pageTitle, brief)
-				)
-			);
-			continue;
-		}
-		if (kind === "menu") {
-			const occasion = occasionFromBrief(brief);
-			blocks.push(
-				block("block-menu", "menu", titleFor("menu", screen), summaryFor("menu"), undefined, [
-					block("block-dish-one", "dish", `${pageTitle} grill plate`, "Placeholder dish. Ask the author for the real grill menu. No price is invented."),
-					block(
-						"block-dish-two",
-						"dish",
-						occasion ? `${occasion} platter` : `${pageTitle} delivery plate`,
-						"Placeholder dish. Ask the author for the real menu. No invented specials or prices."
-					)
-				])
-			);
-			continue;
-		}
-		if (kind === "hours") {
-			blocks.push(
-				block(
-					"block-hours",
-					"hours",
-					/\bcontact\b/i.test(brief) ? "Contact" : titleFor("hours", screen),
-					summaryFor("hours"),
-					copyFor("hours", working.scenarioId, screen, brief, pageTitle)
-				)
-			);
-			continue;
-		}
-		blocks.push(
-			block(
-				`block-${kind}`,
-				kind,
-				titleFor(kind, screen, brief),
-				summaryFor(kind, brief),
-				copyFor(kind, working.scenarioId, screen, brief, pageTitle)
-			)
-		);
+		if (CHILD_ONLY_KINDS.has(kind)) continue;
+		blocks.push(buildStockBlock(kind, working, screen, brief, pageTitle));
 	}
 
 	if (blocks.length === 0 && !clearPage) {
@@ -816,7 +992,12 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 
 	const locale = resolvePageLocale({ brief: authorText(working), modelLocale: working.content?.locale });
 	const overlay = overlayModelContent(working, blocks, locale, warnings);
-	let assembled = overlay.blocks;
+	const shell = arrangeShell(localizeEmptyLedes(overlay.blocks, locale), locale);
+	const years = stripInventedFooterYears(shell.blocks, authorText(working));
+	if (years.stripped.length) {
+		warnings.push(`Removed invented years from ${years.stripped.join(", ")}. Add a year in the request to keep one.`);
+	}
+	let assembled = years.blocks;
 	const edits = working.edits?.length ? working.edits : extractCopyEditsFromBrief(brief);
 	if (edits.length) {
 		const patched = applyCopyEdits(assembled, edits);
@@ -834,6 +1015,79 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 	});
 }
 
+/** One Stock block with catalog fallback copy (model copy is overlaid later). */
+function buildStockBlock(
+	kind: PageBlockKind,
+	working: ProposalContext,
+	screen: CatalogScreen | null,
+	brief: string,
+	pageTitle: string
+): PageBlock {
+	if (kind === "nav") {
+		return block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", working.scenarioId, screen, brief, pageTitle), navLinks(working.scenarioId, brief));
+	}
+	if (kind === "sidenav") {
+		// Links and brand are wired by arrangeShell from the page's own navbar and sections.
+		return block(
+			"block-sidenav",
+			"sidenav",
+			"Navigation",
+			"Sidebar navigation from the Stock app shell."
+		);
+	}
+	if (kind === "bottomnav") {
+		return block("block-bottomnav", "bottomnav", "Sections", "Mobile tab bar from the Stock app shell. Hidden on wide screens.");
+	}
+	if (kind === "features") {
+		return block("block-features", "features", titleFor("features", screen), summaryFor("features"), undefined, featuresFor(working.scenarioId, screen, pageTitle, brief));
+	}
+	if (kind === "menu") {
+		const occasion = occasionFromBrief(brief);
+		return block("block-menu", "menu", titleFor("menu", screen), summaryFor("menu"), undefined, [
+			block("block-dish-one", "dish", `${pageTitle} grill plate`, "Placeholder dish. Ask the author for the real grill menu. No price is invented."),
+			block(
+				"block-dish-two",
+				"dish",
+				occasion ? `${occasion} platter` : `${pageTitle} delivery plate`,
+				"Placeholder dish. Ask the author for the real menu. No invented specials or prices."
+			)
+		]);
+	}
+	if (kind === "hours") {
+		return block(
+			"block-hours",
+			"hours",
+			/\bcontact\b/i.test(brief) ? "Contact" : titleFor("hours", screen),
+			summaryFor("hours"),
+			copyFor("hours", working.scenarioId, screen, brief, pageTitle)
+		);
+	}
+	return block(`block-${kind}`, kind, titleFor(kind, screen, brief), summaryFor(kind, brief), copyFor(kind, working.scenarioId, screen, brief, pageTitle));
+}
+
+const CHILD_ONLY_KINDS: ReadonlySet<PageBlockKind> = new Set<PageBlockKind>(["nav-link", "feature", "dish", "metric", "activity-item"]);
+
+const STOCK_EMPTY_LEDE = /in this draft\.\s.*until the author supplies (?:them|data)\.$/;
+// ru: "No data in this draft yet. The block stays empty until you add data."
+const EMPTY_LEDE_BY_LOCALE: Readonly<Record<string, string>> = {
+	ru: "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435."
+};
+
+/** Stock empty-state ledes are English; never leak them onto a page in another language. */
+export function localizeEmptyLedes(blocks: PageBlock[], locale: string): PageBlock[] {
+	const lang = locale.toLowerCase().split("-")[0];
+	if (lang === "en") return blocks;
+	return blocks.map((node) => {
+		const lede = node.copy?.lede;
+		if (typeof lede !== "string" || !STOCK_EMPTY_LEDE.test(lede)) return node;
+		const copy = { ...node.copy };
+		const localized = EMPTY_LEDE_BY_LOCALE[lang];
+		if (localized) copy.lede = localized;
+		else delete copy.lede;
+		return { ...node, copy };
+	});
+}
+
 function authorText(ctx: ProposalContext): string {
 	return (ctx.authorBrief ?? ctx.brief).trim();
 }
@@ -843,11 +1097,14 @@ function overlayModelContent(
 	ctx: ProposalContext,
 	blocks: PageBlock[],
 	locale: string,
-	warnings: string[]
-): { blocks: PageBlock[]; demo: boolean; demoLabel: string } {
-	const wantsDemo = detectDemoDataRequest(authorText(ctx));
-	const demoLabel = ctx.content?.demoLabel ?? defaultDemoLabel(locale);
-	const merged = mergeModelContent(blocks, ctx.content, { demo: wantsDemo, demoLabel, locale });
+	warnings: string[],
+	opts: { demo?: boolean; onlyKinds?: ReadonlySet<PageBlockKind> } = {}
+): { blocks: PageBlock[]; demo: boolean; demoLabel: string; changedKinds: PageBlockKind[] } {
+	const author = authorText(ctx);
+	const wantsDemo = opts.demo ?? (detectDemoDataRequest(author) && !detectDemoOptOut(author));
+	const existingLabel = blocks.find((node) => typeof node.copy?.badge === "string")?.copy?.badge;
+	const demoLabel = existingLabel ?? demoLabelForLocale(ctx.content?.demoLabel, locale) ?? defaultDemoLabel(locale);
+	const merged = mergeModelContent(blocks, ctx.content, { demo: wantsDemo, demoLabel, locale, onlyKinds: opts.onlyKinds });
 	if (merged.changed.length) warnings.push(`Model copy kept on: ${[...new Set(merged.changed.map((c) => c.split(".")[0]))].join(", ")}.`);
 	if (merged.droppedData.length) {
 		warnings.push(
@@ -856,10 +1113,11 @@ function overlayModelContent(
 	}
 	if (wantsDemo && merged.demoBlocks.length) {
 		warnings.push(`Demo data (not real) on ${merged.demoBlocks.join(", ")}, marked "${demoLabel}".`);
-	} else if (wantsDemo) {
+	} else if (wantsDemo && !opts.onlyKinds) {
 		warnings.push("Demo data was requested but no data rows were supplied. Data blocks keep their empty state.");
 	}
-	return { blocks: merged.blocks, demo: wantsDemo && merged.demoBlocks.length > 0, demoLabel };
+	const changedKinds = [...new Set(merged.changed.map((c) => c.split(".")[0] as PageBlockKind))];
+	return { blocks: merged.blocks, demo: wantsDemo && merged.demoBlocks.length > 0, demoLabel, changedKinds };
 }
 
 type FinishIdentity = {
@@ -872,6 +1130,7 @@ type FinishIdentity = {
 	stamp?: string;
 	status?: Page["status"];
 	slug?: string;
+	diff?: LayoutProposal["diff"];
 };
 
 function finishProposal(
@@ -929,10 +1188,11 @@ function finishProposal(
 			warnings,
 			inspected: [...INSPECTED],
 			missing,
-			diff: {
+			diff: identity?.diff ?? {
 				added: page.layout.blocks.map((b) => b.kind),
 				removed: [],
-				changed: []
+				changed: [],
+				kept: []
 			},
 			demoData: demo,
 			catalogRefs: checked.refs,

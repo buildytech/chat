@@ -28,7 +28,9 @@ export const PAGE_BLOCK_KINDS = [
 	"metric",
 	"chart",
 	"activity",
-	"activity-item"
+	"activity-item",
+	"sidenav",
+	"bottomnav"
 ] as const;
 
 export type PageBlockKind = (typeof PAGE_BLOCK_KINDS)[number];

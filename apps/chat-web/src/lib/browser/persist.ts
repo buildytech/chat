@@ -31,6 +31,12 @@ export type StoredPageRecord = {
 	candidateProvenance?: StoredPageProvenance | null;
 	selectedBlockId: string | null;
 	revision: number | null;
+	/**
+	 * Last proposed page in this chat, kept after Discard so a follow-up turn
+	 * ("add a sidebar") edits it instead of rebuilding from scratch.
+	 */
+	lastProposed?: unknown | null;
+	lastProposedProvenance?: StoredPageProvenance | null;
 };
 
 const STOCK_NOTE = /^Stock screen (screen\.[A-Za-z0-9._/-]+)$/;
@@ -77,7 +83,10 @@ export function migrateStoredPageRecord(record: StoredPageRecord): StoredPageRec
 	const candidateProvenance = record.candidate
 		? (normalizeProvenance(record.candidateProvenance, record.candidate) ?? appliedProvenance)
 		: null;
-	return { ...record, appliedProvenance, candidateProvenance };
+	const lastProposedProvenance = record.lastProposed
+		? normalizeProvenance(record.lastProposedProvenance, record.lastProposed)
+		: null;
+	return { ...record, appliedProvenance, candidateProvenance, lastProposed: record.lastProposed ?? null, lastProposedProvenance };
 }
 
 type PagesBlobV1 = {

@@ -9,7 +9,7 @@
 			"maxDuration": 60
 		},
 		"api/runtime/v1/run.ts": {
-			"maxDuration": 60
+			"maxDuration": 300
 		}
 	},
 	"rewrites": [

@@ -74,6 +74,7 @@
   },
   "rendererKinds": [
     "activity",
+    "bottomnav",
     "chart",
     "cta",
     "dish",
@@ -88,7 +89,8 @@
     "nav",
     "nav-link",
     "overview",
-    "pagehead"
+    "pagehead",
+    "sidenav"
   ],
   "screens": [
     {
@@ -3783,8 +3785,8 @@
       ],
       "title": "Bottom tab bar",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "bottomnav",
+      "rendererCompatible": true
     },
     {
       "blockId": "cart",
@@ -5411,8 +5413,8 @@
       ],
       "title": "Sidebar navigation",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "sidenav",
+      "rendererCompatible": true
     },
     {
       "blockId": "sitemap",
@@ -5930,6 +5932,8 @@
     "sitemap": "footer",
     "restaurantmenu": "menu",
     "menuboard": "menu",
-    "dish": "dish"
+    "dish": "dish",
+    "sidenav": "sidenav",
+    "bottomnav": "bottomnav"
   }
 }

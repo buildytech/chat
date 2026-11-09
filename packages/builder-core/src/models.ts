@@ -24,13 +24,27 @@ export const GROK_CHAT_MODELS = [
 		id: "grok-4.20-multi-agent-0309",
 		label: "Grok 4.20 Multi-agent",
 		intendedRole: "task-distribution",
-		intendedRoleNote: "Owner suggestion for later: task distribution. Not a technical capability claim. Not used for routing."
+		intendedRoleNote: "Owner suggestion for later: task distribution. Not a technical capability claim. Not used for routing.",
+		/**
+		 * Live probe 2026-11-09: chat completions answers 400 "Multi Agent requests are not allowed
+		 * on chat completions"; the Responses API answers 400 "Client-side tools for multi-agent
+		 * models require beta access". The catalog tool loop cannot run on it.
+		 */
+		toolLoop: "unavailable",
+		unavailableCode: "multi_agent_tools_unavailable"
 	},
 	{
 		id: "grok-4.7",
 		label: "Grok 4.7",
 		intendedRole: "consulting",
-		intendedRoleNote: "Owner suggestion for later: consulting. Not a technical capability claim. Not used for routing."
+		intendedRoleNote: "Owner suggestion for later: consulting. Not a technical capability claim. Not used for routing.",
+		/**
+		 * Live runs 2026-11-09 (dashboard prompt, tool_choice "required", 285 s budget): 4 of 7 finished,
+		 * in 54-227 s; the rest failed after 169-240 s (provider error, no propose_layout, timeout).
+		 * Answers in prose on tool_choice "auto". Too slow and unreliable for the catalog tool loop.
+		 */
+		toolLoop: "unavailable",
+		unavailableCode: "model_too_slow"
 	},
 	{
 		id: "grok-build-0.1",
@@ -42,6 +56,17 @@ export const GROK_CHAT_MODELS = [
 
 export type GrokChatModelId = (typeof GROK_CHAT_MODELS)[number]["id"];
 export type GrokChatModel = (typeof GROK_CHAT_MODELS)[number];
+
+/** False when the model cannot run this app's client-side tool loop (shown disabled in the selector). */
+export function modelRunsToolLoop(model: GrokChatModel | null | undefined): boolean {
+	if (!model) return false;
+	return !("toolLoop" in model && model.toolLoop === "unavailable");
+}
+
+export function modelUnavailableCode(model: GrokChatModel | null | undefined): string | null {
+	if (!model || modelRunsToolLoop(model)) return null;
+	return "unavailableCode" in model ? model.unavailableCode : "model_tools_unavailable";
+}
 
 export const DEFAULT_CHAT_MODEL_ID: GrokChatModelId = CANDIDATE_CHAT_MODEL;
 
@@ -59,6 +84,8 @@ export type ModelResolveError = {
 		| "image_model_not_for_chat"
 		| "unknown_chat_model"
 		| "model_not_enabled_on_account"
+		| "model_tools_unavailable"
+		| "model_too_slow"
 		| "silent_fallback_forbidden";
 	message: string;
 	requestedId: string;
@@ -105,6 +132,22 @@ export function resolveChatModelRequest(input: {
 			ok: false,
 			code: "unknown_chat_model",
 			message: `${requestedId} is not one of the five verified Grok chat models.`,
+			requestedId
+		};
+	}
+	if (!modelRunsToolLoop(catalog) && modelUnavailableCode(catalog) === "model_too_slow") {
+		return {
+			ok: false,
+			code: "model_too_slow",
+			message: `${catalog.label} (${requestedId}) is disabled here: in live runs it took 1-4 minutes per page and often timed out or skipped the page tool. Pick another model. No other model was substituted.`,
+			requestedId
+		};
+	}
+	if (!modelRunsToolLoop(catalog)) {
+		return {
+			ok: false,
+			code: "model_tools_unavailable",
+			message: `${catalog.label} (${requestedId}) cannot run this app's catalog tools: xAI rejects client-side tools for multi-agent models (chat completions not allowed; the Responses API needs beta access). Pick another model. No other model was substituted.`,
 			requestedId
 		};
 	}
@@ -156,6 +199,8 @@ export type ChatRunRequest = {
 		scenarioId: "dashboard" | "landing" | "website" | null;
 		missing: string[];
 	};
+	/** Client flag: the author asked for demo data earlier in this chat. */
+	sessionDemoData?: boolean;
 };
 
 function parseCurrentProvenance(raw: unknown): ChatRunRequest["currentProvenance"] {
@@ -187,6 +232,7 @@ export function mapChatRunRequest(
 		pageId?: unknown;
 		currentPage?: unknown;
 		currentProvenance?: unknown;
+		sessionDemoData?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -221,7 +267,8 @@ export function mapChatRunRequest(
 			expectedRevision: typeof body.expectedRevision === "number" ? body.expectedRevision : 0,
 			pageId: typeof body.pageId === "string" ? body.pageId : currentPage?.id,
 			currentPage,
-			currentProvenance: parseCurrentProvenance(body.currentProvenance)
+			currentProvenance: parseCurrentProvenance(body.currentProvenance),
+			sessionDemoData: body.sessionDemoData === true
 		}
 	};
 }

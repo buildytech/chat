@@ -6,8 +6,10 @@
  */
 import { handleRuntimeFetch } from "./http.ts";
 
+// Upper bound for the bundled run entry (Hobby + fluid compute max). vercel.json keeps
+// status at 60 s and run at 300 s per function.
 export const config = {
-	maxDuration: 60
+	maxDuration: 300
 };
 
 export default {

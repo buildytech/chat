@@ -22,7 +22,8 @@
 	import { theme } from "../theme/theme.svelte";
 	import { cn } from "../../utils/cn";
 	import { deleteAllSessions, type SessionSummary } from "../chat-core";
-	import { getSelectedModelId, listChatModels, setSelectedModelId } from "../browser/models.svelte";
+	import { getSelectedModelId, isChatModelAvailable, listChatModels, setSelectedModelId } from "../browser/models.svelte";
+	import { modelUnavailableCode } from "@buildytech/builder-core";
 	import ConfirmDialog from "./ConfirmDialog.svelte";
 
 	type NavItem = {
@@ -312,14 +313,20 @@
 					<Button
 						id={index === 0 ? "creator-settings-model" : undefined}
 						class={cn(
-							"w-full justify-start rounded-default px-2 py-1.5 text-left text-sm hover:bg-accent/70",
+							"w-full justify-start rounded-default px-2 py-1.5 text-left text-sm",
+							isChatModelAvailable(model.id) ? "hover:bg-accent/70" : "cursor-not-allowed opacity-60",
 							model.id === selectedModelId ? "bg-accent text-accent-foreground" : "text-foreground"
 						)}
 						aria-pressed={model.id === selectedModelId ? "true" : "false"}
+						disabled={!isChatModelAvailable(model.id)}
+						title={isChatModelAvailable(model.id) ? undefined : t(modelUnavailableCode(model) === "model_too_slow" ? "composer.modelTooSlow" : "composer.modelUnavailable")}
 						onclick={() => setSelectedModelId(model.id)}
 					>
 						{model.label}
 					</Button>
+					{#if !isChatModelAvailable(model.id)}
+						<Text tag="p" class="px-2 text-[11px] text-muted-foreground">{t(modelUnavailableCode(model) === "model_too_slow" ? "composer.modelTooSlow" : "composer.modelUnavailable")}</Text>
+					{/if}
 				{/each}
 				<Button
 					class="w-full justify-start rounded-default px-2 py-1.5 text-sm text-foreground hover:bg-accent/70"

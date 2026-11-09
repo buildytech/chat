@@ -2,6 +2,7 @@ import {
 	DEFAULT_CHAT_MODEL_ID,
 	GROK_CHAT_MODELS,
 	getChatModel,
+	modelRunsToolLoop,
 	type GrokChatModelId
 } from "@buildytech/builder-core";
 
@@ -11,7 +12,9 @@ function readStored(): GrokChatModelId {
 	if (typeof localStorage === "undefined") return DEFAULT_CHAT_MODEL_ID;
 	try {
 		const raw = localStorage.getItem(STORE_KEY);
-		return getChatModel(raw ?? "")?.id ?? DEFAULT_CHAT_MODEL_ID;
+		const model = getChatModel(raw ?? "");
+		// A stored pick that cannot run the tool loop falls back to the default, visibly.
+		return model && modelRunsToolLoop(model) ? model.id : DEFAULT_CHAT_MODEL_ID;
 	} catch {
 		return DEFAULT_CHAT_MODEL_ID;
 	}
@@ -23,13 +26,18 @@ export function listChatModels() {
 	return GROK_CHAT_MODELS;
 }
 
+/** Selector state per model: disabled models stay visible with an honest reason. */
+export function isChatModelAvailable(id: string): boolean {
+	return modelRunsToolLoop(getChatModel(id));
+}
+
 export function getSelectedModelId(): GrokChatModelId {
 	return selectedModelId;
 }
 
 export function setSelectedModelId(id: string): boolean {
 	const model = getChatModel(id);
-	if (!model) return false;
+	if (!model || !modelRunsToolLoop(model)) return false;
 	selectedModelId = model.id;
 	if (typeof localStorage === "undefined") return true;
 	try {

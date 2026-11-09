@@ -1,15 +1,20 @@
 import { blocksOf, type CreatorPage, type PageBlock } from "@buildytech/page-contract";
 import { barHeightClass, itemViewFor, type ItemView } from "./data-view.ts";
 
-type ItemContext = { view: ItemView; barClass?: string };
+type ItemContext = { view: ItemView; barClass?: string; active?: boolean; group?: string | null; compact?: boolean };
 
 function walkBlocks(blocks: PageBlock[], parent: PageBlock | null = null): Array<{ block: PageBlock; item?: ItemContext }> {
 	const out: Array<{ block: PageBlock; item?: ItemContext }> = [];
-	for (const block of blocks) {
+	for (const [index, block] of blocks.entries()) {
+		const previous = index > 0 ? blocks[index - 1] : undefined;
+		const group = block.copy?.eyebrow && previous?.copy?.eyebrow !== block.copy.eyebrow ? block.copy.eyebrow : null;
 		const item: ItemContext | undefined = parent
 			? {
 					view: itemViewFor(parent.kind),
-					barClass: parent.kind === "chart" ? barHeightClass(block, parent.children ?? []) : undefined
+					barClass: parent.kind === "chart" ? barHeightClass(block, parent.children ?? []) : undefined,
+					active: index === 0,
+					group: parent.kind === "sidenav" ? group : null,
+					compact: parent.kind === "bottomnav"
 				}
 			: undefined;
 		out.push({ block, item });
@@ -30,6 +35,11 @@ function textContent(value: string | undefined | null): string {
 	const text = value ?? "";
 	if (/[<>{}]/.test(text)) return `{${JSON.stringify(text)}}`;
 	return text;
+}
+
+/** Attribute value: a quoted literal, or an expression when braces would start Svelte syntax. */
+function attrValue(value: string): string {
+	return /[{}]/.test(value) ? `{${JSON.stringify(value)}}` : JSON.stringify(value);
 }
 
 function selectedClass(selected: boolean, on: string, off: string): string {
@@ -67,6 +77,9 @@ export function svelteForBlock(
 	const kind = block.kind;
 	const children = block.children ?? [];
 	const view = item?.view ?? "plain";
+	if (view === "link") return svelteForLink(block, item!);
+	if (kind === "sidenav") return svelteForSidenav(block);
+	if (kind === "bottomnav") return svelteForBottomnav(block);
 	const extra: string[] = [];
 	if (kind === "hero" || kind === "cta") extra.push('import Button from "$ui/button/Button.svelte";');
 	if (kind === "nav" || copy?.badge || view === "row" || (kind === "chart" && children.length))
@@ -203,13 +216,99 @@ ${childTags(block)}
 `;
 }
 
+/** Sidenav / bottomnav link row: one list item with a real anchor (aria-current on the active page). */
+function svelteForLink(block: PageBlock, item: ItemContext): string {
+	const current = item.active ? ` aria-current="page"` : "";
+	const linkClass = item.compact
+		? item.active
+			? "flex w-full justify-center truncate rounded-default bg-accent px-2 py-2 text-xs font-medium text-accent-foreground"
+			: "flex w-full justify-center truncate rounded-default px-2 py-2 text-xs text-muted-foreground hover:bg-accent"
+		: item.active
+			? "flex w-full rounded-default bg-accent px-2 py-2 text-sm font-medium text-accent-foreground"
+			: "flex w-full rounded-default px-2 py-2 text-sm text-muted-foreground hover:bg-accent";
+	const group = item.group
+		? `\n\t<Text tag="span" class="block px-2 pb-1 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">${textContent(item.group)}</Text>`
+		: "";
+	return `<script lang="ts">
+	import Block from "$lib/compose/Block.svelte";
+	import Link from "$ui/link/Link.svelte";${item.group ? '\n\timport Text from "$ui/text/Text.svelte";' : ""}
+</script>
+
+<Block tag="li" class=${JSON.stringify(item.compact ? "min-w-0 flex-1" : "")} data-block-id=${JSON.stringify(block.id)} data-block-kind=${JSON.stringify(block.kind)} data-slot="nav-item">${group}
+	<Link href=${JSON.stringify(`#${block.id}`)} class=${JSON.stringify(linkClass)}${current}>${textContent(block.title)}</Link>
+</Block>
+`;
+}
+
+/** Dashboard sidebar column. Collapses to a top bar with a disclosure button below md. */
+function svelteForSidenav(block: PageBlock): string {
+	const linksId = `${block.id}-links`;
+	return `<script lang="ts">
+	${[...childImports(block), 'import Block from "$lib/compose/Block.svelte";', 'import Group from "$lib/compose/Group.svelte";', 'import Stack from "$lib/compose/Stack.svelte";', 'import Title from "$lib/compose/Title.svelte";', 'import Box from "$ui/box/Box.svelte";', 'import Button from "$ui/button/Button.svelte";', 'import Text from "$ui/text/Text.svelte";'].join("\n\t")}
+
+	let open = $state(false);
+</script>
+
+<Block tag="aside" class="border-b border-border bg-card px-4 py-4 md:sticky md:top-0 md:h-screen md:border-b-0 md:border-r" data-block-id=${JSON.stringify(block.id)} data-block-kind="sidenav" data-slot="sidenav">
+	<Stack class="gap-3">
+		<Group class="items-center justify-between gap-2">
+			<Title as={2} class="text-base font-semibold text-foreground">${textContent(block.copy?.brand ?? block.title)}</Title>
+			<Button class="rounded-default border border-border px-2 py-1 text-sm text-foreground md:hidden" aria-label=${attrValue(block.title)} aria-expanded={open ? "true" : "false"} aria-controls=${JSON.stringify(linksId)} onclick={() => (open = !open)}>
+				<Text tag="span" aria-hidden="true">&#8801;</Text>
+			</Button>
+		</Group>
+		<Box tag="nav" id=${JSON.stringify(linksId)} aria-label=${attrValue(block.title)} class={open ? "block" : "hidden md:block"}>
+			<Stack tag="ul" class="gap-1">
+${childTags(block)}
+			</Stack>
+		</Box>
+	</Stack>
+</Block>
+`;
+}
+
+/** Mobile-only bottom tab bar (hidden at md and up). */
+function svelteForBottomnav(block: PageBlock): string {
+	return `<script lang="ts">
+	${[...childImports(block), 'import Block from "$lib/compose/Block.svelte";', 'import Group from "$lib/compose/Group.svelte";'].join("\n\t")}
+</script>
+
+<Block tag="nav" class="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-card px-2 py-2 md:hidden" aria-label=${attrValue(block.title)} data-block-id=${JSON.stringify(block.id)} data-block-kind="bottomnav" data-slot="bottomnav">
+	<Group tag="ul" class="justify-around gap-1">
+${childTags(block)}
+	</Group>
+</Block>
+`;
+}
+
 export function svelteFromPage(page: CreatorPage, selectedId: string | null = null): string {
 	const roots = blocksOf(page);
 	const imports = roots.map(
 		(block) => `import ${identFromBlockId(block.id)} from "./blocks/${block.id}.svelte";`
 	);
-	const tags = roots.map((block) => `\t<${identFromBlockId(block.id)} />`).join("\n");
 	void selectedId;
+	const sidenav = roots.find((block) => block.kind === "sidenav");
+	const bottomnav = roots.find((block) => block.kind === "bottomnav");
+	if (sidenav || bottomnav) {
+		const main = roots.filter((block) => block !== sidenav && block !== bottomnav);
+		const mainTags = main.map((block) => `\t\t\t<${identFromBlockId(block.id)} />`).join("\n");
+		return `<script lang="ts">
+	import Block from "$lib/compose/Block.svelte";
+	import Stack from "$lib/compose/Stack.svelte";
+	import Box from "$ui/box/Box.svelte";
+	${imports.join("\n\t")}
+</script>
+
+<Block tag="div" class="min-h-screen bg-background md:grid md:grid-cols-[16rem_minmax(0,1fr)]" data-page-id=${JSON.stringify(page.id)} data-page-slug=${JSON.stringify(page.slug)} data-page-status=${JSON.stringify(page.status)} data-slot="app-shell">
+${sidenav ? `\t<${identFromBlockId(sidenav.id)} />\n` : ""}	<Box tag="main" class="min-w-0 px-4 pb-20 pt-4 md:pb-8" data-slot="app-main">
+		<Stack class="gap-4">
+${mainTags}
+		</Stack>
+	</Box>
+${bottomnav ? `\t<${identFromBlockId(bottomnav.id)} />\n` : ""}</Block>
+`;
+	}
+	const tags = roots.map((block) => `\t<${identFromBlockId(block.id)} />`).join("\n");
 	return `<script lang="ts">
 	import Block from "$lib/compose/Block.svelte";
 	import Stack from "$lib/compose/Stack.svelte";

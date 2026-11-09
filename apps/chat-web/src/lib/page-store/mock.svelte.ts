@@ -18,6 +18,8 @@ let currentPage = $state.raw<Page | null>(null);
 let candidatePage = $state.raw<Page | null>(null);
 let appliedProvenance = $state.raw<StoredPageProvenance | null>(null);
 let candidateProvenance = $state.raw<StoredPageProvenance | null>(null);
+let lastProposedPage = $state.raw<Page | null>(null);
+let lastProposedProvenance = $state.raw<StoredPageProvenance | null>(null);
 let selectedBlockId = $state<string | null>(null);
 let pageRevision = $state<number | null>(null);
 let boundSessionId: string | null = null;
@@ -39,7 +41,9 @@ function persistBound(): void {
 		appliedProvenance,
 		candidateProvenance,
 		selectedBlockId,
-		revision: pageRevision
+		revision: pageRevision,
+		lastProposed: lastProposedPage,
+		lastProposedProvenance
 	};
 	writeSessionPages(boundSessionId, record);
 }
@@ -61,6 +65,8 @@ function restoreRecord(record: StoredPageRecord | null): void {
 	candidatePage = candidate;
 	appliedProvenance = record?.appliedProvenance ?? null;
 	candidateProvenance = record?.candidateProvenance ?? null;
+	lastProposedPage = parseStored(record?.lastProposed);
+	lastProposedProvenance = lastProposedPage ? (record?.lastProposedProvenance ?? null) : null;
 	pageRevision = typeof record?.revision === "number" ? record.revision : applied ? 1 : null;
 	const visible = candidate ?? applied;
 	if (visible && record?.selectedBlockId && hasBlock(visible.layout.blocks, record.selectedBlockId)) {
@@ -79,6 +85,8 @@ export function bindPageSession(sessionId: string | null): void {
 		candidatePage = null;
 		appliedProvenance = null;
 		candidateProvenance = null;
+		lastProposedPage = null;
+		lastProposedProvenance = null;
 		selectedBlockId = null;
 		pageRevision = null;
 		return;
@@ -115,6 +123,17 @@ export function getAppliedProvenance(): StoredPageProvenance | null {
 	return appliedProvenance;
 }
 
+/**
+ * Base page for the next chat turn: the pending proposal the author is looking at, else the
+ * applied page, else the last proposal (kept after Discard). Follow-ups edit this page.
+ */
+export function getEditBase(): { page: Page; provenance: StoredPageProvenance | null; source: "candidate" | "applied" | "last-proposal" } | null {
+	if (candidatePage) return { page: candidatePage, provenance: candidateProvenance ?? appliedProvenance, source: "candidate" };
+	if (currentPage) return { page: currentPage, provenance: appliedProvenance, source: "applied" };
+	if (lastProposedPage) return { page: lastProposedPage, provenance: lastProposedProvenance, source: "last-proposal" };
+	return null;
+}
+
 export function getPageRevision(): number | null {
 	return pageRevision;
 }
@@ -148,6 +167,8 @@ export function setCurrentPage(page: Page, revision: number | null = null): void
 	candidatePage = null;
 	appliedProvenance = null;
 	candidateProvenance = null;
+	lastProposedPage = null;
+	lastProposedProvenance = null;
 	pageRevision = revision;
 	syncSelection(next);
 	persistBound();
@@ -156,6 +177,8 @@ export function setCurrentPage(page: Page, revision: number | null = null): void
 export function setCandidatePage(page: Page, provenance?: StoredPageProvenance | null): void {
 	candidatePage = parsePage(page);
 	candidateProvenance = provenance ?? null;
+	lastProposedPage = candidatePage;
+	lastProposedProvenance = candidateProvenance;
 	syncSelection(candidatePage);
 	persistBound();
 }
@@ -185,6 +208,8 @@ export function clearCurrentPage(): void {
 	candidatePage = null;
 	appliedProvenance = null;
 	candidateProvenance = null;
+	lastProposedPage = null;
+	lastProposedProvenance = null;
 	selectedBlockId = null;
 	pageRevision = null;
 	persistBound();

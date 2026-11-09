@@ -13,7 +13,7 @@
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
 	import type { CreatorRuntimeStatus } from "../chat-core";
-	import { formatTokens, type GrokChatModel, type SessionUsage } from "@buildytech/builder-core";
+	import { formatTokens, modelRunsToolLoop, modelUnavailableCode, type GrokChatModel, type SessionUsage } from "@buildytech/builder-core";
 
 	let {
 		disabled = false,
@@ -208,16 +208,22 @@
 					<Button
 						type="button"
 						class={cn(
-							"w-full items-start justify-start rounded-default px-2 py-1.5 text-left hover:bg-accent",
+							"w-full items-start justify-start rounded-default px-2 py-1.5 text-left",
+							modelRunsToolLoop(model) ? "hover:bg-accent" : "cursor-not-allowed opacity-60",
 							model.id === selectedModelId ? "bg-accent" : ""
 						)}
 						role="option"
 						aria-selected={model.id === selectedModelId ? "true" : "false"}
+						aria-disabled={modelRunsToolLoop(model) ? undefined : "true"}
+						disabled={!modelRunsToolLoop(model)}
 						onclick={() => chooseModel(model.id)}
 					>
 						<Stack class="gap-0.5">
 							<Text tag="span" class="text-sm text-foreground">{model.label}</Text>
 							<Text tag="span" class="font-mono text-[11px] text-muted-foreground">{model.id}</Text>
+							{#if !modelRunsToolLoop(model)}
+								<Text tag="span" class="text-[11px] text-muted-foreground">{t(modelUnavailableCode(model) === "model_too_slow" ? "composer.modelTooSlow" : "composer.modelUnavailable")}</Text>
+							{/if}
 						</Stack>
 					</Button>
 				{/each}

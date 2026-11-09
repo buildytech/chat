@@ -9,6 +9,15 @@ export type { EnvMap };
 
 /** Hobby-safe Function duration from Vercel docs examples (seconds). Not Pro 300/800. */
 export const VERCEL_HOBBY_SAFE_MAX_DURATION_SEC = 60;
+/**
+ * /runtime/v1/run: Hobby with fluid compute allows up to 300 s. Slow reasoning models
+ * (for example grok-4.7) need more than 60 s for a tool loop.
+ * https://vercel.com/docs/functions/configuring-functions/duration
+ */
+export const VERCEL_RUN_MAX_DURATION_SEC = 300;
+/** The run aborts itself before the platform kills it, so the client gets a clean timeout code. */
+export const RUN_BUDGET_SHARED_MS = (VERCEL_RUN_MAX_DURATION_SEC - 15) * 1000;
+export const RUN_BUDGET_LOCAL_MS = 240_000;
 
 export function isLoopbackBind(bind: string | undefined): boolean {
 	const value = (bind ?? "127.0.0.1").trim();
@@ -118,10 +127,9 @@ export function basicAuthorizationHeader(user: string, pass: string): string {
 
 export function clampRunBudgetMs(requested: unknown, env?: EnvMap): number {
 	const asked = Number(requested);
-	const fallback = 90_000;
-	const raw = Number.isFinite(asked) && asked > 0 ? asked : fallback;
-	const cap = isSharedPublicSurface(readEnv(env)) ? VERCEL_HOBBY_SAFE_MAX_DURATION_SEC * 1000 : fallback;
-	return Math.min(raw, cap, fallback);
+	const cap = isSharedPublicSurface(readEnv(env)) ? RUN_BUDGET_SHARED_MS : RUN_BUDGET_LOCAL_MS;
+	const raw = Number.isFinite(asked) && asked > 0 ? asked : cap;
+	return Math.min(raw, cap);
 }
 
 export function stripRuntimePrefix(pathname: string): string {

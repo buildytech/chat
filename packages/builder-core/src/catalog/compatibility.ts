@@ -68,7 +68,9 @@ export function screenSupport(screen: CatalogScreen): ScreenSupport {
 	const compat = compatibilityFor(screen);
 	const mappedKinds = [...new Set(compat.mapped.map((row) => row.rendererKind))];
 	const missing = compat.missing.map((row) => row.catalogLabel);
-	const score = mappedKinds.length - missing.length;
+	// App-shell chrome (sidenav, bottomnav) is added from the screen family on Dashboards;
+	// it does not make a screen a better body match.
+	const score = mappedKinds.filter((kind) => kind !== "sidenav" && kind !== "bottomnav").length - missing.length;
 	const hasBody = mappedKinds.some(
 		(kind) =>
 			kind === "hero" ||

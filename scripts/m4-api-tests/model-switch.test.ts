@@ -5,7 +5,9 @@ import {
 	DEFAULT_CHAT_MODEL_ID,
 	GROK_CHAT_MODELS,
 	assertNoFallback,
+	getChatModel,
 	mapChatRunRequest,
+	modelRunsToolLoop,
 	resolveChatModelRequest
 } from "../../packages/builder-core/src/models.ts";
 
@@ -24,9 +26,38 @@ test("selector catalog is the five verified text ids with labels", () => {
 	assert.equal(DEFAULT_CHAT_MODEL_ID, "grok-4.20-0309-non-reasoning");
 });
 
+test("multi-agent model is listed but cannot run the client-side tool loop (honest reason, no substitute)", () => {
+	const mapped = mapChatRunRequest(
+		{ modelId: "grok-4.20-multi-agent-0309", brief: "same general scenario", scenarioId: "landing" },
+		{ discoveredChatIds: [...PARENT_VERIFIED_CHAT_IDS] }
+	);
+	assert.equal(mapped.ok, false);
+	if (!mapped.ok) {
+		assert.equal(mapped.code, "model_tools_unavailable");
+		assert.equal(mapped.requestedId, "grok-4.20-multi-agent-0309");
+		assert.match(mapped.message, /multi-agent/);
+		assert.match(mapped.message, /No other model was substituted/);
+	}
+	const model = getChatModel("grok-4.20-multi-agent-0309");
+	assert.equal(modelRunsToolLoop(model), false);
+	assert.equal(modelRunsToolLoop(getChatModel("grok-build-0.1")), true);
+});
+
+test("grok-4.7 is disabled with an honest latency reason (no substitute)", () => {
+	const mapped = mapChatRunRequest({ modelId: "grok-4.7", brief: "dashboard" }, { discoveredChatIds: [...PARENT_VERIFIED_CHAT_IDS] });
+	assert.equal(mapped.ok, false);
+	if (!mapped.ok) {
+		assert.equal(mapped.code, "model_too_slow");
+		assert.match(mapped.message, /1-4 minutes/);
+		assert.match(mapped.message, /No other model was substituted/);
+	}
+	assert.equal(modelRunsToolLoop(getChatModel("grok-4.7")), false);
+});
+
 test("each text model maps to itself on the run request", () => {
 	const discovered = [...PARENT_VERIFIED_CHAT_IDS];
 	for (const id of PARENT_VERIFIED_CHAT_IDS) {
+		if (!modelRunsToolLoop(getChatModel(id))) continue;
 		const mapped = mapChatRunRequest(
 			{ modelId: id, brief: "same general scenario", scenarioId: "landing" },
 			{ discoveredChatIds: discovered }
@@ -54,13 +85,13 @@ test("image models are not chat choices", () => {
 
 test("unavailable selected model does not fall back to the candidate", () => {
 	const mapped = mapChatRunRequest(
-		{ modelId: "grok-4.7", brief: "trial" },
+		{ modelId: "grok-build-0.1", brief: "trial" },
 		{ discoveredChatIds: ["grok-4.20-0309-non-reasoning"] }
 	);
 	assert.equal(mapped.ok, false);
 	if (!mapped.ok) {
 		assert.equal(mapped.code, "model_not_enabled_on_account");
-		assert.equal(mapped.requestedId, "grok-4.7");
+		assert.equal(mapped.requestedId, "grok-build-0.1");
 		assert.doesNotMatch(mapped.message, /grok-4.20-0309-non-reasoning/);
 	}
 	const missing = mapChatRunRequest({ brief: "trial" }, { discoveredChatIds: [...PARENT_VERIFIED_CHAT_IDS] });

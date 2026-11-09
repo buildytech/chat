@@ -21,6 +21,8 @@ export type ModelContentItem = {
 	value?: string;
 	note?: string;
 	detail?: string;
+	/** Sidebar group heading for a nav link (stored as nav-link copy.eyebrow). */
+	group?: string;
 };
 
 export type ModelBlockContent = {
@@ -28,6 +30,8 @@ export type ModelBlockContent = {
 	title?: string;
 	copy: PageBlockCopy;
 	items: ModelContentItem[];
+	/** Follow-up turns: true only on blocks the author asked to change. */
+	edit?: boolean;
 };
 
 export type ModelPageContent = {
@@ -35,6 +39,8 @@ export type ModelPageContent = {
 	locale?: string;
 	demoLabel?: string;
 	blocks: ModelBlockContent[];
+	/** Follow-up turns: Stock block kinds the author asked to remove. */
+	remove?: PageBlockKind[];
 };
 
 /** Kinds whose rows are figures or events. Rows are kept only when the author asked for demo data. */
@@ -48,11 +54,24 @@ const ITEM_RULES: Partial<Record<PageBlockKind, { child: PageBlockKind; max: num
 	overview: { child: "metric", max: 4 },
 	metrics: { child: "metric", max: 6 },
 	chart: { child: "metric", max: 12 },
-	activity: { child: "activity-item", max: 8 }
+	activity: { child: "activity-item", max: 8 },
+	sidenav: { child: "nav-link", max: 8 },
+	bottomnav: { child: "nav-link", max: 5 }
 };
+
+/** Child kind rendered inside a parent kind (shared with the catalog provenance gate). */
+export function childKindFor(kind: PageBlockKind): PageBlockKind | null {
+	return ITEM_RULES[kind]?.child ?? null;
+}
+
+export function itemLimitFor(kind: PageBlockKind): number {
+	return ITEM_RULES[kind]?.max ?? 0;
+}
 
 const CONTENT_KINDS = new Set<string>([
 	"nav",
+	"sidenav",
+	"bottomnav",
 	"hero",
 	"pagehead",
 	"overview",
@@ -161,8 +180,36 @@ const DEMO_LABELS: Record<string, string> = {
 	ru: "\u0414\u0435\u043c\u043e-\u0434\u0430\u043d\u043d\u044b\u0435"
 };
 
+const SHELL_TITLES: Record<string, { sidenav: string; bottomnav: string }> = {
+	en: { sidenav: "Navigation", bottomnav: "Sections" },
+	ru: {
+		sidenav: "\u041d\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u044f",
+		bottomnav: "\u0420\u0430\u0437\u0434\u0435\u043b\u044b"
+	}
+};
+
+/** Accessible name for app-shell navigation landmarks in the page language. */
+export function shellTitle(kind: "sidenav" | "bottomnav", locale: string): string {
+	const table = SHELL_TITLES[locale.split("-")[0] ?? "en"] ?? SHELL_TITLES.en!;
+	return table[kind];
+}
+
+export function isShellDefaultTitle(title: string): boolean {
+	return Object.values(SHELL_TITLES).some((row) => row.sidenav === title || row.bottomnav === title);
+}
+
 export function defaultDemoLabel(locale: string): string {
 	return DEMO_LABELS[locale.split("-")[0] ?? "en"] ?? DEMO_LABELS.en!;
+}
+
+/** The model's demo badge text, unless it is in the wrong language for the page (e.g. "Demo data" on a ru page). */
+export function demoLabelForLocale(modelLabel: string | undefined, locale: string): string | undefined {
+	if (!modelLabel) return undefined;
+	const lang = locale.split("-")[0] ?? "en";
+	if (lang === "en") return modelLabel;
+	if (modelLabel.trim().toLowerCase() === DEMO_LABELS.en!.toLowerCase() || /^demo\b/i.test(modelLabel.trim())) return undefined;
+	if (lang === "ru" && !/\p{Script=Cyrillic}/u.test(modelLabel)) return undefined;
+	return modelLabel;
 }
 
 /** Plain text for the Page contract: no control chars, no markup braces, bounded. */
@@ -182,7 +229,9 @@ export function cleanText(value: unknown, max: number): string | undefined {
 function normalizeKind(raw: unknown): PageBlockKind | null {
 	const key = String(raw ?? "").trim().toLowerCase();
 	if (CONTENT_KINDS.has(key)) return key as PageBlockKind;
-	if (key === "header" || key === "navigation") return "nav";
+	if (key === "header" || key === "navigation" || key === "navbar" || key === "topbar") return "nav";
+	if (key === "sidebar" || key === "side-nav" || key === "side_nav" || key === "sidebar-nav") return "sidenav";
+	if (key === "tabbar" || key === "tab-bar" || key === "bottom-nav" || key === "bottom_nav" || key === "bottombar") return "bottomnav";
 	if (key === "kpis" || key === "kpi" || key === "stats") return "metrics";
 	if (key === "feed" || key === "events" || key === "timeline") return "activity";
 	return null;
@@ -198,12 +247,16 @@ function parseItem(raw: unknown): ModelContentItem | null {
 	const label = cleanText(rec.label ?? rec.title ?? rec.name, 80);
 	if (!label) return null;
 	const item: ModelContentItem = { label };
-	const value = cleanText(rec.value ?? rec.figure ?? rec.count, 24);
+	const rawValue = cleanText(rec.value ?? rec.figure ?? rec.count, 24);
+	// Drop punctuation-only figures such as "," or "-" (no letter or digit).
+	const value = rawValue && /[\p{L}\p{N}]/u.test(rawValue) ? rawValue : undefined;
 	const note = cleanText(rec.note ?? rec.delta ?? rec.status ?? rec.time, 120);
 	const detail = cleanText(rec.detail ?? rec.description ?? rec.summary, 200);
 	if (value) item.value = value;
 	if (note) item.note = note;
 	if (detail) item.detail = detail;
+	const group = cleanText(rec.group ?? rec.section, 40);
+	if (group) item.group = group;
 	return item;
 }
 
@@ -232,10 +285,19 @@ export function parseModelContent(args: Record<string, unknown>): ModelPageConte
 		}
 		const rule = ITEM_RULES[kind];
 		const items = rule && Array.isArray(rec.items)
-			? rec.items.map(parseItem).filter((item): item is ModelContentItem => Boolean(item)).slice(0, rule.max)
+			? rec.items
+					.map(parseItem)
+					.filter((item): item is ModelContentItem => Boolean(item))
+					// A metric tile or chart point without a figure renders as an empty bar; drop it.
+					.filter((item) => rule.child !== "metric" || Boolean(item.value))
+					.slice(0, rule.max)
 			: [];
 		const blockTitle = cleanText(rec.title, 80);
-		out.blocks.push({ kind, ...(blockTitle ? { title: blockTitle } : {}), copy, items });
+		out.blocks.push({ kind, ...(blockTitle ? { title: blockTitle } : {}), copy, items, ...(rec.edit === true ? { edit: true } : {}) });
+	}
+	if (Array.isArray(args.remove)) {
+		const remove = args.remove.map(normalizeKind).filter((kind): kind is PageBlockKind => Boolean(kind));
+		if (remove.length) out.remove = [...new Set(remove)];
 	}
 	return out;
 }
@@ -254,6 +316,7 @@ function childBlock(parent: PageBlock, child: PageBlockKind, item: ModelContentI
 	const copy: PageBlockCopy = {};
 	if (item.value && (demo || child === "nav-link" || child === "feature")) copy.value = item.value;
 	if (item.note) copy.note = item.note;
+	if (item.group && child === "nav-link") copy.eyebrow = item.group;
 	if (Object.keys(copy).length) node.copy = copy;
 	return node;
 }
@@ -273,7 +336,7 @@ export type MergeResult = {
 export function mergeModelContent(
 	blocks: PageBlock[],
 	content: ModelPageContent | undefined,
-	opts: { demo: boolean; demoLabel: string; locale?: string }
+	opts: { demo: boolean; demoLabel: string; locale?: string; onlyKinds?: ReadonlySet<PageBlockKind> }
 ): MergeResult {
 	const changed: string[] = [];
 	const droppedData: string[] = [];
@@ -284,6 +347,8 @@ export function mergeModelContent(
 	// only the model's fields so the page never mixes languages.
 	const foreign = Boolean(opts.locale && opts.locale.split("-")[0] !== "en");
 	const navEntry = byKind.get("nav");
+	const sideEntry = byKind.get("sidenav");
+	if (sideEntry && !sideEntry.copy.brand && content.title) sideEntry.copy = { ...sideEntry.copy, brand: content.title.slice(0, 48) };
 	if (content.title || (navEntry && !navEntry.items.length && foreign)) {
 		const sections = content.blocks
 			.filter((entry) => entry.kind === "overview" || entry.kind === "metrics" || entry.kind === "chart" || entry.kind === "activity")
@@ -299,6 +364,7 @@ export function mergeModelContent(
 		const entry = byKind.get(node.kind);
 		const isData = DATA_KINDS.has(node.kind);
 		if (!entry) return node;
+		if (opts.onlyKinds && !opts.onlyKinds.has(node.kind)) return node;
 		const copy: PageBlockCopy = foreign ? {} : { ...node.copy };
 		for (const [field, text] of Object.entries(entry.copy) as Array<[PageCopyKey, string]>) {
 			copy[field] = text;
@@ -351,7 +417,8 @@ export function proposeContentParameterSchema(): Record<string, unknown> {
 			label: { type: "string", description: "Row label, metric name, chart x label, nav link, or event text." },
 			value: { type: "string", description: "Display figure, e.g. 128 or 94%. Metrics, overview, chart, menu only." },
 			note: { type: "string", description: "Delta, status, or time, e.g. +12% or 2 h ago." },
-			detail: { type: "string", description: "Secondary line, e.g. who and which project." }
+			detail: { type: "string", description: "Secondary line, e.g. who and which project." },
+			group: { type: "string", description: "Sidenav only: group heading for this link, e.g. Workspace." }
 		},
 		required: ["label"]
 	};
@@ -377,10 +444,20 @@ export function proposeContentParameterSchema(): Record<string, unknown> {
 					},
 					title: { type: "string", description: "Visible section heading in the page language. Required." },
 					...copyProps,
-					items: { type: "array", items: item }
+					items: { type: "array", items: item },
+					edit: {
+						type: "boolean",
+						description:
+							"Follow-up turns on currentPage only: true on blocks the author asked to change or add. Other existing blocks keep their copy and rows."
+					}
 				},
 				required: ["kind", "title"]
 			}
+		},
+		remove: {
+			type: "array",
+			description: "Follow-up turns only: block kinds the author explicitly asked to remove. Never remove anything else.",
+			items: { type: "string", enum: [...CONTENT_KINDS] }
 		}
 	};
 }

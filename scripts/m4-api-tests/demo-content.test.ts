@@ -81,8 +81,11 @@ test("Russian demo prompt: Russian locale, model copy kept, demo rows rendered a
 	assert.equal(proposal.provenance.screenId, DASH);
 	assert.ok(CYRILLIC.test(String(find(page, "pagehead")?.copy?.headline)));
 	assert.equal(find(page, "pagehead")?.copy?.badge, RU.demo);
-	const nav = find(page, "nav");
+	// Section links live in the sidenav (app shell); the top navbar keeps the brand.
+	const nav = find(page, "sidenav");
 	assert.deepEqual(nav?.children?.map((child) => child.title), [RU.projects, RU.tasks, RU.team]);
+	assert.equal(find(page, "nav")?.children, undefined);
+	assert.equal(find(page, "nav")?.copy?.brand, RU.title);
 	assert.doesNotMatch(JSON.stringify(nav), /Orders/);
 	const metrics = find(page, "metrics");
 	assert.equal(metrics?.copy?.badge, RU.demo);
@@ -98,10 +101,12 @@ test("Russian demo prompt: Russian locale, model copy kept, demo rows rendered a
 	// Stock order and kinds are still the catalog's, not the model's.
 	assert.deepEqual(
 		page.layout.blocks.map((block) => block.kind),
-		["nav", "pagehead", "overview", "metrics", "chart", "activity", "footer"]
+		["sidenav", "nav", "pagehead", "overview", "metrics", "chart", "activity", "bottomnav"]
 	);
-	// Missing fields fall back to catalog copy.
-	assert.ok(find(page, "footer")?.copy?.legal);
+	// The marketing sitemap footer is not part of a Dashboard unless the author asks for it.
+	assert.equal(find(page, "footer"), undefined);
+	assert.ok(CYRILLIC.test(String(find(page, "sidenav")?.title)));
+	assert.ok(CYRILLIC.test(String(find(page, "bottomnav")?.title)));
 });
 
 test("Russian page never mixes in English catalog fallbacks on model-written blocks", () => {
@@ -109,7 +114,8 @@ test("Russian page never mixes in English catalog fallbacks on model-written blo
 	const blocks = (args.blocks as Array<Record<string, unknown>>).filter((block) => block.kind !== "nav");
 	const proposal = propose({ ...args, blocks }, RU_DEMO_PROMPT);
 	const page = proposal.page;
-	const nav = find(page, "nav");
+	assert.equal(find(page, "nav")?.copy?.brand, RU.title);
+	const nav = find(page, "sidenav");
 	assert.equal(nav?.copy?.brand, RU.title);
 	assert.deepEqual(nav?.children?.map((child) => child.title), [RU.projects]);
 	for (const kind of ["overview", "metrics", "chart", "activity"]) {
@@ -130,8 +136,8 @@ test("without a demo request data rows are dropped but model copy is kept", () =
 	assert.equal(find(page, "chart")?.children, undefined);
 	assert.equal(find(page, "activity")?.children, undefined);
 	assert.ok(proposal.warnings.some((line) => /Data rows dropped/.test(line)));
-	// Copy-only nav links are not data and stay.
-	assert.equal(find(page, "nav")?.children?.length, 3);
+	// Copy-only nav links are not data and stay (moved into the sidenav).
+	assert.equal(find(page, "sidenav")?.children?.length, 3);
 });
 
 test("the model's own brief cannot unlock demo data; only the author's message can", () => {
@@ -218,15 +224,19 @@ test("catalog refs are generated from the pinned catalog with Stock links", () =
 	assert.deepEqual(
 		refs.blocks.map((ref) => [ref.kind, ref.catalogId]),
 		[
+			["sidenav", "block.sidenav"],
 			["nav", "block.navbar"],
 			["pagehead", "block.pagehead"],
 			["overview", "block.overview"],
 			["metrics", "block.metrics"],
 			["chart", "block.chart"],
 			["activity", "block.activity"],
-			["footer", "block.sitemap"]
+			["bottomnav", "block.bottomnav"]
 		]
 	);
+	// Shell blocks come from a sibling Stock screen of the same family, and say so.
+	assert.equal(refs.blocks.find((ref) => ref.kind === "sidenav")?.sourceScreenId, "screen.theme-dashboard-console/layouts");
+	assert.equal(refs.blocks.find((ref) => ref.kind === "metrics")?.sourceScreenId, DASH);
 	const metrics = refs.blocks.find((ref) => ref.kind === "metrics")!;
 	assert.equal(metrics.title, "Metric tiles");
 	assert.equal(metrics.url, "https://app.codegen-x.com/#/search?type=block&spec=block.metrics");
@@ -253,7 +263,7 @@ test("catalog validator rejects invented blocks, foreign blocks, bad rows, unkno
 	assert.equal(fake.ok, false);
 	if (!fake.ok) {
 		assert.equal(fake.code, "catalog_block_unknown");
-		assert.equal(fake.path, "layout.blocks[7]");
+		assert.equal(fake.path, `layout.blocks[${proposal.page.layout.blocks.length}]`);
 		assert.match(fake.message, /Invented blocks are rejected/);
 	}
 
@@ -290,5 +300,5 @@ test("runtime revalidation rejects a tampered proposal with a fake block before 
 	if (!checked.ok) assert.match(checked.code, /^catalog_/);
 	const clean = revalidateProposal(proposal);
 	assert.equal(clean.ok, true);
-	if (clean.ok) assert.equal(clean.catalogRefs.blocks.length, 7);
+	if (clean.ok) assert.equal(clean.catalogRefs.blocks.length, proposal.page.layout.blocks.length);
 });

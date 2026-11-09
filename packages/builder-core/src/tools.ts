@@ -29,6 +29,8 @@ export type ToolHost = {
 	liveTurn?: boolean;
 	/** The author's own message. Demo-data and locale detection read this, not the model's brief. */
 	authorBrief?: string;
+	/** Host flag: demo data was requested earlier in this chat (from the author's own messages). */
+	sessionDemoData?: boolean;
 };
 
 export type CompactSearchItem = {
@@ -240,6 +242,10 @@ export function executeTool(
 			liveTurn: Boolean(host?.liveTurn),
 			edits: parseLayoutCopyEdits(args.edits),
 			authorBrief: host?.authorBrief,
+			sessionDemoData: Boolean(host?.sessionDemoData),
+			targetScreenId: currentPage
+				? (recordedScreenId(args.targetScreenId) ?? recordedScreenId(args.screenId))
+				: null,
 			content: parseModelContent(args)
 		});
 		if (!result.ok) {
@@ -261,7 +267,12 @@ export function executeTool(
 
 export function runConstructorTools(ctx: ProposalContext): LayoutProposal | LayoutProposalError {
 	const scenarioId = ctx.scenarioId ?? inferScenarioId(ctx.brief);
-	const host = { currentPage: ctx.currentPage, authorBrief: ctx.authorBrief ?? ctx.brief };
+	const host = {
+		currentPage: ctx.currentPage,
+		currentProvenance: ctx.currentProvenance,
+		authorBrief: ctx.authorBrief ?? ctx.brief,
+		sessionDemoData: ctx.sessionDemoData
+	};
 	const search = executeTool({
 		name: "search_catalog",
 		arguments: scenarioId === "dashboard"

@@ -46,6 +46,8 @@ export type ChatProposalState = {
 	demoData?: boolean;
 	/** Program-generated from the pinned Stock catalog after validation. Persisted with the chat. */
 	catalogRefs?: CatalogRefs;
+	/** Follow-up turns: block kinds added, kept, and removed versus the base page. */
+	changes?: { added: string[]; kept: string[]; removed: string[] };
 };
 
 export type ChatRunRecord = {

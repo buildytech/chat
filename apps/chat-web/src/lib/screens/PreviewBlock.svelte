@@ -34,6 +34,21 @@
 		event.stopPropagation();
 		selectBlock(id);
 	}
+
+	// Sidenav collapses below the shell breakpoint; the toggle opens it as a sheet.
+	let navOpen = $state(false);
+	const linksId = $derived(`${block.id}-links`);
+
+	function toggleNav(event: Event) {
+		event.stopPropagation();
+		navOpen = !navOpen;
+	}
+
+	function groupStart(index: number): string | null {
+		const label = children[index]?.copy?.eyebrow;
+		if (!label) return null;
+		return children[index - 1]?.copy?.eyebrow === label ? null : label;
+	}
 </script>
 
 <Block
@@ -61,7 +76,71 @@
 			{/if}
 		</Group>
 
-		{#if kind === "nav"}
+		{#if kind === "sidenav"}
+			<Group class="items-center justify-between gap-2" data-slot="sidenav-bar">
+				<Title as={2} class="text-base font-semibold text-foreground">{copy?.brand ?? block.title}</Title>
+				<Button
+					class="rounded-default border border-border px-2 py-1 text-xs text-foreground hover:bg-accent @xl:hidden"
+					aria-expanded={navOpen ? "true" : "false"}
+					aria-controls={linksId}
+					onclick={toggleNav}
+				>
+					<Text tag="span">{navOpen ? t("preview.sidenavClose") : t("preview.sidenavOpen")}</Text>
+				</Button>
+			</Group>
+			<Box
+				tag="nav"
+				id={linksId}
+				aria-label={block.title}
+				class={cn("@xl:block", navOpen ? "block" : "hidden")}
+				data-slot="sidenav-links"
+			>
+				<Stack tag="ul" class="gap-1">
+					{#each children as child, index (child.id)}
+						{#if groupStart(index)}
+							<Box tag="li" class="px-2 pt-2" aria-hidden="true">
+								<Text tag="span" class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+									{groupStart(index)}
+								</Text>
+							</Box>
+						{/if}
+						<Box tag="li">
+							<Button
+								class={cn(
+									"w-full justify-start rounded-default px-2 py-2 text-left text-sm",
+									index === 0 ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground hover:bg-accent/70",
+									selectedId === child.id ? "ring-1 ring-primary" : ""
+								)}
+								aria-current={index === 0 ? "page" : undefined}
+								onclick={(event: Event) => onSelectChild(event, child.id)}
+							>
+								<Text tag="span">{child.title}</Text>
+							</Button>
+						</Box>
+					{/each}
+				</Stack>
+			</Box>
+		{:else if kind === "bottomnav"}
+			<Box tag="nav" aria-label={block.title} data-slot="bottomnav-links">
+				<Group tag="ul" class="justify-around gap-1">
+					{#each children as child, index (child.id)}
+						<Box tag="li" class="min-w-0 flex-1">
+							<Button
+								class={cn(
+									"w-full justify-center truncate rounded-default px-2 py-2 text-xs",
+									index === 0 ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground hover:bg-accent/70",
+									selectedId === child.id ? "ring-1 ring-primary" : ""
+								)}
+								aria-current={index === 0 ? "page" : undefined}
+								onclick={(event: Event) => onSelectChild(event, child.id)}
+							>
+								<Text tag="span">{child.title}</Text>
+							</Button>
+						</Box>
+					{/each}
+				</Group>
+			</Box>
+		{:else if kind === "nav"}
 			<Group class="flex-wrap justify-between gap-3">
 				<Title as={2} class="text-base font-semibold text-foreground">
 					{copy?.brand ?? block.title}

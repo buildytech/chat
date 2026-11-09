@@ -272,6 +272,23 @@
 		"catalogRefs.rows": "{n} rows",
 		"catalogRefs.demo": "Demo data on this page is not real",
 		"catalogRefs.digest": "Pinned catalog {digest}",
-		"catalogRefs.meta": "kind={kind} · label={label} · variants={variants}"
+		"catalogRefs.meta": "kind={kind} · label={label} · variants={variants}",
+		"assistant.changesAdded": "Added: {list}.",
+		"assistant.changesKept": "Kept {n} blocks with their copy and data: {list}.",
+		"assistant.changesRemoved": "Removed: {list}.",
+		"assistant.changesNone": "No blocks were added or removed.",
+		"assistant.baseCandidate": "Edited the current proposal.",
+		"assistant.baseApplied": "Edited the applied page.",
+		"assistant.baseLastProposal": "Edited the last proposal in this chat (it was discarded, not applied).",
+		"assistant.demoSticky": "Demo data stays on from earlier in this chat. Say \"no demo data\" to remove it.",
+		"runtime.timeout": "The model did not finish in time ({code}). Try again or pick a faster model. No other model was substituted.",
+		"runtime.platformError": "The app host returned an error ({code}). Nothing was changed. Try again.",
+		"runtime.modelToolsUnavailable": "{label} cannot run this app's catalog tools: xAI rejects client-side tools for multi-agent models. Pick another model. No other model was substituted.",
+		"composer.modelUnavailable": "Unavailable here: multi-agent models cannot run this app's catalog tools",
+		"runtime.modelTooSlow": "{label} is disabled here: in live runs it took 1-4 minutes per page and often timed out. Pick another model. No other model was substituted.",
+		"composer.modelTooSlow": "Unavailable here: too slow for the catalog tools (1-4 min per page, frequent timeouts)",
+		"preview.sidenavOpen": "Open navigation",
+		"preview.sidenavClose": "Close navigation",
+		"preview.appMain": "Main content"
 	}
 }
