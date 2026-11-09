@@ -1,5 +1,10 @@
 import { blocksOf, type CreatorPage, type PageBlock } from "@buildytech/page-contract";
+import { organismFor, registryNpmDependencies, type OrganismRender } from "@buildytech/builder-core";
+import registryFiles from "../../registry/files.json" with { type: "json" };
 import { barHeightClass, itemViewFor, type ItemView } from "./data-view.ts";
+
+/** Folder of the vendored UI8Kit registry tree inside the pack (same layout as `npx ui8kit add`). */
+export const REGISTRY_DIR = "ui8kit";
 
 type ItemContext = { view: ItemView; barClass?: string; active?: boolean; group?: string | null; compact?: boolean };
 
@@ -18,7 +23,8 @@ function walkBlocks(blocks: PageBlock[], parent: PageBlock | null = null): Array
 				}
 			: undefined;
 		out.push({ block, item });
-		if (block.children?.length) out.push(...walkBlocks(block.children, block));
+		// A registry organism renders its rows itself (props), so its children get no block files.
+		if (block.children?.length && !organismFor(block)) out.push(...walkBlocks(block.children, block));
 	}
 	return out;
 }
@@ -67,11 +73,34 @@ function primitiveImports(extra: string[]): string[] {
 	];
 }
 
+function organismIdent(organism: string): string {
+	const base = organism.split("/").pop()!.replace(/\.svelte$/, "");
+	return base.replace(/(^|-)([a-z0-9])/g, (_, __, ch: string) => ch.toUpperCase());
+}
+
+/** A block with a registry source: the real UI8Kit organism with props from the shared page-spec mapping. */
+function svelteForOrganism(block: PageBlock, render: OrganismRender): string {
+	const ident = organismIdent(render.organism);
+	// Copy never holds `<` (page contract); escape anyway so the JSON can never close the script element.
+	const props = JSON.stringify(render.props, null, "\t").replace(/</g, "\\u003c").split("\n").join("\n\t");
+	return `<!-- ${render.catalogBlock} / ${render.variant}: UI8Kit registry item ${render.item} (npx ui8kit add ${render.item}). -->
+<script lang="ts">
+	import ${ident} from "../${REGISTRY_DIR}/${render.organism}";
+
+	const props = ${props};
+</script>
+
+<${ident} {...props} />
+`;
+}
+
 export function svelteForBlock(
 	block: PageBlock,
 	selectedId: string | null = null,
 	item?: ItemContext
 ): string {
+	const render = item ? null : organismFor(block);
+	if (render) return svelteForOrganism(block, render);
 	const selected = selectedId === block.id;
 	const copy = block.copy;
 	const kind = block.kind;
@@ -323,6 +352,11 @@ ${tags}
 `;
 }
 
+/** npm packages the pack needs when it carries registry organisms. */
+export function packNpmDependencies(page: CreatorPage): string[] {
+	return blocksOf(page).some((block) => organismFor(block)) ? ["svelte", ...registryNpmDependencies] : [];
+}
+
 export function sveltePackFiles(
 	page: CreatorPage,
 	selectedId: string | null = null
@@ -335,6 +369,12 @@ export function sveltePackFiles(
 			path: `blocks/${block.id}.svelte`,
 			content: svelteForBlock(block, selectedId, item)
 		});
+	}
+	if (packNpmDependencies(page).length) {
+		// The pinned registry snapshot (sha256 in registry/registry.lock.json): organisms, their deps and styles/.
+		for (const [path, content] of Object.entries(registryFiles as Record<string, string>)) {
+			files.push({ path: `${REGISTRY_DIR}/${path}`, content });
+		}
 	}
 	return files;
 }

@@ -1,5 +1,6 @@
-import { parsePage, type CreatorPage } from "./page";
-import { svelteFromPage, sveltePackFiles } from "./svelte-code";
+import { parsePage, type CreatorPage } from "./page.ts";
+import { packNpmDependencies, svelteFromPage, sveltePackFiles, REGISTRY_DIR } from "./svelte-code.ts";
+import chatWebPackage from "../../../package.json" with { type: "json" };
 
 export type PackFile = {
 	path: string;
@@ -180,6 +181,26 @@ export function packFilesFromPage(
 		path: "page.json",
 		content: `${JSON.stringify(valid, null, 2)}\n`
 	});
+	const npm = packNpmDependencies(valid);
+	if (npm.length) {
+		const versions: Record<string, string> = { ...chatWebPackage.dependencies, ...chatWebPackage.devDependencies };
+		const pick = (names: string[]) => Object.fromEntries(names.filter((name) => versions[name]).map((name) => [name, versions[name]!]));
+		files.push({
+			path: "package.json",
+			content: `${JSON.stringify(
+				{
+					name: `${valid.slug || "page"}-pack`,
+					private: true,
+					type: "module",
+					description: `Svelte 5 page. Registry organisms under ${REGISTRY_DIR}/ (styles: ${REGISTRY_DIR}/styles/index.css).`,
+					dependencies: pick(npm),
+					devDependencies: pick(["@sveltejs/vite-plugin-svelte", "@tailwindcss/vite", "tailwindcss", "typescript", "vite"])
+				},
+				null,
+				2
+			)}\n`
+		});
+	}
 	const generator = {
 		name: "@buildytech/chat-web/svelte-pack",
 		emitter: "svelteFromPage",

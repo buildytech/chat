@@ -7,7 +7,8 @@ import { test } from "node:test";
 import { parsePage } from "../../packages/page-contract/src/index.ts";
 import { executeTool, proposeLayout, type LayoutProposal } from "../../packages/builder-core/src/index.ts";
 import { RU_DEMO_PROMPT, ruDashboardArgs } from "./fixtures-demo.ts";
-import { svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
+import { packNpmDependencies, svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
+import { packFilesFromPage } from "../../apps/chat-web/src/lib/page-store/pack.ts";
 
 const CHAT_WEB = fileURLToPath(new URL("../../apps/chat-web/", import.meta.url));
 const SRC = path.join(CHAT_WEB, "src");
@@ -38,13 +39,26 @@ function kitFile(specifier: string): string | null {
 	return null;
 }
 
-function assertPackImports(label: string, files: { path: string; content: string }[]): { path: string; content: string }[] {
+/** A relative import as the bundler resolves it: the file, or with .ts / .js, or the folder index. */
+function packTarget(pack: Map<string, string>, resolved: string): string | null {
+	for (const candidate of [resolved, `${resolved}.ts`, `${resolved}.js`, `${resolved}/index.ts`, `${resolved}/index.js`]) {
+		if (pack.has(candidate)) return candidate;
+	}
+	return null;
+}
+
+function assertPackImports(
+	label: string,
+	files: { path: string; content: string }[],
+	npm: string[] = []
+): { path: string; content: string }[] {
 	const pack = new Map(files.map((file) => [file.path, file.content]));
 	const svelteFiles = files.filter((file) => file.path.endsWith(".svelte"));
 	assert.ok(svelteFiles.some((file) => file.path === "page.svelte"), `${label}: missing page.svelte`);
-	for (const file of svelteFiles) {
-		const imports = [...file.content.matchAll(/from\s+"([^"]+)"/g)].map((match) => match[1]!);
-		assert.ok(imports.length > 0, `${label} ${file.path}: no imports`);
+	for (const file of files.filter((file) => /\.(svelte|ts)$/.test(file.path))) {
+		const code = file.path.endsWith(".ts") ? file.content.replace(/\/\*[\s\S]*?\*\/|^\s*\/\/.*$/gm, "") : file.content;
+		const imports = [...code.matchAll(/from\s+"([^"]+)"/g)].map((match) => match[1]!);
+		if (file.path.endsWith(".svelte")) assert.ok(imports.length > 0, `${label} ${file.path}: no imports`);
 		for (const specifier of imports) {
 			assert.equal(
 				/placeholder|TODO|FIXME|not-implemented|nonexistent/i.test(specifier),
@@ -56,13 +70,15 @@ function assertPackImports(label: string, files: { path: string; content: string
 				assert.ok(disk && existsSync(disk), `${label} ${file.path}: missing primitive ${specifier}`);
 				continue;
 			}
+			const bare = specifier.split("/")[0]!;
+			if (!specifier.startsWith(".") && npm.includes(bare)) continue;
 			assert.ok(
 				specifier.startsWith("./") || specifier.startsWith("../"),
 				`${label} ${file.path}: unexpected import ${specifier}`
 			);
 			const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(file.path), specifier));
 			assert.ok(
-				pack.has(resolved),
+				packTarget(pack, resolved),
 				`${label} ${file.path}: import ${specifier} is not an emitted pack file (${resolved})`
 			);
 		}
@@ -70,9 +86,9 @@ function assertPackImports(label: string, files: { path: string; content: string
 	return svelteFiles;
 }
 
-function assertPackCompiles(label: string, files: { path: string; content: string }[]): void {
+function assertPackCompiles(label: string, files: { path: string; content: string }[], npm: string[] = []): void {
 	const compile = loadCompile();
-	for (const file of assertPackImports(label, files)) {
+	for (const file of assertPackImports(label, files, npm)) {
 		try {
 			const result = compile(file.content, { filename: file.path, generate: "client" });
 			assert.ok(result.js.code.length > 0, `${label} ${file.path}: compiler returned empty js`);
@@ -176,4 +192,61 @@ test("app shell pack: aside sidenav, main, mobile-only bottomnav, nav landmarks 
 	assert.doesNotMatch(secondLink, /aria-current/);
 	assertPackCompiles("app-shell", files);
 	assertPackImports("app-shell", files);
+});
+
+function featuresPage(variant: string) {
+	const result = executeTool(
+		{
+			name: "propose_layout",
+			arguments: {
+				brief: "Landing for a static site builder with a features grid",
+				screenId: "screen.site/home",
+				locale: "en",
+				blocks: [
+					{
+						kind: "features",
+						title: "Features of our service",
+						variant,
+						action: { label: "View all", href: "#/features" },
+						items: [
+							{ label: "Fast by default", detail: "Pages render from static data.", icon: "zap" },
+							{ label: "Clear structure", detail: "One heading per page.", icon: "layers" },
+							{ label: "Accessible", detail: "Landmarks and labels on every section.", icon: "accessibility" }
+						]
+					}
+				]
+			}
+		},
+		{ liveTurn: true, authorBrief: "Landing with features" }
+	);
+	assert.equal(result.ok, true, JSON.stringify(result));
+	return (result.result as LayoutProposal).page;
+}
+
+test("feature-grid pack: the real registry organism with its deps and styles, imports resolve, compiles", () => {
+	const page = featuresPage("cells4");
+	const files = sveltePackFiles(page, null);
+	const npm = packNpmDependencies(page);
+	assert.deepEqual(npm, ["svelte", "clsx", "tailwind-merge"]);
+	const byPath = new Map(files.map((file) => [file.path, file.content]));
+	const block = byPath.get("blocks/block-features.svelte")!;
+	assert.match(block, /import FeatureGrid from "\.\.\/ui8kit\/blocks\/feature-grid\.svelte"/);
+	assert.match(block, /"item": "cell"/);
+	assert.match(block, /"cols": "1-4"|"cols": "1-2"|"cols": "1-3"/);
+	assert.match(block, /"icon": "zap"/);
+	assert.match(block, /"href": "#\/features"/);
+	assert.equal(byPath.has("blocks/block-features-item-1.svelte"), false, "the organism renders its rows");
+	for (const style of ["index", "theme", "kit"]) assert.ok(byPath.has(`ui8kit/styles/${style}.css`), `styles/${style}.css`);
+	assert.ok(byPath.has("ui8kit/blocks/feature-grid.svelte"));
+	assertPackCompiles("feature-grid", files, npm);
+	const pack = packFilesFromPage(page, null);
+	const pkg = JSON.parse(pack.find((file) => file.path === "package.json")!.content) as { dependencies: Record<string, string> };
+	assert.deepEqual(Object.keys(pkg.dependencies).sort(), ["clsx", "svelte", "tailwind-merge"]);
+	const manifest = JSON.parse(pack.find((file) => file.path === "manifest.json")!.content) as { files: string[] };
+	assert.ok(manifest.files.includes("ui8kit/blocks/feature-grid.svelte"));
+});
+
+test("pages without a registry block emit no registry tree and no package.json", () => {
+	const files = packFilesFromPage(page, null);
+	assert.equal(files.some((file) => file.path.startsWith("ui8kit/") || file.path === "package.json"), false);
 });
