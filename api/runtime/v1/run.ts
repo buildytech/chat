@@ -167,6 +167,8 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
     }
   },
   "rendererKinds": [
+    "activity",
+    "chart",
     "cta",
     "dish",
     "feature",
@@ -175,8 +177,12 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
     "hero",
     "hours",
     "menu",
+    "metric",
+    "metrics",
     "nav",
-    "nav-link"
+    "nav-link",
+    "overview",
+    "pagehead"
   ],
   "screens": [
     {
@@ -3707,8 +3713,8 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Activity feed",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "activity",
+      "rendererCompatible": true
     },
     {
       "blockId": "announcement",
@@ -3993,8 +3999,8 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Chart panel",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "chart",
+      "rendererCompatible": true
     },
     {
       "blockId": "checklist",
@@ -4885,7 +4891,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Metric tiles",
       "available": true,
-      "rendererKind": "features",
+      "rendererKind": "metrics",
       "rendererCompatible": true
     },
     {
@@ -4971,7 +4977,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Dashboard overview",
       "available": true,
-      "rendererKind": "features",
+      "rendererKind": "overview",
       "rendererCompatible": true
     },
     {
@@ -4989,8 +4995,8 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Page heading",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "pagehead",
+      "rendererCompatible": true
     },
     {
       "blockId": "pagetrail",
@@ -6005,9 +6011,12 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
     "featureshowcase": "features",
     "featuretabs": "features",
     "featuresplit": "features",
-    "metrics": "features",
-    "overview": "features",
+    "metrics": "metrics",
+    "overview": "overview",
     "stats": "features",
+    "chart": "chart",
+    "activity": "activity",
+    "pagehead": "pagehead",
     "cta": "cta",
     "ctaproof": "cta",
     "footer": "footer",
@@ -6249,7 +6258,13 @@ const PAGE_BLOCK_KINDS = [
 	"dish",
 	"hours",
 	"cta",
-	"footer"
+	"footer",
+	"pagehead",
+	"overview",
+	"metrics",
+	"metric",
+	"chart",
+	"activity"
 ] as const;
 
 const PAGE_COPY_KEYS = [
@@ -6681,7 +6696,16 @@ function screenSupport(screen: CatalogScreen): ScreenSupport {
 	const mappedKinds = [...new Set(compat.mapped.map((row) => row.rendererKind))];
 	const missing = compat.missing.map((row) => row.catalogLabel);
 	const score = mappedKinds.length - missing.length;
-	const hasBody = mappedKinds.some((kind) => kind === "hero" || kind === "features" || kind === "menu");
+	const hasBody = mappedKinds.some(
+		(kind) =>
+			kind === "hero" ||
+			kind === "features" ||
+			kind === "menu" ||
+			kind === "overview" ||
+			kind === "metrics" ||
+			kind === "chart" ||
+			kind === "activity"
+	);
 	const hasFrame = mappedKinds.includes("nav") || mappedKinds.includes("footer") || mappedKinds.includes("cta");
 	const supported =
 		mappedKinds.length >= 3 && hasBody && hasFrame && (missing.length === 0 || missing.length < compat.mapped.length);
@@ -6999,10 +7023,16 @@ function displayTitleFromBrief(brief: string, fallback = "Draft page"): string {
 		const name = named[1].trim();
 		if (name) return name.slice(0, 80);
 	}
-	const forMatch = trimmed.match(/\bfor\s+([^.,\n]+?)(?:,|\s+a\s+|\s+an\s+)/i);
+	const forMatch = trimmed.match(/\bfor\s+([^.,\n]+?)(?=,|\s+a\s+|\s+an\s+|\.|$)/i);
 	if (forMatch?.[1]) {
 		const name = forMatch[1].replace(/\b(?:a|an|the)\s+new year\s+/i, "").trim();
-		if (name && name.split(/\s+/).length <= 8) return name.slice(0, 80);
+		if (
+			name &&
+			name.split(/\s+/).length <= 8 &&
+			!/^(?:the|a|an|this|that|existing|real)\b/i.test(name)
+		) {
+			return name.slice(0, 80);
+		}
 	}
 	const withoutPrefix = trimmed
 		.replace(/^qa\s+\w+(?:\s+\w+)?\s+\d{2,4}:\s*/i, "")
@@ -7279,10 +7309,15 @@ function block(
 
 function pageSlot(kind: PageBlockKind, jobRank: Map<PageBlockKind, number>): number {
 	if (kind === "nav") return 0;
+	if (kind === "pagehead") return 5;
 	if (kind === "hero") return 10;
+	if (kind === "overview") return 15;
+	if (kind === "metrics") return 20;
+	if (kind === "chart") return 25;
+	if (kind === "activity") return 30;
 	if (kind === "cta") return 90;
 	if (kind === "footer") return 100;
-	if (kind === "nav-link" || kind === "feature" || kind === "dish") return 200;
+	if (kind === "nav-link" || kind === "feature" || kind === "dish" || kind === "metric") return 200;
 	const job = jobRank.get(kind);
 	if (job != null) return 20 + job;
 	if (kind === "features") return 20;
@@ -7339,12 +7374,23 @@ function briefMentionsDelivery(brief: string): boolean {
 	return /\bdeliver(?:y|ies|ed)?\b/i.test(brief);
 }
 
+function briefMentionsOrders(brief: string): boolean {
+	return /\borders?\b/i.test(brief);
+}
+
+function titleWho(brief: string, screen: CatalogScreen | null): string {
+	const named = displayTitleFromBrief(brief);
+	if (named && named !== "Draft page") return named;
+	if (screen?.title?.trim()) return screen.title.trim();
+	return "Draft page";
+}
+
 function navLinks(scenario: ScenarioId | null, brief: string): PageBlock[] {
 	const byScenario: Record<ScenarioId, Array<[string, string, string]>> = {
 		dashboard: [
-			["overview", "Overview", "Jump to the metrics overview."],
-			["orders", "Orders", "Orders the author can verify. Counts are not invented."],
-			["ask", "Ask", "Questions about audience and data."]
+			["overview", "Overview", "Jump to the operational overview."],
+			["orders", "Orders", "Orders stay empty until the author supplies them."],
+			["activity", "Activity", "Activity stays empty until the author supplies it."]
 		],
 		landing: [
 			["offer", "Offer", "The value proposition section."],
@@ -7359,20 +7405,27 @@ function navLinks(scenario: ScenarioId | null, brief: string): PageBlock[] {
 	};
 	const grill = briefMentionsGrill(brief);
 	const delivery = briefMentionsDelivery(brief);
-	const rows = grill
-		? [
-				["home", "Home", "This page."],
-				["menu", "Menu", "Ask the author for the real grill menu."],
-				[delivery ? "delivery" : "hours", delivery ? "Delivery" : "Hours", delivery ? "Delivery area waits for the author." : "Hours wait for the author."],
-				["contact", "Contact", "How to reach the author."]
-			]
-		: scenario
-			? byScenario[scenario]
-			: [
-					["home", "Home", "This page."],
-					["about", "About", "Who the business is. Facts still needed."],
-					["contact", "Contact", "How to reach the author."]
-				];
+	const rows =
+		scenario === "dashboard"
+			? byScenario.dashboard
+			: grill
+				? [
+						["home", "Home", "This page."],
+						["menu", "Menu", "Ask the author for the real grill menu."],
+						[
+							delivery ? "delivery" : "hours",
+							delivery ? "Delivery" : "Hours",
+							delivery ? "Delivery area waits for the author." : "Hours wait for the author."
+						],
+						["contact", "Contact", "How to reach the author."]
+					]
+				: scenario
+					? byScenario[scenario]
+					: [
+							["home", "Home", "This page."],
+							["about", "About", "Who the business is. Facts still needed."],
+							["contact", "Contact", "How to reach the author."]
+						];
 	return rows.map(([id, title, summary]) => block(`block-nav-${id}`, "nav-link", title, summary));
 }
 
@@ -7457,11 +7510,38 @@ function copyFor(
 ): PageBlock["copy"] | undefined {
 	const prompt = scenario ? SCENARIO_PROMPTS[scenario] : null;
 	const occasion = occasionFromBrief(brief);
-	const who = title && title !== "Draft page" ? title : "this page";
+	const who = title && title !== "Draft page" ? title : screen?.title?.trim() || "Draft page";
 	const grill = briefMentionsGrill(brief);
 	const delivery = briefMentionsDelivery(brief);
+	const orders = briefMentionsOrders(brief);
 	if (kind === "nav") {
 		return { brand: who.slice(0, 32) };
+	}
+	if (kind === "pagehead") {
+		return {
+			headline: who,
+			lede: "Audience, data, and tasks wait for the author. No invented KPIs."
+		};
+	}
+	if (kind === "overview") {
+		return {
+			lede: orders
+				? "No orders in this draft. Counts stay empty until the author supplies them."
+				: "Operational status for this dashboard. Counts stay empty until the author supplies them."
+		};
+	}
+	if (kind === "metrics") {
+		return { lede: "No figures in this draft. Metric tiles stay empty until the author supplies them." };
+	}
+	if (kind === "chart") {
+		return { lede: "No figures in this draft. The chart stays empty until the author supplies data." };
+	}
+	if (kind === "activity") {
+		return {
+			lede: orders
+				? "No orders in this draft. The list stays empty until the author supplies them."
+				: "No activity in this draft. The list stays empty until the author supplies them."
+		};
 	}
 	if (kind === "hero") {
 		const occasionBit = occasion ? ` ${occasion}` : "";
@@ -7507,9 +7587,14 @@ function copyFor(
 	return undefined;
 }
 
-function titleFor(kind: PageBlockKind, screen: CatalogScreen | null): string {
+function titleFor(kind: PageBlockKind, screen: CatalogScreen | null, brief = ""): string {
 	if (kind === "nav") return "Header";
 	if (kind === "hero") return "Hero";
+	if (kind === "pagehead") return "Page heading";
+	if (kind === "overview") return "Overview";
+	if (kind === "metrics") return "Metrics";
+	if (kind === "chart") return "Chart";
+	if (kind === "activity") return briefMentionsOrders(brief) ? "Orders" : "Activity";
 	if (kind === "features") return screen?.labels.section.includes("dashboard") ? "Overview" : "Why this page";
 	if (kind === "menu") return "Menu";
 	if (kind === "cta") return "Next step";
@@ -7518,9 +7603,18 @@ function titleFor(kind: PageBlockKind, screen: CatalogScreen | null): string {
 	return kind;
 }
 
-function summaryFor(kind: PageBlockKind): string {
+function summaryFor(kind: PageBlockKind, brief = ""): string {
 	if (kind === "nav") return "Brand and section links assembled from compatible catalog labels.";
 	if (kind === "hero") return "Opening section. Claims wait for the author's facts.";
+	if (kind === "pagehead") return "Dashboard heading from the Stock screen or named team. No invented business.";
+	if (kind === "overview") return "Operational empty state. Counts are not invented.";
+	if (kind === "metrics") return "Metric tiles with no figures until the author supplies them.";
+	if (kind === "chart") return "Chart panel with no figures until the author supplies data.";
+	if (kind === "activity") {
+		return briefMentionsOrders(brief)
+			? "Empty orders list. Rows stay empty until the author supplies them."
+			: "Empty activity list. Rows stay empty until the author supplies them.";
+	}
 	if (kind === "features") return "Compatible feature or metric slots. No fabricated numbers.";
 	if (kind === "menu") return "Menu structure from the restaurant catalog labels. Dishes are placeholders.";
 	if (kind === "cta") return "Primary action. No payment or publish.";
@@ -7559,7 +7653,13 @@ function pickSupportedScreen(
 		if (namedMenu) return namedMenu;
 		if (menuPool[0]) return menuPool[0];
 	}
-	const supported = pool.filter((screen) => screenSupport(screen).supported);
+	const supported = pool.filter((screen) => screenSupport(screen).supported).sort(compareScreenSupport);
+	const prefer =
+		scenarioId === "dashboard" ? "overview" : scenarioId === "landing" || scenarioId === "website" ? "hero" : null;
+	const preferred = prefer
+		? supported.filter((screen) => screenSupport(screen).mappedKinds.includes(prefer))
+		: [];
+	if (preferred[0]) return preferred[0];
 	if (supported[0]) return supported[0];
 	if (scenarioId === "dashboard") return pool[0] ?? null;
 	return null;
@@ -7777,10 +7877,10 @@ function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalErr
 		);
 	}
 
-	const pageTitle = displayTitleFromBrief(brief);
+	const pageTitle = titleWho(brief, screen);
 	const blocks: PageBlock[] = [];
 	for (const kind of kinds) {
-		if (kind === "nav-link" || kind === "feature" || kind === "dish") continue;
+		if (kind === "nav-link" || kind === "feature" || kind === "dish" || kind === "metric") continue;
 		if (kind === "nav") {
 			blocks.push(
 				block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", working.scenarioId, screen, brief, pageTitle), navLinks(working.scenarioId, brief))
@@ -7831,8 +7931,8 @@ function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalErr
 			block(
 				`block-${kind}`,
 				kind,
-				titleFor(kind, screen),
-				summaryFor(kind),
+				titleFor(kind, screen, brief),
+				summaryFor(kind, brief),
 				copyFor(kind, working.scenarioId, screen, brief, pageTitle)
 			)
 		);
@@ -7878,7 +7978,7 @@ function finishProposal(
 	identity?: FinishIdentity
 ): LayoutProposal | LayoutProposalError {
 	const briefTitle = displayTitleFromBrief(brief);
-	const catalogTitle = screen ? `${screen.title} ${screen.subtitle}`.trim() : "";
+	const catalogTitle = screen?.title?.trim() ?? "";
 	const assembledTitle = (briefTitle && briefTitle !== "Draft page" ? briefTitle : catalogTitle || briefTitle).slice(
 		0,
 		160

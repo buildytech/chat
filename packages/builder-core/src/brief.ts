@@ -49,10 +49,16 @@ export function displayTitleFromBrief(brief: string, fallback = "Draft page"): s
 		const name = named[1].trim();
 		if (name) return name.slice(0, 80);
 	}
-	const forMatch = trimmed.match(/\bfor\s+([^.,\n]+?)(?:,|\s+a\s+|\s+an\s+)/i);
+	const forMatch = trimmed.match(/\bfor\s+([^.,\n]+?)(?=,|\s+a\s+|\s+an\s+|\.|$)/i);
 	if (forMatch?.[1]) {
 		const name = forMatch[1].replace(/\b(?:a|an|the)\s+new year\s+/i, "").trim();
-		if (name && name.split(/\s+/).length <= 8) return name.slice(0, 80);
+		if (
+			name &&
+			name.split(/\s+/).length <= 8 &&
+			!/^(?:the|a|an|this|that|existing|real)\b/i.test(name)
+		) {
+			return name.slice(0, 80);
+		}
 	}
 	const withoutPrefix = trimmed
 		.replace(/^qa\s+\w+(?:\s+\w+)?\s+\d{2,4}:\s*/i, "")

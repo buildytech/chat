@@ -11,7 +11,13 @@
 			"dish",
 			"hours",
 			"cta",
-			"footer"
+			"footer",
+			"pagehead",
+			"overview",
+			"metrics",
+			"metric",
+			"chart",
+			"activity"
 		],
 		"copyKeys": [
 			"eyebrow",

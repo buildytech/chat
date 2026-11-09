@@ -55,6 +55,7 @@ export function svelteForBlock(block: PageBlock, selectedId: string | null = nul
 	const extra: string[] = [];
 	if (kind === "hero" || kind === "cta") extra.push('import Button from "$ui/button/Button.svelte";');
 	if (kind === "nav") extra.push('import Group from "$lib/compose/Group.svelte";');
+	if (kind === "chart") extra.push('import Box from "$ui/box/Box.svelte";');
 	if (kind !== "footer") extra.push('import Title from "$lib/compose/Title.svelte";');
 	const importLines = [...primitiveImports(extra), ...childImports(block)];
 	const imports = importLines.join("\n");
@@ -80,6 +81,24 @@ ${childTags(block)}
 			<Button class="inline-flex w-fit rounded-default bg-primary px-3 py-2 text-sm text-primary-foreground">
 				<Text tag="span">${textContent(copy?.action)}</Text>
 			</Button>
+		</Stack>`;
+	} else if (kind === "pagehead") {
+		body = `<Stack class="gap-2">
+			<Title as={1} class="text-xl font-semibold text-foreground">${textContent(copy?.headline ?? block.title)}</Title>
+			<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.lede)}</Text>
+		</Stack>`;
+	} else if (kind === "overview" || kind === "metrics" || kind === "activity") {
+		body = `<Stack class="gap-2">
+			<Title as={2} class="text-lg font-semibold text-foreground">${textContent(block.title)}</Title>
+			<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.lede ?? block.summary)}</Text>
+${childTags(block)}
+		</Stack>`;
+	} else if (kind === "chart") {
+		body = `<Stack class="gap-2">
+			<Title as={2} class="text-lg font-semibold text-foreground">${textContent(block.title)}</Title>
+			<Box tag="div" class="flex min-h-32 items-center justify-center rounded-default border border-dashed border-border bg-muted px-4 py-8">
+				<Text tag="p" class="text-sm text-muted-foreground">${textContent(copy?.lede ?? block.summary)}</Text>
+			</Box>
 		</Stack>`;
 	} else if (kind === "hours") {
 		body = `<Stack class="gap-2">

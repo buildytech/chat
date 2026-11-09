@@ -3,6 +3,7 @@
 	import Group from "../compose/Group.svelte";
 	import Stack from "../compose/Stack.svelte";
 	import Title from "../compose/Title.svelte";
+	import Box from "../../ui/box/Box.svelte";
 	import Button from "../../ui/button/Button.svelte";
 	import Text from "../../ui/text/Text.svelte";
 	import { t } from "../i18n/dictionary";
@@ -89,6 +90,37 @@
 						<Text tag="span">{copy.action}</Text>
 					</Button>
 				{/if}
+			</Stack>
+		{:else if kind === "pagehead"}
+			<Stack class="gap-2">
+				<Title as={1} class="text-xl font-semibold text-foreground">
+					{copy?.headline ?? block.title}
+				</Title>
+				{#if copy?.lede}
+					<Text tag="p" class="text-sm text-muted-foreground">{copy.lede}</Text>
+				{/if}
+			</Stack>
+		{:else if kind === "overview" || kind === "metrics" || kind === "activity"}
+			<Stack class="gap-2">
+				<Title as={2} class="text-lg font-semibold text-foreground">{block.title}</Title>
+				<Text tag="p" class="text-sm text-muted-foreground">{copy?.lede ?? block.summary}</Text>
+			</Stack>
+			{#if children.length > 0}
+				<Stack class="gap-2">
+					{#each children as child (child.id)}
+						<PreviewItem block={child} {selectedId} />
+					{/each}
+				</Stack>
+			{/if}
+		{:else if kind === "chart"}
+			<Stack class="gap-2">
+				<Title as={2} class="text-lg font-semibold text-foreground">{block.title}</Title>
+				<Box
+					tag="div"
+					class="flex min-h-32 items-center justify-center rounded-default border border-dashed border-border bg-muted px-4 py-8"
+				>
+					<Text tag="p" class="text-sm text-muted-foreground">{copy?.lede ?? block.summary}</Text>
+				</Box>
 			</Stack>
 		{:else if kind === "features" || kind === "menu"}
 			<Stack class="gap-2">

@@ -386,6 +386,7 @@ test("search ranks supported screens and rejects hollow commerce shop for websit
 
 test("dashboard and website natural language use renderable Stock coverage", () => {
 	assert.equal(inferScenarioId("Create a Dashboard for Orders"), "dashboard");
+	assert.equal(displayTitleFromBrief("Create a Dashboard for Orders. No invented figures."), "Orders");
 	assert.equal(inferScenarioId("Create a Website with menu, overview and contact"), "website");
 	const dash = proposeLayout({
 		brief: "Create a Dashboard for Orders. No invented figures.",
@@ -399,12 +400,23 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 		assert.equal(dash.provenance.screenId, "screen.theme-dashboard-console/home");
 		assert.deepEqual(
 			dash.page.layout.blocks.map((block) => block.kind),
-			["nav", "features", "footer"]
+			["nav", "pagehead", "overview", "metrics", "chart", "activity", "footer"]
 		);
-		assert.ok(dash.missing.includes("activity"));
-		assert.ok(dash.warnings.some((line) => /screen\.theme-dashboard-console\/home/.test(line)));
+		assert.deepEqual(dash.missing, []);
+		assert.equal(dash.page.title, "Orders");
+		assert.equal(dash.page.layout.blocks.find((block) => block.kind === "nav")?.copy?.brand, "Orders");
+		assert.deepEqual(
+			(dash.page.layout.blocks.find((block) => block.kind === "nav")?.children ?? []).map((child) => child.title),
+			["Overview", "Orders", "Activity"]
+		);
+		assert.equal(dash.page.layout.blocks.find((block) => block.kind === "activity")?.title, "Orders");
+		assert.match(String(dash.page.layout.blocks.find((block) => block.kind === "activity")?.copy?.lede ?? ""), /No orders in this draft/);
+		assert.match(String(dash.page.layout.blocks.find((block) => block.kind === "overview")?.copy?.lede ?? ""), /No orders in this draft/);
+		assert.doesNotMatch(JSON.stringify(dash.page.layout.blocks.find((block) => block.kind === "nav")), /"Home"|"Menu"|"Delivery"|"Contact"/);
+		assert.doesNotMatch(JSON.stringify(dash.page), /this page/);
 		assert.doesNotMatch(JSON.stringify(dash.page), /Blank page|Catalog only|Apply when ready/);
 		assert.doesNotMatch(JSON.stringify(dash.page), /grill plate|menuboard/);
+		assert.ok(dash.warnings.some((line) => /screen\.theme-dashboard-console\/home/.test(line)));
 	}
 	const dashSearch = executeTool({ name: "search_catalog", arguments: { section: "dashboard" } });
 	assert.equal(dashSearch.ok, true);
@@ -446,6 +458,21 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 	if (!restaurant.ok) {
 		assert.equal(restaurant.code, "scenario_screen_mismatch");
 		assert.ok(restaurant.suggestedScreenIds?.includes("screen.theme-dashboard-console/home"));
+	}
+	const mixed = proposeLayout({
+		brief: "Create a dashboard for Orders with menu and delivery. No invented figures.",
+		scenarioId: "dashboard",
+		screenId: null,
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(mixed.ok, true);
+	if (mixed.ok) {
+		assert.deepEqual(
+			(mixed.page.layout.blocks.find((block) => block.kind === "nav")?.children ?? []).map((child) => child.title),
+			["Overview", "Orders", "Activity"]
+		);
+		assert.doesNotMatch(JSON.stringify(mixed.page.layout.blocks.find((block) => block.kind === "nav")), /"Home"|"Menu"|"Delivery"/);
 	}
 	const site = proposeLayout({
 		brief: "Create a Website with menu, overview and contact using existing Stock blocks.",
@@ -571,8 +598,8 @@ test("follow-up extracts headline value and keeps other blocks", () => {
 	}
 });
 
-test("missing-renderer warnings include faq, pricing, authpage, pagehead, and wizard", () => {
-	const labels = ["faq", "pricing", "authpage", "pagehead", "wizard"];
+test("missing-renderer warnings include faq, pricing, authpage, and wizard", () => {
+	const labels = ["faq", "pricing", "authpage", "wizard"];
 	for (const label of labels) {
 		const screen = catalogSnapshot.screens.find((item) => item.labels.blocks.includes(label));
 		assert.ok(screen, `catalog has ${label}`);

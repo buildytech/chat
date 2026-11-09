@@ -21,7 +21,13 @@ export const PAGE_BLOCK_KINDS = [
 	"dish",
 	"hours",
 	"cta",
-	"footer"
+	"footer",
+	"pagehead",
+	"overview",
+	"metrics",
+	"metric",
+	"chart",
+	"activity"
 ] as const;
 
 export type PageBlockKind = (typeof PAGE_BLOCK_KINDS)[number];

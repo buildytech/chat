@@ -69,7 +69,16 @@ export function screenSupport(screen: CatalogScreen): ScreenSupport {
 	const mappedKinds = [...new Set(compat.mapped.map((row) => row.rendererKind))];
 	const missing = compat.missing.map((row) => row.catalogLabel);
 	const score = mappedKinds.length - missing.length;
-	const hasBody = mappedKinds.some((kind) => kind === "hero" || kind === "features" || kind === "menu");
+	const hasBody = mappedKinds.some(
+		(kind) =>
+			kind === "hero" ||
+			kind === "features" ||
+			kind === "menu" ||
+			kind === "overview" ||
+			kind === "metrics" ||
+			kind === "chart" ||
+			kind === "activity"
+	);
 	const hasFrame = mappedKinds.includes("nav") || mappedKinds.includes("footer") || mappedKinds.includes("cta");
 	const supported =
 		mappedKinds.length >= 3 && hasBody && hasFrame && (missing.length === 0 || missing.length < compat.mapped.length);

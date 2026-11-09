@@ -73,6 +73,8 @@
     }
   },
   "rendererKinds": [
+    "activity",
+    "chart",
     "cta",
     "dish",
     "feature",
@@ -81,8 +83,12 @@
     "hero",
     "hours",
     "menu",
+    "metric",
+    "metrics",
     "nav",
-    "nav-link"
+    "nav-link",
+    "overview",
+    "pagehead"
   ],
   "screens": [
     {
@@ -3613,8 +3619,8 @@
       ],
       "title": "Activity feed",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "activity",
+      "rendererCompatible": true
     },
     {
       "blockId": "announcement",
@@ -3899,8 +3905,8 @@
       ],
       "title": "Chart panel",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "chart",
+      "rendererCompatible": true
     },
     {
       "blockId": "checklist",
@@ -4791,7 +4797,7 @@
       ],
       "title": "Metric tiles",
       "available": true,
-      "rendererKind": "features",
+      "rendererKind": "metrics",
       "rendererCompatible": true
     },
     {
@@ -4877,7 +4883,7 @@
       ],
       "title": "Dashboard overview",
       "available": true,
-      "rendererKind": "features",
+      "rendererKind": "overview",
       "rendererCompatible": true
     },
     {
@@ -4895,8 +4901,8 @@
       ],
       "title": "Page heading",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "pagehead",
+      "rendererCompatible": true
     },
     {
       "blockId": "pagetrail",
@@ -5911,9 +5917,12 @@
     "featureshowcase": "features",
     "featuretabs": "features",
     "featuresplit": "features",
-    "metrics": "features",
-    "overview": "features",
+    "metrics": "metrics",
+    "overview": "overview",
     "stats": "features",
+    "chart": "chart",
+    "activity": "activity",
+    "pagehead": "pagehead",
     "cta": "cta",
     "ctaproof": "cta",
     "footer": "footer",
