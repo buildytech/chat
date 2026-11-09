@@ -181,7 +181,7 @@ export function packFilesFromPage(
 		content: `${JSON.stringify(valid, null, 2)}\n`
 	});
 	const generator = {
-		name: "@buildytech/chat-web/codeport",
+		name: "@buildytech/chat-web/svelte-pack",
 		emitter: "svelteFromPage",
 		packApi: "packFilesFromPage",
 		packageVersion: "0.0.0",

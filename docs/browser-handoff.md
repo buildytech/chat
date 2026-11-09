@@ -26,15 +26,14 @@ Owner product spec (informative; implement later):
 | Module | Path | Keep |
 | --- | --- | --- |
 | CreatorShell | `apps/chat-web/src/lib/screens/CreatorShell.svelte` | nav / history \| Chat \| Workspace |
-| ChatColumn / ChatCore | `screens/ChatColumn.svelte`, `lib/chat-core` | mock default; `?live=1` optional |
-| Preview / Code | `screens/PreviewPane.svelte`, `CodePane.svelte` | same Page DTO |
-| Page mock store | `apps/chat-web/src/lib/page-store` | fixture, BlockTree, Latte CodePort |
+| ChatColumn / ChatCore | `screens/ChatColumn.svelte`, `lib/chat-core` | mock localStorage; Grok via `/runtime` |
+| Preview / Code | `screens/PreviewPane.svelte`, `CodePane.svelte` | same Page DTO; Svelte UI8Kit source |
+| Page mock store | `apps/chat-web/src/lib/page-store` | fixture, BlockTree, Svelte Code |
 | Page DTO | `packages/page-contract` | includes domain status `published` |
 | Ports | `packages/ports` | Catalog / Page / Publish / Preview |
 | UI8Kit kit | `apps/chat-web/src/ui` | generated primitives; do not hand-patch |
-| Optional Session | `services/context-serve` | not default |
-| Optional orchestrator | `apps/orchestrator` | not default |
-| Host stubs | `adapters/wails3`, `adapters/telegram-mini` | not WordPress |
+| Optional xAI | `apps/xai-runtime`, `api/runtime` | not Session HTTP |
+| Retired Session HTTP | `services/context-serve` | CI placeholder only |
 
 Removed from this repo: `adapters/wordpress`, WP embed entry (`src/embed/wp-main.ts`), `vite.config.wp-embed.ts`, plugin ZIP / WP release pack scripts, `X-WP-Nonce` / `__BUILDYTECH_SI_CHAT__` client config.
 

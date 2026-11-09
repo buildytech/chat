@@ -20,11 +20,11 @@ Do not describe these as future work.
 - Pinned Stock snapshot: `packages/builder-core` (`catalogProvenance()`, `NOTICE`). Constructor search / propose uses that snapshot.
 - Versioned Page DTO for this SPA: `packages/page-contract` `layout.version` **1**. `parsePage` rejects other versions and unknown keys. This is **not** a WordPress import contract.
 - UI8Kit composition rules copied from [`ui8kit/contract`](https://github.com/ui8kit/contract) (`.cursor/rules`, `.cursor/skills`). Kit files in `apps/chat-web/src/ui` are generated; do not hand-patch. Identical DOM / ARIA / tokens across eight runtimes is a **contract rule**, not a shipping exporter.
-- Latte CodePort: TypeScript emitter + `codeport-pack/Main/page.latte` for the Code tab. **No PHP runtime** in Browser or Vercel.
-- Go `services/context-serve`: optional Session HTTP (`?live=1`). Default `npm run dev` must not require it.
+- Code tab: Svelte UI8Kit `page.svelte` from `svelteFromPage`. No PHP/Latte runtime in Browser or Vercel.
+- `services/context-serve`: retired CI placeholder. Default `npm run dev` must not require it.
 - Protected Vercel static SPA + `/runtime`: `docs/deploy-xai.md`, root `middleware.js` (ESM, `"type": "module"`).
 - No WordPress plugin, nonce, or `wp-json` in this repository (ADR-0006, `scripts/m4-api-tests/no-wordpress-runtime.test.ts`).
-- `adapters/wails3`: stub only.
+- Wails3 desktop host is later (ADR-0007). Not a runtime in this repo.
 
 ## Sequence (do not skip)
 
@@ -40,7 +40,7 @@ npm run check
 npm run build
 ```
 
-Optional: `services/context-serve` + `/?live=1`; optional `apps/xai-runtime` / Vercel `/runtime` with Basic Auth. See [runbook.md](../runbook.md) and [deploy-xai.md](../deploy-xai.md).
+Optional: `apps/xai-runtime` / Vercel `/runtime` with Basic Auth. See [runbook.md](../runbook.md) and [deploy-xai.md](../deploy-xai.md).
 
 ### 2. Portable export contract (planned)
 

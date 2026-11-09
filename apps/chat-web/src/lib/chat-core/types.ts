@@ -1,5 +1,14 @@
 import type { RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
-import type { ServerCapabilities } from "../api/gateway";
+
+export type ServerCapabilities = {
+	runtime: string;
+	mode: string;
+	liveModel: boolean;
+	live?: { requested?: boolean; provider?: string; model?: string };
+	tools: string[];
+	features?: Record<string, unknown>;
+	note?: string;
+};
 
 export type CreatorRuntimeStatus = {
 	mode: "live" | "mock" | "booting";

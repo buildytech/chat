@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173`. Mock ChatCore (localStorage) is the default. Optional Session HTTP: `/?live=1` while `services/context-serve` is running.
+Open `http://127.0.0.1:5173`. Mock ChatCore (localStorage) is the default. Protected Grok uses `/runtime`, not Session HTTP.
 
 ```sh
 npm run build

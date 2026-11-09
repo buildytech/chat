@@ -41,7 +41,7 @@ npm run build
 | Mock ChatCore + fake transport | Direct BYOK (memory-only), local-first project persistence |
 | Page DTO + Catalog/Page/Publish/Preview ports | Host adapters that implement those ports |
 | UI8Kit Svelte primitives, ui8px policy, shadcn tokens | Strict actual-catalog codegen-x shared provider wiring |
-| Optional `?live=1` Session HTTP via Vite `/v1` proxy | Paid/live model, deploy, own inference backend |
+| Protected xAI `/runtime` (optional server key) | Paid/live model as a separate product, deploy, own inference backend |
 | Pinned CodeGen-X Stock snapshot in Browser constructor | Portable versioned export, WP Latte/PHP import adapter, Wails3 same-core desktop, round-trip tests |
 
 Owner product spec (Browser future, **not implemented here**): [Creator canvas](https://cursor.com/canvas/store-c3c60695-fe65-4d0c-9e33-7c3f9fe54177/c9e0656b-1cd7-491e-a8e6-07b73acabed9).
@@ -55,8 +55,6 @@ Handoff for the next Browser slice: [docs/browser-handoff.md](docs/browser-hando
 | `apps/chat-web` | Runnable SvelteKit SPA (default mock) |
 | `packages/page-contract` | Framework-neutral Page DTO (`published` is a domain status) |
 | `packages/ports` | CatalogPort / PagePort / PublishPort / PreviewPort |
-| `apps/orchestrator` | Optional Agent SDK stub (not default) |
-| `services/context-serve` | Optional Session HTTP stub (opt-in `?live=1`) |
-| `adapters/wails3`, `adapters/telegram-mini` | Host stubs (Wails3 after Browser; not a WordPress runtime) |
+| `services/context-serve` | Retired CI placeholder (not a Session HTTP product) |
 
 Figma is layout reference only (`design/fig-ref/ARCH.md`).

@@ -1,4 +1,4 @@
-// CodeMirror 6 extensions for Latte + HTML (StreamLanguage) and JSON.
+// CodeMirror 6 extensions for Svelte/HTML (StreamLanguage) and JSON.
 // Colours live in src/styles/editor.css; this file emits cm-syn-* classes.
 import {
 	Decoration,
@@ -234,11 +234,11 @@ const codeLayout = ViewPlugin.fromClass(
 
 export type LatteCodeOptions = {
 	editable?: boolean;
-	language?: "latte" | "json" | "svelte";
+	language?: "json" | "svelte";
 };
 
-/** Full extension set: CodeMirror with Latte StreamLanguage (or JSON) and CSS syntax classes. */
-export function latteCode({ editable = true, language = "latte" }: LatteCodeOptions = {}): Extension {
+/** Full extension set: CodeMirror with Svelte/HTML StreamLanguage (or JSON) and CSS syntax classes. */
+export function latteCode({ editable = true, language = "svelte" }: LatteCodeOptions = {}): Extension {
 	return [
 		lineNumbers(),
 		highlightActiveLineGutter(),

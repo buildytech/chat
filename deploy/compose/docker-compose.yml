@@ -1,11 +1,5 @@
-# Local CR stub + protected xAI runtime. Not a live Grok claim.
+# Protected xAI runtime only. Not a live Grok claim by itself.
 services:
-  context-serve:
-    build:
-      context: ../../services/context-serve
-    image: buildytech-context-serve:stub
-    ports:
-      - "127.0.0.1:8090:8090"
   xai-runtime:
     image: node:22-bookworm
     working_dir: /app
@@ -23,5 +17,3 @@ services:
       - node --experimental-strip-types apps/xai-runtime/src/server.ts
     ports:
       - "127.0.0.1:18100:18100"
-    depends_on:
-      - context-serve

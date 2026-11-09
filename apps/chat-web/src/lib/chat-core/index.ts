@@ -1,6 +1,6 @@
 /**
  * ChatCore — session/messages logic, no DOM (ADR-0003).
- * Default: local mock (localStorage). Optional Session HTTP with ?live=1.
+ * Default: local mock (localStorage). Live Grok uses `/runtime`, not Session HTTP.
  */
 export {
 	abortInflightRun,

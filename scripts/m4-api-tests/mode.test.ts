@@ -10,9 +10,9 @@ describe("transport mode", () => {
 		assert.equal(isMockMode("?mock=1"), true);
 	});
 
-	it("opt-in Session HTTP only with live=1", () => {
-		assert.equal(isLiveSessionMode("?live=1"), true);
-		assert.equal(isMockMode("?live=1"), false);
-		assert.equal(isLiveSessionMode("?session=abc&live=1"), true);
+	it("does not opt into Session HTTP with live=1", () => {
+		assert.equal(isLiveSessionMode("?live=1"), false);
+		assert.equal(isMockMode("?live=1"), true);
+		assert.equal(isLiveSessionMode("?session=abc&live=1"), false);
 	});
 });

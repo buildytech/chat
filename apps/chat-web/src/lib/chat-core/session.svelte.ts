@@ -1,18 +1,4 @@
 import {
-	createSessionApi,
-	getCapabilitiesApi,
-	getSessionApi,
-	GatewayRequestError,
-	listMessagesApi,
-	listSessionsApi,
-	newRequestId,
-	postMessageApi,
-	recoverRunApi,
-	type ServerCapabilities
-} from "../api/gateway";
-import { mapSession, pageFromTurn, parseServerPage } from "../api/map";
-import { isMockMode } from "../api/mode";
-import {
 	readSessionQuery,
 	resolveSessionSelection,
 	syncSessionQuery
@@ -53,10 +39,15 @@ import {
 	discardCandidate,
 	getLastAppliedPage,
 	getPageRevision,
-	setCandidatePage,
-	setCurrentPage
+	setCandidatePage
 } from "../page-store";
-import type { ChatMessage, ChatSession, CreatorRuntimeStatus, SessionSummary } from "./types";
+import type {
+	ChatMessage,
+	ChatSession,
+	CreatorRuntimeStatus,
+	ServerCapabilities,
+	SessionSummary
+} from "./types";
 
 const SELECTED_KEY = "buildy.creator.selectedSessionId";
 
@@ -148,56 +139,6 @@ function replaceSession(session: ChatSession): void {
 	memory = [session, ...rest].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
-function applyPageFromServer(pageRaw: unknown, revision: number | null, token: number): boolean {
-	if (token !== epoch) return false;
-	if (pageRaw == null) {
-		clearCurrentPage();
-		return true;
-	}
-	const page = parseServerPage(pageRaw);
-	if (!page) {
-		// Malformed DTO must not overwrite Workspace.
-		lastError = t("runtime.badPage");
-		return false;
-	}
-	setCurrentPage(page, revision);
-	return true;
-}
-
-async function loadSessionDetail(id: string, token: number): Promise<void> {
-	const ac = new AbortController();
-	inflight = ac;
-	try {
-		const [sessRes, msgRes] = await Promise.all([
-			getSessionApi(id, ac.signal),
-			listMessagesApi(id, ac.signal)
-		]);
-		if (token !== epoch) return;
-		const session = mapSession(sessRes.session, msgRes.messages);
-		replaceSession(session);
-		rememberSelection(session.id);
-		if (sessRes.page?.page) {
-			applyPageFromServer(sessRes.page.page, sessRes.page.revision ?? sessRes.session.pageRevision, token);
-		} else {
-			clearCurrentPage();
-		}
-		lastError = null;
-	} catch (err) {
-		if ((err as Error).name === "AbortError") return;
-		if (token !== epoch) return;
-		if (err instanceof GatewayRequestError && (err.status === 404 || err.code === "not_found")) {
-			memory = memory.filter((s) => s.id !== id);
-			rememberSelection(null);
-			clearCurrentPage();
-			lastError = t("runtime.sessionNotFound").replace("{id}", id);
-			return;
-		}
-		lastError = err instanceof GatewayRequestError ? err.message : t("runtime.loadFailed");
-	} finally {
-		if (inflight === ac) inflight = null;
-	}
-}
-
 async function overlayXaiCapability(token: number): Promise<void> {
 	try {
 		const status = await fetchXaiStatus();
@@ -214,98 +155,43 @@ async function overlayXaiCapability(token: number): Promise<void> {
 	}
 }
 
-/** Load sessions from mock (default) or Session HTTP (`?live=1`). Safe for onMount — not for $derived. */
+/** Load sessions from localStorage mock. Safe for onMount — not for $derived. */
 export async function hydrateSessions(): Promise<void> {
 	if (hydrated || hydrating) return;
 	hydrating = true;
 	const token = bumpEpoch();
 	try {
-		if (isMockMode()) {
-			connectionMode = "mock";
-			capabilities = {
-				runtime: "mock",
-				mode: "localStorage",
-				liveModel: false,
-				tools: [],
-				note: t("runtime.mockMode")
-			};
-			const initial = loadMock();
-			memory = initial;
-			const pick = resolveSessionSelection({
-				urlSession: readSessionQuery(),
-				persistedId: readSelectedId(),
-				sessionIds: initial.map((s) => s.id)
-			});
-			setOnboardingPersist(() => persistSessionContext());
-			if (pick.kind === "missing") {
-				rememberSelection(null);
-				restoreSessionWorkspace(null);
-				lastError = t("runtime.sessionNotFound").replace("{id}", pick.requested);
-				syncSessionQuery(pick.requested, { mode: "replace" });
-				hydrated = true;
-				await overlayXaiCapability(token);
-				return;
-			}
-			const id = pick.kind === "ok" ? pick.id : null;
-			rememberSelection(id);
-			syncSessionQuery(id, { mode: "replace" });
-			restoreSessionWorkspace(id ? memory.find((s) => s.id === id) ?? null : null);
-			hydrated = true;
-			await overlayXaiCapability(token);
-			return;
-		}
-
-		connectionMode = "live";
-		try {
-			capabilities = await getCapabilitiesApi();
-		} catch {
-			capabilities = {
-				runtime: "context-local",
-				mode: "unreachable",
-				liveModel: false,
-				tools: [],
-				note: t("runtime.capabilitiesFailed")
-			};
-		}
-
-		const listed = await listSessionsApi();
-		let sessions = listed.sessions ?? [];
-		if (sessions.length === 0) {
-			const created = await createSessionApi({});
-			sessions = [created.session];
-		}
-		memory = sessions.map((s) => mapSession(s, []));
+		connectionMode = "mock";
+		capabilities = {
+			runtime: "mock",
+			mode: "localStorage",
+			liveModel: false,
+			tools: [],
+			note: t("runtime.mockMode")
+		};
+		const initial = loadMock();
+		memory = initial;
 		const pick = resolveSessionSelection({
 			urlSession: readSessionQuery(),
 			persistedId: readSelectedId(),
-			sessionIds: sessions.map((s) => s.id)
+			sessionIds: initial.map((s) => s.id)
 		});
-		hydrated = true;
+		setOnboardingPersist(() => persistSessionContext());
 		if (pick.kind === "missing") {
-			// Do not fall back to persisted/first — keep URL, try server, else blank+error.
 			rememberSelection(null);
-			clearCurrentPage();
+			restoreSessionWorkspace(null);
+			lastError = t("runtime.sessionNotFound").replace("{id}", pick.requested);
 			syncSessionQuery(pick.requested, { mode: "replace" });
-			await loadSessionDetail(pick.requested, token);
-			if (selectedId) {
-				syncSessionQuery(selectedId, { mode: "replace" });
-			} else if (!lastError) {
-				lastError = t("runtime.sessionNotFound").replace("{id}", pick.requested);
-			}
+			hydrated = true;
+			await overlayXaiCapability(token);
 			return;
 		}
 		const id = pick.kind === "ok" ? pick.id : null;
 		rememberSelection(id);
 		syncSessionQuery(id, { mode: "replace" });
-		if (id) await loadSessionDetail(id, token);
-		else clearCurrentPage();
-	} catch (err) {
-		lastError = err instanceof GatewayRequestError ? err.message : t("runtime.hydrateFailed");
-		// Never silently fall back to mock on API failure.
-		memory = [];
-		rememberSelection(null);
-		clearCurrentPage();
+		restoreSessionWorkspace(id ? memory.find((s) => s.id === id) ?? null : null);
 		hydrated = true;
+		await overlayXaiCapability(token);
 	} finally {
 		hydrating = false;
 	}
@@ -343,55 +229,35 @@ export async function selectSession(
 	if (historyMode !== "none") {
 		syncSessionQuery(id, { mode: historyMode });
 	}
-	if (isMockMode()) {
-		const full = loadMock().find((s) => s.id === id) ?? memory.find((s) => s.id === id);
-		if (full) {
-			replaceSession(full);
-			restoreSessionWorkspace(full);
-			lastError = null;
-		} else {
-			memory = memory.filter((s) => s.id !== id);
-			rememberSelection(null);
-			restoreSessionWorkspace(null);
-			lastError = t("runtime.sessionNotFound").replace("{id}", id);
-		}
-		return;
+	void token;
+	const full = loadMock().find((s) => s.id === id) ?? memory.find((s) => s.id === id);
+	if (full) {
+		replaceSession(full);
+		restoreSessionWorkspace(full);
+		lastError = null;
+	} else {
+		memory = memory.filter((s) => s.id !== id);
+		rememberSelection(null);
+		restoreSessionWorkspace(null);
+		lastError = t("runtime.sessionNotFound").replace("{id}", id);
 	}
-	clearCurrentPage();
-	const existing = memory.find((s) => s.id === id);
-	if (existing) {
-		replaceSession({ ...existing, messages: [] });
-	}
-	await loadSessionDetail(id, token);
 }
 
 export async function createSession(): Promise<ChatSession> {
 	abortInflight();
-	const token = bumpEpoch();
-	if (isMockMode()) {
-		const session: ChatSession = {
-			id: uid("session"),
-			title: t("thread.untitled"),
-			updatedAt: nowIso(),
-			messages: []
-		};
-		memory = [session, ...memory];
-		rememberSelection(session.id);
-		syncSessionQuery(session.id, { mode: "push" });
-		saveMock(memory);
-		hydrateSessionContext({ scenarioId: null, screenId: null });
-		bindPageSession(session.id);
-		clearCurrentPage();
-		return session;
-	}
-	const { session: raw } = await createSessionApi({});
-	const session = mapSession(raw, []);
-	replaceSession(session);
+	const session: ChatSession = {
+		id: uid("session"),
+		title: t("thread.untitled"),
+		updatedAt: nowIso(),
+		messages: []
+	};
+	memory = [session, ...memory];
 	rememberSelection(session.id);
 	syncSessionQuery(session.id, { mode: "push" });
+	saveMock(memory);
+	hydrateSessionContext({ scenarioId: null, screenId: null });
+	bindPageSession(session.id);
 	clearCurrentPage();
-	void token;
-	lastError = null;
 	return session;
 }
 
@@ -698,85 +564,9 @@ export function discardProposal(): void {
 	discardCandidate();
 }
 
-/**
- * Live ChatCore send via Session HTTP. Ordinary text never auto-saves a page.
- * Preserve requestId on retry of the same failed turn.
- */
-export async function sendMessage(text: string, opts?: { requestId?: string; retry?: boolean }): Promise<ChatSession> {
-	if (isMockMode()) return sendMessageMock(text);
-
-	const trimmed = text.trim();
-	if (!trimmed) {
-		const current = getSelectedSession();
-		if (current) return current;
-		return createSession();
-	}
-
-	let session = getSelectedSession();
-	if (!session) session = await createSession();
-
-	const token = epoch;
-	const requestId =
-		opts?.retry && lastRequestId && lastFailedText === trimmed
-			? lastRequestId
-			: (opts?.requestId ?? newRequestId());
-	lastRequestId = requestId;
-	lastFailedText = trimmed;
-
-	abortInflight();
-	const ac = new AbortController();
-	inflight = ac;
-
-	try {
-		const turn = await postMessageApi(
-			session.id,
-			{ content: trimmed, requestId },
-			ac.signal
-		);
-		if (token !== epoch || selectedId !== session.id) {
-			return getSelectedSession() ?? session;
-		}
-
-		let finalTurn = turn;
-		if (turn.run.status === "pending") {
-			finalTurn = await recoverRunApi(session.id, turn.run.id, ac.signal);
-			if (token !== epoch || selectedId !== session.id) {
-				return getSelectedSession() ?? session;
-			}
-		}
-		return await commitTurn(session.id, finalTurn, token);
-	} catch (err) {
-		if ((err as Error).name === "AbortError") {
-			return getSelectedSession() ?? session;
-		}
-		lastError = err instanceof GatewayRequestError ? err.message : t("runtime.sendFailed");
-		throw err;
-	} finally {
-		if (inflight === ac) inflight = null;
-	}
-}
-
-async function commitTurn(
-	sessionId: string,
-	turn: Awaited<ReturnType<typeof postMessageApi>>,
-	token: number
-): Promise<ChatSession> {
-	if (token !== epoch || selectedId !== sessionId) {
-		return getSelectedSession() ?? mapSession(turn.session, turn.messages);
-	}
-	const msgRes = await listMessagesApi(sessionId);
-	if (token !== epoch || selectedId !== sessionId) {
-		return getSelectedSession() ?? mapSession(turn.session, turn.messages);
-	}
-	const next = mapSession(turn.session, msgRes.messages);
-	replaceSession(next);
-	lastError = null;
-	lastFailedText = null;
-	if (turn.page?.page) {
-		const page = pageFromTurn(turn);
-		if (page) setCurrentPage(page, turn.page.revision);
-	}
-	return next;
+/** ChatCore send. Ordinary text never auto-saves a page. Live Grok uses `/runtime`. */
+export async function sendMessage(text: string, _opts?: { requestId?: string; retry?: boolean }): Promise<ChatSession> {
+	return sendMessageMock(text);
 }
 
 export async function retryLastFailed(): Promise<ChatSession | null> {

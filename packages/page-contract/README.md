@@ -26,7 +26,7 @@ const page = parsePage(unknownPayload); // any PagePort status
 const draft = parseDraftPage(unknownPayload); // status === "draft"
 ```
 
-Go `services/context-serve` validates the **same JSON** (see `fixtures/conformance-cases.json`). Do not fork limits, kinds, or error codes.
+TypeScript `parsePage` / `parseDraftPage` is the product validator (see `fixtures/conformance-cases.json`). Do not fork limits, kinds, or error codes.
 
 **Known follow-up (not M2):** the v1 plain-text rule rejects `<>{}` in every string. That is stricter than some legitimate copy (comparisons, examples). Broaden only in an explicit contract review — persistence must not silently loosen it.
 

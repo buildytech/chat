@@ -25,7 +25,7 @@ npm run verify       # test + check + build
 
 Default ChatCore saves chats and per-session applied/candidate pages in localStorage. That is not live Grok. Preview is Svelte UI8Kit; Code is generated Svelte UI8Kit source, not Latte.
 
-Optional leftover Session HTTP: `services/context-serve` and `/?live=1`. Default `npm run dev` must not require it.
+`services/context-serve` is a retired CI placeholder, not a Session HTTP product. Default `npm run dev` does not require it.
 
 Optional protected xAI runtime (`XAI_API_KEY` server-only): `npm run start --workspace=@buildytech/xai-runtime` on `127.0.0.1:18100`. Vite proxies `/runtime`. Chat selector sends one of the five verified text model ids. Non-loopback bind is fail-closed without Basic Auth. Vercel staging uses root `middleware.js` (ESM, `"type": "module"`) + bundled `api/runtime/v1/{status,run}.ts` (Node via `engines.node` `22.x`; see `docs/deploy-xai.md`). Do not open a Vercel project until Basic Auth env is set.
 

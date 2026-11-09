@@ -1,6 +1,6 @@
 # Local compose
 
-Stub context-serve plus the protected xAI runtime. Images are not a live Grok product.
+Protected xAI runtime only. Images are not a live Grok product.
 
 ```sh
 docker compose -f deploy/compose/docker-compose.yml up --build

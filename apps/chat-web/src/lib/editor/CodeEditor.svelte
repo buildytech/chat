@@ -5,7 +5,7 @@
 		/** 1-based line that holds the cursor initially */
 		activeLine?: number;
 		editable?: boolean;
-		language?: "latte" | "json" | "svelte";
+		language?: "json" | "svelte";
 		class?: string;
 		[key: string]: unknown;
 	};
@@ -22,7 +22,7 @@
 		doc,
 		activeLine = 1,
 		editable = false,
-		language = "latte",
+		language = "svelte",
 		class: className,
 		...rest
 	}: CodeEditorProps = $props();

@@ -29,7 +29,5 @@ export {
 	setCurrentPage
 } from "./mock.svelte";
 export { svelteForBlock, svelteFromPage, sveltePackFiles } from "./svelte-code";
-export { latteFromPage, latteForBlock } from "./latte";
 export { buildStoreZip, downloadPageZip, packFilesFromPage, type PackFile } from "./pack";
 export { findBlock, firstBlockId, hasBlock, walkBlocks } from "./tree";
-export { COIMPORT_PACK_FILES } from "./codeport-runtime";
