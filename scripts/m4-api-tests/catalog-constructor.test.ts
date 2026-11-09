@@ -22,6 +22,7 @@ import {
 	displayTitleFromBrief,
 	inferScenarioId,
 	runConstructorTools,
+	scenarioCatalogContext,
 	searchCatalog
 } from "../../packages/builder-core/src/index.ts";
 
@@ -303,13 +304,24 @@ test("search_catalog tool payload is a compact shortlist without preview or snap
 	const tool = executeTool({ name: "search_catalog", arguments: { job: "hero", page: 1 } });
 	assert.equal(tool.ok, true);
 	if (!tool.ok) return;
-	const compact = tool.result as { items: Array<Record<string, unknown>> };
-	assert.equal(compact.items.length, full.items.length);
+	const compact = tool.result as {
+		items: Array<Record<string, unknown>>;
+		pick: { screenId: string } | null;
+		next: string;
+		vocabulary?: unknown;
+	};
+	assert.ok(compact.items.length <= 4);
+	assert.ok(compact.items.length > 0);
+	assert.equal(compact.next, "propose_layout");
+	assert.equal(compact.pick?.screenId, full.items[0]?.screenId);
+	assert.equal("vocabulary" in compact, false);
 	for (const item of compact.items) {
 		assert.equal("preview" in item, false);
 		assert.equal("spec" in item, false);
+		assert.equal("group" in item, false);
 		assert.ok(item.screenId);
 		assert.ok(item.labels);
+		assert.equal("blocks" in (item.labels as object), false);
 	}
 	const details = executeTool({ name: "get_block_details", arguments: { id: "hero" } });
 	assert.equal(details.ok, true);
@@ -393,6 +405,35 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 		assert.ok(dash.warnings.some((line) => /screen\.theme-dashboard-console\/home/.test(line)));
 		assert.doesNotMatch(JSON.stringify(dash.page), /Blank page|Catalog only|Apply when ready/);
 		assert.doesNotMatch(JSON.stringify(dash.page), /grill plate|menuboard/);
+	}
+	const dashSearch = executeTool({ name: "search_catalog", arguments: { section: "dashboard" } });
+	assert.equal(dashSearch.ok, true);
+	if (dashSearch.ok) {
+		const body = dashSearch.result as {
+			pick: { screenId: string; supported: boolean } | null;
+			items: Array<{ screenId: string; supported: boolean }>;
+			next: string;
+		};
+		assert.equal(body.next, "propose_layout");
+		assert.equal(body.pick?.screenId, "screen.theme-dashboard-console/home");
+		assert.equal(body.pick?.supported, true);
+		assert.ok(body.items.every((item) => item.supported));
+		assert.ok(!body.items.some((item) => /restaurant|menu/.test(item.screenId)));
+	}
+	const seed = scenarioCatalogContext("dashboard");
+	assert.equal(seed?.pick?.screenId, "screen.theme-dashboard-console/home");
+	const fromSeed = proposeLayout({
+		brief: "Create a Dashboard for Orders. No invented figures.",
+		scenarioId: "dashboard",
+		screenId: seed?.pick?.screenId ?? null,
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(fromSeed.ok, true);
+	if (fromSeed.ok) {
+		assert.equal(fromSeed.source, "local-catalog-assembler");
+		assert.equal(fromSeed.provenance.screenId, "screen.theme-dashboard-console/home");
+		assert.equal(fromSeed.provenance.assembler, "local-catalog-assembler");
 	}
 	const restaurant = proposeLayout({
 		brief: "Create a Dashboard for Orders. No invented figures.",
@@ -513,6 +554,21 @@ test("follow-up extracts headline value and keeps other blocks", () => {
 	assert.match(rejected.message, /propose_layout was called 2 time/);
 	assert.doesNotMatch(rejected.message, /did not call propose_layout/);
 	assert.doesNotMatch(rejected.message, /Change only|New Year/);
+	const inherit = proposeLayout({
+		brief: "Change only the hero headline to New Year Grill Delivery. Keep all other sections and their content unchanged.",
+		scenarioId: "landing",
+		screenId: null,
+		expectedRevision: 1,
+		currentPage: first.page,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(inherit.ok, true);
+	if (inherit.ok) {
+		assert.equal(inherit.provenance.screenId, "screen.site/home");
+		assert.notEqual(String(inherit.provenance.screenId), "null");
+		const cta = inherit.page.layout.blocks.find((block) => block.kind === "cta");
+		assert.equal(cta?.copy?.note, "Stock screen screen.site/home");
+	}
 });
 
 test("missing-renderer warnings include faq, pricing, authpage, pagehead, and wizard", () => {

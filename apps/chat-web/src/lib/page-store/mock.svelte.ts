@@ -1,7 +1,12 @@
 import { parsePage, type Page, type PageBlock } from "@buildytech/page-contract";
 import { mockLandingPage } from "./fixture";
 import { findBlock, firstBlockId, hasBlock } from "./tree";
-import { readSessionPages, writeSessionPages, type StoredPageRecord } from "../browser/persist";
+import {
+	readSessionPages,
+	writeSessionPages,
+	type StoredPageProvenance,
+	type StoredPageRecord
+} from "../browser/persist";
 
 export { mockLandingPage };
 
@@ -11,6 +16,8 @@ export { mockLandingPage };
  */
 let currentPage = $state.raw<Page | null>(null);
 let candidatePage = $state.raw<Page | null>(null);
+let appliedProvenance = $state.raw<StoredPageProvenance | null>(null);
+let candidateProvenance = $state.raw<StoredPageProvenance | null>(null);
 let selectedBlockId = $state<string | null>(null);
 let pageRevision = $state<number | null>(null);
 let boundSessionId: string | null = null;
@@ -29,6 +36,8 @@ function persistBound(): void {
 	const record: StoredPageRecord = {
 		applied: currentPage,
 		candidate: candidatePage,
+		appliedProvenance,
+		candidateProvenance,
 		selectedBlockId,
 		revision: pageRevision
 	};
@@ -50,6 +59,8 @@ function restoreRecord(record: StoredPageRecord | null): void {
 	const candidate = parseStored(record?.candidate);
 	currentPage = applied;
 	candidatePage = candidate;
+	appliedProvenance = record?.appliedProvenance ?? null;
+	candidateProvenance = record?.candidateProvenance ?? null;
 	pageRevision = typeof record?.revision === "number" ? record.revision : applied ? 1 : null;
 	const visible = candidate ?? applied;
 	if (visible && record?.selectedBlockId && hasBlock(visible.layout.blocks, record.selectedBlockId)) {
@@ -66,6 +77,8 @@ export function bindPageSession(sessionId: string | null): void {
 	if (!sessionId) {
 		currentPage = null;
 		candidatePage = null;
+		appliedProvenance = null;
+		candidateProvenance = null;
 		selectedBlockId = null;
 		pageRevision = null;
 		return;
@@ -92,6 +105,14 @@ export function getCandidatePage(): Page | null {
 
 export function hasUnappliedProposal(): boolean {
 	return candidatePage !== null;
+}
+
+export function getCurrentProvenance(): StoredPageProvenance | null {
+	return candidateProvenance ?? appliedProvenance;
+}
+
+export function getAppliedProvenance(): StoredPageProvenance | null {
+	return appliedProvenance;
 }
 
 export function getPageRevision(): number | null {
@@ -125,19 +146,23 @@ export function setCurrentPage(page: Page, revision: number | null = null): void
 	const next = parsePage(page);
 	currentPage = next;
 	candidatePage = null;
+	appliedProvenance = null;
+	candidateProvenance = null;
 	pageRevision = revision;
 	syncSelection(next);
 	persistBound();
 }
 
-export function setCandidatePage(page: Page): void {
+export function setCandidatePage(page: Page, provenance?: StoredPageProvenance | null): void {
 	candidatePage = parsePage(page);
+	candidateProvenance = provenance ?? null;
 	syncSelection(candidatePage);
 	persistBound();
 }
 
 export function discardCandidate(): void {
 	candidatePage = null;
+	candidateProvenance = null;
 	syncSelection(currentPage);
 	persistBound();
 }
@@ -145,7 +170,9 @@ export function discardCandidate(): void {
 export function applyCandidate(revision: number | null = null): boolean {
 	if (!candidatePage) return false;
 	currentPage = candidatePage;
+	appliedProvenance = candidateProvenance ?? appliedProvenance;
 	candidatePage = null;
+	candidateProvenance = null;
 	pageRevision = revision ?? (pageRevision ?? 0) + 1;
 	syncSelection(currentPage);
 	persistBound();
@@ -156,6 +183,8 @@ export function applyCandidate(revision: number | null = null): boolean {
 export function clearCurrentPage(): void {
 	currentPage = null;
 	candidatePage = null;
+	appliedProvenance = null;
+	candidateProvenance = null;
 	selectedBlockId = null;
 	pageRevision = null;
 	persistBound();

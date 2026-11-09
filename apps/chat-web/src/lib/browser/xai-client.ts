@@ -84,7 +84,8 @@ export async function runXaiProposal(
 				screenId: ctx.screenId,
 				expectedRevision: ctx.expectedRevision,
 				pageId: ctx.pageId ?? ctx.currentPage?.id,
-				currentPage: ctx.currentPage ?? null
+				currentPage: ctx.currentPage ?? null,
+				currentProvenance: ctx.currentProvenance ?? null
 			}),
 			signal
 		});

@@ -32,6 +32,10 @@ test("Preview and Code consume the same page and saved revision store", () => {
 		assert.match(s, /getPageRevision\(\)/);
 		assert.match(s, /data-page-revision/);
 	}
+	const preview = source("PreviewPane");
+	assert.match(preview, /getCurrentProvenance/);
+	assert.match(preview, /preview\.noScreen/);
+	assert.doesNotMatch(preview, /lastProposal\?\.screenId/);
 });
 
 test("Code pane emits Svelte UI8Kit source, not Latte", () => {

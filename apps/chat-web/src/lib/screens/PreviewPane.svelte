@@ -16,7 +16,15 @@
 	import { t } from "../i18n/dictionary";
 	import { cn } from "../../utils/cn";
 	import { applyProposal, discardProposal, getSelectedSession, proposalStatus } from "../chat-core";
-	import { blocksOf, getCurrentPage, getPageRevision, getSelectedBlockId, hasUnappliedProposal } from "../page-store";
+	import {
+		blocksOf,
+		getCurrentPage,
+		getCurrentProvenance,
+		getPageRevision,
+		getSelectedBlockId,
+		hasUnappliedProposal
+	} from "../page-store";
+	import { recordedScreenId } from "@buildytech/builder-core";
 	import PreviewBlock from "./PreviewBlock.svelte";
 
 	const page = $derived(getCurrentPage());
@@ -32,8 +40,9 @@
 	const lastProposal = $derived.by(() => {
 		return getSelectedSession()?.messages.slice().reverse().find((message) => message.proposal)?.proposal ?? null;
 	});
-	const screenId = $derived(lastProposal?.screenId ?? "");
-	const missingLabels = $derived((lastProposal?.missing ?? []).join(", "));
+	const provenance = $derived(getCurrentProvenance());
+	const screenId = $derived(recordedScreenId(provenance?.screenId) ?? "");
+	const missingLabels = $derived((provenance?.missing ?? []).join(", "));
 
 	let device = $state<"desktop" | "mobile">("desktop");
 	let url = $state("");
@@ -223,9 +232,9 @@
 			{/if}
 			{#key reloadKey}
 				<Text tag="p" class="text-xs text-muted-foreground">{t("preview.runtime")}</Text>
-				{#if screenId}
-					<Text tag="p" class="text-xs text-muted-foreground">{screenId}</Text>
-				{/if}
+				<Text tag="p" class="text-xs text-muted-foreground">
+					{screenId || t("preview.noScreen")}
+				</Text>
 				{#if missingLabels}
 					<Text tag="p" class="text-xs text-muted-foreground" role="status">
 						{t("home.incompatible")} {t("home.missing").replace("{list}", missingLabels)}

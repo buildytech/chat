@@ -1,12 +1,20 @@
 import { searchCatalog } from "./catalog/search.ts";
 import { screenSupport } from "./catalog/compatibility.ts";
 import { getBlockDetails } from "./catalog/details.ts";
-import { getSkill, ALLOWED_TOOLS, type AllowedTool } from "./policy.ts";
-import { proposeLayout, type LayoutProposal, type LayoutProposalError, type ProposalContext } from "./assemble.ts";
+import { getSkill, ALLOWED_TOOLS, RUN_BUDGET, type AllowedTool } from "./policy.ts";
+import {
+	inheritedScreenId,
+	proposeLayout,
+	recordedScreenId,
+	type LayoutProposal,
+	type LayoutProposalError,
+	type ProposalContext
+} from "./assemble.ts";
 import { inferScenarioId, isScenarioId } from "./brief.ts";
 import { parseLayoutCopyEdits } from "./edits.ts";
+import { OWNER_FILTERS, type ScenarioId } from "./copy.ts";
 import type { Page } from "@buildytech/page-contract";
-import type { SearchResult } from "./catalog/types.ts";
+import type { CatalogFacetFilter, SearchResult } from "./catalog/types.ts";
 
 export type ToolName = AllowedTool;
 
@@ -14,6 +22,8 @@ export type ToolCall = { name: string; arguments?: Record<string, unknown> };
 
 export type ToolHost = {
 	currentPage?: Page | null;
+	currentProvenance?: ProposalContext["currentProvenance"];
+	scenarioId?: ScenarioId | null;
 	/** Live xAI tool loop. Assembly stays the deterministic catalog assembler. */
 	liveTurn?: boolean;
 };
@@ -23,45 +33,83 @@ export type CompactSearchItem = {
 	title: string;
 	subtitle: string;
 	variant: string;
-	group: string;
-	labels: SearchResult["items"][number]["labels"];
 	mappedKinds: string[];
 	supported: boolean;
-	compatibility: { compatible: boolean; partial: boolean; missing: string[] };
+	missing: string[];
+	labels: { section: string[]; job: string[] };
 };
 
-/** Tool-loop payload: shortlist only. No preview, spec, or snapshot dump. */
-export function compactSearchResult(result: SearchResult): Omit<SearchResult, "items"> & { items: CompactSearchItem[] } {
+export type CompactSearchPayload = {
+	query: SearchResult["query"];
+	page: number;
+	pageSize: number;
+	total: number;
+	pageCount: number;
+	noFit: boolean;
+	code?: SearchResult["code"];
+	clarification?: string;
+	suggested?: SearchResult["suggested"];
+	misplaced?: SearchResult["misplaced"];
+	vocabulary?: SearchResult["vocabulary"];
+	items: CompactSearchItem[];
+	pick: CompactSearchItem | null;
+	next: "propose_layout";
+};
+
+function compactItem(item: SearchResult["items"][number]): CompactSearchItem {
+	const support = screenSupport(item);
+	return {
+		screenId: item.screenId,
+		title: item.title,
+		subtitle: item.subtitle,
+		variant: item.variant,
+		mappedKinds: support.mappedKinds,
+		supported: support.supported,
+		missing: support.missing,
+		labels: { section: item.labels.section, job: item.labels.job }
+	};
+}
+
+/** Tool-loop payload: shortlist only. No preview, spec, snapshot dump, or block-id inspect list. */
+export function compactSearchResult(result: SearchResult): CompactSearchPayload {
+	const items = result.items.map(compactItem);
 	return {
 		query: result.query,
 		page: result.page,
 		pageSize: result.pageSize,
 		total: result.total,
 		pageCount: result.pageCount,
-		vocabulary: result.vocabulary,
 		noFit: result.noFit,
 		code: result.code,
 		clarification: result.clarification,
 		suggested: result.suggested,
 		misplaced: result.misplaced,
-		items: result.items.map((item) => {
-			const support = screenSupport(item);
-			return {
-				screenId: item.screenId,
-				title: item.title,
-				subtitle: item.subtitle,
-				variant: item.variant,
-				group: item.group,
-				labels: item.labels,
-				mappedKinds: support.mappedKinds,
-				supported: support.supported,
-				compatibility: {
-					compatible: item.compatibility.compatible,
-					partial: item.compatibility.partial,
-					missing: support.missing
-				}
-			};
-		})
+		...(result.noFit ? { vocabulary: result.vocabulary } : {}),
+		items,
+		pick: items.find((item) => item.supported) ?? items[0] ?? null,
+		next: "propose_layout"
+	};
+}
+
+/** Compact host seed so the model can propose without paging the catalog. */
+export function scenarioCatalogContext(scenarioId: ScenarioId | null): {
+	scenarioId: ScenarioId;
+	filter: CatalogFacetFilter;
+	pick: CompactSearchItem | null;
+	items: CompactSearchItem[];
+	next: "propose_layout";
+} | null {
+	if (!scenarioId) return null;
+	const filter = OWNER_FILTERS[scenarioId];
+	const result = compactSearchResult(
+		searchCatalog({ ...filter, page: 1, pageSize: RUN_BUDGET.toolPageSize, supportedOnly: true })
+	);
+	return {
+		scenarioId,
+		filter,
+		pick: result.pick,
+		items: result.items,
+		next: "propose_layout"
 	};
 }
 
@@ -121,6 +169,7 @@ export function executeTool(
 			section: typeof args.section === "string" ? args.section : undefined,
 			job: typeof args.job === "string" ? args.job : undefined,
 			page: typeof args.page === "number" ? args.page : 1,
+			pageSize: RUN_BUDGET.toolPageSize,
 			supportedOnly: true
 		});
 		if (result.code === "catalog_facet_unknown") {
@@ -168,13 +217,23 @@ export function executeTool(
 		const brief = String(args.brief ?? "");
 		const scenarioRaw = args.scenarioId;
 		const scenarioId = isScenarioId(scenarioRaw) ? scenarioRaw : inferScenarioId(brief);
+		const currentPage = host?.currentPage ?? undefined;
+		const currentProvenance = host?.currentProvenance;
+		const screenId = currentPage
+			? inheritedScreenId({
+					screenId: recordedScreenId(args.screenId),
+					currentPage,
+					currentProvenance
+				})
+			: recordedScreenId(args.screenId);
 		const result = proposeLayout({
 			brief,
 			scenarioId,
-			screenId: typeof args.screenId === "string" ? args.screenId : null,
+			screenId,
 			expectedRevision: typeof args.expectedRevision === "number" ? args.expectedRevision : 0,
-			pageId: typeof args.pageId === "string" ? args.pageId : host?.currentPage?.id,
-			currentPage: host?.currentPage ?? undefined,
+			pageId: typeof args.pageId === "string" ? args.pageId : currentPage?.id,
+			currentPage,
+			currentProvenance,
 			liveTurn: Boolean(host?.liveTurn),
 			edits: parseLayoutCopyEdits(args.edits)
 		});

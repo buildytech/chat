@@ -132,6 +132,7 @@ export async function handleRuntimeFetch(
 						expectedRevision: mapped.request.expectedRevision,
 						pageId: mapped.request.pageId,
 						currentPage: mapped.request.currentPage,
+						currentProvenance: mapped.request.currentProvenance,
 						liveTurn: true
 					},
 					signal

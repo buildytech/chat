@@ -15,12 +15,68 @@ export type PersistError = {
 	message: string;
 };
 
+export type StoredPageProvenance = {
+	screenId: string | null;
+	scenarioId: string | null;
+	missing: string[];
+	assembler?: string;
+};
+
 export type StoredPageRecord = {
 	applied: unknown | null;
 	candidate: unknown | null;
+	appliedProvenance?: StoredPageProvenance | null;
+	candidateProvenance?: StoredPageProvenance | null;
 	selectedBlockId: string | null;
 	revision: number | null;
 };
+
+const STOCK_NOTE = /^Stock screen (screen\.[A-Za-z0-9._/-]+)$/;
+
+function recordedId(value: unknown): string | null {
+	if (typeof value !== "string") return null;
+	const trimmed = value.trim();
+	if (!trimmed || trimmed === "null" || trimmed === "undefined") return null;
+	return trimmed;
+}
+
+function inferScreenIdFromUnknown(page: unknown): string | null {
+	if (!page || typeof page !== "object") return null;
+	const layout = (page as { layout?: { blocks?: unknown } }).layout;
+	const stack = Array.isArray(layout?.blocks) ? [...layout.blocks] : [];
+	while (stack.length) {
+		const node = stack.pop();
+		if (!node || typeof node !== "object") continue;
+		const rec = node as { copy?: { note?: unknown }; children?: unknown };
+		const note = rec.copy?.note;
+		if (typeof note === "string") {
+			const hit = note.match(STOCK_NOTE);
+			if (hit?.[1]) return hit[1];
+		}
+		if (Array.isArray(rec.children)) stack.push(...rec.children);
+	}
+	return null;
+}
+
+function normalizeProvenance(raw: unknown, page: unknown): StoredPageProvenance | null {
+	if (page == null && raw == null) return null;
+	const rec = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : null;
+	return {
+		screenId: recordedId(rec?.screenId) ?? inferScreenIdFromUnknown(page),
+		scenarioId: typeof rec?.scenarioId === "string" ? rec.scenarioId : null,
+		missing: Array.isArray(rec?.missing) ? rec.missing.filter((row): row is string => typeof row === "string") : [],
+		assembler: typeof rec?.assembler === "string" ? rec.assembler : undefined
+	};
+}
+
+/** Old blobs stored pages without sibling provenance. Infer Stock id from CTA note; else recorded absence. */
+export function migrateStoredPageRecord(record: StoredPageRecord): StoredPageRecord {
+	const appliedProvenance = normalizeProvenance(record.appliedProvenance, record.applied);
+	const candidateProvenance = record.candidate
+		? (normalizeProvenance(record.candidateProvenance, record.candidate) ?? appliedProvenance)
+		: null;
+	return { ...record, appliedProvenance, candidateProvenance };
+}
 
 type PagesBlobV1 = {
 	version: typeof PAGES_VERSION;
@@ -138,7 +194,9 @@ export function loadPagesBlob(): PagesBlobV1 {
 }
 
 export function readSessionPages(sessionId: string): StoredPageRecord | null {
-	return loadPagesBlob().pages[sessionId] ?? null;
+	const rec = loadPagesBlob().pages[sessionId];
+	if (!rec) return null;
+	return migrateStoredPageRecord(rec);
 }
 
 export function writeSessionPages(sessionId: string, record: StoredPageRecord): boolean {

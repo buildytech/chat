@@ -16,7 +16,8 @@
 	import { cn } from "../../utils/cn";
 	import type { ChatMessage as ChatMessageModel } from "../chat-core";
 	import { isPendingProposal, proposalStatus } from "../chat-core/proposals";
-	import { formatTokens } from "@buildytech/builder-core";
+	import { formatTokens, recordedScreenId } from "@buildytech/builder-core";
+	import { getCurrentProvenance } from "../page-store";
 
 	let {
 		message,
@@ -52,7 +53,11 @@
 		const missing = proposal.missing.length
 			? ` ${t("assistant.missingBlocks").replace("{list}", proposal.missing.join(", "))}`
 			: "";
-		return `${via} ${t(key).replace("{title}", proposal.title).replace("{screen}", proposal.screenId ?? "none attached")}${missing}`;
+		const screen =
+			recordedScreenId(proposal.screenId) ??
+			recordedScreenId(getCurrentProvenance()?.screenId) ??
+			t("preview.noScreen");
+		return `${via} ${t(key).replace("{title}", proposal.title).replace("{screen}", screen)}${missing}`;
 	});
 	const statusLabel = $derived(
 		status === "applied"

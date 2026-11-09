@@ -151,7 +151,27 @@ export type ChatRunRequest = {
 	expectedRevision: number;
 	pageId?: string;
 	currentPage?: Page;
+	currentProvenance?: {
+		screenId: string | null;
+		scenarioId: "dashboard" | "landing" | "website" | null;
+		missing: string[];
+	};
 };
+
+function parseCurrentProvenance(raw: unknown): ChatRunRequest["currentProvenance"] {
+	if (!raw || typeof raw !== "object") return undefined;
+	const rec = raw as Record<string, unknown>;
+	const scenarioId =
+		rec.scenarioId === "dashboard" || rec.scenarioId === "landing" || rec.scenarioId === "website"
+			? rec.scenarioId
+			: null;
+	const screenId = typeof rec.screenId === "string" ? rec.screenId : null;
+	return {
+		screenId: screenId && screenId !== "null" ? screenId : null,
+		scenarioId,
+		missing: Array.isArray(rec.missing) ? rec.missing.filter((row): row is string => typeof row === "string") : []
+	};
+}
 
 /**
  * Map a POST /v1/run body onto the exact requested chat model.
@@ -166,6 +186,7 @@ export function mapChatRunRequest(
 		expectedRevision?: unknown;
 		pageId?: unknown;
 		currentPage?: unknown;
+		currentProvenance?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -199,7 +220,8 @@ export function mapChatRunRequest(
 			screenId: typeof body.screenId === "string" ? body.screenId : null,
 			expectedRevision: typeof body.expectedRevision === "number" ? body.expectedRevision : 0,
 			pageId: typeof body.pageId === "string" ? body.pageId : currentPage?.id,
-			currentPage
+			currentPage,
+			currentProvenance: parseCurrentProvenance(body.currentProvenance)
 		}
 	};
 }

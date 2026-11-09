@@ -10,6 +10,7 @@ import {
 	loadSessionsJson,
 	clearPagesBlob,
 	deleteSessionPages,
+	migrateStoredPageRecord,
 	readSessionPages,
 	saveSessionsJson,
 	writeSessionPages
@@ -101,6 +102,27 @@ test("QA can delete a session's pages or clear the pages blob", () => {
 	assert.equal(clearPagesBlob(), true);
 	assert.equal(readSessionPages("session-2"), null);
 	assert.equal(loadPagesBlob().version, 1);
+});
+
+test("old saved pages migrate Stock provenance from CTA note, else none attached", () => {
+	const withNote = migrateStoredPageRecord({
+		applied: {
+			id: "page-a",
+			layout: { version: 1, blocks: [{ id: "block-cta", kind: "cta", title: "CTA", summary: "", copy: { note: "Stock screen screen.site/home" } }] }
+		},
+		candidate: null,
+		selectedBlockId: null,
+		revision: 1
+	});
+	assert.equal(withNote.appliedProvenance?.screenId, "screen.site/home");
+	const blank = migrateStoredPageRecord({
+		applied: { id: "page-b", layout: { version: 1, blocks: [{ id: "block-hero", kind: "hero", title: "Hero", summary: "" }] } },
+		candidate: null,
+		selectedBlockId: null,
+		revision: 1
+	});
+	assert.equal(blank.appliedProvenance?.screenId, null);
+	assert.equal(blank.appliedProvenance?.screenId ?? "none attached", "none attached");
 });
 
 test("quota errors are truthful and leave the last good blob", () => {

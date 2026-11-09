@@ -12,6 +12,8 @@ import {
 	aggregateSessionUsage,
 	catalogProvenance,
 	formatChatModelChoice,
+	recordedScreenId,
+	screenIdFromPage,
 	getChatModel,
 	mapChatRunRequest,
 	runConstructorTools,
@@ -40,6 +42,7 @@ import {
 	bindPageSession,
 	clearCurrentPage,
 	discardCandidate,
+	getAppliedProvenance,
 	getLastAppliedPage,
 	getPageRevision,
 	setCandidatePage
@@ -314,13 +317,26 @@ export function abortInflightRun(): void {
 
 function constructorContext(brief: string): ProposalContext {
 	const applied = getLastAppliedPage();
+	const provenance = getAppliedProvenance();
+	const screenId =
+		recordedScreenId(provenance?.screenId) ?? recordedScreenId(getScreenId()) ?? screenIdFromPage(applied);
+	const scenarioId = provenance?.scenarioId === "dashboard" || provenance?.scenarioId === "landing" || provenance?.scenarioId === "website"
+		? provenance.scenarioId
+		: getScenarioId();
 	return {
 		brief,
-		scenarioId: getScenarioId(),
-		screenId: getScreenId(),
+		scenarioId,
+		screenId,
 		expectedRevision: getPageRevision() ?? 0,
 		pageId: applied?.id,
-		currentPage: applied ?? undefined
+		currentPage: applied ?? undefined,
+		currentProvenance: provenance
+			? {
+					screenId: recordedScreenId(provenance.screenId),
+					scenarioId: scenarioId,
+					missing: provenance.missing
+				}
+			: undefined
 	};
 }
 
@@ -456,7 +472,12 @@ function proposalMessage(
 			run
 		};
 	}
-	setCandidatePage(result.page);
+	setCandidatePage(result.page, {
+		screenId: recordedScreenId(result.provenance.screenId),
+		scenarioId: result.provenance.scenarioId,
+		missing: result.missing,
+		assembler: result.provenance.assembler
+	});
 	const via = live ? t("assistant.xaiProposal") : t("assistant.localAssembler");
 	const missing = result.missing.length
 		? ` ${t("assistant.missingBlocks").replace("{list}", result.missing.join(", "))}`
@@ -475,7 +496,7 @@ function proposalMessage(
 			warnings: result.warnings,
 			missing: result.missing,
 			title: result.page.title,
-			screenId: result.provenance.screenId
+			screenId: recordedScreenId(result.provenance.screenId)
 		},
 		run
 	};
@@ -577,8 +598,8 @@ export function applyProposal(): boolean {
 		updatedAt: nowIso(),
 		pageId: applied?.id,
 		pageRevision: getPageRevision(),
-		scenarioId: session.scenarioId ?? getScenarioId(),
-		screenId: session.screenId ?? getScreenId(),
+		scenarioId: getAppliedProvenance()?.scenarioId ?? session.scenarioId ?? getScenarioId(),
+		screenId: recordedScreenId(getAppliedProvenance()?.screenId) ?? session.screenId ?? getScreenId(),
 		messages: markPendingProposals(session.messages, "applied", "latest")
 	};
 	replaceSession(next);

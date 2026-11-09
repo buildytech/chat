@@ -33,6 +33,12 @@ export type ProposalContext = {
 	liveTurn?: boolean;
 	/** Structured copy patches from propose_layout.edits. Never the raw author prompt. */
 	edits?: LayoutCopyEdit[];
+	/** Saved page metadata for content-only edits. Not accepted from tool JSON layouts. */
+	currentProvenance?: {
+		screenId: string | null;
+		scenarioId: ScenarioId | null;
+		missing: string[];
+	};
 };
 
 export type LayoutProposal = {
@@ -495,6 +501,36 @@ function applyCopyEdits(blocks: PageBlock[], edits: LayoutCopyEdit[]): { blocks:
 	return { blocks: next, changed };
 }
 
+const STOCK_NOTE = /^Stock screen (screen\.[A-Za-z0-9._/-]+)$/;
+
+/** Reject literal "null" / empty strings so UI never stores a fake screen id. */
+export function recordedScreenId(value: unknown): string | null {
+	if (typeof value !== "string") return null;
+	const trimmed = value.trim();
+	if (!trimmed || trimmed === "null" || trimmed === "undefined") return null;
+	return trimmed;
+}
+
+/** Infer a Stock screen id from CTA copy on old pages that never stored provenance. */
+export function screenIdFromPage(page: Page | null | undefined): string | null {
+	if (!page) return null;
+	for (const node of walk(page.layout.blocks)) {
+		const note = node.copy?.note;
+		if (typeof note !== "string") continue;
+		const hit = note.match(STOCK_NOTE);
+		if (hit?.[1]) return hit[1];
+	}
+	return null;
+}
+
+export function inheritedScreenId(ctx: Pick<ProposalContext, "screenId" | "currentPage" | "currentProvenance">): string | null {
+	return (
+		recordedScreenId(ctx.currentProvenance?.screenId) ??
+		screenIdFromPage(ctx.currentPage) ??
+		recordedScreenId(ctx.screenId)
+	);
+}
+
 function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal | LayoutProposalError {
 	const current = ctx.currentPage;
 	if (!current) {
@@ -502,31 +538,35 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 	}
 	const title = titleFromSavedEdit(brief, current.title);
 	const stamp = iso(ctx.now);
-	const scenarioId = resolvedScenario(ctx, brief);
+	const screenId = inheritedScreenId(ctx);
+	const screen = screenId ? getScreenById(screenId) : null;
+	const scenarioId = resolvedScenario({ ...ctx, screenId }, brief) ?? ctx.currentProvenance?.scenarioId ?? null;
+	const missing = ctx.currentProvenance?.missing ?? [];
 	const edits = ctx.edits?.length ? ctx.edits : extractCopyEditsFromBrief(brief);
+	const working: ProposalContext = { ...ctx, pageId: current.id, scenarioId, screenId };
 	if (edits.length) {
 		const patched = applyCopyEdits(current.layout.blocks, edits);
 		return finishProposal(
-			{ ...ctx, pageId: current.id, scenarioId },
+			working,
 			brief,
-			null,
+			screen,
 			patched.blocks,
 			[
 				patched.changed.length
 					? `Edited ${patched.changed.join(", ")} on the saved page. Other blocks are unchanged.`
 					: "No matching block to edit. Other blocks are unchanged."
 			],
-			[],
+			missing,
 			{ title, id: current.id, createdAt: current.createdAt, stamp, status: current.status, slug: current.slug }
 		);
 	}
 	return finishProposal(
-		{ ...ctx, pageId: current.id, scenarioId },
+		working,
 		brief,
-		null,
+		screen,
 		current.layout.blocks,
 		["No structured copy edit in that message. Other blocks are unchanged."],
-		[],
+		missing,
 		{ title, id: current.id, createdAt: current.createdAt, stamp, status: current.status, slug: current.slug }
 	);
 }
@@ -726,7 +766,7 @@ function finishProposal(
 			trialPolicyVersion: TRIAL_POLICY_VERSION,
 			catalog: catalogProvenance(),
 			scenarioId: ctx.scenarioId,
-			screenId: ctx.screenId ?? screen?.screenId ?? null,
+			screenId: recordedScreenId(screen?.screenId) ?? inheritedScreenId(ctx),
 			assembler: "local-catalog-assembler"
 		}
 		};

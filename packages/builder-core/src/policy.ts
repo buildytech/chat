@@ -7,9 +7,9 @@ export const ENABLED_SKILLS = [
 	{
 		id: "ui8kit-strict-catalog",
 		version: "1",
-		purpose: "Search the pinned catalog and inspect authoritative block details before proposing a layout.",
+		purpose: "Use the host scenario seed or one search_catalog shortlist, then call propose_layout. get_block_details is optional for a single unknown id. Never spend the last tool step on search or details.",
 		triggers: ["catalog", "screen", "block", "layout"],
-		requiredTools: ["search_catalog", "get_block_details", "propose_layout"]
+		requiredTools: ["search_catalog", "propose_layout"]
 	},
 	{
 		id: "human-apply-gate",
@@ -44,5 +44,7 @@ export function getSkill(id: string):
 export const RUN_BUDGET = {
 	maxToolCalls: 8,
 	maxMs: 90_000,
-	shortlist: 12
+	shortlist: 12,
+	toolPageSize: 4,
+	reserveProposeSteps: 1
 } as const;
