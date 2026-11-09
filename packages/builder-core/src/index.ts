@@ -33,7 +33,7 @@ export {
 	type CatalogSourceBlock,
 	type CatalogSources
 } from "./catalog/sources.ts";
-export { organismFor, registryNpmDependencies, type OrganismRender } from "./catalog/organism.ts";
+export { organismFor, registryClosure, registryNpmDependencies, type OrganismRender } from "./catalog/organism.ts";
 export { contractFingerprint } from "./catalog/fingerprint.ts";
 export { clientProposalGate } from "./client-gate.ts";
 export {

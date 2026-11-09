@@ -8656,6 +8656,402 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 		"clsx",
 		"tailwind-merge"
 	],
+	"items": {
+		"badge": {
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Badge.svelte"
+			]
+		},
+		"block": {
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Block.svelte"
+			]
+		},
+		"box": {
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Box.svelte"
+			]
+		},
+		"card": {
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Card.svelte"
+			]
+		},
+		"card-content": {
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/CardContent.svelte"
+			]
+		},
+		"card-header": {
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/CardHeader.svelte"
+			]
+		},
+		"card-title": {
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/CardTitle.svelte"
+			]
+		},
+		"container": {
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Container.svelte"
+			]
+		},
+		"empty-state": {
+			"registryDependencies": [
+				"box",
+				"icon-badge",
+				"lucide-icon",
+				"text",
+				"utils"
+			],
+			"files": [
+				"components/empty-state.svelte"
+			]
+		},
+		"feature-cards": {
+			"registryDependencies": [
+				"card",
+				"card-content",
+				"card-header",
+				"card-title",
+				"feature-grid",
+				"grid",
+				"group",
+				"icon-badge",
+				"lucide-icon",
+				"presets",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"files": [
+				"components/feature-cards.svelte"
+			]
+		},
+		"feature-grid": {
+			"registryDependencies": [
+				"empty-state",
+				"feature-cards",
+				"feature-rows",
+				"group",
+				"link",
+				"presets",
+				"section-frame",
+				"title",
+				"utils"
+			],
+			"files": [
+				"blocks/feature-grid.svelte",
+				"blocks/feature-grid.types.ts"
+			]
+		},
+		"feature-rows": {
+			"registryDependencies": [
+				"box",
+				"feature-grid",
+				"grid",
+				"lucide-icon",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"files": [
+				"components/feature-rows.svelte"
+			]
+		},
+		"grid": {
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Grid.svelte"
+			]
+		},
+		"group": {
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Group.svelte"
+			]
+		},
+		"icon-badge": {
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/IconBadge.svelte"
+			]
+		},
+		"image": {
+			"registryDependencies": [
+				"kit-image",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Image.svelte"
+			]
+		},
+		"kit-box": {
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				"kit/ui/box/Box.svelte",
+				"kit/ui/box/box.shared.ts"
+			]
+		},
+		"kit-icon": {
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				"kit/ui/icon/Icon.svelte",
+				"kit/ui/icon/icon.shared.ts",
+				"kit/ui/icon/icon.variants.json"
+			]
+		},
+		"kit-image": {
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				"kit/ui/image/Image.svelte",
+				"kit/ui/image/Picture.svelte",
+				"kit/ui/image/Source.svelte",
+				"kit/ui/image/image.shared.ts"
+			]
+		},
+		"kit-link": {
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				"kit/ui/link/Link.svelte",
+				"kit/ui/link/link.shared.ts"
+			]
+		},
+		"kit-text": {
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				"kit/ui/text/Text.svelte",
+				"kit/ui/text/text.shared.ts"
+			]
+		},
+		"link": {
+			"registryDependencies": [
+				"kit-link",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Link.svelte"
+			]
+		},
+		"lucide-icon": {
+			"registryDependencies": [
+				"kit-icon",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/LucideIcon.svelte",
+				"icons/LucideIcon.svelte",
+				"icons/lucide-icons.ts"
+			]
+		},
+		"media-frame": {
+			"registryDependencies": [
+				"box",
+				"image",
+				"utils"
+			],
+			"files": [
+				"components/media-frame.assets.ts",
+				"components/media-frame.svelte"
+			]
+		},
+		"presets": {
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				"presets/defaults.ts"
+			]
+		},
+		"recipes": {
+			"registryDependencies": [
+				"utils"
+			],
+			"files": [
+				"compose/recipes.ts"
+			]
+		},
+		"section-box": {
+			"registryDependencies": [
+				"card",
+				"utils"
+			],
+			"files": [
+				"components/section-box.svelte"
+			]
+		},
+		"section-column": {
+			"registryDependencies": [
+				"stack",
+				"utils"
+			],
+			"files": [
+				"components/section-column.svelte"
+			]
+		},
+		"section-frame": {
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"grid",
+				"presets",
+				"section-box",
+				"section-column",
+				"section-header",
+				"stack",
+				"utils"
+			],
+			"files": [
+				"components/section-frame.svelte",
+				"components/section-frame.types.ts"
+			]
+		},
+		"section-header": {
+			"registryDependencies": [
+				"badge",
+				"group",
+				"link",
+				"presets",
+				"section-frame",
+				"text",
+				"title",
+				"utils"
+			],
+			"files": [
+				"components/section-header.svelte"
+			]
+		},
+		"stack": {
+			"registryDependencies": [
+				"kit-box",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Stack.svelte"
+			]
+		},
+		"text": {
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Text.svelte"
+			]
+		},
+		"title": {
+			"registryDependencies": [
+				"kit-text",
+				"recipes",
+				"utils"
+			],
+			"files": [
+				"compose/Title.svelte"
+			]
+		},
+		"utils": {
+			"registryDependencies": [],
+			"files": [
+				"kit/utils/cn.ts",
+				"kit/utils/env.ts",
+				"kit/utils/expr.ts",
+				"kit/utils/index.ts",
+				"kit/utils/recipe-types.ts",
+				"kit/utils/tags.ts",
+				"kit/utils/variants.ts",
+				"styles/index.css",
+				"styles/kit.css",
+				"styles/theme.css",
+				"utils/a11y/dismiss.ts",
+				"utils/a11y/focus-trap.ts",
+				"utils/a11y/focusable.ts",
+				"utils/a11y/index.ts",
+				"utils/a11y/roving.ts",
+				"utils/a11y/scroll-lock.ts",
+				"utils/cn.ts",
+				"utils/env.ts",
+				"utils/expr.ts",
+				"utils/format.ts",
+				"utils/html.ts",
+				"utils/index.ts",
+				"utils/safe.ts",
+				"utils/tags.ts",
+				"utils/variants.ts"
+			]
+		}
+	},
 	"blocks": {
 		"block.features": {
 			"kind": "features",
@@ -9364,8 +9760,29 @@ function organismFor(block: PageBlock): OrganismRender | null {
 /** npm packages the vendored registry tree imports (svelte, clsx, tailwind-merge). */
 const registryNpmDependencies: string[] = sources.npmDependencies;
 
+/**
+ * Vendored file paths of registry items and their registryDependencies, transitively (what `npx ui8kit add`
+ * installs). Unknown names throw: the snapshot must contain every item a page uses.
+ */
+function registryClosure(items: string[]): string[] {
+	const seen = new Set<string>();
+	const files = new Set<string>();
+	const queue = [...items];
+	while (queue.length) {
+		const name = queue.shift()!;
+		if (seen.has(name)) continue;
+		const item = sources.items[name];
+		if (!item) throw new Error(`registry item ${name} is not in the pinned snapshot`);
+		seen.add(name);
+		for (const file of item.files) files.add(file);
+		queue.push(...item.registryDependencies);
+	}
+	return [...files].sort();
+}
+
 exports["organismFor"] = organismFor;
 exports["registryNpmDependencies"] = registryNpmDependencies;
+exports["registryClosure"] = registryClosure;
 
 });
 
@@ -13223,6 +13640,7 @@ exports["modelCatalogSources"] = __req("packages/builder-core/src/catalog/source
 exports["resolveCatalogChoice"] = __req("packages/builder-core/src/catalog/sources.ts")["resolveCatalogChoice"];
 exports["variantProps"] = __req("packages/builder-core/src/catalog/sources.ts")["variantProps"];
 exports["organismFor"] = __req("packages/builder-core/src/catalog/organism.ts")["organismFor"];
+exports["registryClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryClosure"];
 exports["registryNpmDependencies"] = __req("packages/builder-core/src/catalog/organism.ts")["registryNpmDependencies"];
 exports["contractFingerprint"] = __req("packages/builder-core/src/catalog/fingerprint.ts")["contractFingerprint"];
 exports["clientProposalGate"] = __req("packages/builder-core/src/client-gate.ts")["clientProposalGate"];

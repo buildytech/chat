@@ -26,7 +26,7 @@ const VENDOR = join(ROOT, "apps/chat-web/src/registry/svelte");
 const FILES_JSON = join(ROOT, "apps/chat-web/src/registry/files.json");
 const SOURCES_JSON = join(ROOT, "packages/builder-core/src/catalog/sources.json");
 const PREVIEW_CSS = join(ROOT, "apps/chat-web/src/registry/preview-kit.css");
-const APP_CSS = join(ROOT, "apps/chat-web/src/app.css");
+const APP_CSS = join(ROOT, "apps/chat-web/src/styles/chat-theme.css");
 const TAILWIND_THEME = join(ROOT, "node_modules/tailwindcss/theme.css");
 
 /** Registry folder per item type (ui8kit CLI TYPE_TO_FOLDER). */
@@ -199,6 +199,8 @@ async function snapshot() {
 		lockDigest: sha256(JSON.stringify(lockItems)),
 		specs: { repo: config.specs.repo, commit: config.specs.commit, files: specsLock },
 		npmDependencies: lock.npmDependencies,
+		// Item graph for the ZIP: the closure of the organisms a page uses (like `npx ui8kit add`).
+		items: Object.fromEntries(lockItems.map((item) => [item.name, { registryDependencies: item.registryDependencies, files: item.files.map((file) => file.path) }])),
 		blocks,
 		icons
 	};

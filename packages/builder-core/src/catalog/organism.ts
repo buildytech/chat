@@ -72,3 +72,23 @@ export function organismFor(block: PageBlock): OrganismRender | null {
 
 /** npm packages the vendored registry tree imports (svelte, clsx, tailwind-merge). */
 export const registryNpmDependencies: readonly string[] = sources.npmDependencies;
+
+/**
+ * Vendored file paths of registry items and their registryDependencies, transitively (what `npx ui8kit add`
+ * installs). Unknown names throw: the snapshot must contain every item a page uses.
+ */
+export function registryClosure(items: readonly string[]): string[] {
+	const seen = new Set<string>();
+	const files = new Set<string>();
+	const queue = [...items];
+	while (queue.length) {
+		const name = queue.shift()!;
+		if (seen.has(name)) continue;
+		const item = sources.items[name];
+		if (!item) throw new Error(`registry item ${name} is not in the pinned snapshot`);
+		seen.add(name);
+		for (const file of item.files) files.add(file);
+		queue.push(...item.registryDependencies);
+	}
+	return [...files].sort();
+}

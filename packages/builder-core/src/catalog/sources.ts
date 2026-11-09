@@ -36,6 +36,8 @@ export type CatalogSources = {
 	lockDigest: string;
 	specs: { repo: string; commit: string; files: Array<{ spec: string; url: string; sha256: string }> };
 	npmDependencies: string[];
+	/** Registry item graph of the snapshot: registryDependencies and vendored file paths per item. */
+	items: Record<string, { registryDependencies: string[]; files: string[] }>;
 	blocks: Record<string, CatalogSourceBlock>;
 	icons: string[];
 };
