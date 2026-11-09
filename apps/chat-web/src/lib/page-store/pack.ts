@@ -1,6 +1,5 @@
 import { parsePage, type CreatorPage } from "./page.ts";
-import { registryFilesFor, svelteFromPage, sveltePackFiles, REGISTRY_DIR } from "./svelte-code.ts";
-import packKit from "./pack-kit.json" with { type: "json" };
+import { INSTALL_ROOT, registryItemsOf, registryLockItemsOf, registryPathsOf, svelteFromPage, sveltePackFiles } from "./svelte-code.ts";
 
 export type PackFile = {
 	path: string;
@@ -169,40 +168,51 @@ function sha256Hex(data: Uint8Array): string {
 	return [h0, h1, h2, h3, h4, h5, h6, h7].map((x) => x.toString(16).padStart(8, "0")).join("");
 }
 
-export function packFilesFromPage(
-	page: CreatorPage,
-	selectedId: string | null = null
-): PackFile[] {
-	const valid = parsePage(page);
-	const svelteFiles = sveltePackFiles(valid, selectedId);
-	const pageSvelte = svelteFromPage(valid, selectedId);
-	// Self-contained Vite project: page code under src/, the registry items it uses, the chat components the generic
-	// blocks import (vendored), and the scaffold (index.html, main.ts, app.css, vite.config.ts, package.json, README).
-	const files: PackFile[] = svelteFiles.map((file) => ({ path: `src/${file.path}`, content: file.content }));
-	if (!files.some((file) => file.path.startsWith(`src/${REGISTRY_DIR}/styles/`))) {
-		// No registry block on this page: still ship the kit styles (theme tokens) the generic blocks use.
-		files.push(...registryFilesFor(["utils"]).map((file) => ({ path: `src/${file.path}`, content: file.content })));
-	}
-	files.push(...vendoredKit(files));
-	files.push(...scaffold(valid.slug || "page", valid.title));
-	files.push({
-		path: "page.json",
-		content: `${JSON.stringify(valid, null, 2)}\n`
-	});
-	const generator = {
+/**
+ * npm packages of the exported project, pinned to the exact versions the chat builds with (a unit test compares them
+ * with node_modules). Runtime: svelte plus the registry's npm dependencies; tooling: what vite.config.ts uses.
+ */
+export const PACK_DEPENDENCIES = { clsx: "2.1.1", svelte: "5.57.3", "tailwind-merge": "3.7.0" } as const;
+export const PACK_DEV_DEPENDENCIES = {
+	"@sveltejs/vite-plugin-svelte": "6.2.4",
+	"@tailwindcss/vite": "4.3.4",
+	tailwindcss: "4.3.4",
+	vite: "7.3.7"
+} as const;
+
+/** CLI files at the project root (exactly as `npx ui8kit init` writes them; the lock lists only this page's items). */
+export const CLI_CONFIG = "ui8kit.config.json";
+export const CLI_LOCK = "ui8kit.lock.json";
+
+/** Reads registry snapshot files by path relative to registry/svelte (`ui8kit.config.json`, `src/blocks/x.svelte`). */
+export type RegistryReader = (paths: string[]) => Promise<Record<string, string>>;
+
+function generatorOf(page: CreatorPage) {
+	return {
 		name: "@buildytech/chat-web/svelte-pack",
 		emitter: "svelteFromPage",
 		packApi: "packFilesFromPage",
 		packageVersion: "0.0.0",
-		pageSvelteSha256: sha256Text(pageSvelte),
+		appSvelteSha256: sha256Text(svelteFromPage(page)),
+		registryItems: registryItemsOf(page),
 		contract:
-			"Vite + Svelte 5 project: src/page.svelte composing src/blocks/*.svelte; UI8Kit registry items under src/ui8kit, chat components under src/lib and src/ui ($lib, $ui aliases)"
+			"Vite + Svelte 5 project as `npx ui8kit init --yes --framework svelte` + `npx ui8kit add <registryItems>` writes it (install root src); src/App.svelte composes src/sections/*.svelte, each a registry block or the not-in-registry stub"
 	};
-	files.push({
-		path: "GENERATOR.json",
-		content: `${JSON.stringify(generator, null, 2)}\n`
-	});
-	const paths = files.map((file) => file.path).concat("manifest.json");
+}
+
+/**
+ * Everything of the exported project the chat writes itself (scaffold, App.svelte, sections, page.json, GENERATOR.json,
+ * manifest.json). The registry files, ui8kit.config.json and ui8kit.lock.json are listed in the manifest and added by
+ * packZipFiles from the pinned snapshot.
+ */
+export function packFilesFromPage(page: CreatorPage, selectedId: string | null = null): PackFile[] {
+	void selectedId;
+	const valid = parsePage(page);
+	const files: PackFile[] = [...scaffold(valid.slug || "page", valid.title), ...sveltePackFiles(valid)];
+	files.push({ path: "page.json", content: `${JSON.stringify(valid, null, 2)}\n` });
+	const generator = generatorOf(valid);
+	files.push({ path: "GENERATOR.json", content: `${JSON.stringify(generator, null, 2)}\n` });
+	const paths = [...files.map((file) => file.path), CLI_CONFIG, CLI_LOCK, ...registryPathsOf(valid), "manifest.json"];
 	const manifest = {
 		id: valid.id,
 		slug: valid.slug,
@@ -211,89 +221,49 @@ export function packFilesFromPage(
 		locale: valid.locale,
 		seo: valid.seo,
 		files: paths,
-		generator: {
-			name: generator.name,
-			emitter: generator.emitter,
-			pageSvelteSha256: generator.pageSvelteSha256
-		}
+		generator: { name: generator.name, emitter: generator.emitter, appSvelteSha256: generator.appSvelteSha256 }
 	};
-	files.push({
-		path: "manifest.json",
-		content: `${JSON.stringify(manifest, null, 2)}\n`
-	});
+	files.push({ path: "manifest.json", content: `${JSON.stringify(manifest, null, 2)}\n` });
 	return files;
 }
 
-export function downloadPageZip(page: CreatorPage, selectedId: string | null = null): void {
-	if (typeof document === "undefined") return;
-	const bytes = buildStoreZip(packFilesFromPage(page, selectedId));
-	const buffer = new ArrayBuffer(bytes.byteLength);
-	new Uint8Array(buffer).set(bytes);
-	const blob = new Blob([buffer], { type: "application/zip" });
-	const href = URL.createObjectURL(blob);
-	const anchor = document.createElement("a");
-	anchor.href = href;
-	anchor.download = `${page.slug || "page"}-pack.zip`;
-	document.body.appendChild(anchor);
-	anchor.click();
-	anchor.remove();
-	URL.revokeObjectURL(href);
+/** ui8kit.lock.json of `init` + `add <items>`: the snapshot lock restricted to those items (same format and order). */
+export function lockFor(fullLock: string, items: readonly string[]): string {
+	const lock = JSON.parse(fullLock) as { items: Record<string, { name: string }> } & Record<string, unknown>;
+	const keep = new Set(items);
+	const picked = Object.fromEntries(Object.entries(lock.items).filter(([, item]) => keep.has(item.name)));
+	return `${JSON.stringify({ ...lock, items: picked }, null, 2)}\n`;
 }
 
-type KitFiles = Record<string, string>;
-
-/** `$lib/...`, `$ui/...` and relative imports of a src/ file, resolved to src/ paths of the vendored kit. */
-function kitImports(path: string, content: string, kit: KitFiles): string[] {
-	const code = content.replace(/\/\*[\s\S]*?\*\/|^\s*\/\/.*$|<!--[\s\S]*?-->/gm, "");
-	const out: string[] = [];
-	for (const match of code.matchAll(/(?:from\s+|import\s+)"([^"]+)"/g)) {
-		const specifier = match[1]!;
-		let target: string | null = null;
-		if (specifier.startsWith("$lib/")) target = `lib/${specifier.slice(5)}`;
-		else if (specifier.startsWith("$ui/")) target = `ui/${specifier.slice(4)}`;
-		else if (specifier.startsWith(".") && !path.startsWith(`src/${REGISTRY_DIR}/`) && !path.startsWith("src/blocks/") && path !== "src/page.svelte") {
-			target = joinPath(path.slice(4), specifier);
-		}
-		if (!target) continue;
-		const found = [target, `${target}.ts`, `${target}.js`, `${target}/index.ts`].find((candidate) => kit[candidate] !== undefined);
-		if (found) out.push(found);
+/** The whole exported project: packFilesFromPage plus the registry files of the page, read from the pinned snapshot. */
+export async function packZipFiles(page: CreatorPage, read: RegistryReader, selectedId: string | null = null): Promise<PackFile[]> {
+	const valid = parsePage(page);
+	const own = packFilesFromPage(valid, selectedId);
+	const registryPaths = registryPathsOf(valid);
+	const registry = await read([CLI_CONFIG, CLI_LOCK, ...registryPaths]);
+	for (const path of [CLI_CONFIG, CLI_LOCK, ...registryPaths]) {
+		if (registry[path] === undefined) throw new Error(`registry snapshot has no ${path}`);
 	}
-	return out;
-}
-
-function joinPath(from: string, specifier: string): string {
-	const parts = from.split("/").slice(0, -1);
-	for (const segment of specifier.split("/")) {
-		if (segment === "..") parts.pop();
-		else if (segment !== ".") parts.push(segment);
-	}
-	return parts.join("/");
-}
-
-/** Chat components the page's generic blocks import, transitively (from pack-kit.json, generated at build time). */
-function vendoredKit(pageFiles: PackFile[]): PackFile[] {
-	const kit = packKit.files as KitFiles;
-	const seen = new Set<string>();
-	const queue = pageFiles.filter((file) => file.path.endsWith(".svelte")).flatMap((file) => kitImports(file.path, file.content, kit));
-	while (queue.length) {
-		const path = queue.shift()!;
-		if (seen.has(path)) continue;
-		seen.add(path);
-		queue.push(...kitImports(`src/${path}`, kit[path]!, kit));
-	}
-	return [...seen].sort().map((path) => ({ path: `src/${path}`, content: kit[path]! }));
+	const manifest = own.pop()!;
+	return [
+		...own,
+		{ path: CLI_CONFIG, content: registry[CLI_CONFIG]! },
+		{ path: CLI_LOCK, content: lockFor(registry[CLI_LOCK]!, registryLockItemsOf(valid)) },
+		...registryPaths.map((path) => ({ path, content: registry[path]! })),
+		manifest
+	];
 }
 
 function scaffold(slug: string, title: string): PackFile[] {
 	const safeTitle = title.replace(/[<>&"]/g, "");
 	const pkg = {
-		name: `${slug.replace(/[^a-z0-9-]/gi, "-").toLowerCase() || "page"}-site`,
+		name: `${slug.replace(/[^a-z0-9-]/gi, "-").toLowerCase() || "page"}`,
 		private: true,
 		version: "0.0.0",
 		type: "module",
 		scripts: { dev: "vite", build: "vite build", preview: "vite preview" },
-		dependencies: packKit.dependencies,
-		devDependencies: packKit.devDependencies
+		dependencies: PACK_DEPENDENCIES,
+		devDependencies: PACK_DEV_DEPENDENCIES
 	};
 	return [
 		{
@@ -311,29 +281,19 @@ function scaffold(slug: string, title: string): PackFile[] {
 	</head>
 	<body>
 		<div id="app"></div>
-		<script type="module" src="/src/main.ts"></script>
+		<script type="module" src="/${INSTALL_ROOT}/main.ts"></script>
 	</body>
 </html>
 `
 		},
 		{
-			path: "src/main.ts",
+			path: `${INSTALL_ROOT}/main.ts`,
 			content: `import { mount } from "svelte";
-import "./app.css";
-import Page from "./page.svelte";
+// The registry's global CSS (ui8kit.config.json globalCss): theme tokens, kit CSS, Tailwind @source of src/.
+import "./styles/index.css";
+import App from "./App.svelte";
 
-mount(Page, { target: document.getElementById("app")! });
-`
-		},
-		{
-			path: "src/app.css",
-			content: `/* UI8Kit theme and kit CSS from the registry snapshot; Tailwind scans src/. */
-@import "./${REGISTRY_DIR}/styles/index.css";
-@source "./";
-
-@utility rounded-default {
-	border-radius: var(--radius);
-}
+mount(App, { target: document.getElementById("app")! });
 `
 		},
 		{
@@ -343,12 +303,12 @@ import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import tailwindcss from "@tailwindcss/vite";
 
+// Aliases of ui8kit.config.json; the registry files import each other by relative paths.
 export default defineConfig({
 	plugins: [tailwindcss(), svelte()],
 	resolve: {
 		alias: {
-			$lib: fileURLToPath(new URL("./src/lib", import.meta.url)),
-			$ui: fileURLToPath(new URL("./src/ui", import.meta.url))
+			"@": fileURLToPath(new URL("./${INSTALL_ROOT}", import.meta.url))
 		}
 	}
 });
@@ -367,9 +327,10 @@ npm i && npm run dev
 
 \`npm run build\` writes the static site to \`dist/\`.
 
-- \`src/page.svelte\` composes the sections in \`src/blocks/\`.
-- \`src/${REGISTRY_DIR}/\` holds the UI8Kit registry items this page uses (same files as \`npx ui8kit add <item>\`, pinned by sha256 in BuildY).
-- \`src/lib\` and \`src/ui\` hold the BuildY components the other sections use (\`$lib\`, \`$ui\` aliases in \`vite.config.ts\`).
+- \`${INSTALL_ROOT}/App.svelte\` composes the sections in \`${INSTALL_ROOT}/sections/\`; each section is one UI8Kit registry block with its props.
+- Everything else under \`${INSTALL_ROOT}/\` (blocks, components, compose, kit, icons, utils, styles, presets) and
+  \`ui8kit.config.json\` / \`ui8kit.lock.json\` are exactly what \`npx ui8kit init\` + \`npx ui8kit add\` write for
+  the items in \`GENERATOR.json\` (\`registryItems\`). Check them with \`npx ui8kit check\`; do not edit them.
 - Dark theme: \`class="dark"\` or \`data-theme="dark"\` on \`<html>\`.
 `
 		}
