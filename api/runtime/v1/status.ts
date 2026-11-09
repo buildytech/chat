@@ -29691,6 +29691,22 @@ function merge(base: Json, over: Json): Json {
 	return out;
 }
 
+/** Page copy keys (page-spec) -> registry prop names that carry the same text. */
+const COPY_FIELDS: Record<string, keyof NonNullable<PageBlock["copy"]>> = {
+	eyebrow: "eyebrow",
+	kicker: "eyebrow",
+	overline: "eyebrow",
+	badge: "badge",
+	brand: "brand",
+	note: "note",
+	legal: "legal",
+	copyright: "legal",
+	contact: "contact",
+	address: "address",
+	days: "days",
+	value: "value"
+};
+const LABEL_FIELDS = new Set(["label", "name", "text", "title"]);
 const TITLE = new Set(["title", "heading", "name", "label", "question", "author", "brand"]);
 const TEXT = new Set(["text", "lead", "summary", "description", "subtitle", "intro", "excerpt", "body", "answer", "quote", "note", "hint", "tagline"]);
 const ACTION_LABEL = new Set(["label", "cta", "text"]);
@@ -29702,13 +29718,16 @@ function iconOf(value: unknown, fallback: unknown): string {
 
 function record(child: PageBlock, list: RegistryBlock["lists"][string]): Record<string, Json> {
 	const row: Record<string, Json> = { ...list.defaults };
+	const title = child.copy?.headline ?? child.title;
+	const text = child.copy?.lede ?? child.summary;
 	for (const [field, type] of Object.entries(list.record)) {
 		if (type !== "string") continue;
 		if (field === "id") row.id = child.id;
 		else if (field === "icon") row.icon = iconOf(child.copy?.icon, list.defaults.icon);
-		else if (TITLE.has(field) && child.title) row[field] = child.title;
-		else if (TEXT.has(field) && child.summary) row[field] = child.summary;
+		else if (TITLE.has(field) && title) row[field] = title;
+		else if (TEXT.has(field) && text) row[field] = text;
 		else if (field === "href" && child.copy?.href) row.href = child.copy.href;
+		else if (COPY_FIELDS[field] && child.copy?.[COPY_FIELDS[field]!]) row[field] = child.copy[COPY_FIELDS[field]!]!;
 	}
 	return row;
 }
@@ -29718,10 +29737,26 @@ function content(block: PageBlock, source: RegistryBlock): Record<string, Json> 
 	const out: Record<string, Json> = {};
 	const has = new Set(source.props);
 	if (has.has("id")) out.id = block.id;
-	const title = source.props.find((prop) => TITLE.has(prop) && !source.lists[prop] && !source.objects[prop]);
-	if (title && block.title) out[title] = block.title;
-	const text = source.props.find((prop) => TEXT.has(prop) && !source.lists[prop] && !source.objects[prop]);
-	if (text && block.summary) out[text] = block.summary;
+	const plain = (prop: string) => !source.lists[prop] && !source.objects[prop];
+	// Edits land in copy (edit_page `set` headline / lede); copy wins over the block's title / summary.
+	const heading = block.copy?.headline ?? block.title;
+	const lede = block.copy?.lede ?? block.summary;
+	const title = source.props.find((prop) => TITLE.has(prop) && prop !== "brand" && plain(prop));
+	if (title && heading) out[title] = heading;
+	const text = source.props.find((prop) => TEXT.has(prop) && plain(prop));
+	if (text && lede) out[text] = lede;
+	for (const prop of source.props) {
+		const key = COPY_FIELDS[prop];
+		const value = key ? block.copy?.[key] : undefined;
+		if (!value || prop in out) continue;
+		if (plain(prop)) out[prop] = value;
+		else if (source.objects[prop]) {
+			const field = source.objects[prop]!.find((name) => LABEL_FIELDS.has(name));
+			if (field) out[prop] = { [field]: value };
+		}
+	}
+	// Chrome labels (site-header / app bars): `labels.brand` carries the page brand.
+	if (block.copy?.brand && source.objects.labels?.includes("brand")) out.labels = { brand: block.copy.brand };
 	const children = block.children ?? [];
 	const lists = Object.entries(source.lists).sort(([, a], [, b]) => Number(b.required) - Number(a.required));
 	if (children.length && lists.length) {

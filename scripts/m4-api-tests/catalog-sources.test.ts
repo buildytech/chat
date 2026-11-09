@@ -188,6 +188,15 @@ test("registry block props: variant props, page content in the block's prop name
 	assert.equal(organismFor({ ...block, catalogBlock: undefined }), null);
 });
 
+test("registry block props: edited copy (headline, lede, brand) wins over the block title and summary", () => {
+	const hero = { id: "block-hero", kind: "hero", title: "Old", summary: "Old lede", catalogBlock: "block.hero", variant: "centered", copy: { headline: "Fresh bread every morning", lede: "Baked at dawn." } };
+	const props = organismFor(hero as never)!.props;
+	assert.equal(props.title, "Fresh bread every morning");
+	assert.equal(props.text, "Baked at dawn.");
+	const nav = { id: "block-nav", kind: "nav", title: "Nav", summary: "", catalogBlock: "block.header", variant: "inline", copy: { brand: "Bean & Brew" } };
+	assert.equal((organismFor(nav as never)!.props.labels as Record<string, string>).brand, "Bean & Brew");
+});
+
 test("tool schemas carry variant, row icon and set_variant (no hardcoded value lists)", () => {
 	const propose = JSON.stringify(proposeContentParameterSchema());
 	assert.match(propose, /"variant"/);
