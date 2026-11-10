@@ -21,6 +21,7 @@ import {
 	safeErrorMessage,
 	scenarioCatalogContext,
 	toolLoopProposalFailure,
+	toolLoopRejection,
 	unknownUsage,
 	validateCatalogProvenance,
 	type LayoutProposal,
@@ -530,7 +531,7 @@ async function completionsToolLoop(
 					lastProposal = proposal;
 				}
 			} else if (name === "propose_layout" || name === "edit_page") {
-				rejections.push({ code: result.code, path: result.path });
+				rejections.push(toolLoopRejection(args, result));
 			}
 			messages.push({
 				role: "tool",
@@ -613,7 +614,7 @@ async function sdkStreamTextLoop(
 						return gap;
 					}
 					lastProposal = proposal;
-				} else if (name === "propose_layout" || name === "edit_page") rejections.push({ code: result.code, path: result.path });
+				} else if (name === "propose_layout" || name === "edit_page") rejections.push(toolLoopRejection(payload, result));
 				return compactToolPayload(name, result);
 			};
 			try {

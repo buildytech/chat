@@ -148,7 +148,25 @@ export function isAllowedTool(name: string): name is AllowedTool {
 	return (ALLOWED_TOOLS as readonly string[]).includes(name);
 }
 
-export type ToolLoopRejection = { code: string; path?: string };
+export type ToolLoopRejection = { code: string; path?: string; screenId?: string };
+
+const SCREEN_TOKEN = /^[A-Za-z0-9][A-Za-z0-9./_-]{0,159}$/;
+
+/**
+ * One rejected propose_layout / edit_page call of the tool loop: code and path, plus the screen id the model sent when
+ * the screen was the problem (a catalog token, never author text) so an unknown_screen run can be diagnosed.
+ */
+export function toolLoopRejection(
+	args: Record<string, unknown>,
+	result: { code: string; path?: string }
+): ToolLoopRejection {
+	const row: ToolLoopRejection = { code: result.code, path: result.path };
+	if (/screen/.test(result.code) && typeof args.screenId === "string") {
+		const id = args.screenId.trim();
+		row.screenId = SCREEN_TOKEN.test(id) ? id : "(not a catalog token)";
+	}
+	return row;
+}
 
 function proposeLabel(toolsCalled: string[]): string {
 	const edit = toolsCalled.includes("edit_page");
@@ -165,9 +183,11 @@ export function toolLoopProposalFailure(input: {
 	if (proposeCount > 0) {
 		const codes = [...new Set(input.rejections.map((row) => row.code).filter(Boolean))];
 		const paths = [...new Set(input.rejections.map((row) => row.path).filter((path): path is string => Boolean(path)))];
+		const screens = [...new Set(input.rejections.map((row) => row.screenId).filter((id): id is string => Boolean(id)))];
 		const detail = [
 			codes.length ? `codes ${codes.join(", ")}` : "assembler rejected every call",
-			paths.length ? `paths ${paths.join(", ")}` : null
+			paths.length ? `paths ${paths.join(", ")}` : null,
+			screens.length ? `screen ids ${screens.join(", ")}` : null
 		]
 			.filter(Boolean)
 			.join("; ");

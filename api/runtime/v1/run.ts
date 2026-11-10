@@ -24087,6 +24087,17 @@ function suggestedFrom(screens: CatalogScreen[]): string[] {
 	return screens.slice(0, 3).map((screen) => screen.screenId);
 }
 
+/** Renderable catalog screens whose id shares the most tokens with an id the catalog does not have. */
+function nearestScreens(screenId: string): CatalogScreen[] {
+	const tokens = new Set(screenId.toLowerCase().split(/[^a-z0-9]+/).filter((token) => token.length > 2 && token !== "screen"));
+	return catalogSnapshot.screens
+		.filter((screen) => screenSupport(screen).supported)
+		.map((screen) => ({ screen, score: screen.screenId.toLowerCase().split(/[^a-z0-9]+/).filter((token) => tokens.has(token)).length }))
+		.filter((entry) => entry.score > 0)
+		.sort((a, b) => b.score - a.score || compareScreenSupport(a.screen, b.screen))
+		.map((entry) => entry.screen);
+}
+
 function poolFor(ctx: ProposalContext): CatalogScreen[] {
 	if (ctx.scenarioId) {
 		return filterScreens(OWNER_FILTERS[ctx.scenarioId]).slice().sort(compareScreenSupport);
@@ -24216,11 +24227,14 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 	if (ctx.screenId) {
 		const screen = getScreenById(ctx.screenId);
 		if (!screen) {
+			const suggested = suggestedFrom(pool.length ? pool : nearestScreens(ctx.screenId));
 			return {
 				ok: false,
 				code: "unknown_screen",
-				message: `Unknown screen ${ctx.screenId}`,
-				suggestedScreenIds: suggestedFrom(pool)
+				message: `Unknown screen ${ctx.screenId}: not a Stock screen id. Pass a screenId exactly as search_catalog returned it (items[].screenId or pick.screenId)${
+					suggested.length ? `, e.g. ${suggested.join(", ")}` : ""
+				}. Do not retry the same screenId.`,
+				suggestedScreenIds: suggested
 			};
 		}
 		const best = pickSupportedScreen(pool.length ? pool : [screen], requiredKinds(ctx), ctx.scenarioId);
@@ -25616,6 +25630,24 @@ function isAllowedTool(name: string): name is AllowedTool {
 	return (ALLOWED_TOOLS as string[]).includes(name);
 }
 
+const SCREEN_TOKEN = /^[A-Za-z0-9][A-Za-z0-9./_-]{0,159}$/;
+
+/**
+ * One rejected propose_layout / edit_page call of the tool loop: code and path, plus the screen id the model sent when
+ * the screen was the problem (a catalog token, never author text) so an unknown_screen run can be diagnosed.
+ */
+function toolLoopRejection(
+	args: Record<string, unknown>,
+	result: { code: string; path?: string }
+): ToolLoopRejection {
+	const row: ToolLoopRejection = { code: result.code, path: result.path };
+	if (/screen/.test(result.code) && typeof args.screenId === "string") {
+		const id = args.screenId.trim();
+		row.screenId = SCREEN_TOKEN.test(id) ? id : "(not a catalog token)";
+	}
+	return row;
+}
+
 function proposeLabel(toolsCalled: string[]): string {
 	const edit = toolsCalled.includes("edit_page");
 	const propose = toolsCalled.includes("propose_layout");
@@ -25631,9 +25663,11 @@ function toolLoopProposalFailure(input: {
 	if (proposeCount > 0) {
 		const codes = [...new Set(input.rejections.map((row) => row.code).filter(Boolean))];
 		const paths = [...new Set(input.rejections.map((row) => row.path).filter((path): path is string => Boolean(path)))];
+		const screens = [...new Set(input.rejections.map((row) => row.screenId).filter((id): id is string => Boolean(id)))];
 		const detail = [
 			codes.length ? `codes ${codes.join(", ")}` : "assembler rejected every call",
-			paths.length ? `paths ${paths.join(", ")}` : null
+			paths.length ? `paths ${paths.join(", ")}` : null,
+			screens.length ? `screen ids ${screens.join(", ")}` : null
 		]
 			.filter(Boolean)
 			.join("; ");
@@ -25849,6 +25883,7 @@ function runConstructorTools(ctx: ProposalContext): LayoutProposal | LayoutPropo
 exports["compactSearchResult"] = compactSearchResult;
 exports["scenarioCatalogContext"] = scenarioCatalogContext;
 exports["isAllowedTool"] = isAllowedTool;
+exports["toolLoopRejection"] = toolLoopRejection;
 exports["toolLoopProposalFailure"] = toolLoopProposalFailure;
 exports["executeTool"] = executeTool;
 exports["runConstructorTools"] = runConstructorTools;
@@ -26643,6 +26678,7 @@ exports["isAllowedTool"] = __req("packages/builder-core/src/tools.ts")["isAllowe
 exports["compactSearchResult"] = __req("packages/builder-core/src/tools.ts")["compactSearchResult"];
 exports["scenarioCatalogContext"] = __req("packages/builder-core/src/tools.ts")["scenarioCatalogContext"];
 exports["toolLoopProposalFailure"] = __req("packages/builder-core/src/tools.ts")["toolLoopProposalFailure"];
+exports["toolLoopRejection"] = __req("packages/builder-core/src/tools.ts")["toolLoopRejection"];
 exports["isScenarioId"] = __req("packages/builder-core/src/brief.ts")["isScenarioId"];
 exports["displayTitleFromBrief"] = __req("packages/builder-core/src/brief.ts")["displayTitleFromBrief"];
 exports["occasionFromBrief"] = __req("packages/builder-core/src/brief.ts")["occasionFromBrief"];
@@ -26815,7 +26851,7 @@ exports["installPropsGate"] = installPropsGate;
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, aggregateStepUsage, assertNoFallback, catalogProvenance, catalogToolParameterSchema, editPageParameterSchema, executeTool, facetVocabulary, inheritedScreenId, isScenarioId, modelCatalogSources, searchVocabulary, proposeContentParameterSchema, readProviderUsage, recordedScreenId, rejectFabricatedLayout, safeErrorMessage, scenarioCatalogContext, toolLoopProposalFailure, unknownUsage, validateCatalogProvenance } = __req("packages/builder-core/src/index.ts");
+const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, aggregateStepUsage, assertNoFallback, catalogProvenance, catalogToolParameterSchema, editPageParameterSchema, executeTool, facetVocabulary, inheritedScreenId, isScenarioId, modelCatalogSources, searchVocabulary, proposeContentParameterSchema, readProviderUsage, recordedScreenId, rejectFabricatedLayout, safeErrorMessage, scenarioCatalogContext, toolLoopProposalFailure, toolLoopRejection, unknownUsage, validateCatalogProvenance } = __req("packages/builder-core/src/index.ts");
 const { PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
@@ -27299,7 +27335,7 @@ async function completionsToolLoop(
 					lastProposal = proposal;
 				}
 			} else if (name === "propose_layout" || name === "edit_page") {
-				rejections.push({ code: result.code, path: result.path });
+				rejections.push(toolLoopRejection(args, result));
 			}
 			messages.push({
 				role: "tool",
@@ -27382,7 +27418,7 @@ async function sdkStreamTextLoop(
 						return gap;
 					}
 					lastProposal = proposal;
-				} else if (name === "propose_layout" || name === "edit_page") rejections.push({ code: result.code, path: result.path });
+				} else if (name === "propose_layout" || name === "edit_page") rejections.push(toolLoopRejection(payload, result));
 				return compactToolPayload(name, result);
 			};
 			try {

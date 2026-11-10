@@ -639,3 +639,17 @@ test("ambiguous briefs still do not invent a layout", () => {
 	assert.equal(run.ok, false);
 	if (!run.ok) assert.equal(run.code, "needs_clarification");
 });
+
+test("unknown_screen names nearest real screens and the tool-loop failure reports the screen id sent", async () => {
+	const core = await import("../../packages/builder-core/src/index.ts");
+	const r = core.executeTool({ name: "propose_layout", arguments: { brief: "Dashboard", screenId: "screen.dashboard-console/home", locale: "en", blocks: [] } }, { liveTurn: true });
+	assert.equal(r.ok, false);
+	assert.equal((r as { code: string }).code, "unknown_screen");
+	const suggested = ((r as { result: { suggestedScreenIds: string[] } }).result.suggestedScreenIds ?? []);
+	assert.ok(suggested.length > 0 && suggested.every((id) => core.getScreenById(id)), JSON.stringify(suggested));
+	assert.match((r as { message: string }).message, /search_catalog/);
+	const row = core.toolLoopRejection({ screenId: "screen.dashboard-console/home" }, r as { code: string });
+	const failure = core.toolLoopProposalFailure({ toolsCalled: ["propose_layout"], rejections: [row] });
+	assert.match(failure.message, /screen ids screen\.dashboard-console\/home/);
+	assert.equal(core.toolLoopRejection({ screenId: "<b>hi</b> there" }, r as { code: string }).screenId, "(not a catalog token)");
+});

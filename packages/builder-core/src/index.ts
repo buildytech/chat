@@ -74,7 +74,8 @@ export {
 	isAllowedTool,
 	compactSearchResult,
 	scenarioCatalogContext,
-	toolLoopProposalFailure
+	toolLoopProposalFailure,
+	toolLoopRejection
 } from "./tools.ts";
 export type { ToolHost, CompactSearchItem, CompactSearchPayload, ToolLoopRejection } from "./tools.ts";
 export { isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";

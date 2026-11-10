@@ -476,6 +476,17 @@ function suggestedFrom(screens: CatalogScreen[]): string[] {
 	return screens.slice(0, 3).map((screen) => screen.screenId);
 }
 
+/** Renderable catalog screens whose id shares the most tokens with an id the catalog does not have. */
+function nearestScreens(screenId: string): CatalogScreen[] {
+	const tokens = new Set(screenId.toLowerCase().split(/[^a-z0-9]+/).filter((token) => token.length > 2 && token !== "screen"));
+	return catalogSnapshot.screens
+		.filter((screen) => screenSupport(screen).supported)
+		.map((screen) => ({ screen, score: screen.screenId.toLowerCase().split(/[^a-z0-9]+/).filter((token) => tokens.has(token)).length }))
+		.filter((entry) => entry.score > 0)
+		.sort((a, b) => b.score - a.score || compareScreenSupport(a.screen, b.screen))
+		.map((entry) => entry.screen);
+}
+
 function poolFor(ctx: ProposalContext): CatalogScreen[] {
 	if (ctx.scenarioId) {
 		return filterScreens(OWNER_FILTERS[ctx.scenarioId]).slice().sort(compareScreenSupport);
@@ -605,11 +616,14 @@ function resolveCatalogScreen(ctx: ProposalContext): CatalogScreen | LayoutPropo
 	if (ctx.screenId) {
 		const screen = getScreenById(ctx.screenId);
 		if (!screen) {
+			const suggested = suggestedFrom(pool.length ? pool : nearestScreens(ctx.screenId));
 			return {
 				ok: false,
 				code: "unknown_screen",
-				message: `Unknown screen ${ctx.screenId}`,
-				suggestedScreenIds: suggestedFrom(pool)
+				message: `Unknown screen ${ctx.screenId}: not a Stock screen id. Pass a screenId exactly as search_catalog returned it (items[].screenId or pick.screenId)${
+					suggested.length ? `, e.g. ${suggested.join(", ")}` : ""
+				}. Do not retry the same screenId.`,
+				suggestedScreenIds: suggested
 			};
 		}
 		const best = pickSupportedScreen(pool.length ? pool : [screen], requiredKinds(ctx), ctx.scenarioId);
