@@ -149,7 +149,7 @@
 	aria-label={t("sidebar.mainNav")}
 	data-nav={collapsed ? "collapsed" : "expanded"}
 >
-	<Stack class="gap-2 p-2 in-data-[nav=collapsed]:items-center">
+	<Stack align="stretch" class="gap-2 p-2 in-data-[nav=collapsed]:items-center">
 		<Group class="justify-between gap-2 in-data-[nav=collapsed]:flex-col in-data-[nav=collapsed]:items-center">
 			<Group class="min-w-0 gap-2 in-data-[nav=collapsed]:hidden">
 				<Box
@@ -181,11 +181,11 @@
 			</Group>
 		</Group>
 
-		<Stack class="gap-0 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.mainNav")}>
+		<Stack align="stretch" class="gap-0 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.mainNav")}>
 			{#each mainItems as item (item.id)}
 				<Button
 					class={cn(
-						"w-full justify-start gap-2 rounded px-2 py-1 text-sm",
+						"flex w-full items-center justify-start gap-2 rounded px-2 py-1 text-sm",
 						"in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0",
 						active === item.id
 							? "bg-accent text-accent-foreground"
@@ -234,7 +234,7 @@
 
 		<Stack align="stretch" class="gap-0">
 			<Button
-				class="w-full justify-between rounded px-2 py-1 text-sm text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+				class="flex w-full items-center justify-between rounded px-2 py-1 text-sm text-muted-foreground hover:bg-accent/70 hover:text-foreground"
 				expanded={recentsOpen}
 				aria-controls="creator-recents"
 				onclick={() => (recentsOpen = !recentsOpen)}
@@ -255,10 +255,10 @@
 					</Text>
 				{:else}
 					{#each visibleSessions as session (session.id)}
-						<Group class="gap-0">
+						<Group class="min-w-0 gap-0">
 							<Button
 								class={cn(
-									"min-w-0 flex-1 justify-start gap-2 rounded px-2 py-1 text-left text-sm",
+									"flex min-w-0 flex-1 items-center justify-start gap-2 rounded px-2 py-1 text-left text-sm",
 									selectedId === session.id || active === session.id
 										? "bg-accent text-accent-foreground"
 										: "text-foreground hover:bg-accent/70"
@@ -266,7 +266,7 @@
 								onclick={() => pickRecent(session.id)}
 							>
 								<Icon size="sm"><Circle /></Icon>
-								<Text tag="span" class="truncate">{session.title}</Text>
+								<Text tag="span" class="min-w-0 truncate">{session.title}</Text>
 							</Button>
 							<Button
 								class="shrink-0 rounded p-2 text-muted-foreground hover:bg-accent hover:text-destructive disabled:opacity-40"
@@ -286,11 +286,11 @@
 		{/if}
 	</Stack>
 
-	<Stack class="gap-0 p-2 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.preferences")}>
+	<Stack align="stretch" class="gap-0 p-2 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.preferences")}>
 		<Separator class="in-data-[nav=collapsed]:hidden" />
 		<Button
 			class={cn(
-				"w-full justify-start gap-2 rounded px-2 py-1 text-sm",
+				"flex w-full items-center justify-start gap-2 rounded px-2 py-1 text-sm",
 				"in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0",
 				active === "settings" ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/70"
 			)}
@@ -321,7 +321,7 @@
 					<Button
 						id={index === 0 ? "creator-settings-model" : undefined}
 						class={cn(
-							"w-full justify-start rounded px-2 py-1 text-left text-sm",
+							"flex w-full items-center justify-start rounded px-2 py-1 text-left text-sm",
 							isChatModelAvailable(model.id) ? "hover:bg-accent/70" : "cursor-not-allowed opacity-60",
 							model.id === selectedModelId ? "bg-accent text-accent-foreground" : "text-foreground"
 						)}
@@ -337,7 +337,7 @@
 					{/if}
 				{/each}
 				<Button
-					class="w-full justify-start rounded px-2 py-1 text-sm text-foreground hover:bg-accent/70"
+					class="flex w-full items-center justify-start rounded px-2 py-1 text-sm text-foreground hover:bg-accent/70"
 					onclick={() => theme.toggle()}
 				>
 					{theme.isDark ? t("sidebar.useLight") : t("sidebar.useDark")}
@@ -352,7 +352,7 @@
 				</Group>
 				<SettingsSessionFile />
 				<Button
-					class="w-full justify-start rounded px-2 py-1 text-sm text-destructive hover:bg-accent/70"
+					class="flex w-full items-center justify-start rounded px-2 py-1 text-sm text-destructive hover:bg-accent/70"
 					aria-haspopup="dialog"
 					onclick={() => (pendingDelete = { kind: "all" })}
 				>
@@ -366,7 +366,7 @@
 		<Group class="justify-between gap-2 rounded p-2 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0">
 			<Group class="gap-2 in-data-[nav=collapsed]:gap-0">
 				<Switch
-					class="relative inline-flex h-6 w-12 items-center rounded-full border-4 border-muted bg-muted p-0 ring-1 ring-border"
+					class="relative inline-flex h-6 w-12 items-center rounded-full border-4 border-muted bg-muted p-0 ring-1 ring-border in-data-[nav=collapsed]:w-8"
 					checked={theme.isDark}
 					aria-label={t("sidebar.nightMode")}
 					title={t("sidebar.nightMode")}
@@ -375,7 +375,7 @@
 					<Box
 						class={cn(
 							"size-4 rounded-full bg-foreground transition-transform",
-							theme.isDark ? "translate-x-6" : "translate-x-0"
+							theme.isDark ? "translate-x-6 in-data-[nav=collapsed]:translate-x-2" : "translate-x-0"
 						)}
 					></Box>
 				</Switch>
