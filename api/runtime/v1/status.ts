@@ -10554,7 +10554,7 @@ __def("packages/page-contract/schema/page-spec.schema.json", function (exports) 
         "version",
         "pages"
       ],
-      "description": "The browser page store blob (localStorage key buildytech-creator-pages-v1): pages by chat id.",
+      "description": "The browser page store blob (localStorage key buildy:v1:pages; before session buildy:v1 the key buildytech-creator-pages-v1, migrated once): pages by chat id.",
       "properties": {
         "version": {
           "const": 1
@@ -11124,7 +11124,7 @@ const { PageContractError, parseDraftPage, parsePage } = __req("packages/page-co
 const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
 const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
 /** ui8kit/contract commit the vendored schemas come from. */
-const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "be20140" } as const;
+const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "1eda0b3" } as const;
 
 const registry = new SchemaRegistry();
 registry.add(pageSpecSchema as Record<string, unknown>);
@@ -11659,8 +11659,8 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 	"format": "buildy-catalog-sources",
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
-	"cli": "ui8kit@3.4.1",
-	"lockDigest": "sha256:6d142b40b28207f3828890ca3770ec507486792d9754a11791f2e588802463e4",
+	"cli": "ui8kit@3.5.0",
+	"lockDigest": "sha256:2c19129ed7b934e7193ebfecabb95a0da433602ba1163ed1e32ecb60e5f8d2f5",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
 		"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4",
@@ -17168,6 +17168,181 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/compose/Textarea.svelte"
 			]
 		},
+		"theme-amber-minimal": {
+			"type": "registry:theme",
+			"title": "Amber Minimal",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/amber-minimal.css"
+			]
+		},
+		"theme-base": {
+			"type": "registry:theme",
+			"title": "Theme Base",
+			"registryDependencies": [],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/NOTICE.md",
+				"src/styles/skins/base.css"
+			]
+		},
+		"theme-bubblegum": {
+			"type": "registry:theme",
+			"title": "Bubblegum",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/bubblegum.css"
+			]
+		},
+		"theme-claude": {
+			"type": "registry:theme",
+			"title": "Claude",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/claude.css"
+			]
+		},
+		"theme-cosmic-night": {
+			"type": "registry:theme",
+			"title": "Cosmic Night",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/cosmic-night.css"
+			]
+		},
+		"theme-doom-64": {
+			"type": "registry:theme",
+			"title": "Doom 64",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/doom-64.css"
+			]
+		},
+		"theme-kodama-grove": {
+			"type": "registry:theme",
+			"title": "Kodama Grove",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/kodama-grove.css"
+			]
+		},
+		"theme-mocha-mousse": {
+			"type": "registry:theme",
+			"title": "Mocha Mousse",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/mocha-mousse.css"
+			]
+		},
+		"theme-modern-minimal": {
+			"type": "registry:theme",
+			"title": "Modern Minimal",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/modern-minimal.css"
+			]
+		},
+		"theme-neo-brutalism": {
+			"type": "registry:theme",
+			"title": "Neo Brutalism",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/neo-brutalism.css"
+			]
+		},
+		"theme-notebook": {
+			"type": "registry:theme",
+			"title": "Notebook",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/notebook.css"
+			]
+		},
+		"theme-perpetuity": {
+			"type": "registry:theme",
+			"title": "Perpetuity",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/perpetuity.css"
+			]
+		},
+		"theme-rose": {
+			"type": "registry:theme",
+			"title": "Rose",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/rose.css"
+			]
+		},
+		"theme-sky": {
+			"type": "registry:theme",
+			"title": "Sky",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/sky.css"
+			]
+		},
+		"theme-supabase": {
+			"type": "registry:theme",
+			"title": "Supabase",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/supabase.css"
+			]
+		},
+		"theme-t3-chat": {
+			"type": "registry:theme",
+			"title": "T3 Chat",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/t3-chat.css"
+			]
+		},
 		"theme-toggle": {
 			"type": "registry:ui",
 			"registryDependencies": [
@@ -17179,6 +17354,17 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"dependencies": [],
 			"files": [
 				"src/compose/ThemeToggle.svelte"
+			]
+		},
+		"theme-violet-bloom": {
+			"type": "registry:theme",
+			"title": "Violet Bloom",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/violet-bloom.css"
 			]
 		},
 		"timeline": {
@@ -17454,6 +17640,97 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/blocks/zone-table.svelte",
 				"src/blocks/zone-table.types.ts"
 			]
+		}
+	},
+	"themes": {
+		"base": {
+			"item": "theme-base",
+			"files": [
+				"src/styles/skins/NOTICE.md",
+				"src/styles/skins/base.css"
+			]
+		},
+		"skins": {
+			"amber-minimal": {
+				"item": "theme-amber-minimal",
+				"title": "Amber Minimal",
+				"file": "src/styles/skins/amber-minimal.css"
+			},
+			"bubblegum": {
+				"item": "theme-bubblegum",
+				"title": "Bubblegum",
+				"file": "src/styles/skins/bubblegum.css"
+			},
+			"claude": {
+				"item": "theme-claude",
+				"title": "Claude",
+				"file": "src/styles/skins/claude.css"
+			},
+			"cosmic-night": {
+				"item": "theme-cosmic-night",
+				"title": "Cosmic Night",
+				"file": "src/styles/skins/cosmic-night.css"
+			},
+			"doom-64": {
+				"item": "theme-doom-64",
+				"title": "Doom 64",
+				"file": "src/styles/skins/doom-64.css"
+			},
+			"kodama-grove": {
+				"item": "theme-kodama-grove",
+				"title": "Kodama Grove",
+				"file": "src/styles/skins/kodama-grove.css"
+			},
+			"mocha-mousse": {
+				"item": "theme-mocha-mousse",
+				"title": "Mocha Mousse",
+				"file": "src/styles/skins/mocha-mousse.css"
+			},
+			"modern-minimal": {
+				"item": "theme-modern-minimal",
+				"title": "Modern Minimal",
+				"file": "src/styles/skins/modern-minimal.css"
+			},
+			"neo-brutalism": {
+				"item": "theme-neo-brutalism",
+				"title": "Neo Brutalism",
+				"file": "src/styles/skins/neo-brutalism.css"
+			},
+			"notebook": {
+				"item": "theme-notebook",
+				"title": "Notebook",
+				"file": "src/styles/skins/notebook.css"
+			},
+			"perpetuity": {
+				"item": "theme-perpetuity",
+				"title": "Perpetuity",
+				"file": "src/styles/skins/perpetuity.css"
+			},
+			"rose": {
+				"item": "theme-rose",
+				"title": "Rose",
+				"file": "src/styles/skins/rose.css"
+			},
+			"sky": {
+				"item": "theme-sky",
+				"title": "Sky",
+				"file": "src/styles/skins/sky.css"
+			},
+			"supabase": {
+				"item": "theme-supabase",
+				"title": "Supabase",
+				"file": "src/styles/skins/supabase.css"
+			},
+			"t3-chat": {
+				"item": "theme-t3-chat",
+				"title": "T3 Chat",
+				"file": "src/styles/skins/t3-chat.css"
+			},
+			"violet-bloom": {
+				"item": "theme-violet-bloom",
+				"title": "Violet Bloom",
+				"file": "src/styles/skins/violet-bloom.css"
+			}
 		}
 	},
 	"blocks": {
@@ -26058,6 +26335,27 @@ function registryClosure(items: string[]): string[] {
 	return [...files].sort();
 }
 
+function registrySkins(): RegistrySkin[] {
+	return Object.entries(sources.themes?.skins ?? {})
+		.map(([id, skin]) => ({ id, ...skin }))
+		.sort((a, b) => a.title.localeCompare(b.title));
+}
+
+/** The skin with this id, or null when the pinned registry has none (unknown ids fall back to the default theme). */
+function registrySkin(id: string | null | undefined): RegistrySkin | null {
+	if (!id) return null;
+	const skin = sources.themes?.skins?.[id];
+	return skin ? { id, ...skin } : null;
+}
+
+/** CSS files of theme-base (what every skin depends on), as `npx ui8kit add theme-<id>` writes them. */
+function registrySkinBaseCss(): string[] {
+	return (sources.themes?.base?.files ?? []).filter((file) => file.endsWith(".css"));
+}
+
+/** Registry item that installs a skin. */
+const skinItem = (id: string): string => `theme-${id}`;
+
 /** Files `npx ui8kit add <name>` writes for one item (pinned snapshot, paths under the install root). */
 function registryItemFiles(name: string): string[] {
 	const item = sources.items[name];
@@ -26086,6 +26384,10 @@ exports["writableOrigin"] = writableOrigin;
 exports["registryNpmDependencies"] = registryNpmDependencies;
 exports["registryInitItems"] = registryInitItems;
 exports["registryClosure"] = registryClosure;
+exports["registrySkins"] = registrySkins;
+exports["registrySkin"] = registrySkin;
+exports["registrySkinBaseCss"] = registrySkinBaseCss;
+exports["skinItem"] = skinItem;
 exports["registryItemFiles"] = registryItemFiles;
 exports["registryItemClosure"] = registryItemClosure;
 
@@ -30751,6 +31053,10 @@ exports["variantProps"] = __req("packages/builder-core/src/catalog/sources.ts")[
 exports["organismFor"] = __req("packages/builder-core/src/catalog/organism.ts")["organismFor"];
 exports["registryClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryClosure"];
 exports["registryItemFiles"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFiles"];
+exports["registrySkin"] = __req("packages/builder-core/src/catalog/organism.ts")["registrySkin"];
+exports["registrySkinBaseCss"] = __req("packages/builder-core/src/catalog/organism.ts")["registrySkinBaseCss"];
+exports["registrySkins"] = __req("packages/builder-core/src/catalog/organism.ts")["registrySkins"];
+exports["skinItem"] = __req("packages/builder-core/src/catalog/organism.ts")["skinItem"];
 exports["registryInitItems"] = __req("packages/builder-core/src/catalog/organism.ts")["registryInitItems"];
 exports["registryItemClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemClosure"];
 exports["registryItemFor"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFor"];

@@ -12,6 +12,8 @@ export {
 	applyVariantFromAsk,
 	getChatMode,
 	setChatMode,
+	getChatSkin,
+	setChatSkin,
 	getRuntimeStatus,
 	getSelectedSession,
 	applySessionFromUrl,

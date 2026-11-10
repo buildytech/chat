@@ -187,6 +187,7 @@ let connectionMode = $state<"live" | "mock" | "booting">("booting");
 let canDeleteSessions = $state(true);
 /** Mode picked before the chat exists (home composer); the first send stores it on the new chat. */
 let pendingMode = $state<AgentMode>("build");
+let pendingSkin = $state<string | null>(null);
 
 function bumpEpoch(): number {
 	epoch += 1;
@@ -289,6 +290,23 @@ export function setChatMode(mode: AgentMode): void {
 	saveMock(memory);
 }
 
+/** Skin of the selected chat's page (session `skin`): a skin id of the pinned registry, or null for the default theme. */
+export function getChatSkin(): string | null {
+	const session = getSelectedSession();
+	return session ? (session.skin ?? null) : pendingSkin;
+}
+
+export function setChatSkin(skin: string | null): void {
+	pendingSkin = skin;
+	const session = getSelectedSession();
+	if (!session || (session.skin ?? null) === skin) return;
+	const next: ChatSession = { ...session };
+	if (skin) next.skin = skin;
+	else delete next.skin;
+	replaceSession(next);
+	saveMock(memory);
+}
+
 export function getRuntimeStatus(): CreatorRuntimeStatus {
 	const persist = getPersistError();
 	return {
@@ -332,7 +350,8 @@ export async function createSession(): Promise<ChatSession> {
 		title: t("thread.untitled"),
 		updatedAt: nowIso(),
 		messages: [],
-		mode: pendingMode
+		mode: pendingMode,
+		...(pendingSkin ? { skin: pendingSkin } : {})
 	};
 	memory = [session, ...memory];
 	rememberSelection(session.id);

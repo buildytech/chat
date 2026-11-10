@@ -1,0 +1,125 @@
+/* Skin "rose": RoseUI System (2024 experiment) remapped to shadcn HSL; CodeGen-X wins conflicts (destructive, radius 0.625rem). darkMode class (.dark). Light primary Tailwind rose-600 #e11d48. Typography: H1–H3 / Title as=h1|h2|h3 use font-serif = Pacifico (Lat+Cyr); body and UI use font-sans = Nunito.
+   On when data-skin="rose" is on <html> (the page) or on any element (a tile of /skins/). */
+[data-skin="rose"] {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(240.0 5.9% 10.0%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(240.0 5.9% 10.0%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(240.0 5.9% 10.0%);
+  /* Tailwind rose-600 #e11d48 */
+  --primary: hsl(346.8 77.2% 49.8%);
+  --primary-foreground: hsl(0.0 0.0% 98.0%);
+  --secondary: hsl(240.0 4.8% 95.9%);
+  --secondary-foreground: hsl(240.0 5.9% 10.0%);
+  --muted: hsl(240.0 4.8% 95.9%);
+  --muted-foreground: hsl(240.0 3.8% 46.1%);
+  --accent: hsl(355.6 100.0% 94.7%);
+  --accent-foreground: hsl(341.5 75.5% 30.4%);
+  --destructive: hsl(0.6 88.4% 48%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(240.0 5.9% 90.0%);
+  --input: hsl(240.0 4.9% 83.9%);
+  --ring: hsl(346.8 77.2% 49.8%);
+  --chart-1: hsl(346.8 77.2% 49.8%);
+  --chart-2: hsl(351.3 94.5% 71.4%);
+  --chart-3: hsl(349.7 89.2% 60.2%);
+  --chart-4: hsl(240.0 3.8% 46.1%);
+  --chart-5: hsl(240.0 5.3% 26.1%);
+  --sidebar: hsl(0.0 0.0% 98.0%);
+  --sidebar-foreground: hsl(240.0 5.9% 10.0%);
+  --sidebar-primary: hsl(346.8 77.2% 49.8%);
+  --sidebar-primary-foreground: hsl(0.0 0.0% 98.0%);
+  --sidebar-accent: hsl(355.6 100.0% 94.7%);
+  --sidebar-accent-foreground: hsl(341.5 75.5% 30.4%);
+  --sidebar-border: hsl(240.0 5.9% 90.0%);
+  --sidebar-ring: hsl(346.8 77.2% 49.8%);
+  --font-sans: Nunito, ui-sans-serif, system-ui, sans-serif;
+  /* H1–H3 / Title as=h1|h2|h3 → font-serif Pacifico */
+  --font-serif: Pacifico, cursive;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius: 0.625rem;
+  --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0px 4px 6px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0px 10px 15px -3px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.05);
+  --shadow-xl: 0px 20px 25px -5px hsl(0 0% 0% / 0.10), 0px 8px 10px -5px hsl(0 0% 0% / 0.04);
+  --shadow-2xl: 0px 25px 50px -12px hsl(0 0% 0% / 0.25);
+  --tracking-normal: 0em;
+  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+  --tracking-wide: calc(var(--tracking-normal) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+  --destructive-hover: hsl(0.6 88.4% 42%);
+}
+
+:is(.dark, [data-theme="dark"]) [data-skin="rose"],
+[data-skin="rose"]:is(.dark, [data-theme="dark"]) {
+  /* RoseUI dark:bg-zinc-900 */
+  --background: hsl(240.0 5.9% 10.0%);
+  --foreground: hsl(0.0 0.0% 98.0%);
+  /* RoseUI dark:bg-zinc-800 */
+  --card: hsl(240.0 3.7% 15.9%);
+  --card-foreground: hsl(0.0 0.0% 98.0%);
+  --popover: hsl(240.0 3.7% 15.9%);
+  --popover-foreground: hsl(0.0 0.0% 98.0%);
+  /* RoseUI dark:text-rose-300 on zinc-800/900 */
+  --primary: hsl(352.6 95.7% 81.8%);
+  --primary-foreground: hsl(341.5 75.5% 30.4%);
+  --secondary: hsl(240.0 3.7% 15.9%);
+  --secondary-foreground: hsl(0.0 0.0% 98.0%);
+  --muted: hsl(240.0 3.7% 15.9%);
+  --muted-foreground: hsl(240.0 5.0% 64.9%);
+  --accent: hsl(341.5 75.5% 30.4%);
+  --accent-foreground: hsl(355.6 100.0% 94.7%);
+  --destructive: hsl(356.1 62.4% 52%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(240.0 3.7% 15.9%);
+  --input: hsl(240.0 5.3% 26.1%);
+  --ring: hsl(352.6 95.7% 81.8%);
+  --chart-1: hsl(352.6 95.7% 81.8%);
+  --chart-2: hsl(349.7 89.2% 60.2%);
+  --chart-3: hsl(351.3 94.5% 71.4%);
+  --chart-4: hsl(240.0 5.0% 64.9%);
+  --chart-5: hsl(240.0 5.2% 33.9%);
+  --sidebar: hsl(240.0 3.7% 15.9%);
+  --sidebar-foreground: hsl(0.0 0.0% 98.0%);
+  --sidebar-primary: hsl(352.6 95.7% 81.8%);
+  --sidebar-primary-foreground: hsl(341.5 75.5% 30.4%);
+  --sidebar-accent: hsl(341.5 75.5% 30.4%);
+  --sidebar-accent-foreground: hsl(355.6 100.0% 94.7%);
+  --sidebar-border: hsl(240.0 3.7% 15.9%);
+  --sidebar-ring: hsl(352.6 95.7% 81.8%);
+  --font-sans: Nunito, ui-sans-serif, system-ui, sans-serif;
+  /* H1–H3 / Title as=h1|h2|h3 → font-serif Pacifico */
+  --font-serif: Pacifico, cursive;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius: 0.625rem;
+  --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0px 4px 6px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0px 10px 15px -3px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.05);
+  --shadow-xl: 0px 20px 25px -5px hsl(0 0% 0% / 0.10), 0px 8px 10px -5px hsl(0 0% 0% / 0.04);
+  --shadow-2xl: 0px 25px 50px -12px hsl(0 0% 0% / 0.25);
+  --tracking-normal: 0em;
+  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+  --tracking-wide: calc(var(--tracking-normal) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+  --destructive-hover: hsl(356.1 62.4% 46%);
+}
+
+:root[data-skin="rose"] body { letter-spacing: var(--tracking-normal); }
+[data-skin="rose"] :is(h1, h2, h3) { font-family: var(--font-serif); font-weight: var(--taste-heading-weight, var(--font-weight-semibold, 600)); }
+[data-skin="rose"] .shadow-xs { --tw-shadow: var(--shadow-xs); }
+[data-skin="rose"] .shadow-sm { --tw-shadow: var(--shadow-sm); }
+[data-skin="rose"] .shadow { --tw-shadow: var(--shadow); }
+[data-skin="rose"] .shadow-md { --tw-shadow: var(--shadow-md); }
+[data-skin="rose"] .shadow-lg { --tw-shadow: var(--shadow-lg); }
+[data-skin="rose"] .shadow-xl { --tw-shadow: var(--shadow-xl); }

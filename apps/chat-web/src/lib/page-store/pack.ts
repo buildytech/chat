@@ -1,4 +1,6 @@
 import { parsePage, type CreatorPage } from "./page.ts";
+import { registrySkin, type RegistrySkin } from "@buildytech/builder-core";
+import chatPackage from "../../../package.json" with { type: "json" };
 import { INSTALL_ROOT, registryItemsOf, registryLockItemsOf, registryPathsOf, svelteFromPage, sveltePackFiles } from "./svelte-code.ts";
 
 export type PackFile = {
@@ -187,14 +189,17 @@ export const CLI_LOCK = "ui8kit.lock.json";
 /** Reads registry snapshot files by path relative to registry/svelte (`ui8kit.config.json`, `src/blocks/x.svelte`). */
 export type RegistryReader = (paths: string[]) => Promise<Record<string, string>>;
 
-function generatorOf(page: CreatorPage) {
+/** Export options: the chat's skin (session `skin`, ADR 0016); null or unknown is the default theme. */
+export type PackOptions = { skin?: string | null };
+
+function generatorOf(page: CreatorPage, skin: string | null) {
 	return {
 		name: "@buildytech/chat-web/svelte-pack",
 		emitter: "svelteFromPage",
 		packApi: "packFilesFromPage",
-		packageVersion: "0.0.0",
+		packageVersion: chatPackage.version,
 		appSvelteSha256: sha256Text(svelteFromPage(page)),
-		registryItems: registryItemsOf(page),
+		registryItems: registryItemsOf(page, skin),
 		contract:
 			"Vite + Svelte 5 project as `npx ui8kit init --yes --framework svelte` + `npx ui8kit add <registryItems>` writes it (install root src); src/App.svelte composes src/sections/*.svelte, each a registry block or the not-in-registry stub"
 	};
@@ -205,14 +210,15 @@ function generatorOf(page: CreatorPage) {
  * manifest.json). The registry files, ui8kit.config.json and ui8kit.lock.json are listed in the manifest and added by
  * packZipFiles from the pinned snapshot.
  */
-export function packFilesFromPage(page: CreatorPage, selectedId: string | null = null): PackFile[] {
-	void selectedId;
+export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}): PackFile[] {
 	const valid = parsePage(page);
-	const files: PackFile[] = [...scaffold(valid.slug || "page", valid.title), ...sveltePackFiles(valid)];
+	const theme = registrySkin(options.skin);
+	const skin = theme?.id ?? null;
+	const files: PackFile[] = [...scaffold(valid.slug || "page", valid.title, theme), ...sveltePackFiles(valid)];
 	files.push({ path: "page.json", content: `${JSON.stringify(valid, null, 2)}\n` });
-	const generator = generatorOf(valid);
+	const generator = generatorOf(valid, skin);
 	files.push({ path: "GENERATOR.json", content: `${JSON.stringify(generator, null, 2)}\n` });
-	const paths = [...files.map((file) => file.path), CLI_CONFIG, CLI_LOCK, ...registryPathsOf(valid), "manifest.json"];
+	const paths = [...files.map((file) => file.path), CLI_CONFIG, CLI_LOCK, ...registryPathsOf(valid, skin), "manifest.json"];
 	const manifest = {
 		id: valid.id,
 		slug: valid.slug,
@@ -220,6 +226,7 @@ export function packFilesFromPage(page: CreatorPage, selectedId: string | null =
 		status: valid.status,
 		locale: valid.locale,
 		seo: valid.seo,
+		skin,
 		files: paths,
 		generator: { name: generator.name, emitter: generator.emitter, appSvelteSha256: generator.appSvelteSha256 }
 	};
@@ -236,10 +243,11 @@ export function lockFor(fullLock: string, items: readonly string[]): string {
 }
 
 /** The whole exported project: packFilesFromPage plus the registry files of the page, read from the pinned snapshot. */
-export async function packZipFiles(page: CreatorPage, read: RegistryReader, selectedId: string | null = null): Promise<PackFile[]> {
+export async function packZipFiles(page: CreatorPage, read: RegistryReader, options: PackOptions = {}): Promise<PackFile[]> {
 	const valid = parsePage(page);
-	const own = packFilesFromPage(valid, selectedId);
-	const registryPaths = registryPathsOf(valid);
+	const skin = registrySkin(options.skin)?.id ?? null;
+	const own = packFilesFromPage(valid, { skin });
+	const registryPaths = registryPathsOf(valid, skin);
 	const registry = await read([CLI_CONFIG, CLI_LOCK, ...registryPaths]);
 	for (const path of [CLI_CONFIG, CLI_LOCK, ...registryPaths]) {
 		if (registry[path] === undefined) throw new Error(`registry snapshot has no ${path}`);
@@ -248,13 +256,16 @@ export async function packZipFiles(page: CreatorPage, read: RegistryReader, sele
 	return [
 		...own,
 		{ path: CLI_CONFIG, content: registry[CLI_CONFIG]! },
-		{ path: CLI_LOCK, content: lockFor(registry[CLI_LOCK]!, registryLockItemsOf(valid)) },
+		{ path: CLI_LOCK, content: lockFor(registry[CLI_LOCK]!, registryLockItemsOf(valid, skin)) },
 		...registryPaths.map((path) => ({ path, content: registry[path]! })),
 		manifest
 	];
 }
 
-function scaffold(slug: string, title: string): PackFile[] {
+function scaffold(slug: string, title: string, skin: RegistrySkin | null): PackFile[] {
+	// A skin is on with its CSS after the styles entry and data-skin on <html> (what `npx ui8kit add theme-<skin>` prints).
+	const htmlAttrs = skin ? ` data-skin="${skin.id}"` : "";
+	const skinImport = skin ? `// Skin ${skin.title} (registry item ${skin.item}): brand tokens only, on with data-skin on <html>.\nimport "./${skin.file.slice(`${INSTALL_ROOT}/`.length)}";\n` : "";
 	const safeTitle = title.replace(/[<>&"]/g, "");
 	const pkg = {
 		name: `${slug.replace(/[^a-z0-9-]/gi, "-").toLowerCase() || "page"}`,
@@ -269,7 +280,7 @@ function scaffold(slug: string, title: string): PackFile[] {
 		{
 			path: "index.html",
 			content: `<!doctype html>
-<html lang="en">
+<html lang="en"${htmlAttrs}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -291,7 +302,7 @@ function scaffold(slug: string, title: string): PackFile[] {
 			content: `import { mount } from "svelte";
 // The registry's global CSS (ui8kit.config.json globalCss): theme tokens, kit CSS, Tailwind @source of src/.
 import "./styles/index.css";
-import App from "./App.svelte";
+${skinImport}import App from "./App.svelte";
 
 mount(App, { target: document.getElementById("app")! });
 `
@@ -332,7 +343,7 @@ npm i && npm run dev
   \`ui8kit.config.json\` / \`ui8kit.lock.json\` are exactly what \`npx ui8kit init\` + \`npx ui8kit add\` write for
   the items in \`GENERATOR.json\` (\`registryItems\`). Check them with \`npx ui8kit check\`; do not edit them.
 - Dark theme: \`class="dark"\` or \`data-theme="dark"\` on \`<html>\`.
-`
+${skin ? `- Skin: ${skin.title} (\`npx ui8kit add ${skin.item}\`): \`${skin.file}\` is imported in \`${INSTALL_ROOT}/main.ts\` and \`<html data-skin="${skin.id}">\` turns it on. Remove both lines for the default theme.\n` : ""}`
 		}
 	];
 }

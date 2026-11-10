@@ -102,6 +102,8 @@ export type ChatSession = {
 	usage?: SessionUsage;
 	/** Ask or Build, picked in the composer and kept with this chat. */
 	mode?: AgentMode;
+	/** Skin of the page (registry item `theme-<skin>`, session 1.1.0 `skin`); null or absent is the default theme. */
+	skin?: string | null;
 	/** Revisions of the applied page, oldest first (session buildy:v1 history; ADR 0015). Last entry <= pageRevision. */
 	history?: SessionRevisionEntry[];
 };

@@ -2,8 +2,8 @@
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import { cn } from "$registry/utils/cn";
-	import { getChatMode } from "$lib/chat-core";
-	import { downloadPageZip, getCurrentPage, getSelectedBlockId } from "$lib/page-store";
+	import { getChatMode, getChatSkin } from "$lib/chat-core";
+	import { downloadPageZip, getCurrentPage } from "$lib/page-store";
 	import BlockTree from "./BlockTree.svelte";
 	import CodePane from "./CodePane.svelte";
 	import InspectorPanel from "./InspectorPanel.svelte";
@@ -27,7 +27,7 @@
 	function onDownloadZip() {
 		const page = getCurrentPage();
 		if (!page) return;
-		void downloadPageZip(page, getSelectedBlockId());
+		void downloadPageZip(page, { skin: getChatSkin() });
 	}
 </script>
 

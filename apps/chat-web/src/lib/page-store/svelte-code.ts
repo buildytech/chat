@@ -5,7 +5,7 @@
  * registry Alert). The registry files themselves come from the pinned snapshot (registry/svelte), never from here.
  */
 import { blocksOf, type CreatorPage, type PageBlock } from "@buildytech/page-contract";
-import { organismFor, registryClosure, registryItemClosure, registryItemFiles, type OrganismRender } from "@buildytech/builder-core";
+import { organismFor, registryClosure, registryItemClosure, registryItemFiles, registrySkin, skinItem, type OrganismRender } from "@buildytech/builder-core";
 
 /** CLI install root of the exported project (ui8kit.config.json `dir`, the CLI default). */
 export const INSTALL_ROOT = "src";
@@ -108,21 +108,26 @@ export function sveltePackFiles(page: CreatorPage): SourceFile[] {
 	];
 }
 
-/** Registry items the page's sections import: `npx ui8kit add <these>` (the stub's Alert when a block has none). */
-export function registryItemsOf(page: CreatorPage): string[] {
+/**
+ * Registry items of the page: `npx ui8kit add <these>` (the stub's Alert when a block has none), plus `theme-<skin>`
+ * when the chat wears a skin of the pinned registry (an unknown skin id is the default theme: no item).
+ */
+export function registryItemsOf(page: CreatorPage, skin: string | null = null): string[] {
 	const items = new Set<string>();
 	for (const block of blocksOf(page)) items.add(organismFor(block)?.item ?? STUB_ITEM);
+	const theme = registrySkin(skin);
+	if (theme) items.add(skinItem(theme.id));
 	return [...items].sort();
 }
 
-/** Registry file paths (project-relative, under src/) of `init` + `add <registryItemsOf(page)>`. */
-export function registryPathsOf(page: CreatorPage): string[] {
-	return registryClosure(registryItemsOf(page));
+/** Registry file paths (project-relative, under src/) of `init` + `add <registryItemsOf(page, skin)>`. */
+export function registryPathsOf(page: CreatorPage, skin: string | null = null): string[] {
+	return registryClosure(registryItemsOf(page, skin));
 }
 
 /** Registry item names the CLI lock records for this page (`init` + `add`, with registryDependencies). */
-export function registryLockItemsOf(page: CreatorPage): string[] {
-	return registryItemClosure(registryItemsOf(page));
+export function registryLockItemsOf(page: CreatorPage, skin: string | null = null): string[] {
+	return registryItemClosure(registryItemsOf(page, skin));
 }
 
 export { identFromBlockId };

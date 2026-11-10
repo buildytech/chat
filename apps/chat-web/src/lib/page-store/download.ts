@@ -3,7 +3,7 @@
  * (registry/svelte, raw text, bundled as separate chunks), so the main bundle does not carry them.
  */
 import type { CreatorPage } from "./page.ts";
-import { buildStoreZip, packZipFiles, type RegistryReader } from "./pack.ts";
+import { buildStoreZip, packZipFiles, type PackOptions, type RegistryReader } from "./pack.ts";
 
 const ROOT = "registry/svelte/";
 
@@ -23,9 +23,9 @@ const readSnapshot: RegistryReader = async (paths) => {
 	return out;
 };
 
-export async function downloadPageZip(page: CreatorPage, selectedId: string | null = null): Promise<void> {
+export async function downloadPageZip(page: CreatorPage, options: PackOptions = {}): Promise<void> {
 	if (typeof document === "undefined") return;
-	const bytes = buildStoreZip(await packZipFiles(page, readSnapshot, selectedId));
+	const bytes = buildStoreZip(await packZipFiles(page, readSnapshot, options));
 	const buffer = new ArrayBuffer(bytes.byteLength);
 	new Uint8Array(buffer).set(bytes);
 	const blob = new Blob([buffer], { type: "application/zip" });

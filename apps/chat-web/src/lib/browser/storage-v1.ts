@@ -121,6 +121,16 @@ export function browserStorage(): Storage | null {
 	}
 }
 
+/** What this browser quarantined (Settings > Quarantine): never loaded, never thrown away. */
+export function browserQuarantine(): QuarantineEntry[] {
+	try {
+		const store = browserStorage();
+		return store ? readQuarantine(store) : [];
+	} catch {
+		return [];
+	}
+}
+
 /** Read one buildy:v1 key (after the migration). Null when absent or storage is unavailable. */
 export function readKey(key: string): string | null {
 	try {

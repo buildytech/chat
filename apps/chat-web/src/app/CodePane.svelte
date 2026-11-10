@@ -12,10 +12,10 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
+	import { getChatSkin } from "$lib/chat-core";
 	import {
 		blocksOf,
 		getCurrentPage, getPageRevision,
-		getSelectedBlockId,
 		packFilesFromPage,
 		svelteFromPage
 	} from "$lib/page-store";
@@ -28,8 +28,7 @@
 
 	const page = $derived(getCurrentPage());
 	const savedRevision = $derived(getPageRevision());
-	const selectedId = $derived(getSelectedBlockId());
-	const pack = $derived(page ? packFilesFromPage(page, selectedId) : []);
+	const pack = $derived(page ? packFilesFromPage(page, { skin: getChatSkin() }) : []);
 
 	let openFolders = $state<Record<string, boolean>>({ "src/sections": true });
 

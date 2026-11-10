@@ -1,6 +1,6 @@
 {
   "lockVersion": 2,
-  "cli": "3.4.1",
+  "cli": "3.5.0",
   "items": {
     "registry.buildy.tw|svelte|about-company": {
       "name": "about-company",
@@ -3403,6 +3403,167 @@
         "src/compose/Textarea.svelte": "90d00c499268ba27bdd3eada02df6c2abc678fe01d3f4a49297bd716dad2f4db"
       }
     },
+    "registry.buildy.tw|svelte|theme-amber-minimal": {
+      "name": "theme-amber-minimal",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/amber-minimal.css": "919e58f761a2ded1493b4e7cd022b64f4b5fac5a6bff214d54e323d8bcc7ed81"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-base": {
+      "name": "theme-base",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/NOTICE.md": "5720023570a7ea06f0774ac7bc7f7a2d1953e1f969ce389081071331001e7790",
+        "src/styles/skins/base.css": "68d7bc8654adb51f7fcf7b4521931f70ea0c1849ae59a85107d67a387e4ad8ff"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-bubblegum": {
+      "name": "theme-bubblegum",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/bubblegum.css": "2aeba87b359994c6db2179ac7b43bb7a4f87a8cb4df461ea707cc18e326babeb"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-claude": {
+      "name": "theme-claude",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/claude.css": "0fb7953ccebd9aaefb8444684fcdbf30f0b2f48ddbd7a65859d9b757e3aed704"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-cosmic-night": {
+      "name": "theme-cosmic-night",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/cosmic-night.css": "97ea856aaa911dc1b559bbd57142a0f0daef2dbe4eef800687c6ccf86bb8edfa"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-doom-64": {
+      "name": "theme-doom-64",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/doom-64.css": "51c5163f703a8f2f63806d348e6878e5e05bdccfc1400159d15971845a1a9ae6"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-kodama-grove": {
+      "name": "theme-kodama-grove",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/kodama-grove.css": "72b79834bdced99a647e179815b0428929af65eaba0b0e1a6c7f8ac63667bf81"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-mocha-mousse": {
+      "name": "theme-mocha-mousse",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/mocha-mousse.css": "6a108252afc18390bde96c0b4f8423aae601636d775ae76954312da764a8bf3c"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-modern-minimal": {
+      "name": "theme-modern-minimal",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/modern-minimal.css": "d46b51dd0de2c828e5532180869cf0ebb622f66ae03d6c0aae9b6fbd20a737cb"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-neo-brutalism": {
+      "name": "theme-neo-brutalism",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/neo-brutalism.css": "426861b683e147b20ba4877518d01bed004b297b3d7914bdf1019ee0c57cb0b0"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-notebook": {
+      "name": "theme-notebook",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/notebook.css": "ac66d55d0b738d762d3d7701be2b6e78bdfd1b3cb41e37475b35aa93fdb2ab75"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-perpetuity": {
+      "name": "theme-perpetuity",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/perpetuity.css": "380489be639f828efdbdb14dbbce06db60aa9b29962798379a49fc56e32f5b6d"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-rose": {
+      "name": "theme-rose",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/rose.css": "c6e9b53e00749efe301c967758d7351dfd1a408644994a27c94594562ac89575"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-sky": {
+      "name": "theme-sky",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/sky.css": "ce88b63f22c59a4ccfbe56039f166a83ede1dbe83ecb256fa4b59cb72e826dc5"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-supabase": {
+      "name": "theme-supabase",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/supabase.css": "4189bcba7ec3b4a446bad0f9f0442f0b37f548ca1f3c9a3e2e77bd741970f036"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-t3-chat": {
+      "name": "theme-t3-chat",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/t3-chat.css": "136bd008fb40c41bb09bd7c514968796c41e91731f61102146a568e891881a8a"
+      }
+    },
     "registry.buildy.tw|svelte|theme-toggle": {
       "name": "theme-toggle",
       "type": "registry:ui",
@@ -3411,6 +3572,16 @@
       "runtime": "svelte",
       "files": {
         "src/compose/ThemeToggle.svelte": "2ade7c6ccb789f859a0f60a345f9d2f1b150cce8fc69ed3f75463f16f78ff51a"
+      }
+    },
+    "registry.buildy.tw|svelte|theme-violet-bloom": {
+      "name": "theme-violet-bloom",
+      "type": "registry:theme",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/styles/skins/violet-bloom.css": "e5e3758f99ba249544312abbcd7d57b0314df35d11c98b8e7bd8d273c2047ea0"
       }
     },
     "registry.buildy.tw|svelte|timeline": {

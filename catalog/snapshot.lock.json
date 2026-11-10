@@ -3,7 +3,7 @@
 	"version": 0,
 	"config": {
 		"path": "catalog/snapshot.config.json",
-		"sha256": "805e638d07ee74538b80ff4059df8bcc69986fc2f43cc0638add9fc38f92816e"
+		"sha256": "ada41d1b67266ba1244640175e862dd22ca5dede984fa277b949fd6a63a13ac4"
 	},
 	"policy": {
 		"path": "catalog/policy.v0.json",
@@ -56,26 +56,26 @@
 		}
 	},
 	"ui8kit": {
-		"cli": "ui8kit@3.4.1",
+		"cli": "ui8kit@3.5.0",
 		"registry": "https://registry.buildy.tw",
 		"runtime": "svelte",
 		"sourceCommit": "3a6d923a3bdf75bba8951a3dfda7f3e97a69ecc5",
 		"files": {
 			"manifest.json": {
-				"sha256": "60b3cd25d44729ee4b1a9a392ea2165f054cbe275e9e4c7a6ef64104ceedf312",
-				"bytes": 897411
+				"sha256": "4b6fa5a6f5a08ed300f2749484122d8a12af2b911e6f0a91811ec4da07257096",
+				"bytes": 917715
 			},
 			"props/v0.json": {
 				"sha256": "2f5e08736cee3dd30abfac5fb20b3d974934383ecc5c95b5d8c13b5288b266a5",
 				"bytes": 611394
 			},
 			"registry.json": {
-				"sha256": "e077af4a1c51446c95c9d1ecf01cfa83eb50180f9fd6c25c8881a2f0e7720079",
-				"bytes": 1189427
+				"sha256": "25ca5d835d99c4d56bceef660f7ced9c8affd1c887abc37890457dac9c4c0dcb",
+				"bytes": 1213622
 			},
 			"svelte/index.json": {
-				"sha256": "39d1542666e00ced6324d73aa55b3f909423000f186edb1af484c3b4784cd122",
-				"bytes": 130412
+				"sha256": "e337945f474db7e99aa864f865c985a8a16f9527230a3d2c7bb14595c0a9095e",
+				"bytes": 136550
 			},
 			"variants/v0.json": {
 				"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4",
@@ -90,13 +90,13 @@
 				"sha256": "2f5e08736cee3dd30abfac5fb20b3d974934383ecc5c95b5d8c13b5288b266a5"
 			},
 			"registry/snapshot.json": {
-				"sha256": "69215006ad3d0f8a28e4cdf17351410340a42b3260958a65f5ae8ef36289ccbf"
+				"sha256": "19c58354ce4052be79bc61c2ca4b203d826bad2de42200ee72b7de0e50d94902"
 			}
 		}
 	},
 	"outputs": {
 		"catalog/stock-registry.v0.json": {
-			"sha256": "33bc7b555b384b1158901f3d0e8a9e2b1a8785c6c794a2ab40e4e9374714c11d"
+			"sha256": "dde9445d16f5f46a8ea69f1a8e176297b25598d9cd03b774a60f6382a87067e0"
 		},
 		"catalog/coverage.json": {
 			"sha256": "33e21c669e670b7b3e96ff7c8cd0678099e01456957c7bfe55cf77f3e9fade9d"

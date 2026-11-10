@@ -258,6 +258,30 @@ export function registryClosure(items: readonly string[]): string[] {
 	return [...files].sort();
 }
 
+export type RegistrySkin = { id: string; item: string; title: string; file: string };
+
+/** Skins of the pinned registry (`npx ui8kit add theme-<id>`), sorted by title. */
+export function registrySkins(): RegistrySkin[] {
+	return Object.entries(sources.themes?.skins ?? {})
+		.map(([id, skin]) => ({ id, ...skin }))
+		.sort((a, b) => a.title.localeCompare(b.title));
+}
+
+/** The skin with this id, or null when the pinned registry has none (unknown ids fall back to the default theme). */
+export function registrySkin(id: string | null | undefined): RegistrySkin | null {
+	if (!id) return null;
+	const skin = sources.themes?.skins?.[id];
+	return skin ? { id, ...skin } : null;
+}
+
+/** CSS files of theme-base (what every skin depends on), as `npx ui8kit add theme-<id>` writes them. */
+export function registrySkinBaseCss(): string[] {
+	return (sources.themes?.base?.files ?? []).filter((file) => file.endsWith(".css"));
+}
+
+/** Registry item that installs a skin. */
+export const skinItem = (id: string): string => `theme-${id}`;
+
 /** Files `npx ui8kit add <name>` writes for one item (pinned snapshot, paths under the install root). */
 export function registryItemFiles(name: string): string[] {
 	const item = sources.items[name];

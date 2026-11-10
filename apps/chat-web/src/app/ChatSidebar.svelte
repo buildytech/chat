@@ -26,6 +26,7 @@
 	import { getSelectedModelId, isChatModelAvailable, listChatModels, setSelectedModelId } from "$lib/browser/models.svelte";
 	import { modelUnavailableCode } from "@buildytech/builder-core";
 	import ConfirmDialog from "./ConfirmDialog.svelte";
+	import SettingsSessionFile from "./SettingsSessionFile.svelte";
 	import Checkbox from "$registry/compose/Checkbox.svelte";
 	import Label from "$registry/compose/Label.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
@@ -346,6 +347,7 @@
 					/>
 					<Label for="creator-settings-preview-clean" class="text-sm text-foreground">{t("settings.hidePreviewLabels")}</Label>
 				</Group>
+				<SettingsSessionFile />
 				<Button
 					class="w-full justify-start rounded px-2 py-1.5 text-sm text-destructive hover:bg-accent/70"
 					aria-haspopup="dialog"

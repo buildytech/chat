@@ -1,11 +1,11 @@
 {
 	"format": "buildy-registry-snapshot",
 	"version": 1,
-	"cli": "ui8kit@3.4.1",
+	"cli": "ui8kit@3.5.0",
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "39d1542666e00ced6324d73aa55b3f909423000f186edb1af484c3b4784cd122",
+		"sha256": "e337945f474db7e99aa864f865c985a8a16f9527230a3d2c7bb14595c0a9095e",
 		"lastUpdated": "2026-11-10T00:07:21+03:00",
 		"version": "0.1.0"
 	},
@@ -5521,6 +5521,181 @@
 				"src/compose/Textarea.svelte"
 			]
 		},
+		"theme-amber-minimal": {
+			"type": "registry:theme",
+			"title": "Amber Minimal",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/amber-minimal.css"
+			]
+		},
+		"theme-base": {
+			"type": "registry:theme",
+			"title": "Theme Base",
+			"registryDependencies": [],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/NOTICE.md",
+				"src/styles/skins/base.css"
+			]
+		},
+		"theme-bubblegum": {
+			"type": "registry:theme",
+			"title": "Bubblegum",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/bubblegum.css"
+			]
+		},
+		"theme-claude": {
+			"type": "registry:theme",
+			"title": "Claude",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/claude.css"
+			]
+		},
+		"theme-cosmic-night": {
+			"type": "registry:theme",
+			"title": "Cosmic Night",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/cosmic-night.css"
+			]
+		},
+		"theme-doom-64": {
+			"type": "registry:theme",
+			"title": "Doom 64",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/doom-64.css"
+			]
+		},
+		"theme-kodama-grove": {
+			"type": "registry:theme",
+			"title": "Kodama Grove",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/kodama-grove.css"
+			]
+		},
+		"theme-mocha-mousse": {
+			"type": "registry:theme",
+			"title": "Mocha Mousse",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/mocha-mousse.css"
+			]
+		},
+		"theme-modern-minimal": {
+			"type": "registry:theme",
+			"title": "Modern Minimal",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/modern-minimal.css"
+			]
+		},
+		"theme-neo-brutalism": {
+			"type": "registry:theme",
+			"title": "Neo Brutalism",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/neo-brutalism.css"
+			]
+		},
+		"theme-notebook": {
+			"type": "registry:theme",
+			"title": "Notebook",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/notebook.css"
+			]
+		},
+		"theme-perpetuity": {
+			"type": "registry:theme",
+			"title": "Perpetuity",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/perpetuity.css"
+			]
+		},
+		"theme-rose": {
+			"type": "registry:theme",
+			"title": "Rose",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/rose.css"
+			]
+		},
+		"theme-sky": {
+			"type": "registry:theme",
+			"title": "Sky",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/sky.css"
+			]
+		},
+		"theme-supabase": {
+			"type": "registry:theme",
+			"title": "Supabase",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/supabase.css"
+			]
+		},
+		"theme-t3-chat": {
+			"type": "registry:theme",
+			"title": "T3 Chat",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/t3-chat.css"
+			]
+		},
 		"theme-toggle": {
 			"type": "registry:ui",
 			"registryDependencies": [
@@ -5532,6 +5707,17 @@
 			"dependencies": [],
 			"files": [
 				"src/compose/ThemeToggle.svelte"
+			]
+		},
+		"theme-violet-bloom": {
+			"type": "registry:theme",
+			"title": "Violet Bloom",
+			"registryDependencies": [
+				"theme-base"
+			],
+			"dependencies": [],
+			"files": [
+				"src/styles/skins/violet-bloom.css"
 			]
 		},
 		"timeline": {

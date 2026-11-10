@@ -254,6 +254,28 @@ test("import checks: bad JSON, wrong format, unknown or secret-looking fields an
 	assert.equal(code(base), "ok");
 });
 
+test("skin (session 1.1.0): kept with the chat through export and import; a malformed skin id is refused", () => {
+	const page = landing();
+	const pages = { "session-a": { applied: page, candidate: null, selectedBlockId: null, revision: 1 } };
+	const file = buildSessionFile({ chats: [chat("session-a", { skin: "claude" })], pages, selectedSessionId: null, app, pins, now: NOW });
+	assert.deepEqual(sessionFileIssues(file), []);
+	assert.equal(file.sessions[0]!.skin, "claude");
+	const parsed = parseSessionFile(JSON.stringify(file));
+	assert.ok(parsed.ok, JSON.stringify(parsed));
+	assert.equal(splitSessionFile(parsed.file).chats[0]!.skin, "claude");
+	for (const skin of [null, "modern-minimal"]) {
+		assert.ok(parseSessionFile({ ...file, sessions: [{ ...file.sessions[0]!, skin }] }).ok, `${skin} is a valid skin`);
+	}
+	for (const skin of ["Claude", "theme-claude.css", "", 7]) {
+		const r = parseSessionFile({ ...file, sessions: [{ ...file.sessions[0]!, skin }] });
+		assert.equal(r.ok ? "ok" : r.code, "schema_invalid", `${JSON.stringify(skin)} is refused`);
+	}
+	// A 1.0.0 file (no skin) still loads: the default theme.
+	const plain = buildSessionFile({ chats: [chat("session-a")], pages, selectedSessionId: null, app, pins, now: NOW });
+	assert.equal("skin" in plain.sessions[0]!, false);
+	assert.ok(parseSessionFile(plain).ok);
+});
+
 test("the vendored session schema stays inside the dependency-free checker's keyword subset and has no credential field", () => {
 	const text = JSON.stringify(sessionSchema);
 	assert.doesNotMatch(text, /"format":\s*"(date-time|uri|email)"/);

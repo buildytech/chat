@@ -1,6 +1,6 @@
 <!--
   The preview site as-is in its own window (/preview?session=...): this chat's page (pending proposal, else the applied
-  page) rendered with the same registry blocks and the registry's own CSS, no chat UI and no service labels. Theme
+  page) rendered with the same registry blocks and the registry's own CSS and the chat's skin, no chat UI and no service labels. Theme
   follows the chat's light / dark choice; the page follows edits made in the chat tab (storage events).
 -->
 <script lang="ts">
@@ -10,6 +10,7 @@
 	import { t } from "$lib/i18n/dictionary";
 	import { blocksOf, readPreviewPage, type Page } from "$lib/page-store";
 	import { THEME_KEY, theme } from "$lib/theme/theme.svelte";
+	import { applySkin, readSessionSkin } from "$lib/theme/skins";
 	import PreviewBlock from "./PreviewBlock.svelte";
 
 	let ready = $state(false);
@@ -17,7 +18,9 @@
 
 	// Read-only: this window never binds or writes the chat's page store.
 	function load() {
-		page = readPreviewPage(new URLSearchParams(location.search).get("session"));
+		const session = new URLSearchParams(location.search).get("session");
+		page = readPreviewPage(session);
+		void applySkin(document, readSessionSkin(session));
 	}
 
 	onMount(() => {

@@ -37,6 +37,6 @@ export {
 	type VisibleChange
 } from "./mock.svelte";
 export { svelteForBlock, svelteFromPage, sveltePackFiles } from "./svelte-code";
-export { buildStoreZip, packFilesFromPage, packZipFiles, type PackFile, type RegistryReader } from "./pack";
+export { buildStoreZip, packFilesFromPage, packZipFiles, type PackFile, type PackOptions, type RegistryReader } from "./pack";
 export { downloadPageZip } from "./download";
 export { findBlock, firstBlockId, hasBlock, walkBlocks } from "./tree";

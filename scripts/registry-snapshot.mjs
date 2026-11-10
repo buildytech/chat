@@ -71,8 +71,40 @@ async function fetchText(url) {
 	return res.text();
 }
 
+/**
+ * The pinned CLI (`npx ui8kit@<pin>`). UI8KIT_CLI_BIN=<checkout>/dist/index.js runs a local build of the same release
+ * instead (when the npm package is not published yet); its `--version` must equal the pin.
+ */
 function cli(cwd, args) {
-	execFileSync("npx", ["--yes", CLI, ...args], { cwd, stdio: ["ignore", "ignore", "inherit"], env: { ...process.env, CI: "1" } });
+	const bin = process.env.UI8KIT_CLI_BIN;
+	const env = { ...process.env, CI: "1" };
+	if (bin) {
+		const version = execFileSync("node", [bin, "--version"], { encoding: "utf8" }).trim();
+		if (`ui8kit@${version}` !== CLI) throw new Error(`UI8KIT_CLI_BIN is ui8kit@${version}, the pin is ${CLI}`);
+		execFileSync("node", [bin, ...args], { cwd, stdio: ["ignore", "ignore", "inherit"], env });
+		return;
+	}
+	execFileSync("npx", ["--yes", CLI, ...args], { cwd, stdio: ["ignore", "ignore", "inherit"], env });
+}
+
+/** Skins (registry:theme items, `add theme-<skin>`; `add --all` leaves them out): skin id -> item, title and CSS file. */
+function themesOf(snapshot) {
+	const themes = {};
+	let base = null;
+	for (const [name, item] of Object.entries(snapshot.items)) {
+		if (item.type !== "registry:theme") continue;
+		if (name === "theme-base") {
+			base = { item: name, files: item.files };
+			continue;
+		}
+		const id = name.slice("theme-".length);
+		const file = item.files.find((f) => f.endsWith(`/${id}.css`));
+		if (!file) throw new Error(`${name}: no styles/skins/${id}.css`);
+		if (!item.registryDependencies.includes("theme-base")) throw new Error(`${name}: does not depend on theme-base`);
+		themes[id] = { item: name, title: item.title, file };
+	}
+	if (Object.keys(themes).length && !base) throw new Error("skins without theme-base");
+	return { base, skins: themes };
 }
 
 /**
@@ -176,6 +208,7 @@ function sources() {
 		initItems: snapshot.initItems,
 		npmDependencies: snapshot.npmDependencies,
 		items: snapshot.items,
+		themes: themesOf(snapshot),
 		blocks,
 		assets,
 		specs
@@ -242,6 +275,9 @@ async function snapshot() {
 		const initLock = JSON.parse(readFileSync(join(tmp, "ui8kit.lock.json"), "utf8"));
 		const initItems = Object.values(initLock.items).map((item) => item.name).sort();
 		cli(tmp, ["add", "--all"]);
+		// skins are a choice, so `--all` leaves them out: install every theme item of the index explicitly
+		const themeNames = JSON.parse(await fetchText(`${REGISTRY}/${RUNTIME}/index.json`)).components.filter((c) => c.type === "registry:theme").map((c) => c.name);
+		if (themeNames.length) cli(tmp, ["add", ...themeNames]);
 		const pkg = JSON.parse(readFileSync(join(tmp, "package.json"), "utf8"));
 		rmSync(KIT, { recursive: true, force: true });
 		for (const entry of KIT_ENTRIES) cpSync(join(tmp, entry), join(KIT, entry), { recursive: true });
@@ -257,6 +293,7 @@ async function snapshot() {
 			if (!locked) throw new Error(`${component.name} is in the index but was not installed`);
 			items[component.name] = {
 				type: component.type,
+				...(component.type === "registry:theme" ? { title: component.title } : {}),
 				registryDependencies: component.registryDependencies ?? [],
 				dependencies: component.dependencies ?? [],
 				files: Object.keys(locked.files).sort()

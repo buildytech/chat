@@ -7,6 +7,7 @@
 import { catalogProvenance } from "@buildytech/builder-core";
 import { SESSION_FORMAT, SESSION_SCHEMA_URL } from "@buildytech/page-contract/session";
 import snapshotConfig from "../../../../../catalog/snapshot.config.json";
+import chatPackage from "../../../package.json";
 import { exportSessions, importSessions, type ImportResult } from "../chat-core";
 import { theme, THEME_KEY } from "../theme/theme.svelte";
 import { getSelectedModelId, setSelectedModelId } from "./models.svelte";
@@ -14,7 +15,6 @@ import { previewSettings } from "./preview-settings.svelte";
 import type { SessionApp, SessionFile, SessionPins, SessionSettings } from "./session-file.ts";
 import { writeKey } from "./storage-v1.ts";
 
-declare const __BUILDY_APP_VERSION__: string;
 declare const __BUILDY_APP_COMMIT__: string;
 
 export type BuildyApi = {
@@ -28,7 +28,7 @@ function app(): SessionApp {
 	const commit = typeof __BUILDY_APP_COMMIT__ === "string" ? __BUILDY_APP_COMMIT__ : "";
 	return {
 		name: "buildy-chat",
-		version: typeof __BUILDY_APP_VERSION__ === "string" ? __BUILDY_APP_VERSION__ : "0.0.0",
+		version: chatPackage.version,
 		host: "browser",
 		...(/^[0-9a-f]{7,40}$/.test(commit) ? { commit } : {})
 	};
@@ -74,24 +74,30 @@ function download(file: SessionFile): void {
 	URL.revokeObjectURL(href);
 }
 
+/** The session file of this browser; `download` also saves it as a .json file (Settings > Export, `buildy.export()`). */
+export function exportSessionFile(options?: { download?: boolean }): SessionFile {
+	const file = exportSessions({ app: app(), pins: sessionPins(), settings: settings() });
+	if (options?.download) download(file);
+	return file;
+}
+
+/** Check and load a session file (Settings > Import, `buildy.import(json)`); a failing file changes nothing. */
+export async function importSessionFile(json: unknown): Promise<ImportResult> {
+	const result = await importSessions(json);
+	if (result.ok) {
+		const parsed = typeof json === "string" ? (JSON.parse(json) as SessionFile) : (json as SessionFile);
+		applySettings(parsed.settings);
+	}
+	return result;
+}
+
 export function installBuildyApi(): void {
 	if (typeof window === "undefined") return;
 	const api: BuildyApi = {
 		format: SESSION_FORMAT,
 		schema: SESSION_SCHEMA_URL,
-		export(options) {
-			const file = exportSessions({ app: app(), pins: sessionPins(), settings: settings() });
-			if (options?.download) download(file);
-			return file;
-		},
-		async import(json) {
-			const result = await importSessions(json);
-			if (result.ok) {
-				const parsed = typeof json === "string" ? (JSON.parse(json) as SessionFile) : (json as SessionFile);
-				applySettings(parsed.settings);
-			}
-			return result;
-		}
+		export: exportSessionFile,
+		import: importSessionFile
 	};
 	Object.defineProperty(window, "buildy", { value: Object.freeze(api), configurable: true, enumerable: false, writable: false });
 }

@@ -34,7 +34,9 @@ export type CatalogSources = {
 	initItems: string[];
 	npmDependencies: string[];
 	/** Registry item graph of the snapshot: type, registryDependencies, npm dependencies and file paths per item. */
-	items: Record<string, { type: string; registryDependencies: string[]; dependencies: string[]; files: string[] }>;
+	items: Record<string, { type: string; title?: string; registryDependencies: string[]; dependencies: string[]; files: string[] }>;
+	/** Skins of the snapshot (registry:theme items, `npx ui8kit add theme-<skin>`): theme-base and skin id -> item, title, CSS file. */
+	themes: { base: { item: string; files: string[] } | null; skins: Record<string, { item: string; title: string; file: string }> };
 	blocks: Record<string, RegistryBlock>;
 	/** Catalog asset id (`block.features/grid`) -> registry item and variant. */
 	assets: Record<string, { item: string; variant: string }>;

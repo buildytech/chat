@@ -14,10 +14,13 @@
 	import Button from "$registry/kit/ui/button/Button.svelte";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Input from "$registry/kit/ui/input/Input.svelte";
+	import Select from "$registry/compose/Select.svelte";
+	import SelectOption from "$registry/compose/SelectOption.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import { applyProposal, discardProposal, getSelectedSession, proposalStatus } from "$lib/chat-core";
+	import { applyProposal, discardProposal, getChatSkin, getSelectedSession, proposalStatus, setChatSkin } from "$lib/chat-core";
+	import { applySkin, skins } from "$lib/theme/skins";
 	import {
 		blocksOf,
 		getCurrentPage,
@@ -102,6 +105,19 @@
 		// Undo / redo of inspector edits also while focus is inside the preview frame.
 		doc.addEventListener("keydown", inspector.onKey);
 		frameDoc = doc;
+	}
+
+	// Skin of this chat's page (session `skin`, registry item theme-<skin>): on the preview document only, as in the ZIP.
+	const skinOptions = skins();
+	const skin = $derived(getChatSkin());
+	$effect(() => {
+		const doc = frameDoc;
+		const id = skin;
+		if (doc) void applySkin(doc, id);
+	});
+
+	function onSkin(event: Event) {
+		setChatSkin((event.currentTarget as HTMLSelectElement).value || null);
 	}
 
 	// Stage size (the frame scales down to fit; its CSS width stays the device width).
@@ -278,6 +294,23 @@
 		</Group>
 
 		<Group class="items-center gap-2 max-md:order-2">
+			{#if skinOptions.length}
+				<Select
+					id="preview-skin"
+					size="sm"
+					class="w-auto"
+					value={skin ?? ""}
+					aria-label={t("preview.skin")}
+					title={t("preview.skin")}
+					data-slot="preview-skin"
+					onchange={onSkin}
+				>
+					<SelectOption value="">{t("preview.skinDefault")}</SelectOption>
+					{#each skinOptions as option (option.id)}
+						<SelectOption value={option.id}>{option.title}</SelectOption>
+					{/each}
+				</Select>
+			{/if}
 			<Button
 				class="inline-flex size-8 items-center justify-center rounded border border-border text-foreground hover:bg-accent"
 				aria-label={t("preview.openNew")}

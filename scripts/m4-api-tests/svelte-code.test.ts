@@ -12,7 +12,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parsePage, type Page } from "../../packages/page-contract/src/index.ts";
-import { executeTool, proposeLayout, SCENARIO_IDS, type LayoutProposal } from "../../packages/builder-core/src/index.ts";
+import { executeTool, proposeLayout, registrySkins, SCENARIO_IDS, type LayoutProposal } from "../../packages/builder-core/src/index.ts";
 import { APP_FILE, registryItemsOf, stubAlertImport, svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
 import {
 	buildStoreZip,
@@ -170,10 +170,11 @@ function unzipStore(bytes: Uint8Array): PackFile[] {
 	return out;
 }
 
-test("mixed ZIP (registry blocks + stub) unzips and builds with vite, styles include dark and responsive classes", async () => {
+test("mixed ZIP (registry blocks + stub, with a skin) unzips and builds with vite, styles include dark, responsive and skin rules", async () => {
 	const page = scenarioPage("landing");
 	const withStub: Page = { ...page, layout: { ...page.layout, blocks: [...page.layout.blocks, { ...fixture.layout.blocks[0]!, id: "block-legacy" }] } };
-	const entries = unzipStore(buildStoreZip(await packZipFiles(withStub, readSnapshot)));
+	const skin = registrySkins()[0]!;
+	const entries = unzipStore(buildStoreZip(await packZipFiles(withStub, readSnapshot, { skin: skin.id })));
 	const dir = mkdtempSync(path.join(tmpdir(), "buildy-pack-"));
 	try {
 		for (const entry of entries) {
@@ -190,6 +191,7 @@ test("mixed ZIP (registry blocks + stub) unzips and builds with vite, styles inc
 		const css = readFileSync(path.join(assets, readdirSync(assets).find((file) => file.endsWith(".css"))!), "utf8");
 		assert.match(css, /\.dark/);
 		assert.match(css, /md\\:/);
+		assert.ok(css.includes(`[data-skin="${skin.id}"]`) || css.includes(`[data-skin=${skin.id}]`), "the skin CSS is in the build");
 	} finally {
 		rmSync(dir, { recursive: true, force: true });
 	}
@@ -217,4 +219,44 @@ test("exported code carries no preview attributes; the stub imports Alert from t
 	}
 	// Registry files are verbatim CLI output (their own data-variant on a component is UI8Kit, not a preview attribute).
 	for (const file of files.filter((f) => registry.has(f.path))) assert.ok(!/data-(block-id|renderer|registry-item)/.test(file.content), file.path);
+});
+
+test("skin: the ZIP carries theme-<skin> exactly as `npx ui8kit add theme-<skin>` writes it, imported and on", async () => {
+	const lock = JSON.parse(readFileSync(path.join(SNAPSHOT, CLI_LOCK), "utf8")) as { items: Record<string, { name: string; type?: string; files: Record<string, string> }> };
+	const skins = registrySkins();
+	assert.ok(skins.length >= 2, "the pinned registry carries skins");
+	const skin = skins.find((entry) => entry.id === "claude") ?? skins[0]!;
+	const page = featuresPage("grid");
+	const files = await packZipFiles(page, readSnapshot, { skin: skin.id });
+	const byPath = new Map(files.map((file) => [file.path, file.content]));
+	const themeItems = Object.values(lock.items).filter((item) => item.name === skin.item || item.name === "theme-base");
+	assert.equal(themeItems.length, 2, "theme-<skin> + theme-base are in the CLI snapshot lock");
+	for (const file of themeItems.flatMap((item) => Object.keys(item.files))) {
+		assert.equal(byPath.get(file), readFileSync(path.join(SNAPSHOT, file), "utf8"), `${file} is byte-identical to the CLI install`);
+	}
+	const zipLock = JSON.parse(byPath.get(CLI_LOCK)!) as { items: Record<string, { name: string }> };
+	for (const name of [skin.item, "theme-base"]) assert.ok(Object.values(zipLock.items).some((item) => item.name === name), `lock records ${name}`);
+	assert.ok(registryItemsOf(page, skin.id).includes(skin.item), "the skin item is one of the page's registry items");
+	assert.match(byPath.get("src/main.ts")!, new RegExp(`import "\\./${skin.file.slice("src/".length).replace(/[.]/g, "\\.")}";`));
+	assert.ok(byPath.get("src/main.ts")!.indexOf("styles/index.css") < byPath.get("src/main.ts")!.indexOf(skin.file.slice("src/".length)), "skin after the styles entry");
+	assert.match(byPath.get("index.html")!, new RegExp(`<html lang="en" data-skin="${skin.id}">`));
+	const manifest = JSON.parse(byPath.get("manifest.json")!) as { skin: string | null; files: string[] };
+	assert.equal(manifest.skin, skin.id);
+	assert.deepEqual([...manifest.files].sort(), [...byPath.keys()].sort());
+	assertSelfContained("skin", files);
+
+	// Default theme and an id the registry does not carry: no theme files, no data-skin.
+	for (const id of [null, "not-a-skin"]) {
+		const plain = await packZipFiles(page, readSnapshot, { skin: id });
+		assert.ok(!plain.some((file) => file.path.includes("/skins/")), `${id}: no skin files`);
+		assert.ok(!plain.find((file) => file.path === "index.html")!.content.includes("data-skin"), `${id}: no data-skin`);
+		assert.equal((JSON.parse(plain.find((file) => file.path === "manifest.json")!.content) as { skin: unknown }).skin, null);
+	}
+});
+
+test("GENERATOR.json names the chat's real version", () => {
+	const generator = JSON.parse(packFilesFromPage(fixture).find((file) => file.path === "GENERATOR.json")!.content) as { packageVersion: string };
+	const version = (JSON.parse(readFileSync(path.join(ROOT, "apps/chat-web/package.json"), "utf8")) as { version: string }).version;
+	assert.equal(generator.packageVersion, version);
+	assert.notEqual(version, "0.0.0");
 });
