@@ -41,6 +41,8 @@ export function isAgentMode(value: unknown): value is AgentMode {
 /** Value lists named by `x-buildy-enum`: generated from the pinned catalog and the page contract, never typed here. */
 export function agentEnumSource(name: string): string[] {
 	switch (name) {
+		case "catalog.site":
+			return [...facetVocabulary().site];
 		case "catalog.section":
 			return [...facetVocabulary().section];
 		case "catalog.job":

@@ -11,9 +11,9 @@
 		"stockBlocksWithPageKind": 34,
 		"screens": 80,
 		"screensFullyPageKinded": 10,
-		"facets": 17,
-		"facetValues": 306,
-		"facetValuesOnAssets": 280,
+		"facets": 18,
+		"facetValues": 312,
+		"facetValuesOnAssets": 286,
 		"collections": 90,
 		"collectionsWithData": 0
 	},
@@ -68,6 +68,7 @@
 			"media": 344,
 			"pattern": 121,
 			"role": 612,
+			"site": 80,
 			"slots": 405
 		},
 		"blocksInNoScreen": [],

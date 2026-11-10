@@ -14,6 +14,7 @@
 		}
 	},
 	"enumSources": {
+		"catalog.site": "Stock facet vocabulary: site type",
 		"catalog.section": "Stock facet vocabulary: section",
 		"catalog.job": "Stock facet vocabulary: job",
 		"catalog.industry": "Stock search vocabulary: industry",
@@ -27,9 +28,9 @@
 				"ask",
 				"build"
 			],
-			"description": "Search Stock screens by q (catalog terms) and facets (section, job, industry, blocks). Returns scored items and pick.screenId; then call propose_layout. Zero hits return nearest terms and the vocabulary for one re-query.",
+			"description": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored items and pick.screenId; then call propose_layout. Zero hits return nearest terms and the vocabulary for one re-query.",
 			"descriptionByMode": {
-				"ask": "Search Stock screens by q (catalog terms) and facets (section, job, industry, blocks). Returns scored screens with their block labels. Read-only."
+				"ask": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored screens with their block labels. Read-only."
 			},
 			"parameters": {
 				"type": "object",
@@ -37,6 +38,11 @@
 					"q": {
 						"type": "string",
 						"description": "Free text in catalog terms (English catalog words work best, e.g. sidebar, shell, kanban, pricing). Matched against Stock titles, subtitles, block names and facet labels."
+					},
+					"site": {
+						"type": "string",
+						"x-buildy-enum": "catalog.site",
+						"description": "Site type: landing (one conversion page), website (multi-page site home), app, docs, shop, blog."
 					},
 					"section": {
 						"type": "string",

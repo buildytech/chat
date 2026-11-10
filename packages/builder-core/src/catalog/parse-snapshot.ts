@@ -52,6 +52,7 @@ function parseOwnerFilter(value: unknown, path: string): CatalogFacetFilter {
 	const filter: CatalogFacetFilter = {};
 	const type = asFacetType(rec.type, `${path}.type`);
 	if (type) filter.type = type;
+	if (rec.site !== undefined) filter.site = asString(rec.site, `${path}.site`);
 	if (rec.section !== undefined) filter.section = asString(rec.section, `${path}.section`);
 	if (rec.job !== undefined) filter.job = asString(rec.job, `${path}.job`);
 	return filter;
@@ -71,6 +72,7 @@ function parseLabels(value: unknown, path: string): CatalogScreen["labels"] {
 	const rec = asRecord(value, path);
 	return {
 		type: asStringArray(rec.type, `${path}.type`),
+		site: asStringArray(rec.site, `${path}.site`),
 		section: asStringArray(rec.section, `${path}.section`),
 		job: asStringArray(rec.job, `${path}.job`),
 		blocks: asStringArray(rec.blocks, `${path}.blocks`),
@@ -147,6 +149,7 @@ function parseVocabulary(value: unknown, path: string): CatalogSnapshot["facetVo
 	const rec = asRecord(value, path);
 	return {
 		type: asStringArray(rec.type, `${path}.type`),
+		site: asStringArray(rec.site, `${path}.site`),
 		section: asStringArray(rec.section, `${path}.section`),
 		job: asStringArray(rec.job, `${path}.job`)
 	};

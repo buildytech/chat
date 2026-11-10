@@ -66,6 +66,6 @@ export const PLACEHOLDER_ROTATION_MS = 6000;
 export const OWNER_FILTERS = {
 	blank: { type: "screen" as const },
 	dashboard: { type: "screen" as const, section: "dashboard" },
-	landing: { type: "screen" as const, section: "marketing" },
-	website: { type: "screen" as const, job: "hero" }
+	landing: { type: "screen" as const, site: "landing" },
+	website: { type: "screen" as const, site: "website" }
 } as const;

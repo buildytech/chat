@@ -3,27 +3,27 @@
 	"version": 0,
 	"config": {
 		"path": "catalog/snapshot.config.json",
-		"sha256": "360d1f847568e998284974eeaeebbdcc817823d69a250efc66dd8c2aaf5c429f"
+		"sha256": "805e638d07ee74538b80ff4059df8bcc69986fc2f43cc0638add9fc38f92816e"
 	},
 	"policy": {
 		"path": "catalog/policy.v0.json",
-		"sha256": "1fe8e7220b037676c560f10373415994313b52cafb4b18582fa6712bc67eff37"
+		"sha256": "267299e67599af0d33e52ab3239ae24f6b362a12120d31cc10891fb5584b30a9"
 	},
 	"codegenX": {
 		"repo": "codegen-x/ui8kit",
-		"commit": "3a6d923a3bdf75bba8951a3dfda7f3e97a69ecc5",
+		"commit": "081a1c5e5cc5db6f6439a37edb666ddfee7aa006",
 		"files": {
 			"added.v0.json": {
 				"sha256": "c596d20022e765e0e01da6212ba8c2b4c6fc71c2dde4ab43966850d67efe327e",
 				"bytes": 388
 			},
 			"assets.v0.json": {
-				"sha256": "75840504dfaf7e6cd08fa2ff507e7d1bcda620156bba315f6e05a5d44f13dc08",
-				"bytes": 673108
+				"sha256": "5cd8e45f5d73e127a7a1fd9a4958b673a0e0119fbbf7f14918e9f4d227c04706",
+				"bytes": 686606
 			},
 			"facets.v0.json": {
-				"sha256": "6cefb8e3fb1d7e423bfed60db68b78eafa4b7a003a3324570d1eb874554b5471",
-				"bytes": 77562
+				"sha256": "4cf52fc4417263f42412be48f1c04b73578a5397081c76bd51d4cee0cc73c370",
+				"bytes": 106602
 			},
 			"i18n/locales.json": {
 				"sha256": "1ba54ca2bb4e289c8046e10ef03b77a05c3fb3420971815f2f564e6e9e3e9656",
@@ -96,16 +96,16 @@
 	},
 	"outputs": {
 		"catalog/stock-registry.v0.json": {
-			"sha256": "343938202ae516d3a037447f9b22fb7fae4bff09f15ee2f375d52f322d64604e"
+			"sha256": "33bc7b555b384b1158901f3d0e8a9e2b1a8785c6c794a2ab40e4e9374714c11d"
 		},
 		"catalog/coverage.json": {
-			"sha256": "3216bf2cf59433b7293a11c7647dc38b39efdb4bcb7b54ff461053d96b9c91f5"
+			"sha256": "33e21c669e670b7b3e96ff7c8cd0678099e01456957c7bfe55cf77f3e9fade9d"
 		},
 		"packages/builder-core/src/catalog/snapshot.json": {
-			"sha256": "edd9a70005528f9a4d146378b3ec042ee343cecbd842503172335f5bb6a2ac77"
+			"sha256": "a69a73d1ebeb7af79258fdecbe0540b54138269472418433c01c952e658b719c"
 		},
 		"packages/builder-core/src/catalog/search-index.json": {
-			"sha256": "d09b328d586bfbe2a3f79c07b267e1b2f34a0509f17e19f03cfceffca7cff346"
+			"sha256": "296eba6984e288c9c9cebfaeb855041fc755ebe63b0683cb8b4980ea23984911"
 		}
 	}
 }

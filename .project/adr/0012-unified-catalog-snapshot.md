@@ -110,3 +110,22 @@ the registry was built from, and Stock publishes the same `variants.v0.json` / `
 - Open: collections have no data in Stock content (`collectionsWithData` 0), `ui.*` dictionary texts referenced by
   samples are not published in Stock content, and 87 of 112 Stock blocks have no Page DTO kind (BuildY policy, see
   coverage).
+
+## Addendum 2026-11-10: two codegen-x pins, the site type facet (alexy-os/chaosbun#146)
+
+- **Two pins.** Stock content can move ahead of the registry build when the enrichment is data only (facets,
+  labels, synonyms). `snapshot.config.json` now pins `codegenX.commit` (the Stock content BuildY reads, `081a1c5`)
+  and `ui8kit.sourceCommit` (the commit registry.buildy.tw was built from, `3a6d923`). `npm run snapshot` accepts
+  two different commits only when `registry.json.sourceCommit` equals `ui8kit.sourceCommit`, the Stock commit
+  descends from it (GitHub compare status `ahead`) and Stock still publishes `variants.v0.json` / `props.v0.json`
+  byte-identical to the registry's `variants/v0.json` / `props/v0.json` (unchanged check). The lock records both
+  (`codegenX.commit`, `ui8kit.sourceCommit`); `snapshot:check` fails when the lock and the config disagree. Without
+  `ui8kit.sourceCommit` the config means one commit for both, as before. Any change to blocks, variants or props
+  still needs a registry rebuild and one pin.
+- **Site type.** Stock gained the facet `site` (screens only; landing, website, app, docs, shop, blog; one value per
+  screen page; draft labels from a table of screens and pages in `facets.v0.json`) and fr/de/es/ru synonyms for
+  every value of type, site, job, industry and section. The snapshot carries `labels.site` on screens and
+  `facetVocabulary.site`; `site` is a search facet (`search_catalog` parameter, `x-buildy-enum: catalog.site`).
+- **Owner filters.** `landing` = `{ type: screen, site: landing }` (was `section: marketing`), `website` =
+  `{ type: screen, site: website }` (was `job: hero`). Seeds: Landing picks `theme-marketing-landing/home`, Website
+  picks `theme-marketing-landing/studio`; both render every block.

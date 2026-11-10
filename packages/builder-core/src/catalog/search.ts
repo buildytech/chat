@@ -12,11 +12,11 @@ export function facetVocabulary(): CatalogSnapshotVocab {
 
 type CatalogSnapshotVocab = (typeof catalogSnapshot)["facetVocabulary"];
 
-export function isFacetValue(facet: "section" | "job" | "type", value: string): boolean {
+export function isFacetValue(facet: "site" | "section" | "job" | "type", value: string): boolean {
 	return catalogSnapshot.facetVocabulary[facet].includes(value);
 }
 
-export function assertFacetValue(facet: "section" | "job" | "type", value: string): void {
+export function assertFacetValue(facet: "site" | "section" | "job" | "type", value: string): void {
 	if (!isFacetValue(facet, value)) {
 		throw Object.assign(new Error(`Unknown catalog facet ${facet}=${value}`), {
 			code: "catalog_facet_unknown",
@@ -39,10 +39,12 @@ export function filterScreens(query: CatalogFacetFilter): CatalogScreen[] {
 	if (type !== "screen") {
 		return [];
 	}
+	if (query.site) assertFacetValue("site", query.site);
 	if (query.section) assertFacetValue("section", query.section);
 	if (query.job) assertFacetValue("job", query.job);
 
 	return catalogSnapshot.screens.filter((screen) => {
+		if (query.site && !screen.labels.site.includes(query.site)) return false;
 		if (query.section && !screen.labels.section.includes(query.section)) return false;
 		if (query.job && !screen.labels.job.includes(query.job)) return false;
 		if (query.industry && !screen.labels.industry.includes(query.industry)) return false;
@@ -54,8 +56,8 @@ export function filterScreens(query: CatalogFacetFilter): CatalogScreen[] {
 function ownerSuggestions(): SearchResult["suggested"] {
 	return [
 		{ section: OWNER_FILTERS.dashboard.section, reason: "Dashboard uses section=dashboard." },
-		{ section: OWNER_FILTERS.landing.section, reason: "Landing uses section=marketing." },
-		{ job: OWNER_FILTERS.website.job, reason: "Website uses job=hero. hero is a job facet, not a section." }
+		{ site: OWNER_FILTERS.landing.site, reason: "Landing uses site=landing (a single conversion page)." },
+		{ site: OWNER_FILTERS.website.site, reason: "Website uses site=website (the home of a multi-page site)." }
 	];
 }
 
@@ -63,16 +65,16 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 	const vocabulary = facetVocabulary();
 	const pageSize = query.pageSize ?? DEFAULT_PAGE_SIZE;
 
-	for (const facet of ["section", "job"] as const) {
+	for (const facet of ["site", "section", "job"] as const) {
 		const value = query[facet];
 		if (!value) continue;
 		if (isFacetValue(facet, value)) continue;
-		const swap = misplacedFacet(facet, value);
+		const swap = facet === "site" ? null : misplacedFacet(facet, value);
 		const suggested = swap
 			? [{ [swap.tryFacet]: value, reason: `"${value}" is a ${swap.tryFacet} value, not ${facet}. Re-search with ${swap.tryFacet}=${value}.` }]
 			: ownerSuggestions();
 		return {
-			query: { type: query.type ?? "screen", section: query.section, job: query.job },
+			query: { type: query.type ?? "screen", site: query.site, section: query.section, job: query.job },
 			page: 1,
 			pageSize,
 			total: 0,
@@ -93,7 +95,7 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 		const facet = unknownBlocks.length ? "blocks" : "industry";
 		const value = unknownBlocks[0] ?? unknownIndustry[0]!;
 		return {
-			query: { type: query.type ?? "screen", section: query.section, job: query.job, industry: query.industry, blocks: query.blocks, q: query.q },
+			query: { type: query.type ?? "screen", site: query.site, section: query.section, job: query.job, industry: query.industry, blocks: query.blocks, q: query.q },
 			page: 1,
 			pageSize,
 			total: 0,
@@ -161,7 +163,7 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 	const slice = items.slice(start, start + pageSize);
 	const noFit = total === 0;
 	return {
-		query: { type: query.type ?? "screen", section: query.section, job: query.job, industry: query.industry, blocks: query.blocks, q: query.q },
+		query: { type: query.type ?? "screen", site: query.site, section: query.section, job: query.job, industry: query.industry, blocks: query.blocks, q: query.q },
 		page,
 		pageSize,
 		total,

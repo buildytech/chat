@@ -133,7 +133,7 @@ test("ADR 0013: every supported non-dashboard screen renders all its Stock block
 			if (block.kind === "features" && block.id !== "block-features") assert.equal(block.children, undefined, block.id);
 		}
 	}
-	const studio = core.proposeLayout({ brief: "Create a page", screenId: "screen.theme-marketing-landing/studio", scenarioId: "landing", expectedRevision: 0, now: "2026-11-10T00:00:00.000Z" });
+	const studio = core.proposeLayout({ brief: "Create a page", screenId: "screen.theme-marketing-landing/studio", scenarioId: "website", expectedRevision: 0, now: "2026-11-10T00:00:00.000Z" });
 	assert.equal(studio.ok, true);
 	if (studio.ok) {
 		const items = studio.page.layout.blocks.map((block) => core.organismFor(block)?.item);
@@ -152,4 +152,28 @@ test("ADR 0013: screen support is strict; a screen that would drop a block is na
 	const cov = JSON.parse(read("catalog/coverage.json"));
 	assert.equal(cov.summary.stockBlocksWithPageKind, 34);
 	assert.equal(cov.summary.screensFullyPageKinded, 10);
+});
+
+test("ADR 0012 addendum: two codegen-x pins; Stock content descends from the registry build and publishes the same variants and props", () => {
+	const config = JSON.parse(read("catalog/snapshot.config.json"));
+	const lock = JSON.parse(read("catalog/snapshot.lock.json"));
+	assert.equal(lock.codegenX.commit, config.codegenX.commit);
+	assert.equal(lock.ui8kit.sourceCommit, config.ui8kit.sourceCommit ?? config.codegenX.commit);
+	assert.equal(lock.codegenX.files["variants.v0.json"].sha256, lock.ui8kit.files["variants/v0.json"].sha256);
+	assert.equal(lock.codegenX.files["props.v0.json"].sha256, lock.ui8kit.files["props/v0.json"].sha256);
+});
+
+test("site type facet: Landing and Website seeds pick different fully rendered screens of their own site type", async () => {
+	const core = await import("../../packages/builder-core/src/index.ts");
+	const tools = await import("../../packages/builder-core/src/tools.ts");
+	const landing = tools.scenarioCatalogContext("landing")!;
+	const website = tools.scenarioCatalogContext("website")!;
+	assert.ok(landing.pick && website.pick);
+	assert.notEqual(landing.pick!.screenId, website.pick!.screenId);
+	for (const [seed, site] of [[landing, "landing"], [website, "website"]] as const) {
+		const screen = core.catalogSnapshot.screens.find((s) => s.screenId === seed.pick!.screenId)!;
+		assert.ok(screen.labels.site.includes(site), screen.screenId);
+		assert.equal(core.screenSupport(screen).supported, true, screen.screenId);
+	}
+	for (const screen of core.catalogSnapshot.screens) assert.equal(screen.labels.site.length, 1, screen.screenId);
 });

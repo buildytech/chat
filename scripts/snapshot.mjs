@@ -50,6 +50,16 @@ async function fetchText(url) {
 	return res.text();
 }
 
+/** The codegen-x commit registry.buildy.tw was built from; the Stock commit when the config pins one commit for both. */
+const registrySourceCommit = (config) => config.ui8kit.sourceCommit ?? config.codegenX.commit;
+
+/** ahead | identical | behind | diverged: how `head` relates to `base` on GitHub (network mode only). */
+async function commitRelation(repo, base, head) {
+	const res = await fetch(`https://api.github.com/repos/${repo}/compare/${base}...${head}`, { headers: { accept: "application/vnd.github+json" } });
+	if (!res.ok) throw new Error(`compare ${base}...${head}: HTTP ${res.status}`);
+	return (await res.json()).status;
+}
+
 /** Derived artifacts of a graph (exact bytes). Policy problems fail the run. */
 function derived(graph, policy) {
 	const problems = validatePolicy(graph, policy, pageBlockKinds());
@@ -111,7 +121,14 @@ async function snapshot() {
 	const problems = [];
 	const registryDoc = inputs.registry["registry.json"];
 	const manifest = inputs.registry["manifest.json"];
-	if (registryDoc.sourceCommit !== codegenX.commit) problems.push(`registry.json sourceCommit ${registryDoc.sourceCommit} != codegenX.commit ${codegenX.commit} (bump ${CONFIG})`);
+	// Two pins (ADR 0012 addendum): Stock content may run ahead of the registry build when it descends from the registry's
+	// source commit and publishes the same variants and props (checked below); anything else is a disagreement.
+	const registrySource = registrySourceCommit(config);
+	if (registryDoc.sourceCommit !== registrySource) problems.push(`registry.json sourceCommit ${registryDoc.sourceCommit} != ui8kit.sourceCommit ${registrySource} (bump ${CONFIG})`);
+	if (registrySource !== codegenX.commit) {
+		const relation = await commitRelation(codegenX.repo, registrySource, codegenX.commit);
+		if (relation !== "ahead") problems.push(`codegenX.commit ${codegenX.commit} is ${relation} of ui8kit.sourceCommit ${registrySource}; Stock content must descend from the registry build`);
+	}
 	for (const [stockFile, registryFile, pinned, key] of [
 		["variants.v0.json", "variants/v0.json", VARIANTS, "variants"],
 		["props.v0.json", "props/v0.json", PROPS, "props"]
@@ -187,6 +204,7 @@ export function check() {
 	if (sha256(read(CONFIG)) !== lock.config.sha256) fail(`${CONFIG} changed since the snapshot (npm run snapshot)`);
 	if (sha256(read(POLICY)) !== lock.policy.sha256) fail(`${POLICY} changed since the snapshot (npm run snapshot:derive)`);
 	if (lock.codegenX.commit !== config.codegenX.commit || lock.ui8kit.cli !== config.ui8kit.cli) fail("lock pins differ from the config");
+	if (lock.ui8kit.sourceCommit !== registrySourceCommit(config)) fail(`lock ui8kit.sourceCommit ${lock.ui8kit.sourceCommit} != ${CONFIG} ui8kit.sourceCommit`);
 	for (const [p, { sha256: want }] of Object.entries({ ...lock.ui8kit.pinned, ...lock.outputs })) {
 		if (!existsSync(path(p))) fail(`${p} missing`);
 		else if (sha256(read(p)) !== want) fail(`${p} sha256 differs from ${LOCK}`);

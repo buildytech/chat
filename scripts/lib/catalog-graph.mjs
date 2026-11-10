@@ -433,7 +433,7 @@ export function deriveSnapshot(graph, policy) {
 			group: screen.group,
 			order: screen.order,
 			preview: screen.preview,
-			labels: { type: labels.type ?? [], section: labels.section ?? [], job: labels.job ?? [], blocks: labels.blocks ?? [], industry: labels.industry ?? [] },
+			labels: { type: labels.type ?? [], site: labels.site ?? [], section: labels.section ?? [], job: labels.job ?? [], blocks: labels.blocks ?? [], industry: labels.industry ?? [] },
 			added: screen.added,
 			missingFacets: screen.missing,
 			layout
@@ -468,7 +468,7 @@ export function deriveSnapshot(graph, policy) {
 		sourceVersion: stock.assetsVersion,
 		counts: { screen: screens.length, upstreamBlock: graph.catalog.assetCounts.block, upstreamScreen: graph.catalog.assetCounts.screen },
 		pageSize: policy.pageSize,
-		facetVocabulary: { type: [...policy.assetTypes], section: sortedValues("section"), job: sortedValues("job") },
+		facetVocabulary: { type: [...policy.assetTypes], site: sortedValues("site"), section: sortedValues("section"), job: sortedValues("job") },
 		ownerFilters: policy.ownerFilters,
 		rendererKinds: policy.pageKinds,
 		screens,

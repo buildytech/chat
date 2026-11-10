@@ -1,5 +1,7 @@
 export type CatalogFacetFilter = {
 	type?: "screen" | "block";
+	/** Site type facet value (landing, website, app, ...) from the catalog vocabulary. */
+	site?: string;
 	section?: string;
 	job?: string;
 	/** Industry facet value from the catalog vocabulary. */
@@ -22,6 +24,7 @@ export type CatalogScreen = {
 	preview: unknown;
 	labels: {
 		type: string[];
+		site: string[];
 		section: string[];
 		job: string[];
 		blocks: string[];
@@ -60,7 +63,7 @@ export type CatalogSnapshot = {
 	sourceVersion: string;
 	counts: { screen: number; upstreamBlock?: number; upstreamScreen?: number };
 	pageSize: number;
-	facetVocabulary: { type: string[]; section: string[]; job: string[] };
+	facetVocabulary: { type: string[]; site: string[]; section: string[]; job: string[] };
 	ownerFilters: Record<string, CatalogFacetFilter>;
 	rendererKinds: string[];
 	rendererMap: Record<string, string>;
@@ -85,7 +88,7 @@ export type SearchResult = {
 	total: number;
 	pageCount: number;
 	items: Array<CatalogScreen & { compatibility: ScreenCompatibility; score?: number; matched?: string[]; via?: string; missingBlocks?: string[] }>;
-	vocabulary: { type: string[]; section: string[]; job: string[] };
+	vocabulary: { type: string[]; site: string[]; section: string[]; job: string[] };
 	noFit: boolean;
 	code?: "catalog_facet_unknown";
 	/** Unsupported Stock screens that matched (exist in Stock, not renderable here). */
@@ -93,6 +96,6 @@ export type SearchResult = {
 	/** Query tokens that matched no catalog term, with the nearest catalog terms. */
 	nearest?: Record<string, string[]>;
 	clarification?: string;
-	suggested?: Array<{ section?: string; job?: string; reason: string }>;
-	misplaced?: { used: "section" | "job"; value: string; tryFacet: "section" | "job" };
+	suggested?: Array<{ site?: string; section?: string; job?: string; reason: string }>;
+	misplaced?: { used: "site" | "section" | "job"; value: string; tryFacet: "section" | "job" };
 };

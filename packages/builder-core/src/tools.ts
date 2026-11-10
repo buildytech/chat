@@ -48,7 +48,7 @@ export type CompactSearchItem = {
 	mappedKinds: string[];
 	supported: boolean;
 	missing: string[];
-	labels: { section: string[]; job: string[]; blocks: string[] };
+	labels: { site: string[]; section: string[]; job: string[]; blocks: string[] };
 	/** Text-match score and the query tokens that matched (q searches only). */
 	score?: number;
 	matched?: string[];
@@ -87,7 +87,7 @@ function compactItem(item: SearchResult["items"][number]): CompactSearchItem {
 		mappedKinds: support.mappedKinds,
 		supported: support.supported,
 		missing: support.missing,
-		labels: { section: item.labels.section, job: item.labels.job, blocks: item.labels.blocks },
+		labels: { site: item.labels.site, section: item.labels.section, job: item.labels.job, blocks: item.labels.blocks },
 		...(item.score ? { score: Math.round(item.score * 10) / 10, matched: item.matched } : {}),
 		...(item.via ? { via: item.via } : {}),
 		...(item.missingBlocks?.length ? { missingBlocks: item.missingBlocks } : {})
@@ -240,6 +240,7 @@ export function executeTool(
 		const blocks = Array.isArray(args.blocks) ? args.blocks.filter((b): b is string => typeof b === "string" && b.length > 0).slice(0, 6) : undefined;
 		const result = searchCatalog({
 			type: "screen",
+			site: typeof args.site === "string" && args.site ? args.site : undefined,
 			section: typeof args.section === "string" && args.section ? args.section : undefined,
 			job: typeof args.job === "string" && args.job ? args.job : undefined,
 			industry: typeof args.industry === "string" && args.industry ? args.industry : undefined,
@@ -376,13 +377,8 @@ export function runConstructorTools(ctx: ProposalContext): LayoutProposal | Layo
 	};
 	const search = executeTool({
 		name: "search_catalog",
-		arguments: scenarioId === "dashboard"
-			? { section: "dashboard" }
-			: scenarioId === "landing"
-				? { section: "marketing" }
-				: scenarioId === "website"
-					? { job: "hero" }
-					: {}
+		// The scenario's own Stock facets (catalog/policy.v0.json ownerFilters), without the asset type the tool fixes.
+		arguments: scenarioId ? Object.fromEntries(Object.entries(OWNER_FILTERS[scenarioId]).filter(([facet]) => facet !== "type")) : {}
 	}, host);
 	if (!search.ok) return { ok: false, code: search.code, message: search.message };
 	const found = search.result as SearchResult;

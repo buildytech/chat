@@ -42,6 +42,7 @@ blocks (`site/pricing` without its tiers, `site/notfound`).
   (`site/pricing`, `theme-marketing-landing/home`, `/studio`, `/events`, `theme-support-center/faq` added).
 - Landing and Website seeds pick `theme-marketing-landing/home` (logos, features, steps, stats, testimonials, FAQ).
   Website has no own facet yet: its owner filter stays `job: hero`. A site-type / intent facet in Stock is the fix
-  (chaosbun#146), not a word list here.
+  (chaosbun#146), not a word list here. Done 2026-11-10: owner filters use the Stock `site` facet (ADR 0012
+  addendum); Website now picks `theme-marketing-landing/studio`.
 - Still without a kind: 78 Stock blocks (authpage, newsletter, products, posts, article, ...). Their screens are
   reported as not renderable instead of rendering a hollow page.

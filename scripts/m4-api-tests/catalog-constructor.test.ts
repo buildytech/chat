@@ -32,7 +32,7 @@ test("production snapshot is pinned codegen-x Stock, not a synthetic TEST fixtur
 	assert.equal(raw.provider, "codegen-x");
 	assert.equal(raw.repo, "codegen-x/ui8kit");
 	assert.equal(raw.sourceArtifact, "apps/stock/content/assets.v0.json");
-	assert.equal(raw.sourceDigest, "sha256:a9d256e6935c6a8d579f86d634eebb46dfe36cacd02d9e4e2a0fdce4ff41664a");
+	assert.equal(raw.sourceDigest, "sha256:78a567cf1d0f50fda913d409197455d368260a91974c7a601fd297e57f8397d7");
 	assert.equal(raw.counts.screen, 80);
 	assert.equal(raw.screens.length, 80);
 	assert.equal(catalogSnapshot.screens.length, 80);
@@ -67,8 +67,14 @@ test("search_catalog uses bounded Stock facet enums; hero is a job not a section
 
 	const dashboard = searchCatalog({ section: OWNER_FILTERS.dashboard.section });
 	assert.ok(dashboard.total > 0);
-	const landing = searchCatalog({ section: OWNER_FILTERS.landing.section });
+	const landing = searchCatalog({ site: OWNER_FILTERS.landing.site });
 	assert.ok(landing.total > 0);
+	assert.ok(landing.items.every((item) => item.labels.site.includes("landing")));
+	const website = searchCatalog({ site: OWNER_FILTERS.website.site });
+	assert.ok(website.total > 0);
+	assert.ok(website.items.every((item) => item.labels.site.includes("website")));
+	const unknownSite = searchCatalog({ site: "nowhere" });
+	assert.equal(unknownSite.code, "catalog_facet_unknown");
 });
 
 test("owner filters match the pinned snapshot and paginate at 12", () => {
@@ -379,7 +385,8 @@ test("search ranks supported screens and rejects hollow commerce shop for websit
 	assert.equal(shop.ok, false);
 	if (!shop.ok) {
 		assert.ok(shop.code === "screen_not_renderable" || shop.code === "scenario_screen_mismatch");
-		assert.ok(shop.suggestedScreenIds?.includes("screen.theme-marketing-landing/home"));
+		// Website suggestions are site=website screens that render (Stock site type facet).
+		assert.ok(shop.suggestedScreenIds?.includes("screen.theme-marketing-landing/studio"), String(shop.suggestedScreenIds));
 	}
 });
 
@@ -490,12 +497,13 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 	});
 	assert.equal(site.ok, true);
 	if (site.ok) {
-		assert.equal(site.provenance.screenId, "screen.theme-marketing-landing/home");
-		// Catalog provenance gate: the picked screen has no menu or hours Stock block, so they are
-		// reported as missing instead of invented.
-		assert.ok(!site.page.layout.blocks.some((block) => block.kind === "menu"));
+		// site=website ranks the restaurant site's menu page (it has the menu block the author asked for).
+		assert.equal(site.provenance.screenId, "screen.theme-restaurant-house/menu");
+		// Catalog provenance gate: the picked screen has no hours Stock block, so it is reported as
+		// missing instead of invented.
+		assert.ok(site.page.layout.blocks.some((block) => block.kind === "menu"));
 		assert.ok(!site.page.layout.blocks.some((block) => block.kind === "hours"));
-		assert.ok(site.missing.includes("menu"));
+		assert.ok(!site.missing.includes("menu"));
 		assert.ok(site.missing.includes("hours"));
 		assert.ok(site.page.layout.blocks.some((block) => block.kind === "nav"));
 		assert.ok(site.page.layout.blocks.some((block) => block.kind === "footer"));
@@ -508,7 +516,7 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 test("site.home layout is nav, hero, features, cta, footer", () => {
 	const page = proposeLayout({
 		brief: "Create a landing page named Harbor",
-		scenarioId: "landing",
+		scenarioId: "website",
 		screenId: "screen.site/home",
 		expectedRevision: 0,
 		now: "2026-11-08T00:00:00.000Z"
@@ -525,7 +533,7 @@ test("site.home layout is nav, hero, features, cta, footer", () => {
 test("follow-up applies the model's typed headline edit and keeps other blocks", () => {
 	const first = proposeLayout({
 		brief: "Create a New Year landing page for Barbecue at Home, a grill food delivery restaurant.",
-		scenarioId: "landing",
+		scenarioId: "website",
 		screenId: "screen.site/home",
 		expectedRevision: 0,
 		now: "2026-11-08T00:00:00.000Z"
@@ -535,7 +543,7 @@ test("follow-up applies the model's typed headline edit and keeps other blocks",
 	const footer = first.page.layout.blocks.find((block) => block.kind === "footer");
 	const follow = proposeLayout({
 		brief: "Change only the hero headline to New Year Grill Delivery. Keep all other sections and their content unchanged.",
-		scenarioId: "landing",
+		scenarioId: "website",
 		screenId: "screen.site/home",
 		expectedRevision: 1,
 		currentPage: first.page,
@@ -617,7 +625,7 @@ test("missing-renderer warnings name blocks without a Page DTO kind; site/pricin
 	}
 	const pricing = proposeLayout({
 		brief: "Create a pricing page",
-		scenarioId: "landing",
+		scenarioId: "website",
 		screenId: "screen.site/pricing",
 		expectedRevision: 0,
 		now: "2026-11-08T00:00:00.000Z"

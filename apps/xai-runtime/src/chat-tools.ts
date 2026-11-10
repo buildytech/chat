@@ -43,7 +43,7 @@ const SYSTEM = [
 	"Use only these application tools: search_catalog, get_block_details, propose_layout, edit_page, get_skill. Do not call search_blocks or propose_page.",
 	"When the author asks to create or change the page, use the tools and finish with propose_layout or edit_page; the host turns that into a proposal the author applies. When the author only asks a question, wants to talk, or says not to change the page, answer in text in their language and call no page tool: a text answer creates no proposal and changes nothing.",
 	"The author may write in any language. You translate their words into the Stock catalog vocabulary yourself; the host never guesses intent from words.",
-	"search_catalog: q is free text in catalog terms (English words from catalog titles, labels and facet values, e.g. shell, sidenav, console, tasks); section, job, industry are facet enums; blocks lists catalog block labels a screen must contain. The payload field catalogVocabulary lists sections, jobs, industries and block labels with titles.",
+	"search_catalog: q is free text in catalog terms (English words from catalog titles, labels and facet values, e.g. shell, sidenav, console, tasks); site (landing, website, app, docs, shop, blog), section, job, industry are facet enums; blocks lists catalog block labels a screen must contain. The payload field catalogVocabulary lists site types, sections, jobs, industries and block labels with titles.",
 	"Pick from the returned items (pick, score, matched, via). unrenderable lists matching screens the renderer cannot show yet; via names the renderable sibling that was offered instead.",
 	"If search_catalog returns no items, noFit or catalog_facet_unknown, re-query once with the returned nearest terms or vocabulary. Do not propose an empty page.",
 	"scenarioSeed is present only when the author attached a scenario in the UI; you may propose its pick without searching unless the author asked for specific blocks.",
@@ -95,6 +95,7 @@ function compactVocabulary(): Record<string, unknown> {
 	const vocab = searchVocabulary();
 	const facets = facetVocabulary();
 	VOCABULARY_CACHE = {
+		site: facets.site,
 		section: facets.section,
 		job: facets.job,
 		industry: (vocab.industry ?? []).map((entry) => entry.id),

@@ -3,12 +3,12 @@
 	"version": 0,
 	"pageSize": 12,
 	"assetTypes": ["screen", "block"],
-	"searchFacets": ["section", "job", "industry", "role", "composition", "character", "density", "media", "slots", "tone"],
+	"searchFacets": ["site", "section", "job", "industry", "role", "composition", "character", "density", "media", "slots", "tone"],
 	"ownerFilters": {
 		"blank": { "type": "screen" },
 		"dashboard": { "type": "screen", "section": "dashboard" },
-		"landing": { "type": "screen", "section": "marketing" },
-		"website": { "type": "screen", "job": "hero" }
+		"landing": { "type": "screen", "site": "landing" },
+		"website": { "type": "screen", "site": "website" }
 	},
 	"pageKinds": ["activity", "bottomnav", "chart", "cta", "dish", "feature", "features", "footer", "hero", "hours", "menu", "metric", "metrics", "nav", "nav-link", "overview", "pagehead", "sidenav"],
 	"pageKindOfBlock": {
