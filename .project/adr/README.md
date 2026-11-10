@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Нумерация: `NNNN-kebab-title.md`. Номера монотонно возрастают, файлы не переименовываем.
+Numbering: `NNNN-kebab-title.md`. Numbers only increase; files are never renamed.
 
 | ADR | Title | Status |
 | --- | --- | --- |
