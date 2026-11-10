@@ -32,6 +32,14 @@
 	const column = $derived(creatorLayout.inspectorColumn);
 	const inspectorCollapsed = $derived(creatorLayout.collapsed("inspector"));
 
+	// The sheet is a non-modal native dialog: Escape closes it here.
+	function onWindowKey(event: KeyboardEvent) {
+		if (sheetOpen && event.key === "Escape") {
+			event.preventDefault();
+			sheetOpen = false;
+		}
+	}
+
 	function onDownloadZip() {
 		const page = getCurrentPage();
 		if (!page) return;
@@ -43,6 +51,8 @@
 		else sheetOpen = !sheetOpen;
 	}
 </script>
+
+<svelte:window onkeydown={onWindowKey} />
 
 <Block
 	tag="section"

@@ -16,3 +16,15 @@ export function shortcutFor(event: KeyLike): ShortcutAction | null {
 	if (event.code === "Backslash") return "focus";
 	return null;
 }
+
+/**
+ * The preview frame is its own document, so its key events never reach the chat window. Re-dispatch a layout
+ * shortcut pressed inside the frame on the chat window (same key, same modifiers); other keys stay in the frame.
+ */
+export function forwardShortcut(event: KeyboardEvent, to: Pick<EventTarget, "dispatchEvent">): boolean {
+	if (!shortcutFor(event)) return false;
+	event.preventDefault();
+	const { key, code, ctrlKey, metaKey, altKey, shiftKey } = event;
+	to.dispatchEvent(new KeyboardEvent("keydown", { key, code, ctrlKey, metaKey, altKey, shiftKey, bubbles: true, cancelable: true }));
+	return true;
+}

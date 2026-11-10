@@ -20,7 +20,7 @@ import {
 	type LayoutPrefs
 } from "../../apps/chat-web/src/lib/layout/prefs.ts";
 import { loadLayout, saveLayout } from "../../apps/chat-web/src/lib/layout/prefs-store.ts";
-import { shortcutFor } from "../../apps/chat-web/src/lib/layout/shortcuts.ts";
+import { forwardShortcut, shortcutFor } from "../../apps/chat-web/src/lib/layout/shortcuts.ts";
 import { readQuarantine, STORAGE_KEYS } from "../../apps/chat-web/src/lib/browser/storage-v1.ts";
 import { sessionFileIssues } from "../../packages/page-contract/src/session.ts";
 
@@ -165,4 +165,33 @@ test("session file prefs (1.2.0): the stored layout is schema-valid; out-of-rang
 	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { layout: { chatWidth: 1.5 } } }), []);
 	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { layout: { dock: "left" } } }), []);
 	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { theme: "dark" } }), []);
+});
+
+test("shortcuts: a layout shortcut pressed inside the preview frame is re-dispatched on the chat window; other keys stay", () => {
+	const g = globalThis as { KeyboardEvent?: unknown };
+	const had = g.KeyboardEvent;
+	g.KeyboardEvent ??= class extends Event {
+		constructor(type: string, init: Record<string, unknown> = {}) {
+			super(type, init);
+			const { bubbles: _b, cancelable: _c, ...keys } = init;
+			Object.assign(this, keys);
+		}
+	};
+	try {
+		const sent: KeyboardEvent[] = [];
+		const to = { dispatchEvent: (e: Event) => (sent.push(e as KeyboardEvent), true) };
+		let prevented = 0;
+		const key = (code: string, mods: Partial<KeyboardEvent> = {}) =>
+			({ key: "x", code, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false, target: null, preventDefault: () => prevented++, ...mods }) as unknown as KeyboardEvent;
+		assert.equal(forwardShortcut(key("KeyB", { ctrlKey: true }), to), true);
+		assert.equal(forwardShortcut(key("Backslash", { metaKey: true }), to), true);
+		assert.equal(forwardShortcut(key("KeyZ", { ctrlKey: true }), to), false, "undo stays with the frame handler");
+		assert.equal(forwardShortcut(key("KeyB"), to), false);
+		assert.equal(sent.length, 2);
+		assert.equal(prevented, 2);
+		assert.equal(shortcutFor(sent[0]!), "chat");
+		assert.equal(shortcutFor(sent[1]!), "focus");
+	} finally {
+		if (had === undefined) delete g.KeyboardEvent;
+	}
 });

@@ -37,6 +37,7 @@
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
 	import { previewWindowUrl } from "$lib/browser/preview-settings";
 	import { getBoundPageSessionId } from "$lib/page-store";
+	import { forwardShortcut } from "$lib/layout/shortcuts";
 
 	const page = $derived(getCurrentPage());
 	const savedRevision = $derived(getPageRevision());
@@ -104,6 +105,8 @@
 		mounted = mount(PreviewFrame, { target: doc.body, props: { frame } });
 		// Undo / redo of inspector edits also while focus is inside the preview frame.
 		doc.addEventListener("keydown", inspector.onKey);
+		// Layout shortcuts (Ctrl+B / Ctrl+I / Ctrl+\) also while focus is inside the frame (ADR 0017).
+		doc.addEventListener("keydown", (event) => forwardShortcut(event, window));
 		frameDoc = doc;
 	}
 
