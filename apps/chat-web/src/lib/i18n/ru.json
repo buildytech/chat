@@ -205,6 +205,19 @@
 		"ask.apply.unknown_block": "{block} нет в закреплённом каталоге Stock.",
 		"settings.hidePreviewLabels": "Скрыть служебные метки в Preview",
 		"preview.standaloneTitle": "Предпросмотр",
-		"preview.standaloneEmpty": "В этом чате ещё нет страницы. Создайте её в чате и откройте предпросмотр снова."
+		"preview.standaloneEmpty": "В этом чате ещё нет страницы. Создайте её в чате и откройте предпросмотр снова.",
+		"inspector.title": "Инспектор",
+		"inspector.empty": "Выберите секцию в превью или в дереве.",
+		"inspector.stub.not_in_registry": "У этой секции нет блока в реестре, поэтому нет полей схемы. Здесь ничего не придумывается.",
+		"inspector.stub.no_schema": "У блока этой секции в реестре нет опубликованной схемы props. Здесь ничего не придумывается.",
+		"inspector.fromVariant": "Задано вариантом {variant}",
+		"inspector.unset": "Не задано",
+		"inspector.more": "Остальные props схемы ({count})",
+		"inspector.rows": "Строк: {count}",
+		"inspector.row": "Строка {n}",
+		"inspector.noRows": "Строк нет",
+		"inspector.allowed": "Допустимо: {list}.",
+		"inspector.iconHint": "Имя иконки Lucide из контракта",
+		"inspector.closest": "Ближайшие допустимые значения"
 	}
 }

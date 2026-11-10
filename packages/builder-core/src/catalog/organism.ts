@@ -11,7 +11,7 @@
  * a variant (an action href), the variant sets the layout axes. The props gate (props-gate.ts) validates the result.
  */
 import raw from "./sources.json" with { type: "json" };
-import type { PageBlock } from "@buildytech/page-contract";
+import { PAGE_SLOTS, type PageBlock, type PageBlockKind } from "@buildytech/page-contract";
 import type { CatalogSources } from "./sources.ts";
 import { fillProps, propShapeFor, propsEventsFor, type PropShape } from "./props-schema.ts";
 
@@ -197,6 +197,39 @@ export function organismFor(block: PageBlock): OrganismRender | null {
 	const props = fillProps(hit.item, merged);
 	const { events, slots } = propsEventsFor(hit.item);
 	return { catalogBlock: block.catalogBlock, item: hit.item, organism: source.organism, variant: hit.variant, props, origins, events, slots };
+}
+
+/** Page-spec fields a prop can be written back to: a block or row title / summary or a copy key. */
+const WRITABLE_ORIGIN = /^(?:children\[\d+\]\.)*(?:title|summary|copy\.[a-z]+)$/;
+
+function slotCopy(kind: PageBlockKind): readonly string[] {
+	return (PAGE_SLOTS[kind]?.copy ?? []) as readonly string[];
+}
+
+/**
+ * The page-spec field a prop of the block's render is written back to (the inverse of the mapping above), or null
+ * when the prop is not page content (a variant axis, a schema default, an id). A prop that has content today keeps
+ * its origin; an empty one is writable when the mapping above would read it: a top-level text prop that names a
+ * copy key the block kind renders (`eyebrow`, `badge`, ...), or the icon of a row whose kind renders `copy.icon`.
+ */
+export function writableOrigin(block: PageBlock, render: Pick<OrganismRender, "item" | "origins">, pointer: string): string | null {
+	const known = render.origins[pointer];
+	if (known) return WRITABLE_ORIGIN.test(known) ? known : null;
+	const parts = pointer.split("/").slice(1);
+	if (parts.length === 3 && /^\d+$/.test(parts[1]!) && parts[2] === "icon") {
+		const row = render.origins[`/${parts[0]}/${parts[1]}`];
+		const index = row ? /^children\[(\d+)\]$/.exec(row)?.[1] : undefined;
+		const child = index !== undefined ? block.children?.[Number(index)] : undefined;
+		const shape = propShapeFor(render.item);
+		const iconField = shape?.lists[parts[0]!]?.record.icon === "icon";
+		return child && iconField && slotCopy(child.kind).includes("icon") ? `${row}.copy.icon` : null;
+	}
+	if (parts.length === 1) {
+		const key = COPY_FIELDS[parts[0]!];
+		const shape = propShapeFor(render.item);
+		if (key && shape?.text.includes(parts[0]!) && slotCopy(block.kind).includes(key)) return `copy.${key}`;
+	}
+	return null;
 }
 
 /** npm packages the registry tree imports (clsx, tailwind-merge; svelte is the framework). */

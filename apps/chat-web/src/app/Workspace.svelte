@@ -6,6 +6,7 @@
 	import { downloadPageZip, getCurrentPage, getSelectedBlockId } from "$lib/page-store";
 	import BlockTree from "./BlockTree.svelte";
 	import CodePane from "./CodePane.svelte";
+	import InspectorPanel from "./InspectorPanel.svelte";
 	import PreviewPane from "./PreviewPane.svelte";
 	import WorkspaceHead from "./WorkspaceHead.svelte";
 
@@ -47,6 +48,9 @@
 				<BlockTree />
 			{/if}
 			<PreviewPane />
+			{#if build}
+				<InspectorPanel />
+			{/if}
 		</Group>
 	{:else}
 		<CodePane />

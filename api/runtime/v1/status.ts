@@ -25124,6 +25124,31 @@ function propShapeFor(item: string): PropShape | null {
 	return shape;
 }
 
+/** One prop of a block schema as a tree: its kind, whether it is required, enum values and nested fields. */
+function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
+	const value = valueOf(node);
+	const properties = isObject(value.properties) ? (value.properties as Record<string, JsonSchema>) : {};
+	const required = Array.isArray(value.required) ? (value.required as string[]) : [];
+	return Object.entries(properties).map(([name, inner]) => {
+		const kind = kindOf(inner);
+		const target = valueOf(inner);
+		const out: PropsFieldNode = { name, kind, required: required.includes(name) };
+		if (kind === "enum") out.enum = (target.enum as unknown[]).map(String);
+		if (kind === "text" && typeof target.maxLength === "number") out.maxLength = target.maxLength;
+		if (depth < 6 && kind === "object") out.fields = fieldTree(inner, depth + 1);
+		if (depth < 6 && kind === "list" && isObject(target.items) && kindOf(target.items as JsonSchema) === "object") {
+			out.fields = fieldTree(target.items as JsonSchema, depth + 1);
+		}
+		return out;
+	});
+}
+
+/** Every prop of a registry block's published schema as a field tree (schema order), or null without a schema. */
+function propsFieldTree(item: string): PropsFieldNode[] | null {
+	const schema = props.items[item]?.schema;
+	return schema ? fieldTree(schema, 0) : null;
+}
+
 /** "addToCart" -> "Add to cart": a readable placeholder for a required label the content does not fill. */
 function humanize(name: string): string {
 	const words = name.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[-_]/g, " ").toLowerCase();
@@ -25218,6 +25243,7 @@ exports["propsEventsFor"] = propsEventsFor;
 exports["lucideIcons"] = lucideIcons;
 exports["refShapeDefs"] = refShapeDefs;
 exports["propShapeFor"] = propShapeFor;
+exports["propsFieldTree"] = propsFieldTree;
 exports["fillProps"] = fillProps;
 exports["propsSummaryFor"] = propsSummaryFor;
 
@@ -25802,6 +25828,7 @@ exports["contentCopyFields"] = contentCopyFields;
 
 __def("packages/builder-core/src/catalog/organism.ts", function (exports) {
 const raw = __req("packages/builder-core/src/catalog/sources.json").default;
+const { PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
 const { fillProps, propShapeFor, propsEventsFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const sources = raw as unknown as CatalogSources;
 
@@ -25972,6 +25999,39 @@ function organismFor(block: PageBlock): OrganismRender | null {
 	return { catalogBlock: block.catalogBlock, item: hit.item, organism: source.organism, variant: hit.variant, props, origins, events, slots };
 }
 
+/** Page-spec fields a prop can be written back to: a block or row title / summary or a copy key. */
+const WRITABLE_ORIGIN = /^(?:children\[\d+\]\.)*(?:title|summary|copy\.[a-z]+)$/;
+
+function slotCopy(kind: PageBlockKind): string[] {
+	return (PAGE_SLOTS[kind]?.copy ?? []) as string[];
+}
+
+/**
+ * The page-spec field a prop of the block's render is written back to (the inverse of the mapping above), or null
+ * when the prop is not page content (a variant axis, a schema default, an id). A prop that has content today keeps
+ * its origin; an empty one is writable when the mapping above would read it: a top-level text prop that names a
+ * copy key the block kind renders (`eyebrow`, `badge`, ...), or the icon of a row whose kind renders `copy.icon`.
+ */
+function writableOrigin(block: PageBlock, render: Pick<OrganismRender, "item" | "origins">, pointer: string): string | null {
+	const known = render.origins[pointer];
+	if (known) return WRITABLE_ORIGIN.test(known) ? known : null;
+	const parts = pointer.split("/").slice(1);
+	if (parts.length === 3 && /^\d+$/.test(parts[1]!) && parts[2] === "icon") {
+		const row = render.origins[`/${parts[0]}/${parts[1]}`];
+		const index = row ? /^children\[(\d+)\]$/.exec(row)?.[1] : undefined;
+		const child = index !== undefined ? block.children?.[Number(index)] : undefined;
+		const shape = propShapeFor(render.item);
+		const iconField = shape?.lists[parts[0]!]?.record.icon === "icon";
+		return child && iconField && slotCopy(child.kind).includes("icon") ? `${row}.copy.icon` : null;
+	}
+	if (parts.length === 1) {
+		const key = COPY_FIELDS[parts[0]!];
+		const shape = propShapeFor(render.item);
+		if (key && shape?.text.includes(parts[0]!) && slotCopy(block.kind).includes(key)) return `copy.${key}`;
+	}
+	return null;
+}
+
 /** npm packages the registry tree imports (clsx, tailwind-merge; svelte is the framework). */
 const registryNpmDependencies: string[] = sources.npmDependencies;
 
@@ -26015,6 +26075,7 @@ function registryItemClosure(items: string[]): string[] {
 
 exports["registryItemFor"] = registryItemFor;
 exports["organismFor"] = organismFor;
+exports["writableOrigin"] = writableOrigin;
 exports["registryNpmDependencies"] = registryNpmDependencies;
 exports["registryInitItems"] = registryInitItems;
 exports["registryClosure"] = registryClosure;
@@ -27133,6 +27194,94 @@ function askBlockCards(specs: unknown[] | undefined): AskBlockCard[] {
 exports["isAgentTextReply"] = isAgentTextReply;
 exports["agentTextReply"] = agentTextReply;
 exports["askBlockCards"] = askBlockCards;
+
+});
+
+__def("packages/builder-core/src/inspector.ts", function (exports) {
+const { organismFor, writableOrigin } = __req("packages/builder-core/src/catalog/organism.ts");
+const { propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { catalogVariantsFor } = __req("packages/builder-core/src/catalog/sources.ts");
+const HIDDEN = new Set(["id", "class", "className"]);
+/** Page-spec origins of long text (a summary / lede) get a multi-line widget. */
+const LONG_ORIGIN = /(?:^|\.)(?:summary|copy\.lede)$/;
+const LONG_TEXT = 200;
+
+function valueAt(data: unknown, pointer: string): unknown {
+	let current = data;
+	for (const part of pointer.split("/").slice(1)) {
+		if (current === null || typeof current !== "object") return undefined;
+		current = (current as Record<string, unknown>)[part];
+	}
+	return current;
+}
+
+function widgetFor(node: PropsFieldNode, origin: string | null): InspectorWidget {
+	switch (node.kind) {
+		case "text":
+			return (origin && LONG_ORIGIN.test(origin)) || (node.maxLength ?? 0) > LONG_TEXT ? "longtext" : "text";
+		case "icon":
+		case "enum":
+		case "boolean":
+		case "number":
+		case "object":
+			return node.kind;
+		case "list":
+			return node.fields ? "list" : "other";
+		default:
+			return "other";
+	}
+}
+
+function fieldsOf(block: PageBlock, render: OrganismRender, nodes: PropsFieldNode[], base: string, hidden: ReadonlySet<string>): InspectorField[] {
+	const out: InspectorField[] = [];
+	for (const node of nodes) {
+		if (HIDDEN.has(node.name) || hidden.has(node.name)) continue;
+		const pointer = `${base}/${node.name}`;
+		const origin = writableOrigin(block, render, pointer);
+		const field: InspectorField = {
+			pointer,
+			name: node.name,
+			widget: widgetFor(node, origin),
+			required: node.required,
+			value: valueAt(render.props, pointer),
+			origin
+		};
+		if (node.enum) field.options = node.enum;
+		if (node.maxLength !== undefined) field.maxLength = node.maxLength;
+		if (field.widget === "object" && node.fields) field.fields = fieldsOf(block, render, node.fields, pointer, new Set());
+		if (field.widget === "list" && node.fields) {
+			const rows = Array.isArray(field.value) ? field.value : [];
+			field.rows = rows.map((_, index) => {
+				const at = `${pointer}/${index}`;
+				const row = render.origins[at];
+				return { pointer: at, origin: row && /^children\[\d+\]$/.test(row) ? row : null, fields: fieldsOf(block, render, node.fields!, at, new Set()) };
+			});
+		}
+		out.push(field);
+	}
+	return out;
+}
+
+/** The inspector fields of a page block, or an honest stub when it has no registry item or no published schema. */
+function inspectorModel(block: PageBlock): InspectorModel {
+	const head = { blockId: block.id, kind: block.kind, title: block.title };
+	const render = organismFor(block);
+	if (!render) return { ok: false, ...head, reason: "not_in_registry" };
+	const tree = propsFieldTree(render.item);
+	if (!tree) return { ok: false, ...head, reason: "no_schema" };
+	const { events, slots } = propsEventsFor(render.item);
+	return {
+		ok: true,
+		...head,
+		catalogBlock: render.catalogBlock,
+		item: render.item,
+		variant: render.variant,
+		variants: catalogVariantsFor(render.catalogBlock),
+		fields: fieldsOf(block, render, tree, "", new Set([...events, ...slots]))
+	};
+}
+
+exports["inspectorModel"] = inspectorModel;
 
 });
 
@@ -30363,12 +30512,15 @@ exports["registryInitItems"] = __req("packages/builder-core/src/catalog/organism
 exports["registryItemClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemClosure"];
 exports["registryItemFor"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFor"];
 exports["registryNpmDependencies"] = __req("packages/builder-core/src/catalog/organism.ts")["registryNpmDependencies"];
+exports["writableOrigin"] = __req("packages/builder-core/src/catalog/organism.ts")["writableOrigin"];
+exports["inspectorModel"] = __req("packages/builder-core/src/inspector.ts")["inspectorModel"];
 exports["fillProps"] = __req("packages/builder-core/src/catalog/props-schema.ts")["fillProps"];
 exports["hasPropsSchema"] = __req("packages/builder-core/src/catalog/props-schema.ts")["hasPropsSchema"];
 exports["lucideIcons"] = __req("packages/builder-core/src/catalog/props-schema.ts")["lucideIcons"];
 exports["propShapeFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propShapeFor"];
 exports["propsDigest"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsDigest"];
 exports["propsEventsFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsEventsFor"];
+exports["propsFieldTree"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsFieldTree"];
 exports["propsItems"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsItems"];
 exports["propsSchemaFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsSchemaFor"];
 exports["propsSummaryFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsSummaryFor"];

@@ -315,6 +315,19 @@
 		"ask.apply.unknown_block": "{block} is not a block of the pinned Stock catalog.",
 		"settings.hidePreviewLabels": "Hide service labels in Preview",
 		"preview.standaloneTitle": "Preview",
-		"preview.standaloneEmpty": "This chat has no page yet. Create one in the chat, then open the preview again."
+		"preview.standaloneEmpty": "This chat has no page yet. Create one in the chat, then open the preview again.",
+		"inspector.title": "Inspector",
+		"inspector.empty": "Select a section in the preview or in the tree.",
+		"inspector.stub.not_in_registry": "This section has no registry block, so it has no schema fields. Nothing is invented here.",
+		"inspector.stub.no_schema": "The registry block of this section has no published props schema. Nothing is invented here.",
+		"inspector.fromVariant": "Set by the variant {variant}",
+		"inspector.unset": "Not set",
+		"inspector.more": "Other schema props ({count})",
+		"inspector.rows": "{count} rows",
+		"inspector.row": "Row {n}",
+		"inspector.noRows": "No rows",
+		"inspector.allowed": "Allowed: {list}.",
+		"inspector.iconHint": "A Lucide icon name of the contract",
+		"inspector.closest": "Closest allowed values"
 	}
 }

@@ -169,6 +169,43 @@ export function propShapeFor(item: string): PropShape | null {
 	return shape;
 }
 
+/** One prop of a block schema as a tree: its kind, whether it is required, enum values and nested fields. */
+export type PropsFieldNode = {
+	name: string;
+	kind: FieldKind;
+	required: boolean;
+	/** enum: the allowed values (layout axes and the like); the icon enum is lucideIcons(). */
+	enum?: string[];
+	/** text: the schema's maxLength, when it sets one. */
+	maxLength?: number;
+	/** object: its fields; list: the fields of one record (lists of plain values have none). */
+	fields?: PropsFieldNode[];
+};
+
+function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
+	const value = valueOf(node);
+	const properties = isObject(value.properties) ? (value.properties as Record<string, JsonSchema>) : {};
+	const required = Array.isArray(value.required) ? (value.required as string[]) : [];
+	return Object.entries(properties).map(([name, inner]) => {
+		const kind = kindOf(inner);
+		const target = valueOf(inner);
+		const out: PropsFieldNode = { name, kind, required: required.includes(name) };
+		if (kind === "enum") out.enum = (target.enum as unknown[]).map(String);
+		if (kind === "text" && typeof target.maxLength === "number") out.maxLength = target.maxLength;
+		if (depth < 6 && kind === "object") out.fields = fieldTree(inner, depth + 1);
+		if (depth < 6 && kind === "list" && isObject(target.items) && kindOf(target.items as JsonSchema) === "object") {
+			out.fields = fieldTree(target.items as JsonSchema, depth + 1);
+		}
+		return out;
+	});
+}
+
+/** Every prop of a registry block's published schema as a field tree (schema order), or null without a schema. */
+export function propsFieldTree(item: string): PropsFieldNode[] | null {
+	const schema = props.items[item]?.schema;
+	return schema ? fieldTree(schema, 0) : null;
+}
+
 /** "addToCart" -> "Add to cart": a readable placeholder for a required label the content does not fill. */
 function humanize(name: string): string {
 	const words = name.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[-_]/g, " ").toLowerCase();

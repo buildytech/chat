@@ -61,8 +61,10 @@ export {
 	registryItemClosure,
 	registryItemFor,
 	registryNpmDependencies,
+	writableOrigin,
 	type OrganismRender
 } from "./catalog/organism.ts";
+export { inspectorModel, type InspectorField, type InspectorModel, type InspectorWidget } from "./inspector.ts";
 export {
 	fillProps,
 	hasPropsSchema,
@@ -70,12 +72,14 @@ export {
 	propShapeFor,
 	propsDigest,
 	propsEventsFor,
+	propsFieldTree,
 	propsItems,
 	propsSchemaFor,
 	propsSummaryFor,
 	type FieldKind,
 	type JsonSchema,
-	type PropShape
+	type PropShape,
+	type PropsFieldNode
 } from "./catalog/props-schema.ts";
 export { contractFingerprint } from "./catalog/fingerprint.ts";
 export { clientProposalGate } from "./client-gate.ts";
