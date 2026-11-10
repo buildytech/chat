@@ -26,7 +26,6 @@ export {
 	catalogSourceFor,
 	catalogSources,
 	catalogVariantsFor,
-	isLucideIcon,
 	modelCatalogSources,
 	resolveCatalogChoice,
 	variantProps,
@@ -43,6 +42,20 @@ export {
 	registryNpmDependencies,
 	type OrganismRender
 } from "./catalog/organism.ts";
+export {
+	fillProps,
+	hasPropsSchema,
+	lucideIcons,
+	propShapeFor,
+	propsDigest,
+	propsEventsFor,
+	propsItems,
+	propsSchemaFor,
+	propsSummaryFor,
+	type FieldKind,
+	type JsonSchema,
+	type PropShape
+} from "./catalog/props-schema.ts";
 export { contractFingerprint } from "./catalog/fingerprint.ts";
 export { clientProposalGate } from "./client-gate.ts";
 export {
@@ -97,7 +110,11 @@ export {
 	screenFamily,
 	stockAssetUrl,
 	stockSearchUrl,
-	validateCatalogProvenance
+	validateCatalogProvenance,
+	setPropsValidator,
+	propsValidatorInstalled,
+	type PropsIssue,
+	type PropsValidator
 } from "./catalog/provenance.ts";
 export type {
 	CatalogBlockRef,

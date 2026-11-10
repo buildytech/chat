@@ -2,7 +2,8 @@ import { PAGE_BLOCK_KINDS, PAGE_COPY_KEYS, type PageBlockKind } from "@buildytec
 import { catalogProvenance, catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, getBlockIndexByCatalogId, rendererKindForLabel } from "./compatibility.ts";
 import { getScreenById } from "./search.ts";
-import { catalogSourceFor, catalogSources, catalogVariantsFor, variantProps } from "./sources.ts";
+import { catalogSourceFor, catalogVariantsFor, variantProps } from "./sources.ts";
+import { lucideIcons, propsSummaryFor } from "./props-schema.ts";
 
 export type BlockDetails = {
 	id: string;
@@ -27,8 +28,10 @@ export type BlockDetails = {
 		variantProps: Record<string, unknown>;
 		/** page-spec slot -> organism prop. */
 		slots: unknown;
-		/** Lucide names allowed in copy.icon / items[].icon. */
+		/** Lucide names allowed in copy.icon / items[].icon (the props schema's enum). */
 		icons: string[];
+		/** Rows, text props, events and slots from the published props schema. */
+		schema: Record<string, string>;
 	};
 };
 
@@ -113,7 +116,8 @@ export function getBlockDetails(input: {
 						defaultVariant: source.defaultVariant,
 						variantProps: variantProps(entry.spec, requested) ?? {},
 						slots: source.props,
-						icons: catalogSources.icons
+						icons: lucideIcons(),
+						schema: propsSummaryFor(source.item) ?? {}
 					}
 				}
 			: {})

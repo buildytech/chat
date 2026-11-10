@@ -4,7 +4,8 @@ import { getBlockIndex, rendererKindForLabel } from "./compatibility.ts";
 import { getScreenById } from "./search.ts";
 import { childKindFor } from "../content.ts";
 import type { CatalogScreen } from "./types.ts";
-import { catalogSourceFor, isLucideIcon, lucideIconHint, resolveCatalogChoice } from "./sources.ts";
+import { catalogSourceFor, resolveCatalogChoice } from "./sources.ts";
+import { organismFor, type OrganismRender } from "./organism.ts";
 
 /**
  * Program-level catalog provenance (deterministic code, never the model).
@@ -68,10 +69,89 @@ export type CatalogValidationError = {
 		| "catalog_block_kind_mismatch"
 		| "unknown_variant"
 		| "variant_without_catalog_block"
-		| "unknown_icon";
+		| "props_invalid"
+		| "props_gate_unavailable";
 	message: string;
 	path?: string;
+	/** props_invalid: what the published props schema rejected, in the block's own prop names. */
+	issues?: PropsIssue[];
 };
+
+/** One problem of the merged props of a registry block, as the published props schema reports it. */
+export type PropsIssue = {
+	/** JSON Pointer into the block props, e.g. /features/2/icon. */
+	pointer: string;
+	keyword: string;
+	message: string;
+	/** The value that was rejected, when there is one. */
+	value?: unknown;
+	/** enum: every allowed value (the icon enum of the contract, a layout axis). */
+	allowed?: unknown[];
+};
+
+/** Validates the merged props of a registry block against its published schema (props-gate.ts installs it). */
+export type PropsValidator = (render: OrganismRender) => PropsIssue[];
+
+let PROPS_VALIDATOR: PropsValidator | null = null;
+
+/**
+ * Install the props validator. The gate is fail-closed: a page with a registry block is rejected while none is
+ * installed (the browser loads props-gate.ts lazily before its first proposal; the runtime installs it at start).
+ */
+export function setPropsValidator(validator: PropsValidator | null): void {
+	PROPS_VALIDATOR = validator;
+}
+
+export function propsValidatorInstalled(): boolean {
+	return PROPS_VALIDATOR !== null;
+}
+
+function quote(value: unknown): string {
+	return typeof value === "string" ? JSON.stringify(value) : JSON.stringify(value) ?? String(value);
+}
+
+/** The page-block field a prop came from: the longest origin prefix of the pointer. */
+function originOf(render: OrganismRender, pointer: string): string | null {
+	let at = pointer;
+	while (at) {
+		if (render.origins[at]) return render.origins[at]!;
+		at = at.slice(0, Math.max(0, at.lastIndexOf("/")));
+	}
+	return null;
+}
+
+function issueText(issue: PropsIssue): string {
+	const where = issue.pointer || "(props)";
+	const value = issue.value !== undefined ? ` ${quote(issue.value)}` : "";
+	const allowed = issue.allowed?.length ? ` Allowed: ${issue.allowed.map(String).join(", ")}.` : "";
+	return `${where}${value}: ${issue.message}.${allowed}`;
+}
+
+/** Merged props (variant preset + page content + schema defaults) of a top-level block against its props schema. */
+function checkBlockProps(node: PageBlock, path: string): CatalogValidationError | null {
+	const render = organismFor(node);
+	if (!render) return null;
+	if (!PROPS_VALIDATOR) {
+		return {
+			ok: false,
+			code: "props_gate_unavailable",
+			message: `Block ${node.id} renders registry item ${render.item}, but the props schema gate is not loaded. Nothing was rendered.`,
+			path
+		};
+	}
+	const issues = PROPS_VALIDATOR(render);
+	if (!issues.length) return null;
+	const origin = originOf(render, issues[0]!.pointer);
+	return {
+		ok: false,
+		code: "props_invalid",
+		message: `Block ${node.id} (${node.kind}, registry ${render.item} variant ${render.variant}) does not match its published props schema${
+			origin ? ` at ${origin}` : ""
+		}: ${issues.slice(0, 3).map(issueText).join(" ")} Fix that field and call again. Nothing was rendered.`,
+		path: origin ? `${path}.${origin}` : path,
+		issues: issues.slice(0, 5)
+	};
+}
 
 function allowedChild(parent: PageBlockKind, child: PageBlockKind): boolean {
 	return childKindFor(parent) === child;
@@ -250,14 +330,6 @@ export function validateCatalogProvenance(input: {
 					path: `${path}.children[${ci}]`
 				};
 			}
-			if (child.copy?.icon !== undefined && !isLucideIcon(child.copy.icon)) {
-				return {
-					ok: false,
-					code: "unknown_icon",
-					message: `Row ${child.id}: ${child.copy.icon} is not a Lucide icon of the pinned registry snapshot. Use one of the allowed names or omit icon. ${lucideIconHint()}`,
-					path: `${path}.children[${ci}].copy.icon`
-				};
-			}
 			if (!allowedChild(node.kind, child.kind) || (child.children?.length ?? 0) > 0) {
 				return {
 					ok: false,
@@ -267,6 +339,8 @@ export function validateCatalogProvenance(input: {
 				};
 			}
 		}
+		const propsError = checkBlockProps(node, path);
+		if (propsError) return propsError;
 		const facets: Array<[string, string]> = [
 			["type", "block"],
 			["spec", entry.spec]

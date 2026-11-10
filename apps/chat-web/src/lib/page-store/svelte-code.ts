@@ -33,16 +33,27 @@ function jsonProps(value: unknown): string {
 	return JSON.stringify(value, null, "\t").replace(/</g, "\\u003c").split("\n").join("\n\t");
 }
 
+/**
+ * Events and slots of the block come from its published props schema (`events`, `slots` next to `schema`): they are
+ * not data, so the section wires each event to a handler stub the project fills in and names the slots it may pass.
+ */
 function sectionForRegistry(render: OrganismRender): string {
 	const ident = organismIdent(render.organism);
+	const handlers = render.events.map((event) => `on${event}`);
+	const wiring = handlers.length
+		? `\n\n\t// Events of ${render.item} (registry props schema): connect them to the app.\n${handlers
+				.map((name) => `\tfunction ${name}(...args: unknown[]): void {\n\t\tvoid args;\n\t}`)
+				.join("\n")}`
+		: "";
+	const slots = render.slots.length ? `\n<!-- Slots of ${render.item}: ${render.slots.join(", ")} (Svelte snippets, optional). -->` : "";
 	return `<!-- ${render.catalogBlock} / ${render.variant}: UI8Kit registry block ${render.item} (npx ui8kit add ${render.item}). -->
 <script lang="ts">
 	import ${ident} from "../${render.organism}";
 
-	const props = ${jsonProps(render.props)};
+	const props = ${jsonProps(render.props)};${wiring}
 </script>
-
-<${ident} {...props} />
+${slots}
+<${ident} {...props}${handlers.map((name) => ` {${name}}`).join("")} />
 `;
 }
 

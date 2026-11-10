@@ -18,7 +18,7 @@ import {
 	editPage,
 	editPageParameterSchema,
 	executeTool,
-	isLucideIcon,
+	lucideIcons,
 	organismFor,
 	proposeContentParameterSchema,
 	proposeLayout,
@@ -87,7 +87,7 @@ test("published variants: sha256 pinned, every Stock catalog asset maps to a reg
 	assert.equal(FEATURES.item, "feature-grid");
 	assert.equal(FEATURES.defaultVariant, "grid");
 	assert.ok(Object.keys(FEATURES.variants).length >= 2);
-	assert.ok(catalogSources.icons.length > 100);
+	assert.ok(lucideIcons().length > 100);
 });
 
 test("propose_layout records catalogBlock and variant, keeps row icons and the section link", () => {
@@ -118,10 +118,11 @@ test("unknown variant and non-Lucide icon are rejected with a code and path", ()
 	assert.equal((variant as { code: string }).code, "unknown_variant");
 	const icon = propose({ items: [{ label: "Fast", icon: "rocketship" }] });
 	assert.equal(icon.ok, false);
-	assert.equal((icon as { code: string }).code, "unknown_icon");
-	assert.match((icon as { path: string }).path, /icon/);
+	// The published props schema rejects it (the lucideIcon enum), not a list of the chat's own.
+	assert.equal((icon as { code: string }).code, "props_invalid");
+	assert.match((icon as { path: string }).path, /children\[0\]\.copy\.icon$/);
 	// The allowed names travel with the error, so the model can retry without another tool call.
-	assert.match((icon as { message: string }).message, /Allowed names: .*\bzap\b/);
+	assert.match((icon as { message: string }).message, /"rocketship".*Allowed: .*\bzap\b/);
 });
 
 test("get_block_details keeps the requested variant and returns the registry presets", () => {

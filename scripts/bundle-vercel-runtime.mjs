@@ -14,14 +14,20 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const entryRel = "apps/xai-runtime/src/vercel-fetch.ts";
 const EXTERNAL = new Set(["ai", "@ai-sdk/openai", "zod"]);
+/**
+ * npm modules the bundle imports statically (hoisted to the top of the entry as ESM default imports; Vercel traces them
+ * into the function). The props gate validates synchronously, so its validator cannot be a dynamic import.
+ */
+const STATIC_EXTERNAL = new Map([["ajv/dist/2020.js", "__ext_ajv2020"]]);
 
 function posix(p) {
 	return p.replaceAll("\\", "/");
 }
 
-function packageSrc(name) {
+function packageSrc(name, subpath = ".") {
 	const pkg = JSON.parse(readFileSync(join(root, "packages", name, "package.json"), "utf8"));
-	const exp = pkg.exports?.["."] ?? pkg.main;
+	const exp = pkg.exports?.[subpath] ?? (subpath === "." ? pkg.main : undefined);
+	if (!exp) throw new Error(`packages/${name} exports no ${subpath}`);
 	const file = typeof exp === "string" ? exp : exp?.default ?? "./src/index.ts";
 	return posix(join("packages", name, file.replace(/^\.\//, "")));
 }
@@ -30,6 +36,8 @@ function resolveSpec(fromRel, spec) {
 	if (EXTERNAL.has(spec)) return { external: spec };
 	if (spec === "@buildytech/builder-core") return { id: packageSrc("builder-core") };
 	if (spec === "@buildytech/page-contract") return { id: packageSrc("page-contract") };
+	if (spec === "@buildytech/builder-core/props-gate") return { id: packageSrc("builder-core", "./props-gate") };
+	if (STATIC_EXTERNAL.has(spec)) return { staticExternal: STATIC_EXTERNAL.get(spec) };
 	if (spec.startsWith("@buildytech/xai-runtime")) {
 		throw new Error(`Do not import ${spec} from ${fromRel}; use a relative path`);
 	}
@@ -169,6 +177,12 @@ function transformModule(id, source) {
 			if (spec) {
 				const resolved = resolveSpec(id, spec);
 				if (resolved.external) continue;
+				if (resolved.staticExternal) {
+					const name = stmt.match(/^import\s+(\w+)\s+from/)?.[1];
+					if (!name) throw new Error(`${id}: ${spec} needs a default import`);
+					prelude.push(`const ${name} = ${resolved.staticExternal};`);
+					continue;
+				}
 				if (/^export\b/.test(stmt)) {
 					const brace = stmt.match(/export\s+\{([^}]*)\}/);
 					if (brace) {
@@ -288,6 +302,7 @@ for (const id of ids) {
 
 const header = `// @ts-nocheck
 /* Bundled Vercel Function entry. Do not import workspace .ts at runtime. */
+${[...STATIC_EXTERNAL].map(([spec, name]) => `import ${name} from ${JSON.stringify(spec)};`).join("\n")}
 const __mods = Object.create(null);
 function __def(id, factory) {
 	__mods[id] = { factory, exports: undefined };

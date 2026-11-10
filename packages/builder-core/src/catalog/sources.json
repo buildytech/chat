@@ -1,6 +1,6 @@
 {
 	"format": "buildy-catalog-sources",
-	"version": 2,
+	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.4.1",
 	"lockDigest": "sha256:6d142b40b28207f3828890ca3770ec507486792d9754a11791f2e588802463e4",
@@ -8,6 +8,11 @@
 		"url": "https://registry.buildy.tw/variants/v0.json",
 		"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4",
 		"digest": "sha256:39b97e88abe27f2946e5e3d9d0bd0192abb176986303c1f873aec4b914024f33"
+	},
+	"props": {
+		"url": "https://registry.buildy.tw/props/v0.json",
+		"sha256": "2f5e08736cee3dd30abfac5fb20b3d974934383ecc5c95b5d8c13b5288b266a5",
+		"digest": "sha256:395a62bcfb3439038865637e0d278a8a41413dd1cdd22e00f0feac85fc5748da"
 	},
 	"initItems": [
 		"presets",
@@ -5816,60 +5821,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"stats",
-				"values",
-				"layout",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"stats": [],
-				"values": []
-			},
-			"lists": {
-				"stats": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"value": "string",
-						"icon": "string",
-						"hint": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"value": "Value",
-						"icon": "Icon",
-						"hint": "Hint"
-					}
-				},
-				"values": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"about-me": {
 			"spec": "block.aboutme",
@@ -5897,73 +5849,6 @@
 					"mediaSide": "end",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"level",
-				"facts",
-				"skills",
-				"labels",
-				"actions",
-				"layout",
-				"mediaSide",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"facts": [],
-				"skills": [],
-				"labels": {
-					"level": "Level"
-				},
-				"actions": {
-					"cta": "Cta"
-				}
-			},
-			"lists": {
-				"facts": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"value": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"value": "Value"
-					}
-				},
-				"skills": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"level": "number"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"level": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"level"
-				],
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref"
-				]
 			}
 		},
 		"activity-feed": {
@@ -5992,44 +5877,7 @@
 					"density": "default",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"events",
-				"empty",
-				"layout",
-				"density",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"events": []
-			},
-			"lists": {
-				"events": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"time": "string",
-						"tone": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"time": "Time",
-						"tone": "Tone"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"announcement-bar": {
 			"spec": "block.announcement",
@@ -6105,29 +5953,7 @@
 						"$": "ui.cases.agency.announcement.cta"
 					}
 				}
-			},
-			"props": [
-				"label",
-				"text",
-				"cta",
-				"ctaHref",
-				"icon",
-				"dismissLabel",
-				"tone",
-				"layout",
-				"dismiss",
-				"badgeLabel",
-				"badge",
-				"position",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"label": "Label",
-				"text": "Text",
-				"dismissLabel": "Dismiss label"
-			},
-			"lists": {},
-			"objects": {}
+			}
 		},
 		"app-shell": {
 			"spec": "block.shell",
@@ -6151,94 +5977,6 @@
 					"layout": "sidebar",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"nav",
-				"user",
-				"search",
-				"metrics",
-				"chart",
-				"activity",
-				"layout",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"nav": {
-					"label": "Label",
-					"brand": "Brand",
-					"links": []
-				},
-				"user": {
-					"name": "Name",
-					"email": "Email"
-				},
-				"search": {
-					"label": "Label",
-					"shortcut": "Shortcut"
-				},
-				"metrics": [],
-				"chart": {
-					"title": "Title",
-					"text": "Text",
-					"summary": "Summary",
-					"series": []
-				},
-				"activity": {
-					"title": "Title",
-					"text": "Text",
-					"events": []
-				}
-			},
-			"lists": {
-				"metrics": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"value": "string",
-						"icon": "string",
-						"hint": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"value": "Value",
-						"icon": "Icon",
-						"hint": "Hint"
-					}
-				}
-			},
-			"objects": {
-				"nav": [
-					"label",
-					"brand",
-					"links",
-					"current"
-				],
-				"user": [
-					"name",
-					"email"
-				],
-				"search": [
-					"label",
-					"shortcut"
-				],
-				"chart": [
-					"title",
-					"text",
-					"summary",
-					"series"
-				],
-				"activity": [
-					"title",
-					"text",
-					"events"
-				]
 			}
 		},
 		"article-body": {
@@ -6267,42 +6005,7 @@
 					"quotes": "show",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"sections",
-				"empty",
-				"tocTitle",
-				"layout",
-				"quotes",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"sections": [],
-				"tocTitle": "Toc title"
-			},
-			"lists": {
-				"sections": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"quote": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"quote": "Quote"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"auth-card": {
 			"spec": "block.auth",
@@ -6410,54 +6113,6 @@
 						"$": "ui.auth.signup.switchLink"
 					}
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"submit",
-				"switchText",
-				"switchLink",
-				"switchHref",
-				"labels",
-				"mode",
-				"layout",
-				"social",
-				"level",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"submit": "Submit",
-				"switchText": "Switch text",
-				"switchLink": "Switch link",
-				"labels": {
-					"name": "Name",
-					"email": "Email",
-					"password": "Password",
-					"remember": "Remember",
-					"forgot": "Forgot",
-					"terms": "Terms",
-					"divider": "Divider",
-					"passkey": "Passkey",
-					"magic": "Magic"
-				}
-			},
-			"lists": {},
-			"objects": {
-				"labels": [
-					"name",
-					"email",
-					"password",
-					"remember",
-					"forgot",
-					"terms",
-					"divider",
-					"passkey",
-					"magic"
-				]
 			}
 		},
 		"auth-layout": {
@@ -6571,69 +6226,6 @@
 					"mode": "signin",
 					"social": "first"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"submit",
-				"switchTo",
-				"labels",
-				"visual",
-				"level",
-				"layout",
-				"side",
-				"mode",
-				"social",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"submit": "Submit",
-				"switchTo": {
-					"text": "Text",
-					"link": "Link"
-				},
-				"labels": {
-					"name": "Name",
-					"email": "Email",
-					"password": "Password",
-					"remember": "Remember",
-					"forgot": "Forgot",
-					"terms": "Terms",
-					"divider": "Divider",
-					"passkey": "Passkey",
-					"magic": "Magic"
-				},
-				"visual": {
-					"title": "Title",
-					"text": "Text"
-				}
-			},
-			"lists": {},
-			"objects": {
-				"switchTo": [
-					"text",
-					"link",
-					"href"
-				],
-				"labels": [
-					"name",
-					"email",
-					"password",
-					"remember",
-					"forgot",
-					"terms",
-					"divider",
-					"passkey",
-					"magic"
-				],
-				"visual": [
-					"title",
-					"text"
-				]
 			}
 		},
 		"before-after": {
@@ -6666,50 +6258,6 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"points",
-				"empty",
-				"labels",
-				"layout",
-				"icons",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"points": [],
-				"labels": {
-					"before": "Before",
-					"after": "After"
-				}
-			},
-			"lists": {
-				"points": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"before": "string",
-						"after": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"before": "Before",
-						"after": "After"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"before",
-					"after"
-				]
 			}
 		},
 		"bento-grid": {
@@ -6742,43 +6290,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"tiles",
-				"empty",
-				"layout",
-				"media",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"tiles": []
-			},
-			"lists": {
-				"tiles": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"size": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon",
-						"size": "Size"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"bottom-nav": {
 			"spec": "block.bottomnav",
@@ -6806,37 +6318,7 @@
 					"position": "static",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"label",
-				"tabs",
-				"current",
-				"labels",
-				"position",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"label": "Label",
-				"tabs": []
-			},
-			"lists": {
-				"tabs": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"cart-drawer": {
 			"spec": "block.cartdrawer",
@@ -6856,101 +6338,6 @@
 					"state": "empty",
 					"media": "image"
 				}
-			},
-			"props": [
-				"id",
-				"lines",
-				"rows",
-				"labels",
-				"drawer",
-				"state",
-				"media",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"lines": [],
-				"rows": [],
-				"labels": {
-					"caption": "Caption",
-					"product": "Product",
-					"price": "Price",
-					"qty": "Qty",
-					"total": "Total",
-					"remove": "Remove",
-					"subtotal": "Subtotal",
-					"checkout": "Checkout",
-					"decrease": "Decrease",
-					"increase": "Increase"
-				},
-				"drawer": {
-					"title": "Title",
-					"close": "Close",
-					"progress": "Progress",
-					"empty": "Empty",
-					"emptyText": "Empty text",
-					"browse": "Browse"
-				}
-			},
-			"lists": {
-				"lines": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"variant": "string",
-						"price": "number",
-						"currency": "string",
-						"qty": "number"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"variant": "Variant",
-						"price": 0,
-						"currency": "USD",
-						"qty": 0
-					}
-				},
-				"rows": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"amount": "number",
-						"currency": "string",
-						"strong": "boolean"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"amount": 0,
-						"currency": "USD",
-						"strong": false
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"caption",
-					"product",
-					"price",
-					"qty",
-					"total",
-					"remove",
-					"subtotal",
-					"checkout",
-					"decrease",
-					"increase"
-				],
-				"drawer": [
-					"title",
-					"close",
-					"progress",
-					"empty",
-					"emptyText",
-					"browse"
-				]
 			}
 		},
 		"cart-list": {
@@ -6983,71 +6370,6 @@
 					"tone": "muted",
 					"density": "default"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lines",
-				"empty",
-				"labels",
-				"layout",
-				"media",
-				"tone",
-				"density",
-				"landmarkLabel",
-				"onremove"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"lines": [],
-				"labels": {
-					"caption": "Caption",
-					"product": "Product",
-					"price": "Price",
-					"qty": "Qty",
-					"total": "Total",
-					"remove": "Remove",
-					"subtotal": "Subtotal",
-					"checkout": "Checkout",
-					"decrease": "Decrease",
-					"increase": "Increase"
-				}
-			},
-			"lists": {
-				"lines": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"variant": "string",
-						"price": "number",
-						"currency": "string",
-						"qty": "number"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"variant": "Variant",
-						"price": 0,
-						"currency": "USD",
-						"qty": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"caption",
-					"product",
-					"price",
-					"qty",
-					"total",
-					"remove",
-					"subtotal",
-					"checkout",
-					"decrease",
-					"increase"
-				]
 			}
 		},
 		"category-nav": {
@@ -7098,48 +6420,6 @@
 					"icon": "hide",
 					"density": "default"
 				}
-			},
-			"props": [
-				"label",
-				"categories",
-				"current",
-				"layout",
-				"count",
-				"icon",
-				"density",
-				"tools",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"label": "Label",
-				"categories": []
-			},
-			"lists": {
-				"categories": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"icon": "string",
-						"count": "number",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"icon": "Icon",
-						"count": 0
-					}
-				}
-			},
-			"objects": {
-				"tools": [
-					"search",
-					"sort",
-					"sortValue",
-					"shown",
-					"query"
-				]
 			}
 		},
 		"chart-panel": {
@@ -7168,44 +6448,7 @@
 					"size": "compact",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"series",
-				"empty",
-				"summary",
-				"percent",
-				"chart",
-				"size",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"series": [],
-				"summary": "Summary",
-				"percent": "Percent"
-			},
-			"lists": {
-				"series": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"value": "number"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"value": 0
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"checklist": {
 			"spec": "block.checklist",
@@ -7262,44 +6505,7 @@
 					"detail": "always",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"tasks",
-				"empty",
-				"progressLabel",
-				"layout",
-				"progress",
-				"marker",
-				"detail",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"tasks": [],
-				"progressLabel": "Progress label"
-			},
-			"lists": {
-				"tasks": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"done": "boolean"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"done": false
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"checkout-form": {
 			"spec": "block.checkout",
@@ -7322,176 +6528,6 @@
 					"summary": "none",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"days",
-				"payments",
-				"lines",
-				"rows",
-				"promos",
-				"labels",
-				"totals",
-				"layout",
-				"summary",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"days": [],
-				"payments": [],
-				"lines": [],
-				"rows": [],
-				"promos": [],
-				"labels": {
-					"contacts": "Contacts",
-					"contactsText": "Contacts text",
-					"name": "Name",
-					"phone": "Phone",
-					"email": "Email",
-					"address": "Address",
-					"addressText": "Address text",
-					"street": "Street",
-					"house": "House",
-					"flat": "Flat",
-					"entrance": "Entrance",
-					"floor": "Floor",
-					"comment": "Comment",
-					"slot": "Slot",
-					"slotText": "Slot text",
-					"payment": "Payment",
-					"paymentText": "Payment text",
-					"consent": "Consent",
-					"submit": "Submit",
-					"legal": "Legal"
-				},
-				"totals": {
-					"title": "Title",
-					"items": "Items",
-					"promo": "Promo",
-					"apply": "Apply",
-					"codes": "Codes",
-					"progress": "Progress",
-					"checkout": "Checkout",
-					"note": "Note"
-				}
-			},
-			"lists": {
-				"days": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"note": "string",
-						"slots": "string[]",
-						"closed": "string[]"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"note": "Note",
-						"slots": [],
-						"closed": []
-					}
-				},
-				"payments": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				},
-				"lines": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"variant": "string",
-						"price": "number",
-						"currency": "string",
-						"qty": "number"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"variant": "Variant",
-						"price": 0,
-						"currency": "USD",
-						"qty": 0
-					}
-				},
-				"rows": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"amount": "number",
-						"currency": "string",
-						"strong": "boolean"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"amount": 0,
-						"currency": "USD",
-						"strong": false
-					}
-				},
-				"promos": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"code": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"code": "Code"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"contacts",
-					"contactsText",
-					"name",
-					"phone",
-					"email",
-					"address",
-					"addressText",
-					"street",
-					"house",
-					"flat",
-					"entrance",
-					"floor",
-					"comment",
-					"slot",
-					"slotText",
-					"payment",
-					"paymentText",
-					"consent",
-					"submit",
-					"legal"
-				],
-				"totals": [
-					"title",
-					"items",
-					"promo",
-					"apply",
-					"codes",
-					"progress",
-					"checkout",
-					"note"
-				]
 			}
 		},
 		"combo-builder": {
@@ -7508,156 +6544,6 @@
 					"layout": "stacked",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"labels",
-				"mains",
-				"sides",
-				"drinks",
-				"total",
-				"currency",
-				"layout",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				},
-				"mains": [],
-				"sides": [],
-				"drinks": [],
-				"total": 0,
-				"currency": "USD"
-			},
-			"lists": {
-				"mains": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"price": "number",
-						"currency": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"price": 0,
-						"currency": "USD",
-						"note": "Note"
-					}
-				},
-				"sides": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"price": "number",
-						"currency": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"price": 0,
-						"currency": "USD",
-						"note": "Note"
-					}
-				},
-				"drinks": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"price": "number",
-						"currency": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"price": 0,
-						"currency": "USD",
-						"note": "Note"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"comparison-table": {
@@ -7695,61 +6581,6 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"rows",
-				"empty",
-				"labels",
-				"highlight",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"rows": [],
-				"labels": {
-					"caption": "Caption",
-					"feature": "Feature",
-					"a": "A",
-					"b": "B",
-					"c": "C",
-					"yes": "Yes",
-					"no": "No"
-				}
-			},
-			"lists": {
-				"rows": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"a": "string",
-						"b": "string",
-						"c": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"a": "A",
-						"b": "B",
-						"c": "C"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"caption",
-					"feature",
-					"a",
-					"b",
-					"c",
-					"yes",
-					"no"
-				]
 			}
 		},
 		"contact-form": {
@@ -7800,62 +6631,6 @@
 					"page": "section",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"labels",
-				"details",
-				"layout",
-				"fields",
-				"terms",
-				"level",
-				"page",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"labels": {
-					"name": "Name",
-					"email": "Email",
-					"subject": "Subject",
-					"message": "Message",
-					"consent": "Consent",
-					"submit": "Submit"
-				},
-				"details": []
-			},
-			"lists": {
-				"details": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"name",
-					"email",
-					"subject",
-					"message",
-					"consent",
-					"submit"
-				]
 			}
 		},
 		"cookie-banner": {
@@ -7884,28 +6659,7 @@
 					"actions": "three",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"accept",
-				"decline",
-				"settings",
-				"layout",
-				"actions",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"accept": "Accept",
-				"decline": "Decline"
-			},
-			"lists": {},
-			"objects": {}
+			}
 		},
 		"credit-packs": {
 			"spec": "block.credits",
@@ -7937,49 +6691,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"packs",
-				"empty",
-				"badges",
-				"buy",
-				"cols",
-				"item",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"packs": [],
-				"badges": {},
-				"buy": "Buy"
-			},
-			"lists": {
-				"packs": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"credits": "number",
-						"price": "number",
-						"currency": "string",
-						"badge": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"credits": 0,
-						"price": 0,
-						"currency": "USD",
-						"badge": "Badge"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"cta-band": {
 			"spec": "block.cta",
@@ -8122,41 +6834,6 @@
 						"$": "ui.cases.agency.cta.text"
 					}
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"actions",
-				"quote",
-				"layout",
-				"tone",
-				"proof",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"actions": {
-					"cta": "Cta"
-				}
-			},
-			"lists": {},
-			"objects": {
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref",
-					"emailLabel"
-				],
-				"quote": [
-					"text",
-					"by"
-				]
 			}
 		},
 		"cta-proof": {
@@ -8216,49 +6893,6 @@
 						"$": "ui.marketing.ctaProof.zonesLead"
 					}
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"actions",
-				"content",
-				"note",
-				"layout",
-				"proof",
-				"mediaSide",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"actions": {
-					"cta": "Cta"
-				},
-				"content": {
-					"logos": [],
-					"features": [],
-					"stats": [],
-					"zones": []
-				}
-			},
-			"lists": {},
-			"objects": {
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref"
-				],
-				"content": [
-					"logos",
-					"features",
-					"stats",
-					"zones"
-				]
 			}
 		},
 		"dashboard-overview": {
@@ -8291,66 +6925,6 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"metrics",
-				"chart",
-				"activity",
-				"layout",
-				"cols",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"metrics": [],
-				"chart": {
-					"title": "Title",
-					"text": "Text",
-					"summary": "Summary",
-					"series": []
-				},
-				"activity": {
-					"title": "Title",
-					"text": "Text",
-					"events": []
-				}
-			},
-			"lists": {
-				"metrics": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"value": "string",
-						"icon": "string",
-						"hint": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"value": "Value",
-						"icon": "Icon",
-						"hint": "Hint"
-					}
-				}
-			},
-			"objects": {
-				"chart": [
-					"title",
-					"text",
-					"summary",
-					"series"
-				],
-				"activity": [
-					"title",
-					"text",
-					"events"
-				]
 			}
 		},
 		"dashboard-shell": {
@@ -8455,59 +7029,6 @@
 					"footer": "full",
 					"content": "split"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"level",
-				"nav",
-				"topbar",
-				"search",
-				"sidebar",
-				"side",
-				"footer",
-				"content",
-				"frame",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"nav": {
-					"label": "Label",
-					"brand": "Brand",
-					"links": [],
-					"current": "Current",
-					"subTitle": "Sub title",
-					"sub": [],
-					"subCurrent": "Sub current",
-					"search": "Search",
-					"shortcut": "Shortcut",
-					"expand": "Expand",
-					"userName": "User name",
-					"copyright": "Copyright",
-					"footerLabel": "Footer label",
-					"footer": []
-				}
-			},
-			"lists": {},
-			"objects": {
-				"nav": [
-					"label",
-					"brand",
-					"links",
-					"current",
-					"subTitle",
-					"sub",
-					"subCurrent",
-					"search",
-					"shortcut",
-					"expand",
-					"userName",
-					"copyright",
-					"footerLabel",
-					"footer"
-				]
 			}
 		},
 		"delivery-info": {
@@ -8531,77 +7052,6 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"facts",
-				"zones",
-				"labels",
-				"layout",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"facts": [],
-				"zones": [],
-				"labels": {
-					"zones": "Zones",
-					"freeFrom": "Free from"
-				}
-			},
-			"lists": {
-				"facts": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				},
-				"zones": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"area": "string",
-						"price": "number",
-						"freeFrom": "number",
-						"minOrder": "number",
-						"time": "string",
-						"express": "string",
-						"currency": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"area": "Area",
-						"price": 0,
-						"freeFrom": 0,
-						"minOrder": 0,
-						"time": "Time",
-						"express": "Express",
-						"currency": "USD"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"zones",
-					"freeFrom"
-				]
 			}
 		},
 		"dish-bento": {
@@ -8618,125 +7068,6 @@
 					"feature": "end",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"feature",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"dish-card": {
@@ -8775,51 +7106,6 @@
 					"density": "default",
 					"action": "none"
 				}
-			},
-			"props": [
-				"dish",
-				"labels",
-				"layout",
-				"media",
-				"prices",
-				"action",
-				"density",
-				"onadd"
-			],
-			"defaults": {
-				"dish": {
-					"id": "item",
-					"name": "Name",
-					"summary": "Summary",
-					"price": 0,
-					"currency": "USD",
-					"weight": "Weight",
-					"tag": "Tag",
-					"items": [],
-					"minutes": 0
-				},
-				"labels": {
-					"add": "Add"
-				}
-			},
-			"lists": {},
-			"objects": {
-				"dish": [
-					"id",
-					"name",
-					"summary",
-					"price",
-					"currency",
-					"weight",
-					"tag",
-					"items",
-					"minutes",
-					"badge",
-					"href"
-				],
-				"labels": [
-					"add"
-				]
 			}
 		},
 		"dish-cart-grid": {
@@ -8836,126 +7122,6 @@
 					"media": "none",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"count",
-				"media",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"dish-compare": {
@@ -8972,125 +7138,6 @@
 					"layout": "cards",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"layout",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"dish-showcase": {
@@ -9114,126 +7161,6 @@
 					"ratio": "4/3",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"cols",
-				"ratio",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"dish-strip": {
@@ -9250,125 +7177,6 @@
 					"size": "lg",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"size",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"empty-panel": {
@@ -9472,27 +7280,7 @@
 						"$": "ui.dashboard.empty.results.cta"
 					}
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"icon",
-				"cta",
-				"ctaHref",
-				"layout",
-				"actions",
-				"visual",
-				"size",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text"
-			},
-			"lists": {},
-			"objects": {}
+			}
 		},
 		"error-page": {
 			"spec": "block.errorpage",
@@ -9540,37 +7328,6 @@
 					},
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"status",
-				"actions",
-				"level",
-				"layout",
-				"code",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"status": "Status",
-				"actions": {
-					"cta": "Cta"
-				}
-			},
-			"lists": {},
-			"objects": {
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref"
-				]
 			}
 		},
 		"faq-list": {
@@ -9664,56 +7421,6 @@
 					"tone": "default",
 					"density": "roomy"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"items",
-				"search",
-				"filter",
-				"layout",
-				"cols",
-				"empty",
-				"multiple",
-				"tone",
-				"density",
-				"landmarkLabel",
-				"onquery",
-				"oncategory"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"items": []
-			},
-			"lists": {
-				"items": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"question": "string",
-						"answer": "string",
-						"category": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"question": "Question",
-						"answer": "Answer"
-					}
-				}
-			},
-			"objects": {
-				"search": [
-					"mode",
-					"label",
-					"query"
-				],
-				"filter": [
-					"mode",
-					"tabs",
-					"label",
-					"category"
-				]
 			}
 		},
 		"faq-split": {
@@ -9764,98 +7471,6 @@
 					"mediaSide": "end",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"items",
-				"channels",
-				"topics",
-				"labels",
-				"layout",
-				"cards",
-				"mediaSide",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"items": [],
-				"channels": [],
-				"topics": [],
-				"labels": {
-					"cta": "Cta",
-					"more": "More",
-					"asideTitle": "Aside title",
-					"asideText": "Aside text",
-					"asideCta": "Aside cta",
-					"search": "Search",
-					"popular": "Popular"
-				}
-			},
-			"lists": {
-				"items": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"question": "string",
-						"answer": "string",
-						"category": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"question": "Question",
-						"answer": "Answer",
-						"category": "Category",
-						"icon": "Icon"
-					}
-				},
-				"channels": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				},
-				"topics": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"value": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"value": "Value"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"cta",
-					"more",
-					"asideTitle",
-					"asideText",
-					"asideCta",
-					"search",
-					"popular",
-					"query"
-				]
 			}
 		},
 		"feature-accordion": {
@@ -9888,43 +7503,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"features",
-				"empty",
-				"expand",
-				"media",
-				"multiple",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"features": []
-			},
-			"lists": {
-				"features": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"feature-grid": {
 			"spec": "block.features",
@@ -10002,49 +7581,6 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"features",
-				"empty",
-				"action",
-				"layout",
-				"cols",
-				"item",
-				"mediaSide",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"features": []
-			},
-			"lists": {
-				"features": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {
-				"action": [
-					"label",
-					"href"
-				]
 			}
 		},
 		"feature-showcase": {
@@ -10079,44 +7615,7 @@
 						"$": "values"
 					}
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"features",
-				"empty",
-				"more",
-				"item",
-				"cols",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"features": [],
-				"more": "More"
-			},
-			"lists": {
-				"features": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"feature-split": {
 			"spec": "block.featuresplit",
@@ -10149,73 +7648,6 @@
 					"mediaSide": "end",
 					"tone": "default"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"level",
-				"features",
-				"stats",
-				"actions",
-				"layout",
-				"mediaSide",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"features": [],
-				"stats": [],
-				"actions": {
-					"cta": "Cta"
-				}
-			},
-			"lists": {
-				"features": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				},
-				"stats": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"value": "string",
-						"icon": "string",
-						"hint": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"value": "Value",
-						"icon": "Icon",
-						"hint": "Hint"
-					}
-				}
-			},
-			"objects": {
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref"
-				]
 			}
 		},
 		"feature-sticky": {
@@ -10248,43 +7680,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"features",
-				"empty",
-				"active",
-				"mediaSide",
-				"item",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"features": []
-			},
-			"lists": {
-				"features": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"feature-tabs": {
 			"spec": "block.featuretabs",
@@ -10307,45 +7703,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"features",
-				"empty",
-				"tabsLabel",
-				"active",
-				"panel",
-				"tone",
-				"density",
-				"landmarkLabel",
-				"onselect"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"features": [],
-				"tabsLabel": "Tabs label"
-			},
-			"lists": {
-				"features": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"footer-split": {
 			"spec": "block.footersplit",
@@ -10383,94 +7741,6 @@
 					"mediaSide": "start",
 					"tone": "default"
 				}
-			},
-			"props": [
-				"id",
-				"label",
-				"brand",
-				"tagline",
-				"copyright",
-				"groups",
-				"extras",
-				"labels",
-				"layout",
-				"mediaSide",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"label": "Label",
-				"brand": "Brand",
-				"tagline": "Tagline",
-				"copyright": "Copyright",
-				"groups": [],
-				"extras": {
-					"stats": [],
-					"points": [],
-					"contacts": [],
-					"channels": []
-				},
-				"labels": {
-					"title": "Title",
-					"text": "Text",
-					"loopTitle": "Loop title",
-					"loopText": "Loop text",
-					"joinTitle": "Join title",
-					"joinText": "Join text",
-					"sitemap": "Sitemap",
-					"points": "Points",
-					"signup": "Signup",
-					"email": "Email",
-					"subscribe": "Subscribe",
-					"note": "Note",
-					"cta": "Cta",
-					"secondary": "Secondary"
-				}
-			},
-			"lists": {
-				"groups": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"icon": "string",
-						"links": "NavLink[]",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"icon": "Icon",
-						"links": []
-					}
-				}
-			},
-			"objects": {
-				"extras": [
-					"stats",
-					"points",
-					"contacts",
-					"channels",
-					"sitemapHref",
-					"ctaHref",
-					"secondaryHref"
-				],
-				"labels": [
-					"title",
-					"text",
-					"loopTitle",
-					"loopText",
-					"joinTitle",
-					"joinText",
-					"sitemap",
-					"points",
-					"signup",
-					"email",
-					"subscribe",
-					"note",
-					"cta",
-					"secondary"
-				]
 			}
 		},
 		"grill-builder": {
@@ -10487,156 +7757,6 @@
 					"layout": "stacked",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"labels",
-				"meats",
-				"weights",
-				"sides",
-				"total",
-				"currency",
-				"layout",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				},
-				"meats": [],
-				"weights": [],
-				"sides": [],
-				"total": 0,
-				"currency": "USD"
-			},
-			"lists": {
-				"meats": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"price": "number",
-						"currency": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"price": 0,
-						"currency": "USD",
-						"note": "Note"
-					}
-				},
-				"weights": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"price": "number",
-						"currency": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"price": 0,
-						"currency": "USD",
-						"note": "Note"
-					}
-				},
-				"sides": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"price": "number",
-						"currency": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"price": 0,
-						"currency": "USD",
-						"note": "Note"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"grocery-list": {
@@ -10655,126 +7775,6 @@
 					"cols": "1",
 					"tone": "default"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"thumbs",
-				"cols",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"hero-classic": {
@@ -11001,59 +8001,6 @@
 						"$": "ui.cases.blog.hero.text"
 					}
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"level",
-				"badge",
-				"topics",
-				"actions",
-				"media",
-				"layout",
-				"scale",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text"
-			},
-			"lists": {
-				"topics": {
-					"required": false,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref",
-					"emailLabel"
-				],
-				"media": [
-					"kind",
-					"side",
-					"codeTitle",
-					"prompt",
-					"lines"
-				]
 			}
 		},
 		"hero-prompt": {
@@ -11083,60 +8030,6 @@
 						"$": "prompts"
 					}
 				}
-			},
-			"props": [
-				"title",
-				"level",
-				"badge",
-				"badgeMark",
-				"actions",
-				"composer",
-				"nav",
-				"topics",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"title": "Title"
-			},
-			"lists": {
-				"topics": {
-					"required": false,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref",
-					"emailLabel"
-				],
-				"composer": [
-					"attachLabel",
-					"modelLabel"
-				],
-				"nav": [
-					"brand",
-					"links",
-					"current",
-					"login",
-					"loginHref",
-					"skip",
-					"label"
-				]
 			}
 		},
 		"hero-split": {
@@ -11187,57 +8080,6 @@
 					"mediaSide": "start",
 					"tone": "default"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"level",
-				"actions",
-				"content",
-				"extra",
-				"media",
-				"mediaSide",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"actions": {
-					"cta": "Cta"
-				},
-				"content": {
-					"stats": [],
-					"features": [],
-					"people": [],
-					"plans": [],
-					"proof": "Proof",
-					"card": {
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"lists": {},
-			"objects": {
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref"
-				],
-				"content": [
-					"stats",
-					"features",
-					"people",
-					"plans",
-					"proof",
-					"card"
-				]
 			}
 		},
 		"icon-wall": {
@@ -11276,42 +8118,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"features",
-				"empty",
-				"cols",
-				"item",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"features": []
-			},
-			"lists": {
-				"features": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"job-board": {
 			"spec": "block.jobs",
@@ -11339,82 +8146,6 @@
 					"salary": "show",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"jobs",
-				"departments",
-				"labels",
-				"layout",
-				"salary",
-				"tone",
-				"empty",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"jobs": [],
-				"departments": [],
-				"labels": {
-					"apply": "Apply",
-					"caption": "Caption",
-					"role": "Role",
-					"team": "Team",
-					"location": "Location",
-					"type": "Type",
-					"salary": "Salary",
-					"count": "Count"
-				}
-			},
-			"lists": {
-				"jobs": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"dept": "string",
-						"location": "string",
-						"type": "string",
-						"salary": "string",
-						"posted": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"dept": "Dept",
-						"location": "Location",
-						"type": "Type",
-						"salary": "Salary",
-						"posted": "Posted"
-					}
-				},
-				"departments": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"apply",
-					"caption",
-					"role",
-					"team",
-					"location",
-					"type",
-					"salary",
-					"count"
-				]
 			}
 		},
 		"kanban-board": {
@@ -11447,60 +8178,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lanes",
-				"empty",
-				"cards",
-				"countLabel",
-				"card",
-				"cols",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"lanes": [],
-				"cards": [],
-				"countLabel": "Count label"
-			},
-			"lists": {
-				"lanes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"key": "string",
-						"title": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"key": "Key",
-						"title": "Title"
-					}
-				},
-				"cards": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"lane": "string",
-						"title": "string",
-						"tag": "string",
-						"who": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"lane": "Lane",
-						"title": "Title",
-						"tag": "Tag",
-						"who": "Who"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"lightbox-gallery": {
 			"spec": "block.lightboxgallery",
@@ -11528,56 +8206,6 @@
 					"captions": "show",
 					"lightbox": "open"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"photos",
-				"empty",
-				"labels",
-				"layout",
-				"captions",
-				"lightbox",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"photos": [],
-				"labels": {
-					"close": "Close",
-					"previous": "Previous",
-					"next": "Next",
-					"open": "Open",
-					"counter": "Counter"
-				}
-			},
-			"lists": {
-				"photos": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"tag": "string",
-						"size": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"tag": "Tag",
-						"size": "Size"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"close",
-					"previous",
-					"next",
-					"open",
-					"counter"
-				]
 			}
 		},
 		"logo-cloud": {
@@ -11628,40 +8256,7 @@
 					"tone": "default",
 					"density": "default"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"logos",
-				"empty",
-				"layout",
-				"cols",
-				"item",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"logos": []
-			},
-			"lists": {
-				"logos": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"icon": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"media-list": {
 			"spec": "block.medialist",
@@ -11919,68 +8514,6 @@
 						"href": "#/start"
 					}
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"extras",
-				"labels",
-				"actions",
-				"layout",
-				"mediaSide",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"extras": {
-					"stats": [],
-					"steps": [],
-					"posts": [],
-					"topics": [],
-					"channels": [],
-					"reviews": []
-				},
-				"labels": {
-					"list": "List",
-					"count": "Count",
-					"minutes": "Minutes",
-					"featured": "Featured",
-					"rating": "Rating",
-					"figures": "Figures"
-				},
-				"actions": {
-					"cta": "Cta"
-				}
-			},
-			"lists": {},
-			"objects": {
-				"extras": [
-					"stats",
-					"steps",
-					"posts",
-					"topics",
-					"channels",
-					"reviews"
-				],
-				"labels": [
-					"list",
-					"count",
-					"minutes",
-					"featured",
-					"rating",
-					"figures"
-				],
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref"
-				]
 			}
 		},
 		"mega-menu": {
@@ -12009,61 +8542,7 @@
 					"cols": "3",
 					"promo": "card"
 				}
-			},
-			"props": [
-				"label",
-				"brand",
-				"brandHref",
-				"trigger",
-				"links",
-				"groups",
-				"promoTitle",
-				"promoText",
-				"panel",
-				"cols",
-				"promo",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"label": "Label",
-				"brand": "Brand",
-				"trigger": "Trigger",
-				"links": [],
-				"groups": []
-			},
-			"lists": {
-				"links": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"icon": "Icon"
-					}
-				},
-				"groups": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"icon": "string",
-						"links": "NavLink[]",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"icon": "Icon",
-						"links": []
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"menu-board": {
 			"spec": "block.menuboard",
@@ -12096,143 +8575,6 @@
 					"prices": "show",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"sections",
-				"empty",
-				"labels",
-				"layout",
-				"prices",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"sections": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				},
-				"sections": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"key": "string",
-						"title": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"key": "Key",
-						"title": "Title",
-						"note": "Note"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"metric-row": {
@@ -12265,43 +8607,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"metrics",
-				"empty",
-				"cols",
-				"item",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"metrics": []
-			},
-			"lists": {
-				"metrics": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"value": "string",
-						"icon": "string",
-						"hint": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"value": "Value",
-						"icon": "Icon",
-						"hint": "Hint"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"milestone-timeline": {
 			"spec": "block.timeline",
@@ -12329,43 +8635,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"milestones",
-				"empty",
-				"layout",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"milestones": []
-			},
-			"lists": {
-				"milestones": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"date": "string",
-						"title": "string",
-						"text": "string",
-						"tag": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"date": "Date",
-						"title": "Title",
-						"text": "Text",
-						"tag": "Tag"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"nav-bar": {
 			"spec": "block.navbar",
@@ -12425,60 +8695,6 @@
 					},
 					"tone": "inverse"
 				}
-			},
-			"props": [
-				"label",
-				"brand",
-				"brandHref",
-				"links",
-				"current",
-				"actions",
-				"search",
-				"tone",
-				"layout",
-				"over",
-				"skip",
-				"landmarkLabel",
-				"ontheme"
-			],
-			"defaults": {
-				"label": "Label",
-				"brand": "Brand",
-				"links": [],
-				"search": {
-					"label": "Label",
-					"shortcut": "Shortcut"
-				}
-			},
-			"lists": {
-				"links": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"login",
-					"loginHref",
-					"themeLabel"
-				],
-				"search": [
-					"label",
-					"shortcut"
-				]
 			}
 		},
 		"newsletter-form": {
@@ -12517,29 +8733,7 @@
 					"tone": "muted",
 					"align": "start"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"label",
-				"submit",
-				"consent",
-				"layout",
-				"terms",
-				"tone",
-				"align",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"label": "Label",
-				"submit": "Submit"
-			},
-			"lists": {},
-			"objects": {}
+			}
 		},
 		"order-summary": {
 			"spec": "block.summary",
@@ -12575,53 +8769,6 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"rows",
-				"empty",
-				"labels",
-				"layout",
-				"cta",
-				"note",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"rows": [],
-				"labels": {
-					"checkout": "Checkout",
-					"note": "Note"
-				}
-			},
-			"lists": {
-				"rows": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"amount": "number",
-						"currency": "string",
-						"strong": "boolean"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"amount": 0,
-						"currency": "USD",
-						"strong": false
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"checkout",
-					"note"
-				]
 			}
 		},
 		"order-table": {
@@ -12654,74 +8801,6 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"orders",
-				"empty",
-				"statuses",
-				"labels",
-				"layout",
-				"pager",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"orders": [],
-				"statuses": {},
-				"labels": {
-					"caption": "Caption",
-					"number": "Number",
-					"date": "Date",
-					"items": "Items",
-					"total": "Total",
-					"status": "Status",
-					"itemsCount": "Items count",
-					"summary": "Summary",
-					"previous": "Previous",
-					"next": "Next"
-				}
-			},
-			"lists": {
-				"orders": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"number": "string",
-						"date": "string",
-						"total": "number",
-						"currency": "string",
-						"status": "string",
-						"items": "number"
-					},
-					"defaults": {
-						"id": "item",
-						"number": "Number",
-						"date": "Date",
-						"total": 0,
-						"currency": "USD",
-						"status": "Status",
-						"items": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"caption",
-					"number",
-					"date",
-					"items",
-					"total",
-					"status",
-					"itemsCount",
-					"summary",
-					"previous",
-					"next"
-				]
 			}
 		},
 		"page-intro": {
@@ -12745,26 +8824,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"cta",
-				"href",
-				"level",
-				"align",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text"
-			},
-			"lists": {},
-			"objects": {}
+			}
 		},
 		"page-trail": {
 			"spec": "block.pagetrail",
@@ -12788,57 +8848,6 @@
 					"aside": "facts",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"label",
-				"crumbs",
-				"extras",
-				"aside",
-				"level",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"label": "Label",
-				"crumbs": [],
-				"extras": {
-					"value": "Value",
-					"caption": "Caption",
-					"note": "Note",
-					"icon": "Icon",
-					"facts": []
-				}
-			},
-			"lists": {
-				"crumbs": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {
-				"extras": [
-					"value",
-					"caption",
-					"note",
-					"icon",
-					"facts"
-				]
 			}
 		},
 		"photo-gallery": {
@@ -12883,53 +8892,6 @@
 					"tone": "default",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"photos",
-				"empty",
-				"labels",
-				"layout",
-				"captions",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"photos": [],
-				"labels": {
-					"previous": "Previous",
-					"next": "Next",
-					"counter": "Counter"
-				}
-			},
-			"lists": {
-				"photos": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"tag": "string",
-						"size": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"tag": "Tag",
-						"size": "Size"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"previous",
-					"next",
-					"counter"
-				]
 			}
 		},
 		"pizza-picker": {
@@ -12946,163 +8908,6 @@
 					"layout": "rows",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"sizes",
-				"crusts",
-				"layout",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				},
-				"sizes": [],
-				"crusts": []
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				},
-				"sizes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"price": "number",
-						"currency": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"price": 0,
-						"currency": "USD",
-						"note": "Note"
-					}
-				},
-				"crusts": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"price": "number",
-						"currency": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"price": 0,
-						"currency": "USD",
-						"note": "Note"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"post-grid": {
@@ -13278,92 +9083,6 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"posts",
-				"labels",
-				"action",
-				"filter",
-				"pager",
-				"layout",
-				"cols",
-				"media",
-				"meta",
-				"tone",
-				"density",
-				"landmarkLabel",
-				"ontopic",
-				"onpage"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"posts": [],
-				"labels": {
-					"minutes": "Minutes",
-					"by": "By",
-					"read": "Read",
-					"empty": "Empty"
-				}
-			},
-			"lists": {
-				"posts": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"excerpt": "string",
-						"category": "string",
-						"author": "string",
-						"date": "string",
-						"minutes": "number",
-						"icon": "string",
-						"href": "string",
-						"image": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"excerpt": "Excerpt",
-						"category": "Category",
-						"author": "Author",
-						"date": "Date",
-						"minutes": 0,
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"minutes",
-					"by",
-					"read",
-					"empty"
-				],
-				"action": [
-					"label",
-					"href"
-				],
-				"filter": [
-					"mode",
-					"topics",
-					"label",
-					"topic"
-				],
-				"pager": [
-					"mode",
-					"page",
-					"pages",
-					"label",
-					"summary",
-					"previous",
-					"next",
-					"pageLabel",
-					"url",
-					"firstUrl"
-				]
 			}
 		},
 		"post-header": {
@@ -13396,47 +9115,6 @@
 					"meta": "short",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"post",
-				"labels",
-				"level",
-				"layout",
-				"cover",
-				"meta",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"labels": {
-					"minutes": "Minutes",
-					"by": "By",
-					"read": "Read",
-					"empty": "Empty"
-				}
-			},
-			"lists": {},
-			"objects": {
-				"post": [
-					"id",
-					"title",
-					"excerpt",
-					"category",
-					"author",
-					"date",
-					"minutes",
-					"icon",
-					"href",
-					"image"
-				],
-				"labels": [
-					"minutes",
-					"by",
-					"read",
-					"empty"
-				]
 			}
 		},
 		"post-showcase": {
@@ -13469,72 +9147,6 @@
 					"mediaSide": "start",
 					"tone": "default"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"posts",
-				"labels",
-				"action",
-				"layout",
-				"cols",
-				"mediaSide",
-				"tone",
-				"empty",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"posts": [],
-				"labels": {
-					"minutes": "Minutes",
-					"by": "By",
-					"read": "Read",
-					"empty": "Empty"
-				},
-				"action": {}
-			},
-			"lists": {
-				"posts": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"excerpt": "string",
-						"category": "string",
-						"author": "string",
-						"date": "string",
-						"minutes": "number",
-						"icon": "string",
-						"href": "string",
-						"image": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"excerpt": "Excerpt",
-						"category": "Category",
-						"author": "Author",
-						"date": "Date",
-						"minutes": 0,
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"minutes",
-					"by",
-					"read",
-					"empty"
-				],
-				"action": [
-					"label",
-					"href"
-				]
 			}
 		},
 		"post-split": {
@@ -13591,82 +9203,6 @@
 					"actions": "pair",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"post",
-				"labels",
-				"extras",
-				"level",
-				"layout",
-				"mediaSide",
-				"author",
-				"cover",
-				"actions",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"post": {
-					"id": "item",
-					"title": "Title",
-					"excerpt": "Excerpt",
-					"category": "Category",
-					"author": "Author",
-					"date": "Date",
-					"minutes": 0,
-					"icon": "Icon"
-				},
-				"labels": {
-					"minutes": "Minutes",
-					"views": "Views",
-					"likes": "Likes",
-					"share": "Share",
-					"save": "Save",
-					"read": "Read",
-					"related": "Related"
-				},
-				"extras": {
-					"role": "Role",
-					"bio": "Bio",
-					"views": "Views",
-					"likes": "Likes",
-					"tags": [],
-					"outline": []
-				}
-			},
-			"lists": {},
-			"objects": {
-				"post": [
-					"id",
-					"title",
-					"excerpt",
-					"category",
-					"author",
-					"date",
-					"minutes",
-					"icon",
-					"href",
-					"image"
-				],
-				"labels": [
-					"minutes",
-					"views",
-					"likes",
-					"share",
-					"save",
-					"read",
-					"related"
-				],
-				"extras": [
-					"role",
-					"bio",
-					"views",
-					"likes",
-					"tags",
-					"outline"
-				]
 			}
 		},
 		"pricing-card": {
@@ -13687,66 +9223,6 @@
 					"emphasis": "auto",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"plan",
-				"labels",
-				"current",
-				"emphasis",
-				"density",
-				"billing",
-				"footer",
-				"onselect"
-			],
-			"defaults": {
-				"plan": {
-					"id": "item",
-					"name": "Name",
-					"tagline": "Tagline",
-					"price": 0,
-					"currency": "USD",
-					"seats": 0,
-					"storage": 0,
-					"highlighted": false,
-					"features": [],
-					"yearly": 0
-				},
-				"labels": {
-					"popular": "Popular",
-					"perMonth": "Per month",
-					"seats": "Seats",
-					"storage": "Storage",
-					"cta": "Cta",
-					"free": "Free",
-					"perYear": "Per year",
-					"empty": "Empty"
-				}
-			},
-			"lists": {},
-			"objects": {
-				"plan": [
-					"id",
-					"name",
-					"tagline",
-					"price",
-					"currency",
-					"seats",
-					"storage",
-					"highlighted",
-					"status",
-					"features",
-					"yearly"
-				],
-				"labels": [
-					"popular",
-					"perMonth",
-					"seats",
-					"storage",
-					"cta",
-					"free",
-					"perYear",
-					"empty"
-				]
 			}
 		},
 		"pricing-tiers": {
@@ -13838,91 +9314,6 @@
 					"tone": "default",
 					"density": "roomy"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"plans",
-				"labels",
-				"billingLabels",
-				"layout",
-				"cols",
-				"emphasis",
-				"billing",
-				"tone",
-				"density",
-				"landmarkLabel",
-				"onselect",
-				"onbilling"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"plans": [],
-				"labels": {
-					"popular": "Popular",
-					"perMonth": "Per month",
-					"seats": "Seats",
-					"storage": "Storage",
-					"cta": "Cta",
-					"free": "Free",
-					"perYear": "Per year",
-					"empty": "Empty"
-				},
-				"billingLabels": {
-					"label": "Label",
-					"monthly": "Monthly",
-					"annual": "Annual",
-					"save": "Save"
-				}
-			},
-			"lists": {
-				"plans": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"tagline": "string",
-						"price": "number",
-						"currency": "string",
-						"seats": "number",
-						"storage": "number",
-						"highlighted": "boolean",
-						"status": "string",
-						"features": "string[]",
-						"yearly": "number"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"tagline": "Tagline",
-						"price": 0,
-						"currency": "USD",
-						"seats": 0,
-						"storage": 0,
-						"highlighted": false,
-						"features": [],
-						"yearly": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"popular",
-					"perMonth",
-					"seats",
-					"storage",
-					"cta",
-					"free",
-					"perYear",
-					"empty"
-				],
-				"billingLabels": [
-					"label",
-					"monthly",
-					"annual",
-					"save"
-				]
 			}
 		},
 		"product-detail": {
@@ -13971,71 +9362,6 @@
 					"tone": "muted",
 					"density": "roomy"
 				}
-			},
-			"props": [
-				"id",
-				"product",
-				"labels",
-				"badges",
-				"level",
-				"layout",
-				"mediaSide",
-				"thumbs",
-				"buy",
-				"tone",
-				"density",
-				"landmarkLabel",
-				"onadd"
-			],
-			"defaults": {
-				"id": "item",
-				"labels": {
-					"add": "Add",
-					"soldOut": "Sold out",
-					"inStock": "In stock",
-					"qty": "Qty",
-					"decrease": "Decrease",
-					"increase": "Increase",
-					"reviews": "Reviews",
-					"ratingLabel": "Rating label",
-					"shipping": "Shipping",
-					"returns": "Returns",
-					"was": "Was",
-					"empty": "Empty"
-				},
-				"badges": {}
-			},
-			"lists": {},
-			"objects": {
-				"product": [
-					"id",
-					"name",
-					"summary",
-					"price",
-					"currency",
-					"rating",
-					"reviews",
-					"badge",
-					"category",
-					"inStock",
-					"compareAt",
-					"href",
-					"image"
-				],
-				"labels": [
-					"add",
-					"soldOut",
-					"inStock",
-					"qty",
-					"decrease",
-					"increase",
-					"reviews",
-					"ratingLabel",
-					"shipping",
-					"returns",
-					"was",
-					"empty"
-				]
 			}
 		},
 		"product-grid": {
@@ -14125,77 +9451,6 @@
 					"tone": "default",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"products",
-				"labels",
-				"badges",
-				"layout",
-				"cols",
-				"ratio",
-				"rating",
-				"action",
-				"tone",
-				"density",
-				"landmarkLabel",
-				"onadd"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"products": [],
-				"labels": {
-					"add": "Add",
-					"soldOut": "Sold out",
-					"reviews": "Reviews",
-					"ratingLabel": "Rating label",
-					"was": "Was",
-					"empty": "Empty"
-				},
-				"badges": {}
-			},
-			"lists": {
-				"products": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"rating": "number",
-						"reviews": "number",
-						"badge": "string",
-						"category": "string",
-						"inStock": "boolean",
-						"compareAt": "number",
-						"href": "string",
-						"image": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"rating": 0,
-						"reviews": 0,
-						"category": "Category",
-						"inStock": false
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"soldOut",
-					"reviews",
-					"ratingLabel",
-					"was",
-					"empty"
-				]
 			}
 		},
 		"product-info": {
@@ -14219,59 +9474,6 @@
 					"expand": "none",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"details",
-				"specs",
-				"labels",
-				"layout",
-				"expand",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"details": [],
-				"specs": [],
-				"labels": {
-					"specs": "Specs"
-				}
-			},
-			"lists": {
-				"details": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text"
-					}
-				},
-				"specs": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"value": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"value": "Value"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"specs"
-				]
 			}
 		},
 		"profile-form": {
@@ -14304,49 +9506,6 @@
 					"prefs": "show",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"labels",
-				"layout",
-				"avatar",
-				"prefs",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"labels": {
-					"picture": "Picture",
-					"change": "Change",
-					"name": "Name",
-					"email": "Email",
-					"bio": "Bio",
-					"prefs": "Prefs",
-					"updates": "Updates",
-					"alerts": "Alerts",
-					"save": "Save",
-					"cancel": "Cancel"
-				}
-			},
-			"lists": {},
-			"objects": {
-				"labels": [
-					"picture",
-					"change",
-					"name",
-					"email",
-					"bio",
-					"prefs",
-					"updates",
-					"alerts",
-					"save",
-					"cancel"
-				]
 			}
 		},
 		"project-grid": {
@@ -14385,61 +9544,6 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"projects",
-				"empty",
-				"labels",
-				"layout",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"projects": [],
-				"labels": {
-					"featured": "Featured",
-					"view": "View",
-					"case": "Case"
-				}
-			},
-			"lists": {
-				"projects": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"category": "string",
-						"year": "number",
-						"summary": "string",
-						"tags": "string[]",
-						"featured": "boolean",
-						"client": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"category": "Category",
-						"year": 0,
-						"summary": "Summary",
-						"tags": [],
-						"featured": false,
-						"client": "Client"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"featured",
-					"view",
-					"case"
-				]
 			}
 		},
 		"proof-band": {
@@ -14472,58 +9576,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"logos",
-				"empty",
-				"stats",
-				"layout",
-				"logoStyle",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"logos": [],
-				"stats": []
-			},
-			"lists": {
-				"logos": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"icon": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"icon": "Icon"
-					}
-				},
-				"stats": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"value": "string",
-						"icon": "string",
-						"hint": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"value": "Value",
-						"icon": "Icon",
-						"hint": "Hint"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"quick-order": {
 			"spec": "block.quickorder",
@@ -14539,125 +9592,6 @@
 					"phone": "hide",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"phone",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"quote-split": {
@@ -14696,89 +9630,6 @@
 					"mediaSide": "end",
 					"tone": "default"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"quotes",
-				"labels",
-				"extras",
-				"actions",
-				"layout",
-				"mediaSide",
-				"tone",
-				"empty",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"quotes": [],
-				"labels": {
-					"rating": "Rating",
-					"byLine": "By line",
-					"handleLine": "Handle line"
-				},
-				"extras": {
-					"stats": [],
-					"logos": [],
-					"rating": 0,
-					"score": "Score",
-					"reviews": "Reviews"
-				},
-				"actions": {
-					"cta": "Cta"
-				}
-			},
-			"lists": {
-				"quotes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"author": "string",
-						"role": "string",
-						"company": "string",
-						"quote": "string",
-						"rating": "number",
-						"handle": "string",
-						"time": "string",
-						"mark": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"author": "Author",
-						"role": "Role",
-						"company": "Company",
-						"quote": "Quote",
-						"rating": 0,
-						"handle": "Handle",
-						"time": "Time",
-						"mark": "Mark"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"rating",
-					"byLine",
-					"handleLine"
-				],
-				"extras": [
-					"stats",
-					"logos",
-					"rating",
-					"score",
-					"reviews"
-				],
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref"
-				]
 			}
 		},
 		"recipe-kits": {
@@ -14795,144 +9646,6 @@
 					"layout": "cards",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"portions",
-				"layout",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				},
-				"portions": []
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				},
-				"portions": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"price": "number",
-						"currency": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"price": 0,
-						"currency": "USD",
-						"note": "Note"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"reservation-form": {
@@ -14971,70 +9684,6 @@
 					"terms": "hide",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"labels",
-				"details",
-				"layout",
-				"fields",
-				"terms",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"labels": {
-					"name": "Name",
-					"phone": "Phone",
-					"email": "Email",
-					"date": "Date",
-					"time": "Time",
-					"guests": "Guests",
-					"notes": "Notes",
-					"consent": "Consent",
-					"submit": "Submit",
-					"decrease": "Decrease",
-					"increase": "Increase"
-				},
-				"details": []
-			},
-			"lists": {
-				"details": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"name",
-					"phone",
-					"email",
-					"date",
-					"time",
-					"guests",
-					"notes",
-					"consent",
-					"submit",
-					"decrease",
-					"increase"
-				]
 			}
 		},
 		"restaurant-menu": {
@@ -15051,142 +9700,6 @@
 					"cols": "2",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"sections",
-				"empty",
-				"labels",
-				"cols",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"sections": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				},
-				"sections": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"key": "string",
-						"title": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"key": "Key",
-						"title": "Title",
-						"note": "Note"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"review-list": {
@@ -15230,54 +9743,6 @@
 					"tone": "muted",
 					"density": "roomy"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"reviews",
-				"labels",
-				"layout",
-				"item",
-				"avatar",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"reviews": [],
-				"labels": {
-					"ratingLabel": "Rating label",
-					"empty": "Empty"
-				}
-			},
-			"lists": {
-				"reviews": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"author": "string",
-						"rating": "number",
-						"text": "string",
-						"date": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"author": "Author",
-						"rating": 0,
-						"text": "Text",
-						"date": "Date"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"ratingLabel",
-					"empty"
-				]
 			}
 		},
 		"rich-text": {
@@ -15305,38 +9770,6 @@
 					"layout": "hero",
 					"level": 1
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"content",
-				"media",
-				"meta",
-				"aside",
-				"level",
-				"layout",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item"
-			},
-			"lists": {},
-			"objects": {
-				"media": [
-					"src",
-					"alt"
-				],
-				"meta": [
-					"date",
-					"author",
-					"category"
-				],
-				"aside": [
-					"title",
-					"content"
-				]
 			}
 		},
 		"shopping-cart": {
@@ -15363,133 +9796,6 @@
 					"progress": "hide",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lines",
-				"rows",
-				"promos",
-				"labels",
-				"totals",
-				"actions",
-				"layout",
-				"promo",
-				"progress",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"lines": [],
-				"rows": [],
-				"promos": [],
-				"labels": {
-					"caption": "Caption",
-					"product": "Product",
-					"price": "Price",
-					"qty": "Qty",
-					"total": "Total",
-					"remove": "Remove",
-					"subtotal": "Subtotal",
-					"checkout": "Checkout",
-					"decrease": "Decrease",
-					"increase": "Increase"
-				},
-				"totals": {
-					"title": "Title",
-					"items": "Items",
-					"promo": "Promo",
-					"apply": "Apply",
-					"codes": "Codes",
-					"progress": "Progress",
-					"checkout": "Checkout",
-					"note": "Note"
-				},
-				"actions": {
-					"back": "Back",
-					"clear": "Clear",
-					"empty": "Empty"
-				}
-			},
-			"lists": {
-				"lines": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"variant": "string",
-						"price": "number",
-						"currency": "string",
-						"qty": "number"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"variant": "Variant",
-						"price": 0,
-						"currency": "USD",
-						"qty": 0
-					}
-				},
-				"rows": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"amount": "number",
-						"currency": "string",
-						"strong": "boolean"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"amount": 0,
-						"currency": "USD",
-						"strong": false
-					}
-				},
-				"promos": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"code": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"code": "Code"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"caption",
-					"product",
-					"price",
-					"qty",
-					"total",
-					"remove",
-					"subtotal",
-					"checkout",
-					"decrease",
-					"increase"
-				],
-				"totals": [
-					"title",
-					"items",
-					"promo",
-					"apply",
-					"codes",
-					"progress",
-					"checkout",
-					"note"
-				],
-				"actions": [
-					"back",
-					"clear",
-					"empty"
-				]
 			}
 		},
 		"sidebar-nav": {
@@ -15518,43 +9824,7 @@
 					"user": "show",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"label",
-				"brand",
-				"links",
-				"current",
-				"userName",
-				"userEmail",
-				"width",
-				"user",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"label": "Label",
-				"brand": "Brand",
-				"links": [],
-				"userName": "User name",
-				"userEmail": "User email"
-			},
-			"lists": {
-				"links": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"signup-wizard": {
 			"spec": "block.wizard",
@@ -15579,60 +9849,6 @@
 					"layout": "plain",
 					"current": 2
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"steps",
-				"labels",
-				"current",
-				"level",
-				"progress",
-				"layout",
-				"landmarkLabel",
-				"ongo"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"steps": [],
-				"labels": {
-					"stepOf": "Step of",
-					"steps": "Steps",
-					"back": "Back",
-					"next": "Next",
-					"finish": "Finish"
-				}
-			},
-			"lists": {
-				"steps": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"fieldA": "string",
-						"fieldB": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon",
-						"fieldA": "Field a",
-						"fieldB": "Field b"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"stepOf",
-					"steps",
-					"back",
-					"next",
-					"finish"
-				]
 			}
 		},
 		"site-footer": {
@@ -15653,34 +9869,6 @@
 					"layout": "minimal",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"labels",
-				"routes",
-				"layout",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"labels": {
-					"copyright": "Copyright",
-					"nav": "Nav",
-					"home": "Home",
-					"pricing": "Pricing"
-				}
-			},
-			"lists": {},
-			"objects": {
-				"labels": [
-					"copyright",
-					"nav",
-					"home",
-					"pricing"
-				],
-				"routes": [
-					"home",
-					"pricing"
-				]
 			}
 		},
 		"site-header": {
@@ -15709,44 +9897,6 @@
 					"position": "static",
 					"actions": "cta"
 				}
-			},
-			"props": [
-				"labels",
-				"routes",
-				"current",
-				"layout",
-				"position",
-				"actions",
-				"cta",
-				"ctaHref",
-				"landmarkLabel",
-				"ontheme"
-			],
-			"defaults": {
-				"labels": {
-					"skip": "Skip",
-					"brand": "Brand",
-					"nav": "Nav",
-					"home": "Home",
-					"pricing": "Pricing",
-					"theme": "Theme"
-				},
-				"current": "Current"
-			},
-			"lists": {},
-			"objects": {
-				"labels": [
-					"skip",
-					"brand",
-					"nav",
-					"home",
-					"pricing",
-					"theme"
-				],
-				"routes": [
-					"home",
-					"pricing"
-				]
 			}
 		},
 		"sitemap-footer": {
@@ -15815,56 +9965,6 @@
 					},
 					"density": "compact"
 				}
-			},
-			"props": [
-				"label",
-				"brand",
-				"tagline",
-				"copyright",
-				"groups",
-				"signup",
-				"status",
-				"id",
-				"layout",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"label": "Label",
-				"brand": "Brand",
-				"tagline": "Tagline",
-				"copyright": "Copyright",
-				"groups": []
-			},
-			"lists": {
-				"groups": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"icon": "string",
-						"links": "NavLink[]",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"icon": "Icon",
-						"links": []
-					}
-				}
-			},
-			"objects": {
-				"signup": [
-					"mode",
-					"title",
-					"label",
-					"submit"
-				],
-				"status": [
-					"mode",
-					"label"
-				]
 			}
 		},
 		"skeleton-layout": {
@@ -15889,34 +9989,7 @@
 					"shape": "cards",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"label",
-				"lines",
-				"shape",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"label": "Label",
-				"lines": []
-			},
-			"lists": {
-				"lines": {
-					"required": true,
-					"record": {
-						"id": "string"
-					},
-					"defaults": {
-						"id": "item"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"slot-board": {
 			"spec": "block.slots",
@@ -15939,85 +10012,6 @@
 					"item": "card",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"days",
-				"empty",
-				"zone",
-				"labels",
-				"layout",
-				"item",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"days": [],
-				"zone": {
-					"id": "item",
-					"name": "Name",
-					"area": "Area",
-					"price": 0,
-					"freeFrom": 0,
-					"minOrder": 0,
-					"time": "Time",
-					"express": "Express",
-					"currency": "USD"
-				},
-				"labels": {
-					"zone": "Zone",
-					"price": "Price",
-					"freeFrom": "Free from",
-					"time": "Time",
-					"primary": "Primary",
-					"secondary": "Secondary",
-					"note": "Note"
-				}
-			},
-			"lists": {
-				"days": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"note": "string",
-						"slots": "string[]",
-						"closed": "string[]"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"note": "Note",
-						"slots": [],
-						"closed": []
-					}
-				}
-			},
-			"objects": {
-				"zone": [
-					"id",
-					"name",
-					"area",
-					"price",
-					"freeFrom",
-					"minOrder",
-					"time",
-					"express",
-					"currency"
-				],
-				"labels": [
-					"zone",
-					"price",
-					"freeFrom",
-					"time",
-					"primary",
-					"secondary",
-					"note"
-				]
 			}
 		},
 		"stats-band": {
@@ -16131,45 +10125,7 @@
 					"tone": "default",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"stats",
-				"empty",
-				"cols",
-				"layout",
-				"surface",
-				"item",
-				"align",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"stats": []
-			},
-			"lists": {
-				"stats": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"label": "string",
-						"value": "string",
-						"icon": "string",
-						"hint": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"label": "Label",
-						"value": "Value",
-						"icon": "Icon",
-						"hint": "Hint"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"stepper": {
 			"spec": "block.stepper",
@@ -16197,46 +10153,7 @@
 					"marker": "icon",
 					"summary": "hide"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"steps",
-				"current",
-				"stepLabel",
-				"back",
-				"next",
-				"layout",
-				"marker",
-				"summary",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"steps": [],
-				"stepLabel": "Step label",
-				"back": "Back",
-				"next": "Next"
-			},
-			"lists": {
-				"steps": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"steps-list": {
 			"spec": "block.steps",
@@ -16286,42 +10203,7 @@
 					"tone": "default",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"steps",
-				"empty",
-				"layout",
-				"marker",
-				"align",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"steps": []
-			},
-			"lists": {
-				"steps": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"store-hero": {
 			"spec": "block.storehero",
@@ -16356,65 +10238,6 @@
 						"href": "#/catalog"
 					}
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"level",
-				"actions",
-				"perks",
-				"card",
-				"layout",
-				"mediaSide",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"actions": {
-					"cta": "Cta"
-				},
-				"perks": [],
-				"card": {
-					"title": "Title",
-					"text": "Text",
-					"icon": "Icon"
-				}
-			},
-			"lists": {
-				"perks": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {
-				"actions": [
-					"mode",
-					"cta",
-					"href",
-					"secondary",
-					"secondaryHref"
-				],
-				"card": [
-					"title",
-					"text",
-					"icon"
-				]
 			}
 		},
 		"store-locations": {
@@ -16435,57 +10258,6 @@
 					"layout": "map",
 					"tone": "default"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"stores",
-				"empty",
-				"kinds",
-				"labels",
-				"layout",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"stores": [],
-				"kinds": {},
-				"labels": {
-					"map": "Map"
-				}
-			},
-			"lists": {
-				"stores": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"kind": "string",
-						"address": "string",
-						"hours": "string",
-						"phone": "string",
-						"note": "string",
-						"services": "string[]"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"kind": "Kind",
-						"address": "Address",
-						"hours": "Hours",
-						"phone": "Phone",
-						"note": "Note",
-						"services": []
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"map"
-				]
 			}
 		},
 		"story-tabs": {
@@ -16506,57 +10278,6 @@
 					"layout": "years",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"badge",
-				"steps",
-				"empty",
-				"active",
-				"labels",
-				"layout",
-				"tone",
-				"landmarkLabel",
-				"onselect"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"steps": [],
-				"active": "Active",
-				"labels": {
-					"step": "Step",
-					"previous": "Previous",
-					"next": "Next"
-				}
-			},
-			"lists": {
-				"steps": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"date": "string",
-						"title": "string",
-						"text": "string",
-						"tag": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"date": "Date",
-						"title": "Title",
-						"text": "Text",
-						"tag": "Tag"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"step",
-					"previous",
-					"next"
-				]
 			}
 		},
 		"support-channels": {
@@ -16589,44 +10310,7 @@
 					"action": "none",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"channels",
-				"empty",
-				"open",
-				"layout",
-				"cols",
-				"action",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"channels": [],
-				"open": "Open"
-			},
-			"lists": {
-				"channels": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"sushi-sets": {
 			"spec": "block.sushisets",
@@ -16642,125 +10326,6 @@
 					"cols": "3",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"cols",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"team-grid": {
@@ -16805,50 +10370,7 @@
 					"tone": "default",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"members",
-				"empty",
-				"depts",
-				"layout",
-				"cols",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"members": [],
-				"depts": {}
-			},
-			"lists": {
-				"members": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"role": "string",
-						"dept": "string",
-						"location": "string",
-						"bio": "string",
-						"skills": "string[]"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"role": "Role",
-						"dept": "Dept",
-						"location": "Location",
-						"bio": "Bio",
-						"skills": []
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"template-grid": {
 			"spec": "block.templates",
@@ -16876,72 +10398,6 @@
 					"tone": "default",
 					"density": "roomy"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"templates",
-				"filters",
-				"browseHref",
-				"labels",
-				"cols",
-				"tone",
-				"density",
-				"empty",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"templates": [],
-				"filters": [],
-				"labels": {
-					"filters": "Filters",
-					"browse": "Browse",
-					"views": "Views",
-					"likes": "Likes"
-				}
-			},
-			"lists": {
-				"templates": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"views": "string",
-						"likes": "string",
-						"topic": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"views": "Views",
-						"likes": "Likes",
-						"topic": "Topic"
-					}
-				},
-				"filters": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"value": "string",
-						"icon": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"value": "Value"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"filters",
-					"browse",
-					"views",
-					"likes"
-				]
 			}
 		},
 		"testimonial-grid": {
@@ -17070,69 +10526,6 @@
 					"tone": "default",
 					"density": "roomy"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"quotes",
-				"empty",
-				"labels",
-				"layout",
-				"cols",
-				"item",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"quotes": [],
-				"labels": {
-					"rating": "Rating",
-					"byLine": "By line",
-					"handleLine": "Handle line"
-				}
-			},
-			"lists": {
-				"quotes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"author": "string",
-						"role": "string",
-						"company": "string",
-						"quote": "string",
-						"rating": "number",
-						"handle": "string",
-						"time": "string",
-						"mark": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"author": "Author",
-						"role": "Role",
-						"company": "Company",
-						"quote": "Quote",
-						"rating": 0,
-						"handle": "Handle",
-						"time": "Time",
-						"mark": "Mark"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"rating",
-					"byLine",
-					"handleLine"
-				],
-				"item": [
-					"kind",
-					"avatar",
-					"rating",
-					"mark"
-				]
 			}
 		},
 		"tour-callout": {
@@ -17161,31 +10554,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"target",
-				"position",
-				"skip",
-				"next",
-				"placement",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"target": "Target",
-				"position": "Position",
-				"skip": "Skip",
-				"next": "Next"
-			},
-			"lists": {},
-			"objects": {}
+			}
 		},
 		"usage-calculator": {
 			"spec": "block.usage",
@@ -17213,53 +10582,6 @@
 					"ends": "show",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"usage",
-				"slider",
-				"price",
-				"cta",
-				"href",
-				"layout",
-				"ends",
-				"tone",
-				"landmarkLabel",
-				"onusage"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"usage": 0,
-				"slider": {
-					"min": 0,
-					"max": 0,
-					"label": "Label",
-					"unit": "Unit"
-				},
-				"price": {
-					"rate": 0,
-					"currency": "USD",
-					"label": "Label"
-				},
-				"cta": "Cta"
-			},
-			"lists": {},
-			"objects": {
-				"slider": [
-					"min",
-					"max",
-					"label",
-					"unit"
-				],
-				"price": [
-					"rate",
-					"currency",
-					"label"
-				]
 			}
 		},
 		"usp-strip": {
@@ -17296,40 +10618,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"perks",
-				"empty",
-				"layout",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"perks": []
-			},
-			"lists": {
-				"perks": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string",
-						"icon": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text",
-						"icon": "Icon"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"veggie-box": {
 			"spec": "block.veggiebox",
@@ -17345,130 +10634,6 @@
 					"layout": "stacked",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"empty",
-				"labels",
-				"fill",
-				"total",
-				"currency",
-				"layout",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				},
-				"total": 0,
-				"currency": "USD"
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"video-grid": {
@@ -17501,56 +10666,7 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"quotes",
-				"empty",
-				"playLabel",
-				"byLine",
-				"cols",
-				"caption",
-				"tone",
-				"density",
-				"landmarkLabel",
-				"onplay"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"quotes": [],
-				"playLabel": "Play label",
-				"byLine": "By line"
-			},
-			"lists": {
-				"quotes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"author": "string",
-						"role": "string",
-						"company": "string",
-						"quote": "string",
-						"rating": "number",
-						"handle": "string",
-						"time": "string",
-						"mark": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"author": "Author",
-						"role": "Role",
-						"company": "Company",
-						"quote": "Quote",
-						"rating": 0,
-						"handle": "Handle",
-						"time": "Time",
-						"mark": "Mark"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"video-modal": {
 			"spec": "block.videomodal",
@@ -17578,45 +10694,7 @@
 					"outline": "none",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"text",
-				"close",
-				"play",
-				"chaptersTitle",
-				"chapters",
-				"size",
-				"outline",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"text": "Text",
-				"close": "Close",
-				"play": "Play",
-				"chaptersTitle": "Chapters title",
-				"chapters": []
-			},
-			"lists": {
-				"chapters": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"title": "string",
-						"text": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"title": "Title",
-						"text": "Text"
-					}
-				}
-			},
-			"objects": {}
+			}
 		},
 		"week-menu": {
 			"spec": "block.weekmenu",
@@ -17632,142 +10710,6 @@
 					"media": "none",
 					"tone": "muted"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"dishes",
-				"sections",
-				"empty",
-				"labels",
-				"media",
-				"tone",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"dishes": [],
-				"sections": [],
-				"labels": {
-					"add": "Add",
-					"open": "Open",
-					"order": "Order",
-					"qtyOf": "Qty of",
-					"decreaseOf": "Decrease of",
-					"increaseOf": "Increase of",
-					"addOf": "Add of",
-					"orderOf": "Order of",
-					"inCart": "In cart",
-					"total": "Total",
-					"minutes": "Minutes",
-					"ingredients": "Ingredients",
-					"portions": "Portions",
-					"size": "Size",
-					"crust": "Crust",
-					"perKg": "Per kg",
-					"weightOf": "Weight of",
-					"boxFill": "Box fill",
-					"main": "Main",
-					"side": "Side",
-					"drink": "Drink",
-					"meat": "Meat",
-					"weight": "Weight",
-					"sides": "Sides",
-					"summary": "Summary",
-					"phone": "Phone",
-					"cut": "Cut",
-					"heat": "Heat",
-					"price": "Price",
-					"marinade": "Marinade",
-					"caption": "Caption",
-					"pieces": "Pieces",
-					"strip": "Strip",
-					"sections": "Sections"
-				}
-			},
-			"lists": {
-				"dishes": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"summary": "string",
-						"price": "number",
-						"currency": "string",
-						"weight": "string",
-						"tag": "string",
-						"items": "string[]",
-						"minutes": "number",
-						"badge": "string",
-						"href": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"summary": "Summary",
-						"price": 0,
-						"currency": "USD",
-						"weight": "Weight",
-						"tag": "Tag",
-						"items": [],
-						"minutes": 0
-					}
-				},
-				"sections": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"key": "string",
-						"title": "string",
-						"note": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"key": "Key",
-						"title": "Title",
-						"note": "Note"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"add",
-					"open",
-					"order",
-					"qtyOf",
-					"decreaseOf",
-					"increaseOf",
-					"addOf",
-					"orderOf",
-					"inCart",
-					"total",
-					"minutes",
-					"ingredients",
-					"portions",
-					"size",
-					"crust",
-					"perKg",
-					"weightOf",
-					"boxFill",
-					"main",
-					"side",
-					"drink",
-					"meat",
-					"weight",
-					"sides",
-					"summary",
-					"phone",
-					"cut",
-					"heat",
-					"price",
-					"marinade",
-					"caption",
-					"pieces",
-					"strip",
-					"sections"
-				]
 			}
 		},
 		"zone-table": {
@@ -17791,70 +10733,6 @@
 					"tone": "muted",
 					"density": "compact"
 				}
-			},
-			"props": [
-				"id",
-				"title",
-				"lead",
-				"zones",
-				"empty",
-				"labels",
-				"layout",
-				"tone",
-				"density",
-				"landmarkLabel"
-			],
-			"defaults": {
-				"id": "item",
-				"title": "Title",
-				"zones": [],
-				"labels": {
-					"caption": "Caption",
-					"zone": "Zone",
-					"price": "Price",
-					"freeFrom": "Free from",
-					"minOrder": "Min order",
-					"time": "Time",
-					"express": "Express"
-				}
-			},
-			"lists": {
-				"zones": {
-					"required": true,
-					"record": {
-						"id": "string",
-						"name": "string",
-						"area": "string",
-						"price": "number",
-						"freeFrom": "number",
-						"minOrder": "number",
-						"time": "string",
-						"express": "string",
-						"currency": "string"
-					},
-					"defaults": {
-						"id": "item",
-						"name": "Name",
-						"area": "Area",
-						"price": 0,
-						"freeFrom": 0,
-						"minOrder": 0,
-						"time": "Time",
-						"express": "Express",
-						"currency": "USD"
-					}
-				}
-			},
-			"objects": {
-				"labels": [
-					"caption",
-					"zone",
-					"price",
-					"freeFrom",
-					"minOrder",
-					"time",
-					"express"
-				]
 			}
 		}
 	},
@@ -20437,285 +13315,5 @@
 			"item": "zone-table",
 			"variant": "table"
 		}
-	},
-	"icons": [
-		"accessibility",
-		"activity",
-		"anchor",
-		"archive",
-		"arrow-down",
-		"arrow-down-up",
-		"arrow-left",
-		"arrow-right",
-		"arrow-up",
-		"arrow-up-right",
-		"at-sign",
-		"badge-check",
-		"badge-dollar-sign",
-		"ban",
-		"banknote",
-		"bell",
-		"blocks",
-		"bold",
-		"bolt",
-		"book-open",
-		"book-open-text",
-		"book-x",
-		"bookmark",
-		"bot",
-		"boxes",
-		"brain",
-		"briefcase",
-		"brush",
-		"building",
-		"calendar",
-		"calendar-days",
-		"calendar-range",
-		"camera",
-		"chart-area",
-		"chart-column",
-		"chart-line",
-		"chart-pie",
-		"chart-scatter",
-		"check",
-		"chevron-down",
-		"chevron-left",
-		"chevron-right",
-		"chevron-up",
-		"chevrons-down",
-		"chevrons-up",
-		"chevrons-up-down",
-		"circle",
-		"circle-alert",
-		"circle-check",
-		"circle-dollar-sign",
-		"circle-dot",
-		"circle-play",
-		"circle-plus",
-		"circle-question-mark",
-		"circle-slash",
-		"circle-user",
-		"circle-x",
-		"clipboard-check",
-		"clipboard-list",
-		"clock",
-		"cloud",
-		"cloud-off",
-		"cloud-upload",
-		"code-xml",
-		"columns-3",
-		"command",
-		"compass",
-		"cookie",
-		"copy",
-		"credit-card",
-		"database",
-		"dollar-sign",
-		"dot",
-		"download",
-		"ellipsis",
-		"ellipsis-vertical",
-		"external-link",
-		"eye",
-		"eye-off",
-		"file",
-		"file-code",
-		"file-down",
-		"file-image",
-		"file-pen",
-		"file-pen-line",
-		"file-plus",
-		"file-question-mark",
-		"file-search",
-		"file-spreadsheet",
-		"file-text",
-		"file-up",
-		"file-video-camera",
-		"files",
-		"film",
-		"fingerprint-pattern",
-		"flag",
-		"folder",
-		"folder-archive",
-		"folder-kanban",
-		"folder-open",
-		"folder-plus",
-		"folder-tree",
-		"funnel",
-		"gift",
-		"git-compare",
-		"globe",
-		"globe-lock",
-		"graduation-cap",
-		"grid-3x3",
-		"grip-vertical",
-		"group",
-		"handshake",
-		"hash",
-		"heading",
-		"headphones",
-		"heart",
-		"heart-handshake",
-		"hourglass",
-		"house",
-		"id-card",
-		"image",
-		"image-off",
-		"image-plus",
-		"images",
-		"inbox",
-		"info",
-		"italic",
-		"kanban",
-		"key",
-		"key-round",
-		"lamp-desk",
-		"landmark",
-		"languages",
-		"laptop",
-		"layers",
-		"layout-dashboard",
-		"layout-grid",
-		"layout-list",
-		"layout-template",
-		"life-buoy",
-		"lightbulb",
-		"link",
-		"link-2",
-		"list",
-		"list-checks",
-		"list-filter",
-		"list-ordered",
-		"list-todo",
-		"list-tree",
-		"loader",
-		"loader-circle",
-		"lock",
-		"lock-keyhole",
-		"log-in",
-		"log-out",
-		"mail",
-		"mail-check",
-		"mail-open",
-		"map-pin",
-		"megaphone",
-		"menu",
-		"message-circle",
-		"message-circle-question-mark",
-		"message-square",
-		"message-square-more",
-		"message-square-quote",
-		"message-square-text",
-		"messages-square",
-		"minus",
-		"monitor",
-		"monitor-smartphone",
-		"moon",
-		"mountain",
-		"mouse-pointer-click",
-		"move-right",
-		"music",
-		"newspaper",
-		"orbit",
-		"package",
-		"package-check",
-		"package-open",
-		"palette",
-		"panel-bottom",
-		"panel-left",
-		"panel-left-close",
-		"panel-top",
-		"paperclip",
-		"pause",
-		"pencil",
-		"pencil-line",
-		"percent",
-		"phone",
-		"pilcrow",
-		"pin",
-		"play",
-		"plug",
-		"plug-zap",
-		"plus",
-		"presentation",
-		"printer",
-		"puzzle",
-		"qr-code",
-		"quote",
-		"receipt-text",
-		"redo-2",
-		"refresh-cw",
-		"rocket",
-		"rotate-ccw",
-		"rotate-cw",
-		"rows-3",
-		"save",
-		"scale",
-		"scan-face",
-		"scroll-text",
-		"search",
-		"search-x",
-		"send",
-		"settings",
-		"settings-2",
-		"share",
-		"share-2",
-		"shield",
-		"shield-alert",
-		"shield-ban",
-		"shield-check",
-		"shield-x",
-		"shopping-bag",
-		"shopping-cart",
-		"sliders-horizontal",
-		"sliders-vertical",
-		"smartphone",
-		"sparkles",
-		"square",
-		"square-pen",
-		"star",
-		"star-half",
-		"store",
-		"sun",
-		"table",
-		"table-properties",
-		"tablet",
-		"tag",
-		"tags",
-		"terminal",
-		"text-align-center",
-		"text-align-end",
-		"text-align-start",
-		"text-cursor-input",
-		"thumbs-down",
-		"thumbs-up",
-		"ticket-percent",
-		"timer",
-		"toggle-left",
-		"trash",
-		"trees",
-		"trending-down",
-		"trending-up",
-		"triangle-alert",
-		"truck",
-		"type",
-		"undo-2",
-		"upload",
-		"user",
-		"user-check",
-		"user-cog",
-		"user-pen",
-		"user-plus",
-		"user-round-check",
-		"user-x",
-		"users",
-		"users-round",
-		"video",
-		"wallet",
-		"wand-sparkles",
-		"webhook",
-		"wrench",
-		"x",
-		"zap"
-	]
+	}
 }

@@ -24,6 +24,21 @@ import {
 	type RunUsage
 } from "@buildytech/builder-core";
 import { fetchXaiStatus, runXaiProposal, type XaiRunResponse } from "../browser/xai-client";
+
+/**
+ * The props gate (Ajv 2020 over the pinned registry props schemas) is its own chunk: loaded once, before the first
+ * proposal is assembled or gated. Until it is installed the gate is fail-closed (props_gate_unavailable).
+ */
+let propsGate: Promise<unknown> | null = null;
+export function loadPropsGate(): Promise<unknown> {
+	propsGate ??= import("@buildytech/builder-core/props-gate").catch((err) => {
+		propsGate = null;
+		throw err;
+	});
+	return propsGate;
+}
+// Fetch the chunk while the author types; the first send awaits the same promise.
+if (typeof window !== "undefined") setTimeout(() => void loadPropsGate().catch(() => {}), 0);
 import { getSelectedModelId } from "../browser/models.svelte";
 import {
 	getScenarioId,
@@ -614,6 +629,7 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 	inflight = ac;
 	const token = epoch;
 	try {
+		await loadPropsGate();
 		const { result, status, modelId, live, usage, path, tools, runId } = await runConstructor(trimmed, ac.signal);
 		if (token !== epoch) return getSelectedSession() ?? pending;
 		capabilities = {

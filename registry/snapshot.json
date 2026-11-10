@@ -5,13 +5,24 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "fc97e8d085cb405ad2661bb5a8f15a6e4bb44fa681ba5b3f580bd4a51aaa13dd",
-		"lastUpdated": "2026-11-09T23:42:50+03:00",
+		"sha256": "39d1542666e00ced6324d73aa55b3f909423000f186edb1af484c3b4784cd122",
+		"lastUpdated": "2026-11-10T00:07:21+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
 		"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4"
+	},
+	"props": {
+		"url": "https://registry.buildy.tw/props/v0.json",
+		"sha256": "2f5e08736cee3dd30abfac5fb20b3d974934383ecc5c95b5d8c13b5288b266a5",
+		"digest": "sha256:395a62bcfb3439038865637e0d278a8a41413dd1cdd22e00f0feac85fc5748da",
+		"items": 117
+	},
+	"manifest": {
+		"url": "https://registry.buildy.tw/manifest.json",
+		"contractVersion": "2.0.0",
+		"version": "0.1.0"
 	},
 	"initItems": [
 		"presets",

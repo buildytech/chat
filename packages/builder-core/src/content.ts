@@ -1,12 +1,13 @@
 import {
 	PAGE_LIMITS,
+	PAGE_SLOTS,
 	type PageBlock,
 	type PageBlockCopy,
 	type PageBlockKind,
 	type PageCopyKey
 } from "@buildytech/page-contract";
 import { rendererKindForLabel } from "./catalog/compatibility.ts";
-import { isLucideIcon, lucideIconHint, resolveCatalogChoice } from "./catalog/sources.ts";
+import { resolveCatalogChoice } from "./catalog/sources.ts";
 
 /**
  * Model-supplied page content for propose_layout.
@@ -25,7 +26,7 @@ export type ModelContentItem = {
 	detail?: string;
 	/** Sidebar group heading for a nav link (stored as nav-link copy.eyebrow). */
 	group?: string;
-	/** Lucide icon name of a feature row (copy.icon); checked against the pinned registry snapshot. */
+	/** Lucide icon name of a row whose page-spec slot renders icon (copy.icon); the props gate checks it. */
 	icon?: string;
 };
 
@@ -306,9 +307,9 @@ export function parseModelContent(args: Record<string, unknown>): ModelPageConte
 
 /**
  * Catalog checks of the model content before assembly: an explicit catalogBlock (and its variant) must be a block of
- * the pinned catalog for that kind, and every row icon a Lucide name of the registry snapshot. A variant without a
- * catalogBlock is checked after assembly against the block of the chosen screen. Catalog blocks are normalized
- * (label or asset id -> block spec).
+ * the pinned catalog for that kind. A variant without a catalogBlock is checked after assembly against the block of
+ * the chosen screen; row icons and every other registry prop are checked after assembly by the props gate (the
+ * merged props against the block's published schema). Catalog blocks are normalized (label or asset id -> block spec).
  */
 export function checkContentCatalog(content: ModelPageContent): { ok: true } | { ok: false; code: string; message: string; path: string } {
 	for (const [bi, entry] of content.blocks.entries()) {
@@ -319,16 +320,6 @@ export function checkContentCatalog(content: ModelPageContent): { ok: true } | {
 			}
 			entry.catalogBlock = choice.catalogBlock;
 			if (choice.variant) entry.variant = choice.variant;
-		}
-		for (const [ii, item] of entry.items.entries()) {
-			if (item.icon !== undefined && !isLucideIcon(item.icon)) {
-				return {
-					ok: false,
-					code: "unknown_icon",
-					message: `${item.icon} is not a Lucide icon of the pinned registry snapshot. Use one of the allowed names or omit icon. ${lucideIconHint()}`,
-					path: `blocks[${bi}].items[${ii}].icon`
-				};
-			}
 		}
 	}
 	return { ok: true };
@@ -349,7 +340,8 @@ function childBlock(parent: PageBlock, child: PageBlockKind, item: ModelContentI
 	if (item.value && (demo || child === "nav-link" || child === "feature")) copy.value = item.value;
 	if (item.note) copy.note = item.note;
 	if (item.group && child === "nav-link") copy.eyebrow = item.group;
-	if (item.icon && child === "feature") copy.icon = item.icon;
+	// Only rows whose page-spec slot renders an icon carry one; the registry props schema then checks the name.
+	if (item.icon && (PAGE_SLOTS[child]?.copy as readonly string[] | undefined)?.includes("icon")) copy.icon = item.icon;
 	if (Object.keys(copy).length) node.copy = copy;
 	return node;
 }
@@ -459,7 +451,7 @@ export function proposeContentParameterSchema(): Record<string, unknown> {
 			group: { type: "string", description: "Sidenav only: group heading for this link, e.g. Workspace." },
 			icon: {
 				type: "string",
-				description: "Features only: a Lucide icon name for this feature card. get_block_details on the features block lists the allowed names; unknown names are rejected."
+				description: "A Lucide name from catalogSources.icons, on rows whose slot renders an icon (features). The host validates it against the block's published props schema; other rows ignore it."
 			}
 		},
 		required: ["label"]
