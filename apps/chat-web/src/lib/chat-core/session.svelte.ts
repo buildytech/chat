@@ -604,7 +604,13 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 		return createSession();
 	}
 	let session = getSelectedSession();
-	if (!session) session = await createSession();
+	if (!session) {
+		// The first send from the home screen creates the chat; keep the scenario / screen picked there.
+		const picked = { scenarioId: getScenarioId(), screenId: getScreenId() };
+		session = await createSession();
+		hydrateSessionContext(picked);
+		session = { ...session, ...picked };
+	}
 	const userMsg: ChatMessage = {
 		id: uid("msg"),
 		role: "user",

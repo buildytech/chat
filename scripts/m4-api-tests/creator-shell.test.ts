@@ -105,3 +105,9 @@ test("narrow viewport uses Creator tabs, not only the preview device frame", () 
 	assert.doesNotMatch(source("PreviewPane"), /preview\.editSoon/);
 	assert.match(source("PreviewPane"), /missingLabels/);
 });
+
+test("first send from home keeps the picked scenario and screen on the new chat", () => {
+	const s = sessionCore();
+	const send = s.slice(s.indexOf("async function sendMessageMock"), s.indexOf("const userMsg"));
+	assert.match(send, /const picked = \{ scenarioId: getScenarioId\(\), screenId: getScreenId\(\) \};\s*session = await createSession\(\);\s*hydrateSessionContext\(picked\);/);
+});
