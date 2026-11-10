@@ -24,6 +24,7 @@ export const ENABLED_SKILLS = [
 export const ALLOWED_TOOLS = [
 	"search_catalog",
 	"get_block",
+	"propose_plan",
 	"get_block_details",
 	"propose_layout",
 	"edit_page",

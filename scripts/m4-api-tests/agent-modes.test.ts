@@ -84,7 +84,7 @@ test("agent-tools.v1.json is the one tool definition: modes, names, plain JSON S
 		assert.equal((tool.parameters as { type?: string }).type, "object", tool.name);
 	}
 	// Mode -> tool set: Ask is read-only, Build has no Ask-only reader.
-	assert.deepEqual(agentToolNames("ask"), ["search_catalog", "get_block"]);
+	assert.deepEqual(agentToolNames("ask"), ["search_catalog", "get_block", "propose_plan"]);
 	assert.deepEqual(agentToolNames("build"), ["search_catalog", "get_block_details", "propose_layout", "edit_page", "get_skill"]);
 	for (const mode of ["ask", "build"] as const) {
 		const tools = agentOpenAiTools(mode);
@@ -139,7 +139,7 @@ test("Ask turn: only read-only tools, tool_choice auto, text answer, no proposal
 		async (requests) => {
 			const turn = await runXaiCatalogTurn("test-key", MODEL, { brief: OWNER_ASK, mode: "ask", scenarioId: null, screenId: null, expectedRevision: 0 }, AbortSignal.timeout(5000));
 			for (const request of requests) {
-				assert.deepEqual(toolNames(request), ["search_catalog", "get_block"]);
+				assert.deepEqual(toolNames(request), ["search_catalog", "get_block", "propose_plan"]);
 				assert.equal(request.tool_choice, "auto");
 			}
 			const messages = requests[2]!.messages as Array<{ role: string; name?: string; content?: string }>;

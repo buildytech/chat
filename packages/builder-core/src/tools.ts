@@ -8,6 +8,7 @@ import { screenSupport } from "./catalog/compatibility.ts";
 import { getAskBlock, getBlockDetails } from "./catalog/details.ts";
 import { toolOffersMode, type AgentMode } from "./agent/agent-tools.ts";
 import { blockLabelVocabulary, vocabularyValues } from "./catalog/text-search.ts";
+import { checkPagePlan, resolveBlockRef } from "./page-plan.ts";
 import { getSkill, ALLOWED_TOOLS, RUN_BUDGET, type AllowedTool } from "./policy.ts";
 import {
 	inheritedScreenId,
@@ -358,6 +359,20 @@ export function executeTool(
 		}
 		return { ok: true, name: call.name, result: details };
 	}
+	if (call.name === "propose_plan") {
+		if (!host?.currentPage) {
+			return { ok: false, code: "missing_page", message: "There is no page yet: answer in text; Build creates the page first." };
+		}
+		const plan = checkPagePlan({
+			page: host.currentPage,
+			provenance: host.currentProvenance,
+			revision: host.expectedRevision ?? 0,
+			sessionDemoData: Boolean(host.sessionDemoData),
+			raw: args
+		});
+		if (!plan) return { ok: false, code: "plan_empty", message: "propose_plan needs ops on currentPage block ids." };
+		return { ok: true, name: call.name, result: plan };
+	}
 	if (call.name === "get_skill") {
 		const skill = getSkill(String(args.id ?? ""));
 		if (!skill.ok) return { ok: false, code: skill.code, message: `Skill ${skill.id} is not available.` };
@@ -370,10 +385,19 @@ export function executeTool(
 		if (!host?.currentPage) {
 			return { ok: false, code: "missing_page", message: "edit_page needs a current page. Use propose_layout for a new page." };
 		}
+		// A block named by title, catalog block or catalog title (Logo cloud, block.logos) resolves to its page id.
+		const page = host.currentPage;
+		const ops = Array.isArray(args.ops)
+			? args.ops.map((op) => {
+					if (!op || typeof op !== "object" || typeof (op as { blockId?: unknown }).blockId !== "string") return op;
+					const ref = (op as { blockId: string }).blockId;
+					return { ...(op as Record<string, unknown>), blockId: resolveBlockRef(page, ref) ?? ref };
+				})
+			: args.ops;
 		const result = editPage({
 			page: host.currentPage,
 			provenance: host.currentProvenance,
-			patch: normalizePatch({ ops: args.ops, baseRevision: args.baseRevision }),
+			patch: normalizePatch({ ops, baseRevision: args.baseRevision }),
 			expectedRevision: typeof args.expectedRevision === "number" ? args.expectedRevision : (host.expectedRevision ?? 0),
 			demoData: typeof args.demoData === "boolean" ? args.demoData : undefined,
 			sessionDemoData: Boolean(host.sessionDemoData),

@@ -1,4 +1,4 @@
-import type { AgentMode, CatalogRefs, RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
+import type { AgentMode, CatalogRefs, PagePlan, RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
 import type { SessionRevisionEntry } from "@buildytech/page-contract/session";
 
 export type ServerCapabilities = {
@@ -47,8 +47,8 @@ export type ChatProposalState = {
 	demoData?: boolean;
 	/** Program-generated from the pinned Stock catalog after validation. Persisted with the chat. */
 	catalogRefs?: CatalogRefs;
-	/** ask-card: made by Apply variant on an Ask block card (no model call). */
-	origin?: "ask-card";
+	/** ask-card: Apply variant on an Ask block card; ask-plan: Apply in Build on an Ask plan (no model call). */
+	origin?: "ask-card" | "ask-plan";
 	/** Follow-up turns: block kinds added, kept, and removed versus the base page. */
 	changes?: { added: string[]; kept: string[]; removed: string[] };
 };
@@ -86,6 +86,8 @@ export type ChatMessage = {
 	answer?: { blocks: string[] };
 	/** Build proposals: the model's own words next to the proposal summary (Markdown). */
 	modelText?: string;
+	/** Ask answers: the checked page plan (session 1.4.0 `plan`, ADR 0020); its ops run with Apply in Build. */
+	plan?: PagePlan;
 };
 
 export type ChatSession = {

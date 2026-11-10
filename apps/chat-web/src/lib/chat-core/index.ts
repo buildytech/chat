@@ -10,6 +10,7 @@ export {
 	deleteAllSessions,
 	discardProposal,
 	applyVariantFromAsk,
+	applyPlanInBuild,
 	getChatMode,
 	setChatMode,
 	getChatSkin,
@@ -47,3 +48,4 @@ export type {
 	ProposalStatus,
 	SessionSummary
 } from "./types";
+export { changeReportText, planResultText, planOpText } from "./change-text";

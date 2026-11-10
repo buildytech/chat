@@ -126,7 +126,8 @@ export async function runXaiProposal(
 				currentProvenance: ctx.currentProvenance ?? null,
 				sessionDemoData: Boolean(ctx.sessionDemoData),
 				mode: ctx.mode ?? "build",
-				...(ctx.collectionRequest ? { collection: ctx.collectionRequest } : {})
+				...(ctx.collectionRequest ? { collection: ctx.collectionRequest } : {}),
+				...(ctx.manualEdits?.length ? { manualEdits: ctx.manualEdits } : {})
 			}),
 			signal
 		});

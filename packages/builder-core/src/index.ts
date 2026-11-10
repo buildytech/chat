@@ -133,6 +133,20 @@ export { parseLayoutCopyEdits } from "./edits.ts";
 export { editPage, normalizePatch } from "./patch.ts";
 export type { PagePatchContext, PatchOp } from "./patch.ts";
 export {
+	PLAN_LIMITS,
+	PLAN_OPS,
+	blockRef,
+	checkPagePlan,
+	compactPlanPayload,
+	describePageChanges,
+	executePagePlan,
+	manualEditsSince,
+	pageDirectory,
+	parseManualEdits,
+	resolveBlockRef
+} from "./page-plan.ts";
+export type { BlockRef, ManualEdit, PageChange, PageChangeReport, PagePlan, PagePlanOp, PagePlanStatus, PlanExecution, PlanOpName } from "./page-plan.ts";
+export {
 	DATA_KINDS,
 	cleanText,
 	defaultDemoLabel,

@@ -16,12 +16,12 @@
 	import { cn } from "$registry/utils/cn";
 	import type { ChatMessage as ChatMessageModel } from "$lib/chat-core";
 	import { isPendingProposal, proposalStatus } from "$lib/chat-core/proposals";
-	import { formatTokens, recordedScreenId } from "@buildytech/builder-core";
-	import { getCurrentProvenance } from "$lib/page-store";
+	import { formatTokens } from "@buildytech/builder-core";
 	import CatalogRefsList from "./CatalogRefsList.svelte";
 	import MarkdownText from "./MarkdownText.svelte";
 	import AskBlockCards from "./AskBlockCards.svelte";
-	import { applyProposal, applyVariantFromAsk, discardProposal } from "$lib/chat-core";
+	import AskPlanCard from "./AskPlanCard.svelte";
+	import { applyPlanInBuild, applyProposal, applyVariantFromAsk, discardProposal } from "$lib/chat-core";
 
 	let {
 		message,
@@ -43,31 +43,8 @@
 	const proposal = $derived(message.proposal);
 	const status = $derived(proposal ? proposalStatus(proposal) : null);
 	const pending = $derived(proposal ? isPendingProposal(proposal) : false);
-	const body = $derived.by(() => {
-		if (!proposal || !status) return message.text;
-		const via =
-			proposal.origin === "ask-card"
-				? t("ask.applyVia")
-				: proposal.liveModel
-					? t("assistant.xaiProposal")
-					: t("assistant.localAssembler");
-		const key =
-			status === "applied"
-				? "assistant.proposalApplied"
-				: status === "discarded"
-					? "assistant.proposalDiscarded"
-					: status === "superseded"
-						? "assistant.proposalSuperseded"
-						: "assistant.proposalPending";
-		const missing = proposal.missing.length
-			? ` ${t("assistant.missingBlocks").replace("{list}", proposal.missing.join(", "))}`
-			: "";
-		const screen =
-			recordedScreenId(proposal.screenId) ??
-			recordedScreenId(getCurrentProvenance()?.screenId) ??
-			t("preview.noScreen");
-		return `${via} ${t(key).replace("{title}", proposal.title).replace("{screen}", screen)}${missing}`;
-	});
+	// Proposal replies are written from what the proposal changes (ADR 0020); the status line shows its state.
+	const body = $derived(message.text);
 	const statusLabel = $derived(
 		status === "applied"
 			? t("proposal.applied")
@@ -166,6 +143,9 @@
 						{message.mode === "ask" ? t("ask.answerAsk") : t("ask.answerBuild")}
 					</Text>
 					<MarkdownText source={message.text} />
+					{#if message.plan}
+						<AskPlanCard plan={message.plan} messageId={message.id} onApply={(selected) => applyPlanInBuild(message.id, selected)} />
+					{/if}
 					<AskBlockCards blocks={message.answer.blocks} onApplyVariant={(spec, variant) => applyVariantFromAsk(spec, variant)} />
 				</Stack>
 			{:else}

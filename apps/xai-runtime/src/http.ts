@@ -152,7 +152,8 @@ export async function handleRuntimeFetch(
 						authorBrief: mapped.request.brief,
 						liveTurn: true,
 						mode: mapped.request.mode,
-						collection: mapped.request.collection
+						collection: mapped.request.collection,
+						manualEdits: mapped.request.manualEdits
 					},
 					signal
 				);

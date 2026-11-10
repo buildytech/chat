@@ -1,4 +1,5 @@
 import type { AgentMode } from "./agent-tools.ts";
+import type { PagePlan } from "../page-plan.ts";
 import { askBlockCard, type AskBlockCard } from "../catalog/details.ts";
 
 export type { AskBlockCard };
@@ -14,6 +15,8 @@ export type AgentTextReply = {
 	mode: AgentMode;
 	text: string;
 	blocks: string[];
+	/** Ask: the checked page plan of propose_plan (ADR 0020). Hosts check it again against their own page. */
+	plan?: PagePlan;
 };
 
 export function isAgentTextReply(value: unknown): value is AgentTextReply {
@@ -23,8 +26,15 @@ export function isAgentTextReply(value: unknown): value is AgentTextReply {
 const MAX_TEXT = 12_000;
 const MAX_CARDS = 10;
 
-export function agentTextReply(mode: AgentMode, text: string, blocks: readonly string[]): AgentTextReply {
-	return { ok: true, reply: "text", mode, text: text.trim().slice(0, MAX_TEXT), blocks: [...new Set(blocks)].slice(0, MAX_CARDS) };
+export function agentTextReply(mode: AgentMode, text: string, blocks: readonly string[], plan?: PagePlan | null): AgentTextReply {
+	return {
+		ok: true,
+		reply: "text",
+		mode,
+		text: text.trim().slice(0, MAX_TEXT),
+		blocks: [...new Set(blocks)].slice(0, MAX_CARDS),
+		...(plan ? { plan } : {})
+	};
 }
 
 /** Cards of the blocks a reply referenced, recomputed from the bundled catalog; unknown specs are dropped. */

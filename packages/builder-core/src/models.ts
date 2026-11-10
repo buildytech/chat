@@ -2,6 +2,7 @@ import { parsePageSpec, type Page } from "@buildytech/page-contract";
 import { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } from "./xai-env.ts";
 import { isAgentMode, type AgentMode } from "./agent/agent-tools.ts";
 import { collectionBounds, type CollectionBounds } from "./collection.ts";
+import { parseManualEdits } from "./page-plan.ts";
 
 /**
  * Readable labels for the five parent-verified TEXT models.
@@ -206,6 +207,8 @@ export type ChatRunRequest = {
 	mode: AgentMode;
 	/** Stock collection bounds of the chat: the request's collection items the pinned snapshot has (null: none). */
 	collection: CollectionBounds | null;
+	/** Blocks the author edited by hand since the last agent turn (ADR 0020). */
+	manualEdits: Array<{ blockId: string; edits: number }>;
 };
 
 function parseCurrentProvenance(raw: unknown): ChatRunRequest["currentProvenance"] {
@@ -240,6 +243,7 @@ export function mapChatRunRequest(
 		sessionDemoData?: unknown;
 		mode?: unknown;
 		collection?: unknown;
+		manualEdits?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -277,7 +281,8 @@ export function mapChatRunRequest(
 			currentProvenance: parseCurrentProvenance(body.currentProvenance),
 			sessionDemoData: body.sessionDemoData === true,
 			mode: isAgentMode(body.mode) ? body.mode : "build",
-			collection: collectionBounds(body.collection)
+			collection: collectionBounds(body.collection),
+			manualEdits: parseManualEdits(body.manualEdits)
 		}
 	};
 }

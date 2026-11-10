@@ -75,6 +75,11 @@ export type ProposalContext = {
 		scenarioId: ScenarioId | null;
 		missing: string[];
 	};
+	/**
+	 * Blocks the author edited by hand since the last agent turn (host, from the chat's revision history; ADR 0020).
+	 * Build keeps them unless the author names them; Ask audits the page as it is.
+	 */
+	manualEdits?: Array<{ blockId: string; edits: number }>;
 };
 
 export type LayoutProposal = {
@@ -934,17 +939,23 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 		blocks = patched.blocks;
 		changed.push(...patched.changed);
 	}
-	if (optOut) warnings.push("Demo data removed at the author's request.");
+	// Said only when rows or badges were actually removed, and as the typed flag it came from: the host does not
+	// know whether the author asked for it (ADR 0020).
+	const strippedDemo = optOut ? combined.filter((node) => node.copy?.badge || (DATA_KINDS.has(node.kind) && node.children?.length)).map((node) => node.id) : [];
+	if (strippedDemo.length) warnings.push(`Demo rows removed from ${strippedDemo.join(", ")} (propose_layout demoData=false).`);
 	const keptKinds = kept.map((node) => node.kind);
 	// Kept blocks whose copy or rows the model rewrote are reported as edited, not as kept as-is.
 	const rewritten = overlay.changedKinds.filter((kind) => keptKinds.includes(kind) && !add.includes(kind));
 	for (const kind of rewritten) changed.push(`${kind} copy`);
-	const untouched = keptKinds.filter((kind) => !rewritten.includes(kind));
+	// Report by block id, from the page itself: which existing blocks differ and which are exactly as they were.
+	const before = new Map(current.layout.blocks.map((node) => [node.id, JSON.stringify(node)]));
+	const editedIds = blocks.filter((node) => before.has(node.id) && before.get(node.id) !== JSON.stringify(node)).map((node) => node.id);
+	const untouchedIds = blocks.filter((node) => before.get(node.id) === JSON.stringify(node)).map((node) => node.id);
 	const summary = [
 		add.length ? `Added ${add.join(", ")}.` : "",
-		`Kept ${untouched.length} block${untouched.length === 1 ? "" : "s"}${untouched.length ? ` (${untouched.join(", ")})` : ""} with their copy${sticky ? " and demo data" : ""}.`,
+		`Unchanged: ${untouchedIds.length ? untouchedIds.join(", ") : "none"}.`,
 		removed.length ? `Removed ${removed.join(", ")}.` : "",
-		changed.length ? `Edited ${[...new Set(changed)].join(", ")}.` : ""
+		editedIds.length ? `Edited ${editedIds.join(", ")}.` : ""
 	]
 		.filter(Boolean)
 		.join(" ");

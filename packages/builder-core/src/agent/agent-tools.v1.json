@@ -5,7 +5,7 @@
 	"description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
 	"modes": {
 		"ask": {
-			"description": "Read-only conversation about the catalog and the page. The page never changes and no proposal is created. Tool choice auto; the model's final text is the answer.",
+			"description": "Read-only conversation about the catalog and the page. The page never changes and no proposal is created. Recommended page changes go to propose_plan (a checked plan the author may run with Apply in Build). Tool choice auto; the model's final text is the answer.",
 			"toolChoice": "auto"
 		},
 		"build": {
@@ -91,6 +91,121 @@
 				},
 				"required": [
 					"id"
+				]
+			}
+		},
+		{
+			"name": "propose_plan",
+			"modes": [
+				"ask"
+			],
+			"description": "Ask only. When you recommend changes to currentPage, call this once with the changes as page-patch/v1 ops on currentPage block ids, alongside your text answer: set_variant {blockId, variant from get_block}; set {blockId, field (title or a copy key), value}; set_items {blockId, items}; add {kind, title, variant?, copy?}; replace {blockId, kind, title}; remove {blockId}; move {blockId, to}. Each op gets a short reason. The host checks every op against the page and the pinned catalog and returns valid op ids and invalid ops with allowed values; fix invalid ops once with a second call. Nothing changes: the author sees a plan card and may run the ops they tick with Apply in Build. Swapping a block for another catalog block is not an op: say it in text.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"summary": {
+						"type": "string",
+						"description": "One line: what the plan does, in the author's language."
+					},
+					"ops": {
+						"type": "array",
+						"maxItems": 24,
+						"items": {
+							"type": "object",
+							"properties": {
+								"op": {
+									"type": "string",
+									"enum": [
+										"set_variant",
+										"set",
+										"set_items",
+										"add",
+										"replace",
+										"remove",
+										"move"
+									]
+								},
+								"blockId": {
+									"type": "string",
+									"description": "Id of a block on currentPage (currentPage.blocks[].id)."
+								},
+								"field": {
+									"type": "string"
+								},
+								"value": {
+									"type": [
+										"string",
+										"null"
+									]
+								},
+								"kind": {
+									"type": "string"
+								},
+								"at": {
+									"type": "integer"
+								},
+								"to": {
+									"type": "integer"
+								},
+								"title": {
+									"type": "string"
+								},
+								"variant": {
+									"type": [
+										"string",
+										"null"
+									]
+								},
+								"copy": {
+									"type": "object",
+									"description": "Copy keys the kind renders (slots).",
+									"additionalProperties": {
+										"type": "string"
+									}
+								},
+								"items": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"label": {
+												"type": "string"
+											},
+											"detail": {
+												"type": "string"
+											},
+											"value": {
+												"type": "string"
+											},
+											"note": {
+												"type": "string"
+											},
+											"group": {
+												"type": "string"
+											},
+											"icon": {
+												"type": "string",
+												"description": "Feature rows: a Lucide icon name (get_block_details lists them)."
+											}
+										},
+										"required": [
+											"label"
+										]
+									}
+								},
+								"reason": {
+									"type": "string",
+									"description": "Why, in one short sentence in the author's language."
+								}
+							},
+							"required": [
+								"op"
+							]
+						}
+					}
+				},
+				"required": [
+					"ops"
 				]
 			}
 		},

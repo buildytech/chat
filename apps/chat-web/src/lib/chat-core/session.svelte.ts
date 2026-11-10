@@ -23,6 +23,10 @@ import {
 	collectionBounds,
 	agentToolNames,
 	isAgentTextReply,
+	checkPagePlan,
+	describePageChanges,
+	executePagePlan,
+	manualEditsSince,
 	type AgentMode,
 	type AgentTextReply,
 	type ProposalContext,
@@ -92,6 +96,8 @@ import {
 import { markPendingProposals, migrateSessionProposals } from "./proposals";
 import { STORAGE_KEYS, readKey, writeKey } from "../browser/storage-v1.ts";
 import { chatModeOf, variantProposal } from "./modes";
+import { changeReportText, planResultText } from "./change-text";
+import type { Page } from "@buildytech/page-contract";
 import { chatCollectionFrom, collectionErrorText, collectionRequest, collectionScreenId, withoutItem, type ChatCollection } from "./collection";
 import { decodeCollectionParam, parseCollection, type CollectionParse } from "@buildytech/page-contract/collection";
 import type {
@@ -464,6 +470,18 @@ type EditBaseSource = "candidate" | "applied" | "last-proposal" | null;
 
 let lastEditBase: EditBaseSource = null;
 let lastSessionDemo = false;
+/** The page the last turn started from (null: a fresh page); the reply text is the diff against it. */
+let lastBasePage: Page | null = null;
+
+/** When the last model turn of the chat ended (its assistant message), or null. */
+function lastAgentTurnAt(session: ChatSession | null | undefined): string | null {
+	const messages = session?.messages ?? [];
+	for (let i = messages.length - 1; i >= 0; i -= 1) {
+		const message = messages[i]!;
+		if (message.role === "assistant" && message.run) return message.createdAt;
+	}
+	return null;
+}
 
 /**
  * Sticky demo-data state for this chat: the latest proposal's demoData (set from the model's typed
@@ -492,6 +510,10 @@ function constructorContext(
 	const scenarioId = isScenarioId(storedScenario) ? storedScenario : getScenarioId();
 	const sessionDemoData = sessionDemoFromProposals();
 	lastSessionDemo = sessionDemoData;
+	lastBasePage = page;
+	const session = getSelectedSession();
+	// Blocks the author edited by hand since the last agent turn (ADR 0020): Build keeps them, Ask audits them.
+	const manualEdits = page ? manualEditsSince(session?.history, lastAgentTurnAt(session)) : [];
 	// The chat's Stock collection bounds Build turns (the runtime re-checks the items against its own snapshot).
 	const request = mode === "build" ? collectionRequest(getSelectedSession()?.collection) : null;
 	return {
@@ -506,6 +528,7 @@ function constructorContext(
 		pageId: page?.id,
 		currentPage: page ?? undefined,
 		sessionDemoData,
+		...(manualEdits.length ? { manualEdits } : {}),
 		currentProvenance: provenance
 			? {
 					screenId: recordedScreenId(provenance.screenId),
@@ -648,29 +671,10 @@ function localizedRunError(code: string | undefined, message: string, modelId: s
 	return message;
 }
 
-/** What a follow-up changed versus its base page (added / kept / removed), localized. */
-function changeSummary(result: { diff?: { added: string[]; removed: string[]; kept?: string[] } }): string {
-	const diff = result.diff;
-	if (!lastEditBase || !diff) return "";
-	const parts: string[] = [];
-	parts.push(
-		lastEditBase === "candidate"
-			? t("assistant.baseCandidate")
-			: lastEditBase === "applied"
-				? t("assistant.baseApplied")
-				: t("assistant.baseLastProposal")
-	);
-	if (diff.added.length) parts.push(t("assistant.changesAdded").replace("{list}", diff.added.join(", ")));
-	const kept = diff.kept ?? [];
-	if (kept.length) parts.push(t("assistant.changesKept").replace("{n}", String(kept.length)).replace("{list}", kept.join(", ")));
-	if (diff.removed.length) parts.push(t("assistant.changesRemoved").replace("{list}", diff.removed.join(", ")));
-	if (!diff.added.length && !diff.removed.length) parts.push(t("assistant.changesNone"));
-	if (lastSessionDemo) parts.push(t("assistant.demoSticky"));
-	return parts.join(" ");
-}
-
 /** A text answer: shown as the model wrote it (safe Markdown) with its block cards; no page, no proposal. */
 function textMessage(result: AgentTextReply, run?: import("./types").ChatRunRecord): ChatMessage {
+	// An Ask plan from the wire is checked again here against the page the author has now (never trusted as sent).
+	const plan = result.mode === "ask" && result.plan ? checkedPlan(result.plan) : null;
 	return {
 		id: uid("msg"),
 		role: "assistant",
@@ -678,8 +682,27 @@ function textMessage(result: AgentTextReply, run?: import("./types").ChatRunReco
 		createdAt: nowIso(),
 		mode: result.mode,
 		answer: { blocks: [...result.blocks] },
+		...(plan ? { plan } : {}),
 		...(run ? { run } : {})
 	};
+}
+
+function baseProvenance(provenance: ReturnType<typeof getAppliedProvenance> | null | undefined) {
+	return provenance
+		? { screenId: recordedScreenId(provenance.screenId), scenarioId: isScenarioId(provenance.scenarioId) ? provenance.scenarioId : null, missing: provenance.missing }
+		: undefined;
+}
+
+function checkedPlan(raw: unknown) {
+	const base = getEditBase();
+	if (!base?.page) return null;
+	return checkPagePlan({
+		page: base.page,
+		provenance: baseProvenance(base.provenance ?? getAppliedProvenance()),
+		revision: getPageRevision() ?? 0,
+		sessionDemoData: sessionDemoFromProposals(),
+		raw
+	});
 }
 
 function proposalMessage(
@@ -687,7 +710,7 @@ function proposalMessage(
 	modelId: string,
 	live: boolean,
 	usage: RunUsage,
-	extra?: { path?: string; tools?: string[]; runId?: string }
+	extra?: { path?: string; tools?: string[]; runId?: string; basePage?: Page | null }
 ): ChatMessage {
 	const run = runRecord({ modelId, live, usage, path: extra?.path, tools: extra?.tools, runId: extra?.runId });
 	if (isAgentTextReply(result)) return textMessage(result, run);
@@ -717,15 +740,19 @@ function proposalMessage(
 		missing: result.missing,
 		assembler: result.provenance.assembler
 	});
-	const via = live ? t("assistant.xaiProposal") : t("assistant.localAssembler");
-	const missing = result.missing.length
-		? ` ${t("assistant.missingBlocks").replace("{list}", result.missing.join(", "))}`
-		: "";
-	const changes = changeSummary(result);
+	// The reply says what this proposal changes against the page it started from, block by block (ADR 0020).
+	const basePage = extra && "basePage" in extra ? (extra.basePage ?? null) : lastBasePage;
+	const report = describePageChanges(basePage, result.page);
+	const text = changeReportText(report, t, {
+		title: result.page.title,
+		fresh: !basePage,
+		screen: recordedScreenId(result.provenance.screenId),
+		missing: result.missing
+	});
 	return {
 		id: uid("msg"),
 		role: "assistant",
-		text: `${via} ${t("assistant.proposalReady").replace("{title}", result.page.title)}${changes ? ` ${changes}` : ""}${missing}`,
+		text,
 		createdAt: nowIso(),
 		...(result.modelText ? { modelText: result.modelText } : {}),
 		proposal: {
@@ -741,7 +768,13 @@ function proposalMessage(
 			locale: result.page.locale,
 			demoData: Boolean(result.demoData),
 			catalogRefs: catalog.refs,
-			changes: lastEditBase && result.diff ? { added: result.diff.added, kept: result.diff.kept ?? [], removed: result.diff.removed } : undefined
+			changes: basePage
+				? {
+						added: report.added.map((row) => row.id),
+						kept: report.kept.map((row) => row.id),
+						removed: report.removed.map((row) => row.id)
+					}
+				: undefined
 		},
 		run
 	};
@@ -904,15 +937,66 @@ export function applyVariantFromAsk(spec: string, variant: string): boolean {
 	if (!result.ok && (result.code === "no_page" || result.code === "block_not_on_page" || result.code === "unknown_block")) {
 		reply = { id: uid("msg"), role: "assistant", text: t(`ask.apply.${result.code}`).replace("{block}", spec), createdAt: nowIso(), mode: "build" };
 	} else {
-		reply = { ...proposalMessage(result, getSelectedModelId(), false, localRunUsage()), mode: "build" };
+		reply = { ...proposalMessage(result, getSelectedModelId(), false, localRunUsage(), { basePage: base?.page ?? null }), mode: "build" };
 		delete reply.run;
 		if (reply.proposal) {
 			reply.proposal = { ...reply.proposal, origin: "ask-card" };
-			reply.text = `${t("ask.applyVia")} ${reply.text.slice(t("assistant.localAssembler").length + 1)}`;
+			reply.text = `${t("ask.applyVia")}\n${reply.text}`;
 		}
 	}
 	const current = getSelectedSession() ?? session;
 	const prior = reply.proposal ? markPendingProposals(current.messages, "superseded", "all") : current.messages;
+	replaceSession({ ...current, mode: "build", updatedAt: nowIso(), messages: [...prior, request, reply] });
+	saveMock(memory);
+	return Boolean(reply.proposal);
+}
+
+/**
+ * Apply in Build on an Ask plan card (ADR 0020): the chat switches to Build and the ticked ops run on the current page
+ * through the page-patch gates, in order, without a model call. Ops that no longer apply are said with their reason;
+ * the others make one pending proposal the author applies. The plan keeps each op's result.
+ */
+export function applyPlanInBuild(messageId: string, selected: readonly string[]): boolean {
+	const session = getSelectedSession();
+	const source = session?.messages.find((message) => message.id === messageId);
+	if (!session || !source?.plan || !selected.length) return false;
+	setChatMode("build");
+	const request: ChatMessage = {
+		id: uid("msg"),
+		role: "user",
+		text: t("plan.request").replace("{n}", String(selected.length)),
+		createdAt: nowIso(),
+		mode: "build"
+	};
+	const base = getEditBase();
+	const current = getSelectedSession() ?? session;
+	if (!base?.page) {
+		const reply: ChatMessage = { id: uid("msg"), role: "assistant", text: t("plan.noPage"), createdAt: nowIso(), mode: "build" };
+		replaceSession({ ...current, mode: "build", updatedAt: nowIso(), messages: [...current.messages, request, reply] });
+		saveMock(memory);
+		return false;
+	}
+	lastEditBase = base.source;
+	const exec = executePagePlan({
+		page: base.page,
+		provenance: baseProvenance(base.provenance ?? getAppliedProvenance()),
+		plan: source.plan,
+		selected,
+		revision: getPageRevision() ?? 0,
+		sessionDemoData: sessionDemoFromProposals(),
+		at: nowIso()
+	});
+	let reply: ChatMessage;
+	if (exec.proposal) {
+		reply = { ...proposalMessage(exec.proposal, getSelectedModelId(), false, localRunUsage(), { basePage: base.page }), mode: "build" };
+		delete reply.run;
+		if (reply.proposal) reply.proposal = { ...reply.proposal, origin: "ask-plan" };
+		reply.text = `${reply.text}\n${planResultText(exec.plan, t)}`;
+	} else {
+		reply = { id: uid("msg"), role: "assistant", text: planResultText(exec.plan, t), createdAt: nowIso(), mode: "build" };
+	}
+	const withPlan = current.messages.map((message) => (message.id === messageId ? { ...message, plan: exec.plan } : message));
+	const prior = reply.proposal ? markPendingProposals(withPlan, "superseded", "all") : withPlan;
 	replaceSession({ ...current, mode: "build", updatedAt: nowIso(), messages: [...prior, request, reply] });
 	saveMock(memory);
 	return Boolean(reply.proposal);
