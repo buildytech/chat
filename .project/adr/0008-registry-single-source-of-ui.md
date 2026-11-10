@@ -22,7 +22,8 @@ blocks the registry did not cover, and variant presets generated from compose-ge
 2. **Variants.** `registry/variants.v0.json` is the pinned copy of `https://registry.buildy.tw/variants/v0.json`
    (verified against its `.sha256`). It links every Stock catalog asset (`block.x/variant`) to a registry block and
    its props. Render props = merge(type defaults, variant props, page content); dictionary refs (`{"$": "ui.*"}`) are
-   dropped so the page content fills them. `packages/builder-core/src/catalog/sources.json` is derived from the
+   dropped so the page content fills them. Since [0010](0010-props-schemas-program-gate.md) the defaults, prop kinds
+   and validation come from the pinned published props schemas (`registry/props.v0.json`), not from the TS types. `packages/builder-core/src/catalog/sources.json` is derived from the
    snapshot and the variants (`npm run registry:sources`); `registry:check` fails when it is stale.
 3. **`lib` is logic only.** `apps/chat-web/src/lib` holds TypeScript (stores, page store, agent, i18n, editor code) and
    no `.svelte` component; a test enforces it. App UI lives in `apps/chat-web/src/app` and is composed only from
