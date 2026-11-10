@@ -20,6 +20,10 @@ import {
 	runConstructorTools,
 	unknownUsage,
 	clientProposalGate,
+	agentToolNames,
+	isAgentTextReply,
+	type AgentMode,
+	type AgentTextReply,
 	type ProposalContext,
 	type RunUsage
 } from "@buildytech/builder-core";
@@ -66,6 +70,7 @@ import {
 	setCandidatePage
 } from "../page-store";
 import { markPendingProposals, migrateSessionProposals } from "./proposals";
+import { chatModeOf, variantProposal } from "./modes";
 import type {
 	ChatMessage,
 	ChatSession,
@@ -144,6 +149,8 @@ let lastFailedText = $state<string | null>(null);
 let capabilities = $state<ServerCapabilities | null>(null);
 let connectionMode = $state<"live" | "mock" | "booting">("booting");
 let canDeleteSessions = $state(true);
+/** Mode picked before the chat exists (home composer); the first send stores it on the new chat. */
+let pendingMode = $state<AgentMode>("build");
 
 function bumpEpoch(): number {
 	epoch += 1;
@@ -173,7 +180,7 @@ async function overlayXaiCapability(token: number): Promise<void> {
 			runtime: status.runtime || "xai-grok",
 			mode: "localStorage",
 			liveModel: Boolean(status.ready),
-			tools: ["search_catalog", "get_block_details", "propose_layout", "get_skill"],
+			tools: agentToolNames(getChatMode()),
 			note: runtimeNoteFor(status)
 		};
 	} catch {
@@ -233,6 +240,19 @@ export function getSelectedSession(): ChatSession | null {
 	return memory.find((s) => s.id === selectedId) ?? null;
 }
 
+/** Ask or Build for the selected chat (composer toggle, kept per chat). */
+export function getChatMode(): AgentMode {
+	return chatModeOf(getSelectedSession(), pendingMode);
+}
+
+export function setChatMode(mode: AgentMode): void {
+	pendingMode = mode;
+	const session = getSelectedSession();
+	if (!session || session.mode === mode) return;
+	replaceSession({ ...session, mode });
+	saveMock(memory);
+}
+
 export function getRuntimeStatus(): CreatorRuntimeStatus {
 	const persist = getPersistError();
 	return {
@@ -275,7 +295,8 @@ export async function createSession(): Promise<ChatSession> {
 		id: uid("session"),
 		title: t("thread.untitled"),
 		updatedAt: nowIso(),
-		messages: []
+		messages: [],
+		mode: pendingMode
 	};
 	memory = [session, ...memory];
 	rememberSelection(session.id);
@@ -349,7 +370,7 @@ function sessionDemoFromProposals(): boolean {
 	return Boolean(last?.proposal?.demoData);
 }
 
-function constructorContext(brief: string): ProposalContext & { sessionDemoData: boolean } {
+function constructorContext(brief: string, mode: AgentMode): ProposalContext & { sessionDemoData: boolean } {
 	// Follow-ups start from what the author sees: pending proposal, else applied page,
 	// else the last proposal (kept after Discard). Never from scratch unless asked.
 	const base = getEditBase();
@@ -364,6 +385,7 @@ function constructorContext(brief: string): ProposalContext & { sessionDemoData:
 	lastSessionDemo = sessionDemoData;
 	return {
 		brief,
+		mode,
 		authorBrief: brief,
 		scenarioId,
 		screenId,
@@ -425,8 +447,8 @@ function runRecord(opts: {
 	};
 }
 
-async function runConstructor(brief: string, signal: AbortSignal) {
-	const ctx = constructorContext(brief);
+async function runConstructor(brief: string, mode: AgentMode, signal: AbortSignal) {
+	const ctx = constructorContext(brief, mode);
 	const status = await fetchXaiStatus(signal);
 	const mapped = mapChatRunRequest(
 		{ ...ctx, modelId: getSelectedModelId() },
@@ -462,7 +484,8 @@ async function runConstructor(brief: string, signal: AbortSignal) {
 			runId: (live as XaiRunResponse).runId
 		};
 	}
-	if (import.meta.env.PROD) {
+	// The local assembler builds pages; it cannot answer an Ask question, so Ask needs the live runtime.
+	if (import.meta.env.PROD || mode === "ask") {
 		return {
 			result: {
 				ok: false as const,
@@ -533,6 +556,19 @@ function changeSummary(result: { diff?: { added: string[]; removed: string[]; ke
 	return parts.join(" ");
 }
 
+/** A text answer: shown as the model wrote it (safe Markdown) with its block cards; no page, no proposal. */
+function textMessage(result: AgentTextReply, run?: import("./types").ChatRunRecord): ChatMessage {
+	return {
+		id: uid("msg"),
+		role: "assistant",
+		text: result.text,
+		createdAt: nowIso(),
+		mode: result.mode,
+		answer: { blocks: [...result.blocks] },
+		...(run ? { run } : {})
+	};
+}
+
 function proposalMessage(
 	result: Awaited<ReturnType<typeof runConstructor>>["result"],
 	modelId: string,
@@ -541,6 +577,7 @@ function proposalMessage(
 	extra?: { path?: string; tools?: string[]; runId?: string }
 ): ChatMessage {
 	const run = runRecord({ modelId, live, usage, path: extra?.path, tools: extra?.tools, runId: extra?.runId });
+	if (isAgentTextReply(result)) return textMessage(result, run);
 	if (!result.ok) {
 		return {
 			id: uid("msg"),
@@ -577,6 +614,7 @@ function proposalMessage(
 		role: "assistant",
 		text: `${via} ${t("assistant.proposalReady").replace("{title}", result.page.title)}${changes ? ` ${changes}` : ""}${missing}`,
 		createdAt: nowIso(),
+		...(result.modelText ? { modelText: result.modelText } : {}),
 		proposal: {
 			applied: false,
 			status: "pending",
@@ -611,12 +649,14 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 		hydrateSessionContext(picked);
 		session = { ...session, ...picked };
 	}
+	const mode = chatModeOf(session, pendingMode);
 	const userMsg: ChatMessage = {
 		id: uid("msg"),
 		role: "user",
 		text: trimmed,
 		createdAt: nowIso(),
-		selectedModelId: getSelectedModelId()
+		selectedModelId: getSelectedModelId(),
+		mode
 	};
 	const untitled = session.title === t("thread.untitled") || session.title === "New chat";
 	const nextTitle = untitled ? trimmed.slice(0, 48) : session.title;
@@ -636,20 +676,22 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 	const token = epoch;
 	try {
 		await loadPropsGate();
-		const { result, status, modelId, live, usage, path, tools, runId } = await runConstructor(trimmed, ac.signal);
+		const { result, status, modelId, live, usage, path, tools, runId } = await runConstructor(trimmed, mode, ac.signal);
 		if (token !== epoch) return getSelectedSession() ?? pending;
 		capabilities = {
 			runtime: status.runtime || "xai-grok",
 			mode: live ? "xai-runtime" : status.ready ? status.code || "xai_runtime_ready" : "local-assembler",
 			liveModel: Boolean(status.ready),
 			live: { requested: true, provider: "xai", model: modelId },
-			tools: ["search_catalog", "get_block_details", "propose_layout", "get_skill"],
+			tools: agentToolNames(getChatMode()),
 			note: runtimeNoteFor(status)
 		};
 		if (!result.ok) lastError = result.message;
 		else lastError = null;
+		if (mode === "ask" && !result.ok) lastError = localizedRunError(result.code, result.message, modelId);
 		const reply = proposalMessage(result, modelId, live, usage, { path, tools, runId });
-		const prior = result.ok ? markPendingProposals(pending.messages, "superseded", "all") : pending.messages;
+		// Only a new proposal supersedes pending ones; a text answer leaves the page and its proposals as they are.
+		const prior = result.ok && !isAgentTextReply(result) ? markPendingProposals(pending.messages, "superseded", "all") : pending.messages;
 		const done: ChatSession = {
 			...pending,
 			updatedAt: nowIso(),
@@ -711,6 +753,54 @@ export function applyProposal(): boolean {
 	replaceSession(next);
 	saveMock(memory);
 	return true;
+}
+
+/**
+ * Apply variant from an Ask block card: the chat switches to Build and gets an ordinary set_variant proposal through
+ * the same editPage and browser gate as model edits. Pending until the author presses Apply; no model call.
+ */
+export function applyVariantFromAsk(spec: string, variant: string): boolean {
+	const session = getSelectedSession();
+	if (!session) return false;
+	setChatMode("build");
+	const base = getEditBase();
+	lastEditBase = base?.source ?? null;
+	const sessionDemoData = sessionDemoFromProposals();
+	lastSessionDemo = sessionDemoData;
+	const provenance = base?.provenance ?? null;
+	const result = variantProposal({
+		page: base?.page,
+		provenance: provenance
+			? { screenId: recordedScreenId(provenance.screenId), scenarioId: isScenarioId(provenance.scenarioId) ? provenance.scenarioId : null, missing: provenance.missing }
+			: null,
+		revision: getPageRevision() ?? 0,
+		spec,
+		variant,
+		sessionDemoData
+	});
+	const request: ChatMessage = {
+		id: uid("msg"),
+		role: "user",
+		text: t("ask.applyRequest").replace("{variant}", variant).replace("{block}", spec),
+		createdAt: nowIso(),
+		mode: "build"
+	};
+	let reply: ChatMessage;
+	if (!result.ok && (result.code === "no_page" || result.code === "block_not_on_page" || result.code === "unknown_block")) {
+		reply = { id: uid("msg"), role: "assistant", text: t(`ask.apply.${result.code}`).replace("{block}", spec), createdAt: nowIso(), mode: "build" };
+	} else {
+		reply = { ...proposalMessage(result, getSelectedModelId(), false, localRunUsage()), mode: "build" };
+		delete reply.run;
+		if (reply.proposal) {
+			reply.proposal = { ...reply.proposal, origin: "ask-card" };
+			reply.text = `${t("ask.applyVia")} ${reply.text.slice(t("assistant.localAssembler").length + 1)}`;
+		}
+	}
+	const current = getSelectedSession() ?? session;
+	const prior = reply.proposal ? markPendingProposals(current.messages, "superseded", "all") : current.messages;
+	replaceSession({ ...current, mode: "build", updatedAt: nowIso(), messages: [...prior, request, reply] });
+	saveMock(memory);
+	return Boolean(reply.proposal);
 }
 
 export function discardProposal(): void {

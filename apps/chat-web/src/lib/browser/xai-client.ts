@@ -1,4 +1,6 @@
 import type {
+	AgentMode,
+	AgentTextReply,
 	LayoutProposal,
 	LayoutProposalError,
 	ProposalContext,
@@ -23,7 +25,7 @@ export type XaiClientStatus = {
 	error?: { code: string; message: string };
 };
 
-export type XaiRunResponse = (LayoutProposal | LayoutProposalError) & {
+export type XaiRunResponse = (LayoutProposal | LayoutProposalError | AgentTextReply) & {
 	modelId?: string;
 	requestedModelId?: string;
 	usage?: RunUsage;
@@ -103,7 +105,7 @@ export function platformCode(status: number, code?: string): string {
 }
 
 export async function runXaiProposal(
-	ctx: ProposalContext & { modelId: string; sessionDemoData?: boolean },
+	ctx: ProposalContext & { modelId: string; sessionDemoData?: boolean; mode?: AgentMode },
 	signal?: AbortSignal
 ): Promise<XaiRunResponse> {
 	try {
@@ -122,7 +124,8 @@ export async function runXaiProposal(
 				pageId: ctx.pageId ?? ctx.currentPage?.id,
 				currentPage: ctx.currentPage ?? null,
 				currentProvenance: ctx.currentProvenance ?? null,
-				sessionDemoData: Boolean(ctx.sessionDemoData)
+				sessionDemoData: Boolean(ctx.sessionDemoData),
+				mode: ctx.mode ?? "build"
 			}),
 			signal
 		});

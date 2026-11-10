@@ -19,6 +19,9 @@
 	import { formatTokens, recordedScreenId } from "@buildytech/builder-core";
 	import { getCurrentProvenance } from "$lib/page-store";
 	import CatalogRefsList from "./CatalogRefsList.svelte";
+	import MarkdownText from "./MarkdownText.svelte";
+	import AskBlockCards from "./AskBlockCards.svelte";
+	import { applyVariantFromAsk } from "$lib/chat-core";
 
 	let {
 		message,
@@ -42,7 +45,12 @@
 	const pending = $derived(proposal ? isPendingProposal(proposal) : false);
 	const body = $derived.by(() => {
 		if (!proposal || !status) return message.text;
-		const via = proposal.liveModel ? t("assistant.xaiProposal") : t("assistant.localAssembler");
+		const via =
+			proposal.origin === "ask-card"
+				? t("ask.applyVia")
+				: proposal.liveModel
+					? t("assistant.xaiProposal")
+					: t("assistant.localAssembler");
 		const key =
 			status === "applied"
 				? "assistant.proposalApplied"
@@ -152,7 +160,20 @@
 		</Group>
 	{:else}
 		<Stack align="stretch" class="gap-6">
-			<Text tag="p" class="text-sm font-medium whitespace-pre-wrap text-foreground">{body}</Text>
+			{#if message.answer}
+				<Stack align="stretch" class="gap-3" data-answer={message.mode ?? "build"}>
+					<Text tag="span" class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+						{message.mode === "ask" ? t("ask.answerAsk") : t("ask.answerBuild")}
+					</Text>
+					<MarkdownText source={message.text} />
+					<AskBlockCards blocks={message.answer.blocks} onApplyVariant={(spec, variant) => applyVariantFromAsk(spec, variant)} />
+				</Stack>
+			{:else}
+				<Text tag="p" class="text-sm font-medium whitespace-pre-wrap text-foreground">{body}</Text>
+			{/if}
+			{#if proposal && message.modelText}
+				<MarkdownText source={message.modelText} />
+			{/if}
 			{#if proposal}
 				<Group class="flex-wrap items-center gap-2">
 					<Text tag="span" class="text-xs text-muted-foreground">

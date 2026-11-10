@@ -292,6 +292,26 @@
 		"composer.modelUnavailable": "Unavailable here: multi-agent models cannot run this app's catalog tools",
 		"runtime.clientOutdated": "The app was updated while this tab was open. Reload the page to continue; your chats are kept.",
 		"runtime.modelTooSlow": "{label} is disabled here: in live runs it took 1-4 minutes per page and often timed out. Pick another model. No other model was substituted.",
-		"composer.modelTooSlow": "Unavailable here: too slow for the catalog tools (1-4 min per page, frequent timeouts)"
+		"composer.modelTooSlow": "Unavailable here: too slow for the catalog tools (1-4 min per page, frequent timeouts)",
+		"composer.modeLabel": "Chat mode",
+		"composer.mode.ask": "Ask",
+		"composer.mode.build": "Build",
+		"composer.mode.ask.hint": "Ask: talk about blocks and the page. Read-only, the page never changes.",
+		"composer.mode.build.hint": "Build: create or edit the page. Changes arrive as proposals you apply.",
+		"composer.placeholderAsk": "Ask about blocks, variants or the page…",
+		"ask.answerAsk": "Ask · answer",
+		"ask.answerBuild": "Build · answer, no proposal",
+		"ask.cards": "Catalog blocks in this answer",
+		"ask.openStock": "Stock",
+		"ask.cardMeta": "{spec} · registry {item} · {n} variants",
+		"ask.noRegistryItem": "none",
+		"ask.default": "default",
+		"ask.applyHint": "Apply variant switches the chat to Build and creates a proposal you apply.",
+		"ask.applyVariant": "Apply variant {variant} of {block}",
+		"ask.applyRequest": "Apply variant {variant} to {block}",
+		"ask.applyVia": "Variant change from the Ask card (no model call).",
+		"ask.apply.no_page": "There is no page yet. Switch to Build and create a page first, then apply a variant of {block}.",
+		"ask.apply.block_not_on_page": "The page has no {block} block. Ask Build to add it first.",
+		"ask.apply.unknown_block": "{block} is not a block of the pinned Stock catalog."
 	}
 }

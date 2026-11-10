@@ -1,4 +1,4 @@
-import type { CatalogRefs, RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
+import type { AgentMode, CatalogRefs, RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
 
 export type ServerCapabilities = {
 	runtime: string;
@@ -46,6 +46,8 @@ export type ChatProposalState = {
 	demoData?: boolean;
 	/** Program-generated from the pinned Stock catalog after validation. Persisted with the chat. */
 	catalogRefs?: CatalogRefs;
+	/** ask-card: made by Apply variant on an Ask block card (no model call). */
+	origin?: "ask-card";
 	/** Follow-up turns: block kinds added, kept, and removed versus the base page. */
 	changes?: { added: string[]; kept: string[]; removed: string[] };
 };
@@ -74,6 +76,15 @@ export type ChatMessage = {
 	proposal?: ChatProposalState;
 	run?: ChatRunRecord;
 	selectedModelId?: string;
+	/** Chat mode the message was sent or answered in (composer toggle). */
+	mode?: AgentMode;
+	/**
+	 * A text answer with no proposal (every Ask turn, a Build turn where the model only talked): `text` is the model's
+	 * Markdown, `blocks` the catalog block specs it read; the cards are rebuilt from the bundled catalog when shown.
+	 */
+	answer?: { blocks: string[] };
+	/** Build proposals: the model's own words next to the proposal summary (Markdown). */
+	modelText?: string;
 };
 
 export type ChatSession = {
@@ -88,6 +99,8 @@ export type ChatSession = {
 	screenId?: string | null;
 	selectedModelId?: string;
 	usage?: SessionUsage;
+	/** Ask or Build, picked in the composer and kept with this chat. */
+	mode?: AgentMode;
 };
 
 export type SessionSummary = Pick<ChatSession, "id" | "title" | "updatedAt">;

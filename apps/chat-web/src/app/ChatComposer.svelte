@@ -12,7 +12,8 @@
 	import Textarea from "$registry/kit/ui/textarea/Textarea.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import type { CreatorRuntimeStatus } from "$lib/chat-core";
+	import { getChatMode, setChatMode, type CreatorRuntimeStatus } from "$lib/chat-core";
+	import { AGENT_MODES } from "@buildytech/builder-core";
 	import { formatTokens, modelRunsToolLoop, modelUnavailableCode, type GrokChatModel, type SessionUsage } from "@buildytech/builder-core";
 
 	let {
@@ -73,7 +74,9 @@
 		return t("runtime.localAssembler");
 	});
 
-	const fieldPlaceholder = $derived(placeholder || t("composer.placeholder"));
+	// Ask / Build is the author's explicit choice (kept per chat); the host never guesses it from words.
+	const mode = $derived(getChatMode());
+	const fieldPlaceholder = $derived(mode === "ask" ? t("composer.placeholderAsk") : placeholder || t("composer.placeholder"));
 	const cannotSend = $derived(disabled || sendDisabled || !(draft.trim() || variant === "thread"));
 
 	function submit(event: Event) {
@@ -150,7 +153,24 @@
 		/>
 		<Text tag="p" class="text-[11px] text-muted-foreground">{t("composer.enterHint")}</Text>
 		<Group class="items-center justify-between gap-2">
-			<Group class="items-center gap-2">
+			<Group class="flex-wrap items-center gap-2">
+				<Group class="items-center gap-0 rounded border border-border p-0.5" role="group" aria-label={t("composer.modeLabel")}>
+					{#each AGENT_MODES as option (option)}
+						<Button
+							type="button"
+							class={cn(
+								"rounded px-2 py-1 text-sm",
+								mode === option ? "bg-foreground text-background" : "text-foreground hover:bg-accent"
+							)}
+							pressed={mode === option}
+							title={t(`composer.mode.${option}.hint`)}
+							data-mode={option}
+							onclick={() => setChatMode(option)}
+						>
+							<Text tag="span">{t(`composer.mode.${option}`)}</Text>
+						</Button>
+					{/each}
+				</Group>
 				<Button
 					id="composer-model-trigger"
 					type="button"
