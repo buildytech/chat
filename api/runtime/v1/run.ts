@@ -24079,7 +24079,7 @@ function isAgentTextReply(value: unknown): value is AgentTextReply {
 }
 
 const MAX_TEXT = 12_000;
-const MAX_CARDS = 6;
+const MAX_CARDS = 10;
 
 function agentTextReply(mode: AgentMode, text: string, blocks: string[]): AgentTextReply {
 	return { ok: true, reply: "text", mode, text: text.trim().slice(0, MAX_TEXT), blocks: [...new Set(blocks)].slice(0, MAX_CARDS) };
