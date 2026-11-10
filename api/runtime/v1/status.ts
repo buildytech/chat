@@ -30387,7 +30387,7 @@ const BLOCK_CHOICE_PATH = /^blocks\[(\d+)\]\.(variant|catalogBlock)$/;
 function repairProposeArgs(
 	args: Record<string, unknown>,
 	result: { code: string; path?: string; result?: unknown }
-): { args: Record<string, unknown>; warning: string; blockIndex: number } | null {
+): { args: Record<string, unknown>; warning: string; blockIndex: number; field: "variant" | "catalogBlock" | "icon" } | null {
 	if (result.code === "props_invalid" && result.path && /\.icon$/.test(result.path)) return repairIcons(args, result.code);
 	const match = result.path ? BLOCK_CHOICE_PATH.exec(result.path) : null;
 	if (!match) return null;
@@ -30413,11 +30413,11 @@ function repairProposeArgs(
 		next = rest;
 		warning = `${label}: catalogBlock ${String(catalogBlock)} was rejected (${result.code}); this block uses the screen's ${String(rec.kind)} block and its default variant, every other block is as proposed.`;
 	}
-	return { args: { ...args, blocks: blocks!.map((entry, index) => (index === at ? next : entry)) }, warning, blockIndex: at };
+	return { args: { ...args, blocks: blocks!.map((entry, index) => (index === at ? next : entry)) }, warning, blockIndex: at, field };
 }
 
 /** Row icons outside the contract's Lucide enum (the props schema) are dropped; those rows keep their text. */
-function repairIcons(args: Record<string, unknown>, code: string): { args: Record<string, unknown>; warning: string; blockIndex: number } | null {
+function repairIcons(args: Record<string, unknown>, code: string): { args: Record<string, unknown>; warning: string; blockIndex: number; field: "icon" } | null {
 	const allowed = new Set(lucideIcons());
 	const blocks = Array.isArray(args.blocks) ? args.blocks : null;
 	if (!blocks || !allowed.size) return null;
@@ -30441,7 +30441,8 @@ function repairIcons(args: Record<string, unknown>, code: string): { args: Recor
 	return {
 		args: { ...args, blocks: next },
 		warning: `Row icons ${[...new Set(dropped)].join(", ")} are not in the published props schema (${code}); those rows render without an icon, everything else is as proposed.`,
-		blockIndex: first
+		blockIndex: first,
+		field: "icon"
 	};
 }
 
@@ -31736,7 +31737,8 @@ function acceptPartially(
 	for (let i = 0; i < max; i += 1) {
 		const repair = repairProposeArgs(current, rejection);
 		if (!repair) return null;
-		const kind = String(((current.blocks as Array<Record<string, unknown>>)[repair.blockIndex] ?? {}).kind ?? "");
+		// Icon repairs touch rows only; variant / catalogBlock repairs name what the block renders as now.
+		const kind = repair.field === "icon" ? "" : String(((current.blocks as Array<Record<string, unknown>>)[repair.blockIndex] ?? {}).kind ?? "");
 		warnings.push(repair.warning);
 		kinds.push(kind);
 		current = repair.args;
@@ -31745,7 +31747,7 @@ function acceptPartially(
 			const proposal = next.result as LayoutProposal;
 			// Name what the repaired block renders as now (catalog block / variant of the assembled page).
 			const used = warnings.map((warning, index) => {
-				const node = proposal.page.layout.blocks.find((block) => block.kind === kinds[index]);
+				const node = kinds[index] ? proposal.page.layout.blocks.find((block) => block.kind === kinds[index]) : undefined;
 				return node?.catalogBlock ? `${warning} Used: ${node.catalogBlock}${node.variant ? `/${node.variant}` : ""}.` : warning;
 			});
 			return { proposal: { ...proposal, warnings: [...proposal.warnings, ...used] }, args: current };

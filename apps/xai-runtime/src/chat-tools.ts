@@ -282,7 +282,8 @@ function acceptPartially(
 	for (let i = 0; i < max; i += 1) {
 		const repair = repairProposeArgs(current, rejection);
 		if (!repair) return null;
-		const kind = String(((current.blocks as Array<Record<string, unknown>>)[repair.blockIndex] ?? {}).kind ?? "");
+		// Icon repairs touch rows only; variant / catalogBlock repairs name what the block renders as now.
+		const kind = repair.field === "icon" ? "" : String(((current.blocks as Array<Record<string, unknown>>)[repair.blockIndex] ?? {}).kind ?? "");
 		warnings.push(repair.warning);
 		kinds.push(kind);
 		current = repair.args;
@@ -291,7 +292,7 @@ function acceptPartially(
 			const proposal = next.result as LayoutProposal;
 			// Name what the repaired block renders as now (catalog block / variant of the assembled page).
 			const used = warnings.map((warning, index) => {
-				const node = proposal.page.layout.blocks.find((block) => block.kind === kinds[index]);
+				const node = kinds[index] ? proposal.page.layout.blocks.find((block) => block.kind === kinds[index]) : undefined;
 				return node?.catalogBlock ? `${warning} Used: ${node.catalogBlock}${node.variant ? `/${node.variant}` : ""}.` : warning;
 			});
 			return { proposal: { ...proposal, warnings: [...proposal.warnings, ...used] }, args: current };
