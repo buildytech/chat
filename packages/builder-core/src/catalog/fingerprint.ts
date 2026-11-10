@@ -2,6 +2,7 @@ import { PAGE_BLOCK_KINDS } from "@buildytech/page-contract";
 import { POLICY_VERSION } from "../policy.ts";
 import { catalogSnapshot } from "./snapshot.ts";
 import { SEARCH_INDEX_SOURCES } from "./text-search.ts";
+import { AGENT_TOOLS_VERSION } from "../agent/agent-tools.ts";
 
 /** FNV-1a 64-bit (BigInt-free, two 32-bit lanes). Identity check only, not security. */
 function fnv1a64(text: string): string {
@@ -19,7 +20,7 @@ let cached: string | null = null;
 
 /**
  * Identity of the page contract the browser and the runtime validate against: block kinds,
- * renderer map, Stock snapshot digest, search index sources and policy version. A browser tab
+ * renderer map, Stock snapshot digest, search index sources, policy version and agent tools version. A browser tab
  * built from another deploy sends a different value and gets client_outdated instead of a
  * proposal its stale validator would reject.
  */
@@ -34,7 +35,8 @@ export function contractFingerprint(): string {
 			rendererMap,
 			snapshot: catalogSnapshot.sourceDigest,
 			index: SEARCH_INDEX_SOURCES,
-			policy: POLICY_VERSION
+			policy: POLICY_VERSION,
+			tools: AGENT_TOOLS_VERSION
 		})
 	)}`;
 	return cached;

@@ -1,6 +1,7 @@
 import {
 	clampRunBudgetMs,
 	contractFingerprint,
+	isAgentTextReply,
 	gateRequest,
 	isSharedPublicSurface,
 	mapChatRunRequest,
@@ -149,7 +150,8 @@ export async function handleRuntimeFetch(
 						currentProvenance: mapped.request.currentProvenance,
 						sessionDemoData: mapped.request.sessionDemoData,
 						authorBrief: mapped.request.brief,
-						liveTurn: true
+						liveTurn: true,
+						mode: mapped.request.mode
 					},
 					signal
 				);
@@ -163,14 +165,17 @@ export async function handleRuntimeFetch(
 								message: `The model did not finish within ${Math.round(ms / 1000)} s. Try again or pick a faster model. No other model was substituted.`
 							}
 						: turn.proposal;
-				const checked = revalidateProposal(proposal);
-				const live = Boolean(checked.ok && meta.toolCallingWorked);
+				// A text answer (every Ask turn, a Build turn where the model only talked) has no page to revalidate.
+				const checked = isAgentTextReply(proposal) ? proposal : revalidateProposal(proposal);
+				const live = Boolean(checked.ok && (meta.toolCallingWorked || isAgentTextReply(checked)));
 				logSanitizedRun({
 					event: "xai_run",
 					surface: opts.surface,
 					runId: meta.runId,
 					ok: checked.ok,
 					code: checked.ok ? "ok" : checked.code,
+					mode: mapped.request.mode,
+					reply: isAgentTextReply(checked) ? "text" : checked.ok ? "proposal" : "error",
 					path: meta.path,
 					modelId: meta.modelId,
 					liveModel: live,
@@ -197,7 +202,8 @@ export async function handleRuntimeFetch(
 					liveModel: live,
 					liveXai: live,
 					toolCallingProven: meta.toolCallingWorked,
-					assembler: checked.ok ? checked.provenance.assembler : "local-catalog-assembler",
+					assembler: checked.ok && !isAgentTextReply(checked) ? checked.provenance.assembler : "local-catalog-assembler",
+					mode: mapped.request.mode,
 					runtime: "xai-grok",
 					modelId: meta.modelId,
 					requestedModelId: mapped.request.modelId,

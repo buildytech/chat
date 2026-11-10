@@ -1,6 +1,7 @@
 import { searchCatalog } from "./catalog/search.ts";
 import { screenSupport } from "./catalog/compatibility.ts";
-import { getBlockDetails } from "./catalog/details.ts";
+import { getAskBlock, getBlockDetails } from "./catalog/details.ts";
+import { toolOffersMode, type AgentMode } from "./agent/agent-tools.ts";
 import { blockLabelVocabulary, vocabularyValues } from "./catalog/text-search.ts";
 import { getSkill, ALLOWED_TOOLS, RUN_BUDGET, type AllowedTool } from "./policy.ts";
 import {
@@ -35,6 +36,8 @@ export type ToolHost = {
 	sessionDemoData?: boolean;
 	/** Revision of currentPage (edit_page baseRevision check). */
 	expectedRevision?: number;
+	/** Chat mode of the turn: a tool the mode does not offer (agent-tools.v1.json) is rejected, never run. */
+	mode?: AgentMode;
 };
 
 export type CompactSearchItem = {
@@ -216,10 +219,23 @@ export function executeTool(
 		return {
 			ok: false,
 			code: "unknown_tool",
-			message: `Tool "${call.name}" is not on the allowlist. Production tools are search_catalog, get_block_details, propose_layout, edit_page, get_skill.`
+			message: `Tool "${call.name}" is not on the allowlist. Production tools are ${ALLOWED_TOOLS.join(", ")}.`
+		};
+	}
+	if (host?.mode && !toolOffersMode(call.name, host.mode)) {
+		return {
+			ok: false,
+			code: "tool_not_in_mode",
+			message: `Tool "${call.name}" is not offered in ${host.mode} mode.${host.mode === "ask" ? " Ask mode is read-only: answer in text." : ""}`
 		};
 	}
 	const args = call.arguments ?? {};
+	if (call.name === "get_block") {
+		const block = getAskBlock(String(args.id ?? ""));
+		if (!block.ok) return { ok: false, code: block.code, message: `${block.id || "(empty)"} is not a Stock catalog block. Use a spec from catalogBlocks.` };
+		const { ok: _ok, ...result } = block;
+		return { ok: true, name: call.name, result };
+	}
 	if (call.name === "search_catalog") {
 		const blocks = Array.isArray(args.blocks) ? args.blocks.filter((b): b is string => typeof b === "string" && b.length > 0).slice(0, 6) : undefined;
 		const result = searchCatalog({

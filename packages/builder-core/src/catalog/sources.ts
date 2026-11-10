@@ -160,25 +160,42 @@ function flat(value: unknown, prefix = ""): Array<[string, string]> {
 export function modelCatalogSources(): Record<string, unknown> {
 	const blocks: Record<string, unknown> = {};
 	for (const entry of catalogSnapshot.blockIndex) {
-		const kind = rendererKindForLabel(entry.blockId);
-		const source = kind ? catalogSourceFor(entry.spec) : null;
-		if (!kind || !source) continue;
-		const base = new Map(flat(variantProps(entry.spec, source.defaultVariant)));
-		blocks[entry.spec] = {
-			kind,
-			registryItem: source.item,
-			defaultVariant: source.defaultVariant,
-			variants: Object.fromEntries(
-				Object.keys(source.variants).map((id) => [
-					id,
-					flat(variantProps(entry.spec, id))
-						.filter(([key, value]) => base.get(key) !== value)
-						.map(([key, value]) => `${key}=${value}`)
-						.join(" ") || "defaults"
-				])
-			),
-			...propsSummaryFor(source.item)
-		};
+		const summary = blockVariantSummary(entry.spec);
+		if (summary) blocks[entry.spec] = summary;
 	}
 	return { blocks, icons: lucideIcons() };
+}
+
+/**
+ * One catalog block for the model: its page kind, registry item, default variant, every variant as the props that
+ * differ from the default variant, and the row and text fields of its published props schema. Null when the block has
+ * no page kind or no registry item.
+ */
+export function blockVariantSummary(spec: string): {
+	kind: PageBlockKind;
+	registryItem: string;
+	defaultVariant: string;
+	variants: Record<string, string>;
+	[key: string]: unknown;
+} | null {
+	const entry = catalogEntryBySpec(spec);
+	const kind = entry ? rendererKindForLabel(entry.blockId) : null;
+	const source = kind ? catalogSourceFor(spec) : null;
+	if (!entry || !kind || !source) return null;
+	const base = new Map(flat(variantProps(spec, source.defaultVariant)));
+	return {
+		kind,
+		registryItem: source.item,
+		defaultVariant: source.defaultVariant,
+		variants: Object.fromEntries(
+			Object.keys(source.variants).map((id) => [
+				id,
+				flat(variantProps(spec, id))
+					.filter(([key, value]) => base.get(key) !== value)
+					.map(([key, value]) => `${key}=${value}`)
+					.join(" ") || "defaults"
+			])
+		),
+		...propsSummaryFor(source.item)
+	};
 }

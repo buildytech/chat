@@ -1,5 +1,6 @@
 import { parsePageSpec, type Page } from "@buildytech/page-contract";
 import { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } from "./xai-env.ts";
+import { isAgentMode, type AgentMode } from "./agent/agent-tools.ts";
 
 /**
  * Readable labels for the five parent-verified TEXT models.
@@ -200,6 +201,8 @@ export type ChatRunRequest = {
 	};
 	/** Client flag: the author asked for demo data earlier in this chat. */
 	sessionDemoData?: boolean;
+	/** Chat mode the author picked in the composer (Ask is read-only). Missing or unknown means build. */
+	mode: AgentMode;
 };
 
 function parseCurrentProvenance(raw: unknown): ChatRunRequest["currentProvenance"] {
@@ -232,6 +235,7 @@ export function mapChatRunRequest(
 		currentPage?: unknown;
 		currentProvenance?: unknown;
 		sessionDemoData?: unknown;
+		mode?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -267,7 +271,8 @@ export function mapChatRunRequest(
 			pageId: typeof body.pageId === "string" ? body.pageId : currentPage?.id,
 			currentPage,
 			currentProvenance: parseCurrentProvenance(body.currentProvenance),
-			sessionDemoData: body.sessionDemoData === true
+			sessionDemoData: body.sessionDemoData === true,
+			mode: isAgentMode(body.mode) ? body.mode : "build"
 		}
 	};
 }

@@ -192,22 +192,3 @@ export function getScreenById(screenId: string): CatalogScreen | null {
 	return catalogSnapshot.screens.find((s) => s.screenId === screenId) ?? null;
 }
 
-export function catalogToolParameterSchema(): Record<string, unknown> {
-	const vocab = facetVocabulary();
-	return {
-		q: {
-			type: "string",
-			description:
-				"Free text in catalog terms (English catalog words work best, e.g. sidebar, shell, kanban, pricing). Matched against Stock titles, subtitles, block names and facet labels."
-		},
-		section: { type: "string", enum: [...vocab.section] },
-		job: { type: "string", enum: [...vocab.job] },
-		industry: { type: "string", enum: vocabularyValues("industry") },
-		blocks: {
-			type: "array",
-			items: { type: "string", enum: blockLabelVocabulary() },
-			description: "Block labels every screen must contain, e.g. [\"sidenav\"] for a built-in sidebar."
-		},
-		page: { type: "integer", minimum: 1 }
-	};
-}

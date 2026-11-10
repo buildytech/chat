@@ -2,7 +2,8 @@ import { PAGE_BLOCK_KINDS, PAGE_COPY_KEYS, type PageBlockKind } from "@buildytec
 import { catalogProvenance, catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, getBlockIndexByCatalogId, rendererKindForLabel } from "./compatibility.ts";
 import { getScreenById } from "./search.ts";
-import { catalogSourceFor, catalogVariantsFor, variantProps } from "./sources.ts";
+import { blockVariantSummary, catalogSourceFor, catalogVariantsFor, variantProps } from "./sources.ts";
+import { stockSearchUrl } from "./provenance.ts";
 import { lucideIcons, propsSummaryFor } from "./props-schema.ts";
 
 export type BlockDetails = {
@@ -121,6 +122,71 @@ export function getBlockDetails(input: {
 					}
 				}
 			: {})
+	};
+}
+
+/** A catalog block card of an Ask reply: what the block is, its variants, its registry item and its Stock link. */
+export type AskBlockCard = {
+	spec: string;
+	label: string;
+	title: string;
+	kind: PageBlockKind | null;
+	registryItem: string | null;
+	install: string | null;
+	defaultVariant: string | null;
+	variants: string[];
+	stockUrl: string;
+};
+
+function catalogEntryFor(rawId: string) {
+	const id = String(rawId ?? "").trim();
+	if (!id || id.includes("..") || id.startsWith("/") || id.startsWith("file:") || id.includes("://")) return null;
+	const slash = id.indexOf("/");
+	const spec = slash > 0 ? id.slice(0, slash) : id;
+	const entry =
+		getBlockIndexByCatalogId(id) ??
+		getBlockIndex(spec) ??
+		catalogSnapshot.blockIndex.find((row) => row.spec === spec || row.spec === `block.${spec}`) ??
+		null;
+	return entry?.available ? entry : null;
+}
+
+/** Card of one catalog block from the bundled catalog (spec, label or asset id), or null when it is not a catalog block. */
+export function askBlockCard(id: string): AskBlockCard | null {
+	const entry = catalogEntryFor(id);
+	if (!entry) return null;
+	const source = catalogSourceFor(entry.spec);
+	return {
+		spec: entry.spec,
+		label: entry.blockId,
+		title: entry.title,
+		kind: rendererKindForLabel(entry.blockId),
+		registryItem: source?.item ?? null,
+		install: source ? `npx ui8kit add ${source.item} --framework svelte` : null,
+		defaultVariant: source?.defaultVariant ?? null,
+		variants: catalogVariantsFor(entry.spec),
+		stockUrl: stockSearchUrl([
+			["type", "block"],
+			["spec", entry.spec]
+		])
+	};
+}
+
+/**
+ * get_block (Ask mode): the card plus every variant as the props that set it apart from the default and the row and
+ * text fields of the published props schema. No icon list (get_block_details has it for Build).
+ */
+export function getAskBlock(id: string): ({ ok: true } & AskBlockCard & { variantCount: number; variantProps?: Record<string, string>; [key: string]: unknown }) | { ok: false; code: "unknown_block"; id: string } {
+	const card = askBlockCard(id);
+	if (!card) return { ok: false, code: "unknown_block", id: String(id ?? "") };
+	const summary = blockVariantSummary(card.spec);
+	const { kind: _kind, registryItem: _item, defaultVariant: _default, variants, ...schema } = summary ?? ({} as Record<string, unknown>);
+	return {
+		ok: true,
+		...card,
+		variantCount: card.variants.length,
+		...(variants ? { variantProps: variants as Record<string, string> } : {}),
+		...schema
 	};
 }
 

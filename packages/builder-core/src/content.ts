@@ -439,85 +439,12 @@ export function mergeModelContent(
 	return { blocks: next, changed, droppedData, demoBlocks };
 }
 
-/** JSON schema for the propose_layout content args (shared by both tool-loop paths). */
-export function proposeContentParameterSchema(): Record<string, unknown> {
-	const item = {
-		type: "object",
-		properties: {
-			label: { type: "string", description: "Row label, metric name, chart x label, nav link, or event text." },
-			value: { type: "string", description: "Display figure, e.g. 128 or 94%. Metrics, overview, chart, menu only." },
-			note: { type: "string", description: "Delta, status, or time, e.g. +12% or 2 h ago." },
-			detail: { type: "string", description: "Secondary line, e.g. who and which project." },
-			group: { type: "string", description: "Sidenav only: group heading for this link, e.g. Workspace." },
-			icon: {
-				type: "string",
-				description: "A Lucide name from catalogSources.icons, on rows whose slot renders an icon (features). The host validates it against the block's published props schema; other rows ignore it."
-			}
-		},
-		required: ["label"]
-	};
-	const copyProps: Record<string, unknown> = {};
-	const copyHints: Record<string, string> = {
-		action:
-			"Label of the block's button or link. On features it is the section link next to the heading (e.g. View all) and needs href on the same block.",
-		href: "Target of this block's action: #fragment, /path or https URL. A link the author names for a section goes on that section's block."
-	};
-	for (const field of COPY_FIELDS) copyProps[field] = copyHints[field] ? { type: "string", description: copyHints[field] } : { type: "string" };
-	return {
-		title: { type: "string", description: "Page title in the page language." },
-		locale: { type: "string", description: "BCP 47 language of the author's request, e.g. ru or en. All copy uses it." },
-		demoLabel: {
-			type: "string",
-			description: "Only when the author asked for demo/fake/sample data: a short marker in the page language, e.g. Demo data."
-		},
-		blocks: {
-			type: "array",
-			description:
-				"Copy per Stock block kind in the page language. The host keeps the Stock block order and falls back to catalog copy for missing fields. Data items (overview, metrics, chart, activity) are kept only when the author explicitly asked for demo data.",
-			items: {
-				type: "object",
-				properties: {
-					kind: {
-						type: "string",
-						enum: [...CONTENT_KINDS]
-					},
-					title: { type: "string", description: "Visible section heading in the page language. Required." },
-					...copyProps,
-					items: { type: "array", items: item },
-					variant: {
-						type: "string",
-						description:
-							"Catalog variant of this block, one of get_block_details variants for its catalog block. The host rejects unknown variants; omit for the catalog default."
-					},
-					catalogBlock: {
-						type: "string",
-						description: "Optional Stock catalog block (block.<label> or a catalog asset id). Default: the block of this kind on the chosen screen."
-					},
-					edit: {
-						type: "boolean",
-						description:
-							"Follow-up turns on currentPage only: true on blocks the author asked to change or add. Other existing blocks keep their copy and rows."
-					}
-				},
-				required: ["kind", "title"]
-			}
-		},
-		demoData: {
-			type: "boolean",
-			description:
-				"Records whether the author explicitly asked for demo, fake, sample, mock or test data (in any language): true if asked, false if they asked to remove it or use real data, omit otherwise. The host never generates data: when true YOU must write the rows in blocks[].items (overview, metrics, chart, activity)."
-		},
-		requireBlocks: {
-			type: "array",
-			description:
-				"Catalog block labels the author explicitly asked for (search_catalog labels.blocks, e.g. sidenav for a sidebar or app shell, bottomnav, sitemap for a footer). The host only adds them from Stock screens that contain them.",
-			items: { type: "string" }
-		},
-		newPage: { type: "boolean", description: "true only when the author asked for a new page instead of editing currentPage." },
-		remove: {
-			type: "array",
-			description: "Follow-up turns only: block kinds the author explicitly asked to remove. Never remove anything else.",
-			items: { type: "string", enum: [...CONTENT_KINDS] }
-		}
-	};
+/** Page block kinds that take model content (propose_layout blocks[].kind; agent-tools `page.contentKinds`). */
+export function contentKinds(): string[] {
+	return [...CONTENT_KINDS];
+}
+
+/** Copy keys propose_layout blocks carry (agent-tools.v1.json lists them; a test keeps both equal). */
+export function contentCopyFields(): string[] {
+	return [...COPY_FIELDS];
 }

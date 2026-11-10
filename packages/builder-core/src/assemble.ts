@@ -28,9 +28,12 @@ import {
 	type ModelPageContent
 } from "./content.ts";
 import { stripInventedFooterYears } from "./intents.ts";
+import type { AgentMode } from "./agent/agent-tools.ts";
 
 export type ProposalContext = {
 	brief: string;
+	/** Chat mode (composer toggle). Ask turns never assemble; Build is the default. */
+	mode?: AgentMode;
 	scenarioId: ScenarioId | null;
 	screenId: string | null;
 	expectedRevision: number;
@@ -84,6 +87,8 @@ export type LayoutProposal = {
 	demoData: boolean;
 	/** Program-generated from the pinned catalog after validation. Never model text. */
 	catalogRefs: CatalogRefs;
+	/** Build turns: the model's own words next to its proposal, shown under the proposal summary (Markdown, rendered safely). */
+	modelText?: string;
 	provenance: {
 		policyVersion: string;
 		modelCatalogVersion: string;

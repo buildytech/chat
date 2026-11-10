@@ -16,17 +16,38 @@ export {
 	DEFAULT_PAGE_SIZE,
 	assertFacetValue,
 	facetVocabulary,
-	misplacedFacet,
-	catalogToolParameterSchema
+	misplacedFacet
 } from "./catalog/search.ts";
 export { compatibilityFor, getBlockIndex, rendererKindForLabel, sendBlockedByScreen, screenSupport, compareScreenSupport } from "./catalog/compatibility.ts";
-export { getBlockDetails, screenCanonicalJson } from "./catalog/details.ts";
+export { getBlockDetails, askBlockCard, screenCanonicalJson, type AskBlockCard } from "./catalog/details.ts";
+export {
+	AGENT_MODES,
+	AGENT_TOOLS_VERSION,
+	agentToolsDocument,
+	agentEnumSource,
+	agentOpenAiTools,
+	agentTool,
+	agentToolNames,
+	agentToolParameters,
+	catalogToolParameterSchema,
+	editPageParameterSchema,
+	isAgentMode,
+	proposeContentParameterSchema,
+	resolveAgentSchema,
+	toolOffersMode,
+	type AgentMode,
+	type AgentToolDefinition,
+	type AgentToolsDocument,
+	type OpenAiFunctionTool
+} from "./agent/agent-tools.ts";
+export { agentTextReply, askBlockCards, isAgentTextReply, type AgentTextReply } from "./agent/reply.ts";
 export {
 	catalogEntryBySpec,
 	catalogSourceFor,
 	catalogSources,
 	catalogVariantsFor,
 	modelCatalogSources,
+	blockVariantSummary,
 	resolveCatalogChoice,
 	variantProps,
 	type CatalogSourceBlock,
@@ -80,7 +101,7 @@ export {
 export type { ToolHost, CompactSearchItem, CompactSearchPayload, ToolLoopRejection } from "./tools.ts";
 export { isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
 export { parseLayoutCopyEdits } from "./edits.ts";
-export { editPage, editPageParameterSchema, normalizePatch } from "./patch.ts";
+export { editPage, normalizePatch } from "./patch.ts";
 export type { PagePatchContext, PatchOp } from "./patch.ts";
 export {
 	DATA_KINDS,
@@ -90,7 +111,8 @@ export {
 	isPageLocale,
 	mergeModelContent,
 	parseModelContent,
-	proposeContentParameterSchema,
+	contentKinds,
+	contentCopyFields,
 	resolvePageLocale
 } from "./content.ts";
 export type { ModelBlockContent, ModelContentItem, ModelPageContent, MergeResult } from "./content.ts";
