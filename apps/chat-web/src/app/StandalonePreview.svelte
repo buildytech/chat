@@ -44,7 +44,7 @@
 		<Text tag="p" class="p-4 text-sm text-muted-foreground">{t("preview.standaloneEmpty")}</Text>
 	{:else}
 		{#each blocks as block (block.id)}
-			<PreviewBlock {block} selectedId={null} clean standalone />
+			<PreviewBlock {block} clean standalone />
 		{/each}
 	{/if}
 </Block>

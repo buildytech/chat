@@ -1,6 +1,8 @@
 <!--
   One page block in the preview frame: its UI8Kit registry block (lazy-loaded from the registry tree), or the
-  explicit "not in registry" stub. The wrapper only selects the block and labels where it comes from; it adds no layout.
+  explicit "not in registry" stub. The wrapper carries the block id (`data-block-id` = PageBlock.id) for selection and
+  hover; it adds no layout and no editor chrome. Outlines and labels of the Build canvas are drawn by the chat over the
+  frame (CanvasOverlay), never inside the page.
 -->
 <script lang="ts">
 	import type { Component } from "svelte";
@@ -11,7 +13,7 @@
 	import { organismFor } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { selectBlock, type PageBlock } from "$lib/page-store";
-	import { cn } from "$registry/utils/cn";
+	import { canvas } from "$lib/inspector/canvas.svelte";
 
 	type Organism = Component<Record<string, unknown>>;
 	const loaders = import.meta.glob<{ default: Organism }>("$registry/blocks/*.svelte");
@@ -20,29 +22,26 @@
 	);
 
 	// clean: no service labels (Settings, and always in the standalone preview window); standalone: no selection.
-	let {
-		block,
-		selectedId,
-		clean = false,
-		standalone = false
-	}: { block: PageBlock; selectedId: string | null; clean?: boolean; standalone?: boolean } = $props();
+	let { block, clean = false, standalone = false }: { block: PageBlock; clean?: boolean; standalone?: boolean } = $props();
 
-	const selected = $derived(selectedId === block.id);
 	const render = $derived(organismFor(block));
 	const load = $derived(render ? byFile[render.organism] : undefined);
 </script>
 
 <Block
 	tag="article"
-	class={cn("overflow-hidden outline-2 -outline-offset-2", selected && !standalone ? "outline-primary" : "outline-transparent")}
+	class="overflow-hidden"
 	aria-label={standalone ? undefined : t("preview.selectBlock")}
+	data-block-id={block.id}
 	data-renderer={render && load ? "registry" : "stub"}
 	data-registry-item={render?.item}
 	data-variant={render?.variant}
 	onclick={standalone ? undefined : () => selectBlock(block.id)}
+	onpointerenter={standalone ? undefined : () => canvas.hover(block.id)}
+	onpointerleave={standalone ? undefined : () => canvas.hover(null)}
 >
 	{#if !clean}
-	<Group class="flex-wrap gap-2 border-b border-border bg-muted px-4 py-1" data-slot="block-provenance">
+	<Group class="flex-wrap gap-2 border-b border-border bg-muted px-4 py-2" data-slot="block-provenance">
 		<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{block.kind}</Text>
 		<Text tag="span" class="text-xs text-muted-foreground">
 			{#if render && load}

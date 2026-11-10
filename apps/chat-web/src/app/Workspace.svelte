@@ -1,7 +1,10 @@
 <script lang="ts">
 	import Block from "$registry/compose/Block.svelte";
+	import Group from "$registry/compose/Group.svelte";
 	import { cn } from "$registry/utils/cn";
+	import { getChatMode } from "$lib/chat-core";
 	import { downloadPageZip, getCurrentPage, getSelectedBlockId } from "$lib/page-store";
+	import BlockTree from "./BlockTree.svelte";
 	import CodePane from "./CodePane.svelte";
 	import PreviewPane from "./PreviewPane.svelte";
 	import WorkspaceHead from "./WorkspaceHead.svelte";
@@ -17,6 +20,8 @@
 	} = $props();
 
 	let view = $state<"preview" | "code">("preview");
+	// Build is the editor: the block tree sits next to the canvas. Ask shows the preview alone.
+	const build = $derived(getChatMode() === "build");
 
 	function onDownloadZip() {
 		const page = getCurrentPage();
@@ -37,7 +42,12 @@
 >
 	<WorkspaceHead bind:view {chatHidden} {ontogglechat} {onDownloadZip} />
 	{#if view === "preview"}
-		<PreviewPane />
+		<Group align="stretch" class="mt-4 min-h-0 flex-1 gap-4 max-lg:flex-col" data-slot="build-editor" data-mode={build ? "build" : "ask"}>
+			{#if build}
+				<BlockTree />
+			{/if}
+			<PreviewPane />
+		</Group>
 	{:else}
 		<CodePane />
 	{/if}

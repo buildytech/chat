@@ -23,8 +23,11 @@
 		getCurrentPage,
 		getCurrentProvenance,
 		getPageRevision,
+		getSelectedBlockId,
 		hasUnappliedProposal
 	} from "$lib/page-store";
+	import { topLevelBlockId } from "$lib/inspector/geometry";
+	import CanvasOverlay from "./CanvasOverlay.svelte";
 	import { recordedScreenId } from "@buildytech/builder-core";
 	import PreviewFrame from "./PreviewFrame.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
@@ -68,6 +71,8 @@
 	const FRAME_DOC = '<!doctype html><html lang="en"><head><meta charset="utf-8"></head><body></body></html>';
 	const frame = $state({ reload: 0 });
 	let frameEl = $state<HTMLIFrameElement | null>(null);
+	// The frame document once PreviewFrame is mounted into it: the canvas overlay measures blocks there.
+	let frameDoc = $state.raw<Document | null>(null);
 	let mounted: Record<string, unknown> | null = null;
 	let themeObserver: MutationObserver | null = null;
 
@@ -93,6 +98,7 @@
 		themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme", "style"] });
 		if (mounted) void unmount(mounted);
 		mounted = mount(PreviewFrame, { target: doc.body, props: { frame } });
+		frameDoc = doc;
 	}
 
 	// Stage size (the frame scales down to fit; its CSS width stays the device width).
@@ -112,6 +118,7 @@
 			themeObserver?.disconnect();
 			if (mounted) void unmount(mounted);
 			mounted = null;
+			frameDoc = null;
 		};
 	});
 	let url = $state("");
@@ -172,6 +179,12 @@
 	}
 
 	const clean = $derived(previewSettings.hideServiceLabels);
+	// Canvas selection is the top-level block that holds the selected node (rows select their block).
+	const canvasSelectedId = $derived(topLevelBlockId(blocks, getSelectedBlockId()));
+	const canvasSelectedLabel = $derived.by(() => {
+		const block = blocks.find((node) => node.id === canvasSelectedId);
+		return block ? `${block.kind} · ${block.title}` : "";
+	});
 
 	// The whole preview site as-is in a new window: the /preview route renders this chat's page (pending proposal, else
 	// the applied page) with the registry blocks and kit theme, no chat UI and no service labels.
@@ -182,7 +195,7 @@
 
 <Block
 	tag="section"
-	class="mt-4 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded border border-border bg-card"
+	class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded border border-border bg-card"
 	aria-label={t("workspace.preview")}
 	data-page-id={page?.id ?? ""}
 	data-page-revision={savedRevision ?? ""}
@@ -319,7 +332,7 @@
 		data-blocks={blocks.length}
 		data-slot="preview-stage"
 	>
-		<Box class="mx-auto h-full overflow-hidden" style={`width: ${Math.round(frameWidth * frameScale)}px`}>
+		<Box class="relative mx-auto h-full overflow-hidden" style={`width: ${Math.round(frameWidth * frameScale)}px`}>
 			<iframe
 				bind:this={frameEl}
 				title={t("preview.frame")}
@@ -331,6 +344,16 @@
 				data-frame-width={frameWidth}
 				onload={onFrameLoad}
 			></iframe>
+			{#if frameDoc && !clean}
+				<CanvasOverlay
+					doc={frameDoc}
+					scale={frameScale}
+					width={frameWidth}
+					height={frameHeight}
+					selectedId={canvasSelectedId}
+					selectedLabel={canvasSelectedLabel}
+				/>
+			{/if}
 		</Box>
 	</Box>
 </Block>

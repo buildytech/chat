@@ -7,7 +7,7 @@
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import { blocksOf, getCurrentPage, getSelectedBlockId } from "$lib/page-store";
+	import { blocksOf, getCurrentPage } from "$lib/page-store";
 	import PreviewBlock from "./PreviewBlock.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
 
@@ -15,7 +15,6 @@
 
 	const page = $derived(getCurrentPage());
 	const blocks = $derived(page ? blocksOf(page) : []);
-	const selectedId = $derived(getSelectedBlockId());
 </script>
 
 <Box class="min-h-screen bg-background text-foreground" data-slot="preview-frame">
@@ -24,7 +23,7 @@
 			<Text tag="p" class="p-4 text-sm text-muted-foreground">{t("workspace.empty")}</Text>
 		{:else}
 			{#each blocks as block (block.id)}
-				<PreviewBlock {block} {selectedId} clean={previewSettings.hideServiceLabels} />
+				<PreviewBlock {block} clean={previewSettings.hideServiceLabels} />
 			{/each}
 		{/if}
 	{/key}

@@ -8,6 +8,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
+	import { canvas } from "$lib/inspector/canvas.svelte";
 	import {
 		blocksOf,
 		getCurrentPage,
@@ -25,11 +26,18 @@
 	function padClass(depth: number): string {
 		return depthPad[Math.min(Math.max(depth, 0), depthPad.length - 1)] ?? "pl-8";
 	}
+
+	// Picking a section in the tree selects it and brings it into view in the canvas.
+	function pick(id: string) {
+		selectBlock(id);
+		canvas.requestReveal(id);
+	}
 </script>
 
 <Block
 	tag="aside"
-	class="max-h-32 shrink-0 overflow-y-auto border-b border-border bg-card p-3 lg:max-h-none lg:h-full lg:w-56 lg:border-b-0 lg:border-r"
+	class="shrink-0 overflow-y-auto rounded border border-border bg-card p-4 max-lg:max-h-32 lg:w-56"
+	data-slot="block-tree"
 	aria-label={t("workspace.blockTree")}
 >
 	<Stack align="stretch" class="gap-2">
@@ -44,7 +52,7 @@
 		{:else}
 			{#snippet treeList(items: PageBlock[], depth: number)}
 				{#each items as block (block.id)}
-					<Stack align="stretch" tag="li" class="gap-1">
+					<Stack align="stretch" tag="li" gap="0">
 						<Button
 							class={cn(
 								"w-full justify-start rounded py-2 pr-3 text-left",
@@ -55,22 +63,24 @@
 							)}
 							pressed={selectedId === block.id}
 							aria-label={block.title}
-							onclick={() => selectBlock(block.id)}
+							onclick={() => pick(block.id)}
+							onpointerenter={() => canvas.hover(block.id)}
+							onpointerleave={() => canvas.hover(null)}
 						>
-							<Stack align="stretch" class="min-w-0 gap-1">
+							<Stack align="stretch" gap="0" class="min-w-0">
 								<Text tag="span" class="truncate text-sm font-medium">{block.title}</Text>
 								<Text tag="span" class="truncate text-xs text-muted-foreground">{block.kind}</Text>
 							</Stack>
 						</Button>
 						{#if block.children && block.children.length > 0}
-							<Stack align="stretch" tag="ul" class="gap-1">
+							<Stack align="stretch" tag="ul" gap="0">
 								{@render treeList(block.children, depth + 1)}
 							</Stack>
 						{/if}
 					</Stack>
 				{/each}
 			{/snippet}
-			<Stack align="stretch" tag="ul" class="gap-1">
+			<Stack align="stretch" tag="ul" gap="0">
 				{@render treeList(blocks, 0)}
 			</Stack>
 		{/if}

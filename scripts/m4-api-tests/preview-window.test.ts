@@ -32,7 +32,7 @@ test("/preview renders registry blocks only: no chat UI, no labels, read-only pa
 	assert.match(route, /preview-frame\.css/);
 	assert.doesNotMatch(route, /app\.css|ChatApp/);
 	const view = web("app/StandalonePreview.svelte");
-	assert.match(view, /<PreviewBlock \{block\} selectedId=\{null\} clean standalone \/>/);
+	assert.match(view, /<PreviewBlock \{block\} clean standalone \/>/);
 	assert.match(view, /readPreviewPage/);
 	assert.match(view, /theme\.init\(\)/);
 	assert.doesNotMatch(view, /bindPageSession|ChatSidebar|ChatComposer|session\.svelte/);
