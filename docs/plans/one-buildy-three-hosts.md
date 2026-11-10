@@ -1,6 +1,6 @@
 # Plan: one BuildY product on three hosts
 
-Authoritative decision: [ADR-0007](../../.project/adr/0007-one-buildy-three-hosts.md). This file is the **sequence**. It does not authorize desktop implementation, WordPress runtime in this repo, or a claim that portable import already works.
+Authoritative decisions: [ADR-0007](../../.project/adr/0007-one-buildy-three-hosts.md) (three hosts, one Stock catalog), [ADR-0009](../../.project/adr/0009-brands-in-codegen-x-single-registry.md) (brands in CodeGen-X, one published registry). This file is the **sequence**. It does not authorize desktop implementation, WordPress runtime in this repo, or a claim that portable import already works.
 
 ## Goal
 
@@ -18,6 +18,7 @@ Do not describe these as future work.
 
 - Browser Creator SPA: `apps/chat-web` (CreatorShell, ChatCore mock + localStorage, Preview + Code).
 - Pinned Stock snapshot: `packages/builder-core` (`catalogProvenance()`, `NOTICE`). Constructor search / propose uses that snapshot.
+- Brands are CodeGen-X records (badge + filter), not separate kits. The published registry stays one `@ui8kit` snapshot (ADR 0009).
 - Versioned Page DTO for this SPA: `packages/page-contract` `layout.version` **1**. `parsePage` rejects other versions and unknown keys. This is **not** a WordPress import contract.
 - UI8Kit composition rules copied from [`ui8kit/contract`](https://github.com/ui8kit/contract) (`.cursor/rules`, `.cursor/skills`). Kit files in `registry/svelte` are the pinned CLI snapshot (ADR 0008); do not hand-patch. Identical DOM / ARIA / tokens across eight runtimes is a **contract rule**, not a shipping exporter.
 - Code tab: Svelte UI8Kit `page.svelte` from `svelteFromPage`. No PHP/Latte runtime in Browser or Vercel.
@@ -61,6 +62,25 @@ Copy / adapt the **same** `apps/chat-web` core, Stock snapshot, and contracts in
 ### 5. Round-trip tests (future acceptance)
 
 Browser export → WordPress import → semantically equivalent data and preview. **Not implemented.** Do not mark the constructor “multi-host done” until those tests exist.
+
+## Brands and a single published registry
+
+Authoritative decision: [ADR-0009](../../.project/adr/0009-brands-in-codegen-x-single-registry.md). Owner approved 2026-11-10 (record this in the plan). This section does not design the WordPress catalog; that discussion is still open.
+
+- Do not give a brand its own rules, contract, CLI, or registry, and do not add author namespaces or author URLs. The CLI stays a single-registry client of `@ui8kit`.
+- A brand (for example AiVEO tech) is a record in the CodeGen-X database: a badge and a brand filter. Contribution is closed and trusted (no free pull requests, to avoid AI spam). Brands contribute under UI8Kit rules — presets, fonts not yet present, palettes, blocks — through XGenBot and the generator in `codegen-x/ui8kit`.
+- `registry.buildy.tw` receives that output already cleaned and unified. Brand is visible as metadata (for example `meta.brand` on items and in variants) so Stock and the chat can filter by brand.
+- BuildY chat and WP FastY Builder both consume the same registry with `npx ui8kit init` / `add --all` snapshots (sha256 lock, pinned `variants`, `check`).
+
+Verified 2026-11-10: a Latte CLI snapshot installed 341 of 341 items; `ui8kit check` confirmed 370 files; 240 of 240 shared block files were byte-identical to the current plugin bundle. Plugin primitives lag (registry 3.3.0 / CLI 3.2.1).
+
+Open, design pending (WordPress to be discussed further; no new XGenBot or WPDesigner issues yet):
+
+- Catalog data for WordPress (prop types, WordPress bindings, record types, collections) published next to `variants`.
+- WP FastY Builder snapshot via the CLI.
+- The brand metadata field.
+
+Previews, starters, and theme CSS may remain plugin artifacts until that discussion lands.
 
 ## Non-goals for this document
 
