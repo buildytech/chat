@@ -96,21 +96,39 @@ export function setStockQuery(next: string): void {
 	page = 1;
 }
 
-export function catalogPage(): SearchResult {
+/** Screens of `filter` for the Stock search box: the catalog text index (titles, labels, facet values in the
+ * catalog's locales and synonyms, scored by query word) plus plain substring hits on id, title and labels. */
+function stockMatches(filter: ReturnType<typeof catalogQuery>, needle: string): SearchResult["items"] {
+	const raw = paginateScreens({ ...filter, page: 1, pageSize: 500 });
+	if (!needle) return raw.items;
+	const scored = paginateScreens({ ...filter, q: needle, page: 1, pageSize: 500 }).items;
+	const seen = new Set(scored.map((screen) => screen.screenId));
+	const lower = needle.toLowerCase();
+	const plain = raw.items.filter(
+		(screen) =>
+			!seen.has(screen.screenId) &&
+			`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`
+				.toLowerCase()
+				.includes(lower)
+	);
+	return [...scored, ...plain];
+}
+
+export type StockPage = SearchResult & {
+	/** Matches outside the attached scenario's filter (shown when the scenario has none). */
+	outsideScope: number;
+};
+
+export function catalogPage(): StockPage {
 	const raw = paginateScreens({ ...catalogQuery(), page: 1, pageSize: 500 });
-	const needle = stockQuery.trim().toLowerCase();
-	const matched = needle
-		? raw.items.filter((screen) =>
-				`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`
-					.toLowerCase()
-					.includes(needle)
-			)
-		: raw.items;
+	const needle = stockQuery.trim();
+	const matched = stockMatches(catalogQuery(), needle);
 	const pageSize = 12;
 	const total = matched.length;
 	const pageCount = Math.max(1, Math.ceil(total / pageSize) || 1);
 	const current = Math.min(Math.max(page, 1), pageCount);
 	const start = (current - 1) * pageSize;
+	const outsideScope = needle && total === 0 && scenarioId ? stockMatches(OWNER_FILTERS.blank, needle).length : 0;
 	return {
 		...raw,
 		page: current,
@@ -118,7 +136,8 @@ export function catalogPage(): SearchResult {
 		pageCount,
 		total,
 		items: matched.slice(start, start + pageSize),
-		noFit: total === 0
+		noFit: total === 0,
+		outsideScope
 	};
 }
 

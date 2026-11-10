@@ -11643,6 +11643,31 @@ function getScreenById(screenId: string): CatalogScreen | null {
 }
 
 
+const FACET_NAMES: FacetName[] = ["site", "section", "job", "industry", "blocks"];
+
+/** Facet tree for drill-down: per facet, how many renderable screens each value adds to the rest of the filter. */
+function facetTree(query: CatalogFacetFilter = {}, limit = 12): FacetTree {
+	const out = {} as FacetTree;
+	for (const facet of FACET_NAMES) {
+		const rest: CatalogFacetFilter = { ...query, type: "screen" };
+		delete rest[facet];
+		delete rest.q;
+		let pool: CatalogScreen[];
+		try {
+			pool = filterScreens(rest).filter((screen) => screenSupport(screen).supported);
+		} catch {
+			pool = [];
+		}
+		const counts = new Map<string, number>();
+		for (const screen of pool) for (const value of screen.labels[facet] ?? []) counts.set(value, (counts.get(value) ?? 0) + 1);
+		out[facet] = [...counts.entries()]
+			.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+			.slice(0, limit)
+			.map(([value, count]) => ({ value, count }));
+	}
+	return out;
+}
+
 exports["DEFAULT_PAGE_SIZE"] = DEFAULT_PAGE_SIZE;
 exports["facetVocabulary"] = facetVocabulary;
 exports["isFacetValue"] = isFacetValue;
@@ -11652,6 +11677,8 @@ exports["filterScreens"] = filterScreens;
 exports["searchCatalog"] = searchCatalog;
 exports["paginateScreens"] = paginateScreens;
 exports["getScreenById"] = getScreenById;
+exports["FACET_NAMES"] = FACET_NAMES;
+exports["facetTree"] = facetTree;
 
 });
 
@@ -25568,6 +25595,13 @@ function catalogVariantsFor(catalogBlock: string): string[] {
 	return [...new Set([...(entry?.variants ?? []), ...Object.keys(source?.variants ?? {})])];
 }
 
+/** Available catalog blocks that render as `kind` and have `variant` (catalog data only, pinned snapshot order). */
+function catalogBlocksWithVariant(kind: PageBlockKind, variant: string): string[] {
+	return catalogSnapshot.blockIndex
+		.filter((entry) => entry.available && rendererKindForLabel(entry.blockId) === kind && catalogVariantsFor(entry.spec).includes(variant))
+		.map((entry) => entry.spec);
+}
+
 function resolveCatalogChoice(input: {
 	kind: PageBlockKind;
 	catalogBlock?: string | null;
@@ -25677,6 +25711,7 @@ exports["catalogSources"] = catalogSources;
 exports["catalogSourceFor"] = catalogSourceFor;
 exports["catalogEntryBySpec"] = catalogEntryBySpec;
 exports["catalogVariantsFor"] = catalogVariantsFor;
+exports["catalogBlocksWithVariant"] = catalogBlocksWithVariant;
 exports["resolveCatalogChoice"] = resolveCatalogChoice;
 exports["variantProps"] = variantProps;
 exports["modelCatalogSources"] = modelCatalogSources;
@@ -25867,7 +25902,7 @@ function parseModelContent(args: Record<string, unknown>): ModelPageContent {
 	if (demoLabel) out.demoLabel = demoLabel;
 	const rawBlocks = Array.isArray(args.blocks) ? args.blocks : [];
 	const seen = new Set<PageBlockKind>();
-	for (const raw of rawBlocks.slice(0, 16)) {
+	for (const [at, raw] of rawBlocks.slice(0, 16).entries()) {
 		if (!raw || typeof raw !== "object") continue;
 		const rec = raw as Record<string, unknown>;
 		const kind = normalizeKind(rec.kind);
@@ -25906,7 +25941,8 @@ function parseModelContent(args: Record<string, unknown>): ModelPageContent {
 			items,
 			...(rec.edit === true ? { edit: true } : {}),
 			...(catalogBlock ? { catalogBlock } : {}),
-			...(variant ? { variant } : {})
+			...(variant ? { variant } : {}),
+			at
 		});
 	}
 	if (typeof args.demoData === "boolean") out.demoData = args.demoData;
@@ -25941,7 +25977,7 @@ function checkContentCatalog(content: ModelPageContent): { ok: true } | { ok: fa
 		if (entry.catalogBlock) {
 			const choice = resolveCatalogChoice({ kind: entry.kind, catalogBlock: entry.catalogBlock, variant: entry.variant });
 			if (!choice.ok) {
-				return { ok: false, code: choice.code, message: choice.message, path: `blocks[${bi}].${choice.code === "unknown_variant" ? "variant" : "catalogBlock"}` };
+				return { ok: false, code: choice.code, message: choice.message, path: `blocks[${entry.at ?? bi}].${choice.code === "unknown_variant" ? "variant" : "catalogBlock"}` };
 			}
 			entry.catalogBlock = choice.catalogBlock;
 			if (choice.variant) entry.variant = choice.variant;
@@ -26629,7 +26665,7 @@ function validateCatalogProvenance(input: {
 				return {
 					ok: false,
 					code: choice.ok ? "unknown_catalog_block" : choice.code,
-					message: `${choice.ok ? `${node.catalogBlock} is not a catalog block spec.` : choice.message} Nothing was rendered.`,
+					message: `Block ${node.id} (${node.kind}): ${choice.ok ? `${node.catalogBlock} is not a catalog block spec.` : choice.message} Nothing was rendered.`,
 					path: `${path}.${!choice.ok && choice.code === "unknown_variant" ? "variant" : "catalogBlock"}`
 				};
 			}
@@ -26903,7 +26939,7 @@ __def("packages/builder-core/src/agent/agent-tools.v1.json", function (exports) 
 				"ask",
 				"build"
 			],
-			"description": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored items and pick.screenId; then call propose_layout. Zero hits return nearest terms and the vocabulary for one re-query.",
+			"description": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored items and pick.screenId; then call propose_layout. Never a dead end: when no renderable screen matches every facet the host drops the fewest facets and says which in relaxed; zero or weak hits (and browse=true) add facets, the counts of renderable screens per site, section, job, industry and block label for drill-down. Do not repeat a search that returned items: pick one and call propose_layout.",
 			"descriptionByMode": {
 				"ask": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored screens with their block labels. Read-only."
 			},
@@ -26942,6 +26978,10 @@ __def("packages/builder-core/src/agent/agent-tools.v1.json", function (exports) 
 					"page": {
 						"type": "integer",
 						"minimum": 1
+					},
+					"browse": {
+						"type": "boolean",
+						"description": "true: also return facets (renderable screen counts per facet value for this filter) to drill down with another call."
 					}
 				}
 			}
@@ -26994,7 +27034,7 @@ __def("packages/builder-core/src/agent/agent-tools.v1.json", function (exports) 
 			"modes": [
 				"build"
 			],
-			"description": "Assemble a Page from screenId (the search pick) and your typed intent (locale, demoData, requireBlocks). Always include blocks: one entry per block kind with title and lede in the page language, nav/sidenav items naming the sections; with demoData=true also items (rows) for overview, metrics, chart and activity. Does not apply. Follow-up copy uses edits.",
+			"description": "Assemble a Page from screenId (the search pick) and your typed intent (locale, demoData, requireBlocks). Always include blocks: one entry per block kind with title and lede in the page language, nav/sidenav items naming the sections; with demoData=true also items (rows) for overview, metrics, chart and activity. Does not apply. Follow-up copy uses edits. A rejected block choice returns code, path blocks[i].variant or blocks[i].catalogBlock, and fix (the block's kind, the catalog block it renders as, the rejected value, allowedVariants, defaultVariant, catalogBlocksWithVariant); fix only that block. The same error twice on one block, or a run that ends rejected, keeps every other block and uses the catalog default for that block (said in warnings).",
 			"parameters": {
 				"type": "object",
 				"properties": {
@@ -27113,7 +27153,7 @@ __def("packages/builder-core/src/agent/agent-tools.v1.json", function (exports) 
 								},
 								"variant": {
 									"type": "string",
-									"description": "Catalog variant of this block, one of get_block_details variants for its catalog block. The host rejects unknown variants; omit for the catalog default."
+									"description": "Catalog variant of this block: one of catalogSources.blocks[<its catalog block>].variants. Without catalogBlock the block renders as the screen's block of this kind, so use that block's variants or also set catalogBlock. The host rejects unknown variants with the allowed list; omit for the catalog default."
 								},
 								"catalogBlock": {
 									"type": "string",
@@ -29917,7 +29957,11 @@ exports["parseLayoutCopyEdits"] = parseLayoutCopyEdits;
 });
 
 __def("packages/builder-core/src/tools.ts", function (exports) {
-const { searchCatalog } = __req("packages/builder-core/src/catalog/search.ts");
+const { facetTree, getScreenById, searchCatalog } = __req("packages/builder-core/src/catalog/search.ts");
+const { familyLabelForKind } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { catalogBlocksWithVariant, catalogSourceFor, catalogVariantsFor } = __req("packages/builder-core/src/catalog/sources.ts");
+const { getBlockIndex } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { lucideIcons } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { screenSupport } = __req("packages/builder-core/src/catalog/compatibility.ts");
 const { getAskBlock, getBlockDetails } = __req("packages/builder-core/src/catalog/details.ts");
 const { toolOffersMode } = __req("packages/builder-core/src/agent/agent-tools.ts");
@@ -29947,6 +29991,34 @@ function compactItem(item: SearchResult["items"][number]): CompactSearchItem {
 }
 
 /** Tool-loop payload: shortlist only. No preview, spec, snapshot dump, or block-id inspect list. */
+const RELAX_ORDER = ["industry", "section", "job", "blocks", "site"] as const;
+
+/**
+ * No renderable screen for the exact filter: drop the fewest facets (industry, section, job, blocks, then site) until
+ * screens match, and say which were dropped. The text query is kept, so items still rank by the author's terms. The
+ * result is the same Stock search; nothing is invented. Null when no relaxation finds a screen.
+ */
+function searchRelaxed(query: SearchQuery): { result: SearchResult; dropped: string[] } | null {
+	const present = RELAX_ORDER.filter((facet) => {
+		const value = query[facet];
+		return Array.isArray(value) ? value.length > 0 : Boolean(value);
+	});
+	for (let size = 1; size <= present.length; size += 1) {
+		for (const dropped of combinations(present, size)) {
+			const next: SearchQuery = { ...query };
+			for (const facet of dropped) delete next[facet];
+			const result = searchCatalog(next);
+			if (!result.noFit && result.total > 0) return { result, dropped };
+		}
+	}
+	return null;
+}
+
+function combinations<T>(items: T[], size: number): T[][] {
+	if (size === 0) return [[]];
+	return items.flatMap((item, index) => combinations(items.slice(index + 1), size - 1).map((rest) => [item, ...rest]));
+}
+
 function compactSearchResult(result: SearchResult): CompactSearchPayload {
 	const items = result.items.map(compactItem);
 	return {
@@ -30031,7 +30103,10 @@ function proposeLabel(toolsCalled: string[]): string {
 function toolLoopProposalFailure(input: {
 	toolsCalled: string[];
 	rejections: ToolLoopRejection[];
+	/** Step budget summary: the nearest renderable screens the search returned and the allowed values of rejected blocks (catalog tokens only). */
+	nearest?: { screens?: string[]; fixes?: string[]; budget?: number };
 }): LayoutProposalError {
+	const near = nearestSummary(input.nearest);
 	const proposeCount = input.toolsCalled.filter((name) => name === "propose_layout" || name === "edit_page").length;
 	if (proposeCount > 0) {
 		const codes = [...new Set(input.rejections.map((row) => row.code).filter(Boolean))];
@@ -30047,7 +30122,7 @@ function toolLoopProposalFailure(input: {
 		return {
 			ok: false,
 			code: "propose_layout_rejected",
-			message: `${proposeLabel(input.toolsCalled)} was called ${proposeCount} time(s) and rejected (${detail}). No local layout was substituted.`,
+			message: `${proposeLabel(input.toolsCalled)} was called ${proposeCount} time(s) and rejected (${detail}). No local layout was substituted.${near}`,
 			path: paths[0]
 		};
 	}
@@ -30056,9 +30131,19 @@ function toolLoopProposalFailure(input: {
 		ok: false,
 		code: used ? "propose_layout_missing" : "tools_not_used",
 		message: used
-			? "Grok used catalog tools but did not call propose_layout. No local layout was substituted."
+			? `Grok used catalog tools but did not call propose_layout. No local layout was substituted.${near}`
 			: "Grok did not call catalog tools on this turn. No local layout was substituted."
 	};
+}
+
+function nearestSummary(nearest: { screens?: string[]; fixes?: string[]; budget?: number } | undefined): string {
+	if (!nearest) return "";
+	const parts = [
+		nearest.budget ? `Step budget ${nearest.budget} used up.` : null,
+		nearest.screens?.length ? `Nearest renderable screens: ${nearest.screens.slice(0, 4).join(", ")}.` : null,
+		...(nearest.fixes ?? []).slice(0, 4)
+	].filter(Boolean);
+	return parts.length ? ` ${parts.join(" ")}` : "";
 }
 
 function executeTool(
@@ -30088,7 +30173,7 @@ function executeTool(
 	}
 	if (call.name === "search_catalog") {
 		const blocks = Array.isArray(args.blocks) ? args.blocks.filter((b): b is string => typeof b === "string" && b.length > 0).slice(0, 6) : undefined;
-		const result = searchCatalog({
+		const query: SearchQuery = {
 			type: "screen",
 			site: typeof args.site === "string" && args.site ? args.site : undefined,
 			section: typeof args.section === "string" && args.section ? args.section : undefined,
@@ -30099,16 +30184,42 @@ function executeTool(
 			page: typeof args.page === "number" ? args.page : 1,
 			pageSize: RUN_BUDGET.toolPageSize,
 			supportedOnly: true
-		});
+		};
+		const result = searchCatalog(query);
+		const browse = args.browse === true;
 		if (result.code === "catalog_facet_unknown") {
+			// Not a dead end: the facet tree of the valid part of the filter comes with the error.
+			const valid: SearchQuery = { ...query };
+			const bad = result.misplaced?.used ?? (["site", "section", "job"] as const).find((facet) => query[facet] && !result.vocabulary[facet].includes(query[facet]!));
+			if (bad) delete valid[bad as keyof SearchQuery];
+			if (query.industry && !vocabularyValues("industry").includes(query.industry)) delete valid.industry;
+			if (query.blocks?.some((label) => !blockLabelVocabulary().includes(label))) delete valid.blocks;
 			return {
 				ok: false,
 				code: "catalog_facet_unknown",
 				message: result.clarification ?? "Unknown catalog facet. Use the pinned Stock vocabulary.",
-				result
+				result: { ...result, facets: facetTree(valid, 10) }
 			};
 		}
-		return { ok: true, name: call.name, result: compactSearchResult(result) };
+		const relaxed = result.noFit ? searchRelaxed(query) : null;
+		const tree = browse || result.total <= 1 ? { facets: facetTree(query, 10) } : {};
+		if (relaxed) {
+			return {
+				ok: true,
+				name: call.name,
+				result: {
+					...compactSearchResult(relaxed.result),
+					facets: facetTree(query, 10),
+					query: result.query,
+					...(result.unrenderable?.length ? { unrenderable: result.unrenderable } : {}),
+					relaxed: {
+						dropped: relaxed.dropped,
+						note: `No renderable Stock screen matches every facet. These match without ${relaxed.dropped.join(", ")}. Pick one and call propose_layout; do not repeat the same search.`
+					}
+				}
+			};
+		}
+		return { ok: true, name: call.name, result: { ...compactSearchResult(result), ...tree } };
 	}
 	if (call.name === "get_block_details") {
 		const details = getBlockDetails({
@@ -30201,6 +30312,10 @@ function executeTool(
 			content
 		});
 		if (!result.ok) {
+			// The assembled page named a variant its catalog block does not have: point at the caller's block with the
+			// allowed values (only when that block is the one the screen rendered; otherwise keep the assembler's error).
+			const variantCheck = result.code === "unknown_variant" ? checkContentVariants(content, screenId) : null;
+			if (variantCheck) return variantCheck;
 			return {
 				ok: false,
 				code: result.code,
@@ -30215,6 +30330,119 @@ function executeTool(
 		return { ok: true, name: call.name, result };
 	}
 	return { ok: false, code: "unknown_tool", message: "Unreachable tool" };
+}
+
+function checkContentVariants(content: ModelPageContent, screenId: string | null | undefined): VariantRejection | null {
+	const screen = screenId ? getScreenById(screenId) : null;
+	if (!screen) return null;
+	for (const [bi, entry] of content.blocks.entries()) {
+		if (!entry.variant || entry.catalogBlock) continue;
+		const found = familyLabelForKind(screen, entry.kind);
+		// Only kinds the screen itself renders; a family sibling's block is checked after assembly (when it is added).
+		const spec = found && found.screenId === screen.screenId ? getBlockIndex(found.label)?.spec : undefined;
+		if (!spec) continue;
+		const allowed = catalogVariantsFor(spec);
+		if (!allowed.length || allowed.includes(entry.variant)) continue;
+		const at = entry.at ?? bi;
+		const path = `blocks[${at}].variant`;
+		const others = catalogBlocksWithVariant(entry.kind, entry.variant).filter((other) => other !== spec);
+		const defaultVariant = catalogSourceDefault(spec);
+		const title = entry.title ? ` "${entry.title}"` : "";
+		return {
+			ok: false,
+			code: "unknown_variant",
+			path,
+			message:
+				`propose_layout.blocks[${at}] (kind ${entry.kind}${title}) has no catalogBlock, so it renders as ${spec} of screen ${screen.screenId}; ` +
+				`${spec} has no variant ${entry.variant}. Fix only this block: set variant to one of ${allowed.join(", ")}` +
+				(others.length ? `, or keep variant ${entry.variant} and set catalogBlock to one of ${others.join(", ")}` : "") +
+				`, or omit variant to keep the screen's own variant of ${spec}. Nothing was rendered.`,
+			result: {
+				path,
+				blockIndex: at,
+				kind: entry.kind,
+				catalogBlock: spec,
+				variant: entry.variant,
+				allowedVariants: allowed,
+				defaultVariant,
+				catalogBlocksWithVariant: others
+			}
+		};
+	}
+	return null;
+}
+
+function catalogSourceDefault(spec: string): string | null {
+	return catalogSourceFor(spec)?.defaultVariant ?? null;
+}
+
+const BLOCK_CHOICE_PATH = /^blocks\[(\d+)\]\.(variant|catalogBlock)$/;
+
+/**
+ * Partial acceptance of a rejected propose_layout: when the rejection names one caller block's catalog choice
+ * (blocks[i].variant or blocks[i].catalogBlock), return the same arguments without that choice (the tool contract:
+ * an omitted variant is the catalog default, an omitted catalogBlock is the screen's block of that kind) and a warning
+ * naming the block, the rejected value and what is used instead. Every other block stays as the model sent it.
+ */
+function repairProposeArgs(
+	args: Record<string, unknown>,
+	result: { code: string; path?: string; result?: unknown }
+): { args: Record<string, unknown>; warning: string; blockIndex: number } | null {
+	if (result.code === "props_invalid" && result.path && /\.icon$/.test(result.path)) return repairIcons(args, result.code);
+	const match = result.path ? BLOCK_CHOICE_PATH.exec(result.path) : null;
+	if (!match) return null;
+	const at = Number(match[1]);
+	const field = match[2] as "variant" | "catalogBlock";
+	const blocks = Array.isArray(args.blocks) ? args.blocks : null;
+	const block = blocks?.[at];
+	if (!block || typeof block !== "object") return null;
+	const rec = block as Record<string, unknown>;
+	const fix = (result.result ?? {}) as { catalogBlock?: unknown; defaultVariant?: unknown };
+	const label = `propose_layout.blocks[${at}] (kind ${String(rec.kind)}${typeof rec.title === "string" ? ` "${rec.title}"` : ""})`;
+	let next: Record<string, unknown>;
+	let warning: string;
+	if (field === "variant") {
+		if (rec.variant === undefined) return null;
+		const { variant, ...rest } = rec;
+		next = rest;
+		const where = typeof fix.catalogBlock === "string" ? fix.catalogBlock : "its catalog block";
+		warning = `${label}: variant ${String(variant)} is not a variant of ${where} (${result.code}); this block keeps the screen's default variant, every other block is as proposed.`;
+	} else {
+		if (rec.catalogBlock === undefined) return null;
+		const { catalogBlock, variant: _variant, ...rest } = rec;
+		next = rest;
+		warning = `${label}: catalogBlock ${String(catalogBlock)} was rejected (${result.code}); this block uses the screen's ${String(rec.kind)} block and its default variant, every other block is as proposed.`;
+	}
+	return { args: { ...args, blocks: blocks!.map((entry, index) => (index === at ? next : entry)) }, warning, blockIndex: at };
+}
+
+/** Row icons outside the contract's Lucide enum (the props schema) are dropped; those rows keep their text. */
+function repairIcons(args: Record<string, unknown>, code: string): { args: Record<string, unknown>; warning: string; blockIndex: number } | null {
+	const allowed = new Set(lucideIcons());
+	const blocks = Array.isArray(args.blocks) ? args.blocks : null;
+	if (!blocks || !allowed.size) return null;
+	const dropped: string[] = [];
+	let first = -1;
+	const next = blocks.map((block, index) => {
+		if (!block || typeof block !== "object" || !Array.isArray((block as { items?: unknown }).items)) return block;
+		const rec = block as Record<string, unknown>;
+		const items = (rec.items as unknown[]).map((item) => {
+			if (!item || typeof item !== "object") return item;
+			const row = item as Record<string, unknown>;
+			if (typeof row.icon !== "string" || allowed.has(row.icon.trim())) return item;
+			dropped.push(row.icon);
+			if (first < 0) first = index;
+			const { icon: _icon, ...rest } = row;
+			return rest;
+		});
+		return { ...rec, items };
+	});
+	if (!dropped.length) return null;
+	return {
+		args: { ...args, blocks: next },
+		warning: `Row icons ${[...new Set(dropped)].join(", ")} are not in the published props schema (${code}); those rows render without an icon, everything else is as proposed.`,
+		blockIndex: first
+	};
 }
 
 function runConstructorTools(ctx: ProposalContext): LayoutProposal | LayoutProposalError {
@@ -30262,12 +30490,15 @@ function runConstructorTools(ctx: ProposalContext): LayoutProposal | LayoutPropo
 	return proposed.result as LayoutProposal;
 }
 
+exports["searchRelaxed"] = searchRelaxed;
 exports["compactSearchResult"] = compactSearchResult;
 exports["scenarioCatalogContext"] = scenarioCatalogContext;
 exports["isAllowedTool"] = isAllowedTool;
 exports["toolLoopRejection"] = toolLoopRejection;
 exports["toolLoopProposalFailure"] = toolLoopProposalFailure;
 exports["executeTool"] = executeTool;
+exports["checkContentVariants"] = checkContentVariants;
+exports["repairProposeArgs"] = repairProposeArgs;
 exports["runConstructorTools"] = runConstructorTools;
 
 });
@@ -31011,6 +31242,7 @@ exports["catalogProvenance"] = __req("packages/builder-core/src/catalog/snapshot
 exports["parseCatalogSnapshot"] = __req("packages/builder-core/src/catalog/snapshot.ts")["parseCatalogSnapshot"];
 exports["paginateScreens"] = __req("packages/builder-core/src/catalog/search.ts")["paginateScreens"];
 exports["searchCatalog"] = __req("packages/builder-core/src/catalog/search.ts")["searchCatalog"];
+exports["facetTree"] = __req("packages/builder-core/src/catalog/search.ts")["facetTree"];
 exports["filterScreens"] = __req("packages/builder-core/src/catalog/search.ts")["filterScreens"];
 exports["getScreenById"] = __req("packages/builder-core/src/catalog/search.ts")["getScreenById"];
 exports["DEFAULT_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/search.ts")["DEFAULT_PAGE_SIZE"];
@@ -31094,6 +31326,9 @@ exports["isAllowedTool"] = __req("packages/builder-core/src/tools.ts")["isAllowe
 exports["compactSearchResult"] = __req("packages/builder-core/src/tools.ts")["compactSearchResult"];
 exports["scenarioCatalogContext"] = __req("packages/builder-core/src/tools.ts")["scenarioCatalogContext"];
 exports["toolLoopProposalFailure"] = __req("packages/builder-core/src/tools.ts")["toolLoopProposalFailure"];
+exports["repairProposeArgs"] = __req("packages/builder-core/src/tools.ts")["repairProposeArgs"];
+exports["checkContentVariants"] = __req("packages/builder-core/src/tools.ts")["checkContentVariants"];
+exports["searchRelaxed"] = __req("packages/builder-core/src/tools.ts")["searchRelaxed"];
 exports["toolLoopRejection"] = __req("packages/builder-core/src/tools.ts")["toolLoopRejection"];
 exports["isScenarioId"] = __req("packages/builder-core/src/brief.ts")["isScenarioId"];
 exports["displayTitleFromBrief"] = __req("packages/builder-core/src/brief.ts")["displayTitleFromBrief"];
@@ -31267,7 +31502,7 @@ exports["installPropsGate"] = installPropsGate;
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, agentOpenAiTools, agentTextReply, aggregateStepUsage, assertNoFallback, catalogProvenance, executeTool, facetVocabulary, inheritedScreenId, isScenarioId, modelCatalogSources, searchVocabulary, readProviderUsage, recordedScreenId, rejectFabricatedLayout, safeErrorMessage, scenarioCatalogContext, toolLoopProposalFailure, toolLoopRejection, unknownUsage, validateCatalogProvenance } = __req("packages/builder-core/src/index.ts");
+const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, agentOpenAiTools, agentTextReply, aggregateStepUsage, assertNoFallback, catalogProvenance, executeTool, facetVocabulary, inheritedScreenId, isScenarioId, modelCatalogSources, searchVocabulary, readProviderUsage, recordedScreenId, rejectFabricatedLayout, safeErrorMessage, scenarioCatalogContext, toolLoopProposalFailure, toolLoopRejection, repairProposeArgs, unknownUsage, validateCatalogProvenance } = __req("packages/builder-core/src/index.ts");
 const { PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
@@ -31467,11 +31702,62 @@ function compactToolPayload(
 		code: result.code,
 		message: result.message,
 		path: "path" in result ? result.path : undefined,
+		// unknown_variant: the caller's block, the catalog block it rendered as and every allowed value.
+		...(result.code === "unknown_variant" && result.result && typeof result.result === "object" && "allowedVariants" in result.result
+			? { fix: result.result }
+			: {}),
 		suggestedScreenIds:
 			result.result && typeof result.result === "object" && result.result !== null && "suggestedScreenIds" in result.result
 				? (result.result as { suggestedScreenIds?: string[] }).suggestedScreenIds
 				: undefined
 	};
+}
+
+/** Same rejection (code and caller path) seen before in this turn: the model did not take the allowed values. */
+function repeatedRejection(result: { code: string; path?: string }, rejections: ToolLoopRejection[]): boolean {
+	const block = (path: string | undefined) => (path ? path.slice(0, path.indexOf("]") + 1) || path : "");
+	return Boolean(result.path) && rejections.some((row) => row.code === result.code && block(row.path) === block(result.path));
+}
+
+/**
+ * Partial acceptance: drop the rejected block choice(s) one at a time (repairProposeArgs) and run the same call
+ * again, up to `max` blocks. Returns the proposal with one warning per repaired block, or null.
+ */
+function acceptPartially(
+	args: Record<string, unknown>,
+	failed: { code: string; path?: string; result?: unknown },
+	host: Parameters<typeof executeTool>[1],
+	max = 3
+): { proposal: LayoutProposal; args: Record<string, unknown> } | null {
+	let current = args;
+	let rejection = failed;
+	const warnings: string[] = [];
+	const kinds: string[] = [];
+	for (let i = 0; i < max; i += 1) {
+		const repair = repairProposeArgs(current, rejection);
+		if (!repair) return null;
+		const kind = String(((current.blocks as Array<Record<string, unknown>>)[repair.blockIndex] ?? {}).kind ?? "");
+		warnings.push(repair.warning);
+		kinds.push(kind);
+		current = repair.args;
+		const next = executeTool({ name: "propose_layout", arguments: current }, host);
+		if (next.ok) {
+			const proposal = next.result as LayoutProposal;
+			// Name what the repaired block renders as now (catalog block / variant of the assembled page).
+			const used = warnings.map((warning, index) => {
+				const node = proposal.page.layout.blocks.find((block) => block.kind === kinds[index]);
+				return node?.catalogBlock ? `${warning} Used: ${node.catalogBlock}${node.variant ? `/${node.variant}` : ""}.` : warning;
+			});
+			return { proposal: { ...proposal, warnings: [...proposal.warnings, ...used] }, args: current };
+		}
+		rejection = next;
+	}
+	return null;
+}
+
+function screenIdsOf(result: unknown): string[] {
+	const items = (result as { items?: Array<{ screenId?: unknown; supported?: unknown }> } | null)?.items;
+	return Array.isArray(items) ? items.filter((item) => item.supported !== false && typeof item.screenId === "string").map((item) => item.screenId as string) : [];
 }
 
 function bindProposeArgs(args: Record<string, unknown>, ctx: ProposalContext): Record<string, unknown> {
@@ -31637,6 +31923,8 @@ async function buildToolLoop(
 	let fallback: LayoutProposal | null = null;
 	let text = "";
 	const blocks: string[] = [];
+	let lastRejected: { args: Record<string, unknown>; result: { code: string; path?: string; result?: unknown } } | null = null;
+	let nearestScreens: string[] = [];
 
 	while (trace.steps < RUN_BUDGET.maxToolCalls) {
 		trace.steps += 1;
@@ -31667,12 +31955,26 @@ async function buildToolLoop(
 			trace.toolsCalled.push(name);
 			let args = parseArgs(call.function?.arguments);
 			if (name === "propose_layout") args = bindProposeArgs(args, ctx);
-			const result = executeTool({ name, arguments: args }, host);
+			let result = executeTool({ name, arguments: args }, host);
+			if (name === "propose_layout" && !result.ok) {
+				lastRejected = { args, result };
+				// The same block error twice: keep the other blocks, use the catalog default for that block.
+				const partial = repeatedRejection(result, rejections) ? acceptPartially(args, result, host) : null;
+				if (partial) {
+					rejections.push(toolLoopRejection(args, result));
+					result = { ok: true, name: "propose_layout", result: partial.proposal };
+					args = partial.args;
+				}
+			}
+			if (name === "search_catalog" && result.ok) {
+				const ids = screenIdsOf(result.result);
+				if (ids.length) nearestScreens = ids;
+			}
 			if (result.ok && (name === "get_block" || name === "get_block_details")) {
 				const spec = (result.result as { spec?: unknown }).spec;
 				if (typeof spec === "string") blocks.push(spec);
 			}
-			let reply: unknown = compactToolPayload(name, result);
+			let reply: unknown = withBudget(compactToolPayload(name, result), trace.steps, name);
 			if (name === "edit_page" && result.ok) {
 				lastProposal = markLiveProposal(result.result as LayoutProposal);
 			} else if (name === "propose_layout" && result.ok) {
@@ -31696,13 +31998,43 @@ async function buildToolLoop(
 	const usage = aggregateStepUsage(stepUsage);
 	const meta = turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId);
 	if (!lastProposal?.ok && fallback) lastProposal = fallback;
+	// Budget spent on a rejected page: accept it without the rejected block choice(s), said in warnings.
+	if (!lastProposal?.ok && lastRejected) {
+		const partial = acceptPartially(lastRejected.args, lastRejected.result, host);
+		if (partial) lastProposal = markLiveProposal(partial.proposal);
+	}
 	if (lastProposal?.ok) return { proposal: text ? { ...lastProposal, modelText: text.slice(0, 4000) } : lastProposal, meta };
 	// The model answered in text and proposed nothing: show the text, create no proposal.
 	if (text && !trace.toolsCalled.some((name) => name === "propose_layout" || name === "edit_page")) {
 		return { proposal: agentTextReply("build", text, blocks), meta };
 	}
 	if (lastProposal) return { proposal: lastProposal, meta };
-	return { proposal: toolLoopProposalFailure({ toolsCalled: trace.toolsCalled, rejections }), meta };
+	const fix = (lastRejected?.result.result ?? null) as { path?: unknown; kind?: unknown; catalogBlock?: unknown; variant?: unknown; allowedVariants?: unknown } | null;
+	const fixes =
+		fix && typeof fix.path === "string" && Array.isArray(fix.allowedVariants)
+			? [`${fix.path} (${String(fix.kind)}) renders as ${String(fix.catalogBlock)}, which has no variant ${String(fix.variant)}; allowed: ${fix.allowedVariants.join(", ")}.`]
+			: [];
+	return {
+		proposal: toolLoopProposalFailure({
+			toolsCalled: trace.toolsCalled,
+			rejections,
+			nearest: { screens: nearestScreens, fixes, budget: trace.steps >= RUN_BUDGET.maxToolCalls ? RUN_BUDGET.maxToolCalls : undefined }
+		}),
+		meta
+	};
+}
+
+/**
+ * Step budget on every Build tool reply: steps used and left. With one step left the reply says the next call must
+ * be propose_layout (the turn ends after it). Host counters only, no text from the model.
+ */
+function withBudget(reply: unknown, step: number, name: string): unknown {
+	if (!reply || typeof reply !== "object" || Array.isArray(reply)) return reply;
+	const left = RUN_BUDGET.maxToolCalls - step;
+	const budget: Record<string, unknown> = { step, maxSteps: RUN_BUDGET.maxToolCalls, left };
+	if (left <= 2 && name !== "propose_layout") budget.next = "propose_layout now with the best pick (pick.screenId); the turn ends when the budget is spent.";
+	if (left <= 2 && name === "propose_layout") budget.next = "Fix only the named block (fix.allowedVariants) or omit its variant; the turn ends when the budget is spent.";
+	return { ...(reply as Record<string, unknown>), budget };
 }
 
 /** Ask payload: the author's message, a summary of the page they see, and the catalog block list. No page tools. */

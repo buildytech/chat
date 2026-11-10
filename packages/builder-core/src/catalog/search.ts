@@ -194,3 +194,35 @@ export function getScreenById(screenId: string): CatalogScreen | null {
 	return catalogSnapshot.screens.find((s) => s.screenId === screenId) ?? null;
 }
 
+
+export type FacetName = "site" | "section" | "job" | "industry" | "blocks";
+export const FACET_NAMES: readonly FacetName[] = ["site", "section", "job", "industry", "blocks"];
+
+/** Facet tree for drill-down: per facet, how many renderable screens each value adds to the rest of the filter. */
+export type FacetTree = Record<FacetName, Array<{ value: string; count: number }>>;
+
+/**
+ * Counts of renderable Stock screens per facet value. Each facet is counted with that facet left out of the filter
+ * (the usual faceted-search rule), so a value with count > 0 is a valid next refinement. Catalog data only.
+ */
+export function facetTree(query: CatalogFacetFilter = {}, limit = 12): FacetTree {
+	const out = {} as FacetTree;
+	for (const facet of FACET_NAMES) {
+		const rest: CatalogFacetFilter = { ...query, type: "screen" };
+		delete rest[facet];
+		delete rest.q;
+		let pool: CatalogScreen[];
+		try {
+			pool = filterScreens(rest).filter((screen) => screenSupport(screen).supported);
+		} catch {
+			pool = [];
+		}
+		const counts = new Map<string, number>();
+		for (const screen of pool) for (const value of screen.labels[facet] ?? []) counts.set(value, (counts.get(value) ?? 0) + 1);
+		out[facet] = [...counts.entries()]
+			.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+			.slice(0, limit)
+			.map(([value, count]) => ({ value, count }));
+	}
+	return out;
+}

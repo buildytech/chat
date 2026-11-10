@@ -225,6 +225,14 @@
 			</Group>
 			{#if result.total === 0}
 				<Text tag="p" class="text-sm text-muted-foreground">{t("home.stockEmpty")}</Text>
+				{#if result.outsideScope > 0}
+					<Group class="flex-wrap items-center gap-2" data-slot="stock-outside">
+						<Text tag="p" class="text-sm text-muted-foreground">{t("home.stockOutside").replace("{n}", String(result.outsideScope))}</Text>
+						<Button class="text-sm text-muted-foreground hover:text-foreground" onclick={clearScenario}>
+							<Text tag="span">{t("home.clearScenario")}</Text>
+						</Button>
+					</Group>
+				{/if}
 			{:else}
 				<Stack align="stretch" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{#each result.items as item (item.screenId)}

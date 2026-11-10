@@ -318,7 +318,7 @@ export function validateCatalogProvenance(input: {
 				return {
 					ok: false,
 					code: choice.ok ? "unknown_catalog_block" : choice.code,
-					message: `${choice.ok ? `${node.catalogBlock} is not a catalog block spec.` : choice.message} Nothing was rendered.`,
+					message: `Block ${node.id} (${node.kind}): ${choice.ok ? `${node.catalogBlock} is not a catalog block spec.` : choice.message} Nothing was rendered.`,
 					path: `${path}.${!choice.ok && choice.code === "unknown_variant" ? "variant" : "catalogBlock"}`
 				};
 			}

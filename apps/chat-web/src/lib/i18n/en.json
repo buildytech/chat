@@ -215,6 +215,7 @@
 		"home.stock": "Stock screens",
 		"home.stockSearch": "Search Stock screens",
 		"home.stockEmpty": "No screens match this filter",
+		"home.stockOutside": "{n} screens match outside this scenario. Clear the scenario to see them.",
 		"home.clearScenario": "Clear scenario",
 		"home.attachScreen": "Attach screen",
 		"home.pageOf": "Page {page} of {pages}",

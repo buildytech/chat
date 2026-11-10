@@ -21,6 +21,7 @@ import {
 	scenarioCatalogContext,
 	toolLoopProposalFailure,
 	toolLoopRejection,
+	repairProposeArgs,
 	unknownUsage,
 	validateCatalogProvenance,
 	type AgentTextReply,
@@ -247,11 +248,62 @@ function compactToolPayload(
 		code: result.code,
 		message: result.message,
 		path: "path" in result ? result.path : undefined,
+		// unknown_variant: the caller's block, the catalog block it rendered as and every allowed value.
+		...(result.code === "unknown_variant" && result.result && typeof result.result === "object" && "allowedVariants" in result.result
+			? { fix: result.result }
+			: {}),
 		suggestedScreenIds:
 			result.result && typeof result.result === "object" && result.result !== null && "suggestedScreenIds" in result.result
 				? (result.result as { suggestedScreenIds?: string[] }).suggestedScreenIds
 				: undefined
 	};
+}
+
+/** Same rejection (code and caller path) seen before in this turn: the model did not take the allowed values. */
+function repeatedRejection(result: { code: string; path?: string }, rejections: ToolLoopRejection[]): boolean {
+	const block = (path: string | undefined) => (path ? path.slice(0, path.indexOf("]") + 1) || path : "");
+	return Boolean(result.path) && rejections.some((row) => row.code === result.code && block(row.path) === block(result.path));
+}
+
+/**
+ * Partial acceptance: drop the rejected block choice(s) one at a time (repairProposeArgs) and run the same call
+ * again, up to `max` blocks. Returns the proposal with one warning per repaired block, or null.
+ */
+function acceptPartially(
+	args: Record<string, unknown>,
+	failed: { code: string; path?: string; result?: unknown },
+	host: Parameters<typeof executeTool>[1],
+	max = 3
+): { proposal: LayoutProposal; args: Record<string, unknown> } | null {
+	let current = args;
+	let rejection = failed;
+	const warnings: string[] = [];
+	const kinds: string[] = [];
+	for (let i = 0; i < max; i += 1) {
+		const repair = repairProposeArgs(current, rejection);
+		if (!repair) return null;
+		const kind = String(((current.blocks as Array<Record<string, unknown>>)[repair.blockIndex] ?? {}).kind ?? "");
+		warnings.push(repair.warning);
+		kinds.push(kind);
+		current = repair.args;
+		const next = executeTool({ name: "propose_layout", arguments: current }, host);
+		if (next.ok) {
+			const proposal = next.result as LayoutProposal;
+			// Name what the repaired block renders as now (catalog block / variant of the assembled page).
+			const used = warnings.map((warning, index) => {
+				const node = proposal.page.layout.blocks.find((block) => block.kind === kinds[index]);
+				return node?.catalogBlock ? `${warning} Used: ${node.catalogBlock}${node.variant ? `/${node.variant}` : ""}.` : warning;
+			});
+			return { proposal: { ...proposal, warnings: [...proposal.warnings, ...used] }, args: current };
+		}
+		rejection = next;
+	}
+	return null;
+}
+
+function screenIdsOf(result: unknown): string[] {
+	const items = (result as { items?: Array<{ screenId?: unknown; supported?: unknown }> } | null)?.items;
+	return Array.isArray(items) ? items.filter((item) => item.supported !== false && typeof item.screenId === "string").map((item) => item.screenId as string) : [];
 }
 
 function bindProposeArgs(args: Record<string, unknown>, ctx: ProposalContext): Record<string, unknown> {
@@ -419,6 +471,8 @@ async function buildToolLoop(
 	let fallback: LayoutProposal | null = null;
 	let text = "";
 	const blocks: string[] = [];
+	let lastRejected: { args: Record<string, unknown>; result: { code: string; path?: string; result?: unknown } } | null = null;
+	let nearestScreens: string[] = [];
 
 	while (trace.steps < RUN_BUDGET.maxToolCalls) {
 		trace.steps += 1;
@@ -449,12 +503,26 @@ async function buildToolLoop(
 			trace.toolsCalled.push(name);
 			let args = parseArgs(call.function?.arguments);
 			if (name === "propose_layout") args = bindProposeArgs(args, ctx);
-			const result = executeTool({ name, arguments: args }, host);
+			let result = executeTool({ name, arguments: args }, host);
+			if (name === "propose_layout" && !result.ok) {
+				lastRejected = { args, result };
+				// The same block error twice: keep the other blocks, use the catalog default for that block.
+				const partial = repeatedRejection(result, rejections) ? acceptPartially(args, result, host) : null;
+				if (partial) {
+					rejections.push(toolLoopRejection(args, result));
+					result = { ok: true, name: "propose_layout", result: partial.proposal };
+					args = partial.args;
+				}
+			}
+			if (name === "search_catalog" && result.ok) {
+				const ids = screenIdsOf(result.result);
+				if (ids.length) nearestScreens = ids;
+			}
 			if (result.ok && (name === "get_block" || name === "get_block_details")) {
 				const spec = (result.result as { spec?: unknown }).spec;
 				if (typeof spec === "string") blocks.push(spec);
 			}
-			let reply: unknown = compactToolPayload(name, result);
+			let reply: unknown = withBudget(compactToolPayload(name, result), trace.steps, name);
 			if (name === "edit_page" && result.ok) {
 				lastProposal = markLiveProposal(result.result as LayoutProposal);
 			} else if (name === "propose_layout" && result.ok) {
@@ -478,13 +546,43 @@ async function buildToolLoop(
 	const usage = aggregateStepUsage(stepUsage);
 	const meta = turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId);
 	if (!lastProposal?.ok && fallback) lastProposal = fallback;
+	// Budget spent on a rejected page: accept it without the rejected block choice(s), said in warnings.
+	if (!lastProposal?.ok && lastRejected) {
+		const partial = acceptPartially(lastRejected.args, lastRejected.result, host);
+		if (partial) lastProposal = markLiveProposal(partial.proposal);
+	}
 	if (lastProposal?.ok) return { proposal: text ? { ...lastProposal, modelText: text.slice(0, 4000) } : lastProposal, meta };
 	// The model answered in text and proposed nothing: show the text, create no proposal.
 	if (text && !trace.toolsCalled.some((name) => name === "propose_layout" || name === "edit_page")) {
 		return { proposal: agentTextReply("build", text, blocks), meta };
 	}
 	if (lastProposal) return { proposal: lastProposal, meta };
-	return { proposal: toolLoopProposalFailure({ toolsCalled: trace.toolsCalled, rejections }), meta };
+	const fix = (lastRejected?.result.result ?? null) as { path?: unknown; kind?: unknown; catalogBlock?: unknown; variant?: unknown; allowedVariants?: unknown } | null;
+	const fixes =
+		fix && typeof fix.path === "string" && Array.isArray(fix.allowedVariants)
+			? [`${fix.path} (${String(fix.kind)}) renders as ${String(fix.catalogBlock)}, which has no variant ${String(fix.variant)}; allowed: ${fix.allowedVariants.join(", ")}.`]
+			: [];
+	return {
+		proposal: toolLoopProposalFailure({
+			toolsCalled: trace.toolsCalled,
+			rejections,
+			nearest: { screens: nearestScreens, fixes, budget: trace.steps >= RUN_BUDGET.maxToolCalls ? RUN_BUDGET.maxToolCalls : undefined }
+		}),
+		meta
+	};
+}
+
+/**
+ * Step budget on every Build tool reply: steps used and left. With one step left the reply says the next call must
+ * be propose_layout (the turn ends after it). Host counters only, no text from the model.
+ */
+function withBudget(reply: unknown, step: number, name: string): unknown {
+	if (!reply || typeof reply !== "object" || Array.isArray(reply)) return reply;
+	const left = RUN_BUDGET.maxToolCalls - step;
+	const budget: Record<string, unknown> = { step, maxSteps: RUN_BUDGET.maxToolCalls, left };
+	if (left <= 2 && name !== "propose_layout") budget.next = "propose_layout now with the best pick (pick.screenId); the turn ends when the budget is spent.";
+	if (left <= 2 && name === "propose_layout") budget.next = "Fix only the named block (fix.allowedVariants) or omit its variant; the turn ends when the budget is spent.";
+	return { ...(reply as Record<string, unknown>), budget };
 }
 
 /** Ask payload: the author's message, a summary of the page they see, and the catalog block list. No page tools. */

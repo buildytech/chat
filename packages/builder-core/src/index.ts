@@ -11,6 +11,7 @@ export { catalogSnapshot, catalogProvenance, parseCatalogSnapshot } from "./cata
 export {
 	paginateScreens,
 	searchCatalog,
+	facetTree,
 	filterScreens,
 	getScreenById,
 	DEFAULT_PAGE_SIZE,
@@ -121,6 +122,9 @@ export {
 	compactSearchResult,
 	scenarioCatalogContext,
 	toolLoopProposalFailure,
+	repairProposeArgs,
+	checkContentVariants,
+	searchRelaxed,
 	toolLoopRejection
 } from "./tools.ts";
 export type { ToolHost, CompactSearchItem, CompactSearchPayload, ToolLoopRejection } from "./tools.ts";

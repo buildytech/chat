@@ -40,6 +40,8 @@ export type ModelBlockContent = {
 	/** Stock catalog block (spec, label or asset id) and catalog variant the model picked; checked by the program. */
 	catalogBlock?: string;
 	variant?: string;
+	/** Index of this entry in the caller's propose_layout.blocks (rejection paths point at the caller's input). */
+	at?: number;
 };
 
 export type ModelPageContent = {
@@ -242,7 +244,7 @@ export function parseModelContent(args: Record<string, unknown>): ModelPageConte
 	if (demoLabel) out.demoLabel = demoLabel;
 	const rawBlocks = Array.isArray(args.blocks) ? args.blocks : [];
 	const seen = new Set<PageBlockKind>();
-	for (const raw of rawBlocks.slice(0, 16)) {
+	for (const [at, raw] of rawBlocks.slice(0, 16).entries()) {
 		if (!raw || typeof raw !== "object") continue;
 		const rec = raw as Record<string, unknown>;
 		const kind = normalizeKind(rec.kind);
@@ -281,7 +283,8 @@ export function parseModelContent(args: Record<string, unknown>): ModelPageConte
 			items,
 			...(rec.edit === true ? { edit: true } : {}),
 			...(catalogBlock ? { catalogBlock } : {}),
-			...(variant ? { variant } : {})
+			...(variant ? { variant } : {}),
+			at
 		});
 	}
 	if (typeof args.demoData === "boolean") out.demoData = args.demoData;
@@ -316,7 +319,7 @@ export function checkContentCatalog(content: ModelPageContent): { ok: true } | {
 		if (entry.catalogBlock) {
 			const choice = resolveCatalogChoice({ kind: entry.kind, catalogBlock: entry.catalogBlock, variant: entry.variant });
 			if (!choice.ok) {
-				return { ok: false, code: choice.code, message: choice.message, path: `blocks[${bi}].${choice.code === "unknown_variant" ? "variant" : "catalogBlock"}` };
+				return { ok: false, code: choice.code, message: choice.message, path: `blocks[${entry.at ?? bi}].${choice.code === "unknown_variant" ? "variant" : "catalogBlock"}` };
 			}
 			entry.catalogBlock = choice.catalogBlock;
 			if (choice.variant) entry.variant = choice.variant;
