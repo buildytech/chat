@@ -144,6 +144,14 @@ function content(block: PageBlock, shape: PropShape, origins: Origins): Record<s
 	}
 	const children = block.children ?? [];
 	const lists = Object.entries(shape.lists).sort(([, a], [, b]) => Number(b.required) - Number(a.required));
+	// No rows: the block's empty state (`empty`, or `labels.empty`) says so in the page's words (its lede / summary).
+	if (!children.length && lists.length && lede) {
+		if (text.has("empty") && !("empty" in out)) set("empty", lede, block.copy?.lede ? "copy.lede" : "summary");
+		else if (shape.objects.labels?.empty === "text") {
+			out.labels = { ...(out.labels as Record<string, Json> | undefined), empty: lede };
+			origins["/labels/empty"] = block.copy?.lede ? "copy.lede" : "summary";
+		}
+	}
 	if (children.length && lists.length) {
 		const [name, list] = lists[0]!;
 		out[name] = children.map((child, index) => {

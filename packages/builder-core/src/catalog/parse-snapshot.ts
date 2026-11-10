@@ -2,6 +2,7 @@ import type {
 	CatalogBlockIndexEntry,
 	CatalogFacetFilter,
 	CatalogScreen,
+	CatalogScreenSlot,
 	CatalogSnapshot
 } from "./types.ts";
 
@@ -95,6 +96,16 @@ function parseScreen(value: unknown, path: string): CatalogScreen {
 	if (rec.missingFacets !== undefined) {
 		screen.missingFacets = asStringArray(rec.missingFacets, `${path}.missingFacets`);
 	}
+	if (rec.layout !== undefined) {
+		if (!Array.isArray(rec.layout)) fail(`${path}.layout`, "must be an array");
+		screen.layout = (rec.layout as unknown[]).map((row, i) => {
+			const at = `${path}.layout[${i}]`;
+			const slot = asRecord(row, at);
+			const region = asString(slot.region, `${at}.region`);
+			if (region !== "before" && region !== "area" && region !== "after") fail(`${at}.region`, "must be before, area or after");
+			return { block: asString(slot.block, `${at}.block`), variant: asString(slot.variant, `${at}.variant`), region: region as CatalogScreenSlot["region"] };
+		});
+	}
 	return screen;
 }
 
@@ -104,7 +115,7 @@ function parseBlockIndexEntry(value: unknown, path: string): CatalogBlockIndexEn
 	if (rec.rendererKind !== null && rec.rendererKind !== undefined) {
 		rendererKind = asString(rec.rendererKind, `${path}.rendererKind`);
 	}
-	return {
+	const entry: CatalogBlockIndexEntry = {
 		blockId: asString(rec.blockId, `${path}.blockId`),
 		spec: asString(rec.spec, `${path}.spec`),
 		catalogIds: asStringArray(rec.catalogIds, `${path}.catalogIds`),
@@ -114,6 +125,8 @@ function parseBlockIndexEntry(value: unknown, path: string): CatalogBlockIndexEn
 		rendererKind,
 		rendererCompatible: asBoolean(rec.rendererCompatible, `${path}.rendererCompatible`)
 	};
+	if (rec.jobs !== undefined) entry.jobs = asStringArray(rec.jobs, `${path}.jobs`);
+	return entry;
 }
 
 function parseCounts(value: unknown, path: string): CatalogSnapshot["counts"] {

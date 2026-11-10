@@ -1,5 +1,5 @@
 {
-	"$comment": "BuildY policy over the catalog (ADR 0012): the only hand-written catalog data in this repository. Everything else in catalog/ is generated from the pinned sources. `npm run snapshot` validates every value here against the snapshot (facet values, block ids, Page DTO kinds) and fails on a stale entry.",
+	"$comment": "BuildY policy over the catalog (ADR 0012): the only hand-written catalog data in this repository. pageKindOfBlock names the Page DTO slot shape a Stock block fills (`features` = heading + rows); the block itself (catalogBlock) decides what renders, so several blocks of one kind render side by side. Everything else in catalog/ is generated from the pinned sources. `npm run snapshot` validates every value here against the snapshot (facet values, block ids, Page DTO kinds) and fails on a stale entry.",
 	"version": 0,
 	"pageSize": 12,
 	"assetTypes": ["screen", "block"],
@@ -36,6 +36,15 @@
 		"menuboard": "menu",
 		"dish": "dish",
 		"sidenav": "sidenav",
-		"bottomnav": "bottomnav"
+		"bottomnav": "bottomnav",
+		"logos": "features",
+		"testimonials": "features",
+		"pricing": "features",
+		"faq": "features",
+		"team": "features",
+		"steps": "features",
+		"proof": "features",
+		"quotesplit": "features",
+		"videos": "features"
 	}
 }

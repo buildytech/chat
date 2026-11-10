@@ -7,7 +7,7 @@
 	},
 	"policy": {
 		"path": "catalog/policy.v0.json",
-		"sha256": "cba0c7f2d7668ffb859d07bbc4ed60be98d1084108d9fa3e3ca0df2e5eccc697"
+		"sha256": "1fe8e7220b037676c560f10373415994313b52cafb4b18582fa6712bc67eff37"
 	},
 	"codegenX": {
 		"repo": "codegen-x/ui8kit",
@@ -99,10 +99,10 @@
 			"sha256": "343938202ae516d3a037447f9b22fb7fae4bff09f15ee2f375d52f322d64604e"
 		},
 		"catalog/coverage.json": {
-			"sha256": "f1edcf852cf06833269a29f71d97438451f8d4d4f17184166345aa0e22c6ed68"
+			"sha256": "3216bf2cf59433b7293a11c7647dc38b39efdb4bcb7b54ff461053d96b9c91f5"
 		},
 		"packages/builder-core/src/catalog/snapshot.json": {
-			"sha256": "da6dbced99b3797a41bf58294c1d3af668ccce9d34cb44b9ee338897a17b5b8b"
+			"sha256": "edd9a70005528f9a4d146378b3ec042ee343cecbd842503172335f5bb6a2ac77"
 		},
 		"packages/builder-core/src/catalog/search-index.json": {
 			"sha256": "d09b328d586bfbe2a3f79c07b267e1b2f34a0509f17e19f03cfceffca7cff346"

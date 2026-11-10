@@ -158,7 +158,8 @@ test("Landing without a demo request keeps model copy and English locale", () =>
 	assert.equal(hero?.copy?.headline, "Design that ships");
 	assert.equal(hero?.copy?.action, "Book a call");
 	assert.equal(hero?.copy?.badge, undefined);
-	assert.equal(find(proposal.page, "features")?.children?.[0]?.title, "Fast");
+	// The model's features entry lands on the page's own features block, not on another list section of the screen.
+	assert.equal(proposal.page.layout.blocks.find((block) => block.id === "block-features")?.children?.[0]?.title, "Fast");
 	assert.ok(proposal.catalogRefs.blocks.length > 0);
 });
 

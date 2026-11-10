@@ -10,7 +10,8 @@ import { displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./
 import type { LayoutCopyEdit } from "./edits.ts";
 import { catalogProvenance, catalogSnapshot } from "./catalog/snapshot.ts";
 import { blockLabelVocabulary } from "./catalog/text-search.ts";
-import { compareScreenSupport, compatibilityFor, rendererKindForLabel, screenSupport } from "./catalog/compatibility.ts";
+import { compareScreenSupport, compatibilityFor, getBlockIndex, rendererKindForLabel, screenSlots, screenSupport } from "./catalog/compatibility.ts";
+import { catalogVariantsFor } from "./catalog/sources.ts";
 import { getBlockDetails } from "./catalog/details.ts";
 import { filterScreens, getScreenById, searchCatalog } from "./catalog/search.ts";
 import { OWNER_FILTERS } from "./copy.ts";
@@ -205,6 +206,41 @@ function uniqueKindsFromScreen(screen: CatalogScreen): PageBlockKind[] {
 	}
 	kinds.sort((a, b) => pageSlot(a, jobRank) - pageSlot(b, jobRank));
 	return kinds;
+}
+
+/**
+ * One page block per Stock block: `kind` is the Page DTO slot shape, `label` the Stock block that renders (its
+ * catalogBlock) and `variant` the variant the screen sets. A kind appears once, except list sections (`features`):
+ * every Stock block of that shape on the screen gets its own page block, in screen order.
+ */
+type PageSlotPick = { kind: PageBlockKind; label: string | null; variant: string | null };
+
+const MULTI_KINDS: ReadonlySet<PageBlockKind> = new Set<PageBlockKind>(["features"]);
+
+function slotsForKinds(screen: CatalogScreen, kinds: PageBlockKind[]): PageSlotPick[] {
+	const onScreen = screenSlots(screen)
+		.map((slot) => ({ kind: rendererKindForLabel(slot.block), label: slot.block, variant: slot.variant || null }))
+		.filter((slot): slot is PageSlotPick & { kind: PageBlockKind; label: string } => slot.kind !== null && getBlockIndex(slot.label)?.available !== false);
+	const out: PageSlotPick[] = [];
+	for (const kind of kinds) {
+		const rows = onScreen.filter((slot) => slot.kind === kind);
+		if (!rows.length) {
+			const found = familyLabelForKind(screen, kind);
+			out.push({ kind, label: found?.label ?? null, variant: null });
+			continue;
+		}
+		const named = rows.find((slot) => slot.label === kind);
+		if (!MULTI_KINDS.has(kind)) out.push(named ?? rows[0]!);
+		else out.push(...rows);
+	}
+	return out;
+}
+
+/** The list section that keeps the page's own placeholder rows: the first block tagged with that job, else the first. */
+function primaryLabel(slots: PageSlotPick[], kind: PageBlockKind): string | null {
+	const rows = slots.filter((slot) => slot.kind === kind && slot.label);
+	const tagged = rows.find((slot) => getBlockIndex(slot.label!)?.jobs?.includes(kind));
+	return (tagged ?? rows[0])?.label ?? null;
 }
 
 export function isClearPageCommand(brief: string): boolean {
@@ -732,6 +768,9 @@ function uncoveredKinds(screen: CatalogScreen, kinds: PageBlockKind[]): PageBloc
 function applyCopyEdits(blocks: PageBlock[], edits: LayoutCopyEdit[]): { blocks: PageBlock[]; changed: string[] } {
 	const changed: string[] = [];
 	const next = blocks.map((node) => {
+		// A kind with several blocks (list sections): a copy edit by kind goes to the kind's own block only.
+		const many = blocks.filter((item) => item.kind === node.kind).length > 1;
+		if (many && node.id !== `block-${node.kind}`) return node;
 		const patches = edits.filter((edit) => edit.kind === node.kind);
 		if (!patches.length) return node;
 		const copy = { ...node.copy };
@@ -1050,9 +1089,10 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 		);
 	}
 	const support = screenSupport(screen);
-	const renderedKinds = kinds.filter((kind) => !CHILD_ONLY_KINDS.has(kind));
+	const slots = slotsForKinds(screen, kinds.filter((kind) => !CHILD_ONLY_KINDS.has(kind)));
+	const rendered = slots.map((slot) => (slot.label && slot.label !== slot.kind ? `${slot.kind} (${slot.label})` : slot.kind));
 	warnings.push(
-		`Stock screen ${screen.screenId}. Browser renders ${renderedKinds.join(", ") || "no sections"}.`
+		`Stock screen ${screen.screenId}. Browser renders ${rendered.join(", ") || "no sections"}.`
 	);
 	if (support.missing.length) {
 		missing.push(...support.missing);
@@ -1063,9 +1103,10 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 
 	const pageTitle = titleWho(brief, screen);
 	const blocks: PageBlock[] = [];
-	for (const kind of kinds) {
-		if (CHILD_ONLY_KINDS.has(kind)) continue;
-		blocks.push(buildStockBlock(kind, working, screen, brief, pageTitle));
+	const primary = new Map<PageBlockKind, string | null>();
+	for (const slot of slots) {
+		if (!primary.has(slot.kind)) primary.set(slot.kind, primaryLabel(slots, slot.kind));
+		blocks.push(buildStockBlock(slot.kind, working, screen, brief, pageTitle, slot, primary.get(slot.kind) ?? null));
 	}
 
 	if (blocks.length === 0 && !clearPage) {
@@ -1112,8 +1153,38 @@ function buildStockBlock(
 	working: ProposalContext,
 	screen: CatalogScreen | null,
 	brief: string,
-	pageTitle: string
+	pageTitle: string,
+	slot?: PageSlotPick,
+	primary?: string | null
 ): PageBlock {
+	const node = stockBlockOfKind(kind, working, screen, brief, pageTitle, slot, primary);
+	if (!slot?.label) return node;
+	// The Stock block of the screen renders (its registry item), with the variant the screen sets.
+	const catalogBlock = `block.${slot.label}`;
+	const sourced: PageBlock = { ...node, catalogBlock };
+	if (slot.variant && catalogVariantsFor(catalogBlock).includes(slot.variant)) sourced.variant = slot.variant;
+	return sourced;
+}
+
+/** Empty rows lede of a list section from Stock: nothing is invented; localizeEmptyLedes translates it. */
+const LIST_EMPTY_LEDE = "Nothing is filled in this draft. Rows stay empty until the author supplies them.";
+
+function stockBlockOfKind(
+	kind: PageBlockKind,
+	working: ProposalContext,
+	screen: CatalogScreen | null,
+	brief: string,
+	pageTitle: string,
+	slot?: PageSlotPick,
+	primary?: string | null
+): PageBlock {
+	const entry = slot?.label ? getBlockIndex(slot.label) : null;
+	if (MULTI_KINDS.has(kind) && slot?.label && (slot.label !== primary || !entry?.jobs?.includes(kind))) {
+		// A list section that is not the page's own placeholder rows (logos, testimonials, pricing, faq, ...): its
+		// Stock title and an empty state, never invented rows.
+		const id = slot.label === primary ? `block-${kind}` : `block-${slot.label}`;
+		return block(id, kind, entry?.title || slot.label, LIST_EMPTY_LEDE);
+	}
 	if (kind === "nav") {
 		return block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", working.scenarioId, screen, brief, pageTitle), navLinks(working.scenarioId, brief));
 	}
@@ -1168,14 +1239,17 @@ const EMPTY_LEDE_BY_LOCALE: Readonly<Record<string, string>> = {
 export function localizeEmptyLedes(blocks: PageBlock[], locale: string): PageBlock[] {
 	const lang = locale.toLowerCase().split("-")[0];
 	if (lang === "en") return blocks;
+	const localized = EMPTY_LEDE_BY_LOCALE[lang];
 	return blocks.map((node) => {
+		let next = node;
+		// Empty list sections carry the Stock empty lede in their summary (their slot has no lede copy).
+		if (STOCK_EMPTY_LEDE.test(node.summary) && localized) next = { ...next, summary: localized };
 		const lede = node.copy?.lede;
-		if (typeof lede !== "string" || !STOCK_EMPTY_LEDE.test(lede)) return node;
+		if (typeof lede !== "string" || !STOCK_EMPTY_LEDE.test(lede)) return next;
 		const copy = { ...node.copy };
-		const localized = EMPTY_LEDE_BY_LOCALE[lang];
 		if (localized) copy.lede = localized;
 		else delete copy.lede;
-		return { ...node, copy };
+		return { ...next, copy };
 	});
 }
 

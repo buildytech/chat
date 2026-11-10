@@ -226,6 +226,33 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "header",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "centered",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "footer",
+          "variant": "minimal",
+          "region": "after"
+        }
       ]
     },
     {
@@ -268,6 +295,33 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "header",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "centered",
+          "region": "area"
+        },
+        {
+          "block": "pricing",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "footer",
+          "variant": "minimal",
+          "region": "after"
+        }
       ]
     },
     {
@@ -304,6 +358,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "header",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "centered",
+          "region": "area"
+        },
+        {
+          "block": "footer",
+          "variant": "minimal",
+          "region": "after"
+        }
       ]
     },
     {
@@ -345,6 +416,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -386,6 +474,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "splitStart",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -427,6 +532,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "signup",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -468,6 +590,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "socialFirst",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -509,6 +648,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "reset",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -550,6 +706,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "magic",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -590,6 +763,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "density",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "minimal",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -631,6 +821,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "social",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -673,6 +880,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "wizard",
+          "variant": "bar",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -715,6 +944,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "auth",
+          "variant": "signin",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -758,6 +1009,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "profile",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -808,6 +1081,48 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "shop",
+          "region": "area"
+        },
+        {
+          "block": "categories",
+          "variant": "chips",
+          "region": "area"
+        },
+        {
+          "block": "products",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "reviews",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "shop",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -850,6 +1165,33 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagetrail",
+          "variant": "crumbsFigure",
+          "region": "area"
+        },
+        {
+          "block": "categories",
+          "variant": "sidebar",
+          "region": "area"
+        },
+        {
+          "block": "products",
+          "variant": "catalog",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -892,6 +1234,33 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "categories",
+          "variant": "bar",
+          "region": "area"
+        },
+        {
+          "block": "products",
+          "variant": "browse",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -934,7 +1303,39 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "storehero",
+          "variant": "overlay",
+          "region": "area"
+        },
+        {
+          "block": "usp",
+          "variant": "strip",
+          "region": "area"
+        },
+        {
+          "block": "products",
+          "variant": "railCompact",
+          "region": "area"
+        },
+        {
+          "block": "cartdrawer",
+          "variant": "filled",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-commerce-shop/product",
@@ -977,6 +1378,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "product",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "productinfo",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "reviews",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "products",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1020,6 +1453,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "cartpage",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "cart",
+          "variant": "table",
+          "region": "area"
+        },
+        {
+          "block": "summary",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1061,6 +1526,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "checkout",
+          "variant": "numbered",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1107,6 +1594,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "delivery",
+          "variant": "full",
+          "region": "area"
+        },
+        {
+          "block": "zones",
+          "variant": "table",
+          "region": "area"
+        },
+        {
+          "block": "slots",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "locations",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1150,6 +1674,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "orders",
+          "variant": "table",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1193,6 +1739,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "posts",
+          "variant": "magazine",
+          "region": "area"
+        },
+        {
+          "block": "postshowcase",
+          "variant": "introCards",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1233,6 +1811,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "posts",
+          "variant": "filters",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1272,6 +1872,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "posts",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1310,6 +1932,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "density"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "postheader",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "article",
+          "variant": "toc",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1349,6 +1993,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "density"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "postsplit",
+          "variant": "splitStats",
+          "region": "area"
+        },
+        {
+          "block": "article",
+          "variant": "column",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1390,6 +2056,33 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "density"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "postheader",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "article",
+          "variant": "column",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "inline",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1429,6 +2122,33 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "postheader",
+          "variant": "noCover",
+          "region": "area"
+        },
+        {
+          "block": "article",
+          "variant": "plain",
+          "region": "area"
+        },
+        {
+          "block": "posts",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1469,6 +2189,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "richtext",
+          "variant": "heroTitle",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1512,7 +2249,44 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "overview",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "metrics",
+          "variant": "tiles",
+          "region": "area"
+        },
+        {
+          "block": "chart",
+          "variant": "bars",
+          "region": "area"
+        },
+        {
+          "block": "activity",
+          "variant": "timeline",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-dashboard-console/board",
@@ -1554,6 +2328,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "composition",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "kanban",
+          "variant": "detail",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1593,7 +2389,29 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "shell",
+          "variant": "sidebar",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-dashboard-console/shells",
@@ -1634,6 +2452,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "composition"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "dashshell",
+          "variant": "classic",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1678,7 +2518,49 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "sidenav",
+          "variant": "full",
+          "region": "area"
+        },
+        {
+          "block": "bottomnav",
+          "variant": "labels",
+          "region": "area"
+        },
+        {
+          "block": "metrics",
+          "variant": "compact",
+          "region": "area"
+        },
+        {
+          "block": "chart",
+          "variant": "meters",
+          "region": "area"
+        },
+        {
+          "block": "overview",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-dashboard-console/states",
@@ -1718,7 +2600,34 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "empty",
+          "variant": "illustrated",
+          "region": "area"
+        },
+        {
+          "block": "skeleton",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-food-delivery/home",
@@ -1763,6 +2672,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "dishshowcase",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "dishcart",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "quickorder",
+          "variant": "phone",
+          "region": "area"
+        },
+        {
+          "block": "dishstrip",
+          "variant": "small",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1808,6 +2754,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "pizzapicker",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "sushisets",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "dishstrip",
+          "variant": "large",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1854,6 +2832,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "pizzapicker",
+          "variant": "rows",
+          "region": "area"
+        },
+        {
+          "block": "sushisets",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "combobuilder",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "dishcart",
+          "variant": "textOnly",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1900,6 +2915,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "recipekits",
+          "variant": "rows",
+          "region": "area"
+        },
+        {
+          "block": "veggiebox",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "grocerylist",
+          "variant": "twoCols",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1946,6 +2993,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "recipekits",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "veggiebox",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "grocerylist",
+          "variant": "plain",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1991,6 +3070,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "restaurantmenu",
+          "variant": "column",
+          "region": "area"
+        },
+        {
+          "block": "weekmenu",
+          "variant": "week",
+          "region": "area"
+        },
+        {
+          "block": "dishshowcase",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "quickorder",
+          "variant": "rows",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2037,6 +3153,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "composition",
         "character",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "weekmenu",
+          "variant": "compact",
+          "region": "area"
+        },
+        {
+          "block": "restaurantmenu",
+          "variant": "twoCols",
+          "region": "area"
+        },
+        {
+          "block": "dishshowcase",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2082,7 +3230,44 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "backdrop",
+          "region": "area"
+        },
+        {
+          "block": "grillbuilder",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "combobuilder",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "delivery",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-food-grill/dishes",
@@ -2127,6 +3312,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "dishbento",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "dishshowcase",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "restaurantmenu",
+          "variant": "twoCols",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2174,6 +3391,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "dishcompare",
+          "variant": "table",
+          "region": "area"
+        },
+        {
+          "block": "dishbento",
+          "variant": "end",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "band",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2224,6 +3473,58 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "screenshot",
+          "region": "area"
+        },
+        {
+          "block": "logos",
+          "variant": "row",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "rowsAlternate",
+          "region": "area"
+        },
+        {
+          "block": "steps",
+          "variant": "rowIcons",
+          "region": "area"
+        },
+        {
+          "block": "stats",
+          "variant": "icons",
+          "region": "area"
+        },
+        {
+          "block": "testimonials",
+          "variant": "single",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "band",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2270,6 +3571,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "form",
+          "region": "area"
+        },
+        {
+          "block": "iconwall",
+          "variant": "tiles4",
+          "region": "area"
+        },
+        {
+          "block": "proof",
+          "variant": "above",
+          "region": "area"
+        },
+        {
+          "block": "testimonials",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "form",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2313,7 +3651,49 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "industry": []
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "code",
+          "region": "area"
+        },
+        {
+          "block": "bento",
+          "variant": "bento",
+          "region": "area"
+        },
+        {
+          "block": "templates",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "tiles4",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "tabs",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-marketing-landing/studio",
@@ -2357,7 +3737,44 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "display",
+          "region": "area"
+        },
+        {
+          "block": "logos",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "tiles4",
+          "region": "area"
+        },
+        {
+          "block": "testimonials",
+          "variant": "masonry",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "band",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-marketing-landing/events",
@@ -2401,7 +3818,44 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "backdrop",
+          "region": "area"
+        },
+        {
+          "block": "stats",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "testimonials",
+          "variant": "strip",
+          "region": "area"
+        },
+        {
+          "block": "videos",
+          "variant": "overlay",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "agency",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-marketing-landing/company",
@@ -2448,6 +3902,48 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "about",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "storytabs",
+          "variant": "yearTabs",
+          "region": "area"
+        },
+        {
+          "block": "timeline",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "team",
+          "variant": "cards4",
+          "region": "area"
+        },
+        {
+          "block": "jobs",
+          "variant": "grouped",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2490,6 +3986,33 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "aboutme",
+          "variant": "facts",
+          "region": "area"
+        },
+        {
+          "block": "projects",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "photos",
+          "variant": "masonry",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2535,6 +4058,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "herosplit",
+          "variant": "quoteStats",
+          "region": "area"
+        },
+        {
+          "block": "logos",
+          "variant": "row",
+          "region": "area"
+        },
+        {
+          "block": "faqsplit",
+          "variant": "helpCard",
+          "region": "area"
+        },
+        {
+          "block": "quotesplit",
+          "variant": "ratingPanel",
+          "region": "area"
+        },
+        {
+          "block": "ctaproof",
+          "variant": "splitStats",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2583,6 +4143,48 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "pricing",
+          "variant": "monthly",
+          "region": "area"
+        },
+        {
+          "block": "logos",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "compare",
+          "variant": "plans",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "twoColumns",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "saas",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "newsletter",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2628,6 +4230,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "pricing",
+          "variant": "duo",
+          "region": "area"
+        },
+        {
+          "block": "plan",
+          "variant": "standard",
+          "region": "area"
+        },
+        {
+          "block": "compare",
+          "variant": "highlight",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "newsletter",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2673,6 +4307,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "usage",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "credits",
+          "variant": "tiles4",
+          "region": "area"
+        },
+        {
+          "block": "pricing",
+          "variant": "annual",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "row",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "newsletter",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2719,6 +4390,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "compare",
+          "variant": "rivals",
+          "region": "area"
+        },
+        {
+          "block": "testimonials",
+          "variant": "featured",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "search",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "quote",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "newsletter",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2763,7 +4471,54 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "featuresplit",
+          "variant": "metricCards",
+          "region": "area"
+        },
+        {
+          "block": "featureshowcase",
+          "variant": "panelCards4",
+          "region": "area"
+        },
+        {
+          "block": "bento",
+          "variant": "images",
+          "region": "area"
+        },
+        {
+          "block": "featuretabs",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "accordion",
+          "variant": "media",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-marketing-product/tour",
@@ -2810,6 +4565,48 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "sticky",
+          "variant": "end",
+          "region": "area"
+        },
+        {
+          "block": "beforeafter",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "steps",
+          "variant": "column",
+          "region": "area"
+        },
+        {
+          "block": "videos",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "megamenu",
+          "variant": "open",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2858,6 +4655,53 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "grid2",
+          "region": "area"
+        },
+        {
+          "block": "iconwall",
+          "variant": "chips6",
+          "region": "area"
+        },
+        {
+          "block": "accordion",
+          "variant": "first",
+          "region": "area"
+        },
+        {
+          "block": "beforeafter",
+          "variant": "rows",
+          "region": "area"
+        },
+        {
+          "block": "sticky",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "compact",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2901,6 +4745,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "header",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "megamenu",
+          "variant": "twoCols",
+          "region": "area"
+        },
+        {
+          "block": "footer",
+          "variant": "centered",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2947,6 +4823,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "stepper",
+          "variant": "horizontal",
+          "region": "area"
+        },
+        {
+          "block": "checklist",
+          "variant": "expand",
+          "region": "area"
+        },
+        {
+          "block": "tour",
+          "variant": "below",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2991,6 +4899,33 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "videomodal",
+          "variant": "default",
+          "region": "area"
+        },
+        {
+          "block": "checklist",
+          "variant": "numbered",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3034,7 +4969,39 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "stepper",
+          "variant": "vertical",
+          "region": "area"
+        },
+        {
+          "block": "checklist",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "empty",
+          "variant": "compact",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-onboarding-flow/tour",
@@ -3079,6 +5046,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "tour",
+          "variant": "above",
+          "region": "area"
+        },
+        {
+          "block": "checklist",
+          "variant": "text",
+          "region": "area"
+        },
+        {
+          "block": "videomodal",
+          "variant": "chapters",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3123,6 +5122,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "cluster",
+          "region": "area"
+        },
+        {
+          "block": "announcement",
+          "variant": "badge",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "form",
+          "region": "area"
+        },
+        {
+          "block": "cookie",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "footersplit",
+          "variant": "newsletterStart",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3167,6 +5203,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "saas",
+          "region": "area"
+        },
+        {
+          "block": "announcement",
+          "variant": "bar",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "inline",
+          "region": "area"
+        },
+        {
+          "block": "logos",
+          "variant": "tiles4",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "saas",
+          "region": "area"
+        },
+        {
+          "block": "footersplit",
+          "variant": "newsletterStart",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3211,6 +5284,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "announcement",
+          "variant": "badge",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "shop",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "consent",
+          "region": "area"
+        },
+        {
+          "block": "footersplit",
+          "variant": "newsletterStart",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3255,6 +5360,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "announcement",
+          "variant": "dismissible",
+          "region": "area"
+        },
+        {
+          "block": "cookie",
+          "variant": "settings",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "footersplit",
+          "variant": "newsletterStart",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3301,6 +5438,38 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "dish",
+          "variant": "vertical",
+          "region": "area"
+        },
+        {
+          "block": "menuboard",
+          "variant": "sections",
+          "region": "area"
+        },
+        {
+          "block": "reservation",
+          "variant": "single",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3345,6 +5514,33 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "menuboard",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "dish",
+          "variant": "horizontal",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3390,6 +5586,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "reservation",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3433,6 +5651,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "lightboxgallery",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3477,6 +5717,43 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "channels",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "medialist",
+          "variant": "topicRows",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "tabs",
+          "region": "area"
+        },
+        {
+          "block": "contact",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "status",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3517,6 +5794,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "chat",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "status",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3558,6 +5857,33 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "contact",
+          "variant": "single",
+          "region": "area"
+        },
+        {
+          "block": "channels",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "status",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3597,6 +5923,23 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
         "character",
         "density",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "errorpage",
+          "variant": "centered",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "status",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3637,6 +5980,28 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "missingFacets": [
         "character",
         "density"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "errorpage",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "channels",
+          "variant": "twoUp",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "status",
+          "region": "after"
+        }
       ]
     }
   ],
@@ -3657,7 +6022,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "About the company",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "value"
+      ]
     },
     {
       "blockId": "aboutme",
@@ -3677,7 +6045,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "About me",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "value"
+      ]
     },
     {
       "blockId": "accordion",
@@ -3697,7 +6068,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Feature accordion",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "activity",
@@ -3717,7 +6091,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Activity feed",
       "available": true,
       "rendererKind": "activity",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "announcement",
@@ -3745,7 +6122,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Announcement bar",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "cta"
+      ]
     },
     {
       "blockId": "article",
@@ -3765,7 +6145,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Article",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "article"
+      ]
     },
     {
       "blockId": "auth",
@@ -3793,7 +6176,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Auth card",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "auth"
+      ]
     },
     {
       "blockId": "authpage",
@@ -3823,7 +6209,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Sign-in page",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "auth"
+      ]
     },
     {
       "blockId": "beforeafter",
@@ -3843,7 +6232,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Before and after",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "features",
+        "value"
+      ]
     },
     {
       "blockId": "bento",
@@ -3863,7 +6256,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Bento grid",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "bottomnav",
@@ -3883,7 +6279,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Bottom tab bar",
       "available": true,
       "rendererKind": "bottomnav",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard",
+        "navigation"
+      ]
     },
     {
       "blockId": "cart",
@@ -3903,7 +6303,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Cart",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "cartdrawer",
@@ -3921,7 +6324,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Cart drawer",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "cartpage",
@@ -3939,7 +6345,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Cart page",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "categories",
@@ -3965,7 +6374,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Category navigation",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "channels",
@@ -3985,7 +6397,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Support channels",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "contacts"
+      ]
     },
     {
       "blockId": "chart",
@@ -4005,7 +6420,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Chart panel",
       "available": true,
       "rendererKind": "chart",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "checklist",
@@ -4031,7 +6449,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Setup checklist",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "checkout",
@@ -4049,7 +6470,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Checkout",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "combobuilder",
@@ -4065,7 +6489,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Combo builder",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "compare",
@@ -4085,7 +6512,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Comparison table",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "comparison"
+      ]
     },
     {
       "blockId": "contact",
@@ -4109,7 +6539,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Contact form",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "contacts"
+      ]
     },
     {
       "blockId": "cookie",
@@ -4129,7 +6562,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Cookie notice",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "credits",
@@ -4149,7 +6585,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Credit packs",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "pricing"
+      ]
     },
     {
       "blockId": "cta",
@@ -4183,7 +6622,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Call to action",
       "available": true,
       "rendererKind": "cta",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "cta",
+        "lead"
+      ]
     },
     {
       "blockId": "ctaproof",
@@ -4209,7 +6652,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Call to action, with proof",
       "available": true,
       "rendererKind": "cta",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "cta",
+        "proof"
+      ]
     },
     {
       "blockId": "dashshell",
@@ -4245,7 +6692,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Dashboard shell",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "delivery",
@@ -4263,7 +6713,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Delivery info",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "delivery"
+      ]
     },
     {
       "blockId": "dish",
@@ -4285,7 +6738,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Dish card",
       "available": true,
       "rendererKind": "dish",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "dishbento",
@@ -4301,7 +6757,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Dish bento",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "dishcart",
@@ -4317,7 +6776,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Dish cart grid",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "dishcompare",
@@ -4333,7 +6795,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Cut compare",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "dishshowcase",
@@ -4351,7 +6816,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Dish showcase",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "dishstrip",
@@ -4367,7 +6835,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Dish strip",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "empty",
@@ -4391,7 +6862,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Empty state",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "errorpage",
@@ -4413,7 +6887,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Error page",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard",
+        "navigation"
+      ]
     },
     {
       "blockId": "faq",
@@ -4438,8 +6916,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "FAQ",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "faq"
+      ]
     },
     {
       "blockId": "faqsplit",
@@ -4465,7 +6946,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "FAQ, split",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "faq"
+      ]
     },
     {
       "blockId": "features",
@@ -4493,7 +6977,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Features",
       "available": true,
       "rendererKind": "features",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "featureshowcase",
@@ -4513,7 +7000,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Feature cards with a picture",
       "available": true,
       "rendererKind": "features",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "features",
+        "value"
+      ]
     },
     {
       "blockId": "featuresplit",
@@ -4535,7 +7026,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Features, split",
       "available": true,
       "rendererKind": "features",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "featuretabs",
@@ -4553,7 +7047,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Feature tabs",
       "available": true,
       "rendererKind": "features",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "footer",
@@ -4571,7 +7068,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Footer",
       "available": true,
       "rendererKind": "footer",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "footer"
+      ]
     },
     {
       "blockId": "footersplit",
@@ -4595,7 +7095,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Footer, split",
       "available": true,
       "rendererKind": "footer",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "footer"
+      ]
     },
     {
       "blockId": "grillbuilder",
@@ -4611,7 +7114,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Grill dish builder",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "grocerylist",
@@ -4627,7 +7133,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Grocery list",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "header",
@@ -4647,7 +7156,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Header",
       "available": true,
       "rendererKind": "nav",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "hero",
@@ -4689,7 +7201,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Hero",
       "available": true,
       "rendererKind": "hero",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "hero",
+        "lead"
+      ]
     },
     {
       "blockId": "herosplit",
@@ -4715,7 +7231,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Hero, split",
       "available": true,
       "rendererKind": "hero",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "hero"
+      ]
     },
     {
       "blockId": "iconwall",
@@ -4737,7 +7256,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Icon wall",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "features",
+        "value"
+      ]
     },
     {
       "blockId": "jobs",
@@ -4757,7 +7280,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Careers",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "kanban",
@@ -4777,7 +7303,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Kanban board",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "lightboxgallery",
@@ -4797,7 +7326,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Lightbox gallery",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "locations",
@@ -4815,7 +7347,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Store locations",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "contacts",
+        "delivery"
+      ]
     },
     {
       "blockId": "logos",
@@ -4838,8 +7374,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Logo cloud",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "logos"
+      ]
     },
     {
       "blockId": "medialist",
@@ -4863,7 +7402,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "List beside a picture",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "proof"
+      ]
     },
     {
       "blockId": "megamenu",
@@ -4883,7 +7425,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Mega menu",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "menuboard",
@@ -4905,7 +7450,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Menu board",
       "available": true,
       "rendererKind": "menu",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "metrics",
@@ -4925,7 +7473,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Metric tiles",
       "available": true,
       "rendererKind": "metrics",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard",
+        "numbers"
+      ]
     },
     {
       "blockId": "navbar",
@@ -4949,7 +7501,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Navigation bar",
       "available": true,
       "rendererKind": "nav",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "newsletter",
@@ -4971,7 +7526,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Newsletter sign-up",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "lead"
+      ]
     },
     {
       "blockId": "orders",
@@ -4991,7 +7549,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Order history",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "overview",
@@ -5011,7 +7572,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Dashboard overview",
       "available": true,
       "rendererKind": "overview",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "pagehead",
@@ -5029,7 +7593,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Page heading",
       "available": true,
       "rendererKind": "pagehead",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "pagetrail",
@@ -5049,7 +7616,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Page heading with breadcrumbs",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "photos",
@@ -5073,7 +7643,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Photo gallery",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "pizzapicker",
@@ -5089,7 +7662,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Pizza picker",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "plan",
@@ -5107,7 +7683,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Plan",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "pricing"
+      ]
     },
     {
       "blockId": "postheader",
@@ -5127,7 +7706,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Post header",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "article"
+      ]
     },
     {
       "blockId": "posts",
@@ -5161,7 +7743,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Blog posts",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "blog"
+      ]
     },
     {
       "blockId": "postshowcase",
@@ -5181,7 +7766,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Post showcase",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "blog"
+      ]
     },
     {
       "blockId": "postsplit",
@@ -5205,7 +7793,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Post header, split",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "blog"
+      ]
     },
     {
       "blockId": "pricing",
@@ -5236,8 +7827,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Pricing",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "pricing"
+      ]
     },
     {
       "blockId": "product",
@@ -5259,7 +7853,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Product page",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "product"
+      ]
     },
     {
       "blockId": "productinfo",
@@ -5277,7 +7874,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Product details",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "product"
+      ]
     },
     {
       "blockId": "products",
@@ -5307,7 +7907,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Product grid",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "profile",
@@ -5327,7 +7930,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Profile form",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "projects",
@@ -5351,7 +7957,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Projects",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "proof",
@@ -5370,8 +7979,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Logos and stats",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "proof"
+      ]
     },
     {
       "blockId": "quickorder",
@@ -5387,7 +7999,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Quick order",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "quotesplit",
@@ -5410,8 +8025,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Testimonials, split",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "testimonials"
+      ]
     },
     {
       "blockId": "recipekits",
@@ -5427,7 +8045,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Recipe kits",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "reservation",
@@ -5449,7 +8070,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Reservation form",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog",
+        "lead"
+      ]
     },
     {
       "blockId": "restaurantmenu",
@@ -5465,7 +8090,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Restaurant menu",
       "available": true,
       "rendererKind": "menu",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "reviews",
@@ -5487,7 +8115,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Reviews",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "product",
+        "testimonials"
+      ]
     },
     {
       "blockId": "richtext",
@@ -5511,7 +8143,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Rich text",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "article"
+      ]
     },
     {
       "blockId": "shell",
@@ -5531,7 +8166,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "App shell",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "sidenav",
@@ -5551,7 +8189,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Sidebar navigation",
       "available": true,
       "rendererKind": "sidenav",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard",
+        "navigation"
+      ]
     },
     {
       "blockId": "sitemap",
@@ -5575,7 +8217,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Sitemap footer",
       "available": true,
       "rendererKind": "footer",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "footer"
+      ]
     },
     {
       "blockId": "skeleton",
@@ -5595,7 +8240,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Loading state",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "slots",
@@ -5613,7 +8261,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Delivery window",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "delivery"
+      ]
     },
     {
       "blockId": "stats",
@@ -5641,7 +8292,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Stats",
       "available": true,
       "rendererKind": "features",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "numbers"
+      ]
     },
     {
       "blockId": "stepper",
@@ -5661,7 +8315,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Stepper",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "steps",
@@ -5684,8 +8341,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "How it works",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "how"
+      ]
     },
     {
       "blockId": "sticky",
@@ -5705,7 +8365,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Sticky feature list",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "storehero",
@@ -5725,7 +8388,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Store hero",
       "available": true,
       "rendererKind": "hero",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "hero"
+      ]
     },
     {
       "blockId": "storytabs",
@@ -5743,7 +8409,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Story in steps",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "article"
+      ]
     },
     {
       "blockId": "summary",
@@ -5763,7 +8432,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Order summary",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "sushisets",
@@ -5779,7 +8451,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Sushi sets",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "team",
@@ -5802,8 +8477,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Team",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "proof"
+      ]
     },
     {
       "blockId": "templates",
@@ -5823,7 +8501,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Template gallery",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "testimonials",
@@ -5854,8 +8535,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Testimonials",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "testimonials"
+      ]
     },
     {
       "blockId": "timeline",
@@ -5875,7 +8559,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Timeline",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "article"
+      ]
     },
     {
       "blockId": "tour",
@@ -5895,7 +8582,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Tour callout",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "how"
+      ]
     },
     {
       "blockId": "usage",
@@ -5915,7 +8605,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Usage calculator",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "pricing"
+      ]
     },
     {
       "blockId": "usp",
@@ -5937,7 +8630,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Store promises",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "value"
+      ]
     },
     {
       "blockId": "veggiebox",
@@ -5953,7 +8649,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Vegetable box",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "videomodal",
@@ -5973,7 +8672,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Video walkthrough",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "how"
+      ]
     },
     {
       "blockId": "videos",
@@ -5992,8 +8694,11 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       ],
       "title": "Video testimonials",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "proof"
+      ]
     },
     {
       "blockId": "weekmenu",
@@ -6009,7 +8714,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Week of meals",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "wizard",
@@ -6029,7 +8737,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Sign-up wizard",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "auth"
+      ]
     },
     {
       "blockId": "zones",
@@ -6047,7 +8758,10 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "title": "Delivery zones",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "delivery"
+      ]
     }
   ],
   "rendererMap": {
@@ -6075,7 +8789,16 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
     "menuboard": "menu",
     "dish": "dish",
     "sidenav": "sidenav",
-    "bottomnav": "bottomnav"
+    "bottomnav": "bottomnav",
+    "logos": "features",
+    "testimonials": "features",
+    "pricing": "features",
+    "faq": "features",
+    "team": "features",
+    "steps": "features",
+    "proof": "features",
+    "quotesplit": "features",
+    "videos": "features"
   }
 };
 });
@@ -6172,6 +8895,16 @@ function parseScreen(value: unknown, path: string): CatalogScreen {
 	if (rec.missingFacets !== undefined) {
 		screen.missingFacets = asStringArray(rec.missingFacets, `${path}.missingFacets`);
 	}
+	if (rec.layout !== undefined) {
+		if (!Array.isArray(rec.layout)) fail(`${path}.layout`, "must be an array");
+		screen.layout = (rec.layout as unknown[]).map((row, i) => {
+			const at = `${path}.layout[${i}]`;
+			const slot = asRecord(row, at);
+			const region = asString(slot.region, `${at}.region`);
+			if (region !== "before" && region !== "area" && region !== "after") fail(`${at}.region`, "must be before, area or after");
+			return { block: asString(slot.block, `${at}.block`), variant: asString(slot.variant, `${at}.variant`), region: region as CatalogScreenSlot["region"] };
+		});
+	}
 	return screen;
 }
 
@@ -6181,7 +8914,7 @@ function parseBlockIndexEntry(value: unknown, path: string): CatalogBlockIndexEn
 	if (rec.rendererKind !== null && rec.rendererKind !== undefined) {
 		rendererKind = asString(rec.rendererKind, `${path}.rendererKind`);
 	}
-	return {
+	const entry: CatalogBlockIndexEntry = {
 		blockId: asString(rec.blockId, `${path}.blockId`),
 		spec: asString(rec.spec, `${path}.spec`),
 		catalogIds: asStringArray(rec.catalogIds, `${path}.catalogIds`),
@@ -6191,6 +8924,8 @@ function parseBlockIndexEntry(value: unknown, path: string): CatalogBlockIndexEn
 		rendererKind,
 		rendererCompatible: asBoolean(rec.rendererCompatible, `${path}.rendererCompatible`)
 	};
+	if (rec.jobs !== undefined) entry.jobs = asStringArray(rec.jobs, `${path}.jobs`);
+	return entry;
 }
 
 function parseCounts(value: unknown, path: string): CatalogSnapshot["counts"] {
@@ -8237,10 +10972,19 @@ function rendererKindForLabel(label: string): PageBlockKind | null {
 	return null;
 }
 
+/**
+ * Stock blocks of a screen in screen order (the snapshot's composition), with the region each sits in; screens
+ * without a composition fall back to their block labels (all body).
+ */
+function screenSlots(screen: CatalogScreen): CatalogScreenSlot[] {
+	if (screen.layout?.length) return screen.layout;
+	return screen.labels.blocks.map((block) => ({ block, variant: "", region: "area" as const }));
+}
+
 function compatibilityFor(screen: CatalogScreen): ScreenCompatibility {
 	const mapped: ScreenCompatibility["mapped"] = [];
 	const missing: ScreenCompatibility["missing"] = [];
-	for (const label of screen.labels.blocks) {
+	for (const { block: label } of screenSlots(screen)) {
 		const entry = getBlockIndex(label);
 		const kind = rendererKindForLabel(label);
 		const catalogIds = entry?.catalogIds ?? [];
@@ -8273,27 +11017,20 @@ function screenSupport(screen: CatalogScreen): ScreenSupport {
 	const compat = compatibilityFor(screen);
 	const mappedKinds = [...new Set(compat.mapped.map((row) => row.rendererKind))];
 	const missing = compat.missing.map((row) => row.catalogLabel);
+	const region = new Map(screenSlots(screen).map((slot) => [slot.block, slot.region]));
 	// App-shell chrome (sidenav, bottomnav) is added from the screen family on Dashboards;
 	// it does not make a screen a better body match.
-	const score = mappedKinds.filter((kind) => kind !== "sidenav" && kind !== "bottomnav").length - missing.length;
-	const hasBody = mappedKinds.some(
-		(kind) =>
-			kind === "hero" ||
-			kind === "features" ||
-			kind === "menu" ||
-			kind === "overview" ||
-			kind === "metrics" ||
-			kind === "chart" ||
-			kind === "activity"
-	);
-	const hasFrame = mappedKinds.includes("nav") || mappedKinds.includes("footer") || mappedKinds.includes("cta");
-	const supported =
-		mappedKinds.length >= 3 && hasBody && hasFrame && (missing.length === 0 || missing.length < compat.mapped.length);
+	const body = compat.mapped.filter(
+		(row) => region.get(row.catalogLabel) === "area" && row.rendererKind !== "sidenav" && row.rendererKind !== "bottomnav"
+	).length;
+	const score = body - missing.length;
+	const supported = missing.length === 0 && body > 0;
 	return {
 		mappedKinds,
 		missing,
 		mapped: compat.mapped.length,
 		missingCount: missing.length,
+		body,
 		supported,
 		score
 	};
@@ -8304,6 +11041,7 @@ function compareScreenSupport(a: CatalogScreen, b: CatalogScreen): number {
 	const sb = screenSupport(b);
 	if (sa.supported !== sb.supported) return sa.supported ? -1 : 1;
 	if (sb.score !== sa.score) return sb.score - sa.score;
+	if (sb.mapped !== sa.mapped) return sb.mapped - sa.mapped;
 	if (sb.mappedKinds.length !== sa.mappedKinds.length) return sb.mappedKinds.length - sa.mappedKinds.length;
 	return sa.missingCount - sb.missingCount;
 }
@@ -8311,6 +11049,7 @@ function compareScreenSupport(a: CatalogScreen, b: CatalogScreen): number {
 exports["getBlockIndex"] = getBlockIndex;
 exports["getBlockIndexByCatalogId"] = getBlockIndexByCatalogId;
 exports["rendererKindForLabel"] = rendererKindForLabel;
+exports["screenSlots"] = screenSlots;
 exports["compatibilityFor"] = compatibilityFor;
 exports["sendBlockedByScreen"] = sendBlockedByScreen;
 exports["screenSupport"] = screenSupport;
@@ -22702,8 +25441,31 @@ function mergeModelContent(
 		if (!nav.items.length && sections.length && (foreign || !navEntry)) nav.items = sections.map((label) => ({ label }));
 		byKind.set("nav", nav);
 	}
+	// One model entry per page block: an entry naming a catalogBlock goes to that block; the other entries of a
+	// kind go to the kind's own block (`block-<kind>`), else its first block. Several blocks may share a kind.
+	const entryOf = new Map<PageBlock, ModelBlockContent>();
+	const taken = new Set<ModelBlockContent>();
+	const entries = [...byKind.values()];
+	for (const entry of content.blocks) if (!entries.includes(entry) && entry.catalogBlock) entries.push(entry);
+	for (const entry of entries) {
+		if (!entry.catalogBlock) continue;
+		const node = blocks.find((item) => item.kind === entry.kind && item.catalogBlock === entry.catalogBlock && !entryOf.has(item));
+		if (node) {
+			entryOf.set(node, entry);
+			taken.add(entry);
+		}
+	}
+	for (const entry of entries) {
+		if (taken.has(entry)) continue;
+		const free = blocks.filter((item) => item.kind === entry.kind && !entryOf.has(item));
+		const node = free.find((item) => item.id === `block-${item.kind}`) ?? free[0];
+		if (node) {
+			entryOf.set(node, entry);
+			taken.add(entry);
+		}
+	}
 	const next = blocks.map((node) => {
-		const entry = byKind.get(node.kind);
+		const entry = entryOf.get(node);
 		const isData = DATA_KINDS.has(node.kind);
 		if (!entry) return node;
 		if (opts.onlyKinds && !opts.onlyKinds.has(node.kind)) return node;
@@ -22902,6 +25664,14 @@ function content(block: PageBlock, shape: PropShape, origins: Origins): Record<s
 	}
 	const children = block.children ?? [];
 	const lists = Object.entries(shape.lists).sort(([, a], [, b]) => Number(b.required) - Number(a.required));
+	// No rows: the block's empty state (`empty`, or `labels.empty`) says so in the page's words (its lede / summary).
+	if (!children.length && lists.length && lede) {
+		if (text.has("empty") && !("empty" in out)) set("empty", lede, block.copy?.lede ? "copy.lede" : "summary");
+		else if (shape.objects.labels?.empty === "text") {
+			out.labels = { ...(out.labels as Record<string, Json> | undefined), empty: lede };
+			origins["/labels/empty"] = block.copy?.lede ? "copy.lede" : "summary";
+		}
+	}
 	if (children.length && lists.length) {
 		const [name, list] = lists[0]!;
 		out[name] = children.map((child, index) => {
@@ -23001,7 +25771,7 @@ exports["registryItemClosure"] = registryItemClosure;
 
 __def("packages/builder-core/src/catalog/provenance.ts", function (exports) {
 const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
-const { getBlockIndex, rendererKindForLabel } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { getBlockIndex, rendererKindForLabel, screenSlots } = __req("packages/builder-core/src/catalog/compatibility.ts");
 const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
 const { childKindFor } = __req("packages/builder-core/src/content.ts");
 const { catalogSourceFor, resolveCatalogChoice } = __req("packages/builder-core/src/catalog/sources.ts");
@@ -23106,7 +25876,7 @@ function familyLabelForKind(
 	kind: PageBlockKind
 ): { label: string; screenId: string } | null {
 	for (const row of screenFamily(screen)) {
-		const label = labelForKind(row.labels.blocks, kind);
+		const label = labelForKind(screenSlots(row).map((slot) => slot.block), kind);
 		if (label) return { label, screenId: row.screenId };
 	}
 	return null;
@@ -23154,7 +25924,9 @@ function screenRef(screenId: string): CatalogScreenRef | null {
 }
 
 function labelForKind(labels: string[], kind: PageBlockKind): string | null {
-	for (const label of labels) {
+	// The block named like the kind first (`features` for features), then the others in the given order.
+	const ordered = labels.includes(kind) ? [kind, ...labels.filter((label) => label !== kind)] : labels;
+	for (const label of ordered) {
 		if (rendererKindForLabel(label) !== kind) continue;
 		const entry = getBlockIndex(label);
 		if (entry?.available) return label;
@@ -24337,7 +27109,8 @@ const { SCENARIO_PROMPTS } = __req("packages/builder-core/src/copy.ts");
 const { displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } = __req("packages/builder-core/src/brief.ts");
 const { catalogProvenance, catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
 const { blockLabelVocabulary } = __req("packages/builder-core/src/catalog/text-search.ts");
-const { compareScreenSupport, compatibilityFor, rendererKindForLabel, screenSupport } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { compareScreenSupport, compatibilityFor, getBlockIndex, rendererKindForLabel, screenSlots, screenSupport } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { catalogVariantsFor } = __req("packages/builder-core/src/catalog/sources.ts");
 const { getBlockDetails } = __req("packages/builder-core/src/catalog/details.ts");
 const { filterScreens, getScreenById, searchCatalog } = __req("packages/builder-core/src/catalog/search.ts");
 const { OWNER_FILTERS } = __req("packages/builder-core/src/copy.ts");
@@ -24426,6 +27199,41 @@ function uniqueKindsFromScreen(screen: CatalogScreen): PageBlockKind[] {
 	}
 	kinds.sort((a, b) => pageSlot(a, jobRank) - pageSlot(b, jobRank));
 	return kinds;
+}
+
+/**
+ * One page block per Stock block: `kind` is the Page DTO slot shape, `label` the Stock block that renders (its
+ * catalogBlock) and `variant` the variant the screen sets. A kind appears once, except list sections (`features`):
+ * every Stock block of that shape on the screen gets its own page block, in screen order.
+ */
+type PageSlotPick = { kind: PageBlockKind; label: string | null; variant: string | null };
+
+const MULTI_KINDS: ReadonlySet<PageBlockKind> = new Set<PageBlockKind>(["features"]);
+
+function slotsForKinds(screen: CatalogScreen, kinds: PageBlockKind[]): PageSlotPick[] {
+	const onScreen = screenSlots(screen)
+		.map((slot) => ({ kind: rendererKindForLabel(slot.block), label: slot.block, variant: slot.variant || null }))
+		.filter((slot): slot is PageSlotPick & { kind: PageBlockKind; label: string } => slot.kind !== null && getBlockIndex(slot.label)?.available !== false);
+	const out: PageSlotPick[] = [];
+	for (const kind of kinds) {
+		const rows = onScreen.filter((slot) => slot.kind === kind);
+		if (!rows.length) {
+			const found = familyLabelForKind(screen, kind);
+			out.push({ kind, label: found?.label ?? null, variant: null });
+			continue;
+		}
+		const named = rows.find((slot) => slot.label === kind);
+		if (!MULTI_KINDS.has(kind)) out.push(named ?? rows[0]!);
+		else out.push(...rows);
+	}
+	return out;
+}
+
+/** The list section that keeps the page's own placeholder rows: the first block tagged with that job, else the first. */
+function primaryLabel(slots: PageSlotPick[], kind: PageBlockKind): string | null {
+	const rows = slots.filter((slot) => slot.kind === kind && slot.label);
+	const tagged = rows.find((slot) => getBlockIndex(slot.label!)?.jobs?.includes(kind));
+	return (tagged ?? rows[0])?.label ?? null;
 }
 
 function isClearPageCommand(brief: string): boolean {
@@ -24953,6 +27761,9 @@ function uncoveredKinds(screen: CatalogScreen, kinds: PageBlockKind[]): PageBloc
 function applyCopyEdits(blocks: PageBlock[], edits: LayoutCopyEdit[]): { blocks: PageBlock[]; changed: string[] } {
 	const changed: string[] = [];
 	const next = blocks.map((node) => {
+		// A kind with several blocks (list sections): a copy edit by kind goes to the kind's own block only.
+		const many = blocks.filter((item) => item.kind === node.kind).length > 1;
+		if (many && node.id !== `block-${node.kind}`) return node;
 		const patches = edits.filter((edit) => edit.kind === node.kind);
 		if (!patches.length) return node;
 		const copy = { ...node.copy };
@@ -25271,9 +28082,10 @@ function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalErr
 		);
 	}
 	const support = screenSupport(screen);
-	const renderedKinds = kinds.filter((kind) => !CHILD_ONLY_KINDS.has(kind));
+	const slots = slotsForKinds(screen, kinds.filter((kind) => !CHILD_ONLY_KINDS.has(kind)));
+	const rendered = slots.map((slot) => (slot.label && slot.label !== slot.kind ? `${slot.kind} (${slot.label})` : slot.kind));
 	warnings.push(
-		`Stock screen ${screen.screenId}. Browser renders ${renderedKinds.join(", ") || "no sections"}.`
+		`Stock screen ${screen.screenId}. Browser renders ${rendered.join(", ") || "no sections"}.`
 	);
 	if (support.missing.length) {
 		missing.push(...support.missing);
@@ -25284,9 +28096,10 @@ function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalErr
 
 	const pageTitle = titleWho(brief, screen);
 	const blocks: PageBlock[] = [];
-	for (const kind of kinds) {
-		if (CHILD_ONLY_KINDS.has(kind)) continue;
-		blocks.push(buildStockBlock(kind, working, screen, brief, pageTitle));
+	const primary = new Map<PageBlockKind, string | null>();
+	for (const slot of slots) {
+		if (!primary.has(slot.kind)) primary.set(slot.kind, primaryLabel(slots, slot.kind));
+		blocks.push(buildStockBlock(slot.kind, working, screen, brief, pageTitle, slot, primary.get(slot.kind) ?? null));
 	}
 
 	if (blocks.length === 0 && !clearPage) {
@@ -25333,8 +28146,38 @@ function buildStockBlock(
 	working: ProposalContext,
 	screen: CatalogScreen | null,
 	brief: string,
-	pageTitle: string
+	pageTitle: string,
+	slot?: PageSlotPick,
+	primary?: string | null
 ): PageBlock {
+	const node = stockBlockOfKind(kind, working, screen, brief, pageTitle, slot, primary);
+	if (!slot?.label) return node;
+	// The Stock block of the screen renders (its registry item), with the variant the screen sets.
+	const catalogBlock = `block.${slot.label}`;
+	const sourced: PageBlock = { ...node, catalogBlock };
+	if (slot.variant && catalogVariantsFor(catalogBlock).includes(slot.variant)) sourced.variant = slot.variant;
+	return sourced;
+}
+
+/** Empty rows lede of a list section from Stock: nothing is invented; localizeEmptyLedes translates it. */
+const LIST_EMPTY_LEDE = "Nothing is filled in this draft. Rows stay empty until the author supplies them.";
+
+function stockBlockOfKind(
+	kind: PageBlockKind,
+	working: ProposalContext,
+	screen: CatalogScreen | null,
+	brief: string,
+	pageTitle: string,
+	slot?: PageSlotPick,
+	primary?: string | null
+): PageBlock {
+	const entry = slot?.label ? getBlockIndex(slot.label) : null;
+	if (MULTI_KINDS.has(kind) && slot?.label && (slot.label !== primary || !entry?.jobs?.includes(kind))) {
+		// A list section that is not the page's own placeholder rows (logos, testimonials, pricing, faq, ...): its
+		// Stock title and an empty state, never invented rows.
+		const id = slot.label === primary ? `block-${kind}` : `block-${slot.label}`;
+		return block(id, kind, entry?.title || slot.label, LIST_EMPTY_LEDE);
+	}
 	if (kind === "nav") {
 		return block("block-nav", "nav", titleFor("nav", screen), summaryFor("nav"), copyFor("nav", working.scenarioId, screen, brief, pageTitle), navLinks(working.scenarioId, brief));
 	}
@@ -25389,14 +28232,17 @@ const EMPTY_LEDE_BY_LOCALE: Readonly<Record<string, string>> = {
 function localizeEmptyLedes(blocks: PageBlock[], locale: string): PageBlock[] {
 	const lang = locale.toLowerCase().split("-")[0];
 	if (lang === "en") return blocks;
+	const localized = EMPTY_LEDE_BY_LOCALE[lang];
 	return blocks.map((node) => {
+		let next = node;
+		// Empty list sections carry the Stock empty lede in their summary (their slot has no lede copy).
+		if (STOCK_EMPTY_LEDE.test(node.summary) && localized) next = { ...next, summary: localized };
 		const lede = node.copy?.lede;
-		if (typeof lede !== "string" || !STOCK_EMPTY_LEDE.test(lede)) return node;
+		if (typeof lede !== "string" || !STOCK_EMPTY_LEDE.test(lede)) return next;
 		const copy = { ...node.copy };
-		const localized = EMPTY_LEDE_BY_LOCALE[lang];
 		if (localized) copy.lede = localized;
 		else delete copy.lede;
-		return { ...node, copy };
+		return { ...next, copy };
 	});
 }
 

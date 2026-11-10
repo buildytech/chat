@@ -230,7 +230,7 @@ test("Apply variant from an Ask card: set_variant proposal, pending, gate-valid;
 	assert.equal(built.ok, true);
 	if (!built.ok) return;
 	const page = (built as LayoutProposal).page;
-	const features = page.layout.blocks.find((block) => block.kind === "features");
+	const features = page.layout.blocks.find((block) => block.catalogBlock === "block.features");
 	assert.ok(features, "the landing pick has a features block");
 	const provenance = { screenId: built.provenance.screenId, scenarioId: built.provenance.scenarioId, missing: built.missing };
 	const target = variantTarget(page, "block.features");

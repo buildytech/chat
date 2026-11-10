@@ -385,8 +385,31 @@ export function mergeModelContent(
 		if (!nav.items.length && sections.length && (foreign || !navEntry)) nav.items = sections.map((label) => ({ label }));
 		byKind.set("nav", nav);
 	}
+	// One model entry per page block: an entry naming a catalogBlock goes to that block; the other entries of a
+	// kind go to the kind's own block (`block-<kind>`), else its first block. Several blocks may share a kind.
+	const entryOf = new Map<PageBlock, ModelBlockContent>();
+	const taken = new Set<ModelBlockContent>();
+	const entries = [...byKind.values()];
+	for (const entry of content.blocks) if (!entries.includes(entry) && entry.catalogBlock) entries.push(entry);
+	for (const entry of entries) {
+		if (!entry.catalogBlock) continue;
+		const node = blocks.find((item) => item.kind === entry.kind && item.catalogBlock === entry.catalogBlock && !entryOf.has(item));
+		if (node) {
+			entryOf.set(node, entry);
+			taken.add(entry);
+		}
+	}
+	for (const entry of entries) {
+		if (taken.has(entry)) continue;
+		const free = blocks.filter((item) => item.kind === entry.kind && !entryOf.has(item));
+		const node = free.find((item) => item.id === `block-${item.kind}`) ?? free[0];
+		if (node) {
+			entryOf.set(node, entry);
+			taken.add(entry);
+		}
+	}
 	const next = blocks.map((node) => {
-		const entry = byKind.get(node.kind);
+		const entry = entryOf.get(node);
 		const isData = DATA_KINDS.has(node.kind);
 		if (!entry) return node;
 		if (opts.onlyKinds && !opts.onlyKinds.has(node.kind)) return node;

@@ -8,6 +8,7 @@ import {
 	SCENARIO_IDS,
 	catalogSnapshot,
 	compatibilityFor,
+	screenSupport,
 	catalogToolParameterSchema,
 	executeTool,
 	parseLayoutCopyEdits,
@@ -358,14 +359,15 @@ test("live xAI tool host tags source xai-runtime but keeps the local assembler",
 
 test("search ranks supported screens and rejects hollow commerce shop for website", () => {
 	const hero = searchCatalog({ job: "hero", page: 1 });
-	assert.equal(hero.items[0]?.screenId, "screen.site/home");
+	// The richest fully rendered hero screen ranks first (every Stock block of it renders).
+	assert.equal(hero.items[0]?.screenId, "screen.theme-marketing-landing/home");
 	assert.equal(hero.items[0]?.compatibility.missing.length, 0);
 	const compact = executeTool({ name: "search_catalog", arguments: { job: "hero", page: 1 } });
 	assert.equal(compact.ok, true);
 	if (compact.ok) {
 		const first = (compact.result as { items: Array<{ screenId: string; supported: boolean }> }).items[0];
 		assert.equal(first.supported, true);
-		assert.equal(first.screenId, "screen.site/home");
+		assert.equal(first.screenId, "screen.theme-marketing-landing/home");
 	}
 	const shop = proposeLayout({
 		brief: "Create a website with a menu, overview, and contact using existing Stock blocks.",
@@ -377,7 +379,7 @@ test("search ranks supported screens and rejects hollow commerce shop for websit
 	assert.equal(shop.ok, false);
 	if (!shop.ok) {
 		assert.ok(shop.code === "screen_not_renderable" || shop.code === "scenario_screen_mismatch");
-		assert.ok(shop.suggestedScreenIds?.includes("screen.site/home"));
+		assert.ok(shop.suggestedScreenIds?.includes("screen.theme-marketing-landing/home"));
 	}
 });
 
@@ -488,8 +490,8 @@ test("dashboard and website natural language use renderable Stock coverage", () 
 	});
 	assert.equal(site.ok, true);
 	if (site.ok) {
-		assert.equal(site.provenance.screenId, "screen.site/home");
-		// Catalog provenance gate: screen.site/home has no menu or hours Stock block, so they are
+		assert.equal(site.provenance.screenId, "screen.theme-marketing-landing/home");
+		// Catalog provenance gate: the picked screen has no menu or hours Stock block, so they are
 		// reported as missing instead of invented.
 		assert.ok(!site.page.layout.blocks.some((block) => block.kind === "menu"));
 		assert.ok(!site.page.layout.blocks.some((block) => block.kind === "hours"));
@@ -601,8 +603,8 @@ test("follow-up applies the model's typed headline edit and keeps other blocks",
 	}
 });
 
-test("missing-renderer warnings include faq, pricing, authpage, and wizard", () => {
-	const labels = ["faq", "pricing", "authpage", "wizard"];
+test("missing-renderer warnings name blocks without a Page DTO kind; site/pricing now renders faq and pricing", () => {
+	const labels = ["authpage", "wizard", "newsletter", "products"];
 	for (const label of labels) {
 		const screen = catalogSnapshot.screens.find((item) => item.labels.blocks.includes(label));
 		assert.ok(screen, `catalog has ${label}`);
@@ -611,6 +613,7 @@ test("missing-renderer warnings include faq, pricing, authpage, and wizard", () 
 			compat.missing.some((row) => row.catalogLabel === label),
 			`${label} is reported missing`
 		);
+		assert.equal(screenSupport(screen!).supported, false, `${screen!.screenId} drops ${label}: not supported`);
 	}
 	const pricing = proposeLayout({
 		brief: "Create a pricing page",
@@ -619,12 +622,25 @@ test("missing-renderer warnings include faq, pricing, authpage, and wizard", () 
 		expectedRevision: 0,
 		now: "2026-11-08T00:00:00.000Z"
 	});
-	if (pricing.ok) {
-		assert.ok(pricing.missing.includes("faq") || pricing.missing.includes("pricing"));
-		assert.ok(pricing.warnings.some((line) => /Not rendered/.test(line)));
-	} else {
-		assert.equal(pricing.code, "screen_not_renderable");
-		assert.match(pricing.message, /faq|pricing/);
+	assert.equal(pricing.ok, true);
+	if (!pricing.ok) return;
+	assert.deepEqual(pricing.missing, []);
+	assert.deepEqual(
+		pricing.page.layout.blocks.map((block) => block.catalogBlock),
+		["block.header", "block.hero", "block.pricing", "block.faq", "block.footer"]
+	);
+	const newsletter = catalogSnapshot.screens.find((item) => item.labels.blocks.includes("newsletter"))!;
+	const dropped = proposeLayout({
+		brief: "Create a page",
+		scenarioId: "landing",
+		screenId: newsletter.screenId,
+		expectedRevision: 0,
+		now: "2026-11-08T00:00:00.000Z"
+	});
+	assert.equal(dropped.ok, false);
+	if (!dropped.ok) {
+		assert.ok(dropped.code === "screen_not_renderable" || dropped.code === "scenario_screen_mismatch");
+		if (dropped.code === "screen_not_renderable") assert.match(dropped.message, /newsletter/);
 	}
 });
 

@@ -110,3 +110,46 @@ test("generated catalog files are ASCII (locale labels stay as \\u escapes)", ()
 	}
 	assert.equal(graph.entities.facetValue["section/marketing"].label.ru.length > 0, true);
 });
+
+test("ADR 0013: every supported non-dashboard screen renders all its Stock blocks in screen order, props gate-valid, no invented rows", async () => {
+	const core = await import("../../packages/builder-core/src/index.ts");
+	const { validateRegistryProps } = await import("../../packages/builder-core/src/catalog/props-gate.ts");
+	const supported = core.catalogSnapshot.screens.filter((screen) => core.screenSupport(screen).supported && !screen.labels.section.includes("dashboard"));
+	assert.ok(supported.length >= 8, `supported screens: ${supported.length}`);
+	for (const screen of supported) {
+		const r = core.proposeLayout({ brief: "Create a page", screenId: screen.screenId, scenarioId: null, expectedRevision: 0, now: "2026-11-10T00:00:00.000Z" });
+		assert.equal(r.ok, true, screen.screenId);
+		if (!r.ok) continue;
+		assert.deepEqual(r.missing, [], screen.screenId);
+		const blocks = r.page.layout.blocks;
+		// Row kinds (dish, metric, ...) fill their section's rows instead of a block of their own.
+		const sections = screen.layout!.filter((slot) => !["dish", "metric", "feature", "nav-link", "activity-item"].includes(core.rendererKindForLabel(slot.block)!));
+		assert.deepEqual(blocks.map((block) => block.catalogBlock), sections.map((slot) => `block.${slot.block}`), screen.screenId);
+		for (const block of blocks) {
+			const render = core.organismFor(block);
+			assert.ok(render, `${screen.screenId} ${block.id} has a registry block`);
+			assert.deepEqual(validateRegistryProps(render!), [], `${screen.screenId} ${block.id} props`);
+			// List sections other than the page's own features rows start empty: nothing is invented.
+			if (block.kind === "features" && block.id !== "block-features") assert.equal(block.children, undefined, block.id);
+		}
+	}
+	const studio = core.proposeLayout({ brief: "Create a page", screenId: "screen.theme-marketing-landing/studio", scenarioId: "landing", expectedRevision: 0, now: "2026-11-10T00:00:00.000Z" });
+	assert.equal(studio.ok, true);
+	if (studio.ok) {
+		const items = studio.page.layout.blocks.map((block) => core.organismFor(block)?.item);
+		assert.ok(items.includes("logo-cloud") && items.includes("testimonial-grid"), items.join(","));
+		const logos = studio.page.layout.blocks.find((block) => block.catalogBlock === "block.logos")!;
+		assert.match(String(core.organismFor(logos)!.props.empty), /until the author supplies them/);
+	}
+});
+
+test("ADR 0013: screen support is strict; a screen that would drop a block is named, not rendered hollow", async () => {
+	const core = await import("../../packages/builder-core/src/index.ts");
+	for (const screen of core.catalogSnapshot.screens) {
+		const support = core.screenSupport(screen);
+		assert.equal(support.supported, support.missing.length === 0 && support.body > 0, screen.screenId);
+	}
+	const cov = JSON.parse(read("catalog/coverage.json"));
+	assert.equal(cov.summary.stockBlocksWithPageKind, 34);
+	assert.equal(cov.summary.screensFullyPageKinded, 10);
+});

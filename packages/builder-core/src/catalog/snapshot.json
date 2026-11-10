@@ -131,6 +131,33 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "header",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "centered",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "footer",
+          "variant": "minimal",
+          "region": "after"
+        }
       ]
     },
     {
@@ -173,6 +200,33 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "header",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "centered",
+          "region": "area"
+        },
+        {
+          "block": "pricing",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "footer",
+          "variant": "minimal",
+          "region": "after"
+        }
       ]
     },
     {
@@ -209,6 +263,23 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "header",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "centered",
+          "region": "area"
+        },
+        {
+          "block": "footer",
+          "variant": "minimal",
+          "region": "after"
+        }
       ]
     },
     {
@@ -250,6 +321,23 @@
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -291,6 +379,23 @@
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "splitStart",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -332,6 +437,23 @@
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "signup",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -373,6 +495,23 @@
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "socialFirst",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -414,6 +553,23 @@
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "reset",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -455,6 +611,23 @@
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "magic",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -495,6 +668,23 @@
         "character",
         "density",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "minimal",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -536,6 +726,23 @@
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "authpage",
+          "variant": "social",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -578,6 +785,28 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "wizard",
+          "variant": "bar",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -620,6 +849,28 @@
       "missingFacets": [
         "character",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "auth",
+          "variant": "signin",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -663,6 +914,28 @@
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "profile",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -713,6 +986,48 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "shop",
+          "region": "area"
+        },
+        {
+          "block": "categories",
+          "variant": "chips",
+          "region": "area"
+        },
+        {
+          "block": "products",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "reviews",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "shop",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -755,6 +1070,33 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagetrail",
+          "variant": "crumbsFigure",
+          "region": "area"
+        },
+        {
+          "block": "categories",
+          "variant": "sidebar",
+          "region": "area"
+        },
+        {
+          "block": "products",
+          "variant": "catalog",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -797,6 +1139,33 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "categories",
+          "variant": "bar",
+          "region": "area"
+        },
+        {
+          "block": "products",
+          "variant": "browse",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -839,7 +1208,39 @@
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "storehero",
+          "variant": "overlay",
+          "region": "area"
+        },
+        {
+          "block": "usp",
+          "variant": "strip",
+          "region": "area"
+        },
+        {
+          "block": "products",
+          "variant": "railCompact",
+          "region": "area"
+        },
+        {
+          "block": "cartdrawer",
+          "variant": "filled",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-commerce-shop/product",
@@ -882,6 +1283,38 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "product",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "productinfo",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "reviews",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "products",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -925,6 +1358,38 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "cartpage",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "cart",
+          "variant": "table",
+          "region": "area"
+        },
+        {
+          "block": "summary",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -966,6 +1431,28 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "checkout",
+          "variant": "numbered",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1012,6 +1499,43 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "delivery",
+          "variant": "full",
+          "region": "area"
+        },
+        {
+          "block": "zones",
+          "variant": "table",
+          "region": "area"
+        },
+        {
+          "block": "slots",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "locations",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1055,6 +1579,28 @@
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "orders",
+          "variant": "table",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1098,6 +1644,38 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "posts",
+          "variant": "magazine",
+          "region": "area"
+        },
+        {
+          "block": "postshowcase",
+          "variant": "introCards",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1138,6 +1716,28 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "posts",
+          "variant": "filters",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1177,6 +1777,28 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "posts",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1215,6 +1837,28 @@
       "missingFacets": [
         "character",
         "density"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "postheader",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "article",
+          "variant": "toc",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1254,6 +1898,28 @@
       "missingFacets": [
         "character",
         "density"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "postsplit",
+          "variant": "splitStats",
+          "region": "area"
+        },
+        {
+          "block": "article",
+          "variant": "column",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1295,6 +1961,33 @@
       "missingFacets": [
         "character",
         "density"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "postheader",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "article",
+          "variant": "column",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "inline",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1334,6 +2027,33 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "postheader",
+          "variant": "noCover",
+          "region": "area"
+        },
+        {
+          "block": "article",
+          "variant": "plain",
+          "region": "area"
+        },
+        {
+          "block": "posts",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1374,6 +2094,23 @@
         "density",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "richtext",
+          "variant": "heroTitle",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1417,7 +2154,44 @@
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "overview",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "metrics",
+          "variant": "tiles",
+          "region": "area"
+        },
+        {
+          "block": "chart",
+          "variant": "bars",
+          "region": "area"
+        },
+        {
+          "block": "activity",
+          "variant": "timeline",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-dashboard-console/board",
@@ -1459,6 +2233,28 @@
       "missingFacets": [
         "composition",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "kanban",
+          "variant": "detail",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1498,7 +2294,29 @@
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "shell",
+          "variant": "sidebar",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-dashboard-console/shells",
@@ -1539,6 +2357,28 @@
       "added": "2025-01-01",
       "missingFacets": [
         "composition"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "dashshell",
+          "variant": "classic",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1583,7 +2423,49 @@
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "sidenav",
+          "variant": "full",
+          "region": "area"
+        },
+        {
+          "block": "bottomnav",
+          "variant": "labels",
+          "region": "area"
+        },
+        {
+          "block": "metrics",
+          "variant": "compact",
+          "region": "area"
+        },
+        {
+          "block": "chart",
+          "variant": "meters",
+          "region": "area"
+        },
+        {
+          "block": "overview",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-dashboard-console/states",
@@ -1623,7 +2505,34 @@
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "empty",
+          "variant": "illustrated",
+          "region": "area"
+        },
+        {
+          "block": "skeleton",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "compact",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-food-delivery/home",
@@ -1668,6 +2577,43 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "dishshowcase",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "dishcart",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "quickorder",
+          "variant": "phone",
+          "region": "area"
+        },
+        {
+          "block": "dishstrip",
+          "variant": "small",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1713,6 +2659,38 @@
       "missingFacets": [
         "character",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "pizzapicker",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "sushisets",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "dishstrip",
+          "variant": "large",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1759,6 +2737,43 @@
       "missingFacets": [
         "character",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "pizzapicker",
+          "variant": "rows",
+          "region": "area"
+        },
+        {
+          "block": "sushisets",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "combobuilder",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "dishcart",
+          "variant": "textOnly",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1805,6 +2820,38 @@
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "recipekits",
+          "variant": "rows",
+          "region": "area"
+        },
+        {
+          "block": "veggiebox",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "grocerylist",
+          "variant": "twoCols",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1851,6 +2898,38 @@
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "recipekits",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "veggiebox",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "grocerylist",
+          "variant": "plain",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1896,6 +2975,43 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "restaurantmenu",
+          "variant": "column",
+          "region": "area"
+        },
+        {
+          "block": "weekmenu",
+          "variant": "week",
+          "region": "area"
+        },
+        {
+          "block": "dishshowcase",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "quickorder",
+          "variant": "rows",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1942,6 +3058,38 @@
         "composition",
         "character",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "weekmenu",
+          "variant": "compact",
+          "region": "area"
+        },
+        {
+          "block": "restaurantmenu",
+          "variant": "twoCols",
+          "region": "area"
+        },
+        {
+          "block": "dishshowcase",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -1987,7 +3135,44 @@
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "backdrop",
+          "region": "area"
+        },
+        {
+          "block": "grillbuilder",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "combobuilder",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "delivery",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-food-grill/dishes",
@@ -2032,6 +3217,38 @@
       "missingFacets": [
         "character",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "dishbento",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "dishshowcase",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "restaurantmenu",
+          "variant": "twoCols",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2079,6 +3296,38 @@
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "dishcompare",
+          "variant": "table",
+          "region": "area"
+        },
+        {
+          "block": "dishbento",
+          "variant": "end",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "band",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2129,6 +3378,58 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "screenshot",
+          "region": "area"
+        },
+        {
+          "block": "logos",
+          "variant": "row",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "rowsAlternate",
+          "region": "area"
+        },
+        {
+          "block": "steps",
+          "variant": "rowIcons",
+          "region": "area"
+        },
+        {
+          "block": "stats",
+          "variant": "icons",
+          "region": "area"
+        },
+        {
+          "block": "testimonials",
+          "variant": "single",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "band",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2175,6 +3476,43 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "form",
+          "region": "area"
+        },
+        {
+          "block": "iconwall",
+          "variant": "tiles4",
+          "region": "area"
+        },
+        {
+          "block": "proof",
+          "variant": "above",
+          "region": "area"
+        },
+        {
+          "block": "testimonials",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "form",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2218,7 +3556,49 @@
         "industry": []
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "code",
+          "region": "area"
+        },
+        {
+          "block": "bento",
+          "variant": "bento",
+          "region": "area"
+        },
+        {
+          "block": "templates",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "tiles4",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "tabs",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-marketing-landing/studio",
@@ -2262,7 +3642,44 @@
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "display",
+          "region": "area"
+        },
+        {
+          "block": "logos",
+          "variant": "grid4",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "tiles4",
+          "region": "area"
+        },
+        {
+          "block": "testimonials",
+          "variant": "masonry",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "band",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-marketing-landing/events",
@@ -2306,7 +3723,44 @@
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "backdrop",
+          "region": "area"
+        },
+        {
+          "block": "stats",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "testimonials",
+          "variant": "strip",
+          "region": "area"
+        },
+        {
+          "block": "videos",
+          "variant": "overlay",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "agency",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-marketing-landing/company",
@@ -2353,6 +3807,48 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "about",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "storytabs",
+          "variant": "yearTabs",
+          "region": "area"
+        },
+        {
+          "block": "timeline",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "team",
+          "variant": "cards4",
+          "region": "area"
+        },
+        {
+          "block": "jobs",
+          "variant": "grouped",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2395,6 +3891,33 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "aboutme",
+          "variant": "facts",
+          "region": "area"
+        },
+        {
+          "block": "projects",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "photos",
+          "variant": "masonry",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2440,6 +3963,43 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "herosplit",
+          "variant": "quoteStats",
+          "region": "area"
+        },
+        {
+          "block": "logos",
+          "variant": "row",
+          "region": "area"
+        },
+        {
+          "block": "faqsplit",
+          "variant": "helpCard",
+          "region": "area"
+        },
+        {
+          "block": "quotesplit",
+          "variant": "ratingPanel",
+          "region": "area"
+        },
+        {
+          "block": "ctaproof",
+          "variant": "splitStats",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2488,6 +4048,48 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "pricing",
+          "variant": "monthly",
+          "region": "area"
+        },
+        {
+          "block": "logos",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "compare",
+          "variant": "plans",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "twoColumns",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "saas",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "newsletter",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2533,6 +4135,38 @@
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "pricing",
+          "variant": "duo",
+          "region": "area"
+        },
+        {
+          "block": "plan",
+          "variant": "standard",
+          "region": "area"
+        },
+        {
+          "block": "compare",
+          "variant": "highlight",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "newsletter",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2578,6 +4212,43 @@
       "added": "2025-01-01",
       "missingFacets": [
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "usage",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "credits",
+          "variant": "tiles4",
+          "region": "area"
+        },
+        {
+          "block": "pricing",
+          "variant": "annual",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "row",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "newsletter",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2624,6 +4295,43 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "compare",
+          "variant": "rivals",
+          "region": "area"
+        },
+        {
+          "block": "testimonials",
+          "variant": "featured",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "search",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "quote",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "newsletter",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2668,7 +4376,54 @@
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "featuresplit",
+          "variant": "metricCards",
+          "region": "area"
+        },
+        {
+          "block": "featureshowcase",
+          "variant": "panelCards4",
+          "region": "area"
+        },
+        {
+          "block": "bento",
+          "variant": "images",
+          "region": "area"
+        },
+        {
+          "block": "featuretabs",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "accordion",
+          "variant": "media",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-marketing-product/tour",
@@ -2715,6 +4470,48 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "sticky",
+          "variant": "end",
+          "region": "area"
+        },
+        {
+          "block": "beforeafter",
+          "variant": "cards",
+          "region": "area"
+        },
+        {
+          "block": "steps",
+          "variant": "column",
+          "region": "area"
+        },
+        {
+          "block": "videos",
+          "variant": "grid3",
+          "region": "area"
+        },
+        {
+          "block": "megamenu",
+          "variant": "open",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2763,6 +4560,53 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "features",
+          "variant": "grid2",
+          "region": "area"
+        },
+        {
+          "block": "iconwall",
+          "variant": "chips6",
+          "region": "area"
+        },
+        {
+          "block": "accordion",
+          "variant": "first",
+          "region": "area"
+        },
+        {
+          "block": "beforeafter",
+          "variant": "rows",
+          "region": "area"
+        },
+        {
+          "block": "sticky",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "compact",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2806,6 +4650,38 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "header",
+          "variant": "stacked",
+          "region": "area"
+        },
+        {
+          "block": "megamenu",
+          "variant": "twoCols",
+          "region": "area"
+        },
+        {
+          "block": "footer",
+          "variant": "centered",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2852,6 +4728,38 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "stepper",
+          "variant": "horizontal",
+          "region": "area"
+        },
+        {
+          "block": "checklist",
+          "variant": "expand",
+          "region": "area"
+        },
+        {
+          "block": "tour",
+          "variant": "below",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2896,6 +4804,33 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "videomodal",
+          "variant": "default",
+          "region": "area"
+        },
+        {
+          "block": "checklist",
+          "variant": "numbered",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -2939,7 +4874,39 @@
         ]
       },
       "added": "2025-01-01",
-      "missingFacets": []
+      "missingFacets": [],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "stepper",
+          "variant": "vertical",
+          "region": "area"
+        },
+        {
+          "block": "checklist",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "empty",
+          "variant": "compact",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
+      ]
     },
     {
       "screenId": "screen.theme-onboarding-flow/tour",
@@ -2984,6 +4951,38 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "tour",
+          "variant": "above",
+          "region": "area"
+        },
+        {
+          "block": "checklist",
+          "variant": "text",
+          "region": "area"
+        },
+        {
+          "block": "videomodal",
+          "variant": "chapters",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "row",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3028,6 +5027,43 @@
       "added": "2025-01-01",
       "missingFacets": [
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "cluster",
+          "region": "area"
+        },
+        {
+          "block": "announcement",
+          "variant": "badge",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "form",
+          "region": "area"
+        },
+        {
+          "block": "cookie",
+          "variant": "card",
+          "region": "area"
+        },
+        {
+          "block": "footersplit",
+          "variant": "newsletterStart",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3072,6 +5108,43 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "hero",
+          "variant": "saas",
+          "region": "area"
+        },
+        {
+          "block": "announcement",
+          "variant": "bar",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "inline",
+          "region": "area"
+        },
+        {
+          "block": "logos",
+          "variant": "tiles4",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "saas",
+          "region": "area"
+        },
+        {
+          "block": "footersplit",
+          "variant": "newsletterStart",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3116,6 +5189,38 @@
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "announcement",
+          "variant": "badge",
+          "region": "area"
+        },
+        {
+          "block": "cta",
+          "variant": "shop",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "consent",
+          "region": "area"
+        },
+        {
+          "block": "footersplit",
+          "variant": "newsletterStart",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3160,6 +5265,38 @@
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "announcement",
+          "variant": "dismissible",
+          "region": "area"
+        },
+        {
+          "block": "cookie",
+          "variant": "settings",
+          "region": "area"
+        },
+        {
+          "block": "newsletter",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "footersplit",
+          "variant": "newsletterStart",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3206,6 +5343,38 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "dish",
+          "variant": "vertical",
+          "region": "area"
+        },
+        {
+          "block": "menuboard",
+          "variant": "sections",
+          "region": "area"
+        },
+        {
+          "block": "reservation",
+          "variant": "single",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3250,6 +5419,33 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "menuboard",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "dish",
+          "variant": "horizontal",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3295,6 +5491,28 @@
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "reservation",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3338,6 +5556,28 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "muted",
+          "region": "area"
+        },
+        {
+          "block": "lightboxgallery",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "columns",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3382,6 +5622,43 @@
       "added": "2025-01-01",
       "missingFacets": [
         "character"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "center",
+          "region": "area"
+        },
+        {
+          "block": "channels",
+          "variant": "grid",
+          "region": "area"
+        },
+        {
+          "block": "medialist",
+          "variant": "topicRows",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "tabs",
+          "region": "area"
+        },
+        {
+          "block": "contact",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "status",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3422,6 +5699,28 @@
         "character",
         "pattern",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "faq",
+          "variant": "chat",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "status",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3463,6 +5762,33 @@
       "missingFacets": [
         "character",
         "pattern"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "pagehead",
+          "variant": "start",
+          "region": "area"
+        },
+        {
+          "block": "contact",
+          "variant": "single",
+          "region": "area"
+        },
+        {
+          "block": "channels",
+          "variant": "list",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "status",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3502,6 +5828,23 @@
         "character",
         "density",
         "media"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "errorpage",
+          "variant": "centered",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "status",
+          "region": "after"
+        }
       ]
     },
     {
@@ -3542,6 +5885,28 @@
       "missingFacets": [
         "character",
         "density"
+      ],
+      "layout": [
+        {
+          "block": "navbar",
+          "variant": "inline",
+          "region": "before"
+        },
+        {
+          "block": "errorpage",
+          "variant": "split",
+          "region": "area"
+        },
+        {
+          "block": "channels",
+          "variant": "twoUp",
+          "region": "area"
+        },
+        {
+          "block": "sitemap",
+          "variant": "status",
+          "region": "after"
+        }
       ]
     }
   ],
@@ -3562,7 +5927,10 @@
       "title": "About the company",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "value"
+      ]
     },
     {
       "blockId": "aboutme",
@@ -3582,7 +5950,10 @@
       "title": "About me",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "value"
+      ]
     },
     {
       "blockId": "accordion",
@@ -3602,7 +5973,10 @@
       "title": "Feature accordion",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "activity",
@@ -3622,7 +5996,10 @@
       "title": "Activity feed",
       "available": true,
       "rendererKind": "activity",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "announcement",
@@ -3650,7 +6027,10 @@
       "title": "Announcement bar",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "cta"
+      ]
     },
     {
       "blockId": "article",
@@ -3670,7 +6050,10 @@
       "title": "Article",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "article"
+      ]
     },
     {
       "blockId": "auth",
@@ -3698,7 +6081,10 @@
       "title": "Auth card",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "auth"
+      ]
     },
     {
       "blockId": "authpage",
@@ -3728,7 +6114,10 @@
       "title": "Sign-in page",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "auth"
+      ]
     },
     {
       "blockId": "beforeafter",
@@ -3748,7 +6137,11 @@
       "title": "Before and after",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "features",
+        "value"
+      ]
     },
     {
       "blockId": "bento",
@@ -3768,7 +6161,10 @@
       "title": "Bento grid",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "bottomnav",
@@ -3788,7 +6184,11 @@
       "title": "Bottom tab bar",
       "available": true,
       "rendererKind": "bottomnav",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard",
+        "navigation"
+      ]
     },
     {
       "blockId": "cart",
@@ -3808,7 +6208,10 @@
       "title": "Cart",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "cartdrawer",
@@ -3826,7 +6229,10 @@
       "title": "Cart drawer",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "cartpage",
@@ -3844,7 +6250,10 @@
       "title": "Cart page",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "categories",
@@ -3870,7 +6279,10 @@
       "title": "Category navigation",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "channels",
@@ -3890,7 +6302,10 @@
       "title": "Support channels",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "contacts"
+      ]
     },
     {
       "blockId": "chart",
@@ -3910,7 +6325,10 @@
       "title": "Chart panel",
       "available": true,
       "rendererKind": "chart",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "checklist",
@@ -3936,7 +6354,10 @@
       "title": "Setup checklist",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "checkout",
@@ -3954,7 +6375,10 @@
       "title": "Checkout",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "combobuilder",
@@ -3970,7 +6394,10 @@
       "title": "Combo builder",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "compare",
@@ -3990,7 +6417,10 @@
       "title": "Comparison table",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "comparison"
+      ]
     },
     {
       "blockId": "contact",
@@ -4014,7 +6444,10 @@
       "title": "Contact form",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "contacts"
+      ]
     },
     {
       "blockId": "cookie",
@@ -4034,7 +6467,10 @@
       "title": "Cookie notice",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "credits",
@@ -4054,7 +6490,10 @@
       "title": "Credit packs",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "pricing"
+      ]
     },
     {
       "blockId": "cta",
@@ -4088,7 +6527,11 @@
       "title": "Call to action",
       "available": true,
       "rendererKind": "cta",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "cta",
+        "lead"
+      ]
     },
     {
       "blockId": "ctaproof",
@@ -4114,7 +6557,11 @@
       "title": "Call to action, with proof",
       "available": true,
       "rendererKind": "cta",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "cta",
+        "proof"
+      ]
     },
     {
       "blockId": "dashshell",
@@ -4150,7 +6597,10 @@
       "title": "Dashboard shell",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "delivery",
@@ -4168,7 +6618,10 @@
       "title": "Delivery info",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "delivery"
+      ]
     },
     {
       "blockId": "dish",
@@ -4190,7 +6643,10 @@
       "title": "Dish card",
       "available": true,
       "rendererKind": "dish",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "dishbento",
@@ -4206,7 +6662,10 @@
       "title": "Dish bento",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "dishcart",
@@ -4222,7 +6681,10 @@
       "title": "Dish cart grid",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "dishcompare",
@@ -4238,7 +6700,10 @@
       "title": "Cut compare",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "dishshowcase",
@@ -4256,7 +6721,10 @@
       "title": "Dish showcase",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "dishstrip",
@@ -4272,7 +6740,10 @@
       "title": "Dish strip",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "empty",
@@ -4296,7 +6767,10 @@
       "title": "Empty state",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "errorpage",
@@ -4318,7 +6792,11 @@
       "title": "Error page",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard",
+        "navigation"
+      ]
     },
     {
       "blockId": "faq",
@@ -4343,8 +6821,11 @@
       ],
       "title": "FAQ",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "faq"
+      ]
     },
     {
       "blockId": "faqsplit",
@@ -4370,7 +6851,10 @@
       "title": "FAQ, split",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "faq"
+      ]
     },
     {
       "blockId": "features",
@@ -4398,7 +6882,10 @@
       "title": "Features",
       "available": true,
       "rendererKind": "features",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "featureshowcase",
@@ -4418,7 +6905,11 @@
       "title": "Feature cards with a picture",
       "available": true,
       "rendererKind": "features",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "features",
+        "value"
+      ]
     },
     {
       "blockId": "featuresplit",
@@ -4440,7 +6931,10 @@
       "title": "Features, split",
       "available": true,
       "rendererKind": "features",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "featuretabs",
@@ -4458,7 +6952,10 @@
       "title": "Feature tabs",
       "available": true,
       "rendererKind": "features",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "footer",
@@ -4476,7 +6973,10 @@
       "title": "Footer",
       "available": true,
       "rendererKind": "footer",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "footer"
+      ]
     },
     {
       "blockId": "footersplit",
@@ -4500,7 +7000,10 @@
       "title": "Footer, split",
       "available": true,
       "rendererKind": "footer",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "footer"
+      ]
     },
     {
       "blockId": "grillbuilder",
@@ -4516,7 +7019,10 @@
       "title": "Grill dish builder",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "grocerylist",
@@ -4532,7 +7038,10 @@
       "title": "Grocery list",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "header",
@@ -4552,7 +7061,10 @@
       "title": "Header",
       "available": true,
       "rendererKind": "nav",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "hero",
@@ -4594,7 +7106,11 @@
       "title": "Hero",
       "available": true,
       "rendererKind": "hero",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "hero",
+        "lead"
+      ]
     },
     {
       "blockId": "herosplit",
@@ -4620,7 +7136,10 @@
       "title": "Hero, split",
       "available": true,
       "rendererKind": "hero",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "hero"
+      ]
     },
     {
       "blockId": "iconwall",
@@ -4642,7 +7161,11 @@
       "title": "Icon wall",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "features",
+        "value"
+      ]
     },
     {
       "blockId": "jobs",
@@ -4662,7 +7185,10 @@
       "title": "Careers",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "kanban",
@@ -4682,7 +7208,10 @@
       "title": "Kanban board",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "lightboxgallery",
@@ -4702,7 +7231,10 @@
       "title": "Lightbox gallery",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "locations",
@@ -4720,7 +7252,11 @@
       "title": "Store locations",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "contacts",
+        "delivery"
+      ]
     },
     {
       "blockId": "logos",
@@ -4743,8 +7279,11 @@
       ],
       "title": "Logo cloud",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "logos"
+      ]
     },
     {
       "blockId": "medialist",
@@ -4768,7 +7307,10 @@
       "title": "List beside a picture",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "proof"
+      ]
     },
     {
       "blockId": "megamenu",
@@ -4788,7 +7330,10 @@
       "title": "Mega menu",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "menuboard",
@@ -4810,7 +7355,10 @@
       "title": "Menu board",
       "available": true,
       "rendererKind": "menu",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "metrics",
@@ -4830,7 +7378,11 @@
       "title": "Metric tiles",
       "available": true,
       "rendererKind": "metrics",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard",
+        "numbers"
+      ]
     },
     {
       "blockId": "navbar",
@@ -4854,7 +7406,10 @@
       "title": "Navigation bar",
       "available": true,
       "rendererKind": "nav",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "newsletter",
@@ -4876,7 +7431,10 @@
       "title": "Newsletter sign-up",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "lead"
+      ]
     },
     {
       "blockId": "orders",
@@ -4896,7 +7454,10 @@
       "title": "Order history",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "overview",
@@ -4916,7 +7477,10 @@
       "title": "Dashboard overview",
       "available": true,
       "rendererKind": "overview",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "pagehead",
@@ -4934,7 +7498,10 @@
       "title": "Page heading",
       "available": true,
       "rendererKind": "pagehead",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "pagetrail",
@@ -4954,7 +7521,10 @@
       "title": "Page heading with breadcrumbs",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "navigation"
+      ]
     },
     {
       "blockId": "photos",
@@ -4978,7 +7548,10 @@
       "title": "Photo gallery",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "pizzapicker",
@@ -4994,7 +7567,10 @@
       "title": "Pizza picker",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "plan",
@@ -5012,7 +7588,10 @@
       "title": "Plan",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "pricing"
+      ]
     },
     {
       "blockId": "postheader",
@@ -5032,7 +7611,10 @@
       "title": "Post header",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "article"
+      ]
     },
     {
       "blockId": "posts",
@@ -5066,7 +7648,10 @@
       "title": "Blog posts",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "blog"
+      ]
     },
     {
       "blockId": "postshowcase",
@@ -5086,7 +7671,10 @@
       "title": "Post showcase",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "blog"
+      ]
     },
     {
       "blockId": "postsplit",
@@ -5110,7 +7698,10 @@
       "title": "Post header, split",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "blog"
+      ]
     },
     {
       "blockId": "pricing",
@@ -5141,8 +7732,11 @@
       ],
       "title": "Pricing",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "pricing"
+      ]
     },
     {
       "blockId": "product",
@@ -5164,7 +7758,10 @@
       "title": "Product page",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "product"
+      ]
     },
     {
       "blockId": "productinfo",
@@ -5182,7 +7779,10 @@
       "title": "Product details",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "product"
+      ]
     },
     {
       "blockId": "products",
@@ -5212,7 +7812,10 @@
       "title": "Product grid",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "profile",
@@ -5232,7 +7835,10 @@
       "title": "Profile form",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "projects",
@@ -5256,7 +7862,10 @@
       "title": "Projects",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "proof",
@@ -5275,8 +7884,11 @@
       ],
       "title": "Logos and stats",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "proof"
+      ]
     },
     {
       "blockId": "quickorder",
@@ -5292,7 +7904,10 @@
       "title": "Quick order",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "quotesplit",
@@ -5315,8 +7930,11 @@
       ],
       "title": "Testimonials, split",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "testimonials"
+      ]
     },
     {
       "blockId": "recipekits",
@@ -5332,7 +7950,10 @@
       "title": "Recipe kits",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "reservation",
@@ -5354,7 +7975,11 @@
       "title": "Reservation form",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog",
+        "lead"
+      ]
     },
     {
       "blockId": "restaurantmenu",
@@ -5370,7 +7995,10 @@
       "title": "Restaurant menu",
       "available": true,
       "rendererKind": "menu",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "reviews",
@@ -5392,7 +8020,11 @@
       "title": "Reviews",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "product",
+        "testimonials"
+      ]
     },
     {
       "blockId": "richtext",
@@ -5416,7 +8048,10 @@
       "title": "Rich text",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "article"
+      ]
     },
     {
       "blockId": "shell",
@@ -5436,7 +8071,10 @@
       "title": "App shell",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "sidenav",
@@ -5456,7 +8094,11 @@
       "title": "Sidebar navigation",
       "available": true,
       "rendererKind": "sidenav",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "dashboard",
+        "navigation"
+      ]
     },
     {
       "blockId": "sitemap",
@@ -5480,7 +8122,10 @@
       "title": "Sitemap footer",
       "available": true,
       "rendererKind": "footer",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "footer"
+      ]
     },
     {
       "blockId": "skeleton",
@@ -5500,7 +8145,10 @@
       "title": "Loading state",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "slots",
@@ -5518,7 +8166,10 @@
       "title": "Delivery window",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "delivery"
+      ]
     },
     {
       "blockId": "stats",
@@ -5546,7 +8197,10 @@
       "title": "Stats",
       "available": true,
       "rendererKind": "features",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "numbers"
+      ]
     },
     {
       "blockId": "stepper",
@@ -5566,7 +8220,10 @@
       "title": "Stepper",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "dashboard"
+      ]
     },
     {
       "blockId": "steps",
@@ -5589,8 +8246,11 @@
       ],
       "title": "How it works",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "how"
+      ]
     },
     {
       "blockId": "sticky",
@@ -5610,7 +8270,10 @@
       "title": "Sticky feature list",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "features"
+      ]
     },
     {
       "blockId": "storehero",
@@ -5630,7 +8293,10 @@
       "title": "Store hero",
       "available": true,
       "rendererKind": "hero",
-      "rendererCompatible": true
+      "rendererCompatible": true,
+      "jobs": [
+        "hero"
+      ]
     },
     {
       "blockId": "storytabs",
@@ -5648,7 +8314,10 @@
       "title": "Story in steps",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "article"
+      ]
     },
     {
       "blockId": "summary",
@@ -5668,7 +8337,10 @@
       "title": "Order summary",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "checkout"
+      ]
     },
     {
       "blockId": "sushisets",
@@ -5684,7 +8356,10 @@
       "title": "Sushi sets",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "team",
@@ -5707,8 +8382,11 @@
       ],
       "title": "Team",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "proof"
+      ]
     },
     {
       "blockId": "templates",
@@ -5728,7 +8406,10 @@
       "title": "Template gallery",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "testimonials",
@@ -5759,8 +8440,11 @@
       ],
       "title": "Testimonials",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "testimonials"
+      ]
     },
     {
       "blockId": "timeline",
@@ -5780,7 +8464,10 @@
       "title": "Timeline",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "article"
+      ]
     },
     {
       "blockId": "tour",
@@ -5800,7 +8487,10 @@
       "title": "Tour callout",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "how"
+      ]
     },
     {
       "blockId": "usage",
@@ -5820,7 +8510,10 @@
       "title": "Usage calculator",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "pricing"
+      ]
     },
     {
       "blockId": "usp",
@@ -5842,7 +8535,10 @@
       "title": "Store promises",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "value"
+      ]
     },
     {
       "blockId": "veggiebox",
@@ -5858,7 +8554,10 @@
       "title": "Vegetable box",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "videomodal",
@@ -5878,7 +8577,10 @@
       "title": "Video walkthrough",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "how"
+      ]
     },
     {
       "blockId": "videos",
@@ -5897,8 +8599,11 @@
       ],
       "title": "Video testimonials",
       "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false
+      "rendererKind": "features",
+      "rendererCompatible": true,
+      "jobs": [
+        "proof"
+      ]
     },
     {
       "blockId": "weekmenu",
@@ -5914,7 +8619,10 @@
       "title": "Week of meals",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "catalog"
+      ]
     },
     {
       "blockId": "wizard",
@@ -5934,7 +8642,10 @@
       "title": "Sign-up wizard",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "auth"
+      ]
     },
     {
       "blockId": "zones",
@@ -5952,7 +8663,10 @@
       "title": "Delivery zones",
       "available": true,
       "rendererKind": null,
-      "rendererCompatible": false
+      "rendererCompatible": false,
+      "jobs": [
+        "delivery"
+      ]
     }
   ],
   "rendererMap": {
@@ -5980,6 +8694,15 @@
     "menuboard": "menu",
     "dish": "dish",
     "sidenav": "sidenav",
-    "bottomnav": "bottomnav"
+    "bottomnav": "bottomnav",
+    "logos": "features",
+    "testimonials": "features",
+    "pricing": "features",
+    "faq": "features",
+    "team": "features",
+    "steps": "features",
+    "proof": "features",
+    "quotesplit": "features",
+    "videos": "features"
   }
 }

@@ -29,7 +29,12 @@ export type CatalogScreen = {
 	};
 	added?: string;
 	missingFacets?: string[];
+	/** The screen's composition (ADR 0012 screen-contains-block): each Stock block once, in order, with its variant and region. */
+	layout?: CatalogScreenSlot[];
 };
+
+/** One Stock block of a screen: `before` / `after` are the frame (header, footer), `area` is the body. */
+export type CatalogScreenSlot = { block: string; variant: string; region: "before" | "area" | "after" };
 
 export type CatalogBlockIndexEntry = {
 	blockId: string;
@@ -40,6 +45,8 @@ export type CatalogBlockIndexEntry = {
 	available: boolean;
 	rendererKind: string | null;
 	rendererCompatible: boolean;
+	/** Job facet values of the block's variants (Stock tags). */
+	jobs?: string[];
 };
 
 export type CatalogSnapshot = {

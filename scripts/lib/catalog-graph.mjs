@@ -404,8 +404,25 @@ export function deriveSnapshot(graph, policy) {
 		graph.edges["facet-has-value"].filter((e) => e.from === facet).map((e) => E.facetValue[e.to].value);
 	const sortedValues = (facet) => [...facetValues(facet)].sort();
 	const pageKind = (blockId) => policy.pageKindOfBlock[blockId] ?? null;
+	const composition = groupBy(graph.edges["screen-contains-block"], "from");
+	// Job facet values of each Stock block, from the tags of its variants (data, not a word list).
+	const jobsOf = new Map();
+	for (const e of graph.edges["variant-tagged-facet"]) {
+		if (!e.to.startsWith("job/")) continue;
+		const spec = E.variant[e.from]?.block;
+		if (!spec) continue;
+		if (!jobsOf.has(spec)) jobsOf.set(spec, new Set());
+		jobsOf.get(spec).add(e.to.slice(4));
+	}
 	const screens = Object.entries(E.screen).map(([screenId, screen], sourceOrdinal) => {
 		const labels = labelsOf(screenTags.get(screenId));
+		// The screen's own composition: each Stock block once, in screen order, with the variant the screen sets.
+		const layout = [];
+		for (const e of [...(composition.get(screenId) ?? [])].sort((a, b) => a.order - b.order)) {
+			const block = e.to.slice(6);
+			if (layout.some((row) => row.block === block)) continue;
+			layout.push({ block, variant: e.variant.slice(e.variant.indexOf("/") + 1), region: e.region });
+		}
 		return {
 			screenId,
 			sourceOrdinal,
@@ -418,7 +435,8 @@ export function deriveSnapshot(graph, policy) {
 			preview: screen.preview,
 			labels: { type: labels.type ?? [], section: labels.section ?? [], job: labels.job ?? [], blocks: labels.blocks ?? [], industry: labels.industry ?? [] },
 			added: screen.added,
-			missingFacets: screen.missing
+			missingFacets: screen.missing,
+			layout
 		};
 	});
 	const blockIndex = Object.entries(E.block)
@@ -434,7 +452,8 @@ export function deriveSnapshot(graph, policy) {
 				title: block.title,
 				available: true,
 				rendererKind: kind,
-				rendererCompatible: kind !== null
+				rendererCompatible: kind !== null,
+				jobs: [...(jobsOf.get(spec) ?? [])].sort()
 			};
 		});
 	const stock = graph.sources.codegenX;

@@ -170,7 +170,7 @@ test("model context and block details come from the schema: no hand-written fiel
 	const context = modelCatalogSources() as { blocks: Record<string, Record<string, string>>; icons: string[] };
 	assert.deepEqual(context.icons, lucideIcons());
 	assert.match(context.blocks["block.features"]!.rows!, /^features\[\]: .*\bicon:icon\b/);
-	assert.equal(JSON.stringify(context).includes("rowIcon"), false);
+	assert.doesNotMatch(JSON.stringify(context), /"rowIcon"/);
 	const details = getBlockDetails({ id: "features" }) as { registry: { icons: string[]; schema: Record<string, string> } };
 	assert.deepEqual(details.registry.icons, lucideIcons());
 	assert.match(details.registry.schema.rows!, /features\[\]/);

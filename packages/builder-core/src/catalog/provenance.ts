@@ -1,6 +1,6 @@
 import type { Page, PageBlock, PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
-import { getBlockIndex, rendererKindForLabel } from "./compatibility.ts";
+import { getBlockIndex, rendererKindForLabel, screenSlots } from "./compatibility.ts";
 import { getScreenById } from "./search.ts";
 import { childKindFor } from "../content.ts";
 import type { CatalogScreen } from "./types.ts";
@@ -190,7 +190,7 @@ export function familyLabelForKind(
 	kind: PageBlockKind
 ): { label: string; screenId: string } | null {
 	for (const row of screenFamily(screen)) {
-		const label = labelForKind(row.labels.blocks, kind);
+		const label = labelForKind(screenSlots(row).map((slot) => slot.block), kind);
 		if (label) return { label, screenId: row.screenId };
 	}
 	return null;
@@ -238,7 +238,9 @@ function screenRef(screenId: string): CatalogScreenRef | null {
 }
 
 function labelForKind(labels: string[], kind: PageBlockKind): string | null {
-	for (const label of labels) {
+	// The block named like the kind first (`features` for features), then the others in the given order.
+	const ordered = labels.includes(kind) ? [kind, ...labels.filter((label) => label !== kind)] : labels;
+	for (const label of ordered) {
 		if (rendererKindForLabel(label) !== kind) continue;
 		const entry = getBlockIndex(label);
 		if (entry?.available) return label;
