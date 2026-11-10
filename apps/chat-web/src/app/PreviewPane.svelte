@@ -28,6 +28,7 @@
 	} from "$lib/page-store";
 	import { topLevelBlockId } from "$lib/inspector/geometry";
 	import CanvasOverlay from "./CanvasOverlay.svelte";
+	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { recordedScreenId } from "@buildytech/builder-core";
 	import PreviewFrame from "./PreviewFrame.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
@@ -98,6 +99,8 @@
 		themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme", "style"] });
 		if (mounted) void unmount(mounted);
 		mounted = mount(PreviewFrame, { target: doc.body, props: { frame } });
+		// Undo / redo of inspector edits also while focus is inside the preview frame.
+		doc.addEventListener("keydown", inspector.onKey);
 		frameDoc = doc;
 	}
 
@@ -203,11 +206,11 @@
 	data-block="preview-pane"
 >
 	<Group
-		class="shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border p-3"
+		class="shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border p-2"
 		data-slot="browser-head"
 	>
 		<Group
-			class="gap-1 rounded bg-muted p-1"
+			class="gap-0 rounded bg-muted"
 			role="tablist"
 			aria-label={t("preview.device")}
 		>
@@ -229,11 +232,11 @@
 		</Group>
 
 		<Group
-			class="min-w-0 flex-1 items-center justify-between gap-2 rounded border border-border bg-background px-2 py-1 max-md:order-3 max-md:basis-full"
+			class="min-w-0 flex-1 items-center justify-between gap-2 rounded border border-border bg-background px-2 py-0 max-md:order-3 max-md:basis-full"
 			role="group"
 			aria-label={t("preview.address")}
 		>
-			<Group class="min-w-0 flex-1 items-center gap-1">
+			<Group class="min-w-0 flex-1 items-center gap-0">
 				<Button
 					class="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
 					aria-label={t("preview.back")}
@@ -288,17 +291,17 @@
 	{#if unapplied || !clean}
 	<Stack align="stretch" class="shrink-0 gap-2 border-b border-border px-4 py-2" data-slot="preview-status" data-clean={clean ? "true" : undefined}>
 		{#if unapplied}
-			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-3 py-2">
+			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-4 py-2">
 				<Text tag="span" class="text-xs text-muted-foreground">{t("proposal.notApplied")}</Text>
 				<Group class="gap-2">
 					<Button
-						class="rounded bg-foreground px-3 py-1.5 text-sm text-background hover:bg-foreground/90"
+						class="rounded bg-foreground px-3 py-2 text-sm text-background hover:bg-foreground/90"
 						onclick={() => applyProposal()}
 					>
 						<Text tag="span">{t("proposal.apply")}</Text>
 					</Button>
 					<Button
-						class="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+						class="rounded border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
 						onclick={() => discardProposal()}
 					>
 						<Text tag="span">{t("proposal.discard")}</Text>
@@ -306,7 +309,7 @@
 				</Group>
 			</Group>
 		{:else if appliedLabel && !clean}
-			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-3 py-2">
+			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-4 py-2">
 				<Text tag="span" class="text-xs text-muted-foreground">{appliedLabel}</Text>
 			</Group>
 		{/if}

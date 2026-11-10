@@ -17,6 +17,7 @@ export {
 	applySessionFromUrl,
 	hydrateSessions,
 	listSessions,
+	loadPropsGate,
 	retryLastFailed,
 	selectSession,
 	sendMessage

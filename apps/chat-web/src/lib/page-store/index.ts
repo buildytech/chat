@@ -28,6 +28,7 @@ export {
 	hasUnappliedProposal,
 	loadMockFixturePage,
 	readPreviewPage,
+	replaceVisiblePage,
 	selectBlock,
 	setCandidatePage,
 	setCurrentPage

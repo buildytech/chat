@@ -5,9 +5,13 @@
   honest stub; no field is invented.
 -->
 <script lang="ts">
+	import Redo2 from "@lucide/svelte/icons/redo-2";
 	import SlidersHorizontal from "@lucide/svelte/icons/sliders-horizontal";
+	import Undo2 from "@lucide/svelte/icons/undo-2";
+	import { onMount } from "svelte";
 	import Alert from "$registry/compose/Alert.svelte";
 	import Badge from "$registry/compose/Badge.svelte";
+	import Button from "$registry/compose/Button.svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Disclosure from "$registry/compose/Disclosure.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -16,13 +20,13 @@
 	import Summary from "$registry/compose/Summary.svelte";
 	import Text from "$registry/compose/Text.svelte";
 	import { inspectorModel } from "@buildytech/builder-core";
+	import { loadPropsGate } from "$lib/chat-core";
 	import { t } from "$lib/i18n/dictionary";
-	import { partitionFields, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
+	import { partitionFields, type FieldHandlers } from "$lib/inspector/fields";
+	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { topLevelBlockId } from "$lib/inspector/geometry";
 	import { blocksOf, getCurrentPage, getSelectedBlockId } from "$lib/page-store";
 	import InspectorFields from "./InspectorFields.svelte";
-
-	let { issues = {}, handlers }: { issues?: Record<string, FieldIssue>; handlers?: FieldHandlers } = $props();
 
 	const blocks = $derived.by(() => {
 		const page = getCurrentPage();
@@ -34,7 +38,21 @@
 	});
 	const model = $derived(block ? inspectorModel(block) : null);
 	const parts = $derived(model?.ok ? partitionFields(model.fields) : { main: [], more: [] });
+	const issues = $derived(model ? inspector.issuesFor(model.blockId) : {});
+	const handlers: FieldHandlers = {
+		onedit: (field, value, typing) => {
+			if (model) inspector.edit(model.blockId, field, value, typing);
+		},
+		onseal: () => inspector.seal()
+	};
+
+	// The props gate (Ajv over the pinned schemas) is a lazy chunk; edits fail closed until it is loaded.
+	onMount(() => {
+		void loadPropsGate().catch(() => {});
+	});
 </script>
+
+<svelte:window onkeydown={inspector.onKey} />
 
 <Block
 	tag="aside"
@@ -46,9 +64,19 @@
 	data-variant={model?.ok ? model.variant : undefined}
 >
 	<Stack align="stretch" gap="4">
-		<Group gap="2">
-			<Icon size="sm"><SlidersHorizontal /></Icon>
-			<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("inspector.title")}</Text>
+		<Group gap="2" justify="between">
+			<Group gap="2">
+				<Icon size="sm"><SlidersHorizontal /></Icon>
+				<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("inspector.title")}</Text>
+			</Group>
+			<Group gap="2" role="group" aria-label={t("inspector.history")}>
+				<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.undo")} title={t("inspector.undoKey")} disabled={!inspector.canUndo} onclick={() => inspector.undo()} data-action="undo">
+					<Undo2 />
+				</Button>
+				<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.redo")} title={t("inspector.redoKey")} disabled={!inspector.canRedo} onclick={() => inspector.redo()} data-action="redo">
+					<Redo2 />
+				</Button>
+			</Group>
 		</Group>
 		{#if !model}
 			<Text tag="p" class="text-sm text-muted-foreground">{t("inspector.empty")}</Text>

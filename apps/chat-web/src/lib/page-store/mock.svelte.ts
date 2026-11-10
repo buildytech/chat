@@ -210,6 +210,27 @@ export function applyCandidate(revision: number | null = null): boolean {
 	return true;
 }
 
+/**
+ * Build inspector edits: replace the page Preview shows (the pending proposal, else the applied page) with a page the
+ * inspector gate already checked (page-spec + props gate). The applied page gets the next revision, like any saved
+ * edit; a pending proposal stays pending. Block objects are kept as given, so unchanged blocks do not re-render.
+ */
+export function replaceVisiblePage(page: Page, selectId: string | null = null): boolean {
+	if (candidatePage) {
+		if (lastProposedPage === candidatePage) lastProposedPage = page;
+		candidatePage = page;
+	} else if (currentPage) {
+		currentPage = page;
+		pageRevision = (pageRevision ?? 0) + 1;
+	} else {
+		return false;
+	}
+	if (selectId && hasBlock(page.layout.blocks, selectId)) selectedBlockId = selectId;
+	else syncSelection(page);
+	persistBound();
+	return true;
+}
+
 /** Blank Workspace for a new / unbound session. Never loads the demo fixture. */
 export function clearCurrentPage(): void {
 	currentPage = null;

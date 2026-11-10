@@ -26386,6 +26386,7 @@ function sameCatalogRefs(a: CatalogRefs | null | undefined, b: CatalogRefs): boo
 exports["STOCK_APP_URL"] = STOCK_APP_URL;
 exports["setPropsValidator"] = setPropsValidator;
 exports["propsValidatorInstalled"] = propsValidatorInstalled;
+exports["checkBlockProps"] = checkBlockProps;
 exports["screenFamily"] = screenFamily;
 exports["attachCatalogSources"] = attachCatalogSources;
 exports["familyLabelForKind"] = familyLabelForKind;
@@ -27198,7 +27199,9 @@ exports["askBlockCards"] = askBlockCards;
 });
 
 __def("packages/builder-core/src/inspector.ts", function (exports) {
+const { parsePageSpec } = __req("packages/page-contract/src/index.ts");
 const { organismFor, writableOrigin } = __req("packages/builder-core/src/catalog/organism.ts");
+const { checkBlockProps } = __req("packages/builder-core/src/catalog/provenance.ts");
 const { propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { catalogVariantsFor } = __req("packages/builder-core/src/catalog/sources.ts");
 const HIDDEN = new Set(["id", "class", "className"]);
@@ -27281,7 +27284,101 @@ function inspectorModel(block: PageBlock): InspectorModel {
 	};
 }
 
+// ---- Write-back (step 3) ----------------------------------------------------------------------------------------
+
+const fail = (code: string, message: string, pointer: string, allowed?: string[]): InspectorFailure =>
+	allowed?.length ? { ok: false, code, message, pointer, allowed } : { ok: false, code, message, pointer };
+
+const ORIGIN = /^((?:children\[\d+\]\.)*)(title|summary|copy\.([a-z]+))$/;
+
+/** The block with `origin` (`copy.headline`, `children[2].copy.icon`, `title`) set to `value`; other fields kept. */
+function writeOrigin(block: PageBlock, origin: string, value: string): PageBlock | null {
+	const match = ORIGIN.exec(origin);
+	if (!match) return null;
+	const path = [...match[1]!.matchAll(/children\[(\d+)\]\./g)].map((hit) => Number(hit[1]));
+	const field = match[2]!;
+	const set = (node: PageBlock, depth: number): PageBlock | null => {
+		if (depth < path.length) {
+			const index = path[depth]!;
+			const child = node.children?.[index];
+			if (!child) return null;
+			const next = set(child, depth + 1);
+			if (!next) return null;
+			const children = [...node.children!];
+			children[index] = next;
+			return { ...node, children };
+		}
+		if (field === "title" || field === "summary") return { ...node, [field]: value };
+		const copy: PageBlockCopy = { ...node.copy, [match[3]! as PageCopyKey]: value };
+		return { ...node, copy };
+	};
+	return set(block, 0);
+}
+
+/** `next` with every top-level block that did not change replaced by the object of `prev` (only changed blocks re-render). */
+function shareUnchanged(prev: Page, next: Page): Page {
+	const before = new Map(prev.layout.blocks.map((node) => [node.id, node]));
+	const blocks = next.layout.blocks.map((node) => {
+		const old = before.get(node.id);
+		return old && JSON.stringify(old) === JSON.stringify(node) ? old : node;
+	});
+	return { ...next, layout: { ...next.layout, blocks } };
+}
+
+type Issue = { pointer: string; message: string; allowed?: unknown[]; value?: unknown };
+
+/**
+ * The inspector gate: the page-spec schema + parsePage program checks on the whole page, then the props gate (Ajv
+ * 2020 over the published schema, fail closed) on every changed top-level block. Nothing is written on failure.
+ */
+function gateInspectorPage(base: Page, blocks: PageBlock[], changed: string[], pointer: string, now?: string): InspectorFailure | { ok: true; page: Page } {
+	let page: Page;
+	try {
+		page = parsePageSpec({ ...base, layout: { ...base.layout, blocks }, updatedAt: now ?? new Date().toISOString() }, { draft: base.status === "draft" });
+	} catch (err) {
+		const rec = err as { code?: string; path?: string; message?: string };
+		return fail(rec.code ?? "page_spec_invalid", rec.message ?? "The page does not match page-spec/v1.", pointer);
+	}
+	for (const id of changed) {
+		const index = page.layout.blocks.findIndex((node) => node.id === id);
+		if (index < 0) continue;
+		const error = checkBlockProps(page.layout.blocks[index]!, `layout.blocks[${index}]`);
+		if (!error) continue;
+		const issues = ((error as { issues?: Issue[] }).issues ?? []) as Issue[];
+		const issue = issues.find((row) => row.pointer === pointer) ?? issues[0];
+		if (!issue) return fail(error.code, error.message, pointer);
+		const value = issue.value !== undefined ? ` ${JSON.stringify(issue.value)}` : "";
+		return fail(error.code, `${issue.pointer || "(props)"}${value}: ${issue.message}.`, issue.pointer || pointer, issue.allowed?.map(String));
+	}
+	return { ok: true, page: shareUnchanged(base, page) };
+}
+
+/**
+ * Write one inspector field back to the page: the field's page-spec origin (override only; variant presets and
+ * schema defaults are never copied into the page), then the inspector gate. On failure the page is unchanged and
+ * the result names the field, the reason and, for an enum, the allowed values.
+ */
+function inspectorSetField(page: Page, blockId: string, pointer: string, value: string, now?: string): InspectorResult {
+	const index = page.layout.blocks.findIndex((node) => node.id === blockId);
+	const block = page.layout.blocks[index];
+	if (!block) return fail("block_not_found", `No section ${blockId} on this page.`, pointer);
+	const render = organismFor(block);
+	if (!render) return fail("not_in_registry", `Section ${blockId} has no registry block.`, pointer);
+	const origin = writableOrigin(block, render, pointer);
+	if (!origin) return fail("field_not_editable", `${pointer} is set by the variant ${render.variant}, not by the page.`, pointer);
+	const next = writeOrigin(block, origin, value);
+	if (!next) return fail("field_not_editable", `${pointer} has no page field ${origin}.`, pointer);
+	const blocks = [...page.layout.blocks];
+	blocks[index] = next;
+	const gated = gateInspectorPage(page, blocks, [blockId], pointer, now);
+	return gated.ok ? { ok: true, page: gated.page, blockId } : gated;
+}
+
 exports["inspectorModel"] = inspectorModel;
+exports["writeOrigin"] = writeOrigin;
+exports["shareUnchanged"] = shareUnchanged;
+exports["gateInspectorPage"] = gateInspectorPage;
+exports["inspectorSetField"] = inspectorSetField;
 
 });
 
@@ -30513,7 +30610,11 @@ exports["registryItemClosure"] = __req("packages/builder-core/src/catalog/organi
 exports["registryItemFor"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFor"];
 exports["registryNpmDependencies"] = __req("packages/builder-core/src/catalog/organism.ts")["registryNpmDependencies"];
 exports["writableOrigin"] = __req("packages/builder-core/src/catalog/organism.ts")["writableOrigin"];
+exports["gateInspectorPage"] = __req("packages/builder-core/src/inspector.ts")["gateInspectorPage"];
 exports["inspectorModel"] = __req("packages/builder-core/src/inspector.ts")["inspectorModel"];
+exports["inspectorSetField"] = __req("packages/builder-core/src/inspector.ts")["inspectorSetField"];
+exports["shareUnchanged"] = __req("packages/builder-core/src/inspector.ts")["shareUnchanged"];
+exports["writeOrigin"] = __req("packages/builder-core/src/inspector.ts")["writeOrigin"];
 exports["fillProps"] = __req("packages/builder-core/src/catalog/props-schema.ts")["fillProps"];
 exports["hasPropsSchema"] = __req("packages/builder-core/src/catalog/props-schema.ts")["hasPropsSchema"];
 exports["lucideIcons"] = __req("packages/builder-core/src/catalog/props-schema.ts")["lucideIcons"];

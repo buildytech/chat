@@ -64,7 +64,19 @@ export {
 	writableOrigin,
 	type OrganismRender
 } from "./catalog/organism.ts";
-export { inspectorModel, type InspectorField, type InspectorModel, type InspectorWidget } from "./inspector.ts";
+export {
+	gateInspectorPage,
+	inspectorModel,
+	inspectorSetField,
+	shareUnchanged,
+	writeOrigin,
+	type InspectorFailure,
+	type InspectorField,
+	type InspectorModel,
+	type InspectorResult,
+	type InspectorSuccess,
+	type InspectorWidget
+} from "./inspector.ts";
 export {
 	fillProps,
 	hasPropsSchema,

@@ -128,7 +128,7 @@ function issueText(issue: PropsIssue): string {
 }
 
 /** Merged props (variant preset + page content + schema defaults) of a top-level block against its props schema. */
-function checkBlockProps(node: PageBlock, path: string): CatalogValidationError | null {
+export function checkBlockProps(node: PageBlock, path: string): CatalogValidationError | null {
 	const render = organismFor(node);
 	if (!render) return null;
 	if (!PROPS_VALIDATOR) {

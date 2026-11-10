@@ -218,6 +218,11 @@
 		"inspector.noRows": "Строк нет",
 		"inspector.allowed": "Допустимо: {list}.",
 		"inspector.iconHint": "Имя иконки Lucide из контракта",
-		"inspector.closest": "Ближайшие допустимые значения"
+		"inspector.closest": "Ближайшие допустимые значения",
+		"inspector.history": "История инспектора",
+		"inspector.undo": "Отменить",
+		"inspector.redo": "Повторить",
+		"inspector.undoKey": "Отменить (Ctrl+Z)",
+		"inspector.redoKey": "Повторить (Ctrl+Shift+Z)"
 	}
 }

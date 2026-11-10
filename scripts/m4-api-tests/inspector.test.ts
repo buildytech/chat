@@ -146,3 +146,96 @@ test("inspector panel: registry widgets only, mounted in Build", () => {
 	assert.match(web("app/Workspace.svelte"), /\{#if build\}\s*<InspectorPanel/);
 	assert.match(web("app/InspectorPanel.svelte"), /inspectorModel\(block\)/);
 });
+
+// ---- Step 3: validated write-back and local history ---------------------------------------------------------------
+
+import { inspectorSetField, writeOrigin } from "../../packages/builder-core/src/index.ts";
+import { EditHistory } from "../../apps/chat-web/src/lib/inspector/history.ts";
+
+test("write-back: origins map to page-spec fields (title, summary, copy, row copy) and nothing else", () => {
+	const block: PageBlock = { id: "b", kind: "features", title: "T", summary: "S", children: [{ id: "r1", kind: "feature", title: "R", summary: "RS" }] };
+	assert.equal(writeOrigin(block, "title", "New")?.title, "New");
+	assert.equal(writeOrigin(block, "copy.headline", "H")?.copy?.headline, "H");
+	const row = writeOrigin(block, "children[0].copy.icon", "rocket")!;
+	assert.equal(row.children?.[0]?.copy?.icon, "rocket");
+	assert.equal(row.children?.[0]?.title, "R");
+	assert.equal(block.children?.[0]?.copy, undefined, "the input block is not mutated");
+	assert.equal(writeOrigin(block, "children[0].summary", "x")?.children?.[0]?.summary, "x");
+	assert.equal(writeOrigin(block, "children[4].title", "x"), null, "no such row");
+	assert.equal(writeOrigin(block, "id", "x"), null, "ids are not writable");
+	assert.equal(writeOrigin(block, "catalogBlock", "x"), null);
+});
+
+test("write-back: a passing edit changes only its block; other blocks keep their objects", () => {
+	const { page } = landing();
+	const r = inspectorSetField(page, "block-hero", "/title", "Fresh coffee", NOW);
+	assert.ok(r.ok, JSON.stringify(r));
+	const hero = r.page.layout.blocks.find((b) => b.id === "block-hero")!;
+	assert.equal(hero.copy?.headline, "Fresh coffee");
+	for (const [index, node] of r.page.layout.blocks.entries()) {
+		if (node.id !== "block-hero") assert.equal(node, page.layout.blocks[index], `${node.id} keeps its object`);
+	}
+	const model = inspectorModel(hero);
+	assert.ok(model.ok);
+	assert.equal(byPointer(model.fields, "/title")?.value, "Fresh coffee", "the render shows the edit");
+	assert.equal(page.layout.blocks.find((b) => b.id === "block-hero")?.copy?.headline !== "Fresh coffee", true, "base page untouched");
+});
+
+test("write-back gate: invalid enum, pattern and empty required values are rejected with pointer and allowed values", () => {
+	const { page } = landing();
+	const icon = inspectorSetField(page, "block-features", "/features/0/icon", "rockett", NOW);
+	assert.equal(icon.ok, false);
+	assert.ok(!icon.ok);
+	assert.equal(icon.code, "props_invalid");
+	assert.equal(icon.pointer, "/features/0/icon");
+	assert.ok(icon.allowed?.includes("rocket"), "the contract's Lucide enum is listed");
+	const ok = inspectorSetField(page, "block-features", "/features/0/icon", "rocket", NOW);
+	assert.ok(ok.ok);
+	assert.equal(ok.page.layout.blocks.find((b) => b.id === "block-features")?.children?.[0]?.copy?.icon, "rocket");
+	const href = inspectorSetField(page, "block-hero", "/actions/href", "javascript:alert(1)", NOW);
+	assert.equal(href.ok, false);
+	const empty = inspectorSetField(page, "block-features", "/title", "", NOW);
+	assert.equal(empty.ok, false);
+	assert.ok(!empty.ok && empty.pointer === "/title");
+	const axis = inspectorSetField(page, "block-features", "/layout", "grid", NOW);
+	assert.ok(!axis.ok && axis.code === "field_not_editable", "variant axes are not page content");
+	assert.equal(inspectorSetField(page, "nope", "/title", "x", NOW).ok, false);
+});
+
+test("history: typing in one field is one step until sealed; undo / redo walk the snapshots", () => {
+	const h = new EditHistory<string>();
+	h.record("a", "ab", "title");
+	h.record("ab", "abc", "title");
+	h.record("abc", "abcd", "title");
+	assert.equal(h.head(), "abcd");
+	assert.equal(h.undo(), "a", "three keystrokes are one step");
+	assert.equal(h.redo(), "abcd");
+	h.seal();
+	h.record("abcd", "abcde", "title");
+	h.record("abcde", "X", "lede");
+	assert.equal(h.undo(), "abcde", "another field is another step");
+	assert.equal(h.undo(), "abcd", "a sealed step is not extended");
+	assert.equal(h.undo(), "a");
+	assert.equal(h.undo(), null);
+	assert.equal(h.canRedo, true);
+	h.record("a", "op", null);
+	assert.equal(h.canRedo, false, "a new edit drops the redo branch");
+	h.record("op", "op2", null);
+	assert.equal(h.undo(), "op", "operations are never coalesced");
+	const small = new EditHistory<number>(2);
+	small.record(0, 1); small.record(1, 2); small.record(2, 3);
+	assert.equal(small.undo(), 2);
+	assert.equal(small.undo(), 1);
+	assert.equal(small.undo(), null, "the history keeps at most `limit` steps");
+});
+
+test("inspector store: no chat proposal per keystroke; undo keys in Build; frame keys too", () => {
+	const store = web("lib/inspector/inspector.svelte.ts");
+	assert.match(store, /inspectorSetField\(/);
+	assert.match(store, /replaceVisiblePage\(/);
+	assert.doesNotMatch(store, /setCandidatePage|sendMessage|applyProposal/);
+	assert.match(store, /getChatMode\(\) !== "build"/);
+	assert.match(web("app/PreviewPane.svelte"), /doc\.addEventListener\("keydown", inspector\.onKey\)/);
+	assert.match(web("app/InspectorPanel.svelte"), /<svelte:window onkeydown=\{inspector\.onKey\} \/>/);
+	assert.match(web("app/InspectorFields.svelte"), /onblur=\{canEdit \? \(\) => handlers!\.onseal\(\)/);
+});

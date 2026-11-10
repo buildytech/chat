@@ -328,6 +328,11 @@
 		"inspector.noRows": "No rows",
 		"inspector.allowed": "Allowed: {list}.",
 		"inspector.iconHint": "A Lucide icon name of the contract",
-		"inspector.closest": "Closest allowed values"
+		"inspector.closest": "Closest allowed values",
+		"inspector.history": "Inspector history",
+		"inspector.undo": "Undo",
+		"inspector.redo": "Redo",
+		"inspector.undoKey": "Undo (Ctrl+Z)",
+		"inspector.redoKey": "Redo (Ctrl+Shift+Z)"
 	}
 }
