@@ -5,13 +5,13 @@ import {
 	modelRunsToolLoop,
 	type GrokChatModelId
 } from "@buildytech/builder-core";
+import { STORAGE_KEYS, readKey, writeKey } from "./storage-v1.ts";
 
-const STORE_KEY = "buildy.chat.selectedModelId";
+const STORE_KEY = STORAGE_KEYS.selectedModelId;
 
 function readStored(): GrokChatModelId {
-	if (typeof localStorage === "undefined") return DEFAULT_CHAT_MODEL_ID;
 	try {
-		const raw = localStorage.getItem(STORE_KEY);
+		const raw = readKey(STORE_KEY);
 		const model = getChatModel(raw ?? "");
 		// A stored pick that cannot run the tool loop falls back to the default, visibly.
 		return model && modelRunsToolLoop(model) ? model.id : DEFAULT_CHAT_MODEL_ID;
@@ -39,11 +39,6 @@ export function setSelectedModelId(id: string): boolean {
 	const model = getChatModel(id);
 	if (!model || !modelRunsToolLoop(model)) return false;
 	selectedModelId = model.id;
-	if (typeof localStorage === "undefined") return true;
-	try {
-		localStorage.setItem(STORE_KEY, model.id);
-	} catch {
-		/* nonsecret preference only */
-	}
+	writeKey(STORE_KEY, model.id);
 	return true;
 }

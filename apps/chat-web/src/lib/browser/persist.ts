@@ -1,13 +1,17 @@
 /**
- * Browser-local persistence for chats and per-session pages.
- * Existing `buildytech-chat-sessions` array is kept as-is (forward-compatible fields only).
- * Pages live in a separate versioned key so older clients never mis-parse a wrapper.
+ * Browser-local persistence for chats and per-session pages under the buildy:v1 key space (ADR 0015): chats in
+ * `buildy:v1:sessions`, page records in `buildy:v1:pages` (page-spec/v1 store blob). Both are validated at load against
+ * the session profile buildy:v1 (`session.schema.json#/$defs/session`) and page-spec/v1 (`#/$defs/record`); a value
+ * that fails goes to quarantine (`buildy:v1:quarantine`) with its reason and the rest loads. Nothing is dropped silently.
  */
 
 import { isScenarioId, type ScenarioId } from "@buildytech/builder-core";
+import { pageSpecDefIssues } from "@buildytech/page-contract";
+import { sessionDefIssues } from "@buildytech/page-contract/session";
+import { STORAGE_KEYS, browserStorage, quarantine, type StorageLike } from "./storage-v1.ts";
 
-export const SESSIONS_KEY = "buildytech-chat-sessions";
-export const PAGES_KEY = "buildytech-creator-pages-v1";
+export const SESSIONS_KEY = STORAGE_KEYS.sessions;
+export const PAGES_KEY = STORAGE_KEYS.pages;
 export const PAGES_VERSION = 1 as const;
 
 export type PersistErrorCode = "unavailable" | "quota" | "corrupt";
@@ -116,16 +120,42 @@ function remember(code: PersistErrorCode, message: string): void {
 	lastError = { code, message };
 }
 
-function storage(): Storage | null {
+let storeOverride: StorageLike | null = null;
+/** Raw text this tab validated or wrote per key: validation runs once per value, not on every keystroke save. */
+const trusted = new Map<string, string>();
+
+/** Tests: run the store against an in-memory Storage. */
+export function useStorageForTests(store: StorageLike | null): void {
+	storeOverride = store;
+	lastError = null;
+	frozenKeys.clear();
+	trusted.clear();
+}
+
+function storage(): StorageLike | null {
+	if (storeOverride) return storeOverride;
 	try {
-		if (typeof localStorage === "undefined") return null;
-		const probe = localStorage;
+		const probe = browserStorage();
+		if (!probe) throw new Error("unavailable");
 		void probe.getItem(SESSIONS_KEY);
 		return probe;
 	} catch {
 		remember("unavailable", "This browser is not saving chats. Work in this tab only.");
 		return null;
 	}
+}
+
+const QUARANTINED = "Some saved data did not pass the session schema and was moved to quarantine (buildy:v1:quarantine). Everything else loaded.";
+
+/** Keep an unreadable value in quarantine. If even that write is refused, freeze the key so it is never overwritten. */
+function keepAside(store: StorageLike, key: string, reason: string, raw: string, path?: string): boolean {
+	if (quarantine(store, { key, reason, raw, path })) {
+		remember("corrupt", QUARANTINED);
+		return true;
+	}
+	remember("corrupt", "Saved data could not be read. Existing data was left untouched.");
+	frozenKeys.add(key);
+	return false;
 }
 
 function isQuota(err: unknown): boolean {
@@ -142,7 +172,9 @@ function writeJson(key: string, value: unknown): boolean {
 		return false;
 	}
 	try {
-		store.setItem(key, JSON.stringify(value));
+		const text = JSON.stringify(value);
+		store.setItem(key, text);
+		trusted.set(key, text);
 		if (lastError?.code === "quota") lastError = null;
 		return true;
 	} catch (err) {
@@ -155,24 +187,53 @@ function writeJson(key: string, value: unknown): boolean {
 	}
 }
 
-export function loadSessionsJson(): unknown {
+/**
+ * Chats of this browser, each validated against session.schema.json#/$defs/session. A chat that fails is moved to
+ * quarantine and the list is rewritten without it; an unreadable blob is quarantined whole.
+ */
+export function loadSessionsJson(): unknown[] {
 	const store = storage();
 	if (!store) return [];
 	const raw = store.getItem(SESSIONS_KEY);
 	if (raw == null) return [];
+	let list: unknown[] | null = null;
 	try {
 		const parsed: unknown = JSON.parse(raw);
-		if (Array.isArray(parsed)) return parsed;
-		if (parsed && typeof parsed === "object" && Array.isArray((parsed as { sessions?: unknown }).sessions)) {
-			return (parsed as { sessions: unknown[] }).sessions;
+		if (Array.isArray(parsed)) list = parsed;
+		else if (parsed && typeof parsed === "object" && Array.isArray((parsed as { sessions?: unknown }).sessions)) {
+			list = (parsed as { sessions: unknown[] }).sessions;
 		}
-		remember("corrupt", "Saved chats could not be read. Existing data was left untouched.");
-		frozenKeys.add(SESSIONS_KEY);
-		return [];
 	} catch {
-		remember("corrupt", "Saved chats could not be read. Existing data was left untouched.");
-		frozenKeys.add(SESSIONS_KEY);
+		list = null;
+	}
+	if (!list) {
+		if (keepAside(store, SESSIONS_KEY, "corrupt", raw)) writeRaw(store, SESSIONS_KEY, "[]");
 		return [];
+	}
+	if (trusted.get(SESSIONS_KEY) === raw) return list;
+	const valid: unknown[] = [];
+	let dropped = false;
+	list.forEach((item, i) => {
+		const issues = sessionDefIssues(item, "session");
+		if (!issues.length) {
+			valid.push(item);
+			return;
+		}
+		const first = issues[0]!;
+		if (keepAside(store, SESSIONS_KEY, `session_invalid:${first.keyword}`, JSON.stringify(item), `$[${i}]${first.path.slice(1)}`)) dropped = true;
+		else valid.push(item);
+	});
+	if (dropped) writeRaw(store, SESSIONS_KEY, JSON.stringify(valid));
+	else trusted.set(SESSIONS_KEY, raw);
+	return valid;
+}
+
+function writeRaw(store: StorageLike, key: string, value: string): void {
+	try {
+		store.setItem(key, value);
+		trusted.set(key, value);
+	} catch {
+		/* the quarantined copy is safe; the next load retries */
 	}
 }
 
@@ -184,24 +245,54 @@ function emptyBlob(): PagesBlobV1 {
 	return { version: PAGES_VERSION, pages: {} };
 }
 
+/**
+ * The page store blob. Each chat's record is validated against page-spec.schema.json#/$defs/record (after the legacy
+ * provenance migration); a record that fails goes to quarantine and the blob is rewritten without it.
+ */
 export function loadPagesBlob(): PagesBlobV1 {
 	const store = storage();
 	if (!store) return emptyBlob();
 	const raw = store.getItem(PAGES_KEY);
 	if (raw == null) return emptyBlob();
+	let parsed: PagesBlobV1 | null = null;
 	try {
-		const parsed = JSON.parse(raw) as PagesBlobV1;
-		if (!parsed || parsed.version !== PAGES_VERSION || typeof parsed.pages !== "object" || parsed.pages == null) {
-			remember("corrupt", "Saved pages could not be read. Existing data was left untouched.");
-			frozenKeys.add(PAGES_KEY);
-			return emptyBlob();
-		}
-		return { version: PAGES_VERSION, pages: parsed.pages };
+		parsed = JSON.parse(raw) as PagesBlobV1;
 	} catch {
-		remember("corrupt", "Saved pages could not be read. Existing data was left untouched.");
-		frozenKeys.add(PAGES_KEY);
+		parsed = null;
+	}
+	if (!parsed || parsed.version !== PAGES_VERSION || typeof parsed.pages !== "object" || parsed.pages == null || Array.isArray(parsed.pages)) {
+		if (keepAside(store, PAGES_KEY, "corrupt", raw)) writeRaw(store, PAGES_KEY, JSON.stringify(emptyBlob()));
 		return emptyBlob();
 	}
+	if (trusted.get(PAGES_KEY) === raw) return { version: PAGES_VERSION, pages: parsed.pages };
+	const pages: Record<string, StoredPageRecord> = {};
+	let dropped = false;
+	for (const [id, record] of Object.entries(parsed.pages)) {
+		const issues = record && typeof record === "object" ? pageSpecDefIssues(JSON.parse(JSON.stringify(migrateStoredPageRecord(record))), "record") : [{ path: "$", keyword: "type" }];
+		if (!issues.length) {
+			pages[id] = record;
+			continue;
+		}
+		const first = issues[0]!;
+		if (keepAside(store, PAGES_KEY, `page_record_invalid:${first.keyword}`, JSON.stringify(record), `$.pages.${id}${first.path.slice(1)}`)) dropped = true;
+		else pages[id] = record;
+	}
+	if (dropped) writeRaw(store, PAGES_KEY, JSON.stringify({ version: PAGES_VERSION, pages }));
+	else trusted.set(PAGES_KEY, raw);
+	return { version: PAGES_VERSION, pages };
+}
+
+/** Keep a value aside in quarantine (e.g. a chat an import replaces). False when the browser refused the write. */
+export function quarantineValue(key: string, reason: string, raw: string): boolean {
+	const store = storage();
+	return store ? quarantine(store, { key, reason, raw }) : false;
+}
+
+/** Write every page record at once (import). */
+export function writeAllSessionPages(records: Record<string, StoredPageRecord>): boolean {
+	const blob = loadPagesBlob();
+	Object.assign(blob.pages, records);
+	return writeJson(PAGES_KEY, blob);
 }
 
 export function readSessionPages(sessionId: string): StoredPageRecord | null {

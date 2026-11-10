@@ -5,7 +5,7 @@
  * registry Alert). The registry files themselves come from the pinned snapshot (registry/svelte), never from here.
  */
 import { blocksOf, type CreatorPage, type PageBlock } from "@buildytech/page-contract";
-import { organismFor, registryClosure, registryItemClosure, type OrganismRender } from "@buildytech/builder-core";
+import { organismFor, registryClosure, registryItemClosure, registryItemFiles, type OrganismRender } from "@buildytech/builder-core";
 
 /** CLI install root of the exported project (ui8kit.config.json `dir`, the CLI default). */
 export const INSTALL_ROOT = "src";
@@ -57,16 +57,27 @@ ${slots}
 `;
 }
 
+/**
+ * Import path of the stub's Alert from a section: the file `npx ui8kit add alert` installs (pinned snapshot), relative
+ * to src/sections. Never a hand-written path.
+ */
+export function stubAlertImport(): string {
+	const file = registryItemFiles(STUB_ITEM).find((path) => path.endsWith(".svelte"));
+	if (!file || !file.startsWith(`${INSTALL_ROOT}/`)) throw new Error(`registry item ${STUB_ITEM} has no Svelte file under ${INSTALL_ROOT}/`);
+	return `../${file.slice(INSTALL_ROOT.length + 1)}`;
+}
+
+/** The not-in-registry stub. Exported code carries no preview attributes (data-block-id etc.): the block id lives in the file name and page.json. */
 function sectionForStub(block: PageBlock): string {
 	const what = `${block.catalogBlock ?? block.kind}${block.variant ? ` / ${block.variant}` : ""}`;
 	return `<!-- ${block.kind}: no UI8Kit registry block for ${what}. -->
 <script lang="ts">
-	import Alert from "../compose/Alert.svelte";
+	import Alert from "${stubAlertImport()}";
 
 	const message = ${JSON.stringify(`Not in the registry: ${what}`)};
 </script>
 
-<Alert variant="destructive" data-slot="registry-stub" data-block-id=${JSON.stringify(block.id)}>{message}</Alert>
+<Alert variant="destructive" data-slot="registry-stub">{message}</Alert>
 `;
 }
 

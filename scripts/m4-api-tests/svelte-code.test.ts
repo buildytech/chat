@@ -13,7 +13,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parsePage, type Page } from "../../packages/page-contract/src/index.ts";
 import { executeTool, proposeLayout, SCENARIO_IDS, type LayoutProposal } from "../../packages/builder-core/src/index.ts";
-import { APP_FILE, registryItemsOf, svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
+import { APP_FILE, registryItemsOf, stubAlertImport, svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
 import {
 	buildStoreZip,
 	CLI_CONFIG,
@@ -112,7 +112,7 @@ test("blocks without a registry item render the explicit stub (registry Alert), 
 	const sections = files.filter((file) => file.path.startsWith("src/sections/"));
 	assert.equal(sections.length, fixture.layout.blocks.length);
 	for (const section of sections) {
-		assert.match(section.content, /import Alert from "\.\.\/compose\/Alert\.svelte"/);
+		assert.match(section.content, new RegExp(`import Alert from "${stubAlertImport().replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}"`));
 		assert.match(section.content, /data-slot="registry-stub"/);
 	}
 	assert.deepEqual(registryItemsOf(fixture), ["alert"]);
@@ -193,4 +193,28 @@ test("mixed ZIP (registry blocks + stub) unzips and builds with vite, styles inc
 	} finally {
 		rmSync(dir, { recursive: true, force: true });
 	}
+});
+
+test("exported code carries no preview attributes; the stub imports Alert from the path `npx ui8kit add alert` writes", async () => {
+	const lock = JSON.parse(readFileSync(path.join(SNAPSHOT, "ui8kit.lock.json"), "utf8")) as { items: Record<string, { name: string; files: Record<string, string> }> };
+	const alertFiles = Object.values(lock.items).filter((item) => item.name === "alert").flatMap((item) => Object.keys(item.files));
+	assert.deepEqual(alertFiles.map((file) => `../${file.slice("src/".length)}`), [stubAlertImport()], "1:1 with the CLI install path");
+	const page = scenarioPage("landing");
+	const withStub: Page = { ...page, layout: { ...page.layout, blocks: [...page.layout.blocks, { ...fixture.layout.blocks[0]!, id: "block-legacy" }] } };
+	const files = await packZipFiles(withStub, readSnapshot);
+	const registry = new Set(Object.values(lock.items).flatMap((item) => Object.keys(item.files)));
+	// BuildY-authored files: everything but the verbatim registry files and the CLI inventories (config, lock, manifest list real paths).
+	const inventories = new Set([CLI_CONFIG, CLI_LOCK, "manifest.json"]);
+	const generated = files.filter((file) => !registry.has(file.path) && !inventories.has(file.path));
+	assert.ok(generated.some((file) => file.path === "src/sections/block-legacy.svelte"), "the stub section is in the pack");
+	for (const file of generated) {
+		for (const attr of ["data-block-id", "data-renderer", "data-registry-item", "data-variant"]) {
+			assert.ok(!file.content.includes(attr), `${file.path} carries the preview attribute ${attr}`);
+		}
+		// "compose/" may appear only as the CLI install path of a registry import, never as BuildY's own naming.
+		const leaks = file.content.split("\n").filter((line) => line.includes("compose/") && !line.includes(`from "${stubAlertImport()}"`));
+		assert.deepEqual(leaks, [], `${file.path} leaks compose naming`);
+	}
+	// Registry files are verbatim CLI output (their own data-variant on a component is UI8Kit, not a preview attribute).
+	for (const file of files.filter((f) => registry.has(f.path))) assert.ok(!/data-(block-id|renderer|registry-item)/.test(file.content), file.path);
 });

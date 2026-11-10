@@ -27,11 +27,14 @@ export {
 	getSelectedBlockId,
 	hasUnappliedProposal,
 	loadMockFixturePage,
+	onPageRevision,
 	readPreviewPage,
 	replaceVisiblePage,
 	selectBlock,
 	setCandidatePage,
-	setCurrentPage
+	setCurrentPage,
+	type RevisionEvent,
+	type VisibleChange
 } from "./mock.svelte";
 export { svelteForBlock, svelteFromPage, sveltePackFiles } from "./svelte-code";
 export { buildStoreZip, packFilesFromPage, packZipFiles, type PackFile, type RegistryReader } from "./pack";

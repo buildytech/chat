@@ -1,4 +1,5 @@
 import type { AgentMode, CatalogRefs, RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
+import type { SessionRevisionEntry } from "@buildytech/page-contract/session";
 
 export type ServerCapabilities = {
 	runtime: string;
@@ -101,6 +102,8 @@ export type ChatSession = {
 	usage?: SessionUsage;
 	/** Ask or Build, picked in the composer and kept with this chat. */
 	mode?: AgentMode;
+	/** Revisions of the applied page, oldest first (session buildy:v1 history; ADR 0015). Last entry <= pageRevision. */
+	history?: SessionRevisionEntry[];
 };
 
 export type SessionSummary = Pick<ChatSession, "id" | "title" | "updatedAt">;

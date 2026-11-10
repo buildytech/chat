@@ -65,17 +65,25 @@ test("existing session arrays keep loading from the original key", () => {
 	assert.equal(getPersistError(), null);
 });
 
-test("corrupt session JSON is not overwritten", () => {
+test("corrupt session JSON is kept in quarantine before the key is reused (ADR 0015)", () => {
 	memory.setItem(SESSIONS_KEY, "{not-json");
 	const loaded = loadSessionsJson();
 	assert.deepEqual(loaded, []);
 	assert.equal(getPersistError()?.code, "corrupt");
-	assert.equal(memory.getItem(SESSIONS_KEY), "{not-json");
+	assert.equal(JSON.parse(memory.getItem("buildy:v1:quarantine")!)[0].raw, "{not-json", "the unreadable value is kept");
+	assert.equal(saveSessionsJson([{ id: "session-x" }]), true);
+	assert.deepEqual(loadSessionsJson(), [{ id: "session-x" }]);
+});
+
+test("when even the quarantine write is refused, the corrupt value is frozen, not overwritten", () => {
+	memory.setItem(SESSIONS_KEY, "{not-json");
+	memory.quota = true;
+	assert.deepEqual(loadSessionsJson(), []);
+	memory.quota = false;
 	assert.equal(saveSessionsJson([{ id: "session-x" }]), false);
 	assert.equal(memory.getItem(SESSIONS_KEY), "{not-json");
 	allowPersistOverwrite();
 	assert.equal(saveSessionsJson([{ id: "session-x" }]), true);
-	assert.deepEqual(loadSessionsJson(), [{ id: "session-x" }]);
 });
 
 test("pages are stored per session and discard does not need a write of applied", () => {

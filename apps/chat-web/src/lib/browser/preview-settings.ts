@@ -2,7 +2,9 @@
  * Preview settings (pure, no runes): the "Hide service labels in Preview" choice and the URL of the standalone preview
  * window. Persisted under the buildy:v1 key space in this browser.
  */
-export const PREVIEW_CLEAN_KEY = "buildy:v1:preview.hideServiceLabels";
+import { STORAGE_KEYS } from "./storage-v1.ts";
+
+export const PREVIEW_CLEAN_KEY = STORAGE_KEYS.previewHideServiceLabels;
 
 export function parsePreviewClean(raw: string | null | undefined): boolean {
 	return raw === "1";

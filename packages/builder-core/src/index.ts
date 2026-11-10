@@ -57,6 +57,7 @@ export {
 export {
 	organismFor,
 	registryClosure,
+	registryItemFiles,
 	registryInitItems,
 	registryItemClosure,
 	registryItemFor,

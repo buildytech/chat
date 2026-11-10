@@ -9,7 +9,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { blocksOf, readPreviewPage, type Page } from "$lib/page-store";
-	import { theme } from "$lib/theme/theme.svelte";
+	import { THEME_KEY, theme } from "$lib/theme/theme.svelte";
 	import PreviewBlock from "./PreviewBlock.svelte";
 
 	let ready = $state(false);
@@ -25,7 +25,7 @@
 		load();
 		ready = true;
 		const onStorage = (event: StorageEvent) => {
-			if (event.key === "buildytech-chat-theme") theme.init();
+			if (event.key === THEME_KEY) theme.init();
 			else load();
 		};
 		window.addEventListener("storage", onStorage);

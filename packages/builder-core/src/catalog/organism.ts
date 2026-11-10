@@ -258,6 +258,13 @@ export function registryClosure(items: readonly string[]): string[] {
 	return [...files].sort();
 }
 
+/** Files `npx ui8kit add <name>` writes for one item (pinned snapshot, paths under the install root). */
+export function registryItemFiles(name: string): string[] {
+	const item = sources.items[name];
+	if (!item) throw new Error(`registry item ${name} is not in the pinned snapshot`);
+	return [...item.files];
+}
+
 /** Item names of `init` plus `add <items>` with registryDependencies, transitively (lock entries of the CLI). */
 export function registryItemClosure(items: readonly string[]): string[] {
 	const seen = new Set<string>();

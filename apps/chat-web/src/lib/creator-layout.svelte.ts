@@ -1,4 +1,6 @@
-export const CREATOR_LAYOUT_KEY = "buildy.creator.layout";
+import { STORAGE_KEYS, readKey, writeKey } from "./browser/storage-v1.ts";
+
+export const CREATOR_LAYOUT_KEY = STORAGE_KEYS.layout;
 
 export const CREATOR_LAYOUT_DEFAULTS = {
 	navWidth: 248,
@@ -48,9 +50,8 @@ function readBlob(): CreatorLayoutBlob {
 		chatHidden: false,
 		treeCollapsed: false
 	};
-	if (typeof localStorage === "undefined") return fallback;
 	try {
-		const raw = localStorage.getItem(CREATOR_LAYOUT_KEY);
+		const raw = readKey(CREATOR_LAYOUT_KEY);
 		if (!raw) return fallback;
 		const parsed = JSON.parse(raw) as Partial<CreatorLayoutBlob>;
 		return {
@@ -92,7 +93,7 @@ function createCreatorLayout() {
 	let resizing = $state(false);
 
 	function persist() {
-		if (typeof localStorage !== "undefined") {
+		{
 			const blob: CreatorLayoutBlob = {
 				navWidth,
 				chatWidth,
@@ -101,7 +102,7 @@ function createCreatorLayout() {
 				chatHidden,
 				treeCollapsed
 			};
-			localStorage.setItem(CREATOR_LAYOUT_KEY, JSON.stringify(blob));
+			writeKey(CREATOR_LAYOUT_KEY, JSON.stringify(blob));
 		}
 		syncCssVars();
 	}

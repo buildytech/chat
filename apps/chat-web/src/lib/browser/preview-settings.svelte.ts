@@ -1,12 +1,8 @@
 import { PREVIEW_CLEAN_KEY, parsePreviewClean, serializePreviewClean } from "./preview-settings";
+import { readKey, writeKey } from "./storage-v1.ts";
 
 function read(): boolean {
-	if (typeof localStorage === "undefined") return false;
-	try {
-		return parsePreviewClean(localStorage.getItem(PREVIEW_CLEAN_KEY));
-	} catch {
-		return false;
-	}
+	return parsePreviewClean(readKey(PREVIEW_CLEAN_KEY));
 }
 
 let clean = $state(read());
@@ -18,10 +14,6 @@ export const previewSettings = {
 	},
 	setHideServiceLabels(on: boolean): void {
 		clean = on;
-		try {
-			localStorage.setItem(PREVIEW_CLEAN_KEY, serializePreviewClean(on));
-		} catch {
-			/* storage unavailable: the choice lasts for this tab */
-		}
+		writeKey(PREVIEW_CLEAN_KEY, serializePreviewClean(on));
 	}
 };

@@ -15,6 +15,12 @@ export class EditHistory<T> {
 		this.limit = limit;
 	}
 
+	/** True when record(…, key) would extend the open step (coalesced typing) instead of opening a new one. */
+	continues(key: string | null): boolean {
+		const top = this.past.at(-1);
+		return key !== null && top !== undefined && this.open === key && top.key === key;
+	}
+
 	/** Record `before -> after`. With a key equal to the open step's key the open step is extended (coalesced typing). */
 	record(before: T, after: T, key: string | null = null): void {
 		this.future = [];

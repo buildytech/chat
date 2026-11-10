@@ -8,6 +8,7 @@ import { inspectorOp, inspectorSetField, type InspectorField, type InspectorOp, 
 import type { Page } from "@buildytech/page-contract";
 import { getChatMode } from "../chat-core";
 import { getBoundPageSessionId, getCurrentPage, getCurrentProvenance, getPageRevision, replaceVisiblePage } from "../page-store";
+import { commitChange } from "../page-store/revision";
 import type { FieldIssue } from "./fields";
 import { EditHistory } from "./history";
 
@@ -44,15 +45,17 @@ function setIssue(blockId: string, pointer: string, issue: FieldIssue | null): v
 function commit(before: Page, result: InspectorResult, key: string | null): boolean {
 	if (!result.ok) return false;
 	if (result.page === before) return true;
-	if (!replaceVisiblePage(result.page, result.blockId)) return false;
-	historyFor(before).record(before, result.page, key);
+	const steps = historyFor(before);
+	// Coalesced typing extends the open undo step and keeps its revision: one undo step = one page revision.
+	if (!replaceVisiblePage(result.page, result.blockId, commitChange(steps.continues(key)))) return false;
+	steps.record(before, result.page, key);
 	version += 1;
 	return true;
 }
 
-function restore(page: Page | null): boolean {
+function restore(page: Page | null, change: "undo" | "redo"): boolean {
 	if (!page) return false;
-	replaceVisiblePage(page);
+	replaceVisiblePage(page, null, change);
 	issues = {};
 	opIssue = null;
 	version += 1;
@@ -135,12 +138,12 @@ export const inspector = {
 
 	undo(): boolean {
 		if (!inspector.canUndo) return false;
-		return restore(history.undo());
+		return restore(history.undo(), "undo");
 	},
 
 	redo(): boolean {
 		if (!inspector.canRedo) return false;
-		return restore(history.redo());
+		return restore(history.redo(), "redo");
 	},
 
 	/**

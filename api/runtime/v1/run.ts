@@ -11124,7 +11124,7 @@ const { PageContractError, parseDraftPage, parsePage } = __req("packages/page-co
 const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
 const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
 /** ui8kit/contract commit the vendored schemas come from. */
-const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "9f47cf4" } as const;
+const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "be20140" } as const;
 
 const registry = new SchemaRegistry();
 registry.add(pageSpecSchema as Record<string, unknown>);
@@ -26058,6 +26058,13 @@ function registryClosure(items: string[]): string[] {
 	return [...files].sort();
 }
 
+/** Files `npx ui8kit add <name>` writes for one item (pinned snapshot, paths under the install root). */
+function registryItemFiles(name: string): string[] {
+	const item = sources.items[name];
+	if (!item) throw new Error(`registry item ${name} is not in the pinned snapshot`);
+	return [...item.files];
+}
+
 /** Item names of `init` plus `add <items>` with registryDependencies, transitively (lock entries of the CLI). */
 function registryItemClosure(items: string[]): string[] {
 	const seen = new Set<string>();
@@ -26079,6 +26086,7 @@ exports["writableOrigin"] = writableOrigin;
 exports["registryNpmDependencies"] = registryNpmDependencies;
 exports["registryInitItems"] = registryInitItems;
 exports["registryClosure"] = registryClosure;
+exports["registryItemFiles"] = registryItemFiles;
 exports["registryItemClosure"] = registryItemClosure;
 
 });
@@ -30742,6 +30750,7 @@ exports["resolveCatalogChoice"] = __req("packages/builder-core/src/catalog/sourc
 exports["variantProps"] = __req("packages/builder-core/src/catalog/sources.ts")["variantProps"];
 exports["organismFor"] = __req("packages/builder-core/src/catalog/organism.ts")["organismFor"];
 exports["registryClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryClosure"];
+exports["registryItemFiles"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFiles"];
 exports["registryInitItems"] = __req("packages/builder-core/src/catalog/organism.ts")["registryInitItems"];
 exports["registryItemClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemClosure"];
 exports["registryItemFor"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFor"];

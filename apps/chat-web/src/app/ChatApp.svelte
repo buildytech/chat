@@ -15,6 +15,7 @@
 		sendMessage
 	} from "$lib/chat-core";
 	import { getSelectedModelId, listChatModels, setSelectedModelId } from "$lib/browser/models.svelte";
+	import { installBuildyApi } from "$lib/browser/buildy-api";
 	import { t } from "$lib/i18n/dictionary";
 	import { theme } from "$lib/theme/theme.svelte";
 	import CreatorShell from "./CreatorShell.svelte";
@@ -26,6 +27,7 @@
 	onMount(() => {
 		void hydrateSessions();
 		theme.init();
+		installBuildyApi();
 	});
 
 	async function onPopState() {

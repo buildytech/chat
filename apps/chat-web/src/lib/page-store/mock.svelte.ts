@@ -1,6 +1,8 @@
 import { parsePageSpec, type Page, type PageBlock } from "@buildytech/page-contract";
+import type { SessionRevisionCause } from "@buildytech/page-contract/session";
 import { mockLandingPage } from "./fixture";
 import { findBlock, firstBlockId, hasBlock } from "./tree";
+import { nextRevision, type VisibleChange } from "./revision";
 import {
 	readSessionPages,
 	writeSessionPages,
@@ -23,6 +25,25 @@ let lastProposedProvenance = $state.raw<StoredPageProvenance | null>(null);
 let selectedBlockId = $state<string | null>(null);
 let pageRevision = $state<number | null>(null);
 let boundSessionId: string | null = null;
+
+/** A new revision of the applied page: one per committed change (ADR 0015). The chat store keeps session.pageRevision and the history in sync. */
+export type RevisionEvent = {
+	sessionId: string;
+	revision: number;
+	cause: SessionRevisionCause;
+	pageId: string;
+	blockId?: string;
+};
+let revisionListener: ((event: RevisionEvent) => void) | null = null;
+
+export function onPageRevision(listener: ((event: RevisionEvent) => void) | null): void {
+	revisionListener = listener;
+}
+
+function announce(cause: SessionRevisionCause, blockId?: string | null): void {
+	if (!boundSessionId || !currentPage || pageRevision == null) return;
+	revisionListener?.({ sessionId: boundSessionId, revision: pageRevision, cause, pageId: currentPage.id, ...(blockId ? { blockId } : {}) });
+}
 
 /** Saved pages are page-spec/v1 documents: the published schema, then the parsePage program checks. */
 function parseStored(raw: unknown): Page | null {
@@ -207,27 +228,33 @@ export function applyCandidate(revision: number | null = null): boolean {
 	pageRevision = revision ?? (pageRevision ?? 0) + 1;
 	syncSelection(currentPage);
 	persistBound();
+	announce("apply");
 	return true;
 }
 
+export type { VisibleChange };
+
 /**
  * Build inspector edits: replace the page Preview shows (the pending proposal, else the applied page) with a page the
- * inspector gate already checked (page-spec + props gate). The applied page gets the next revision, like any saved
- * edit; a pending proposal stays pending. Block objects are kept as given, so unchanged blocks do not re-render.
+ * inspector gate already checked (page-spec + props gate). The applied page gets the next revision for every committed
+ * change (coalesced typing is one change, matching one undo step); a pending proposal stays pending and keeps no
+ * revision. Block objects are kept as given, so unchanged blocks do not re-render.
  */
-export function replaceVisiblePage(page: Page, selectId: string | null = null): boolean {
+export function replaceVisiblePage(page: Page, selectId: string | null = null, change: VisibleChange = "edit"): boolean {
+	if (!candidatePage && !currentPage) return false;
+	// The visible page is the pending proposal when there is one (no revision), else the applied page.
+	const step = nextRevision(pageRevision, change, !candidatePage);
 	if (candidatePage) {
 		if (lastProposedPage === candidatePage) lastProposedPage = page;
 		candidatePage = page;
-	} else if (currentPage) {
-		currentPage = page;
-		pageRevision = (pageRevision ?? 0) + 1;
 	} else {
-		return false;
+		currentPage = page;
+		pageRevision = step.revision;
 	}
 	if (selectId && hasBlock(page.layout.blocks, selectId)) selectedBlockId = selectId;
 	else syncSelection(page);
 	persistBound();
+	if (step.cause) announce(step.cause, selectId);
 	return true;
 }
 

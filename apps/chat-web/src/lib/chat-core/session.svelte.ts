@@ -55,9 +55,27 @@ import {
 	clearPagesBlob,
 	deleteSessionPages,
 	getPersistError,
+	loadPagesBlob,
 	loadSessionsJson,
-	saveSessionsJson
+	quarantineValue,
+	readSessionPages,
+	saveSessionsJson,
+	writeAllSessionPages,
+	type StoredPageRecord
 } from "../browser/persist";
+import { SESSIONS_KEY as SESSIONS_STORE_KEY } from "../browser/persist";
+import {
+	buildSessionFile,
+	parseSessionFile,
+	reconcileChatRevision,
+	recordRevision,
+	splitSessionFile,
+	type ParsedSessionFile,
+	type SessionApp,
+	type SessionFile,
+	type SessionPins,
+	type SessionSettings
+} from "../browser/session-file";
 import {
 	applyCandidate,
 	bindPageSession,
@@ -67,9 +85,11 @@ import {
 	getEditBase,
 	getLastAppliedPage,
 	getPageRevision,
+	onPageRevision,
 	setCandidatePage
 } from "../page-store";
 import { markPendingProposals, migrateSessionProposals } from "./proposals";
+import { STORAGE_KEYS, readKey, writeKey } from "../browser/storage-v1.ts";
 import { chatModeOf, variantProposal } from "./modes";
 import type {
 	ChatMessage,
@@ -79,7 +99,7 @@ import type {
 	SessionSummary
 } from "./types";
 
-const SELECTED_KEY = "buildy.creator.selectedSessionId";
+const SELECTED_KEY = STORAGE_KEYS.selectedSessionId;
 
 function nowIso(): string {
 	return new Date().toISOString();
@@ -89,10 +109,20 @@ function uid(prefix: string): string {
 	return `${prefix}-${crypto.randomUUID()}`;
 }
 
+/** Chats from storage (schema-checked, see persist.ts), with session.pageRevision equal to the page store's revision. */
 function loadMock(): ChatSession[] {
 	const parsed = loadSessionsJson();
 	if (!Array.isArray(parsed)) return [];
-	return (parsed as ChatSession[]).map(migrateSessionProposals);
+	const pages = loadPagesBlob().pages;
+	let drift = false;
+	const sessions = (parsed as ChatSession[]).map((raw) => {
+		const session = migrateSessionProposals(raw);
+		const synced = reconcileChatRevision(session, pages[session.id] ?? undefined);
+		if (synced !== session) drift = true;
+		return synced;
+	});
+	if (drift) saveSessionsJson(sessions);
+	return sessions;
 }
 
 function saveMock(sessions: ChatSession[]): void {
@@ -119,25 +149,31 @@ function restoreSessionWorkspace(session: ChatSession | null): void {
 }
 
 function readSelectedId(): string | null {
-	if (typeof localStorage === "undefined") return null;
-	try {
-		return localStorage.getItem(SELECTED_KEY);
-	} catch {
-		return null;
-	}
+	return readKey(SELECTED_KEY);
 }
 
 function writeSelectedId(id: string | null): void {
-	if (typeof localStorage === "undefined") return;
-	try {
-		if (id) localStorage.setItem(SELECTED_KEY, id);
-		else localStorage.removeItem(SELECTED_KEY);
-	} catch {
-		/* ignore */
-	}
+	writeKey(SELECTED_KEY, id);
 }
 
 let memory = $state<ChatSession[]>([]);
+
+// Every new revision of an applied page (proposal applied, committed inspector edit, undo / redo) is written to its
+// chat: pageRevision, pageId and one history entry. Coalesced typing reaches this once per undo step (ADR 0015).
+onPageRevision((event) => {
+	const session = memory.find((s) => s.id === event.sessionId);
+	if (!session) return;
+	replaceSession(
+		recordRevision(session, {
+			revision: event.revision,
+			at: nowIso(),
+			cause: event.cause,
+			pageId: event.pageId,
+			...(event.blockId ? { blockId: event.blockId } : {})
+		})
+	);
+	saveMock(memory);
+});
 let selectedId = $state<string | null>(null);
 let hydrated = false;
 let hydrating = false;
@@ -731,10 +767,12 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 }
 
 export function applyProposal(): boolean {
-	const session = getSelectedSession();
-	if (!session) return false;
+	if (!getSelectedSession()) return false;
 	const ok = applyCandidate((getPageRevision() ?? 0) + 1);
 	if (!ok) return false;
+	// Re-read: applyCandidate announced the revision and the chat got its history entry.
+	const session = getSelectedSession();
+	if (!session) return false;
 	const applied = getLastAppliedPage();
 	const provenance = getAppliedProvenance();
 	const storedScenario = provenance?.scenarioId;
@@ -823,4 +861,56 @@ export async function sendMessage(text: string, _opts?: { requestId?: string; re
 export async function retryLastFailed(): Promise<ChatSession | null> {
 	if (!lastFailedText || !lastRequestId) return null;
 	return sendMessage(lastFailedText, { retry: true, requestId: lastRequestId });
+}
+
+/** The session file buildy:v1 of this browser (every chat, its page record, revisions and history). Writes nothing. */
+export function exportSessions(meta: { app: SessionApp; pins: SessionPins; settings?: SessionSettings }): SessionFile {
+	const current = getSelectedSession();
+	if (current) saveMock(memory);
+	const pages: Record<string, StoredPageRecord | null> = {};
+	for (const session of memory) pages[session.id] = readSessionPages(session.id);
+	return buildSessionFile({
+		chats: memory as unknown as import("../browser/session-file").StoredChat[],
+		pages,
+		selectedSessionId: selectedId,
+		...meta
+	});
+}
+
+export type ImportResult =
+	| { ok: true; added: string[]; replaced: string[]; selected: string | null }
+	| (Extract<ParsedSessionFile, { ok: false }> & { added?: never })
+	| { ok: false; code: "storage_refused"; issues: { path: string; keyword: string }[] };
+
+/**
+ * Load a session file: checked against session.schema.json and its program checks first (nothing is written when it
+ * fails). A chat with an id that already exists here is replaced; the replaced chat and its page record are kept in
+ * quarantine first, so an import never loses data.
+ */
+export async function importSessions(input: unknown): Promise<ImportResult> {
+	const parsed = parseSessionFile(input);
+	if (!parsed.ok) return parsed;
+	abortInflight();
+	const { chats, pages } = splitSessionFile(parsed.file);
+	const incoming = new Set(chats.map((c) => c.id));
+	const replaced: string[] = [];
+	for (const session of memory) {
+		if (!incoming.has(session.id)) continue;
+		const page = readSessionPages(session.id);
+		if (!quarantineValue(SESSIONS_STORE_KEY, "replaced_by_import", JSON.stringify({ ...session, page }))) {
+			return { ok: false, code: "storage_refused", issues: [{ path: `$.sessions.${session.id}`, keyword: "quarantine" }] };
+		}
+		replaced.push(session.id);
+	}
+	// Unbind first: the bound chat's in-memory page is saved now, so it cannot overwrite an imported record later.
+	bindPageSession(null);
+	const imported = (chats as unknown as ChatSession[]).map(migrateSessionProposals);
+	const kept = memory.filter((s) => !incoming.has(s.id));
+	memory = [...imported, ...kept].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+	saveMock(memory);
+	for (const id of incoming) if (!(id in pages)) deleteSessionPages(id);
+	writeAllSessionPages(pages);
+	const pick = parsed.file.selectedSessionId ?? imported[0]?.id ?? null;
+	if (pick) await selectSession(pick, { history: "replace" });
+	return { ok: true, added: chats.map((c) => c.id).filter((id) => !replaced.includes(id)), replaced, selected: pick };
 }

@@ -15,12 +15,15 @@ export {
 	getRuntimeStatus,
 	getSelectedSession,
 	applySessionFromUrl,
+	exportSessions,
 	hydrateSessions,
+	importSessions,
 	listSessions,
 	loadPropsGate,
 	retryLastFailed,
 	selectSession,
-	sendMessage
+	sendMessage,
+	type ImportResult
 } from "./session.svelte";
 export { chatModeOf, turnOutcome, variantProposal, variantTarget, DEFAULT_CHAT_MODE } from "./modes";
 export { parseMarkdown, parseInline, type MdBlock, type MdInline } from "./markdown";

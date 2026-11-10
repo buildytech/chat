@@ -33,3 +33,4 @@ export {
 	type SchemaIssue
 } from "./spec.ts";
 export { SchemaRegistry } from "./json-schema.ts";
+// Session profile buildy:v1 is its own entry (@buildytech/page-contract/session) so the runtime bundle does not carry it.

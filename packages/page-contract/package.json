@@ -8,6 +8,7 @@
 	"types": "./src/index.ts",
 	"exports": {
 		".": "./src/index.ts",
+		"./session": "./src/session.ts",
 		"./fixtures/north-harbor-kitchen.json": "./fixtures/north-harbor-kitchen.json"
 	},
 	"scripts": {
