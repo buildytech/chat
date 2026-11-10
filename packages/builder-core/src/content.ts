@@ -202,7 +202,7 @@ export function cleanText(value: unknown, max: number): string | undefined {
 }
 
 /** Page kind for a catalog block label or page kind, via the catalog renderer map (no alias lists). */
-function normalizeKind(raw: unknown): PageBlockKind | null {
+export function normalizeKind(raw: unknown): PageBlockKind | null {
 	const key = String(raw ?? "").trim().toLowerCase();
 	if (CONTENT_KINDS.has(key)) return key as PageBlockKind;
 	const mapped = rendererKindForLabel(key);

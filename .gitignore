@@ -1,6 +1,7 @@
 node_modules/
 dist/
 build/
+!apps/chat-web/src/routes/build/
 .svelte-kit/
 .vite/
 .turbo/

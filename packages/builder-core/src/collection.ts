@@ -9,6 +9,7 @@ import { catalogSnapshot } from "./catalog/snapshot.ts";
 import { getBlockIndex, rendererKindForLabel, screenSlots } from "./catalog/compatibility.ts";
 import { getScreenById } from "./catalog/search.ts";
 import { catalogEntryBySpec } from "./catalog/sources.ts";
+import { normalizeKind } from "./content.ts";
 
 export const COLLECTION_CODES = ["outside_collection", "collection_item_unused"] as const;
 export type CollectionCode = (typeof COLLECTION_CODES)[number];
@@ -207,7 +208,7 @@ export function collectionRejection(check: CollectionCheck, bounds: CollectionBo
 		);
 	}
 	if (check.unused.length) {
-		parts.push(`Required collection items are not on the page: ${check.unused.map((u) => `${name(u)} (kind ${u.kind})`).join(", ")}. Add a blocks[] entry { kind, catalogBlock, variant } for each.`);
+		parts.push(`Required collection items are not on the page: ${check.unused.map((u) => `${name(u)} (kind ${u.kind})`).join(", ")}. Set catalogBlock and variant on the blocks[] entry of that kind ({ kind, catalogBlock, variant }, copy kept); one entry per kind, a second entry of the same kind is ignored.`);
 	}
 	parts.push(`Allowed catalog blocks: ${bounds.allowed.join(", ")}. Call propose_layout again; nothing was rendered.`);
 	return {
@@ -264,8 +265,28 @@ export function repairCollectionArgs(
 	const unused = ((result.result ?? {}) as { unused?: { catalogBlock: string; variant: string | null; kind: string | null }[] }).unused ?? [];
 	const add = unused.filter((u) => u.kind);
 	if (!add.length) return null;
-	const blocks = Array.isArray(args.blocks) ? [...args.blocks] : [];
-	for (const u of add) blocks.push({ kind: u.kind, catalogBlock: u.catalogBlock, ...(u.variant ? { variant: u.variant } : {}) });
+	const blocks: unknown[] = Array.isArray(args.blocks) ? [...args.blocks] : [];
+	// The parser keeps one entry per kind, so an item goes onto the model's entry of its kind (its copy is kept);
+	// an entry that already names another required item of the same kind is left alone.
+	const requiredSpecs = new Set(((result.result ?? {}) as { required?: { catalogBlock: string }[] }).required?.map((r) => r.catalogBlock) ?? []);
+	const claimed = new Set<number>();
+	for (const u of add) {
+		const pick = { kind: u.kind, catalogBlock: u.catalogBlock, ...(u.variant ? { variant: u.variant } : {}) };
+		const at = blocks.findIndex((raw, index) => {
+			if (claimed.has(index) || !raw || typeof raw !== "object") return false;
+			const rec = raw as Record<string, unknown>;
+			if (normalizeKind(rec.kind) !== u.kind) return false;
+			const spec = typeof rec.catalogBlock === "string" ? rec.catalogBlock : "";
+			return !spec || spec === u.catalogBlock || !requiredSpecs.has(spec);
+		});
+		if (at >= 0) {
+			blocks[at] = { ...(blocks[at] as Record<string, unknown>), ...pick };
+			claimed.add(at);
+		} else {
+			blocks.push(pick);
+			claimed.add(blocks.length - 1);
+		}
+	}
 	return {
 		args: { ...args, blocks },
 		warning: `Collection items placed by the host: ${add.map((u) => (u.variant ? `${u.catalogBlock}/${u.variant}` : u.catalogBlock)).join(", ")}.`

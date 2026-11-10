@@ -136,6 +136,13 @@ test("collection_item_unused alone; repairCollectionArgs places the item; prune 
 	const repair = repairCollectionArgs({ remove: ["nav", "features", "footer"] }, r);
 	assert.ok(repair);
 	assert.deepEqual(used(propose(repair!.args)), ["block.hero/split", "block.cta/card"]);
+	// The model's own entry of that kind (no catalogBlock) gets the item; its copy stays (the parser keeps one entry per kind).
+	const own = { remove: ["nav", "features", "footer"], blocks: [{ kind: "hero", title: "Fresh bread" }, { kind: "cta", catalogBlock: "block.cta", variant: "card" }] };
+	const ownReject = propose(own);
+	assert.equal(!ownReject.ok && ownReject.code, "collection_item_unused");
+	const ownRepair = repairCollectionArgs(own, ownReject as { code: string; result?: unknown });
+	assert.equal((ownRepair!.args.blocks as unknown[]).length, 2);
+	assert.deepEqual(used(propose(ownRepair!.args)), ["block.hero/split", "block.cta/card"]);
 	const pruned = propose({}, { ...HOST, collection: { ...bounds, prune: true } });
 	assert.deepEqual(used(pruned), ["block.hero/centered", "block.cta/card"]);
 	assert.ok((pruned.ok ? (pruned.result as { warnings: string[] }).warnings : []).some((w) => /block\.header \(nav\) is not in the collection/.test(w)));
