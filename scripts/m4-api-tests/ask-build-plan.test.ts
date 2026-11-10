@@ -232,6 +232,9 @@ test("Ask turn: propose_plan is checked on the page; the answer carries the plan
 			const logos = prompt.currentPage.blocks.find((row: { id: string }) => row.id === "block-logos");
 			assert.equal(logos.block, "block.logos");
 			assert.equal(logos.variant, "grid4");
+			// Live run: the plan set the hero's title (section list name) when the visible heading is copy.headline.
+			const hero = prompt.currentPage.blocks.find((row: { id: string }) => row.id === "block-hero");
+			assert.ok(hero.copyKeys.includes("headline"));
 			const tool = (requests[2]!.messages as Array<{ role: string; name?: string; content?: string }>).find((m) => m.role === "tool" && m.name === "propose_plan");
 			const payload = JSON.parse(String(tool?.content));
 			assert.equal(payload.valid.length, 10);

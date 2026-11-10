@@ -1,4 +1,4 @@
-import type { Page, PageBlock } from "@buildytech/page-contract";
+import { PAGE_SLOTS, type Page, type PageBlock } from "@buildytech/page-contract";
 import type { LayoutProposal, LayoutProposalError, ProposalContext } from "./assemble.ts";
 import { askBlockCard } from "./catalog/details.ts";
 import { catalogVariantsFor } from "./catalog/sources.ts";
@@ -105,7 +105,9 @@ export function pageDirectory(page: Page): Array<Record<string, unknown>> {
 			...(card && card.title !== node.title ? { blockTitle: card.title } : {}),
 			...(node.variant ? { variant: node.variant } : {}),
 			...(heading && heading !== node.title ? { heading: heading.slice(0, 120) } : {}),
-			...(node.children?.length ? { rows: node.children.length } : {})
+			...(node.children?.length ? { rows: node.children.length } : {}),
+			// Copy keys the block renders; with headline, title only names the block in the section list.
+			...(PAGE_SLOTS[node.kind]?.copy.length ? { copyKeys: PAGE_SLOTS[node.kind]!.copy } : {})
 		};
 	});
 }

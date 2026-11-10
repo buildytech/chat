@@ -40,7 +40,9 @@ handoff in this change.
   the message (session 1.4.0 `message.plan`). When an Ask answer names a current page block id but the model did not
   call `propose_plan` (seen live with the non-reasoning model), the loop sends one follow-up step with `tool_choice`
   forced to `propose_plan`; the first answer stays the reply and no further step runs when every op is valid. The
-  host looks only at the model's own answer for block ids, never at the author's words.
+  host looks only at the model's own answer for block ids, never at the author's words. The Ask directory lists each
+  block's `copyKeys`: when they include `headline`, that is the visible heading and `title` only names the block in
+  the section list (a live plan set the hero `title` and the heading did not change).
 - **Apply in Build** (plan card button, registry Checkbox per op): the chat switches to Build and the ticked valid ops
   run in order on the current edit base (`executePagePlan`), with no model call. An op that no longer applies (the
   author changed the page by hand since; `no_change`, a variant gate) is rejected with its reason and the others still

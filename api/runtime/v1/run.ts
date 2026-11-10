@@ -27011,7 +27011,7 @@ __def("packages/builder-core/src/agent/agent-tools.v1.json", function (exports) 
 			"modes": [
 				"ask"
 			],
-			"description": "Ask only. When you recommend changes to currentPage, call this once with the changes as page-patch/v1 ops on currentPage block ids, alongside your text answer: set_variant {blockId, variant from get_block}; set {blockId, field (title or a copy key), value}; set_items {blockId, items}; add {kind, title, variant?, copy?}; replace {blockId, kind, title}; remove {blockId}; move {blockId, to}. Each op gets a short reason. The host checks every op against the page and the pinned catalog and returns valid op ids and invalid ops with allowed values; fix invalid ops once with a second call. Nothing changes: the author sees a plan card and may run the ops they tick with Apply in Build. Swapping a block for another catalog block is not an op: say it in text.",
+			"description": "Ask only. When you recommend changes to currentPage, call this once with the changes as page-patch/v1 ops on currentPage block ids, alongside your text answer: set_variant {blockId, variant from get_block}; set {blockId, field (title or a key of currentPage.blocks[].copyKeys; when copyKeys has headline, headline is the visible heading and title only names the block in the section list), value}; set_items {blockId, items}; add {kind, title, variant?, copy?}; replace {blockId, kind, title}; remove {blockId}; move {blockId, to}. Each op gets a short reason. The host checks every op against the page and the pinned catalog and returns valid op ids and invalid ops with allowed values; fix invalid ops once with a second call. Nothing changes: the author sees a plan card and may run the ops they tick with Apply in Build. Swapping a block for another catalog block is not an op: say it in text.",
 			"parameters": {
 				"type": "object",
 				"properties": {
@@ -30004,6 +30004,7 @@ exports["clientProposalGate"] = clientProposalGate;
 });
 
 __def("packages/builder-core/src/page-plan.ts", function (exports) {
+const { PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
 const { askBlockCard } = __req("packages/builder-core/src/catalog/details.ts");
 const { catalogVariantsFor } = __req("packages/builder-core/src/catalog/sources.ts");
 const { editPage, normalizePatch } = __req("packages/builder-core/src/patch.ts");
@@ -30059,7 +30060,9 @@ function pageDirectory(page: Page): Array<Record<string, unknown>> {
 			...(card && card.title !== node.title ? { blockTitle: card.title } : {}),
 			...(node.variant ? { variant: node.variant } : {}),
 			...(heading && heading !== node.title ? { heading: heading.slice(0, 120) } : {}),
-			...(node.children?.length ? { rows: node.children.length } : {})
+			...(node.children?.length ? { rows: node.children.length } : {}),
+			// Copy keys the block renders; with headline, title only names the block in the section list.
+			...(PAGE_SLOTS[node.kind]?.copy.length ? { copyKeys: PAGE_SLOTS[node.kind]!.copy } : {})
 		};
 	});
 }
@@ -32267,7 +32270,7 @@ const SYSTEM_ASK = [
 	`Policy ${POLICY_VERSION}.`,
 	"Ask mode is read-only: you cannot change the page and nothing you say creates a proposal. Never claim that the page changed.",
 	"currentPage is the page as the author sees it now (block ids, catalog blocks, variants, headings); manualEdits lists blocks the author edited by hand since the last agent turn. Audit that page, not an earlier one.",
-	"When you recommend concrete changes to currentPage (variants, copy, rows, order, adding or removing blocks), call propose_plan once with them as ops on currentPage block ids before your text answer, then answer in text. The author ticks the ops on a plan card and runs them with Apply in Build. Fix ops propose_plan reports invalid once, with the allowed values. Changes that are not ops (another catalog block in place of a block) stay in your text.",
+	"When you recommend concrete changes to currentPage (variants, copy, rows, order, adding or removing blocks), call propose_plan once with them as ops on currentPage block ids before your text answer, then answer in text. The author ticks the ops on a plan card and runs them with Apply in Build. Fix ops propose_plan reports invalid once, with the allowed values. Changes that are not ops (another catalog block in place of a block) stay in your text. Visible text is set with set: when a block's copyKeys include headline, its visible heading is headline (title only names it in the section list); otherwise title is its heading; ledes and actions are copyKeys.",
 	"Answer the author's message in their language as concise Markdown: short paragraphs, - lists or 1. lists, **bold**, `code`. No HTML, no tables, no images.",
 	"Ground every catalog fact in tool results: call get_block for each catalog block you discuss (it returns all variants with the props that set each apart from the default) and search_catalog for Stock screens. catalogBlocks lists the block specs with titles and variant counts.",
 	"Never invent blocks, variants, props or counts. If the author asks for more items than the catalog has (for example 10 variants of a block that has 8), say how many exist and list all of them.",
