@@ -46,3 +46,10 @@ variant preset) and rejected harmless input (a Dashboard run failed 6 of 6 on ic
 - Data ops in variant presets (`{op, args}`) are dropped like dictionary refs; the schema fills the prop.
 - The browser main chunk grows by the compact schemas (about 30 kB gzip); Ajv (about 42 kB gzip) loads lazily.
 - WP FastY Builder can reuse the same file, digest checks and gate semantics (chaosbun#145, phase 2).
+
+## Follow-up (staging acceptance)
+
+- Dashboard `unknown_screen` 6/6 was program-side: the first send from the home screen created the chat and reset the
+  picked scenario, so the run went out with `scenarioId: null` and `unknown_screen` had no pool to suggest from.
+  The new chat now keeps the picked scenario and screen; without a scenario, `unknown_screen` suggests the nearest
+  renderable catalog screens, and the tool-loop failure names the screen ids that were sent.
