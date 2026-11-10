@@ -35,9 +35,11 @@ from TypeScript strings in `catalog.json` and it validates only on save, in PHP,
    Typing in one field is one history step, sealed on blur; Ctrl/Cmd+Z undoes, Shift+Ctrl/Cmd+Z and Ctrl+Y redo.
    Writes persist like any page edit (the pending proposal when there is one, else the applied page with the next
    revision); the chat sees them on its next turn.
-4. **Block operations through page-patch.** Variant (`set_variant`), reset to the Stock sample of the variant
-   (`replace`), move and remove run through `editPage` (page-patch/v1 and the catalog provenance gate); duplicate
-   and row duplicate / remove are local tree operations under the same gates. All are undoable steps.
+4. **Block operations through page-patch.** Variant (`set_variant`), move and remove run through `editPage`
+   (page-patch/v1 and the catalog provenance gate). Reset puts back the Stock sample of the block (the page's screen
+   assembled with no content, the block with the same id) in its current variant; duplicate (fresh `-copy` ids) and
+   row duplicate / remove (within the slot's row limit) are local tree operations. Those three pass `parsePageSpec`,
+   the props gate and the catalog provenance gate. Every operation is one undoable step.
 
 Out of scope: field-level highlight inside a block (`data-slot`), WP-style data bindings, adding new blocks from the
 inspector (the chat does that).

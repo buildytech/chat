@@ -58,4 +58,6 @@ export type FieldIssue = { pointer: string; code: string; message: string; allow
 export type FieldHandlers = {
 	onedit: (field: InspectorField, value: string, typing: boolean) => void;
 	onseal: () => void;
+	/** Page rows of a list (row origin `children[i]`): duplicate or remove row `index`. */
+	onrow?: (index: number, action: "duplicate" | "remove") => void;
 };

@@ -5,7 +5,12 @@
   honest stub; no field is invented.
 -->
 <script lang="ts">
+	import ArrowDown from "@lucide/svelte/icons/arrow-down";
+	import ArrowUp from "@lucide/svelte/icons/arrow-up";
+	import Copy from "@lucide/svelte/icons/copy";
 	import Redo2 from "@lucide/svelte/icons/redo-2";
+	import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
+	import Trash2 from "@lucide/svelte/icons/trash-2";
 	import SlidersHorizontal from "@lucide/svelte/icons/sliders-horizontal";
 	import Undo2 from "@lucide/svelte/icons/undo-2";
 	import { onMount } from "svelte";
@@ -15,6 +20,9 @@
 	import Block from "$registry/compose/Block.svelte";
 	import Disclosure from "$registry/compose/Disclosure.svelte";
 	import Group from "$registry/compose/Group.svelte";
+	import Select from "$registry/compose/Select.svelte";
+	import SelectOption from "$registry/compose/SelectOption.svelte";
+	import Field from "$registry/components/field.svelte";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import Summary from "$registry/compose/Summary.svelte";
@@ -39,12 +47,22 @@
 	const model = $derived(block ? inspectorModel(block) : null);
 	const parts = $derived(model?.ok ? partitionFields(model.fields) : { main: [], more: [] });
 	const issues = $derived(model ? inspector.issuesFor(model.blockId) : {});
+	const index = $derived(model ? blocks.findIndex((node) => node.id === model.blockId) : -1);
+	const opIssue = $derived(model ? inspector.opIssueFor(model.blockId) : null);
 	const handlers: FieldHandlers = {
 		onedit: (field, value, typing) => {
 			if (model) inspector.edit(model.blockId, field, value, typing);
 		},
-		onseal: () => inspector.seal()
+		onseal: () => inspector.seal(),
+		onrow: (row, action) => {
+			if (model) inspector.run({ op: action === "duplicate" ? "duplicate_row" : "remove_row", blockId: model.blockId, row });
+		}
 	};
+
+	function setVariant(event: Event) {
+		if (!model) return;
+		inspector.run({ op: "set_variant", blockId: model.blockId, variant: (event.currentTarget as HTMLSelectElement).value });
+	}
 
 	// The props gate (Ajv over the pinned schemas) is a lazy chunk; edits fail closed until it is loaded.
 	onMount(() => {
@@ -91,9 +109,38 @@
 					{/if}
 				</Group>
 			</Stack>
+			<Group gap="2" class="flex-wrap" role="group" aria-label={t("inspector.actions")} data-slot="inspector-actions">
+				<Button size="sm" layout="icon" variant="outline" aria-label={t("inspector.moveUp")} title={t("inspector.moveUp")} disabled={index <= 0} data-action="move-up" onclick={() => inspector.run({ op: "move", blockId: model.blockId, to: index - 1 })}>
+					<ArrowUp />
+				</Button>
+				<Button size="sm" layout="icon" variant="outline" aria-label={t("inspector.moveDown")} title={t("inspector.moveDown")} disabled={index < 0 || index >= blocks.length - 1} data-action="move-down" onclick={() => inspector.run({ op: "move", blockId: model.blockId, to: index + 1 })}>
+					<ArrowDown />
+				</Button>
+				<Button size="sm" layout="icon" variant="outline" aria-label={t("inspector.duplicate")} title={t("inspector.duplicate")} data-action="duplicate" onclick={() => inspector.run({ op: "duplicate", blockId: model.blockId })}>
+					<Copy />
+				</Button>
+				<Button size="sm" layout="icon" variant="outline" aria-label={t("inspector.reset")} title={t("inspector.reset")} disabled={!model.ok} data-action="reset" onclick={() => inspector.run({ op: "reset", blockId: model.blockId })}>
+					<RotateCcw />
+				</Button>
+				<Button size="sm" layout="icon" variant="outline" aria-label={t("inspector.remove")} title={t("inspector.remove")} data-action="remove" onclick={() => inspector.run({ op: "remove", blockId: model.blockId })}>
+					<Trash2 />
+				</Button>
+			</Group>
+			{#if opIssue}
+				<Alert variant="destructive" role="alert" data-slot="inspector-op-issue">{opIssue.message}</Alert>
+			{/if}
 			{#if !model.ok}
 				<Alert variant="warning" data-slot="inspector-stub">{t(`inspector.stub.${model.reason}`)}</Alert>
 			{:else}
+				{#if model.variants.length > 1}
+					<Field label={t("inspector.variant")} htmlFor={`insp-${model.blockId}-variant`}>
+						<Select id={`insp-${model.blockId}-variant`} size="sm" value={model.variant} data-action="variant" onchange={setVariant}>
+							{#each model.variants as option (option)}
+								<SelectOption value={option}>{option}</SelectOption>
+							{/each}
+						</Select>
+					</Field>
+				{/if}
 				<InspectorFields fields={parts.main} blockId={model.blockId} variant={model.variant} {issues} {handlers} />
 				{#if parts.more.length}
 					<Disclosure variant="ghost" data-slot="inspector-more">

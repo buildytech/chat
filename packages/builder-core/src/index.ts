@@ -67,12 +67,15 @@ export {
 export {
 	gateInspectorPage,
 	inspectorModel,
+	inspectorOp,
 	inspectorSetField,
 	shareUnchanged,
 	writeOrigin,
 	type InspectorFailure,
 	type InspectorField,
 	type InspectorModel,
+	type InspectorOp,
+	type InspectorOpContext,
 	type InspectorResult,
 	type InspectorSuccess,
 	type InspectorWidget

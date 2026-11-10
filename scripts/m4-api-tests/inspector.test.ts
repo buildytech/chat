@@ -239,3 +239,89 @@ test("inspector store: no chat proposal per keystroke; undo keys in Build; frame
 	assert.match(web("app/InspectorPanel.svelte"), /<svelte:window onkeydown=\{inspector\.onKey\} \/>/);
 	assert.match(web("app/InspectorFields.svelte"), /onblur=\{canEdit \? \(\) => handlers!\.onseal\(\)/);
 });
+
+// ---- Step 4: block operations ---------------------------------------------------------------------------------
+
+import { inspectorOp, type InspectorOp } from "../../packages/builder-core/src/index.ts";
+
+function opContext() {
+	const { page, provenance } = landing();
+	return { page, provenance, revision: 1, now: NOW };
+}
+const order = (page: { layout: { blocks: PageBlock[] } }) => page.layout.blocks.map((node) => node.id);
+const run = (op: InspectorOp, ctx = opContext()) => ({ ctx, result: inspectorOp(ctx, op) });
+
+test("ops: set_variant goes through the catalog gate; unknown variants fail closed", () => {
+	const { ctx, result } = run({ op: "set_variant", blockId: "block-features", variant: "grid2" });
+	assert.equal(result.ok, true);
+	if (!result.ok) return;
+	assert.equal(result.page.layout.blocks.find((node) => node.id === "block-features")?.variant, "grid2");
+	assert.equal(result.page.layout.blocks[0], ctx.page.layout.blocks[0], "untouched blocks keep their objects");
+	const bad = run({ op: "set_variant", blockId: "block-features", variant: "nope" }).result;
+	assert.equal(bad.ok, false);
+	if (!bad.ok) assert.match(bad.message, /grid2/);
+});
+
+test("ops: move, remove and duplicate keep the page valid and return the next selection", () => {
+	const moved = run({ op: "move", blockId: "block-cta", to: 1 }).result;
+	assert.ok(moved.ok && order(moved.page)[1] === "block-cta" && moved.blockId === "block-cta");
+	const removed = run({ op: "remove", blockId: "block-logos" }).result;
+	assert.ok(removed.ok && !order(removed.page).includes("block-logos"));
+	if (removed.ok) assert.equal(removed.blockId, order(opContext().page)[order(opContext().page).indexOf("block-logos") + 1]);
+	const copy = run({ op: "duplicate", blockId: "block-features" }).result;
+	assert.ok(copy.ok);
+	if (!copy.ok) return;
+	const ids = order(copy.page);
+	assert.equal(ids[ids.indexOf("block-features") + 1], "block-features-copy");
+	assert.equal(copy.blockId, "block-features-copy");
+	const twin = copy.page.layout.blocks.find((node) => node.id === "block-features-copy")!;
+	const rowIds = (twin.children ?? []).map((row) => row.id);
+	assert.ok(rowIds.length > 0 && rowIds.every((id) => id.endsWith("-copy")), "rows get fresh ids");
+	const again = inspectorOp({ ...opContext(), page: copy.page }, { op: "duplicate", blockId: "block-features" });
+	assert.ok(again.ok && again.blockId === "block-features-copy-2");
+	const outOfRange = run({ op: "move", blockId: "block-cta", to: 99 }).result;
+	assert.equal(outOfRange.ok, false);
+});
+
+test("ops: reset puts back the Stock sample in the current variant; rows respect the slot limit", () => {
+	const ctx = opContext();
+	const edited = inspectorSetField(ctx.page, "block-hero", "/title", "Edited headline", NOW);
+	assert.ok(edited.ok);
+	if (!edited.ok) return;
+	const reset = inspectorOp({ ...ctx, page: edited.page }, { op: "reset", blockId: "block-hero" });
+	assert.ok(reset.ok);
+	if (!reset.ok) return;
+	const hero = reset.page.layout.blocks.find((node) => node.id === "block-hero")!;
+	const stock = ctx.page.layout.blocks.find((node) => node.id === "block-hero")!;
+	assert.deepEqual(hero.copy, stock.copy);
+	assert.equal(hero.variant, stock.variant);
+	assert.equal(inspectorOp({ ...ctx, provenance: null }, { op: "reset", blockId: "block-hero" }).ok, false, "no screen, no sample");
+
+	const features = ctx.page.layout.blocks.find((node) => node.id === "block-features")!;
+	const rows = features.children?.length ?? 0;
+	const dup = inspectorOp(ctx, { op: "duplicate_row", blockId: "block-features", row: 0 });
+	assert.ok(dup.ok && dup.page.layout.blocks.find((node) => node.id === "block-features")!.children!.length === rows + 1);
+	const removed = inspectorOp(ctx, { op: "remove_row", blockId: "block-features", row: 0 });
+	assert.ok(removed.ok && removed.page.layout.blocks.find((node) => node.id === "block-features")!.children!.length === rows - 1);
+	let page = ctx.page;
+	for (let n = 0; n < 20; n += 1) {
+		const next = inspectorOp({ ...ctx, page }, { op: "duplicate_row", blockId: "block-features", row: 0 });
+		if (!next.ok) {
+			assert.equal(next.code, "rows_over_limit");
+			break;
+		}
+		page = next.page;
+		assert.ok(n < 19, "the row limit is enforced");
+	}
+	assert.equal(inspectorOp(ctx, { op: "remove_row", blockId: "block-features", row: 99 }).ok, false);
+});
+
+test("ops ui: actions, variant select and row actions are registry buttons wired to the store", () => {
+	const panel = web("app/InspectorPanel.svelte");
+	for (const action of ["move-up", "move-down", "duplicate", "reset", "remove", "variant"]) assert.match(panel, new RegExp(`data-action="${action}"`));
+	assert.match(panel, /inspector\.run\(/);
+	const fields = web("app/InspectorFields.svelte");
+	assert.match(fields, /data-action="duplicate-row"/);
+	assert.match(fields, /data-action="remove-row"/);
+	assert.match(web("lib/inspector/inspector.svelte.ts"), /run\(op: InspectorOp\)/);
+});

@@ -27198,301 +27198,6 @@ exports["askBlockCards"] = askBlockCards;
 
 });
 
-__def("packages/builder-core/src/inspector.ts", function (exports) {
-const { parsePageSpec } = __req("packages/page-contract/src/index.ts");
-const { organismFor, writableOrigin } = __req("packages/builder-core/src/catalog/organism.ts");
-const { checkBlockProps } = __req("packages/builder-core/src/catalog/provenance.ts");
-const { propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
-const { catalogVariantsFor } = __req("packages/builder-core/src/catalog/sources.ts");
-const HIDDEN = new Set(["id", "class", "className"]);
-/** Page-spec origins of long text (a summary / lede) get a multi-line widget. */
-const LONG_ORIGIN = /(?:^|\.)(?:summary|copy\.lede)$/;
-const LONG_TEXT = 200;
-
-function valueAt(data: unknown, pointer: string): unknown {
-	let current = data;
-	for (const part of pointer.split("/").slice(1)) {
-		if (current === null || typeof current !== "object") return undefined;
-		current = (current as Record<string, unknown>)[part];
-	}
-	return current;
-}
-
-function widgetFor(node: PropsFieldNode, origin: string | null): InspectorWidget {
-	switch (node.kind) {
-		case "text":
-			return (origin && LONG_ORIGIN.test(origin)) || (node.maxLength ?? 0) > LONG_TEXT ? "longtext" : "text";
-		case "icon":
-		case "enum":
-		case "boolean":
-		case "number":
-		case "object":
-			return node.kind;
-		case "list":
-			return node.fields ? "list" : "other";
-		default:
-			return "other";
-	}
-}
-
-function fieldsOf(block: PageBlock, render: OrganismRender, nodes: PropsFieldNode[], base: string, hidden: ReadonlySet<string>): InspectorField[] {
-	const out: InspectorField[] = [];
-	for (const node of nodes) {
-		if (HIDDEN.has(node.name) || hidden.has(node.name)) continue;
-		const pointer = `${base}/${node.name}`;
-		const origin = writableOrigin(block, render, pointer);
-		const field: InspectorField = {
-			pointer,
-			name: node.name,
-			widget: widgetFor(node, origin),
-			required: node.required,
-			value: valueAt(render.props, pointer),
-			origin
-		};
-		if (node.enum) field.options = node.enum;
-		if (node.maxLength !== undefined) field.maxLength = node.maxLength;
-		if (field.widget === "object" && node.fields) field.fields = fieldsOf(block, render, node.fields, pointer, new Set());
-		if (field.widget === "list" && node.fields) {
-			const rows = Array.isArray(field.value) ? field.value : [];
-			field.rows = rows.map((_, index) => {
-				const at = `${pointer}/${index}`;
-				const row = render.origins[at];
-				return { pointer: at, origin: row && /^children\[\d+\]$/.test(row) ? row : null, fields: fieldsOf(block, render, node.fields!, at, new Set()) };
-			});
-		}
-		out.push(field);
-	}
-	return out;
-}
-
-/** The inspector fields of a page block, or an honest stub when it has no registry item or no published schema. */
-function inspectorModel(block: PageBlock): InspectorModel {
-	const head = { blockId: block.id, kind: block.kind, title: block.title };
-	const render = organismFor(block);
-	if (!render) return { ok: false, ...head, reason: "not_in_registry" };
-	const tree = propsFieldTree(render.item);
-	if (!tree) return { ok: false, ...head, reason: "no_schema" };
-	const { events, slots } = propsEventsFor(render.item);
-	return {
-		ok: true,
-		...head,
-		catalogBlock: render.catalogBlock,
-		item: render.item,
-		variant: render.variant,
-		variants: catalogVariantsFor(render.catalogBlock),
-		fields: fieldsOf(block, render, tree, "", new Set([...events, ...slots]))
-	};
-}
-
-// ---- Write-back (step 3) ----------------------------------------------------------------------------------------
-
-const fail = (code: string, message: string, pointer: string, allowed?: string[]): InspectorFailure =>
-	allowed?.length ? { ok: false, code, message, pointer, allowed } : { ok: false, code, message, pointer };
-
-const ORIGIN = /^((?:children\[\d+\]\.)*)(title|summary|copy\.([a-z]+))$/;
-
-/** The block with `origin` (`copy.headline`, `children[2].copy.icon`, `title`) set to `value`; other fields kept. */
-function writeOrigin(block: PageBlock, origin: string, value: string): PageBlock | null {
-	const match = ORIGIN.exec(origin);
-	if (!match) return null;
-	const path = [...match[1]!.matchAll(/children\[(\d+)\]\./g)].map((hit) => Number(hit[1]));
-	const field = match[2]!;
-	const set = (node: PageBlock, depth: number): PageBlock | null => {
-		if (depth < path.length) {
-			const index = path[depth]!;
-			const child = node.children?.[index];
-			if (!child) return null;
-			const next = set(child, depth + 1);
-			if (!next) return null;
-			const children = [...node.children!];
-			children[index] = next;
-			return { ...node, children };
-		}
-		if (field === "title" || field === "summary") return { ...node, [field]: value };
-		const copy: PageBlockCopy = { ...node.copy, [match[3]! as PageCopyKey]: value };
-		return { ...node, copy };
-	};
-	return set(block, 0);
-}
-
-/** `next` with every top-level block that did not change replaced by the object of `prev` (only changed blocks re-render). */
-function shareUnchanged(prev: Page, next: Page): Page {
-	const before = new Map(prev.layout.blocks.map((node) => [node.id, node]));
-	const blocks = next.layout.blocks.map((node) => {
-		const old = before.get(node.id);
-		return old && JSON.stringify(old) === JSON.stringify(node) ? old : node;
-	});
-	return { ...next, layout: { ...next.layout, blocks } };
-}
-
-type Issue = { pointer: string; message: string; allowed?: unknown[]; value?: unknown };
-
-/**
- * The inspector gate: the page-spec schema + parsePage program checks on the whole page, then the props gate (Ajv
- * 2020 over the published schema, fail closed) on every changed top-level block. Nothing is written on failure.
- */
-function gateInspectorPage(base: Page, blocks: PageBlock[], changed: string[], pointer: string, now?: string): InspectorFailure | { ok: true; page: Page } {
-	let page: Page;
-	try {
-		page = parsePageSpec({ ...base, layout: { ...base.layout, blocks }, updatedAt: now ?? new Date().toISOString() }, { draft: base.status === "draft" });
-	} catch (err) {
-		const rec = err as { code?: string; path?: string; message?: string };
-		return fail(rec.code ?? "page_spec_invalid", rec.message ?? "The page does not match page-spec/v1.", pointer);
-	}
-	for (const id of changed) {
-		const index = page.layout.blocks.findIndex((node) => node.id === id);
-		if (index < 0) continue;
-		const error = checkBlockProps(page.layout.blocks[index]!, `layout.blocks[${index}]`);
-		if (!error) continue;
-		const issues = ((error as { issues?: Issue[] }).issues ?? []) as Issue[];
-		const issue = issues.find((row) => row.pointer === pointer) ?? issues[0];
-		if (!issue) return fail(error.code, error.message, pointer);
-		const value = issue.value !== undefined ? ` ${JSON.stringify(issue.value)}` : "";
-		return fail(error.code, `${issue.pointer || "(props)"}${value}: ${issue.message}.`, issue.pointer || pointer, issue.allowed?.map(String));
-	}
-	return { ok: true, page: shareUnchanged(base, page) };
-}
-
-/**
- * Write one inspector field back to the page: the field's page-spec origin (override only; variant presets and
- * schema defaults are never copied into the page), then the inspector gate. On failure the page is unchanged and
- * the result names the field, the reason and, for an enum, the allowed values.
- */
-function inspectorSetField(page: Page, blockId: string, pointer: string, value: string, now?: string): InspectorResult {
-	const index = page.layout.blocks.findIndex((node) => node.id === blockId);
-	const block = page.layout.blocks[index];
-	if (!block) return fail("block_not_found", `No section ${blockId} on this page.`, pointer);
-	const render = organismFor(block);
-	if (!render) return fail("not_in_registry", `Section ${blockId} has no registry block.`, pointer);
-	const origin = writableOrigin(block, render, pointer);
-	if (!origin) return fail("field_not_editable", `${pointer} is set by the variant ${render.variant}, not by the page.`, pointer);
-	const next = writeOrigin(block, origin, value);
-	if (!next) return fail("field_not_editable", `${pointer} has no page field ${origin}.`, pointer);
-	const blocks = [...page.layout.blocks];
-	blocks[index] = next;
-	const gated = gateInspectorPage(page, blocks, [blockId], pointer, now);
-	return gated.ok ? { ok: true, page: gated.page, blockId } : gated;
-}
-
-exports["inspectorModel"] = inspectorModel;
-exports["writeOrigin"] = writeOrigin;
-exports["shareUnchanged"] = shareUnchanged;
-exports["gateInspectorPage"] = gateInspectorPage;
-exports["inspectorSetField"] = inspectorSetField;
-
-});
-
-__def("packages/builder-core/src/policy.ts", function (exports) {
-
-const POLICY_VERSION = "browser-constructor/3";
-/** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
-const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
-const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
-
-const ENABLED_SKILLS = [
-	{
-		id: "ui8kit-strict-catalog",
-		version: "1",
-		purpose: "Use the host scenario seed or one search_catalog shortlist, then call propose_layout. On a current page, edit with edit_page (page-patch/v1 ops) and keep everything else. get_block_details is optional for a single unknown id. Never spend the last tool step on search or details.",
-		triggers: ["catalog", "screen", "block", "layout"],
-		requiredTools: ["search_catalog", "propose_layout"]
-	},
-	{
-		id: "human-apply-gate",
-		version: "1",
-		purpose: "Never apply or publish. The author must confirm Apply on a schema-valid proposal.",
-		triggers: ["apply", "publish"],
-		requiredTools: ["propose_layout"]
-	}
-] as const;
-
-/** Every tool of agent-tools.v1.json (a test keeps both equal). Which ones a turn offers depends on its mode. */
-const ALLOWED_TOOLS = [
-	"search_catalog",
-	"get_block",
-	"get_block_details",
-	"propose_layout",
-	"edit_page",
-	"get_skill"
-] as const;
-
-function getSkill(id: string):
-	| { ok: true; skill: (typeof ENABLED_SKILLS)[number] }
-	| { ok: false; code: "unknown_skill" | "disabled_skill" | "path_rejected"; id: string } {
-	const raw = String(id ?? "");
-	if (!raw || raw.includes("..") || raw.includes("/") || raw.includes("\\") || raw.includes("://")) {
-		return { ok: false, code: "path_rejected", id: raw };
-	}
-	const skill = ENABLED_SKILLS.find((s) => s.id === raw);
-	if (!skill) return { ok: false, code: "unknown_skill", id: raw };
-	return { ok: true, skill };
-}
-
-const RUN_BUDGET = {
-	maxToolCalls: 8,
-	maxMs: 90_000,
-	shortlist: 12,
-	toolPageSize: 4,
-	reserveProposeSteps: 1
-} as const;
-
-exports["POLICY_VERSION"] = POLICY_VERSION;
-exports["MODEL_CATALOG_VERSION"] = MODEL_CATALOG_VERSION;
-exports["TRIAL_POLICY_VERSION"] = TRIAL_POLICY_VERSION;
-exports["ENABLED_SKILLS"] = ENABLED_SKILLS;
-exports["ALLOWED_TOOLS"] = ALLOWED_TOOLS;
-exports["getSkill"] = getSkill;
-exports["RUN_BUDGET"] = RUN_BUDGET;
-
-});
-
-__def("packages/builder-core/src/catalog/fingerprint.ts", function (exports) {
-const { PAGE_BLOCK_KINDS } = __req("packages/page-contract/src/index.ts");
-const { POLICY_VERSION } = __req("packages/builder-core/src/policy.ts");
-const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
-const { SEARCH_INDEX_SOURCES } = __req("packages/builder-core/src/catalog/text-search.ts");
-const { AGENT_TOOLS_VERSION } = __req("packages/builder-core/src/agent/agent-tools.ts");
-function fnv1a64(text: string): string {
-	let h1 = 0x811c9dc5;
-	let h2 = 0xcbf29ce4;
-	for (let i = 0; i < text.length; i++) {
-		const c = text.charCodeAt(i);
-		h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
-		h2 = Math.imul(h2 ^ (c + 0x9e), 0x01000193) >>> 0;
-	}
-	return h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
-}
-
-let cached: string | null = null;
-
-/**
- * Identity of the page contract the browser and the runtime validate against: block kinds,
- * renderer map, Stock snapshot digest, search index sources, policy version and agent tools version. A browser tab
- * built from another deploy sends a different value and gets client_outdated instead of a
- * proposal its stale validator would reject.
- */
-function contractFingerprint(): string {
-	if (cached) return cached;
-	const rendererMap = Object.keys(catalogSnapshot.rendererMap)
-		.sort()
-		.map((key) => `${key}=${catalogSnapshot.rendererMap[key]}`);
-	cached = `cf1-${fnv1a64(
-		JSON.stringify({
-			kinds: PAGE_BLOCK_KINDS,
-			rendererMap,
-			snapshot: catalogSnapshot.sourceDigest,
-			index: SEARCH_INDEX_SOURCES,
-			policy: POLICY_VERSION,
-			tools: AGENT_TOOLS_VERSION
-		})
-	)}`;
-	return cached;
-}
-
-exports["contractFingerprint"] = contractFingerprint;
-
-});
-
 __def("packages/builder-core/src/brief.ts", function (exports) {
 const { SCENARIO_IDS } = __req("packages/builder-core/src/copy.ts");
 function isScenarioId(value: unknown): value is ScenarioId {
@@ -27562,6 +27267,70 @@ exports["isScenarioId"] = isScenarioId;
 exports["occasionFromBrief"] = occasionFromBrief;
 exports["titleFromSavedEdit"] = titleFromSavedEdit;
 exports["displayTitleFromBrief"] = displayTitleFromBrief;
+
+});
+
+__def("packages/builder-core/src/policy.ts", function (exports) {
+
+const POLICY_VERSION = "browser-constructor/3";
+/** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
+const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
+const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
+
+const ENABLED_SKILLS = [
+	{
+		id: "ui8kit-strict-catalog",
+		version: "1",
+		purpose: "Use the host scenario seed or one search_catalog shortlist, then call propose_layout. On a current page, edit with edit_page (page-patch/v1 ops) and keep everything else. get_block_details is optional for a single unknown id. Never spend the last tool step on search or details.",
+		triggers: ["catalog", "screen", "block", "layout"],
+		requiredTools: ["search_catalog", "propose_layout"]
+	},
+	{
+		id: "human-apply-gate",
+		version: "1",
+		purpose: "Never apply or publish. The author must confirm Apply on a schema-valid proposal.",
+		triggers: ["apply", "publish"],
+		requiredTools: ["propose_layout"]
+	}
+] as const;
+
+/** Every tool of agent-tools.v1.json (a test keeps both equal). Which ones a turn offers depends on its mode. */
+const ALLOWED_TOOLS = [
+	"search_catalog",
+	"get_block",
+	"get_block_details",
+	"propose_layout",
+	"edit_page",
+	"get_skill"
+] as const;
+
+function getSkill(id: string):
+	| { ok: true; skill: (typeof ENABLED_SKILLS)[number] }
+	| { ok: false; code: "unknown_skill" | "disabled_skill" | "path_rejected"; id: string } {
+	const raw = String(id ?? "");
+	if (!raw || raw.includes("..") || raw.includes("/") || raw.includes("\\") || raw.includes("://")) {
+		return { ok: false, code: "path_rejected", id: raw };
+	}
+	const skill = ENABLED_SKILLS.find((s) => s.id === raw);
+	if (!skill) return { ok: false, code: "unknown_skill", id: raw };
+	return { ok: true, skill };
+}
+
+const RUN_BUDGET = {
+	maxToolCalls: 8,
+	maxMs: 90_000,
+	shortlist: 12,
+	toolPageSize: 4,
+	reserveProposeSteps: 1
+} as const;
+
+exports["POLICY_VERSION"] = POLICY_VERSION;
+exports["MODEL_CATALOG_VERSION"] = MODEL_CATALOG_VERSION;
+exports["TRIAL_POLICY_VERSION"] = TRIAL_POLICY_VERSION;
+exports["ENABLED_SKILLS"] = ENABLED_SKILLS;
+exports["ALLOWED_TOOLS"] = ALLOWED_TOOLS;
+exports["getSkill"] = getSkill;
+exports["RUN_BUDGET"] = RUN_BUDGET;
 
 });
 
@@ -29000,112 +28769,6 @@ exports["CHILD_ONLY_KINDS"] = CHILD_ONLY_KINDS;
 
 });
 
-__def("packages/builder-core/src/client-gate.ts", function (exports) {
-const { pageSpecIssues } = __req("packages/page-contract/src/index.ts");
-const { recordedScreenId } = __req("packages/builder-core/src/assemble.ts");
-const { validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
-function clientProposalGate(
-	proposal: Pick<LayoutProposal, "page" | "provenance">
-): ReturnType<typeof validateCatalogProvenance> | PageSpecGateError | CatalogValidationError {
-	const issues = pageSpecIssues(proposal.page);
-	if (issues.length) {
-		const first = issues[0]!;
-		return { ok: false, code: "page_spec_invalid", message: `page-spec/v1 ${first.keyword} failed at ${first.path}`, path: first.path };
-	}
-	return validateCatalogProvenance({
-		page: proposal.page,
-		screenId: recordedScreenId(proposal.provenance.screenId),
-		catalogDigest: proposal.provenance.catalog?.sourceDigest ?? null
-	});
-}
-
-exports["clientProposalGate"] = clientProposalGate;
-
-});
-
-__def("packages/builder-core/src/edits.ts", function (exports) {
-const { PAGE_BLOCK_KINDS, PAGE_COPY_KEYS } = __req("packages/page-contract/src/index.ts");
-const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
-const FIELD_SET = new Set<string>(PAGE_COPY_KEYS);
-
-const KIND_ALIASES: Record<string, PageBlockKind> = {
-	navigation: "nav",
-	header: "hero",
-	heading: "hero",
-	calltoaction: "cta",
-	"call-to-action": "cta"
-};
-
-const FIELD_ALIASES: Record<string, PageCopyKey> = {
-	title: "headline",
-	subtitle: "lede",
-	description: "lede",
-	body: "lede",
-	cta: "action",
-	button: "action",
-	label: "action"
-};
-
-function normalizeKind(raw: string): PageBlockKind | null {
-	const key = raw.trim().toLowerCase();
-	if (KIND_SET.has(key)) return key as PageBlockKind;
-	return KIND_ALIASES[key] ?? null;
-}
-
-function normalizeField(raw: string): PageCopyKey | null {
-	const key = raw.trim().toLowerCase();
-	if (FIELD_SET.has(key)) return key as PageCopyKey;
-	const aliased = FIELD_ALIASES[key];
-	return aliased && FIELD_SET.has(aliased) ? aliased : null;
-}
-
-function parseCopyPath(path: string): { kind: PageBlockKind; field: PageCopyKey } | null {
-	const parts = path
-		.split(".")
-		.map((part) => part.trim().toLowerCase())
-		.filter(Boolean);
-	const kind = parts.map(normalizeKind).find((item): item is PageBlockKind => Boolean(item));
-	const field = [...parts].reverse().map(normalizeField).find((item): item is PageCopyKey => Boolean(item));
-	if (!kind || !field) return null;
-	return { kind, field };
-}
-
-function looksLikeRawInstruction(value: string): boolean {
-	const words = value.trim().split(/\s+/);
-	if (/^(?:change|keep|create|update|edit|replace|apply)\b/i.test(value) && words.length > 6) return true;
-	if (/\bkeep all other\b/i.test(value)) return true;
-	return false;
-}
-
-function cleanExtractedValue(raw: string): string {
-	let value = raw.trim().replace(/^["'«]+|[»"']+$/g, "").trim();
-	value = value.replace(/\s+keep\s+all\s+other[\s\S]*$/i, "").trim();
-	if (!value || looksLikeRawInstruction(value)) return "";
-	if (value.length > 80) return "";
-	return value.slice(0, 80);
-}
-
-/** Structured copy patches from propose_layout.edits. Drops raw prompt text. */
-function parseLayoutCopyEdits(raw: unknown): LayoutCopyEdit[] {
-	if (!Array.isArray(raw)) return [];
-	const out: LayoutCopyEdit[] = [];
-	for (const item of raw) {
-		if (!item || typeof item !== "object") continue;
-		const rec = item as Record<string, unknown>;
-		const fromPath = typeof rec.path === "string" ? parseCopyPath(rec.path) : null;
-		const kind = normalizeKind(String(rec.kind ?? rec.blockKind ?? rec.slot ?? rec.block ?? fromPath?.kind ?? ""));
-		const field = normalizeField(String(rec.field ?? rec.copyKey ?? rec.key ?? fromPath?.field ?? ""));
-		const value = cleanExtractedValue(String(rec.value ?? ""));
-		if (!kind || !field || !value) continue;
-		out.push({ kind, field, value });
-	}
-	return out;
-}
-
-exports["parseLayoutCopyEdits"] = parseLayoutCopyEdits;
-
-});
-
 __def("packages/builder-core/src/patch.ts", function (exports) {
 const { PAGE_LIMITS, PAGE_SLOTS, pagePatchIssues, pagePatchSchema, parsePageSpec } = __req("packages/page-contract/src/index.ts");
 const { arrangeShell, CHILD_ONLY_KINDS, localizeEmptyLedes, naturalIndexFor, stockBlockFor } = __req("packages/builder-core/src/assemble.ts");
@@ -29465,6 +29128,478 @@ function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposalError {
 
 exports["normalizePatch"] = normalizePatch;
 exports["editPage"] = editPage;
+
+});
+
+__def("packages/builder-core/src/inspector.ts", function (exports) {
+const { PAGE_LIMITS, PAGE_SLOTS, parsePageSpec } = __req("packages/page-contract/src/index.ts");
+const { proposeLayout } = __req("packages/builder-core/src/assemble.ts");
+const { editPage } = __req("packages/builder-core/src/patch.ts");
+const { validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { isScenarioId } = __req("packages/builder-core/src/brief.ts");
+const { organismFor, writableOrigin } = __req("packages/builder-core/src/catalog/organism.ts");
+const { checkBlockProps } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { catalogVariantsFor } = __req("packages/builder-core/src/catalog/sources.ts");
+const HIDDEN = new Set(["id", "class", "className"]);
+/** Page-spec origins of long text (a summary / lede) get a multi-line widget. */
+const LONG_ORIGIN = /(?:^|\.)(?:summary|copy\.lede)$/;
+const LONG_TEXT = 200;
+
+function valueAt(data: unknown, pointer: string): unknown {
+	let current = data;
+	for (const part of pointer.split("/").slice(1)) {
+		if (current === null || typeof current !== "object") return undefined;
+		current = (current as Record<string, unknown>)[part];
+	}
+	return current;
+}
+
+function widgetFor(node: PropsFieldNode, origin: string | null): InspectorWidget {
+	switch (node.kind) {
+		case "text":
+			return (origin && LONG_ORIGIN.test(origin)) || (node.maxLength ?? 0) > LONG_TEXT ? "longtext" : "text";
+		case "icon":
+		case "enum":
+		case "boolean":
+		case "number":
+		case "object":
+			return node.kind;
+		case "list":
+			return node.fields ? "list" : "other";
+		default:
+			return "other";
+	}
+}
+
+function fieldsOf(block: PageBlock, render: OrganismRender, nodes: PropsFieldNode[], base: string, hidden: ReadonlySet<string>): InspectorField[] {
+	const out: InspectorField[] = [];
+	for (const node of nodes) {
+		if (HIDDEN.has(node.name) || hidden.has(node.name)) continue;
+		const pointer = `${base}/${node.name}`;
+		const origin = writableOrigin(block, render, pointer);
+		const field: InspectorField = {
+			pointer,
+			name: node.name,
+			widget: widgetFor(node, origin),
+			required: node.required,
+			value: valueAt(render.props, pointer),
+			origin
+		};
+		if (node.enum) field.options = node.enum;
+		if (node.maxLength !== undefined) field.maxLength = node.maxLength;
+		if (field.widget === "object" && node.fields) field.fields = fieldsOf(block, render, node.fields, pointer, new Set());
+		if (field.widget === "list" && node.fields) {
+			const rows = Array.isArray(field.value) ? field.value : [];
+			field.rows = rows.map((_, index) => {
+				const at = `${pointer}/${index}`;
+				const row = render.origins[at];
+				return { pointer: at, origin: row && /^children\[\d+\]$/.test(row) ? row : null, fields: fieldsOf(block, render, node.fields!, at, new Set()) };
+			});
+		}
+		out.push(field);
+	}
+	return out;
+}
+
+/** The inspector fields of a page block, or an honest stub when it has no registry item or no published schema. */
+function inspectorModel(block: PageBlock): InspectorModel {
+	const head = { blockId: block.id, kind: block.kind, title: block.title };
+	const render = organismFor(block);
+	if (!render) return { ok: false, ...head, reason: "not_in_registry" };
+	const tree = propsFieldTree(render.item);
+	if (!tree) return { ok: false, ...head, reason: "no_schema" };
+	const { events, slots } = propsEventsFor(render.item);
+	return {
+		ok: true,
+		...head,
+		catalogBlock: render.catalogBlock,
+		item: render.item,
+		variant: render.variant,
+		variants: catalogVariantsFor(render.catalogBlock),
+		fields: fieldsOf(block, render, tree, "", new Set([...events, ...slots]))
+	};
+}
+
+// ---- Write-back (step 3) ----------------------------------------------------------------------------------------
+
+const fail = (code: string, message: string, pointer: string, allowed?: string[]): InspectorFailure =>
+	allowed?.length ? { ok: false, code, message, pointer, allowed } : { ok: false, code, message, pointer };
+
+const ORIGIN = /^((?:children\[\d+\]\.)*)(title|summary|copy\.([a-z]+))$/;
+
+/** The block with `origin` (`copy.headline`, `children[2].copy.icon`, `title`) set to `value`; other fields kept. */
+function writeOrigin(block: PageBlock, origin: string, value: string): PageBlock | null {
+	const match = ORIGIN.exec(origin);
+	if (!match) return null;
+	const path = [...match[1]!.matchAll(/children\[(\d+)\]\./g)].map((hit) => Number(hit[1]));
+	const field = match[2]!;
+	const set = (node: PageBlock, depth: number): PageBlock | null => {
+		if (depth < path.length) {
+			const index = path[depth]!;
+			const child = node.children?.[index];
+			if (!child) return null;
+			const next = set(child, depth + 1);
+			if (!next) return null;
+			const children = [...node.children!];
+			children[index] = next;
+			return { ...node, children };
+		}
+		if (field === "title" || field === "summary") return { ...node, [field]: value };
+		const copy: PageBlockCopy = { ...node.copy, [match[3]! as PageCopyKey]: value };
+		return { ...node, copy };
+	};
+	return set(block, 0);
+}
+
+/** `next` with every top-level block that did not change replaced by the object of `prev` (only changed blocks re-render). */
+function shareUnchanged(prev: Page, next: Page): Page {
+	const before = new Map(prev.layout.blocks.map((node) => [node.id, node]));
+	const blocks = next.layout.blocks.map((node) => {
+		const old = before.get(node.id);
+		return old && JSON.stringify(old) === JSON.stringify(node) ? old : node;
+	});
+	return { ...next, layout: { ...next.layout, blocks } };
+}
+
+type Issue = { pointer: string; message: string; allowed?: unknown[]; value?: unknown };
+
+/**
+ * The inspector gate: the page-spec schema + parsePage program checks on the whole page, then the props gate (Ajv
+ * 2020 over the published schema, fail closed) on every changed top-level block. Nothing is written on failure.
+ */
+function gateInspectorPage(base: Page, blocks: PageBlock[], changed: string[], pointer: string, now?: string): InspectorFailure | { ok: true; page: Page } {
+	let page: Page;
+	try {
+		page = parsePageSpec({ ...base, layout: { ...base.layout, blocks }, updatedAt: now ?? new Date().toISOString() }, { draft: base.status === "draft" });
+	} catch (err) {
+		const rec = err as { code?: string; path?: string; message?: string };
+		return fail(rec.code ?? "page_spec_invalid", rec.message ?? "The page does not match page-spec/v1.", pointer);
+	}
+	for (const id of changed) {
+		const index = page.layout.blocks.findIndex((node) => node.id === id);
+		if (index < 0) continue;
+		const error = checkBlockProps(page.layout.blocks[index]!, `layout.blocks[${index}]`);
+		if (!error) continue;
+		const issues = ((error as { issues?: Issue[] }).issues ?? []) as Issue[];
+		const issue = issues.find((row) => row.pointer === pointer) ?? issues[0];
+		if (!issue) return fail(error.code, error.message, pointer);
+		const value = issue.value !== undefined ? ` ${JSON.stringify(issue.value)}` : "";
+		return fail(error.code, `${issue.pointer || "(props)"}${value}: ${issue.message}.`, issue.pointer || pointer, issue.allowed?.map(String));
+	}
+	return { ok: true, page: shareUnchanged(base, page) };
+}
+
+/**
+ * Write one inspector field back to the page: the field's page-spec origin (override only; variant presets and
+ * schema defaults are never copied into the page), then the inspector gate. On failure the page is unchanged and
+ * the result names the field, the reason and, for an enum, the allowed values.
+ */
+function inspectorSetField(page: Page, blockId: string, pointer: string, value: string, now?: string): InspectorResult {
+	const index = page.layout.blocks.findIndex((node) => node.id === blockId);
+	const block = page.layout.blocks[index];
+	if (!block) return fail("block_not_found", `No section ${blockId} on this page.`, pointer);
+	const render = organismFor(block);
+	if (!render) return fail("not_in_registry", `Section ${blockId} has no registry block.`, pointer);
+	const origin = writableOrigin(block, render, pointer);
+	if (!origin) return fail("field_not_editable", `${pointer} is set by the variant ${render.variant}, not by the page.`, pointer);
+	const next = writeOrigin(block, origin, value);
+	if (!next) return fail("field_not_editable", `${pointer} has no page field ${origin}.`, pointer);
+	const blocks = [...page.layout.blocks];
+	blocks[index] = next;
+	const gated = gateInspectorPage(page, blocks, [blockId], pointer, now);
+	return gated.ok ? { ok: true, page: gated.page, blockId } : gated;
+}
+
+// ---- Block operations (step 4) ---------------------------------------------------------------------------------
+
+function walkIds(blocks: PageBlock[], out = new Set<string>()): Set<string> {
+	for (const node of blocks) {
+		out.add(node.id);
+		walkIds(node.children ?? [], out);
+	}
+	return out;
+}
+
+/** A free id derived from `id` (`block-hero-copy`, `block-hero-copy-2`, ...), within the page-spec id length. */
+function freeId(id: string, taken: Set<string>): string {
+	for (let n = 1; ; n += 1) {
+		const suffix = n === 1 ? "-copy" : `-copy-${n}`;
+		const candidate = `${id.slice(0, PAGE_LIMITS.maxIdLength - suffix.length)}${suffix}`;
+		if (!taken.has(candidate)) {
+			taken.add(candidate);
+			return candidate;
+		}
+	}
+}
+
+/** A copy of a block (and its rows) with fresh ids that do not collide with the page. */
+function cloneWithIds(node: PageBlock, taken: Set<string>): PageBlock {
+	const copy: PageBlock = { ...structuredClone(node), id: freeId(node.id, taken) };
+	if (node.children?.length) copy.children = node.children.map((child) => cloneWithIds(child, taken));
+	return copy;
+}
+
+type PatchProvenance = Parameters<typeof editPage>[0]["provenance"];
+
+function patchProvenance(ctx: InspectorOpContext): PatchProvenance {
+	if (!ctx.provenance) return undefined;
+	const scenarioId: ScenarioId | null = isScenarioId(ctx.provenance.scenarioId) ? ctx.provenance.scenarioId : null;
+	return { screenId: ctx.provenance.screenId, scenarioId, missing: ctx.provenance.missing ?? [] } as PatchProvenance;
+}
+
+/** A page-patch/v1 operation through editPage: the published schema, slot checks and the catalog provenance gate. */
+function viaPatch(ctx: InspectorOpContext, op: Record<string, unknown>, select: string): InspectorResult {
+	const result = editPage({ page: ctx.page, provenance: patchProvenance(ctx), patch: { ops: [op] }, expectedRevision: ctx.revision, now: ctx.now });
+	if (!result.ok) return fail(result.code, result.message, "");
+	return { ok: true, page: shareUnchanged(ctx.page, result.page), blockId: select };
+}
+
+/** The Stock sample of a block: the same screen assembled with no page content, the block with the same id. */
+function stockSample(ctx: InspectorOpContext, block: PageBlock): PageBlock | null {
+	const screenId = ctx.provenance?.screenId ?? null;
+	if (!screenId) return null;
+	const scenarioId = isScenarioId(ctx.provenance?.scenarioId) ? ctx.provenance!.scenarioId : null;
+	const fresh = proposeLayout({
+		brief: ctx.page.title,
+		scenarioId,
+		screenId,
+		expectedRevision: 0,
+		now: ctx.now,
+		content: { locale: ctx.page.locale, blocks: [] }
+	});
+	if (!fresh.ok) return null;
+	const sample = fresh.page.layout.blocks.find((node) => node.id === block.id && node.catalogBlock === block.catalogBlock);
+	return sample ? { ...sample, ...(block.variant ? { variant: block.variant } : {}) } : null;
+}
+
+/** A local tree operation under the inspector gate, plus the catalog provenance gate when the page has a screen. */
+function gated(ctx: InspectorOpContext, blocks: PageBlock[], changed: string[], select: string): InspectorResult {
+	const result = gateInspectorPage(ctx.page, blocks, changed, "", ctx.now);
+	if (!result.ok) return result;
+	const screenId = ctx.provenance?.screenId ?? null;
+	if (screenId) {
+		const checked = validateCatalogProvenance({ page: result.page, screenId });
+		if (!checked.ok) return fail(checked.code, checked.message, "");
+	}
+	return { ok: true, page: result.page, blockId: select };
+}
+
+/**
+ * Block operations of the inspector. Variant, move and remove are page-patch/v1 operations (editPage); reset puts
+ * back the Stock sample of the block in its current variant; duplicate and the row operations are local tree edits.
+ * Every result passes page-spec, the props gate and (with a screen) the catalog provenance gate, or nothing changes.
+ */
+function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): InspectorResult {
+	const blocks = ctx.page.layout.blocks;
+	const index = blocks.findIndex((node) => node.id === op.blockId);
+	const block = blocks[index];
+	if (!block) return fail("block_not_found", `No section ${op.blockId} on this page.`, "");
+	switch (op.op) {
+		case "set_variant":
+			if (op.variant === block.variant) return { ok: true, page: ctx.page, blockId: block.id };
+			return viaPatch(ctx, { op: "set_variant", blockId: block.id, variant: op.variant }, block.id);
+		case "move":
+			if (op.to < 0 || op.to >= blocks.length) return fail("index_out_of_range", `A section moves to 1..${blocks.length}.`, "");
+			if (op.to === index) return { ok: true, page: ctx.page, blockId: block.id };
+			return viaPatch(ctx, { op: "move", blockId: block.id, to: op.to }, block.id);
+		case "remove": {
+			const neighbour = blocks[index + 1] ?? blocks[index - 1];
+			return viaPatch(ctx, { op: "remove", blockId: block.id }, neighbour?.id ?? "");
+		}
+		case "reset": {
+			const sample = stockSample(ctx, block);
+			if (!sample) return fail("no_stock_sample", `Section ${block.id} has no Stock sample on this page's screen.`, "");
+			const next = [...blocks];
+			next[index] = sample;
+			return gated(ctx, next, [block.id], block.id);
+		}
+		case "duplicate": {
+			const copy = cloneWithIds(block, walkIds(blocks));
+			const next = [...blocks];
+			next.splice(index + 1, 0, copy);
+			return gated(ctx, next, [copy.id], copy.id);
+		}
+		case "duplicate_row":
+		case "remove_row": {
+			const rows = block.children ?? [];
+			const row = rows[op.row];
+			if (!row) return fail("row_not_found", `Section ${block.id} has no row ${op.row + 1}.`, "");
+			const nextRows = [...rows];
+			if (op.op === "remove_row") nextRows.splice(op.row, 1);
+			else {
+				const max = PAGE_SLOTS[block.kind]?.items?.max ?? 0;
+				if (rows.length >= max) return fail("rows_over_limit", `${block.kind} renders at most ${max} rows.`, "");
+				nextRows.splice(op.row + 1, 0, cloneWithIds(row, walkIds(blocks)));
+			}
+			const nextBlock: PageBlock = { ...block, children: nextRows };
+			if (!nextRows.length) delete nextBlock.children;
+			const next = [...blocks];
+			next[index] = nextBlock;
+			return gated(ctx, next, [block.id], block.id);
+		}
+	}
+}
+
+exports["inspectorModel"] = inspectorModel;
+exports["writeOrigin"] = writeOrigin;
+exports["shareUnchanged"] = shareUnchanged;
+exports["gateInspectorPage"] = gateInspectorPage;
+exports["inspectorSetField"] = inspectorSetField;
+exports["inspectorOp"] = inspectorOp;
+
+});
+
+__def("packages/builder-core/src/catalog/fingerprint.ts", function (exports) {
+const { PAGE_BLOCK_KINDS } = __req("packages/page-contract/src/index.ts");
+const { POLICY_VERSION } = __req("packages/builder-core/src/policy.ts");
+const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
+const { SEARCH_INDEX_SOURCES } = __req("packages/builder-core/src/catalog/text-search.ts");
+const { AGENT_TOOLS_VERSION } = __req("packages/builder-core/src/agent/agent-tools.ts");
+function fnv1a64(text: string): string {
+	let h1 = 0x811c9dc5;
+	let h2 = 0xcbf29ce4;
+	for (let i = 0; i < text.length; i++) {
+		const c = text.charCodeAt(i);
+		h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+		h2 = Math.imul(h2 ^ (c + 0x9e), 0x01000193) >>> 0;
+	}
+	return h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
+}
+
+let cached: string | null = null;
+
+/**
+ * Identity of the page contract the browser and the runtime validate against: block kinds,
+ * renderer map, Stock snapshot digest, search index sources, policy version and agent tools version. A browser tab
+ * built from another deploy sends a different value and gets client_outdated instead of a
+ * proposal its stale validator would reject.
+ */
+function contractFingerprint(): string {
+	if (cached) return cached;
+	const rendererMap = Object.keys(catalogSnapshot.rendererMap)
+		.sort()
+		.map((key) => `${key}=${catalogSnapshot.rendererMap[key]}`);
+	cached = `cf1-${fnv1a64(
+		JSON.stringify({
+			kinds: PAGE_BLOCK_KINDS,
+			rendererMap,
+			snapshot: catalogSnapshot.sourceDigest,
+			index: SEARCH_INDEX_SOURCES,
+			policy: POLICY_VERSION,
+			tools: AGENT_TOOLS_VERSION
+		})
+	)}`;
+	return cached;
+}
+
+exports["contractFingerprint"] = contractFingerprint;
+
+});
+
+__def("packages/builder-core/src/client-gate.ts", function (exports) {
+const { pageSpecIssues } = __req("packages/page-contract/src/index.ts");
+const { recordedScreenId } = __req("packages/builder-core/src/assemble.ts");
+const { validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
+function clientProposalGate(
+	proposal: Pick<LayoutProposal, "page" | "provenance">
+): ReturnType<typeof validateCatalogProvenance> | PageSpecGateError | CatalogValidationError {
+	const issues = pageSpecIssues(proposal.page);
+	if (issues.length) {
+		const first = issues[0]!;
+		return { ok: false, code: "page_spec_invalid", message: `page-spec/v1 ${first.keyword} failed at ${first.path}`, path: first.path };
+	}
+	return validateCatalogProvenance({
+		page: proposal.page,
+		screenId: recordedScreenId(proposal.provenance.screenId),
+		catalogDigest: proposal.provenance.catalog?.sourceDigest ?? null
+	});
+}
+
+exports["clientProposalGate"] = clientProposalGate;
+
+});
+
+__def("packages/builder-core/src/edits.ts", function (exports) {
+const { PAGE_BLOCK_KINDS, PAGE_COPY_KEYS } = __req("packages/page-contract/src/index.ts");
+const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
+const FIELD_SET = new Set<string>(PAGE_COPY_KEYS);
+
+const KIND_ALIASES: Record<string, PageBlockKind> = {
+	navigation: "nav",
+	header: "hero",
+	heading: "hero",
+	calltoaction: "cta",
+	"call-to-action": "cta"
+};
+
+const FIELD_ALIASES: Record<string, PageCopyKey> = {
+	title: "headline",
+	subtitle: "lede",
+	description: "lede",
+	body: "lede",
+	cta: "action",
+	button: "action",
+	label: "action"
+};
+
+function normalizeKind(raw: string): PageBlockKind | null {
+	const key = raw.trim().toLowerCase();
+	if (KIND_SET.has(key)) return key as PageBlockKind;
+	return KIND_ALIASES[key] ?? null;
+}
+
+function normalizeField(raw: string): PageCopyKey | null {
+	const key = raw.trim().toLowerCase();
+	if (FIELD_SET.has(key)) return key as PageCopyKey;
+	const aliased = FIELD_ALIASES[key];
+	return aliased && FIELD_SET.has(aliased) ? aliased : null;
+}
+
+function parseCopyPath(path: string): { kind: PageBlockKind; field: PageCopyKey } | null {
+	const parts = path
+		.split(".")
+		.map((part) => part.trim().toLowerCase())
+		.filter(Boolean);
+	const kind = parts.map(normalizeKind).find((item): item is PageBlockKind => Boolean(item));
+	const field = [...parts].reverse().map(normalizeField).find((item): item is PageCopyKey => Boolean(item));
+	if (!kind || !field) return null;
+	return { kind, field };
+}
+
+function looksLikeRawInstruction(value: string): boolean {
+	const words = value.trim().split(/\s+/);
+	if (/^(?:change|keep|create|update|edit|replace|apply)\b/i.test(value) && words.length > 6) return true;
+	if (/\bkeep all other\b/i.test(value)) return true;
+	return false;
+}
+
+function cleanExtractedValue(raw: string): string {
+	let value = raw.trim().replace(/^["'«]+|[»"']+$/g, "").trim();
+	value = value.replace(/\s+keep\s+all\s+other[\s\S]*$/i, "").trim();
+	if (!value || looksLikeRawInstruction(value)) return "";
+	if (value.length > 80) return "";
+	return value.slice(0, 80);
+}
+
+/** Structured copy patches from propose_layout.edits. Drops raw prompt text. */
+function parseLayoutCopyEdits(raw: unknown): LayoutCopyEdit[] {
+	if (!Array.isArray(raw)) return [];
+	const out: LayoutCopyEdit[] = [];
+	for (const item of raw) {
+		if (!item || typeof item !== "object") continue;
+		const rec = item as Record<string, unknown>;
+		const fromPath = typeof rec.path === "string" ? parseCopyPath(rec.path) : null;
+		const kind = normalizeKind(String(rec.kind ?? rec.blockKind ?? rec.slot ?? rec.block ?? fromPath?.kind ?? ""));
+		const field = normalizeField(String(rec.field ?? rec.copyKey ?? rec.key ?? fromPath?.field ?? ""));
+		const value = cleanExtractedValue(String(rec.value ?? ""));
+		if (!kind || !field || !value) continue;
+		out.push({ kind, field, value });
+	}
+	return out;
+}
+
+exports["parseLayoutCopyEdits"] = parseLayoutCopyEdits;
 
 });
 
@@ -30612,6 +30747,7 @@ exports["registryNpmDependencies"] = __req("packages/builder-core/src/catalog/or
 exports["writableOrigin"] = __req("packages/builder-core/src/catalog/organism.ts")["writableOrigin"];
 exports["gateInspectorPage"] = __req("packages/builder-core/src/inspector.ts")["gateInspectorPage"];
 exports["inspectorModel"] = __req("packages/builder-core/src/inspector.ts")["inspectorModel"];
+exports["inspectorOp"] = __req("packages/builder-core/src/inspector.ts")["inspectorOp"];
 exports["inspectorSetField"] = __req("packages/builder-core/src/inspector.ts")["inspectorSetField"];
 exports["shareUnchanged"] = __req("packages/builder-core/src/inspector.ts")["shareUnchanged"];
 exports["writeOrigin"] = __req("packages/builder-core/src/inspector.ts")["writeOrigin"];

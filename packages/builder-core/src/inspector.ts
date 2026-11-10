@@ -5,7 +5,12 @@
  * and requiredness come from the schema; a field without a page-spec origin is shown read-only (the variant or the
  * schema default sets it). Pure data, no Svelte.
  */
-import { parsePageSpec, type Page, type PageBlock, type PageBlockCopy, type PageCopyKey } from "@buildytech/page-contract";
+import { PAGE_LIMITS, PAGE_SLOTS, parsePageSpec, type Page, type PageBlock, type PageBlockCopy, type PageCopyKey } from "@buildytech/page-contract";
+import { proposeLayout } from "./assemble.ts";
+import { editPage } from "./patch.ts";
+import { validateCatalogProvenance } from "./catalog/provenance.ts";
+import { isScenarioId } from "./brief.ts";
+import type { ScenarioId } from "./copy.ts";
 import { organismFor, writableOrigin, type OrganismRender } from "./catalog/organism.ts";
 import { checkBlockProps } from "./catalog/provenance.ts";
 import { propsEventsFor, propsFieldTree, type PropsFieldNode } from "./catalog/props-schema.ts";
@@ -227,4 +232,150 @@ export function inspectorSetField(page: Page, blockId: string, pointer: string, 
 	blocks[index] = next;
 	const gated = gateInspectorPage(page, blocks, [blockId], pointer, now);
 	return gated.ok ? { ok: true, page: gated.page, blockId } : gated;
+}
+
+// ---- Block operations (step 4) ---------------------------------------------------------------------------------
+
+export type InspectorOp =
+	| { op: "set_variant"; blockId: string; variant: string }
+	| { op: "reset"; blockId: string }
+	| { op: "move"; blockId: string; to: number }
+	| { op: "duplicate"; blockId: string }
+	| { op: "remove"; blockId: string }
+	| { op: "duplicate_row"; blockId: string; row: number }
+	| { op: "remove_row"; blockId: string; row: number };
+
+export type InspectorOpContext = {
+	page: Page;
+	provenance: { screenId: string | null; scenarioId: string | null; missing?: string[] } | null;
+	revision: number;
+	now?: string;
+};
+
+function walkIds(blocks: readonly PageBlock[], out = new Set<string>()): Set<string> {
+	for (const node of blocks) {
+		out.add(node.id);
+		walkIds(node.children ?? [], out);
+	}
+	return out;
+}
+
+/** A free id derived from `id` (`block-hero-copy`, `block-hero-copy-2`, ...), within the page-spec id length. */
+function freeId(id: string, taken: Set<string>): string {
+	for (let n = 1; ; n += 1) {
+		const suffix = n === 1 ? "-copy" : `-copy-${n}`;
+		const candidate = `${id.slice(0, PAGE_LIMITS.maxIdLength - suffix.length)}${suffix}`;
+		if (!taken.has(candidate)) {
+			taken.add(candidate);
+			return candidate;
+		}
+	}
+}
+
+/** A copy of a block (and its rows) with fresh ids that do not collide with the page. */
+function cloneWithIds(node: PageBlock, taken: Set<string>): PageBlock {
+	const copy: PageBlock = { ...structuredClone(node), id: freeId(node.id, taken) };
+	if (node.children?.length) copy.children = node.children.map((child) => cloneWithIds(child, taken));
+	return copy;
+}
+
+type PatchProvenance = Parameters<typeof editPage>[0]["provenance"];
+
+function patchProvenance(ctx: InspectorOpContext): PatchProvenance {
+	if (!ctx.provenance) return undefined;
+	const scenarioId: ScenarioId | null = isScenarioId(ctx.provenance.scenarioId) ? ctx.provenance.scenarioId : null;
+	return { screenId: ctx.provenance.screenId, scenarioId, missing: ctx.provenance.missing ?? [] } as PatchProvenance;
+}
+
+/** A page-patch/v1 operation through editPage: the published schema, slot checks and the catalog provenance gate. */
+function viaPatch(ctx: InspectorOpContext, op: Record<string, unknown>, select: string): InspectorResult {
+	const result = editPage({ page: ctx.page, provenance: patchProvenance(ctx), patch: { ops: [op] }, expectedRevision: ctx.revision, now: ctx.now });
+	if (!result.ok) return fail(result.code, result.message, "");
+	return { ok: true, page: shareUnchanged(ctx.page, result.page), blockId: select };
+}
+
+/** The Stock sample of a block: the same screen assembled with no page content, the block with the same id. */
+function stockSample(ctx: InspectorOpContext, block: PageBlock): PageBlock | null {
+	const screenId = ctx.provenance?.screenId ?? null;
+	if (!screenId) return null;
+	const scenarioId = isScenarioId(ctx.provenance?.scenarioId) ? ctx.provenance!.scenarioId : null;
+	const fresh = proposeLayout({
+		brief: ctx.page.title,
+		scenarioId,
+		screenId,
+		expectedRevision: 0,
+		now: ctx.now,
+		content: { locale: ctx.page.locale, blocks: [] }
+	});
+	if (!fresh.ok) return null;
+	const sample = fresh.page.layout.blocks.find((node) => node.id === block.id && node.catalogBlock === block.catalogBlock);
+	return sample ? { ...sample, ...(block.variant ? { variant: block.variant } : {}) } : null;
+}
+
+/** A local tree operation under the inspector gate, plus the catalog provenance gate when the page has a screen. */
+function gated(ctx: InspectorOpContext, blocks: PageBlock[], changed: string[], select: string): InspectorResult {
+	const result = gateInspectorPage(ctx.page, blocks, changed, "", ctx.now);
+	if (!result.ok) return result;
+	const screenId = ctx.provenance?.screenId ?? null;
+	if (screenId) {
+		const checked = validateCatalogProvenance({ page: result.page, screenId });
+		if (!checked.ok) return fail(checked.code, checked.message, "");
+	}
+	return { ok: true, page: result.page, blockId: select };
+}
+
+/**
+ * Block operations of the inspector. Variant, move and remove are page-patch/v1 operations (editPage); reset puts
+ * back the Stock sample of the block in its current variant; duplicate and the row operations are local tree edits.
+ * Every result passes page-spec, the props gate and (with a screen) the catalog provenance gate, or nothing changes.
+ */
+export function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): InspectorResult {
+	const blocks = ctx.page.layout.blocks;
+	const index = blocks.findIndex((node) => node.id === op.blockId);
+	const block = blocks[index];
+	if (!block) return fail("block_not_found", `No section ${op.blockId} on this page.`, "");
+	switch (op.op) {
+		case "set_variant":
+			if (op.variant === block.variant) return { ok: true, page: ctx.page, blockId: block.id };
+			return viaPatch(ctx, { op: "set_variant", blockId: block.id, variant: op.variant }, block.id);
+		case "move":
+			if (op.to < 0 || op.to >= blocks.length) return fail("index_out_of_range", `A section moves to 1..${blocks.length}.`, "");
+			if (op.to === index) return { ok: true, page: ctx.page, blockId: block.id };
+			return viaPatch(ctx, { op: "move", blockId: block.id, to: op.to }, block.id);
+		case "remove": {
+			const neighbour = blocks[index + 1] ?? blocks[index - 1];
+			return viaPatch(ctx, { op: "remove", blockId: block.id }, neighbour?.id ?? "");
+		}
+		case "reset": {
+			const sample = stockSample(ctx, block);
+			if (!sample) return fail("no_stock_sample", `Section ${block.id} has no Stock sample on this page's screen.`, "");
+			const next = [...blocks];
+			next[index] = sample;
+			return gated(ctx, next, [block.id], block.id);
+		}
+		case "duplicate": {
+			const copy = cloneWithIds(block, walkIds(blocks));
+			const next = [...blocks];
+			next.splice(index + 1, 0, copy);
+			return gated(ctx, next, [copy.id], copy.id);
+		}
+		case "duplicate_row":
+		case "remove_row": {
+			const rows = block.children ?? [];
+			const row = rows[op.row];
+			if (!row) return fail("row_not_found", `Section ${block.id} has no row ${op.row + 1}.`, "");
+			const nextRows = [...rows];
+			if (op.op === "remove_row") nextRows.splice(op.row, 1);
+			else {
+				const max = PAGE_SLOTS[block.kind]?.items?.max ?? 0;
+				if (rows.length >= max) return fail("rows_over_limit", `${block.kind} renders at most ${max} rows.`, "");
+				nextRows.splice(op.row + 1, 0, cloneWithIds(row, walkIds(blocks)));
+			}
+			const nextBlock: PageBlock = { ...block, children: nextRows };
+			if (!nextRows.length) delete nextBlock.children;
+			const next = [...blocks];
+			next[index] = nextBlock;
+			return gated(ctx, next, [block.id], block.id);
+		}
+	}
 }

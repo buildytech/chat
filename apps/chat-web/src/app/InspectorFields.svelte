@@ -4,6 +4,8 @@
   read-only. Rejected edits show the gate's message and, for an enum, the allowed values in the field.
 -->
 <script lang="ts">
+	import Copy from "@lucide/svelte/icons/copy";
+	import Trash2 from "@lucide/svelte/icons/trash-2";
 	import Box from "$registry/compose/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";
 	import Checkbox from "$registry/compose/Checkbox.svelte";
@@ -157,6 +159,16 @@
 				{#each field.rows ?? [] as row, index (row.pointer)}
 					<Fieldset variant="card" data-pointer={row.pointer}>
 						<Legend class="text-xs">{t("inspector.row").replace("{n}", String(index + 1))}</Legend>
+						{#if handlers?.onrow && row.origin}
+							<Group gap="2" justify="end" role="group" aria-label={t("inspector.rowActions").replace("{n}", String(index + 1))}>
+								<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.duplicateRow")} title={t("inspector.duplicateRow")} data-action="duplicate-row" onclick={() => handlers!.onrow!(index, "duplicate")}>
+									<Copy />
+								</Button>
+								<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.removeRow")} title={t("inspector.removeRow")} data-action="remove-row" onclick={() => handlers!.onrow!(index, "remove")}>
+									<Trash2 />
+								</Button>
+							</Group>
+						{/if}
 						<Self fields={row.fields} {blockId} {variant} {issues} {handlers} />
 					</Fieldset>
 				{/each}

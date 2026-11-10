@@ -223,6 +223,16 @@
 		"inspector.undo": "Отменить",
 		"inspector.redo": "Повторить",
 		"inspector.undoKey": "Отменить (Ctrl+Z)",
-		"inspector.redoKey": "Повторить (Ctrl+Shift+Z)"
+		"inspector.redoKey": "Повторить (Ctrl+Shift+Z)",
+		"inspector.actions": "Действия с секцией",
+		"inspector.moveUp": "Переместить вверх",
+		"inspector.moveDown": "Переместить вниз",
+		"inspector.duplicate": "Дублировать секцию",
+		"inspector.reset": "Сбросить к образцу Stock этого варианта",
+		"inspector.remove": "Удалить секцию",
+		"inspector.variant": "Вариант",
+		"inspector.rowActions": "Действия строки {n}",
+		"inspector.duplicateRow": "Дублировать строку",
+		"inspector.removeRow": "Удалить строку"
 	}
 }

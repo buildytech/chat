@@ -333,6 +333,16 @@
 		"inspector.undo": "Undo",
 		"inspector.redo": "Redo",
 		"inspector.undoKey": "Undo (Ctrl+Z)",
-		"inspector.redoKey": "Redo (Ctrl+Shift+Z)"
+		"inspector.redoKey": "Redo (Ctrl+Shift+Z)",
+		"inspector.actions": "Section actions",
+		"inspector.moveUp": "Move up",
+		"inspector.moveDown": "Move down",
+		"inspector.duplicate": "Duplicate section",
+		"inspector.reset": "Reset to the Stock sample of this variant",
+		"inspector.remove": "Remove section",
+		"inspector.variant": "Variant",
+		"inspector.rowActions": "Row {n} actions",
+		"inspector.duplicateRow": "Duplicate row",
+		"inspector.removeRow": "Remove row"
 	}
 }

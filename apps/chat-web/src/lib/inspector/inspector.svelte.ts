@@ -4,10 +4,10 @@
  * no model call: a passing edit replaces the visible page at once (persisted like any page edit), a rejected one
  * leaves the page as it was and is shown in its field.
  */
-import { inspectorSetField, type InspectorField, type InspectorResult } from "@buildytech/builder-core";
+import { inspectorOp, inspectorSetField, type InspectorField, type InspectorOp, type InspectorResult } from "@buildytech/builder-core";
 import type { Page } from "@buildytech/page-contract";
 import { getChatMode } from "../chat-core";
-import { getBoundPageSessionId, getCurrentPage, replaceVisiblePage } from "../page-store";
+import { getBoundPageSessionId, getCurrentPage, getCurrentProvenance, getPageRevision, replaceVisiblePage } from "../page-store";
 import type { FieldIssue } from "./fields";
 import { EditHistory } from "./history";
 
@@ -17,6 +17,8 @@ let historySession: string | null = null;
 let version = $state(0);
 /** Rejected edits: block id -> field pointer -> issue. */
 let issues = $state<Record<string, Record<string, FieldIssue>>>({});
+/** The last rejected block operation, shown above the fields of its block. */
+let opIssue = $state<{ blockId: string; code: string; message: string } | null>(null);
 
 /** The history of the bound chat for the page Preview shows; reset when the chat or the page changed elsewhere. */
 function historyFor(page: Page): EditHistory<Page> {
@@ -26,6 +28,7 @@ function historyFor(page: Page): EditHistory<Page> {
 		history.clear();
 		historySession = bound;
 		issues = {};
+		opIssue = null;
 	}
 	return history;
 }
@@ -50,6 +53,7 @@ function restore(page: Page | null): boolean {
 	if (!page) return false;
 	replaceVisiblePage(page);
 	issues = {};
+	opIssue = null;
 	version += 1;
 	return true;
 }
@@ -94,6 +98,27 @@ export const inspector = {
 		const done = commit(page, result, typing ? `${blockId}${field.pointer}` : null);
 		if (!typing) history.seal();
 		return done;
+	},
+
+	/** The last rejected operation on this block, if any. */
+	opIssueFor(blockId: string): { code: string; message: string } | null {
+		return opIssue?.blockId === blockId ? opIssue : null;
+	},
+
+	/** A block operation (variant, reset, move, duplicate, remove, row duplicate / remove): one undo step. */
+	run(op: InspectorOp): boolean {
+		const page = getCurrentPage();
+		if (!page) return false;
+		historyFor(page).seal();
+		const provenance = getCurrentProvenance();
+		const result = inspectorOp({ page, provenance, revision: getPageRevision() ?? 0 }, op);
+		if (!result.ok) {
+			opIssue = { blockId: op.blockId, code: result.code, message: result.message };
+			return false;
+		}
+		opIssue = null;
+		if (result.page === page) return true;
+		return commit(page, result, null);
 	},
 
 	/** End the open typing step (blur). */
