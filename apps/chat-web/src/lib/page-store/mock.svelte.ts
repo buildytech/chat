@@ -99,6 +99,13 @@ export function getBoundPageSessionId(): string | null {
 	return boundSessionId;
 }
 
+/** Read-only: the page a chat shows in Preview (candidate, else applied), straight from storage. Binds and writes nothing. */
+export function readPreviewPage(sessionId: string | null | undefined): Page | null {
+	if (!sessionId) return null;
+	const record = readSessionPages(sessionId);
+	return parseStored(record?.candidate) ?? parseStored(record?.applied);
+}
+
 /** Preview prefers an unapplied candidate, then last applied. */
 export function getCurrentPage(): Page | null {
 	return candidatePage ?? currentPage;

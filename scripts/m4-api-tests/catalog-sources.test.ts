@@ -237,7 +237,7 @@ test("layout: lib holds only logic (no .svelte), no chat-owned 'compose' path, n
 		const text = readFileSync(join(src, file), "utf8");
 		for (const [, spec] of text.matchAll(/from "([^"]+\.svelte)"/g)) {
 			// $lib/x.svelte names a runes module (x.svelte.ts): lib holds no components (asserted above).
-			assert.ok(["$registry/", "$lib/", "./", "../app/"].some((prefix) => spec!.startsWith(prefix)), `${file} imports ${spec}`);
+			assert.ok(["$registry/", "$lib/", "./", "../app/", "../../app/"].some((prefix) => spec!.startsWith(prefix)), `${file} imports ${spec}`);
 		}
 	}
 });

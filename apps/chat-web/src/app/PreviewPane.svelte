@@ -27,6 +27,9 @@
 	} from "$lib/page-store";
 	import { recordedScreenId } from "@buildytech/builder-core";
 	import PreviewFrame from "./PreviewFrame.svelte";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte";
+	import { previewWindowUrl } from "$lib/browser/preview-settings";
+	import { getBoundPageSessionId } from "$lib/page-store";
 
 	const page = $derived(getCurrentPage());
 	const savedRevision = $derived(getPageRevision());
@@ -168,8 +171,12 @@
 		}
 	}
 
+	const clean = $derived(previewSettings.hideServiceLabels);
+
+	// The whole preview site as-is in a new window: the /preview route renders this chat's page (pending proposal, else
+	// the applied page) with the registry blocks and kit theme, no chat UI and no service labels.
 	function openNew() {
-		window.open(location.href, "_blank", "noopener");
+		window.open(previewWindowUrl(getSelectedSession()?.id ?? getBoundPageSessionId()), "_blank", "noopener");
 	}
 </script>
 
@@ -265,7 +272,8 @@
 		</Group>
 	</Group>
 
-	<Stack align="stretch" class="shrink-0 gap-2 border-b border-border px-4 py-3" data-slot="preview-status">
+	{#if unapplied || !clean}
+	<Stack align="stretch" class="shrink-0 gap-2 border-b border-border px-4 py-2" data-slot="preview-status" data-clean={clean ? "true" : undefined}>
 		{#if unapplied}
 			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-3 py-2">
 				<Text tag="span" class="text-xs text-muted-foreground">{t("proposal.notApplied")}</Text>
@@ -284,12 +292,13 @@
 					</Button>
 				</Group>
 			</Group>
-		{:else if appliedLabel}
+		{:else if appliedLabel && !clean}
 			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-3 py-2">
 				<Text tag="span" class="text-xs text-muted-foreground">{appliedLabel}</Text>
 			</Group>
 		{/if}
 		{#key reloadKey}
+			{#if !clean}
 			<Text tag="p" class="text-xs text-muted-foreground">{t("preview.runtime")}</Text>
 			<Text tag="p" class="text-xs text-muted-foreground">
 				{screenId || t("preview.noScreen")}
@@ -299,8 +308,10 @@
 					{t("home.incompatible")} {t("home.missing").replace("{list}", missingLabels)}
 				</Text>
 			{/if}
+			{/if}
 		{/key}
 	</Stack>
+	{/if}
 
 	<Box
 		class="relative min-h-0 flex-1 overflow-hidden bg-muted"

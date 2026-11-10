@@ -312,6 +312,9 @@
 		"ask.applyVia": "Variant change from the Ask card (no model call).",
 		"ask.apply.no_page": "There is no page yet. Switch to Build and create a page first, then apply a variant of {block}.",
 		"ask.apply.block_not_on_page": "The page has no {block} block. Ask Build to add it first.",
-		"ask.apply.unknown_block": "{block} is not a block of the pinned Stock catalog."
+		"ask.apply.unknown_block": "{block} is not a block of the pinned Stock catalog.",
+		"settings.hidePreviewLabels": "Hide service labels in Preview",
+		"preview.standaloneTitle": "Preview",
+		"preview.standaloneEmpty": "This chat has no page yet. Create one in the chat, then open the preview again."
 	}
 }

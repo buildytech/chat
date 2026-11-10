@@ -9,6 +9,7 @@
 	import { t } from "$lib/i18n/dictionary";
 	import { blocksOf, getCurrentPage, getSelectedBlockId } from "$lib/page-store";
 	import PreviewBlock from "./PreviewBlock.svelte";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte";
 
 	let { frame }: { frame: { reload: number } } = $props();
 
@@ -23,7 +24,7 @@
 			<Text tag="p" class="p-4 text-sm text-muted-foreground">{t("workspace.empty")}</Text>
 		{:else}
 			{#each blocks as block (block.id)}
-				<PreviewBlock {block} {selectedId} />
+				<PreviewBlock {block} {selectedId} clean={previewSettings.hideServiceLabels} />
 			{/each}
 		{/if}
 	{/key}

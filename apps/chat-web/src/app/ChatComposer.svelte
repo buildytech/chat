@@ -154,7 +154,7 @@
 		<Text tag="p" class="text-[11px] text-muted-foreground">{t("composer.enterHint")}</Text>
 		<Group class="items-center justify-between gap-2">
 			<Group class="flex-wrap items-center gap-2">
-				<Group class="items-center gap-0 rounded border border-border p-0.5" role="group" aria-label={t("composer.modeLabel")}>
+				<Group class="items-center gap-0 rounded border border-border p-1" role="group" aria-label={t("composer.modeLabel")}>
 					{#each AGENT_MODES as option (option)}
 						<Button
 							type="button"

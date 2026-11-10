@@ -3,6 +3,7 @@
 @import "../../../registry/svelte/src/styles/index.css";
 @source "./app/PreviewFrame.svelte";
 @source "./app/PreviewBlock.svelte";
+@source "./app/StandalonePreview.svelte";
 
 html,
 body {

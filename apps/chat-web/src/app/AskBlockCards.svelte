@@ -19,10 +19,10 @@
 </script>
 
 {#if cards.length > 0}
-	<Box tag="ul" class="flex flex-col gap-3" aria-label={t("ask.cards")}>
+	<Box tag="ul" class="flex flex-col gap-4" aria-label={t("ask.cards")}>
 		{#each cards as card (card.spec)}
 			<Box tag="li">
-				<Block tag="article" class="rounded border border-border px-3 py-3" data-spec={card.spec}>
+				<Block tag="article" class="rounded border border-border p-4" data-spec={card.spec}>
 					<Stack align="stretch" class="gap-2">
 						<Group class="flex-wrap items-center justify-between gap-2">
 							<Title as={3} class="text-sm font-semibold text-foreground">{card.title}</Title>
@@ -30,7 +30,7 @@
 								href={card.stockUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="inline-flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-4"
+								class="inline-flex items-center gap-2 text-xs text-muted-foreground underline underline-offset-4"
 								aria-label={t("catalogRefs.open").replace("{title}", card.title)}
 							>
 								<Text tag="span">{t("ask.openStock")}</Text>

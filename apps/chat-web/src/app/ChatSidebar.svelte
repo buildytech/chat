@@ -26,6 +26,9 @@
 	import { getSelectedModelId, isChatModelAvailable, listChatModels, setSelectedModelId } from "$lib/browser/models.svelte";
 	import { modelUnavailableCode } from "@buildytech/builder-core";
 	import ConfirmDialog from "./ConfirmDialog.svelte";
+	import Checkbox from "$registry/compose/Checkbox.svelte";
+	import Label from "$registry/compose/Label.svelte";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte";
 
 	type NavItem = {
 		id: string;
@@ -335,6 +338,14 @@
 				>
 					{theme.isDark ? t("sidebar.useLight") : t("sidebar.useDark")}
 				</Button>
+				<Group class="items-center gap-2 px-2 py-2" data-slot="settings-preview-clean">
+					<Checkbox
+						id="creator-settings-preview-clean"
+						checked={previewSettings.hideServiceLabels}
+						onchange={(event: Event) => previewSettings.setHideServiceLabels((event.currentTarget as HTMLInputElement).checked)}
+					/>
+					<Label for="creator-settings-preview-clean" class="text-sm text-foreground">{t("settings.hidePreviewLabels")}</Label>
+				</Group>
 				<Button
 					class="w-full justify-start rounded px-2 py-1.5 text-sm text-destructive hover:bg-accent/70"
 					aria-haspopup="dialog"

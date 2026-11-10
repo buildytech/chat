@@ -202,6 +202,9 @@
 		"ask.applyVia": "Смена варианта с карточки Ask (без вызова модели).",
 		"ask.apply.no_page": "Страницы ещё нет. Переключитесь в Build и создайте страницу, затем примените вариант {block}.",
 		"ask.apply.block_not_on_page": "На странице нет блока {block}. Сначала попросите Build добавить его.",
-		"ask.apply.unknown_block": "{block} нет в закреплённом каталоге Stock."
+		"ask.apply.unknown_block": "{block} нет в закреплённом каталоге Stock.",
+		"settings.hidePreviewLabels": "Скрыть служебные метки в Preview",
+		"preview.standaloneTitle": "Предпросмотр",
+		"preview.standaloneEmpty": "В этом чате ещё нет страницы. Создайте её в чате и откройте предпросмотр снова."
 	}
 }

@@ -27,6 +27,7 @@ export {
 	getSelectedBlockId,
 	hasUnappliedProposal,
 	loadMockFixturePage,
+	readPreviewPage,
 	selectBlock,
 	setCandidatePage,
 	setCurrentPage

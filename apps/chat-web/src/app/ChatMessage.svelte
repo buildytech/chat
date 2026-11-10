@@ -161,8 +161,8 @@
 	{:else}
 		<Stack align="stretch" class="gap-6">
 			{#if message.answer}
-				<Stack align="stretch" class="gap-3" data-answer={message.mode ?? "build"}>
-					<Text tag="span" class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+				<Stack align="stretch" class="gap-4" data-answer={message.mode ?? "build"}>
+					<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
 						{message.mode === "ask" ? t("ask.answerAsk") : t("ask.answerBuild")}
 					</Text>
 					<MarkdownText source={message.text} />

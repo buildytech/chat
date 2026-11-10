@@ -19,7 +19,13 @@
 		Object.entries(loaders).map(([path, load]) => [`blocks/${path.split("/").pop()}`, load])
 	);
 
-	let { block, selectedId }: { block: PageBlock; selectedId: string | null } = $props();
+	// clean: no service labels (Settings, and always in the standalone preview window); standalone: no selection.
+	let {
+		block,
+		selectedId,
+		clean = false,
+		standalone = false
+	}: { block: PageBlock; selectedId: string | null; clean?: boolean; standalone?: boolean } = $props();
 
 	const selected = $derived(selectedId === block.id);
 	const render = $derived(organismFor(block));
@@ -28,13 +34,14 @@
 
 <Block
 	tag="article"
-	class={cn("overflow-hidden outline-2 -outline-offset-2", selected ? "outline-primary" : "outline-transparent")}
-	aria-label={t("preview.selectBlock")}
+	class={cn("overflow-hidden outline-2 -outline-offset-2", selected && !standalone ? "outline-primary" : "outline-transparent")}
+	aria-label={standalone ? undefined : t("preview.selectBlock")}
 	data-renderer={render && load ? "registry" : "stub"}
 	data-registry-item={render?.item}
 	data-variant={render?.variant}
-	onclick={() => selectBlock(block.id)}
+	onclick={standalone ? undefined : () => selectBlock(block.id)}
 >
+	{#if !clean}
 	<Group class="flex-wrap gap-2 border-b border-border bg-muted px-4 py-1" data-slot="block-provenance">
 		<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{block.kind}</Text>
 		<Text tag="span" class="text-xs text-muted-foreground">
@@ -45,6 +52,7 @@
 			{/if}
 		</Text>
 	</Group>
+	{/if}
 	{#if render && load}
 		{#await load() then module}
 			<module.default {...render.props} />
