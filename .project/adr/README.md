@@ -14,6 +14,7 @@ Numbering: `NNNN-kebab-title.md`. Numbers only increase; files are never renamed
 | [0008](0008-registry-single-source-of-ui.md) | The UI8Kit registry is the single source of UI | Accepted |
 | [0009](0009-brands-in-codegen-x-single-registry.md) | Brands live in CodeGen-X; the published registry stays one | Accepted |
 | [0010](0010-props-schemas-program-gate.md) | Published props schemas are the program gate for registry blocks | Accepted |
+| [0011](0011-ask-build-modes-shared-agent-tools.md) | Ask / Build chat modes and one shared agent tools file | Accepted |
 
 Status values: Proposed, Accepted, Superseded, Deprecated.
 
@@ -24,3 +25,4 @@ Status values: Proposed, Accepted, Superseded, Deprecated.
 0008 makes registry.buildy.tw/svelte the only source of UI: a pinned CLI snapshot (`registry/svelte`, sha256 lock), published variants, `lib` without components, a "not in the registry" stub instead of own layouts, and a ZIP identical to `ui8kit init` + `add`.
 0009 records that brands (badge + filter) live in the CodeGen-X database, not as per-brand kits or author namespaces/URLs. Contribution is closed and trusted, through XGenBot and the generator; `registry.buildy.tw` publishes one cleaned `@ui8kit` registry, with brand visible as metadata. Chat and WP FastY Builder both snapshot that registry. Catalog data for WordPress, a CLI snapshot for the plugin, and the brand field remain open (WordPress to be discussed further).
 0010 pins registry.buildy.tw/props/v0.json (sha256 = sidecar = manifest, digest recomputed) and makes it the program gate: render props are the schema-filled merge of variant preset and page content, validated with Ajv 2020 (strict) for propose_layout, page-patch and the browser gate; errors list the schema's allowed values; no chat-side icon list. Fail-closed; lazy chunk in the browser.
+0011 adds an explicit Ask / Build toggle in the composer (kept per chat; no intent word lists). Ask offers only read-only tools (`search_catalog`, `get_block`), answers in text (safe Markdown) with catalog block cards and never changes the page; Build runs with `tool_choice: auto`, so a text-only answer creates no proposal. Apply variant on an Ask card makes an ordinary pending set_variant proposal. Tool definitions live once in `packages/builder-core/src/agent/agent-tools.v1.json` (name, description, JSON Schema parameters, modes) for the chat runtime and later the WordPress builder.
