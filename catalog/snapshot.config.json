@@ -1,0 +1,27 @@
+{
+	"$comment": "The one place that pins the catalog sources (ADR 0012). `npm run snapshot` reads it, fetches every input at these pins and writes catalog/stock-registry.v0.json, catalog/snapshot.lock.json, catalog/coverage.json and the runtime artifacts derived from them.",
+	"codegenX": {
+		"repo": "codegen-x/ui8kit",
+		"commit": "3a6d923a3bdf75bba8951a3dfda7f3e97a69ecc5",
+		"raw": "https://raw.githubusercontent.com",
+		"content": "apps/stock/content",
+		"files": [
+			"assets.v0.json",
+			"facets.v0.json",
+			"previews.v0.json",
+			"install.v0.json",
+			"added.v0.json",
+			"pattern-map.v0.json",
+			"terms/pattern.v0.json",
+			"i18n/locales.json",
+			"variants.v0.json",
+			"props.v0.json"
+		]
+	},
+	"ui8kit": {
+		"cli": "ui8kit@3.4.1",
+		"registry": "https://registry.buildy.tw",
+		"runtime": "svelte",
+		"files": ["registry.json", "manifest.json", "svelte/index.json", "variants/v0.json", "props/v0.json"]
+	}
+}

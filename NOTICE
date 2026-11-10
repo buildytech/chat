@@ -7,8 +7,9 @@ See the LICENSE file in the repository root.
 Istok Web is licensed under the SIL Open Font License, Version 1.1.
 See apps/chat-web/src/fonts/OFL.txt.
 
-The Stock catalog snapshot at packages/builder-core/src/catalog/snapshot.json is a
-derived subset of CodeGen-X UI8Kit Stock (https://github.com/codegen-x/ui8kit,
-pinned commit 6b2e71b56375cf3aab161a755c8eee806e7309fb, source artifact
-apps/stock/content/assets.v0.json). CodeGen-X UI8Kit is licensed under the MIT
+The unified catalog snapshot at catalog/stock-registry.v0.json and the artifacts
+derived from it (packages/builder-core/src/catalog/snapshot.json, search-index.json)
+are derived from CodeGen-X UI8Kit Stock (https://github.com/codegen-x/ui8kit,
+pinned commit 3a6d923a3bdf75bba8951a3dfda7f3e97a69ecc5, apps/stock/content) and the
+UI8Kit registry published at https://registry.buildy.tw from the same commit. CodeGen-X UI8Kit is licensed under the MIT
 License. Copyright 2026 CodeGen-X.

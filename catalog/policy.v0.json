@@ -1,0 +1,41 @@
+{
+	"$comment": "BuildY policy over the catalog (ADR 0012): the only hand-written catalog data in this repository. Everything else in catalog/ is generated from the pinned sources. `npm run snapshot` validates every value here against the snapshot (facet values, block ids, Page DTO kinds) and fails on a stale entry.",
+	"version": 0,
+	"pageSize": 12,
+	"assetTypes": ["screen", "block"],
+	"searchFacets": ["section", "job", "industry", "role", "composition", "character", "density", "media", "slots", "tone"],
+	"ownerFilters": {
+		"blank": { "type": "screen" },
+		"dashboard": { "type": "screen", "section": "dashboard" },
+		"landing": { "type": "screen", "section": "marketing" },
+		"website": { "type": "screen", "job": "hero" }
+	},
+	"pageKinds": ["activity", "bottomnav", "chart", "cta", "dish", "feature", "features", "footer", "hero", "hours", "menu", "metric", "metrics", "nav", "nav-link", "overview", "pagehead", "sidenav"],
+	"pageKindOfBlock": {
+		"navbar": "nav",
+		"header": "nav",
+		"hero": "hero",
+		"herosplit": "hero",
+		"storehero": "hero",
+		"features": "features",
+		"featureshowcase": "features",
+		"featuretabs": "features",
+		"featuresplit": "features",
+		"metrics": "metrics",
+		"overview": "overview",
+		"stats": "features",
+		"chart": "chart",
+		"activity": "activity",
+		"pagehead": "pagehead",
+		"cta": "cta",
+		"ctaproof": "cta",
+		"footer": "footer",
+		"footersplit": "footer",
+		"sitemap": "footer",
+		"restaurantmenu": "menu",
+		"menuboard": "menu",
+		"dish": "dish",
+		"sidenav": "sidenav",
+		"bottomnav": "bottomnav"
+	}
+}

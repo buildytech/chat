@@ -19,13 +19,16 @@
     "test": "npm run test --workspace=@buildytech/page-contract && npm run test:unit",
     "check": "npm run check --workspace=@buildytech/chat-web",
     "verify": "npm test && npm run check && npm run build",
-    "catalog:index": "node scripts/build-catalog-index.mjs",
+    "snapshot": "node scripts/snapshot.mjs",
+    "snapshot:check": "node scripts/snapshot.mjs --check",
+    "snapshot:derive": "node scripts/snapshot.mjs --derive",
+    "catalog:index": "node scripts/snapshot.mjs --derive",
     "schema:check": "node scripts/check-page-spec-schema.mjs",
     "registry:snapshot": "node scripts/registry-snapshot.mjs",
     "registry:check": "node scripts/registry-snapshot.mjs --check",
     "registry:sources": "node scripts/registry-snapshot.mjs --sources",
     "test:api": "node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts --test scripts/m4-api-tests/*.test.ts",
-    "test:unit": "node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts --test scripts/m4-api-tests/map.test.ts scripts/m4-api-tests/gateway.retry.test.ts scripts/m4-api-tests/session-url.test.ts scripts/m4-api-tests/creator-shell.test.ts scripts/m4-api-tests/mode.test.ts scripts/m4-api-tests/no-wordpress-runtime.test.ts scripts/m4-api-tests/model-switch.test.ts scripts/m4-api-tests/usage.test.ts scripts/m4-api-tests/catalog-constructor.test.ts scripts/m4-api-tests/vercel-protect.test.ts scripts/m4-api-tests/persist.test.ts scripts/m4-api-tests/svelte-code.test.ts scripts/m4-api-tests/proposal-state.test.ts scripts/m4-api-tests/demo-content.test.ts scripts/m4-api-tests/app-shell.test.ts scripts/m4-api-tests/shell-search.test.ts scripts/m4-api-tests/page-patch.test.ts scripts/m4-api-tests/catalog-sources.test.ts scripts/m4-api-tests/registry-render.test.ts scripts/m4-api-tests/props-schema.test.ts scripts/m4-api-tests/agent-modes.test.ts scripts/m4-api-tests/preview-window.test.ts"
+    "test:unit": "node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts --test scripts/m4-api-tests/map.test.ts scripts/m4-api-tests/gateway.retry.test.ts scripts/m4-api-tests/session-url.test.ts scripts/m4-api-tests/creator-shell.test.ts scripts/m4-api-tests/mode.test.ts scripts/m4-api-tests/no-wordpress-runtime.test.ts scripts/m4-api-tests/model-switch.test.ts scripts/m4-api-tests/usage.test.ts scripts/m4-api-tests/catalog-constructor.test.ts scripts/m4-api-tests/vercel-protect.test.ts scripts/m4-api-tests/persist.test.ts scripts/m4-api-tests/svelte-code.test.ts scripts/m4-api-tests/proposal-state.test.ts scripts/m4-api-tests/demo-content.test.ts scripts/m4-api-tests/app-shell.test.ts scripts/m4-api-tests/shell-search.test.ts scripts/m4-api-tests/page-patch.test.ts scripts/m4-api-tests/catalog-sources.test.ts scripts/m4-api-tests/registry-render.test.ts scripts/m4-api-tests/props-schema.test.ts scripts/m4-api-tests/agent-modes.test.ts scripts/m4-api-tests/preview-window.test.ts scripts/m4-api-tests/catalog-snapshot.test.ts"
   },
   "engines": {
     "node": "22.x"

@@ -1,0 +1,111 @@
+{
+	"format": "buildy-catalog-snapshot-lock",
+	"version": 0,
+	"config": {
+		"path": "catalog/snapshot.config.json",
+		"sha256": "360d1f847568e998284974eeaeebbdcc817823d69a250efc66dd8c2aaf5c429f"
+	},
+	"policy": {
+		"path": "catalog/policy.v0.json",
+		"sha256": "cba0c7f2d7668ffb859d07bbc4ed60be98d1084108d9fa3e3ca0df2e5eccc697"
+	},
+	"codegenX": {
+		"repo": "codegen-x/ui8kit",
+		"commit": "3a6d923a3bdf75bba8951a3dfda7f3e97a69ecc5",
+		"files": {
+			"added.v0.json": {
+				"sha256": "c596d20022e765e0e01da6212ba8c2b4c6fc71c2dde4ab43966850d67efe327e",
+				"bytes": 388
+			},
+			"assets.v0.json": {
+				"sha256": "75840504dfaf7e6cd08fa2ff507e7d1bcda620156bba315f6e05a5d44f13dc08",
+				"bytes": 673108
+			},
+			"facets.v0.json": {
+				"sha256": "6cefb8e3fb1d7e423bfed60db68b78eafa4b7a003a3324570d1eb874554b5471",
+				"bytes": 77562
+			},
+			"i18n/locales.json": {
+				"sha256": "1ba54ca2bb4e289c8046e10ef03b77a05c3fb3420971815f2f564e6e9e3e9656",
+				"bytes": 331
+			},
+			"install.v0.json": {
+				"sha256": "ee93d20cf85a08e2c099bb2c519d0b9cf06ee215c9e9efcf1c7e27ec0f26974f",
+				"bytes": 177680
+			},
+			"pattern-map.v0.json": {
+				"sha256": "81d95e237d372079b02331b809467bb26902fcc82d752d4520b8a2aa5df8c768",
+				"bytes": 3752
+			},
+			"previews.v0.json": {
+				"sha256": "73927c2cd1ef85b95cdbc4b785d0e785bfb0a1958e2c74c340e60de5da39e4f4",
+				"bytes": 242789
+			},
+			"props.v0.json": {
+				"sha256": "2f5e08736cee3dd30abfac5fb20b3d974934383ecc5c95b5d8c13b5288b266a5",
+				"bytes": 611394
+			},
+			"terms/pattern.v0.json": {
+				"sha256": "8516b8a03d49a4017946f06ace08be4ae6a090b5e7881710e295c23c1677ec91",
+				"bytes": 14837
+			},
+			"variants.v0.json": {
+				"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4",
+				"bytes": 124758
+			}
+		}
+	},
+	"ui8kit": {
+		"cli": "ui8kit@3.4.1",
+		"registry": "https://registry.buildy.tw",
+		"runtime": "svelte",
+		"sourceCommit": "3a6d923a3bdf75bba8951a3dfda7f3e97a69ecc5",
+		"files": {
+			"manifest.json": {
+				"sha256": "60b3cd25d44729ee4b1a9a392ea2165f054cbe275e9e4c7a6ef64104ceedf312",
+				"bytes": 897411
+			},
+			"props/v0.json": {
+				"sha256": "2f5e08736cee3dd30abfac5fb20b3d974934383ecc5c95b5d8c13b5288b266a5",
+				"bytes": 611394
+			},
+			"registry.json": {
+				"sha256": "e077af4a1c51446c95c9d1ecf01cfa83eb50180f9fd6c25c8881a2f0e7720079",
+				"bytes": 1189427
+			},
+			"svelte/index.json": {
+				"sha256": "39d1542666e00ced6324d73aa55b3f909423000f186edb1af484c3b4784cd122",
+				"bytes": 130412
+			},
+			"variants/v0.json": {
+				"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4",
+				"bytes": 124758
+			}
+		},
+		"pinned": {
+			"registry/variants.v0.json": {
+				"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4"
+			},
+			"registry/props.v0.json": {
+				"sha256": "2f5e08736cee3dd30abfac5fb20b3d974934383ecc5c95b5d8c13b5288b266a5"
+			},
+			"registry/snapshot.json": {
+				"sha256": "69215006ad3d0f8a28e4cdf17351410340a42b3260958a65f5ae8ef36289ccbf"
+			}
+		}
+	},
+	"outputs": {
+		"catalog/stock-registry.v0.json": {
+			"sha256": "343938202ae516d3a037447f9b22fb7fae4bff09f15ee2f375d52f322d64604e"
+		},
+		"catalog/coverage.json": {
+			"sha256": "f1edcf852cf06833269a29f71d97438451f8d4d4f17184166345aa0e22c6ed68"
+		},
+		"packages/builder-core/src/catalog/snapshot.json": {
+			"sha256": "da6dbced99b3797a41bf58294c1d3af668ccce9d34cb44b9ee338897a17b5b8b"
+		},
+		"packages/builder-core/src/catalog/search-index.json": {
+			"sha256": "d09b328d586bfbe2a3f79c07b267e1b2f34a0509f17e19f03cfceffca7cff346"
+		}
+	}
+}

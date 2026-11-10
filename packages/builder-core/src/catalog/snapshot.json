@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "provider": "codegen-x",
   "repo": "codegen-x/ui8kit",
-  "pinnedCommit": "6b2e71b56375cf3aab161a755c8eee806e7309fb",
+  "pinnedCommit": "3a6d923a3bdf75bba8951a3dfda7f3e97a69ecc5",
   "sourceArtifact": "apps/stock/content/assets.v0.json",
   "sourceDigest": "sha256:a9d256e6935c6a8d579f86d634eebb46dfe36cacd02d9e4e2a0fdce4ff41664a",
   "sourceVersion": "0",

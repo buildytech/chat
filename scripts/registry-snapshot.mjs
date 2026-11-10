@@ -30,9 +30,11 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const CLI = "ui8kit@3.4.1";
-const REGISTRY = "https://registry.buildy.tw";
-const RUNTIME = "svelte";
+/** Pins come from the one catalog config (.project/adr/0012-unified-catalog-snapshot.md). */
+const PINS = JSON.parse(readFileSync(join(ROOT, "catalog/snapshot.config.json"), "utf8")).ui8kit;
+const CLI = PINS.cli;
+const REGISTRY = PINS.registry;
+const RUNTIME = PINS.runtime;
 const VARIANTS_URL = `${REGISTRY}/variants/v0.json`;
 const PROPS_URL = `${REGISTRY}/props/v0.json`;
 const MANIFEST_URL = `${REGISTRY}/manifest.json`;
