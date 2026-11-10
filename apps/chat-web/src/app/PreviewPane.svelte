@@ -214,7 +214,7 @@
 
 <Block
 	tag="section"
-	class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded border border-border bg-card"
+	class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-card"
 	aria-label={t("workspace.preview")}
 	data-page-id={page?.id ?? ""}
 	data-page-revision={savedRevision ?? ""}
@@ -222,7 +222,7 @@
 	data-block="preview-pane"
 >
 	<Group
-		class="shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border p-2"
+		class="h-10 shrink-0 items-center justify-between gap-2 border-b border-border px-2"
 		data-slot="browser-head"
 	>
 		<Group
@@ -248,13 +248,13 @@
 		</Group>
 
 		<Group
-			class="min-w-0 flex-1 items-center justify-between gap-2 rounded border border-border bg-background px-2 py-0 max-md:order-3 max-md:basis-full"
+			class="min-w-0 flex-1 items-center justify-between gap-2 rounded border border-border bg-background px-2 py-0 max-md:hidden"
 			role="group"
 			aria-label={t("preview.address")}
 		>
 			<Group class="min-w-0 flex-1 items-center gap-0">
 				<Button
-					class="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
+					class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
 					aria-label={t("preview.back")}
 					disabled={history.length === 0}
 					onclick={back}
@@ -262,7 +262,7 @@
 					<Icon size="sm"><ArrowLeft /></Icon>
 				</Button>
 				<Button
-					class="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
+					class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
 					aria-label={t("preview.forward")}
 					disabled={future.length === 0}
 					onclick={forward}
@@ -285,7 +285,7 @@
 				/>
 			</Group>
 			<Button
-				class="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+				class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 				aria-label={t("preview.reload")}
 				onclick={reload}
 			>
@@ -293,7 +293,7 @@
 			</Button>
 		</Group>
 
-		<Group class="items-center gap-2 max-md:order-2">
+		<Group class="shrink-0 items-center gap-2">
 			{#if skinOptions.length}
 				<Select
 					id="preview-skin"
@@ -322,9 +322,9 @@
 	</Group>
 
 	{#if unapplied || !clean}
-	<Stack align="stretch" class="shrink-0 gap-2 border-b border-border px-4 py-2" data-slot="preview-status" data-clean={clean ? "true" : undefined}>
+	<Stack align="stretch" class="shrink-0 gap-2 border-b border-border p-2" data-slot="preview-status" data-clean={clean ? "true" : undefined}>
 		{#if unapplied}
-			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-4 py-2">
+			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-2 py-2">
 				<Text tag="span" class="text-xs text-muted-foreground">{t("proposal.notApplied")}</Text>
 				<Group class="gap-2">
 					<Button
@@ -342,7 +342,7 @@
 				</Group>
 			</Group>
 		{:else if appliedLabel && !clean}
-			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-4 py-2">
+			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-2 py-2">
 				<Text tag="span" class="text-xs text-muted-foreground">{appliedLabel}</Text>
 			</Group>
 		{/if}

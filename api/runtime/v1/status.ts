@@ -10980,7 +10980,7 @@ type Schema = Record<string, unknown> | boolean;
 const ANNOTATIONS = new Set(["$schema", "$id", "$defs", "title", "description", "default", "examples"]);
 const ASSERTIONS = new Set([
 	"$ref", "allOf", "anyOf", "oneOf", "not", "type", "enum", "const", "pattern", "minLength", "maxLength",
-	"minimum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties"
+	"minimum", "maximum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties"
 ]);
 
 function typeOf(value: unknown): string {
@@ -11090,6 +11090,7 @@ class SchemaRegistry {
 			if (typeof schema.pattern === "string" && !this.pattern(schema.pattern).test(value)) fail("pattern");
 		}
 		if (typeof value === "number" && typeof schema.minimum === "number" && value < schema.minimum) fail("minimum");
+		if (typeof value === "number" && typeof schema.maximum === "number" && value > schema.maximum) fail("maximum");
 		if (Array.isArray(value)) {
 			if (typeof schema.minItems === "number" && value.length < schema.minItems) fail("minItems");
 			if (typeof schema.maxItems === "number" && value.length > schema.maxItems) fail("maxItems");
@@ -11124,7 +11125,7 @@ const { PageContractError, parseDraftPage, parsePage } = __req("packages/page-co
 const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
 const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
 /** ui8kit/contract commit the vendored schemas come from. */
-const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "1eda0b3" } as const;
+const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "3b4f9c6" } as const;
 
 const registry = new SchemaRegistry();
 registry.add(pageSpecSchema as Record<string, unknown>);

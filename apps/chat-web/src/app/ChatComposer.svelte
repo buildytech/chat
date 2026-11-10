@@ -124,8 +124,8 @@
 	tag="footer"
 	class={cn(
 		variant === "onboarding"
-			? "w-full rounded border border-border bg-card px-3 py-3"
-			: "sticky bottom-0 z-10 mt-auto border-t border-border bg-background px-3 py-3 lg:static lg:z-auto"
+			? "w-full rounded border border-border bg-card p-2"
+			: "sticky bottom-0 z-10 border-t border-border bg-background p-2 lg:static lg:z-0"
 	)}
 >
 	<Form class="flex flex-col gap-2" onsubmit={submit} onkeydown={onKeydown}>
@@ -135,7 +135,7 @@
 			name="message"
 			rows="2"
 			placeholder={fieldPlaceholder}
-			class="max-h-[30vh] min-h-16 w-full resize-none overflow-y-auto rounded border border-input bg-card px-3 py-2 text-sm text-foreground shadow-none outline-none ring-ring focus-visible:ring-2"
+			class="min-h-12 w-full resize-none overflow-y-auto rounded border border-input bg-card px-3 py-2 text-sm text-foreground shadow-none outline-none ring-ring focus-visible:ring-2"
 			value={draft}
 			oninput={(event: Event) => (draft = (event.currentTarget as HTMLTextAreaElement).value)}
 			onkeydown={onKeydown}
@@ -154,7 +154,7 @@
 		<Text tag="p" class="text-[11px] text-muted-foreground">{t("composer.enterHint")}</Text>
 		<Group class="items-center justify-between gap-2">
 			<Group class="flex-wrap items-center gap-2">
-				<Group class="items-center gap-0 rounded border border-border p-1" role="group" aria-label={t("composer.modeLabel")}>
+				<Group class="items-center gap-0 rounded border border-border p-0" role="group" aria-label={t("composer.modeLabel")}>
 					{#each AGENT_MODES as option (option)}
 						<Button
 							type="button"
@@ -174,7 +174,7 @@
 				<Button
 					id="composer-model-trigger"
 					type="button"
-					class="inline-flex max-w-[220px] items-center gap-1 rounded border border-border px-2 py-1.5 text-sm text-foreground hover:bg-accent"
+					class="inline-flex min-w-0 items-center gap-1 rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-accent"
 					aria-label={t("composer.model")}
 					expanded={modelOpen}
 					aria-haspopup="listbox"
@@ -194,7 +194,7 @@
 				</Button>
 				<Button
 					type="button"
-					class="rounded border border-border px-2 py-1.5 text-sm text-foreground hover:bg-accent"
+					class="rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-accent"
 					onclick={() => {
 						modelOpen = false;
 						onAddModel?.();
@@ -224,12 +224,12 @@
 			</Group>
 		</Group>
 		{#if modelOpen && chatModels.length > 0}
-			<Stack align="stretch" id="composer-model-list" class="gap-1 rounded border border-border bg-card p-2" role="listbox" aria-label={t("composer.modelList")}>
+			<Stack align="stretch" id="composer-model-list" class="gap-0 rounded border border-border bg-card p-2" role="listbox" aria-label={t("composer.modelList")}>
 				{#each chatModels as model (model.id)}
 					<Button
 						type="button"
 						class={cn(
-							"w-full items-start justify-start rounded px-2 py-1.5 text-left",
+							"w-full items-start justify-start rounded px-2 py-1 text-left",
 							modelRunsToolLoop(model) ? "hover:bg-accent" : "cursor-not-allowed opacity-60",
 							model.id === selectedModelId ? "bg-accent" : ""
 						)}
@@ -239,7 +239,7 @@
 						disabled={!modelRunsToolLoop(model)}
 						onclick={() => chooseModel(model.id)}
 					>
-						<Stack align="stretch" class="gap-0.5">
+						<Stack align="stretch" class="gap-0">
 							<Text tag="span" class="text-sm text-foreground">{model.label}</Text>
 							<Text tag="span" class="font-mono text-[11px] text-muted-foreground">{model.id}</Text>
 							{#if !modelRunsToolLoop(model)}
@@ -248,7 +248,7 @@
 						</Stack>
 					</Button>
 				{/each}
-				<Text tag="p" class="px-2 pt-1 text-[11px] text-muted-foreground">{t("composer.modelTrialHint")}</Text>
+				<Text tag="p" class="px-2 pt-2 text-xs text-muted-foreground">{t("composer.modelTrialHint")}</Text>
 			</Stack>
 		{/if}
 		{#if selected}

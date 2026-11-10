@@ -11,6 +11,7 @@ import chatPackage from "../../../package.json";
 import { exportSessions, importSessions, type ImportResult } from "../chat-core";
 import { theme, THEME_KEY } from "../theme/theme.svelte";
 import { getSelectedModelId, setSelectedModelId } from "./models.svelte";
+import { creatorLayout } from "../creator-layout.svelte";
 import { previewSettings } from "./preview-settings.svelte";
 import type { SessionApp, SessionFile, SessionPins, SessionSettings } from "./session-file.ts";
 import { writeKey } from "./storage-v1.ts";
@@ -76,7 +77,7 @@ function download(file: SessionFile): void {
 
 /** The session file of this browser; `download` also saves it as a .json file (Settings > Export, `buildy.export()`). */
 export function exportSessionFile(options?: { download?: boolean }): SessionFile {
-	const file = exportSessions({ app: app(), pins: sessionPins(), settings: settings() });
+	const file = exportSessions({ app: app(), pins: sessionPins(), settings: settings(), prefs: { layout: { ...creatorLayout.layout } } });
 	if (options?.download) download(file);
 	return file;
 }
@@ -87,6 +88,8 @@ export async function importSessionFile(json: unknown): Promise<ImportResult> {
 	if (result.ok) {
 		const parsed = typeof json === "string" ? (JSON.parse(json) as SessionFile) : (json as SessionFile);
 		applySettings(parsed.settings);
+		// A file with prefs brings its layout (clamped to this host); without prefs this browser keeps its own.
+		if (parsed.prefs?.layout) creatorLayout.replace(parsed.prefs.layout);
 	}
 	return result;
 }

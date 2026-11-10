@@ -48,8 +48,8 @@ test("canvas: blocks carry data-block-id; chrome lives in the chat document, not
 	assert.match(overlay, /addEventListener\("scroll"/);
 	assert.doesNotMatch(overlay, /\sstyle=/, "geometry is set by an attachment, not a style attribute");
 	assert.doesNotMatch(web("app/StandalonePreview.svelte"), /CanvasOverlay|BlockTree/);
-	const workspace = web("app/Workspace.svelte");
-	assert.match(workspace, /\{#if build\}\s*<BlockTree \/>/);
+	assert.match(web("app/Workspace.svelte"), /\{#if build && column\}[\s\S]*<InspectorColumn/);
+	assert.match(web("app/InspectorColumn.svelte"), /<BlockTree \/>/);
 	assert.match(web("app/BlockTree.svelte"), /canvas\.hover\(block\.id\)/);
 });
 
@@ -143,7 +143,10 @@ test("inspector panel: registry widgets only, mounted in Build", () => {
 	const fieldsView = web("app/InspectorFields.svelte");
 	for (const widget of ["Input", "Textarea", "Select", "Checkbox", "Fieldset"]) assert.match(fieldsView, new RegExp(`\\$registry/compose/${widget}\\.svelte`));
 	assert.doesNotMatch(fieldsView, /<(input|textarea|select|div|span|button)\b/);
-	assert.match(web("app/Workspace.svelte"), /\{#if build\}\s*<InspectorPanel/);
+	// ADR 0017: one inspector column (Layers over Properties) in Build, a sheet below md.
+	assert.match(web("app/Workspace.svelte"), /\{#if build && column\}[\s\S]*<InspectorColumn \/>/);
+	assert.match(web("app/Workspace.svelte"), /\{#if build && !column\}[\s\S]*<InspectorColumn sheet/);
+	assert.match(web("app/InspectorColumn.svelte"), /<BlockTree \/>[\s\S]*<InspectorPanel \/>/);
 	assert.match(web("app/InspectorPanel.svelte"), /inspectorModel\(block\)/);
 });
 

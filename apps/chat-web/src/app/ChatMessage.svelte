@@ -121,9 +121,9 @@
 	}
 </script>
 
-<Block tag="article" class="w-full max-w-full" data-role={message.role}>
+<Block tag="article" class="w-full" data-role={message.role}>
 	{#if mine}
-		<Group class="items-start gap-3">
+		<Group class="items-start gap-2">
 			<Box
 				class="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground"
 				aria-hidden="true"
@@ -136,7 +136,7 @@
 						<Text tag="span" class="text-sm font-semibold text-foreground">{t("message.you")}</Text>
 						<Text tag="span" class="text-xs text-muted-foreground">{relativeTime(message.createdAt)}</Text>
 					</Group>
-					<Group class="gap-1">
+					<Group class="gap-0">
 						<Button
 							class="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 							aria-label={copied ? t("message.copied") : t("message.copy")}
@@ -153,7 +153,7 @@
 						</Button>
 					</Group>
 				</Group>
-				<Box class="rounded bg-muted px-3 py-2 text-foreground">
+				<Box class="rounded bg-muted px-2 py-2 text-foreground">
 					<Text tag="p" class="text-sm whitespace-pre-wrap">{message.text}</Text>
 				</Box>
 			</Stack>
@@ -181,13 +181,13 @@
 					</Text>
 					{#if pending}
 						<Button
-							class="rounded bg-foreground px-3 py-1.5 text-sm text-background hover:bg-foreground/90"
+							class="rounded bg-foreground px-3 py-1 text-sm text-background hover:bg-foreground/90"
 							onclick={() => (onApply ? onApply() : applyProposal())}
 						>
 							<Text tag="span">{t("proposal.apply")}</Text>
 						</Button>
 						<Button
-							class="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+							class="rounded border border-border px-3 py-1 text-sm text-foreground hover:bg-accent"
 							onclick={() => (onDiscard ? onDiscard() : discardProposal())}
 						>
 							<Text tag="span">{t("proposal.discard")}</Text>
@@ -199,7 +199,7 @@
 				{/if}
 			{/if}
 			{#if run}
-				<Stack align="stretch" class="gap-1">
+				<Stack align="stretch" class="gap-2">
 					<Text tag="p" class="font-mono text-[11px] text-muted-foreground">
 						{t("usage.runModel").replace("{label}", run.modelLabel).replace("{id}", run.modelId)}
 					</Text>
@@ -235,16 +235,16 @@
 				</Stack>
 			{/if}
 			{#if showActivity && activity.length > 0}
-				<Stack align="stretch" class="gap-2.5" role="list" aria-label={t("chat.activity")}>
+				<Stack align="stretch" class="gap-2" role="list" aria-label={t("chat.activity")}>
 					{#each activity as line (line)}
-						<Group class="items-center gap-3" role="listitem">
+						<Group class="items-center gap-2" role="listitem">
 							<Icon size="sm" class="text-muted-foreground"><FileText /></Icon>
 							<Text tag="span" class="text-xs font-semibold text-foreground">{line}</Text>
 						</Group>
 					{/each}
 				</Stack>
 			{/if}
-			<Group class="items-center gap-1" aria-label={t("chat.reactions")}>
+			<Group class="items-center gap-0" aria-label={t("chat.reactions")}>
 				<Button
 					class="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 					aria-label={t("message.copy")}

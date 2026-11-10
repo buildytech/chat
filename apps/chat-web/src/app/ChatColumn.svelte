@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Block from "$registry/compose/Block.svelte";
+	import { creatorLayout } from "$lib/creator-layout.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
 	import type { ChatSession, CreatorRuntimeStatus } from "$lib/chat-core";
@@ -44,10 +45,11 @@
 	id="creator-chat-column"
 	aria-label={t("shell.chatColumn")}
 	class={cn(
-		"min-h-0 min-w-0 flex-col border-r border-border bg-background",
+		"min-h-0 min-w-0 flex-col bg-background",
 		visible ? "flex flex-1" : "max-lg:hidden",
-		chatHidden ? "lg:hidden" : "lg:flex lg:w-[var(--creator-chat-w,320px)] lg:flex-none lg:shrink-0"
+		chatHidden ? "lg:hidden" : "lg:flex lg:flex-none lg:shrink-0"
 	)}
+	style={creatorLayout.columns && !chatHidden ? `width: ${creatorLayout.widths.chat}px` : undefined}
 >
 	<ChatThread
 		{session}

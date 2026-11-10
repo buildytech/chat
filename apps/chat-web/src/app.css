@@ -29,15 +29,13 @@ select {
 	font: inherit;
 }
 
-#creator-shell {
-	--creator-nav-w: 248px;
-	--creator-chat-w: 320px;
-	--creator-tree-w: 208px;
-}
-
 body.creator-resizing {
 	cursor: col-resize;
 	user-select: none;
+}
+
+body.creator-resizing[data-resize-axis="y"] {
+	cursor: row-resize;
 }
 
 body.creator-resizing iframe,

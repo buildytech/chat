@@ -19,7 +19,7 @@
 	} = $props();
 </script>
 
-<Block tag="header" class="flex items-center justify-between border-b border-border px-3 py-3">
+<Block tag="header" class="flex h-10 items-center justify-between border-b border-border px-2">
 	<Title as={2} class="truncate text-base font-semibold text-foreground">{title}</Title>
 	<Group class="hidden lg:flex">
 		<Button

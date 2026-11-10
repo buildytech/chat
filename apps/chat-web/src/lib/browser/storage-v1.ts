@@ -14,7 +14,10 @@ export const STORAGE_KEYS = {
 	pages: "buildy:v1:pages",
 	selectedSessionId: "buildy:v1:selectedSessionId",
 	selectedModelId: "buildy:v1:selectedModelId",
+	/** Before ADR 0017; moved once into prefs.layout by creator-layout.svelte.ts. */
 	layout: "buildy:v1:layout",
+	/** Layout preferences (ADR 0017): `{ layout }`, session file `prefs`. */
+	prefs: "buildy:v1:prefs",
 	theme: "buildy:v1:theme",
 	previewHideServiceLabels: "buildy:v1:preview.hideServiceLabels",
 	migration: "buildy:v1:migration",

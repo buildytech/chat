@@ -30,6 +30,8 @@
 	import Checkbox from "$registry/compose/Checkbox.svelte";
 	import Label from "$registry/compose/Label.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
+	import { creatorLayout } from "$lib/creator-layout.svelte";
+	import { PANE_RANGE } from "$lib/layout/prefs";
 
 	type NavItem = {
 		id: string;
@@ -142,11 +144,12 @@
 
 <Block
 	tag="aside"
-	class="flex h-full w-[248px] shrink-0 flex-col justify-between overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:w-[var(--creator-nav-w,248px)]"
+	class="flex h-full shrink-0 flex-col justify-between overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
+	style={`width: ${creatorLayout.columns ? creatorLayout.widths.nav : PANE_RANGE.nav.default}px`}
 	aria-label={t("sidebar.mainNav")}
 	data-nav={collapsed ? "collapsed" : "expanded"}
 >
-	<Stack class="gap-3 p-3 in-data-[nav=collapsed]:items-center in-data-[nav=collapsed]:p-2">
+	<Stack class="gap-2 p-2 in-data-[nav=collapsed]:items-center">
 		<Group class="justify-between gap-2 in-data-[nav=collapsed]:flex-col in-data-[nav=collapsed]:items-center">
 			<Group class="min-w-0 gap-2 in-data-[nav=collapsed]:hidden">
 				<Box
@@ -157,7 +160,7 @@
 				</Box>
 				<Text tag="span" class="truncate text-sm font-semibold">{t("sidebar.brand")}</Text>
 			</Group>
-			<Group class="gap-1 in-data-[nav=collapsed]:flex-col">
+			<Group class="gap-0 in-data-[nav=collapsed]:flex-col">
 				<Button
 					class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 					aria-label={t("sidebar.newChat")}
@@ -178,11 +181,11 @@
 			</Group>
 		</Group>
 
-		<Stack class="gap-1 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.mainNav")}>
+		<Stack class="gap-0 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.mainNav")}>
 			{#each mainItems as item (item.id)}
 				<Button
 					class={cn(
-						"w-full justify-start gap-2 rounded px-3 py-2 text-sm",
+						"w-full justify-start gap-2 rounded px-2 py-1 text-sm",
 						"in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0",
 						active === item.id
 							? "bg-accent text-accent-foreground"
@@ -202,7 +205,7 @@
 						{#if item.kbd}
 							<Text
 								tag="span"
-								class="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground in-data-[nav=collapsed]:hidden"
+								class="rounded border border-border px-2 text-xs text-muted-foreground in-data-[nav=collapsed]:hidden"
 							>
 								{item.kbd}
 							</Text>
@@ -214,14 +217,14 @@
 
 		{#if !collapsed}
 		{#if searchOpen}
-			<Stack align="stretch" class="gap-1 px-1">
+			<Stack align="stretch" class="gap-2">
 				<Input
 					id="sidebar-chat-search"
 					type="search"
 					value={searchDraft}
 					placeholder={t("sidebar.searchPlaceholder")}
 					aria-label={t("sidebar.search")}
-					class="w-full rounded border border-input bg-card px-3 py-1.5 text-sm"
+					class="w-full rounded border border-input bg-card px-2 py-1 text-sm"
 					oninput={(event: Event) => {
 						searchDraft = (event.currentTarget as HTMLInputElement).value;
 					}}
@@ -229,9 +232,9 @@
 			</Stack>
 		{/if}
 
-		<Stack align="stretch" class="gap-1">
+		<Stack align="stretch" class="gap-0">
 			<Button
-				class="w-full justify-between rounded px-3 py-2 text-sm text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+				class="w-full justify-between rounded px-2 py-1 text-sm text-muted-foreground hover:bg-accent/70 hover:text-foreground"
 				expanded={recentsOpen}
 				aria-controls="creator-recents"
 				onclick={() => (recentsOpen = !recentsOpen)}
@@ -245,17 +248,17 @@
 					{/if}
 				</Icon>
 			</Button>
-			<Stack align="stretch" id="creator-recents" class="min-h-0 gap-1" hidden={!recentsOpen}>
+			<Stack align="stretch" id="creator-recents" class="min-h-0 gap-0" hidden={!recentsOpen}>
 				{#if visibleSessions.length === 0}
-					<Text tag="p" class="px-3 py-2 text-sm text-muted-foreground">
+					<Text tag="p" class="px-2 py-2 text-sm text-muted-foreground">
 						{searchDraft.trim() ? t("sidebar.noMatches") : t("sidebar.empty")}
 					</Text>
 				{:else}
 					{#each visibleSessions as session (session.id)}
-						<Group class="gap-1">
+						<Group class="gap-0">
 							<Button
 								class={cn(
-									"min-w-0 flex-1 justify-start gap-2 rounded px-3 py-2 text-left text-sm",
+									"min-w-0 flex-1 justify-start gap-2 rounded px-2 py-1 text-left text-sm",
 									selectedId === session.id || active === session.id
 										? "bg-accent text-accent-foreground"
 										: "text-foreground hover:bg-accent/70"
@@ -283,11 +286,11 @@
 		{/if}
 	</Stack>
 
-	<Stack class="gap-1 p-3 in-data-[nav=collapsed]:items-center in-data-[nav=collapsed]:p-2" tag="nav" aria-label={t("sidebar.preferences")}>
+	<Stack class="gap-0 p-2 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.preferences")}>
 		<Separator class="in-data-[nav=collapsed]:hidden" />
 		<Button
 			class={cn(
-				"w-full justify-start gap-2 rounded px-3 py-2 text-sm",
+				"w-full justify-start gap-2 rounded px-2 py-1 text-sm",
 				"in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0",
 				active === "settings" ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/70"
 			)}
@@ -318,7 +321,7 @@
 					<Button
 						id={index === 0 ? "creator-settings-model" : undefined}
 						class={cn(
-							"w-full justify-start rounded px-2 py-1.5 text-left text-sm",
+							"w-full justify-start rounded px-2 py-1 text-left text-sm",
 							isChatModelAvailable(model.id) ? "hover:bg-accent/70" : "cursor-not-allowed opacity-60",
 							model.id === selectedModelId ? "bg-accent text-accent-foreground" : "text-foreground"
 						)}
@@ -330,11 +333,11 @@
 						{model.label}
 					</Button>
 					{#if !isChatModelAvailable(model.id)}
-						<Text tag="p" class="px-2 text-[11px] text-muted-foreground">{t(modelUnavailableCode(model) === "model_too_slow" ? "composer.modelTooSlow" : "composer.modelUnavailable")}</Text>
+						<Text tag="p" class="px-2 text-xs text-muted-foreground">{t(modelUnavailableCode(model) === "model_too_slow" ? "composer.modelTooSlow" : "composer.modelUnavailable")}</Text>
 					{/if}
 				{/each}
 				<Button
-					class="w-full justify-start rounded px-2 py-1.5 text-sm text-foreground hover:bg-accent/70"
+					class="w-full justify-start rounded px-2 py-1 text-sm text-foreground hover:bg-accent/70"
 					onclick={() => theme.toggle()}
 				>
 					{theme.isDark ? t("sidebar.useLight") : t("sidebar.useDark")}
@@ -349,7 +352,7 @@
 				</Group>
 				<SettingsSessionFile />
 				<Button
-					class="w-full justify-start rounded px-2 py-1.5 text-sm text-destructive hover:bg-accent/70"
+					class="w-full justify-start rounded px-2 py-1 text-sm text-destructive hover:bg-accent/70"
 					aria-haspopup="dialog"
 					onclick={() => (pendingDelete = { kind: "all" })}
 				>
@@ -360,10 +363,10 @@
 				{/if}
 			</Stack>
 		{/if}
-		<Group class="justify-between gap-2 rounded px-3 py-2 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0">
+		<Group class="justify-between gap-2 rounded p-2 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0">
 			<Group class="gap-2 in-data-[nav=collapsed]:gap-0">
 				<Switch
-					class="relative h-5 w-9 rounded-full border border-border bg-muted p-0"
+					class="relative inline-flex h-6 w-12 items-center rounded-full border-4 border-muted bg-muted p-0 ring-1 ring-border"
 					checked={theme.isDark}
 					aria-label={t("sidebar.nightMode")}
 					title={t("sidebar.nightMode")}
@@ -371,8 +374,8 @@
 				>
 					<Box
 						class={cn(
-							"absolute top-0.5 size-4 rounded-full bg-foreground transition-[left]",
-							theme.isDark ? "left-4" : "left-0.5"
+							"size-4 rounded-full bg-foreground transition-transform",
+							theme.isDark ? "translate-x-6" : "translate-x-0"
 						)}
 					></Box>
 				</Switch>

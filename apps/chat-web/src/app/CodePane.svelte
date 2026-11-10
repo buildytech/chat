@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Box from "$registry/kit/ui/box/Box.svelte";
 	import ChevronLeft from "@lucide/svelte/icons/chevron-left";
 	import Copy from "@lucide/svelte/icons/copy";
 	import FileCode from "@lucide/svelte/icons/file-code";
@@ -151,13 +152,13 @@
 		oncollapse={() => creatorLayout.toggleTree()}
 	/>
 	{#if !treeCollapsed}
-		<PaneSplitter pane="tree" class="max-md:hidden" />
+		<PaneSplitter pane="tree" controls="code-file-pane" class="max-md:hidden" />
 	{/if}
 
 	<Stack align="stretch" class="flex min-h-0 min-w-0 flex-1 flex-col max-md:in-data-[stage=files]:hidden">
 		<Stack align="stretch" class="hidden border-b border-border p-4 max-md:in-data-[stage=editor]:block">
 			<Button
-				class="inline-flex w-full items-center justify-center gap-2 rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+				class="inline-flex w-full items-center justify-center gap-2 rounded border border-border px-3 py-1 text-sm text-foreground hover:bg-accent"
 				onclick={() => (stage = "files")}
 			>
 				<Icon size="sm" class="text-muted-foreground"><ChevronLeft /></Icon>
@@ -183,7 +184,7 @@
 			{#each tabs as tab, i (tab.path)}
 				<Group
 					class={cn(
-						"h-full shrink-0 items-center gap-1 border-r border-border px-2",
+						"h-full shrink-0 items-center gap-0 border-r border-border px-2",
 						tab.active ? "bg-card text-foreground" : "text-muted-foreground"
 					)}
 				>
@@ -207,15 +208,16 @@
 			{/each}
 			</Group>
 		</Group>
-		<Group class="h-10 shrink-0 items-center gap-1 overflow-x-auto border-b border-border px-3" aria-label={t("code.path")}>
+		<Group class="h-10 shrink-0 items-center gap-2 overflow-x-auto border-b border-border px-2" aria-label={t("code.path")}>
 			{#each crumbs as crumb, i (crumb + i)}
 				{#if i > 0}
 					<Text tag="span" class="text-xs text-muted-foreground" aria-hidden="true">/</Text>
 				{/if}
 				<Text tag="span" class="text-xs text-foreground">{crumb}</Text>
 			{/each}
+			<Box class="min-w-0 flex-1"></Box>
 			<Button
-				class="ml-auto inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-accent"
+				class="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-accent"
 				aria-label={t("code.copy")}
 				onclick={copySource}
 			>

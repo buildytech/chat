@@ -8,6 +8,7 @@
 </script>
 
 <script lang="ts">
+	import Box from "$registry/kit/ui/box/Box.svelte";
 	import ChevronDown from "@lucide/svelte/icons/chevron-down";
 	import ChevronRight from "@lucide/svelte/icons/chevron-right";
 	import FileCode from "@lucide/svelte/icons/file-code";
@@ -23,6 +24,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
+	import { creatorLayout, INSPECTOR_COLUMN_MIN } from "$lib/creator-layout.svelte";
 
 	let {
 		pane,
@@ -61,12 +63,13 @@
 	id="code-file-pane"
 	tag="aside"
 	class={cn(
-		"flex w-full shrink-0 flex-col overflow-y-auto border-b border-border bg-muted md:w-[var(--creator-tree-w,208px)] md:border-b-0 md:border-r max-md:flex-1 max-md:in-data-[stage=editor]:hidden",
+		"flex w-full shrink-0 flex-col overflow-y-auto border-b border-border bg-muted md:border-b-0 md:border-r max-md:flex-1 max-md:in-data-[stage=editor]:hidden",
 		collapsed && "md:hidden"
 	)}
 	aria-label={t("code.tree")}
+	style={creatorLayout.viewport >= INSPECTOR_COLUMN_MIN ? `width: ${creatorLayout.size("tree")}px` : undefined}
 >
-	<Group class="h-10 shrink-0 items-center gap-1 border-b border-border px-2">
+	<Group class="h-10 shrink-0 items-center gap-0 border-b border-border px-2">
 		<Button
 			class={cn(
 				"inline-flex size-8 items-center justify-center rounded",
@@ -89,8 +92,9 @@
 		>
 			<Icon size="sm"><Search /></Icon>
 		</Button>
+		<Box class="min-w-0 flex-1"></Box>
 		<Button
-			class="ml-auto hidden size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground md:inline-flex"
+			class="hidden size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground md:inline-flex"
 			aria-label={t("code.hideFiles")}
 			title={t("code.hideFiles")}
 			onclick={() => oncollapse?.()}
@@ -98,7 +102,7 @@
 			<Icon size="sm"><PanelLeft /></Icon>
 		</Button>
 	</Group>
-	<Stack align="stretch" class="gap-1 p-2">
+	<Stack align="stretch" class="gap-0 p-2">
 		{#if pane === "search"}
 			<Input
 				id="code-file-search"
@@ -106,19 +110,19 @@
 				value={fileQuery}
 				placeholder={t("code.searchPlaceholder")}
 				aria-label={t("code.search")}
-				class="w-full rounded border border-input bg-card px-2 py-1.5 text-sm"
+				class="w-full rounded border border-input bg-card px-2 py-1 text-sm"
 				oninput={(event: Event) => {
 					fileQuery = (event.currentTarget as HTMLInputElement).value;
 				}}
 			/>
 		{/if}
 		{#if visibleEntries.length === 0}
-			<Text tag="p" class="px-2 py-3 text-sm text-muted-foreground">{t("code.searchEmpty")}</Text>
+			<Text tag="p" class="px-2 py-2 text-sm text-muted-foreground">{t("code.searchEmpty")}</Text>
 		{:else}
 			{#each visibleEntries as entry (entry.id)}
 				<Button
 					class={cn(
-						"w-full justify-start gap-2 rounded px-2 py-1.5 text-left text-sm",
+						"w-full justify-start gap-2 rounded px-2 py-1 text-left text-sm",
 						entry.kind === "file" && entry.path.startsWith("blocks/") && "pl-6",
 						selectedPath === entry.path
 							? "bg-accent text-accent-foreground"

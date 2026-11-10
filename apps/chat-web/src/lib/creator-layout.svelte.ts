@@ -1,196 +1,131 @@
-import { STORAGE_KEYS, readKey, writeKey } from "./browser/storage-v1.ts";
+/**
+ * The creator shell layout (ADR 0017): pane sizes and collapsed states from `buildy:v1:prefs`, the viewport, and the
+ * widths that fit it. Rules live in `layout/prefs.ts` (pure, tested); this module holds the state and persists it.
+ */
+import { STORAGE_KEYS, browserStorage } from "./browser/storage-v1.ts";
+import { getChatMode } from "./chat-core";
+import { loadLayout, saveLayout } from "./layout/prefs-store.ts";
+import {
+	collapsedKey,
+	fitWidths,
+	isCollapsed,
+	parseLayout,
+	PANE_RANGE,
+	sizeOf,
+	withCollapsed,
+	withSize,
+	type LayoutPrefs,
+	type Pane,
+	type Panel
+} from "./layout/prefs.ts";
 
-export const CREATOR_LAYOUT_KEY = STORAGE_KEYS.layout;
+export const PREFS_KEY = STORAGE_KEYS.prefs;
+/** Breakpoints of the shell: columns from lg (the chat is a tab below), the inspector a sheet below md. */
+export const COLUMNS_MIN = 1024;
+export const INSPECTOR_COLUMN_MIN = 768;
 
-export const CREATOR_LAYOUT_DEFAULTS = {
-	navWidth: 248,
-	chatWidth: 320,
-	treeWidth: 208
-} as const;
-
-export const CREATOR_LAYOUT_CLAMP = {
-	nav: { min: 180, max: 360 },
-	chat: { min: 240, max: 480 },
-	tree: { min: 140, max: 360 }
-} as const;
-
-export const CREATOR_NAV_RAIL = 64;
-
-export type CreatorLayoutPane = keyof typeof CREATOR_LAYOUT_CLAMP;
-
-type CreatorLayoutBlob = {
-	navWidth: number;
-	chatWidth: number;
-	treeWidth: number;
-	sidebarCollapsed: boolean;
-	chatHidden: boolean;
-	treeCollapsed: boolean;
-};
-
-function clamp(value: number, min: number, max: number): number {
-	return Math.min(max, Math.max(min, Math.round(value)));
-}
-
-function asNumber(value: unknown, min: number, max: number, fallback: number): number {
-	const n = typeof value === "number" ? value : Number(value);
-	if (!Number.isFinite(n)) return fallback;
-	return clamp(n, min, max);
-}
-
-function asBool(value: unknown, fallback: boolean): boolean {
-	return typeof value === "boolean" ? value : fallback;
-}
-
-function readBlob(): CreatorLayoutBlob {
-	const fallback: CreatorLayoutBlob = {
-		navWidth: CREATOR_LAYOUT_DEFAULTS.navWidth,
-		chatWidth: CREATOR_LAYOUT_DEFAULTS.chatWidth,
-		treeWidth: CREATOR_LAYOUT_DEFAULTS.treeWidth,
-		sidebarCollapsed: false,
-		chatHidden: false,
-		treeCollapsed: false
-	};
-	try {
-		const raw = readKey(CREATOR_LAYOUT_KEY);
-		if (!raw) return fallback;
-		const parsed = JSON.parse(raw) as Partial<CreatorLayoutBlob>;
-		return {
-			navWidth: asNumber(
-				parsed.navWidth,
-				CREATOR_LAYOUT_CLAMP.nav.min,
-				CREATOR_LAYOUT_CLAMP.nav.max,
-				fallback.navWidth
-			),
-			chatWidth: asNumber(
-				parsed.chatWidth,
-				CREATOR_LAYOUT_CLAMP.chat.min,
-				CREATOR_LAYOUT_CLAMP.chat.max,
-				fallback.chatWidth
-			),
-			treeWidth: asNumber(
-				parsed.treeWidth,
-				CREATOR_LAYOUT_CLAMP.tree.min,
-				CREATOR_LAYOUT_CLAMP.tree.max,
-				fallback.treeWidth
-			),
-			sidebarCollapsed: asBool(parsed.sidebarCollapsed, fallback.sidebarCollapsed),
-			chatHidden: asBool(parsed.chatHidden, fallback.chatHidden),
-			treeCollapsed: asBool(parsed.treeCollapsed, fallback.treeCollapsed)
-		};
-	} catch {
-		return fallback;
-	}
-}
+export type CreatorLayoutPane = Pane;
 
 function createCreatorLayout() {
-	const initial = readBlob();
-	let navWidth = $state(initial.navWidth);
-	let chatWidth = $state(initial.chatWidth);
-	let treeWidth = $state(initial.treeWidth);
-	let sidebarCollapsed = $state(initial.sidebarCollapsed);
-	let chatHidden = $state(initial.chatHidden);
-	let treeCollapsed = $state(initial.treeCollapsed);
+	let layout = $state<LayoutPrefs>(loadLayout(browserStorage()));
+	let viewport = $state(typeof window === "undefined" ? 1440 : window.innerWidth);
 	let resizing = $state(false);
+	// The workspace view: the inspector column exists only in Build on the Preview tab.
+	let view = $state<"preview" | "code">("preview");
 
 	function persist() {
-		{
-			const blob: CreatorLayoutBlob = {
-				navWidth,
-				chatWidth,
-				treeWidth,
-				sidebarCollapsed,
-				chatHidden,
-				treeCollapsed
-			};
-			writeKey(CREATOR_LAYOUT_KEY, JSON.stringify(blob));
-		}
-		syncCssVars();
+		saveLayout(browserStorage(), layout);
 	}
 
-	function widthOf(pane: CreatorLayoutPane): number {
-		if (pane === "nav") return navWidth;
-		if (pane === "chat") return chatWidth;
-		return treeWidth;
+	function set(next: LayoutPrefs, save = true) {
+		if (next === layout) return;
+		layout = next;
+		if (save) persist();
 	}
 
-	function setWidth(pane: CreatorLayoutPane, next: number, shouldPersist = true) {
-		const range = CREATOR_LAYOUT_CLAMP[pane];
-		const value = clamp(next, range.min, range.max);
-		if (pane === "nav") navWidth = value;
-		else if (pane === "chat") chatWidth = value;
-		else treeWidth = value;
-		if (shouldPersist) persist();
-		else syncCssVars();
+	/** Collapse or expand one panel. Expanding a panel ends focus mode (keeps the other stored states). */
+	function setCollapsed(panel: Panel, collapsed: boolean) {
+		let next = layout;
+		if (!collapsed && next.focus) next = { ...next, focus: false };
+		set(withCollapsed(next, panel, collapsed));
 	}
 
-	function resetWidth(pane: CreatorLayoutPane) {
-		if (pane === "nav") setWidth("nav", CREATOR_LAYOUT_DEFAULTS.navWidth);
-		else if (pane === "chat") setWidth("chat", CREATOR_LAYOUT_DEFAULTS.chatWidth);
-		else setWidth("tree", CREATOR_LAYOUT_DEFAULTS.treeWidth);
+	function toggle(panel: Panel) {
+		setCollapsed(panel, !isCollapsed(layout, panel));
 	}
 
-	function setResizing(next: boolean) {
-		resizing = next;
-		if (typeof document === "undefined") return;
-		document.body.classList.toggle("creator-resizing", next);
-	}
-
-	function syncCssVars() {
-		if (typeof document === "undefined") return;
-		const widthNav = `${sidebarCollapsed ? CREATOR_NAV_RAIL : navWidth}px`;
-		const widthChat = `${chatWidth}px`;
-		const widthTree = `${treeWidth}px`;
-		const apply = (node: HTMLElement) => {
-			node.style.setProperty("--creator-nav-w", widthNav);
-			node.style.setProperty("--creator-chat-w", widthChat);
-			node.style.setProperty("--creator-tree-w", widthTree);
-		};
-		apply(document.documentElement);
-		const shell = document.getElementById("creator-shell");
-		if (shell) apply(shell);
-	}
+	const columns = () => viewport >= COLUMNS_MIN;
+	const inspectorColumn = () => viewport >= INSPECTOR_COLUMN_MIN;
 
 	return {
-		get navWidth() {
-			return navWidth;
+		get layout() {
+			return layout;
 		},
-		get chatWidth() {
-			return chatWidth;
-		},
-		get treeWidth() {
-			return treeWidth;
-		},
-		get sidebarCollapsed() {
-			return sidebarCollapsed;
-		},
-		get chatHidden() {
-			return chatHidden;
-		},
-		get treeCollapsed() {
-			return treeCollapsed;
+		get viewport() {
+			return viewport;
 		},
 		get resizing() {
 			return resizing;
 		},
-		widthOf,
-		setWidth,
-		resetWidth,
-		setResizing,
-		syncCssVars,
-		toggleSidebar() {
-			sidebarCollapsed = !sidebarCollapsed;
-			persist();
+		get focus() {
+			return layout.focus;
 		},
-		toggleChat() {
-			chatHidden = !chatHidden;
-			persist();
+		get columns() {
+			return columns();
+		},
+		get inspectorColumn() {
+			return inspectorColumn();
+		},
+		/** Widths as rendered now (stored wishes fitted to the viewport; rails for collapsed panels). */
+		get widths() {
+			return fitWidths({ viewport, layout, inspector: getChatMode() === "build" && view === "preview" && inspectorColumn(), columns: columns() });
+		},
+		setViewport(width: number) {
+			viewport = Math.round(width);
+		},
+		get view() {
+			return view;
+		},
+		set view(next: "preview" | "code") {
+			view = next;
+		},
+		size(pane: Pane): number {
+			return sizeOf(layout, pane);
+		},
+		/** Set a pane size (clamped). Drag moves call it with save=false and save once on release. */
+		setSize(pane: Pane, value: number, save = true) {
+			set(withSize(layout, pane, value), save);
+		},
+		resetSize(pane: Pane) {
+			set(withSize(layout, pane, PANE_RANGE[pane].default));
+		},
+		save: persist,
+		collapsed(panel: Panel): boolean {
+			return isCollapsed(layout, panel);
+		},
+		setCollapsed,
+		toggle,
+		toggleFocus() {
+			set({ ...layout, focus: !layout.focus });
+		},
+		/** Whole layout from a session file (`prefs.layout`), clamped. */
+		replace(input: unknown) {
+			set(parseLayout(input));
+		},
+		setResizing(next: boolean, axis: "x" | "y" = "x") {
+			resizing = next;
+			if (typeof document === "undefined") return;
+			document.body.classList.toggle("creator-resizing", next);
+			document.body.dataset.resizeAxis = axis;
+		},
+		// Code view file tree (kept names for CodePane).
+		get treeCollapsed() {
+			return layout[collapsedKey("tree")] as boolean;
 		},
 		toggleTree() {
-			treeCollapsed = !treeCollapsed;
-			persist();
+			toggle("tree");
 		}
 	};
 }
 
 export const creatorLayout = createCreatorLayout();
-creatorLayout.syncCssVars();

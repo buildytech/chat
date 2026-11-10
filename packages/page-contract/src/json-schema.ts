@@ -1,7 +1,7 @@
 /**
  * Dependency-free JSON Schema (draft 2020-12) checker for the subset the published
  * page-spec / page-patch schemas use: $ref (local and absolute to a registered $id), allOf, anyOf,
- * oneOf, not, type, enum, const, pattern, minLength, maxLength, minimum, minItems, maxItems, items,
+ * oneOf, not, type, enum, const, pattern, minLength, maxLength, minimum, maximum, minItems, maxItems, items,
  * properties, required, additionalProperties. Annotation keywords (title, description, x-*) are ignored.
  * An unknown assertion keyword throws: the vendored schema must stay inside this subset.
  */
@@ -12,7 +12,7 @@ type Schema = Record<string, unknown> | boolean;
 const ANNOTATIONS = new Set(["$schema", "$id", "$defs", "title", "description", "default", "examples"]);
 const ASSERTIONS = new Set([
 	"$ref", "allOf", "anyOf", "oneOf", "not", "type", "enum", "const", "pattern", "minLength", "maxLength",
-	"minimum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties"
+	"minimum", "maximum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties"
 ]);
 
 function typeOf(value: unknown): string {
@@ -122,6 +122,7 @@ export class SchemaRegistry {
 			if (typeof schema.pattern === "string" && !this.pattern(schema.pattern).test(value)) fail("pattern");
 		}
 		if (typeof value === "number" && typeof schema.minimum === "number" && value < schema.minimum) fail("minimum");
+		if (typeof value === "number" && typeof schema.maximum === "number" && value > schema.maximum) fail("maximum");
 		if (Array.isArray(value)) {
 			if (typeof schema.minItems === "number" && value.length < schema.minItems) fail("minItems");
 			if (typeof schema.maxItems === "number" && value.length > schema.maxItems) fail("maxItems");

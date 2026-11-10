@@ -883,7 +883,7 @@ export async function retryLastFailed(): Promise<ChatSession | null> {
 }
 
 /** The session file buildy:v1 of this browser (every chat, its page record, revisions and history). Writes nothing. */
-export function exportSessions(meta: { app: SessionApp; pins: SessionPins; settings?: SessionSettings }): SessionFile {
+export function exportSessions(meta: { app: SessionApp; pins: SessionPins; settings?: SessionSettings; prefs?: import("../browser/session-file").SessionPrefs }): SessionFile {
 	const current = getSelectedSession();
 	if (current) saveMock(memory);
 	const pages: Record<string, StoredPageRecord | null> = {};

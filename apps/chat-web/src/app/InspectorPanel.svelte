@@ -73,15 +73,15 @@
 <svelte:window onkeydown={inspector.onKey} />
 
 <Block
-	tag="aside"
-	class="shrink-0 overflow-y-auto rounded border border-border bg-card p-4 max-lg:max-h-96 lg:w-80"
+	tag="section"
+	class="p-2"
 	aria-label={t("inspector.title")}
 	data-slot="inspector"
 	data-block-id={model?.blockId}
 	data-registry-item={model?.ok ? model.item : undefined}
 	data-variant={model?.ok ? model.variant : undefined}
 >
-	<Stack align="stretch" gap="4">
+	<Stack align="stretch" gap="2">
 		<Group gap="2" justify="between">
 			<Group gap="2">
 				<Icon size="sm"><SlidersHorizontal /></Icon>
@@ -145,7 +145,7 @@
 				{#if parts.more.length}
 					<Disclosure variant="ghost" data-slot="inspector-more">
 						<Summary size="sm">{t("inspector.more").replace("{count}", String(parts.more.length))}</Summary>
-						<Stack align="stretch" gap="4" class="pt-4">
+						<Stack align="stretch" gap="2" class="pt-2">
 							<InspectorFields fields={parts.more} blockId={model.blockId} variant={model.variant} {issues} {handlers} />
 						</Stack>
 					</Disclosure>

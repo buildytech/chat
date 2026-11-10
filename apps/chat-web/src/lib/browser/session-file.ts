@@ -19,6 +19,8 @@ export type SessionPins = {
 	catalogDigest?: string;
 };
 export type SessionApp = { name: string; version: string; host: "browser" | "desktop" | "wordpress"; commit?: string };
+/** Layout preferences (session 1.2.0 `prefs`, `buildy:v1:prefs`; ADR 0017). */
+export type SessionPrefs = { layout?: Record<string, number | boolean> };
 export type SessionSettings = { theme?: "light" | "dark"; selectedModelId?: string; previewHideServiceLabels?: boolean };
 
 /** A chat as the chat store keeps it, plus its revision history (the page record lives in the page store). */
@@ -41,6 +43,7 @@ export type SessionFile = {
 	selectedSessionId: string | null;
 	sessions: SessionFileChat[];
 	settings?: SessionSettings;
+	prefs?: SessionPrefs;
 };
 
 export type SessionFileIssue = { path: string; keyword: string };
@@ -86,6 +89,7 @@ export function buildSessionFile(input: {
 	app: SessionApp;
 	pins: SessionPins;
 	settings?: SessionSettings;
+	prefs?: SessionPrefs;
 	now?: string;
 }): SessionFile {
 	const sessions = input.chats.map((chat) => {
@@ -102,7 +106,8 @@ export function buildSessionFile(input: {
 		pins: plain(input.pins),
 		selectedSessionId: input.selectedSessionId && ids.has(input.selectedSessionId) ? input.selectedSessionId : null,
 		sessions,
-		...(input.settings ? { settings: plain(input.settings) } : {})
+		...(input.settings ? { settings: plain(input.settings) } : {}),
+		...(input.prefs ? { prefs: plain(input.prefs) } : {})
 	};
 }
 

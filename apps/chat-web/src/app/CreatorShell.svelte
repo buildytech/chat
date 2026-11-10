@@ -2,6 +2,13 @@
 	import { onMount } from "svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
+	import Stack from "$registry/compose/Stack.svelte";
+	import Button from "$registry/compose/Button.svelte";
+	import MessageSquare from "@lucide/svelte/icons/message-square";
+	import PanelLeftOpen from "@lucide/svelte/icons/panel-left-open";
+	import { t } from "$lib/i18n/dictionary";
+	import { getChatMode } from "$lib/chat-core";
+	import { shortcutFor } from "$lib/layout/shortcuts";
 	import type { ChatSession, CreatorRuntimeStatus, SessionSummary } from "$lib/chat-core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
@@ -57,41 +64,67 @@
 	} = $props();
 
 	let mobileSurface = $state<"chat" | "workspace">("chat");
-	const sidebarCollapsed = $derived(creatorLayout.sidebarCollapsed);
-	const chatHidden = $derived(creatorLayout.chatHidden);
+	let inspectorSheet = $state(false);
+	const sidebarCollapsed = $derived(creatorLayout.collapsed("nav"));
+	const chatHidden = $derived(creatorLayout.collapsed("chat"));
+	const columns = $derived(creatorLayout.columns);
 
 	onMount(() => {
-		creatorLayout.syncCssVars();
+		const sync = () => creatorLayout.setViewport(window.innerWidth);
+		sync();
+		window.addEventListener("resize", sync);
+		return () => window.removeEventListener("resize", sync);
 	});
 
 	function handleNavToggle() {
-		if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
-			creatorLayout.toggleSidebar();
+		if (creatorLayout.columns) {
+			creatorLayout.toggle("nav");
 			return;
 		}
 		onToggleSidebar();
 	}
 
 	function handleToggleChat() {
-		if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
-			creatorLayout.toggleChat();
+		if (creatorLayout.columns) {
+			creatorLayout.toggle("chat");
 			return;
 		}
-		mobileSurface = "chat";
+		mobileSurface = mobileSurface === "chat" ? "workspace" : "chat";
+	}
+
+	function handleToggleInspector() {
+		if (getChatMode() !== "build") return;
+		if (creatorLayout.inspectorColumn) creatorLayout.toggle("inspector");
+		else {
+			mobileSurface = "workspace";
+			inspectorSheet = !inspectorSheet;
+		}
+	}
+
+	// Ctrl/Cmd+B chat column, Ctrl/Cmd+I inspector, Ctrl/Cmd+\ preview-only focus (not inside the code editor).
+	function onKeyDown(event: KeyboardEvent) {
+		const action = shortcutFor(event);
+		if (!action) return;
+		event.preventDefault();
+		if (action === "chat") handleToggleChat();
+		else if (action === "inspector") handleToggleInspector();
+		else creatorLayout.toggleFocus();
 	}
 </script>
 
+<svelte:window onkeydown={onKeyDown} />
+
 <Block
 	id="creator-shell"
-	class="flex h-dvh min-h-0 flex-col bg-muted text-foreground"
+	class="fixed inset-0 flex min-h-0 flex-col bg-muted text-foreground"
 	data-pane={mobileSurface}
-	data-nav={sidebarCollapsed ? "collapsed" : "expanded"}
+	data-nav={columns && sidebarCollapsed ? "collapsed" : "expanded"}
 	data-chat-hidden={chatHidden ? "true" : "false"}
 >
 	<Group class="relative min-h-0 flex-1 items-stretch">
 		<ChatDrawer
 			open={sidebarOpen}
-			collapsed={sidebarCollapsed}
+			collapsed={columns && sidebarCollapsed}
 			{sessions}
 			{selectedId}
 			{onNew}
@@ -101,8 +134,8 @@
 			onClose={onCloseSidebar}
 			onToggle={handleNavToggle}
 		/>
-		{#if !sidebarCollapsed}
-			<PaneSplitter pane="nav" class="max-lg:hidden" />
+		{#if columns && !sidebarCollapsed}
+			<PaneSplitter pane="nav" controls="chat-sidebar-drawer" class="max-lg:hidden" />
 		{/if}
 		<Block tag="main" id="main-content" class="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
 			<CreatorTopBar
@@ -126,12 +159,28 @@
 					visible={mobileSurface === "chat"}
 					{chatHidden}
 				/>
+				{#if columns && chatHidden}
+					<Stack
+						align="center"
+						class="shrink-0 gap-2 border-r border-border bg-background py-2"
+						style={`width: ${creatorLayout.widths.chat}px`}
+						aria-label={t("shell.chatColumn")}
+						data-slot="chat-rail"
+					>
+						<Button size="sm" layout="icon" variant="ghost" aria-label={t("workspace.showChat")} title={`${t("workspace.showChat")} (Ctrl+B)`} aria-expanded="false" aria-controls="creator-chat-column" data-action="chat-expand" onclick={() => creatorLayout.setCollapsed("chat", false)}>
+							<PanelLeftOpen />
+						</Button>
+						<Button size="sm" layout="icon" variant="ghost" aria-label={t("shell.chatColumn")} title={t("shell.chatColumn")} onclick={() => { creatorLayout.setCollapsed("chat", false); queueMicrotask(() => document.querySelector<HTMLTextAreaElement>("#creator-chat-column textarea")?.focus()); }}>
+							<MessageSquare />
+						</Button>
+					</Stack>
+				{/if}
 				{#if !chatHidden}
-					<PaneSplitter pane="chat" class="max-lg:hidden" />
+					<PaneSplitter pane="chat" controls="creator-chat-column" class="border-r border-border max-lg:hidden" />
 				{/if}
 				<Workspace
 					visible={mobileSurface === "workspace"}
-					{chatHidden}
+					bind:sheetOpen={inspectorSheet}
 					ontogglechat={handleToggleChat}
 				/>
 			</Group>
