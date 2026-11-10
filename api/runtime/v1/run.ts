@@ -11125,7 +11125,7 @@ const { PageContractError, parseDraftPage, parsePage } = __req("packages/page-co
 const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
 const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
 /** ui8kit/contract commit the vendored schemas come from. */
-const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "3bd12c5" } as const;
+const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "70d358a" } as const;
 
 const registry = new SchemaRegistry();
 registry.add(pageSpecSchema as Record<string, unknown>);
@@ -32267,7 +32267,7 @@ const SYSTEM_ASK = [
 	`Policy ${POLICY_VERSION}.`,
 	"Ask mode is read-only: you cannot change the page and nothing you say creates a proposal. Never claim that the page changed.",
 	"currentPage is the page as the author sees it now (block ids, catalog blocks, variants, headings); manualEdits lists blocks the author edited by hand since the last agent turn. Audit that page, not an earlier one.",
-	"When you recommend concrete changes to currentPage (variants, copy, rows, order, adding or removing blocks), also call propose_plan once with them as ops on currentPage block ids, then answer in text. The author ticks the ops on a plan card and runs them with Apply in Build. Fix ops propose_plan reports invalid once, with the allowed values. Changes that are not ops (another catalog block in place of a block) stay in your text.",
+	"When you recommend concrete changes to currentPage (variants, copy, rows, order, adding or removing blocks), call propose_plan once with them as ops on currentPage block ids before your text answer, then answer in text. The author ticks the ops on a plan card and runs them with Apply in Build. Fix ops propose_plan reports invalid once, with the allowed values. Changes that are not ops (another catalog block in place of a block) stay in your text.",
 	"Answer the author's message in their language as concise Markdown: short paragraphs, - lists or 1. lists, **bold**, `code`. No HTML, no tables, no images.",
 	"Ground every catalog fact in tool results: call get_block for each catalog block you discuss (it returns all variants with the props that set each apart from the default) and search_catalog for Stock screens. catalogBlocks lists the block specs with titles and variant counts.",
 	"Never invent blocks, variants, props or counts. If the author asks for more items than the catalog has (for example 10 variants of a block that has 8), say how many exist and list all of them.",
@@ -32603,7 +32603,7 @@ async function providerStep(input: {
 	modelId: string;
 	messages: ChatMessage[];
 	tools: ReturnType<typeof agentOpenAiTools>;
-	toolChoice: "auto" | "none";
+	toolChoice: "auto" | "none" | { type: "function"; function: { name: string } };
 	maxTokens: number;
 	signal: AbortSignal;
 	stepUsage: StepUsage[];
@@ -32857,6 +32857,15 @@ function askPrompt(ctx: ProposalContext): string {
 
 const ASK_BUDGET = { maxSteps: 5, maxTokens: 2400 } as const;
 
+const PLAN_FOLLOW_UP =
+	"Your answer recommends changes to currentPage. Call propose_plan now with exactly those changes as ops on currentPage block ids (set_variant with a variant of that block, set for copy). Do not repeat the answer.";
+
+/** True when an Ask answer names at least one currentPage block id: it talks about changing this page. */
+function recommendsPageChanges(text: string, page: ProposalContext["currentPage"]): boolean {
+	if (!page || !text) return false;
+	return page.layout.blocks.some((node) => text.includes(node.id));
+}
+
 async function askToolLoop(
 	apiKey: string,
 	modelId: string,
@@ -32883,6 +32892,8 @@ async function askToolLoop(
 	const blocks: string[] = [];
 	let text = "";
 	let plan: PagePlan | null = null;
+	let planForced = false;
+	let answer = "";
 
 	while (trace.steps < ASK_BUDGET.maxSteps) {
 		trace.steps += 1;
@@ -32893,7 +32904,7 @@ async function askToolLoop(
 			modelId,
 			messages,
 			tools: ASK_TOOLS(),
-			toolChoice: last ? "none" : "auto",
+			toolChoice: last ? "none" : planForced && !plan ? { type: "function", function: { name: "propose_plan" } } : "auto",
 			maxTokens: ASK_BUDGET.maxTokens,
 			signal,
 			stepUsage,
@@ -32904,7 +32915,16 @@ async function askToolLoop(
 		const calls = last ? [] : (message.tool_calls ?? []);
 		const said = modelText(message);
 		if (calls.length === 0) {
-			text = said;
+			// A recommendation about the current page without a plan gets one forced propose_plan step, so the
+			// author always gets a plan card for it. The model's answer stays the reply; no free text is parsed.
+			if (!plan && !planForced && trace.steps < ASK_BUDGET.maxSteps - 1 && recommendsPageChanges(said, ctx.currentPage)) {
+				planForced = true;
+				answer = said;
+				messages.push({ role: "assistant", content: message.content ?? said });
+				messages.push({ role: "user", content: PLAN_FOLLOW_UP });
+				continue;
+			}
+			text = answer || said;
 			break;
 		}
 		trace.toolCallingWorked = true;
@@ -32928,6 +32948,11 @@ async function askToolLoop(
 				reply = rest;
 			}
 			messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
+		}
+		// After the forced plan the earlier answer is the reply: no extra model call unless an op needs a fix.
+		if (planForced && answer && plan && plan.ops.every((op) => op.valid)) {
+			text = answer;
+			break;
 		}
 	}
 
@@ -32983,6 +33008,7 @@ function revalidateProposal(proposal: LayoutProposal | LayoutProposalError): Lay
 	return { ...proposal, page: checked.page, catalogRefs: catalog.refs, applied: false };
 }
 
+exports["recommendsPageChanges"] = recommendsPageChanges;
 exports["runXaiCatalogTurn"] = runXaiCatalogTurn;
 exports["revalidateProposal"] = revalidateProposal;
 

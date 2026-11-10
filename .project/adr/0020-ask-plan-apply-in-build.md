@@ -37,7 +37,10 @@ handoff in this change.
   can be ticked; invalid ops stay as notes with the code and the allowed values (`unknown_variant`: the block's
   catalog variants). The tool reply gives the model the valid ids and the invalid ops once to fix. The plan rides on
   the Ask text reply; the browser checks it again against its own page (never trusted from the wire) and stores it on
-  the message (session 1.4.0 `message.plan`).
+  the message (session 1.4.0 `message.plan`). When an Ask answer names a current page block id but the model did not
+  call `propose_plan` (seen live with the non-reasoning model), the loop sends one follow-up step with `tool_choice`
+  forced to `propose_plan`; the first answer stays the reply and no further step runs when every op is valid. The
+  host looks only at the model's own answer for block ids, never at the author's words.
 - **Apply in Build** (plan card button, registry Checkbox per op): the chat switches to Build and the ticked valid ops
   run in order on the current edit base (`executePagePlan`), with no model call. An op that no longer applies (the
   author changed the page by hand since; `no_change`, a variant gate) is rejected with its reason and the others still
@@ -69,6 +72,6 @@ handoff in this change.
 - Session schema 1.4.0 (additive): `message.plan` (`plan`, `planOp`, `planItem`), `proposal.origin` `ask-plan`,
   `proposal.changes` lists block ids. Every 1.0.0 to 1.3.0 file validates unchanged.
 - The accept step costs no tokens (before: 10,094 tokens for a turn that changed nothing asked for).
-- Ask turns may spend one more step on `propose_plan`; Ask prompts carry headings and row counts (a few hundred tokens).
+- Ask turns may spend one more step on `propose_plan` (forced when the answer recommends page changes without it); Ask prompts carry headings and row counts (a few hundred tokens).
 - Tests: `scripts/m4-api-tests/ask-build-plan.test.ts` replays the owner's session (`fixtures-askbuild.ts`, structure
   only): plan check, Apply in Build without network, Logo cloud targeting, manual edits, reply text, demo warning.

@@ -246,6 +246,58 @@ test("Ask turn: propose_plan is checked on the page; the answer carries the plan
 	assert.deepEqual(out.meta.toolsCalled, ["get_block", "propose_plan"]);
 });
 
+test("Ask answer that recommends page changes without propose_plan gets one forced plan step; the answer stays the reply", async () => {
+	// Live staging run (ADR 0020): the non-reasoning model read every block and answered in text, naming block ids,
+	// without calling propose_plan, so no plan card appeared.
+	const page = ownerPage();
+	const answer = "**Rework plan**\n- **nav** (`block-nav`): `inverse`.\n- **hero** (`block-hero`): `split`.";
+	const plan = { summary: "Festive header and split hero", ops: OWNER_ASK_PLAN.ops.slice(0, 2) };
+	const out = await withProvider(
+		[
+			{ calls: [{ name: "get_block", arguments: { id: "block.hero" } }] },
+			{ content: answer },
+			{ calls: [{ name: "propose_plan", arguments: plan }] },
+			{ content: "must not be requested" }
+		],
+		async (requests) => {
+			const turn = await runXaiCatalogTurn(
+				"test-key",
+				MODEL,
+				{ brief: "rework the page", mode: "ask", scenarioId: "landing", screenId: OWNER_SCREEN, expectedRevision: 3, currentPage: page, currentProvenance: provenance },
+				AbortSignal.timeout(5000)
+			);
+			assert.equal(requests.length, 3);
+			assert.equal(requests[1]!.tool_choice, "auto");
+			assert.deepEqual(requests[2]!.tool_choice, { type: "function", function: { name: "propose_plan" } });
+			const follow = (requests[2]!.messages as Array<{ role: string; content?: string }>).at(-1)!;
+			assert.equal(follow.role, "user");
+			assert.match(String(follow.content), /Call propose_plan now/);
+			return turn;
+		}
+	);
+	assert.equal(isAgentTextReply(out.proposal), true);
+	if (!isAgentTextReply(out.proposal)) return;
+	assert.equal(out.proposal.text, answer);
+	assert.equal(out.proposal.plan?.ops.length, 2);
+	assert.ok(out.proposal.plan?.ops.every((op) => op.valid));
+	assert.deepEqual(out.meta.toolsCalled, ["get_block", "propose_plan"]);
+});
+
+test("Ask answer that names no block of the page is not forced into a plan", async () => {
+	const page = ownerPage();
+	const out = await withProvider([{ content: "The hero catalog block has 8 variants: default, split, centered." }], async (requests) => {
+		const turn = await runXaiCatalogTurn(
+			"test-key",
+			MODEL,
+			{ brief: "what hero variants exist?", mode: "ask", scenarioId: "landing", screenId: OWNER_SCREEN, expectedRevision: 3, currentPage: page, currentProvenance: provenance },
+			AbortSignal.timeout(5000)
+		);
+		assert.equal(requests.length, 1);
+		return turn;
+	});
+	assert.equal(isAgentTextReply(out.proposal) && out.proposal.plan, undefined);
+});
+
 test("Build on the current page: propose_layout is turned to edit_page; 'Logo cloud' edits block-logos, not features", async () => {
 	// The owner's page was in Russian: block titles are the page's own words, the catalog title is the block's name.
 	const page = (editPage({ page: ownerPage(), provenance, patch: { ops: [{ op: "set", blockId: "block-logos", field: "title", value: "Partners" }] }, expectedRevision: 3, now: NOW }) as LayoutProposal).page;
