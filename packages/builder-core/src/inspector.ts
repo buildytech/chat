@@ -228,6 +228,8 @@ export function inspectorSetField(page: Page, blockId: string, pointer: string, 
 	if (!origin) return fail("field_not_editable", `${pointer} is set by the variant ${render.variant}, not by the page.`, pointer);
 	const next = writeOrigin(block, origin, value);
 	if (!next) return fail("field_not_editable", `${pointer} has no page field ${origin}.`, pointer);
+	// Writing the value the page already has is a no-op: same page, no history step, no revision.
+	if (JSON.stringify(next) === JSON.stringify(block)) return { ok: true, page, blockId };
 	const blocks = [...page.layout.blocks];
 	blocks[index] = next;
 	const gated = gateInspectorPage(page, blocks, [blockId], pointer, now);

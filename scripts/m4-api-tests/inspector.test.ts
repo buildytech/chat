@@ -325,3 +325,17 @@ test("ops ui: actions, variant select and row actions are registry buttons wired
 	assert.match(fields, /data-action="remove-row"/);
 	assert.match(web("lib/inspector/inspector.svelte.ts"), /run\(op: InspectorOp\)/);
 });
+
+test("write-back: writing the current value is a no-op (same page object, no history step)", () => {
+	const { page } = landing();
+	const hero = page.layout.blocks.find((node) => node.id === "block-hero")!;
+	const current = inspectorModel(hero);
+	assert.ok(current.ok);
+	if (!current.ok) return;
+	const title = current.fields.find((field) => field.pointer === "/title")!;
+	const same = inspectorSetField(page, "block-hero", "/title", String(title.value), NOW);
+	assert.ok(same.ok && same.page === page);
+	const store = web("lib/inspector/inspector.svelte.ts");
+	assert.match(store, /result\.page === before\) return true/);
+	assert.match(store, /!typing && value === String\(field\.value/);
+});

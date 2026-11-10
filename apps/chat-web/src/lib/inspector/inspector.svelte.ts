@@ -43,6 +43,7 @@ function setIssue(blockId: string, pointer: string, issue: FieldIssue | null): v
 /** A passing result replaces the visible page and becomes one history step (`key`: coalesced typing). */
 function commit(before: Page, result: InspectorResult, key: string | null): boolean {
 	if (!result.ok) return false;
+	if (result.page === before) return true;
 	if (!replaceVisiblePage(result.page, result.blockId)) return false;
 	historyFor(before).record(before, result.page, key);
 	version += 1;
@@ -89,6 +90,12 @@ export const inspector = {
 		const page = getCurrentPage();
 		if (!page) return false;
 		historyFor(page);
+		// A committed value equal to what the block already renders (e.g. a variant default) adds no override.
+		if (!typing && value === String(field.value ?? "")) {
+			setIssue(blockId, field.pointer, null);
+			history.seal();
+			return true;
+		}
 		const result = inspectorSetField(page, blockId, field.pointer, value);
 		if (!result.ok) {
 			setIssue(blockId, field.pointer, { pointer: result.pointer, code: result.code, message: result.message, allowed: result.allowed, value });
