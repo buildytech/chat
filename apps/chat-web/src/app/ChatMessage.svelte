@@ -21,7 +21,7 @@
 	import CatalogRefsList from "./CatalogRefsList.svelte";
 	import MarkdownText from "./MarkdownText.svelte";
 	import AskBlockCards from "./AskBlockCards.svelte";
-	import { applyVariantFromAsk } from "$lib/chat-core";
+	import { applyProposal, applyVariantFromAsk, discardProposal } from "$lib/chat-core";
 
 	let {
 		message,
@@ -182,13 +182,13 @@
 					{#if pending}
 						<Button
 							class="rounded bg-foreground px-3 py-1.5 text-sm text-background hover:bg-foreground/90"
-							onclick={() => onApply?.()}
+							onclick={() => (onApply ? onApply() : applyProposal())}
 						>
 							<Text tag="span">{t("proposal.apply")}</Text>
 						</Button>
 						<Button
 							class="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
-							onclick={() => onDiscard?.()}
+							onclick={() => (onDiscard ? onDiscard() : discardProposal())}
 						>
 							<Text tag="span">{t("proposal.discard")}</Text>
 						</Button>
