@@ -80,7 +80,7 @@
 			{/if}
 		</Group>
 		{#if build && !column}
-			<Sheet open={sheetOpen} side="right" aria-label={t("inspector.column")} data-slot="inspector-sheet">
+			<Sheet open={sheetOpen} side="right" class="h-full w-full bg-transparent" aria-label={t("inspector.column")} data-slot="inspector-sheet">
 				<Button class="absolute inset-0 h-full w-full bg-foreground/40" aria-label={t("inspector.close")} onclick={() => (sheetOpen = false)}>
 					<Text tag="span" class="sr-only">{t("inspector.close")}</Text>
 				</Button>
