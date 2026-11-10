@@ -19,6 +19,11 @@
   let { label, testid, landmarkLabel, class: className, children }: NavBlockProps = $props();
 </script>
 
-<Block tag="nav" class={cn(className)} aria-label={(landmarkLabel ?? label)} data-testid={testid}>
+<Block
+  tag="nav"
+  class={cn(className)}
+  aria-label={(landmarkLabel ?? label)}
+  data-slot={(testid ?? "nav-block")}
+>
   {@render children?.()}
 </Block>

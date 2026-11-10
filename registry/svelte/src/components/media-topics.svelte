@@ -21,7 +21,7 @@
   let { extras, labels }: MediaTopicsProps = $props();
 </script>
 
-<Stack gap="4" align="stretch">
+<Stack gap="4" align="stretch" data-slot="media-topics">
   <Text size="sm" weight="semibold">
     {labels.list}
   </Text>

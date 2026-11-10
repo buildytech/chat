@@ -19,11 +19,11 @@
   let { steps, active }: StoryDotsProps = $props();
 </script>
 
-<Group gap="2" align="center">
+<Group gap="2" align="center" data-slot="story-dots">
   {#each steps as s (s.id)}
     <Inline
       class={cn("size-2 rounded-full", ((s.id === active) ? "bg-primary" : "bg-border"))}
-      data-testid="story-dot"
+      data-slot="story-dot"
     />
   {/each}
 </Group>

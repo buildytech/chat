@@ -63,9 +63,9 @@
   {#if ((jobs?.length ?? 0) === 0)}
     <EmptyState icon="briefcase" title={empty} />
   {:else if ((layout as string) === "grouped")}
-    <Stack gap="8" align="stretch" data-testid="groups">
+    <Stack gap="8" align="stretch" data-slot="groups">
       {#each departments as d (d.id)}
-        <Stack gap="2" align="stretch" data-testid="group">
+        <Stack gap="2" align="stretch" data-slot="group">
           <Group gap="4" align="baseline" justify="between">
             <Title as={3} size="lg" weight="bold">
               {d.name}
@@ -78,7 +78,7 @@
             {#each jobs.filter((i) => !d.id || i["dept"] === d.id) as j (j.id)}
               <ListItem
                 class="flex flex-wrap items-center justify-between gap-4 border-b border-border py-4"
-                data-testid="item"
+                data-slot="item"
               >
                 <Stack gap="0">
                   <MenuEntry href={j.href} class="font-medium">

@@ -30,11 +30,11 @@
   class="flex-wrap"
   data-slot="action-group"
 >
-  <Button variant="default" size="default" href={urlOf(primaryHref)} data-testid="action-primary">
+  <Button variant="default" size="default" href={urlOf(primaryHref)}>
     {primary}
   </Button>
   {#if secondary}
-    <Button variant="outline" size="default" href={urlOf(secondaryHref)} data-testid="action-secondary">
+    <Button variant="outline" size="default" href={urlOf(secondaryHref)}>
       {secondary}
     </Button>
   {/if}

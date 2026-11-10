@@ -70,41 +70,41 @@
         (summary as string) === "aside" ? "flex flex-col gap-6 lg:col-span-2"
         : "flex flex-col gap-6 lg:col-span-3"
       }
-      data-testid="checkout-form"
+      data-slot="checkout-form"
     >
       <CheckoutStep number="1" title={labels.contacts} text={labels.contactsText} layout={layout}>
         <Grid cols="1-2" class="gap-4">
           <Field label={labels.name} htmlFor={tpl("{0}-name", id)}>
-            <Input type="text" name="name" autocomplete="name" id={tpl("{0}-name", id)} data-testid="field" />
+            <Input type="text" name="name" autocomplete="name" id={tpl("{0}-name", id)} data-slot="field" />
           </Field>
           <Field label={labels.phone} htmlFor={tpl("{0}-phone", id)}>
-            <Input type="tel" name="phone" autocomplete="tel" id={tpl("{0}-phone", id)} data-testid="field" />
+            <Input type="tel" name="phone" autocomplete="tel" id={tpl("{0}-phone", id)} data-slot="field" />
           </Field>
           <Field label={labels.email} htmlFor={tpl("{0}-email", id)}>
-            <Input type="email" name="email" autocomplete="email" id={tpl("{0}-email", id)} data-testid="field" />
+            <Input type="email" name="email" autocomplete="email" id={tpl("{0}-email", id)} data-slot="field" />
           </Field>
         </Grid>
       </CheckoutStep>
       <CheckoutStep number="2" title={labels.address} text={labels.addressText} layout={layout}>
         <Field label={labels.street} htmlFor={tpl("{0}-street", id)}>
-          <Input type="text" name="street" autocomplete="address-line1" id={tpl("{0}-street", id)} data-testid="field" />
+          <Input type="text" name="street" autocomplete="address-line1" id={tpl("{0}-street", id)} data-slot="field" />
         </Field>
         <Grid cols="2-4" class="gap-4">
           <Field label={labels.house} htmlFor={tpl("{0}-house", id)}>
-            <Input type="text" name="house" id={tpl("{0}-house", id)} data-testid="field" />
+            <Input type="text" name="house" id={tpl("{0}-house", id)} data-slot="field" />
           </Field>
           <Field label={labels.flat} htmlFor={tpl("{0}-flat", id)}>
-            <Input type="text" name="flat" id={tpl("{0}-flat", id)} data-testid="field" />
+            <Input type="text" name="flat" id={tpl("{0}-flat", id)} data-slot="field" />
           </Field>
           <Field label={labels.entrance} htmlFor={tpl("{0}-entrance", id)}>
-            <Input type="text" name="entrance" id={tpl("{0}-entrance", id)} data-testid="field" />
+            <Input type="text" name="entrance" id={tpl("{0}-entrance", id)} data-slot="field" />
           </Field>
           <Field label={labels.floor} htmlFor={tpl("{0}-floor", id)}>
-            <Input type="text" name="floor" id={tpl("{0}-floor", id)} data-testid="field" />
+            <Input type="text" name="floor" id={tpl("{0}-floor", id)} data-slot="field" />
           </Field>
         </Grid>
         <Field label={labels.comment} htmlFor={tpl("{0}-comment", id)}>
-          <Textarea rows={4} name="comment" id={tpl("{0}-comment", id)} data-testid="field" />
+          <Textarea rows={4} name="comment" id={tpl("{0}-comment", id)} data-slot="field" />
         </Field>
       </CheckoutStep>
       <CheckoutStep number="3" title={labels.slot} text={labels.slotText} layout={layout}>
@@ -120,7 +120,7 @@
       <CheckoutSubmit id={id} consent={labels.consent} submit={labels.submit} legal={labels.legal} />
     </Form>
     {#if ((summary as string) === "aside")}
-      <Box class="lg:sticky lg:top-8" data-testid="aside">
+      <Box class="lg:sticky lg:top-8" data-slot="aside">
         <CartSummaryCard
           field={tpl("{0}-promo", id)}
           lines={lines}

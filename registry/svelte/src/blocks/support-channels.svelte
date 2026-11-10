@@ -52,13 +52,9 @@
   {#if ((channels?.length ?? 0) === 0)}
     <EmptyState icon="life-buoy" title={empty} />
   {:else}
-    <Grid cols={(((layout as string) === "list") ? "1" : cols)} class="gap-4" data-testid="items">
+    <Grid cols={(((layout as string) === "list") ? "1" : cols)} class="gap-4" data-slot="items">
       {#each channels as c (c.id)}
-        <Card
-          variant="default"
-          class={cn("h-full", (((layout as string) === "list") ? "flex-row items-center" : ""))}
-          data-testid="item"
-        >
+        <Card variant="default" class={cn("h-full", (((layout as string) === "list") ? "flex-row items-center" : ""))}>
           <CardContent class={cn("flex flex-1 gap-4", (((layout as string) === "list") ? "items-center" : "flex-col"))}>
             <LucideIcon name={c.icon} size={24} />
             <Stack gap="2" class="flex-1">

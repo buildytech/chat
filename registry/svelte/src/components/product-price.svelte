@@ -25,12 +25,12 @@
   let { price, compareAt, currency, badge = "", was }: ProductPriceProps = $props();
 </script>
 
-<Group gap="4" align="center" class="flex-wrap">
+<Group gap="4" align="center" class="flex-wrap" data-slot="product-price">
   <Text size="4xl" weight="bold">
     {fmtMoney(price, currency)}
   </Text>
   {#if (compareAt && (compareAt > price))}
-    <Text tag="del" size="lg" class="relative text-muted-foreground" data-testid="compare-at">
+    <Text tag="del" size="lg" class="relative text-muted-foreground" data-slot="compare-at">
       <Inline class="sr-only">
         {was}
       </Inline>

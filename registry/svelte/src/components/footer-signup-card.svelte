@@ -24,20 +24,20 @@
   let { id, labels }: FooterSignupCardProps = $props();
 </script>
 
-<Stack gap="4" align="stretch" class="rounded bg-card inset-ring inset-ring-border p-6" data-testid="signup">
+<Stack gap="4" align="stretch" class="rounded bg-card inset-ring inset-ring-border p-6" data-slot="signup">
   <Group gap="2" align="center">
     <LucideIcon name="mail" size={16} />
     <Text size="sm" weight="semibold">
       {labels.signup}
     </Text>
   </Group>
-  <Form method="dialog" class={cn("w-full max-w-md", (false ? "mx-auto" : ""))} data-testid="email-form">
+  <Form method="dialog" class={cn("w-full max-w-md", (false ? "mx-auto" : ""))} data-slot="email-form">
     <Label for={tpl("{0}-email", id)} class="sr-only">
       {labels.email}
     </Label>
     <Group gap="2" align="start" class="w-full flex-wrap">
-      <Input type="email" name="email" class="min-w-0 flex-1" id={tpl("{0}-email", id)} data-testid="field" />
-      <Button variant="default" size="default" type="submit" data-testid="submit">
+      <Input type="email" name="email" class="min-w-0 flex-1" id={tpl("{0}-email", id)} data-slot="field" />
+      <Button variant="default" size="default" type="submit">
         {labels.subscribe}
       </Button>
     </Group>

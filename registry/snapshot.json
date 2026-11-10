@@ -5,8 +5,8 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "e337945f474db7e99aa864f865c985a8a16f9527230a3d2c7bb14595c0a9095e",
-		"lastUpdated": "2026-11-10T00:07:21+03:00",
+		"sha256": "c4eb28135bb8e11979b854e19044a02f0d703a8651dcb38982ed6a92af8e9851",
+		"lastUpdated": "2026-11-11T01:17:58+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
@@ -15,8 +15,8 @@
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "2f5e08736cee3dd30abfac5fb20b3d974934383ecc5c95b5d8c13b5288b266a5",
-		"digest": "sha256:395a62bcfb3439038865637e0d278a8a41413dd1cdd22e00f0feac85fc5748da",
+		"sha256": "70f8a01df0d2afab5f6fde1c151d31c6b1a6d1a95009f6c5cf9efda7d31ebeab",
+		"digest": "sha256:730d228c09b753b48bb00dc9b9c0130b314446d6d2b3e1f9a348e0a2450fc01a",
 		"items": 117
 	},
 	"manifest": {

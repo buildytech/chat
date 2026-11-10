@@ -51,7 +51,7 @@
 
 <Box
   class={"flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-muted-foreground"}
-  data-testid="pager"
+  data-slot="pager"
 >
   <Inline class="flex flex-wrap items-center gap-4">
     <Inline>
@@ -60,7 +60,7 @@
   </Inline>
   <Inline class="flex flex-wrap items-center gap-2">
     {#if (moreLabel && (page < pages))}
-      <Button variant="outline" size="sm" type="button" data-testid="pager-more" onclick={() => onmore?.()}>
+      <Button variant="outline" size="sm" type="button" onclick={() => onmore?.()}>
         {moreLabel}
       </Button>
     {/if}
@@ -78,14 +78,14 @@
     {#if numbered}
       {#each numbers as n, i ((n || tpl("gap{0}", i)))}
         {#if (n === null)}
-          <Inline class="w-8 text-center">
+          <Inline class="w-8 text-center" data-slot="numbers-row">
             {"…"}
           </Inline>
         {:else if (n === page)}
           <Inline
             class={"flex h-8 min-w-8 items-center justify-center rounded bg-foreground px-2 font-bold text-background"}
             aria-current="page"
-            data-testid="pager-current"
+            data-slot="pager-current"
           >
             {n}
           </Inline>

@@ -59,13 +59,13 @@
       }
     >
       {#each features as f (f.id)}
-        <Card variant="default" class="h-full gap-4 overflow-hidden" data-testid="showcase-card">
+        <Card variant="default" class="h-full gap-4 overflow-hidden">
           {#if ((item as string) === "picture")}
             <MediaFrame alt={f.title} />
           {:else}
             <Box
               class="flex aspect-video items-center justify-center rounded bg-muted text-foreground"
-              data-testid="showcase-panel"
+              data-slot="showcase-panel"
             >
               <LucideIcon name={f.icon} size={32} />
             </Box>

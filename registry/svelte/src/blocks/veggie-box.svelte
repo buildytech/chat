@@ -66,10 +66,10 @@
           (layout as string) === "split" ? "grid grid-cols-2 gap-4 md:grid-cols-3 lg:col-span-2"
           : "grid grid-cols-2 gap-4 md:grid-cols-3 lg:col-span-3 lg:grid-cols-6"
         }
-        data-testid="items"
+        data-slot="items"
       >
         {#each dishes as d (d.id)}
-          <Stack gap="2" class="rounded bg-card inset-ring inset-ring-border p-4" data-testid="item">
+          <Stack gap="2" class="rounded bg-card inset-ring inset-ring-border p-4" data-slot="item">
             <MediaFrame alt={d.name} ratio="1/1" />
             <Text size="sm" weight="semibold">
               {d.name}
@@ -94,7 +94,7 @@
           (layout as string) === "split" ? "rounded bg-card inset-ring inset-ring-border p-6 lg:sticky lg:top-8"
           : "rounded bg-card inset-ring inset-ring-border p-6 lg:col-span-3"
         }
-        data-testid="summary"
+        data-slot="summary"
       >
         <Text size="lg" weight="semibold">
           {labels.summary}
@@ -107,7 +107,7 @@
           <Text size="sm" class="text-muted-foreground">
             {labels.total}
           </Text>
-          <Inline class="text-2xl font-bold" role="status" aria-live="polite" data-testid="total">
+          <Inline class="text-2xl font-bold" role="status" aria-live="polite" data-slot="total">
             {fmtMoney(total, currency)}
           </Inline>
         </Group>

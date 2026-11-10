@@ -82,7 +82,7 @@
   {/if}
   {#if ((posts.filter((i) => !filter?.topic || i["category"] === filter?.topic)?.length ?? 0) > 0)}
     {#if ((layout as string) === "magazine")}
-      <Stack gap="6" align="stretch" data-testid="items">
+      <Stack gap="6" align="stretch" data-slot="items">
         {#each posts.filter((i) => !filter?.topic || i["category"] === filter?.topic) as p, i (p.id)}
           {#if (i === 0)}
             <PostCard post={p} labels={labels} layout="horizontal" media={media} meta={meta} density={density} />
@@ -103,7 +103,7 @@
           : fitCols(cols, (posts.filter((i) => !filter?.topic || i["category"] === filter?.topic)?.length ?? 0))
         }
         class="w-full gap-6"
-        data-testid="items"
+        data-slot="items"
       >
         {#each posts.filter((i) => !filter?.topic || i["category"] === filter?.topic) as p (p.id)}
           <PostCard
@@ -125,7 +125,7 @@
         landmarkLabel ? uniqLabel(tpl("{0}, {1}", pager?.label, landmarkLabel))
         : pager?.label
       }
-      data-testid="posts-pager"
+      data-slot="posts-pager"
     >
       <Pager
         page={(pager?.page ?? 1)}

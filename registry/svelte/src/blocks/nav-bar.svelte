@@ -69,10 +69,10 @@
     ),
     (((over as string) === "media") ? "isolate overflow-hidden border-0 bg-transparent" : "")
   )}
-  data-testid="nav-bar"
   data-layout={layout}
   data-tone={tone}
   aria-label={landmarkLabel}
+  data-slot="nav-bar"
 >
   <OverMedia on={((over as string) === "media")} alt={brand} />
   {#if skip}
@@ -80,7 +80,7 @@
       href="#main-content"
       class={"sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-background " +
         "focus:px-4 focus:py-2 focus:text-sm focus:inset-ring focus:inset-ring-border"}
-      data-testid="skip-link"
+      data-slot="skip-link"
     >
       {skip}
     </LinkPlain>

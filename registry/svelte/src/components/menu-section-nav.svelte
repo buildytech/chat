@@ -24,10 +24,10 @@
   let { label, sections, prefix, landmarkLabel }: MenuSectionNavProps = $props();
 </script>
 
-<Block tag="nav" aria-label={(landmarkLabel ?? label)} data-testid="section-nav">
+<Block tag="nav" aria-label={(landmarkLabel ?? label)} data-slot="section-nav">
   <List tag="ul" class="flex flex-wrap gap-2">
     {#each sections as s (s.id)}
-      <ListItem>
+      <ListItem data-slot="sections-row">
         <Link
           href={urlOf(tpl("#{0}-{1}", prefix, s.key))}
           variant="nav"

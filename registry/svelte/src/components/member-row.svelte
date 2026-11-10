@@ -35,7 +35,7 @@
     : (layout as string) === "directory" ? "rounded bg-card inset-ring inset-ring-border p-4"
     : "border-b border-border pb-4"
   }
-  data-testid="item"
+  data-slot="item"
 >
   <MediaFrame
     alt={member.name}

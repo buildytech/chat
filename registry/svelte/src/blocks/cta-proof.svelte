@@ -72,7 +72,7 @@
     align={(((layout as string) === "center") ? "center" : "start")}
   />
   {#if note}
-    <Text size="xs" class="text-muted-foreground" data-testid="cta-note">
+    <Text size="xs" class="text-muted-foreground" data-slot="cta-note">
       {note}
     </Text>
   {/if}

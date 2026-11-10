@@ -46,7 +46,7 @@
   }: CartDrawerProps = $props();
 </script>
 
-<Block tag="section" class="py-8" aria-label={(landmarkLabel ?? drawer.title)} data-testid="section">
+<Block tag="section" class="py-8" aria-label={(landmarkLabel ?? drawer.title)} data-slot="section">
   <Container class="mx-auto w-full max-w-6xl px-4" data-slot="container">
     <Box class="flex min-h-160 overflow-hidden rounded bg-muted inset-ring inset-ring-border">
       <Box class="hidden flex-1 flex-col gap-4 p-8 sm:flex" aria-hidden="true">
@@ -58,7 +58,7 @@
         class="flex w-full flex-col bg-background shadow-lg sm:max-w-sm"
         role="group"
         aria-label={drawer.title}
-        data-testid="drawer"
+        data-slot="drawer"
       >
         <Group gap="4" align="center" justify="between" class="border-b border-border p-4">
           <Title as={2} size="lg" weight="semibold">
@@ -69,7 +69,7 @@
           </Button>
         </Group>
         {#if (((state as string) === "empty") || ((lines?.length ?? 0) === 0))}
-          <Box class="flex flex-1 flex-col justify-center p-4" data-testid="empty">
+          <Box class="flex flex-1 flex-col justify-center p-4" data-slot="empty">
             <EmptyState icon="shopping-bag" title={drawer.empty} text={drawer.emptyText}>
               {#snippet action()}
                 <Button variant="outline" size="default">

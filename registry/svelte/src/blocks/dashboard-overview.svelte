@@ -52,15 +52,15 @@
 <SectionFrame id={id} title={title} tone={tone} density={density} landmarkLabel={landmarkLabel}>
   <Stack gap="6" align="stretch">
     {#if ((metrics?.length ?? 0) > 0)}
-      <Grid cols={(((cols as string) === "2") ? "1-2" : "1-4")} class="gap-4" data-testid="items">
+      <Grid cols={(((cols as string) === "2") ? "1-2" : "1-4")} class="gap-4" data-slot="items">
         {#each metrics as m (m.id)}
-          <Box data-testid="item">
+          <Box data-slot="item">
             <StatTile label={m.label} value={m.value} icon={m.icon} hint={m.hint} />
           </Box>
         {/each}
       </Grid>
     {/if}
-    <Grid cols={(((layout as string) === "split") ? "1-2" : "1")} class="items-stretch gap-4" data-testid="panels">
+    <Grid cols={(((layout as string) === "split") ? "1-2" : "1")} class="items-stretch gap-4" data-slot="panels">
       {#if ((chart.series?.length ?? 0) > 0)}
         <Panel title={chart.title} description={chart.text} id={tpl("{0}-chart", id)} class="h-full">
           <BarChart bars={chart.series} label={chart.summary} height={144} />

@@ -21,13 +21,13 @@
   let { extras, labels }: MediaContactsProps = $props();
 </script>
 
-<Stack gap="6" align="stretch">
+<Stack gap="6" align="stretch" data-slot="media-contacts">
   <Stack gap="2" align="stretch">
     <Text size="sm" weight="semibold">
       {labels.list}
     </Text>
     {#each extras.channels as c, i (c.id)}
-      <Button variant="outline" size="default" href={urlOf(c.href)} class="w-full gap-2" data-testid="media-channel">
+      <Button variant="outline" size="default" href={urlOf(c.href)} class="w-full gap-2">
         <LucideIcon name={c.icon} size={16} />
         {c.title}
       </Button>
@@ -39,7 +39,7 @@
     </Text>
     {#each extras.stats as s, i (s.id)}
       {#if (i < 3)}
-        <Group gap="4" align="center" justify="between" data-testid="media-stat">
+        <Group gap="4" align="center" justify="between" data-slot="media-stat">
           <Text size="sm" class="text-muted-foreground">
             {s.label}
           </Text>

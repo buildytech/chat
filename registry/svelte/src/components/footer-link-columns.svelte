@@ -24,17 +24,17 @@
 </script>
 
 {#if ((groups?.length ?? 0) > 0)}
-  <Block tag="nav" aria-label={(landmarkLabel ?? label)}>
+  <Block tag="nav" aria-label={(landmarkLabel ?? label)} data-slot="footer-link-columns">
     <Box class="grid grid-cols-2 gap-8 sm:grid-cols-3">
       {#each groups as g, i (g.id)}
         {#if (i < 3)}
-          <Stack gap="2" data-testid="group">
+          <Stack gap="2" data-slot="group">
             <Text size="sm" weight="semibold">
               {g.title}
             </Text>
             <List class="m-0 flex list-none flex-col gap-2 p-0">
               {#each g.links as item (item.id)}
-                <ListItem>
+                <ListItem data-slot="links-row">
                   <MenuEntry href={item.href} class="text-sm text-muted-foreground" variant="muted" size="sm">
                     {item.name}
                   </MenuEntry>

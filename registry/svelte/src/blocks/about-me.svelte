@@ -68,9 +68,9 @@
 >
   {#if ((layout as string) === "facts")}
     {#if ((facts?.length ?? 0) > 0)}
-      <List tag="ul" class="grid grid-cols-1 gap-4 sm:grid-cols-2" data-testid="facts">
+      <List tag="ul" class="grid grid-cols-1 gap-4 sm:grid-cols-2" data-slot="facts">
         {#each facts as f (f.id)}
-          <ListItem class="rounded bg-card inset-ring inset-ring-border flex flex-col gap-0 p-4" data-testid="fact">
+          <ListItem class="rounded bg-card inset-ring inset-ring-border flex flex-col gap-0 p-4" data-slot="fact">
             <Text size="xs" class="text-muted-foreground">
               {f.label}
             </Text>
@@ -82,9 +82,9 @@
       </List>
     {/if}
   {:else if ((skills?.length ?? 0) > 0)}
-    <Stack gap="4" align="stretch" data-testid="skills">
+    <Stack gap="4" align="stretch" data-slot="skills">
       {#each skills as s (s.id)}
-        <Stack gap="2" align="stretch" data-testid="skill">
+        <Stack gap="2" align="stretch" data-slot="skill">
           <Group gap="4" justify="between">
             <Text size="sm" weight="semibold">
               {s.label}

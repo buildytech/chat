@@ -19,7 +19,10 @@
   let { title, summary, id, actions }: PageHeaderProps = $props();
 </script>
 
-<Box class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+<Box
+  class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between"
+  data-slot="page-header"
+>
   <Box class="flex min-w-0 flex-col gap-2">
     <Title as={1} size="xl" weight="bold" class="m-0" id={id}>
       {title}

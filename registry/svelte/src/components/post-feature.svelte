@@ -27,7 +27,7 @@
   let { p, labels }: PostFeatureProps = $props();
 </script>
 
-<Stack gap="4" align="stretch" class="border-t border-border pt-6" data-testid="post-feature">
+<Stack gap="4" align="stretch" class="border-t border-border pt-6" data-slot="post-feature">
   <Badge variant="secondary" size="sm" class="w-fit">
     {p.category}
   </Badge>
@@ -48,7 +48,7 @@
       </Text>
     </Stack>
   </Group>
-  <Button variant="default" size="default" href={urlOf(p.href)} class="w-full gap-2" data-testid="action-primary">
+  <Button variant="default" size="default" href={urlOf(p.href)} class="w-full gap-2">
     {labels.read}
     <LucideIcon name="arrow-right" size={16} />
   </Button>

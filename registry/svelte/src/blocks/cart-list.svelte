@@ -64,9 +64,9 @@
       onremove={(arg: string) => onremove?.(arg)}
     />
   {:else}
-    <Stack gap="4" align="stretch" data-testid="cart-cards">
+    <Stack gap="4" align="stretch" data-slot="cart-cards">
       {#each lines as line (line.id)}
-        <Card variant="default" data-testid="item">
+        <Card variant="default">
           <CardContent class="flex flex-wrap items-center gap-4">
             {#if ((media as string) === "image")}
               <MediaFrame alt={line.name} ratio="1/1" class="size-16 shrink-0" />
@@ -93,14 +93,7 @@
             <Text size="base" weight="bold">
               {fmtMoney((line.price * line.qty), line.currency)}
             </Text>
-            <Button
-              variant="ghost"
-              size="sm"
-              layout="icon"
-              aria-label={labels.remove}
-              data-testid="remove"
-              onclick={() => onremove?.(line.id)}
-            >
+            <Button variant="ghost" size="sm" layout="icon" aria-label={labels.remove} onclick={() => onremove?.(line.id)}>
               <LucideIcon name="x" size={16} />
             </Button>
           </CardContent>

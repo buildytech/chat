@@ -59,7 +59,7 @@
       gap="4"
       align="stretch"
       class={(((layout as string) === "card") ? "rounded bg-card p-6 inset-ring inset-ring-border" : "")}
-      data-testid="checklist"
+      data-slot="checklist"
     >
       {#if ((progress as string) === "bar")}
         <Progress
@@ -72,16 +72,16 @@
         />
       {/if}
       {#if ((progress as string) === "text")}
-        <Text size="sm" class="text-muted-foreground" data-testid="progress-text">
+        <Text size="sm" class="text-muted-foreground" data-slot="progress-text">
           {tpl(progressLabel, tasks.filter((i) => i["done"]).length, (tasks?.length ?? 0))}
         </Text>
       {/if}
-      <List class="m-0 flex list-none flex-col gap-4 p-0" data-testid="items">
+      <List class="m-0 flex list-none flex-col gap-4 p-0" data-slot="items">
         {#each tasks as task, i (task.id)}
           <ListItem
             class="flex items-start gap-4"
-            data-testid="item"
             data-done={(task.done == null ? undefined : String(task.done))}
+            data-slot="item"
           >
             {#if ((marker as string) === "number")}
               <IconBadge variant={(task.done ? "primary" : "outline")} size="xs">
@@ -95,7 +95,7 @@
               />
             {/if}
             {#if ((detail as string) === "expand")}
-              <Disclosure variant="ghost" class="flex-1" data-testid="task-detail">
+              <Disclosure variant="ghost" class="flex-1" data-slot="task-detail">
                 <Summary variant="ghost">
                   {task.title}
                 </Summary>

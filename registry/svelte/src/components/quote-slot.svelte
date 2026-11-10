@@ -23,6 +23,6 @@
   let { q, labels, kind = "card", layout = "grid", class: className }: QuoteSlotProps = $props();
 </script>
 
-<Box class={className} data-testid="quote">
+<Box class={className} data-slot="quote">
   <QuoteCard q={q} labels={labels} item={{ kind, avatar: "image", rating: "show", mark: "none" }} layout={layout} />
 </Box>

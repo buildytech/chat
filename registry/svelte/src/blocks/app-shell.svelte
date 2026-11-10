@@ -61,9 +61,9 @@
   tag="section"
   class="bg-background"
   aria-labelledby={(landmarkLabel ? undefined : tpl("{0}-title", id))}
-  data-testid="app-shell"
   data-layout={layout}
   aria-label={landmarkLabel}
+  data-slot="app-shell"
 >
   {#if ((layout as string) === "top")}
     <Stack gap="6" align="stretch">
@@ -112,9 +112,9 @@
           />
           {#if ((activity.events?.length ?? 0) > 0)}
             <Panel title={activity.title} description={activity.text} id={tpl("{0}-list", id)}>
-              <List class="m-0 flex list-none flex-col gap-4 p-0" data-testid="items">
+              <List class="m-0 flex list-none flex-col gap-4 p-0" data-slot="items">
                 {#each activity.events as e (e.id)}
-                  <ListItem class="flex flex-col gap-2" data-testid="item">
+                  <ListItem class="flex flex-col gap-2" data-slot="item">
                     <Text size="sm" weight="semibold">
                       {e.title}
                     </Text>

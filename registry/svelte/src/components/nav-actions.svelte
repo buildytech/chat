@@ -40,23 +40,17 @@
     size="sm"
     href={urlOf(loginHref)}
     class={(((tone as string) === "inverse") ? "text-background hover:bg-background/10" : "")}
-    data-testid="nav-login"
   >
     {login}
   </Button>
 {/if}
 {#if (((actions as string) === "cta") && cta)}
-  <Button
-    variant={(((tone as string) === "inverse") ? "secondary" : "default")}
-    size="sm"
-    href={urlOf(ctaHref)}
-    data-testid="header-cta"
-  >
+  <Button variant={(((tone as string) === "inverse") ? "secondary" : "default")} size="sm" href={urlOf(ctaHref)}>
     {cta}
   </Button>
 {/if}
 {#if themeLabel}
-  <Button variant="outline" size="sm" data-testid="theme-toggle" onclick={() => ontheme?.()}>
+  <Button variant="outline" size="sm" onclick={() => ontheme?.()}>
     {themeLabel}
   </Button>
 {/if}

@@ -48,11 +48,11 @@
       "flex flex-col gap-2 overflow-hidden rounded p-0 inset-ring inset-ring-border",
       defaults.news.card
     )}
-    data-testid="item"
     data-layout={layout}
     data-meta="news"
+    data-slot="item"
   >
-    <Box class={cn("relative shrink-0 overflow-hidden", defaults.news.cover)} data-testid="news-cover">
+    <Box class={cn("relative shrink-0 overflow-hidden", defaults.news.cover)} data-slot="news-cover">
       <MediaFrame alt={post.title} src={post.image} class={cn("size-full", defaults.media.rounded)} />
       <Title
         as={3}
@@ -62,7 +62,7 @@
           "pointer-events-none absolute inset-x-12 line-clamp-2 text-center leading-5 text-foreground",
           defaults.news.title
         )}
-        data-testid="news-title"
+        data-slot="news-title"
       >
         {post.title}
       </Title>
@@ -71,7 +71,7 @@
       gap="2"
       align="center"
       class={cn("w-full px-2 text-muted-foreground", defaults.news.strip)}
-      data-testid="news-date"
+      data-slot="news-date"
     >
       <LucideIcon name="calendar" size={16} />
       <Text size="xs" weight="bold" class="leading-4">
@@ -93,7 +93,6 @@
       (((layout as string) === "horizontal") ? "flex flex-col sm:flex-row" : "flex flex-col")
     )}
     data-slot="card"
-    data-testid="item"
     data-layout={layout}
     data-meta={meta}
   >
@@ -137,7 +136,7 @@
         </Group>
       {/if}
       {#if (((meta as string) !== "news") && post.href)}
-        <Link href={urlOf(post.href)} variant="default" data-testid="read">
+        <Link href={urlOf(post.href)} variant="default" data-slot="read">
           {labels.read}
         </Link>
       {/if}

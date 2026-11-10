@@ -47,12 +47,12 @@
       (((position as string) === "sticky") ? "sticky bottom-0 z-40" : "")
     )}
     aria-label={(landmarkLabel ?? label)}
-    data-testid="bottom-nav"
     data-position={position}
+    data-slot="bottom-nav"
   >
-    <List class="m-0 grid list-none grid-flow-col auto-cols-fr p-0" data-testid="items">
+    <List class="m-0 grid list-none grid-flow-col auto-cols-fr p-0" data-slot="items">
       {#each tabs as tab (tab.id)}
-        <ListItem>
+        <ListItem data-slot="tabs-row">
           <MenuEntry
             href={tab.href}
             class={cn(

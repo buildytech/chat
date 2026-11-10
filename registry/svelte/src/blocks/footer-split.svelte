@@ -67,9 +67,9 @@
 <Block
   tag="footer"
   class={cn("border-t border-border", (((tone as string) === "muted") ? "bg-muted" : ""))}
-  data-testid="footer-split"
   data-layout={layout}
   aria-label={landmarkLabel}
+  data-slot="footer-split"
 >
   <Container class={cn("mx-auto w-full max-w-6xl px-4", "py-12")} data-slot="container">
     {#if ((layout as string) === "stats")}

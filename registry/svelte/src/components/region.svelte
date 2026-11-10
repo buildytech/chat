@@ -20,6 +20,6 @@
   let { tag, landmarkLabel, class: className, children }: RegionProps = $props();
 </script>
 
-<Block tag={tag} class={className} aria-label={landmarkLabel}>
+<Block tag={tag} class={className} aria-label={landmarkLabel} data-slot="region">
   {@render children?.()}
 </Block>

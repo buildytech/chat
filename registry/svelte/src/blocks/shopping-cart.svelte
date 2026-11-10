@@ -70,7 +70,7 @@
       gap="4"
       align="stretch"
       class={(((layout as string) === "split") ? "lg:col-span-2" : "")}
-      data-testid="lines"
+      data-slot="lines"
     >
       {#if ((lines?.length ?? 0) === 0)}
         <EmptyState icon="shopping-cart" title={actions.empty} />
@@ -80,7 +80,7 @@
           gap="4"
           align="center"
           class="rounded bg-card inset-ring inset-ring-border flex-wrap p-4"
-          data-testid="item"
+          data-slot="item"
         >
           <MediaFrame alt={line.name} ratio="1/1" class="size-20 shrink-0" />
           <Stack gap="0" class="min-w-40 flex-1">
@@ -105,7 +105,7 @@
           <Text size="base" weight="bold" class="w-24 text-right">
             {fmtMoney((line.price * line.qty), line.currency)}
           </Text>
-          <Button variant="ghost" size="sm" layout="icon" aria-label={labels.remove} data-testid="remove">
+          <Button variant="ghost" size="sm" layout="icon" aria-label={labels.remove}>
             <LucideIcon name="trash" size={16} />
           </Button>
         </Group>
@@ -120,7 +120,7 @@
         </Button>
       </Group>
     </Stack>
-    <Box class={(((layout as string) === "split") ? "lg:sticky lg:top-8" : "")} data-testid="aside">
+    <Box class={(((layout as string) === "split") ? "lg:sticky lg:top-8" : "")} data-slot="aside">
       <CartSummaryCard
         field={tpl("{0}-promo", id)}
         lines={lines}

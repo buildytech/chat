@@ -28,14 +28,14 @@
   let { id, mode = "signin", labels, submit }: AuthFormProps = $props();
 </script>
 
-<Form method="dialog" class="gap-4" data-testid="auth-form">
+<Form method="dialog" class="gap-4" data-slot="auth-form">
   {#if ((mode as string) === "signup")}
     <Field label={labels.name} htmlFor={tpl("{0}-name", id)}>
-      <Input type="text" name="name" autocomplete="name" id={tpl("{0}-name", id)} data-testid="field" />
+      <Input type="text" name="name" autocomplete="name" id={tpl("{0}-name", id)} data-slot="field" />
     </Field>
   {/if}
   <Field label={labels.email} htmlFor={tpl("{0}-email", id)}>
-    <Input type="email" name="email" autocomplete="email" id={tpl("{0}-email", id)} data-testid="field" />
+    <Input type="email" name="email" autocomplete="email" id={tpl("{0}-email", id)} data-slot="field" />
   </Field>
   {#if (((mode as string) !== "reset") && ((mode as string) !== "magic"))}
     <Field label={labels.password} htmlFor={tpl("{0}-password", id)}>
@@ -44,7 +44,7 @@
         name="password"
         autocomplete={(((mode as string) === "signup") ? "new-password" : "current-password")}
         id={tpl("{0}-password", id)}
-        data-testid="field"
+        data-slot="field"
       />
     </Field>
   {/if}
@@ -69,7 +69,7 @@
       </Label>
     </Group>
   {/if}
-  <Button variant="default" size="default" type="submit" class="w-full" data-testid="submit">
+  <Button variant="default" size="default" type="submit" class="w-full">
     {submit}
   </Button>
 </Form>

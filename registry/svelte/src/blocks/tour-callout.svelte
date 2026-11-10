@@ -57,10 +57,10 @@
         : "flex-col items-start"
       )
     )}
-    data-testid="tour"
     data-placement={placement}
+    data-slot="tour"
   >
-    <Button variant="outline" size="default" type="button" class="inset-ring-foreground" data-testid="tour-target">
+    <Button variant="outline" size="default" type="button" class="inset-ring-foreground">
       {target}
     </Button>
     <Stack
@@ -69,7 +69,7 @@
       class={cn("w-full max-w-sm", "rounded bg-card inset-ring inset-ring-border", "p-4", "shadow-md")}
       role="group"
       aria-label={title}
-      data-testid="tour-callout"
+      data-slot="tour-callout"
     >
       <Text size="xs" class="text-muted-foreground">
         {position}

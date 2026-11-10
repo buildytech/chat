@@ -35,7 +35,7 @@
   class="py-0"
   landmarkLabel={landmarkLabel}
 >
-  <Stack gap="6" align="center" data-testid="logos-block">
+  <Stack gap="6" align="center" data-slot="logos-block">
     <Title as={2} size="xl" weight="semibold" class="leading-7" id={(id + "-title")}>
       {title}
     </Title>
@@ -44,7 +44,7 @@
       justify="center"
       align="start"
       class={cn("flex w-full flex-wrap", defaults.logos.row)}
-      data-testid="items"
+      data-slot="items"
     >
       {#each logos as logo (logo.id)}
         <LogoSlot name={logo.name} icon={logo.icon} />

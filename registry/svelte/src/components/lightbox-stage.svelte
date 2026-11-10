@@ -33,20 +33,13 @@
   size="xl"
   aria-label={photos[0]?.title ?? ""}
   class="gap-4 p-4"
-  data-testid="lightbox"
+  data-slot="lightbox"
 >
   <Group gap="2" align="center" justify="between">
     <Text size="sm" weight="semibold">
       {photos[0]?.title ?? ""}
     </Text>
-    <Button
-      variant="ghost"
-      size="sm"
-      layout="icon"
-      type="button"
-      aria-label={labels.close}
-      data-testid="lightbox-close"
-    >
+    <Button variant="ghost" size="sm" layout="icon" type="button" aria-label={labels.close}>
       <LucideIcon name="x" size={16} />
     </Button>
   </Group>

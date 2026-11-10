@@ -40,7 +40,7 @@
     (layout as string) === "compact" ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
     : "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
   }
-  data-testid="items"
+  data-slot="items"
 >
   {#each projects as p, i (p.id)}
     <ArticleBlock
@@ -58,7 +58,7 @@
           class={(over ? "h-full" : "")}
         />
         {#if (p.featured && ((layout as string) !== "compact"))}
-          <Badge variant="default" size="default" class="absolute left-4 top-4" data-testid="featured">
+          <Badge variant="default" size="default" class="absolute left-4 top-4">
             {labels.featured}
           </Badge>
         {/if}

@@ -26,10 +26,10 @@
     "h-8 justify-center rounded-full px-2 inset-ring inset-ring-background/30",
     defaults.hero.badge
   )}
-  data-testid="section-badge"
+  data-slot="section-badge"
 >
   {#if mark}
-    <Badge variant="secondary" size="sm" data-testid="badge-mark">
+    <Badge variant="secondary" size="sm">
       {mark}
     </Badge>
   {/if}

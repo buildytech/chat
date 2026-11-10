@@ -20,14 +20,14 @@
 </script>
 
 {#if ((extras.channels?.length ?? 0) > 0)}
-  <Box class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+  <Box class="grid grid-cols-1 gap-4 sm:grid-cols-3" data-slot="footer-channels">
     {#each extras.channels as c, i (c.id)}
       {#if (i < 3)}
         <Stack
           gap="2"
           align="start"
           class="rounded bg-card inset-ring inset-ring-border p-4"
-          data-testid="footer-channel"
+          data-slot="footer-channel"
         >
           <Inline class="flex size-10 shrink-0 items-center justify-center rounded bg-muted text-foreground">
             <LucideIcon name={c.icon} size={20} />

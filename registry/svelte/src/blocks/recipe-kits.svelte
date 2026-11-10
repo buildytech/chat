@@ -62,7 +62,7 @@
         (layout as string) === "cards" ? "grid grid-cols-1 gap-8 md:grid-cols-3"
         : "flex flex-col gap-8"
       }
-      data-testid="items"
+      data-slot="items"
     >
       {#each dishes as d (d.id)}
         <Box
@@ -70,7 +70,7 @@
             (layout as string) === "cards" ? "rounded bg-card inset-ring inset-ring-border flex flex-col gap-4 p-4"
             : "rounded bg-card inset-ring inset-ring-border grid grid-cols-1 gap-8 p-6 md:grid-cols-2"
           }
-          data-testid="item"
+          data-slot="item"
         >
           <MediaFrame alt={d.name} ratio="4/3" />
           <Stack gap="4">
@@ -97,9 +97,9 @@
               <Text size="sm" weight="semibold">
                 {labels.ingredients}
               </Text>
-              <List tag="ul" class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2" data-testid="ingredients">
+              <List tag="ul" class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2" data-slot="ingredients">
                 {#each d.items as x (x)}
-                  <ListItem class="flex items-center gap-2">
+                  <ListItem class="flex items-center gap-2" data-slot="items-row">
                     <LucideIcon name="check" size={16} class="text-primary" />
                     <Inline>
                       {x}
@@ -113,7 +113,7 @@
               <Inline class="text-xl font-bold">
                 {fmtMoney(d.price, d.currency)}
               </Inline>
-              <Button variant="default" size="default" type="button" aria-label={tpl(labels.addOf, d.name)} data-testid="add">
+              <Button variant="default" size="default" type="button" aria-label={tpl(labels.addOf, d.name)}>
                 {labels.add}
               </Button>
             </Group>

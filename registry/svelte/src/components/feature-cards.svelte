@@ -35,11 +35,11 @@
     (item as string) === "cell" ? cn("w-full gap-px overflow-hidden bg-border p-px", defaults.features.cells)
     : "gap-6"
   }
-  data-testid="feature-grid"
+  data-slot="feature-grid"
 >
   {#each features as feature (feature.id)}
     {#if ((item as string) === "tile")}
-      <Card variant="compact" data-testid="feature-card">
+      <Card variant="compact">
         <Group gap="4" align="start">
           <LucideIcon name={feature.icon} size={20} />
           <Stack gap="2">
@@ -57,9 +57,9 @@
         gap="2"
         align="center"
         class="h-full gap-8 bg-background px-6 py-12 text-center"
-        data-testid="feature-card"
+        data-slot="feature-card"
       >
-        <IconBadge variant="primary" size="xl" data-testid="feature-icon">
+        <IconBadge variant="primary" size="xl" data-slot="feature-icon">
           <LucideIcon name={feature.icon} size={24} />
         </IconBadge>
         <Title as={3} size="xl" weight="semibold" class="leading-6">
@@ -70,7 +70,7 @@
         </Text>
       </Stack>
     {:else}
-      <Card variant="default" data-testid="feature-card">
+      <Card variant="default">
         <CardHeader class="flex flex-col gap-4">
           <LucideIcon name={feature.icon} size={24} />
           <CardTitle as={3}>

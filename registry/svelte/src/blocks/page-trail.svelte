@@ -55,10 +55,10 @@
   tag="section"
   class={cn("py-8", (((tone as string) === "muted") ? "bg-muted" : ""))}
   aria-labelledby={(landmarkLabel ? undefined : titleId)}
-  data-testid="section"
   data-tone={tone}
   data-aside={aside}
   aria-label={landmarkLabel}
+  data-slot="section"
 >
   <Container class={cn("mx-auto w-full max-w-6xl px-4", "flex flex-col gap-6")} data-slot="container">
     {#if ((crumbs?.length ?? 0) > 0)}

@@ -55,16 +55,16 @@
 <Block
   tag="section"
   aria-labelledby={(landmarkLabel ? undefined : ((title && id) ? tpl("{0}-t", id) : undefined))}
-  data-testid="panel-section"
   aria-label={landmarkLabel}
+  data-slot="panel-section"
 >
   <Container class="mx-auto w-full max-w-6xl px-4 py-8" data-slot="container">
     <Panel title={title} description={text} id={id} class={cn((((tone as string) === "muted") ? "bg-muted" : ""))}>
-      <Form method="dialog" class="gap-6" data-testid="profile-form">
+      <Form method="dialog" class="gap-6" data-slot="profile-form">
         <Grid cols={(((layout as string) === "split") ? "1-2" : "1")} class="items-start gap-8">
           <Stack gap="4" align="stretch">
             {#if ((avatar as string) === "show")}
-              <Group gap="4" align="center" data-testid="avatar">
+              <Group gap="4" align="center" data-slot="avatar">
                 <MediaFrame alt={labels.picture} ratio="1/1" class="size-16 shrink-0 rounded-full" />
                 <Button variant="outline" size="sm" type="button">
                   {labels.change}
@@ -72,17 +72,17 @@
               </Group>
             {/if}
             <Field label={labels.name} htmlFor={tpl("{0}-name", id)}>
-              <Input type="text" name="name" autocomplete="name" id={tpl("{0}-name", id)} data-testid="field" />
+              <Input type="text" name="name" autocomplete="name" id={tpl("{0}-name", id)} data-slot="field" />
             </Field>
             <Field label={labels.email} htmlFor={tpl("{0}-email", id)}>
-              <Input type="email" name="email" autocomplete="email" id={tpl("{0}-email", id)} data-testid="field" />
+              <Input type="email" name="email" autocomplete="email" id={tpl("{0}-email", id)} data-slot="field" />
             </Field>
             <Field label={labels.bio} htmlFor={tpl("{0}-bio", id)}>
-              <Textarea rows={4} name="bio" id={tpl("{0}-bio", id)} data-testid="field" />
+              <Textarea rows={4} name="bio" id={tpl("{0}-bio", id)} data-slot="field" />
             </Field>
           </Stack>
           {#if ((prefs as string) === "show")}
-            <Stack gap="4" align="stretch" data-testid="prefs">
+            <Stack gap="4" align="stretch" data-slot="prefs">
               <Title as={3} size="base" weight="bold">
                 {labels.prefs}
               </Title>
@@ -102,7 +102,7 @@
           {/if}
         </Grid>
         <Group gap="2" class="flex-wrap">
-          <Button variant="default" size="default" type="submit" data-testid="submit">
+          <Button variant="default" size="default" type="submit">
             {labels.save}
           </Button>
           <Button variant="outline" size="default" type="button">

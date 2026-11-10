@@ -29,7 +29,7 @@
   class="inline-flex h-10 items-center gap-1 rounded bg-background p-1 inset-ring inset-ring-input"
   data-slot="number-field"
 >
-  <Button variant="ghost" size="sm" layout="icon" type="button" aria-label={decrease} data-testid="decrease">
+  <Button variant="ghost" size="sm" layout="icon" type="button" aria-label={decrease}>
     <LucideIcon name="minus" size={16} />
   </Button>
   <Input
@@ -41,7 +41,7 @@
     size="sm"
     class="number-bare w-8 bg-transparent px-0 text-center inset-ring-0"
   />
-  <Button variant="ghost" size="sm" layout="icon" type="button" aria-label={increase} data-testid="increase">
+  <Button variant="ghost" size="sm" layout="icon" type="button" aria-label={increase}>
     <LucideIcon name="plus" size={16} />
   </Button>
 </Box>

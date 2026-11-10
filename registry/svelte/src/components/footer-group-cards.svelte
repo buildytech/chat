@@ -30,10 +30,10 @@
 </script>
 
 {#if ((groups?.length ?? 0) > 0)}
-  <Block tag="nav" aria-label={(landmarkLabel ?? label)}>
+  <Block tag="nav" aria-label={(landmarkLabel ?? label)} data-slot="footer-group-cards">
     <Box class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {#each groups as g (g.id)}
-        <Stack gap="4" align="stretch" class="rounded bg-card inset-ring inset-ring-border p-6" data-testid="group">
+        <Stack gap="4" align="stretch" class="rounded bg-card inset-ring inset-ring-border p-6" data-slot="group">
           <Group gap="2" align="center">
             <Inline class="flex size-10 shrink-0 items-center justify-center rounded bg-muted text-foreground">
               <LucideIcon name={g.icon} size={20} />
@@ -44,7 +44,7 @@
           </Group>
           <List class="m-0 flex list-none flex-col gap-2 p-0">
             {#each g.links as item (item.id)}
-              <ListItem>
+              <ListItem data-slot="links-row">
                 <MenuEntry href={item.href} class="text-sm text-muted-foreground" variant="muted" size="sm">
                   {item.name}
                 </MenuEntry>

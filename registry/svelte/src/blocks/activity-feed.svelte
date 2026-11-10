@@ -48,8 +48,8 @@
 <Block
   tag="section"
   aria-labelledby={(landmarkLabel ? undefined : ((title && id) ? tpl("{0}-t", id) : undefined))}
-  data-testid="panel-section"
   aria-label={landmarkLabel}
+  data-slot="panel-section"
 >
   <Container class="mx-auto w-full max-w-6xl px-4 py-8" data-slot="container">
     <Panel title={title} description={text} id={id} class={(((tone as string) === "muted") ? "bg-muted" : "")}>
@@ -58,14 +58,14 @@
       {:else if ((layout as string) === "timeline")}
         <Timeline items={events} />
       {:else}
-        <List class="m-0 flex list-none flex-col p-0" data-testid="items">
+        <List class="m-0 flex list-none flex-col p-0" data-slot="items">
           {#each events as e (e.id)}
             <ListItem
               class={cn(
                 "flex items-start justify-between gap-4 border-b border-border last:border-0",
                 (((density as string) === "compact") ? "py-2" : "py-4")
               )}
-              data-testid="item"
+              data-slot="item"
             >
               <Stack gap="0">
                 <Text size="sm" weight="semibold">

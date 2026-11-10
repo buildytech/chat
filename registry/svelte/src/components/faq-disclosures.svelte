@@ -19,9 +19,9 @@
   let { items, name }: FaqDisclosuresProps = $props();
 </script>
 
-<Stack gap="0" align="stretch" data-testid="faq">
+<Stack gap="0" align="stretch" data-slot="faq">
   {#each items as q (q.id)}
-    <Disclosure variant="item" name={name} data-testid="faq-item">
+    <Disclosure variant="item" name={name} data-slot="faq-item">
       <Summary variant="item">
         {q.question}
       </Summary>

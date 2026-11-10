@@ -64,7 +64,7 @@
       <Rating value={q.rating} label={tpl(labels.rating, q.rating)} />
     {/if}
     {#if (item?.mark === "icon")}
-      <Inline class="text-muted-foreground" data-testid="mark">
+      <Inline class="text-muted-foreground" data-slot="mark">
         <LucideIcon name={q.mark} size={24} />
       </Inline>
     {/if}

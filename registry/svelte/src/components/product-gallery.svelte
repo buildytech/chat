@@ -21,10 +21,10 @@
   let { name, image, thumbs = "below" }: ProductGalleryProps = $props();
 </script>
 
-<Stack gap="4" align="stretch" data-testid="gallery">
+<Stack gap="4" align="stretch" data-slot="gallery">
   <MediaFrame alt={name} src={image} ratio="1/1" />
   {#if ((thumbs as string) === "below")}
-    <Grid cols="3" class="gap-4" data-testid="thumbs">
+    <Grid cols="3" class="gap-4" data-slot="thumbs">
       <MediaFrame alt={name} src={image} ratio="1/1" class="ring-2 ring-foreground" />
       <MediaFrame alt={name} ratio="1/1" />
       <MediaFrame alt={name} ratio="1/1" />

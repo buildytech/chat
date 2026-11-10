@@ -55,9 +55,9 @@
   {#if ((lanes?.length ?? 0) === 0)}
     <EmptyState icon="kanban" title={empty} />
   {:else}
-    <Grid cols={(((cols as string) === "2") ? "1-2" : "1-3")} class="items-start gap-4" data-testid="lanes">
+    <Grid cols={(((cols as string) === "2") ? "1-2" : "1-3")} class="items-start gap-4" data-slot="lanes">
       {#each lanes as lane (lane.id)}
-        <Stack gap="4" align="stretch" class="rounded bg-muted p-4" data-testid="lane">
+        <Stack gap="4" align="stretch" class="rounded bg-muted p-4" data-slot="lane">
           <Group gap="2" align="center" justify="between">
             <Title as={3} size="base" weight="bold">
               {lane.title}
@@ -73,7 +73,7 @@
                   "flex flex-col rounded bg-card inset-ring inset-ring-border",
                   (((density as string) === "compact") ? "gap-2 p-2" : "gap-2 p-4")
                 )}
-                data-testid="item"
+                data-slot="item"
               >
                 <Text size="sm" weight="semibold">
                   {c.title}

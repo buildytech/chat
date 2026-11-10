@@ -46,8 +46,8 @@
   }: CartTableProps = $props();
 </script>
 
-<Box class="w-full overflow-x-auto">
-  <Table class="w-full text-left text-sm" data-testid="cart-table">
+<Box class="w-full overflow-x-auto" data-slot="cart-table-root">
+  <Table class="w-full text-left text-sm" data-slot="cart-table">
     <TableCaption class="sr-only">
       {labels.caption}
     </TableCaption>
@@ -74,7 +74,7 @@
     </TableHead>
     <TableBody>
       {#each lines as line (line.id)}
-        <TableRow class="border-t border-border" data-testid="item">
+        <TableRow class="border-t border-border" data-slot="item">
           <TableCell class={cn((((density as string) === "compact") ? "py-2" : "py-4"))}>
             <Group gap="4" align="center">
               {#if ((media as string) === "image")}
@@ -107,14 +107,7 @@
             {fmtMoney((line.price * line.qty), line.currency)}
           </TableCell>
           <TableCell class="text-right">
-            <Button
-              variant="ghost"
-              size="sm"
-              layout="icon"
-              aria-label={labels.remove}
-              data-testid="remove"
-              onclick={() => onremove?.(line.id)}
-            >
+            <Button variant="ghost" size="sm" layout="icon" aria-label={labels.remove} onclick={() => onremove?.(line.id)}>
               <LucideIcon name="x" size={16} />
             </Button>
           </TableCell>
@@ -129,14 +122,14 @@
     align="center"
     justify="between"
     class="mt-4 flex-wrap border-t border-border pt-4"
-    data-testid="cart-footer"
+    data-slot="cart-footer"
   >
-    <Text size="base" weight="bold" data-testid="subtotal">
+    <Text size="base" weight="bold" data-slot="subtotal">
       {labels.subtotal}
       {" "}
       {fmtMoney(lines.reduce((s, i) => s + i.price * i.qty, 0), lines[0]?.currency ?? "")}
     </Text>
-    <Button variant="default" size="default" data-testid="checkout">
+    <Button variant="default" size="default">
       {labels.checkout}
     </Button>
   </Group>

@@ -54,14 +54,13 @@
     (((layout as string) === "horizontal") ? "flex flex-col sm:flex-row" : "flex flex-col")
   )}
   data-slot="card"
-  data-testid="item"
   data-layout={layout}
 >
   {#if ((media as string) === "image")}
     <Box class={cn("relative shrink-0", (((layout as string) === "horizontal") ? "sm:w-48" : ""))}>
       <MediaFrame alt={dish.name} ratio="4/3" class="h-full" />
       {#if dish.badge}
-        <Badge variant="default" size="default" class="absolute left-4 top-4" data-testid="badge">
+        <Badge variant="default" size="default" class="absolute left-4 top-4">
           {dish.badge}
         </Badge>
       {/if}
@@ -69,12 +68,12 @@
   {/if}
   <CardContent class="flex flex-1 flex-col gap-2">
     <Group gap="2" align="center" class="flex-wrap">
-      <Text size="xs" class="uppercase tracking-wide text-muted-foreground" data-testid="category">
+      <Text size="xs" class="uppercase tracking-wide text-muted-foreground" data-slot="category">
         {dish.tag}
       </Text>
       {#if ((media as string) === "none")}
         {#if dish.badge}
-          <Badge variant="secondary" size="sm" data-testid="badge">
+          <Badge variant="secondary" size="sm">
             {dish.badge}
           </Badge>
         {/if}
@@ -82,7 +81,7 @@
     </Group>
     <Title as={3} size="base" weight="bold">
       {#if dish.href}
-        <Link href={urlOf(dish.href)} variant="default" data-testid="open">
+        <Link href={urlOf(dish.href)} variant="default" data-slot="open">
           {dish.name}
         </Link>
       {:else}
@@ -90,7 +89,7 @@
       {/if}
     </Title>
     {#if dish.weight}
-      <Text size="xs" class="text-muted-foreground" data-testid="portion">
+      <Text size="xs" class="text-muted-foreground" data-slot="portion">
         {dish.weight}
       </Text>
     {/if}
@@ -101,12 +100,12 @@
     {/if}
     <Group gap="4" justify="between" class="mt-auto pt-2">
       {#if ((prices as string) === "show")}
-        <Text size="xl" weight="bold" data-testid="price">
+        <Text size="xl" weight="bold" data-slot="price">
           {fmtMoney(dish.price, dish.currency)}
         </Text>
       {/if}
       {#if ((action as string) === "button")}
-        <Button variant="default" size="sm" type="button" data-testid="add" onclick={() => onadd?.(dish.id)}>
+        <Button variant="default" size="sm" type="button" onclick={() => onadd?.(dish.id)}>
           {labels.add}
         </Button>
       {/if}

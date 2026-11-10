@@ -48,9 +48,9 @@
   {#if ((perks?.length ?? 0) === 0)}
     <EmptyState icon="truck" title={empty} />
   {:else if ((layout as string) === "bar")}
-    <List tag="ul" class="flex flex-wrap items-center justify-center gap-x-8 gap-y-4" data-testid="items">
+    <List tag="ul" class="flex flex-wrap items-center justify-center gap-x-8 gap-y-4" data-slot="items">
       {#each perks as p (p.id)}
-        <ListItem class="flex items-center gap-2 text-sm font-medium" data-testid="item">
+        <ListItem class="flex items-center gap-2 text-sm font-medium" data-slot="item">
           <LucideIcon name={p.icon} size={16} />
           <Inline>
             {p.title}
@@ -62,13 +62,13 @@
     <Grid
       cols="1-4"
       class={cn("gap-4", (((layout as string) === "strip") ? "rounded bg-muted p-6" : ""))}
-      data-testid="items"
+      data-slot="items"
     >
       {#each perks as p (p.id)}
         <Stack
           gap="4"
           class={(((layout as string) === "cards") ? "rounded bg-card inset-ring inset-ring-border p-6" : "")}
-          data-testid="item"
+          data-slot="item"
         >
           <Box class="flex size-10 shrink-0 items-center justify-center rounded bg-muted">
             <LucideIcon name={p.icon} size={20} />

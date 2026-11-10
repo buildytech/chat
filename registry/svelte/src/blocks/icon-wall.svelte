@@ -54,7 +54,7 @@
   {#if ((features?.length ?? 0) === 0)}
     <EmptyState icon="layout-grid" title={empty} />
   {:else}
-    <Grid cols={wallCols} class="gap-4" data-testid="items">
+    <Grid cols={wallCols} class="gap-4" data-slot="items">
       {#each features as f (f.id)}
         <Box
           class={cn(
@@ -65,7 +65,7 @@
               : "px-4 py-2"
             )
           )}
-          data-testid="item"
+          data-slot="item"
         >
           <LucideIcon name={f.icon} size={(((item as string) === "tile") ? 24 : 16)} />
           <Text size="sm" weight="semibold">

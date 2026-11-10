@@ -57,10 +57,10 @@
         (cols as string) === "2" ? "grid grid-cols-1 gap-x-8 md:grid-cols-2"
         : "grid grid-cols-1"
       }
-      data-testid="items"
+      data-slot="items"
     >
       {#each dishes as d (d.id)}
-        <ListItem class="flex items-center gap-4 border-b border-border py-2" data-testid="item">
+        <ListItem class="flex items-center gap-4 border-b border-border py-2" data-slot="item">
           {#if ((thumbs as string) === "show")}
             <MediaFrame alt={d.name} ratio="1/1" class="size-12 shrink-0" />
           {/if}

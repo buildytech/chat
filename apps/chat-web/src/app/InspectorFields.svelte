@@ -1,7 +1,8 @@
 <!--
   Inspector fields of one level of a block's props (top level, an object prop or a list row), one registry widget per
   schema kind. A field is editable only with a page-spec origin and host handlers; every other field shows its value
-  read-only. Rejected edits show the gate's message and, for an enum, the allowed values in the field.
+  read-only. Rejected edits show the gate's message and, for an enum, the allowed values in the field. Focus in a field
+  selects it on the canvas (ADR 0021): the overlay outlines where the preview shows it.
 -->
 <script lang="ts">
 	import Copy from "@lucide/svelte/icons/copy";
@@ -22,6 +23,7 @@
 	import Field from "$registry/components/field.svelte";
 	import type { InspectorField } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
+	import { canvas } from "$lib/inspector/canvas.svelte";
 	import { closestAllowed, fieldDomId, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
 	import Self from "./InspectorFields.svelte";
 
@@ -65,12 +67,17 @@
 		return field.required ? `${field.name} *` : field.name;
 	}
 
+	function onFocus(event: FocusEvent) {
+		const pointer = (event.target as Element | null)?.closest("[data-pointer]")?.getAttribute("data-pointer");
+		if (pointer) canvas.selectField(blockId, pointer, "inspector");
+	}
+
 	function valueOf(event: Event): string {
 		return (event.currentTarget as HTMLInputElement | HTMLTextAreaElement).value;
 	}
 </script>
 
-<Stack align="stretch" gap="4" data-slot="inspector-fields">
+<Stack align="stretch" gap="4" data-slot="inspector-fields" onfocusin={onFocus}>
 	{#each fields as field (field.pointer)}
 		{@const id = fieldDomId(blockId, field.pointer)}
 		{@const canEdit = editable(field)}

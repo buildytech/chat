@@ -74,10 +74,10 @@
       secondaryHref={actions.secondaryHref}
     />
     {#if ((perks?.length ?? 0) > 0)}
-      <Grid cols="1-3" class="gap-4" data-testid="perks">
+      <Grid cols="1-3" class="gap-4" data-slot="perks">
         {#each perks as p, i (p.id)}
           {#if (i < 3)}
-            <Group gap="4" align="start" data-testid="perk">
+            <Group gap="4" align="start" data-slot="perk">
               <Box class="flex size-10 shrink-0 items-center justify-center rounded bg-muted">
                 <LucideIcon name={p.icon} size={20} />
               </Box>
@@ -113,10 +113,10 @@
       secondaryHref={actions.secondaryHref}
     />
     {#if ((perks?.length ?? 0) > 0)}
-      <Grid cols="1-3" class="gap-4" data-testid="perks">
+      <Grid cols="1-3" class="gap-4" data-slot="perks">
         {#each perks as p, i (p.id)}
           {#if (i < 3)}
-            <Group gap="4" align="start" data-testid="perk">
+            <Group gap="4" align="start" data-slot="perk">
               <Box class="flex size-10 shrink-0 items-center justify-center rounded bg-muted">
                 <LucideIcon name={p.icon} size={20} />
               </Box>

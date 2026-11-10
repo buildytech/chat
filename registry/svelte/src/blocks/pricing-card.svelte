@@ -99,19 +99,14 @@
     </Text>
     <List tag="ul" class="flex flex-col gap-2 text-sm">
       {#each plan.features as feature (feature)}
-        <ListItem class="flex gap-2">
+        <ListItem class="flex gap-2" data-slot="features-row">
           {feature}
         </ListItem>
       {/each}
     </List>
   </CardContent>
   <CardFooter class="flex flex-wrap items-center gap-2">
-    <Button
-      variant={(stand ? "default" : "outline")}
-      size="default"
-      data-testid="plan-select"
-      onclick={() => onselect?.(plan.id)}
-    >
+    <Button variant={(stand ? "default" : "outline")} size="default" onclick={() => onselect?.(plan.id)}>
       {labels.cta}
     </Button>
     {@render footer?.(plan)}

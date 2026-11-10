@@ -26,9 +26,10 @@
   weight="semibold"
   class={cn("text-center tracking-tight text-background", defaults.hero.title)}
   id={id}
+  data-slot="weighted-title"
 >
   {#each (title ?? "").split(" ") as word, i (i)}
-    <Inline class={weights?.[i]}>
+    <Inline class={weights?.[i]} data-slot="items-row">
       {word}
     </Inline>
     {" "}

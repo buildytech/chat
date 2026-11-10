@@ -28,6 +28,7 @@
     className
   )}
   role="status"
+  data-slot="empty-state"
 >
   <IconBadge size="lg">
     <LucideIcon name={icon} size={20} />

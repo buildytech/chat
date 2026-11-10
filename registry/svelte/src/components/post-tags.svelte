@@ -17,9 +17,9 @@
   let { tags, align = "start" }: PostTagsProps = $props();
 </script>
 
-<Group gap="2" justify={align} class="flex-wrap">
+<Group gap="2" justify={align} class="flex-wrap" data-slot="post-tags">
   {#each tags as tag (tag.id)}
-    <Badge variant="secondary" size="sm" data-testid="post-tag">
+    <Badge variant="secondary" size="sm">
       {tag.name}
     </Badge>
   {/each}

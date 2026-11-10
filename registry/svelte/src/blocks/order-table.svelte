@@ -57,9 +57,9 @@
       {#if ((layout as string) === "table")}
         <OrderRows orders={orders} statuses={statuses} labels={labels} density={density} />
       {:else}
-        <Stack gap="4" align="stretch" data-testid="order-cards">
+        <Stack gap="4" align="stretch" data-slot="order-cards">
           {#each orders as o (o.id)}
-            <Card variant="default" data-testid="item">
+            <Card variant="default">
               <CardContent class="flex flex-wrap items-center justify-between gap-4">
                 <Stack gap="0">
                   <Text size="sm" weight="semibold">

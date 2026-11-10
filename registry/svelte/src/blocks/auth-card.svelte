@@ -62,9 +62,9 @@
     (((layout as string) === "card") ? "rounded bg-card p-6 inset-ring inset-ring-border" : "")
   )}
   aria-labelledby={(landmarkLabel ? undefined : tpl("{0}-title", id))}
-  data-testid="auth-card"
   data-mode={mode}
   aria-label={landmarkLabel}
+  data-slot="auth-card"
 >
   <Stack gap="2">
     <Title as={level} size="2xl" weight="bold" id={tpl("{0}-title", id)}>
@@ -75,7 +75,7 @@
     </Text>
   </Stack>
   {#if (((social as string) === "first") && ((social as string) !== "none") && ((mode as string) !== "reset") && ((mode as string) !== "magic"))}
-    <Stack gap="4" data-testid="social">
+    <Stack gap="4" data-slot="social">
       <Group gap="4" align="center">
         <Separator class="flex-1" />
         <Text size="xs" class="text-muted-foreground">
@@ -95,7 +95,7 @@
   {/if}
   <AuthForm id={id} mode={mode} labels={labels} submit={submit} />
   {#if (((social as string) !== "first") && ((social as string) !== "none") && ((mode as string) !== "reset") && ((mode as string) !== "magic"))}
-    <Stack gap="4" data-testid="social">
+    <Stack gap="4" data-slot="social">
       <Group gap="4" align="center">
         <Separator class="flex-1" />
         <Text size="xs" class="text-muted-foreground">
@@ -116,7 +116,7 @@
   <Text size="sm" class="text-center text-muted-foreground">
     {switchText}
     {" "}
-    <Link href={urlOf(switchHref)} variant="default" data-testid="switch">
+    <Link href={urlOf(switchHref)} variant="default" data-slot="switch">
       {switchLink}
     </Link>
   </Text>

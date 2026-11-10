@@ -39,15 +39,15 @@
   gap={(((density as string) === "compact") ? "4" : "6")}
   align="stretch"
   class="min-w-0"
-  data-testid="app-main"
+  data-slot="app-main"
 >
   <Title as={2} size="2xl" weight="bold" id={tpl("{0}-title", id)}>
     {title}
   </Title>
   {#if ((metrics?.length ?? 0) > 0)}
-    <Grid cols={cols} class="gap-4" data-testid="items">
+    <Grid cols={cols} class="gap-4" data-slot="items">
       {#each metrics as m (m.id)}
-        <Box data-testid="item">
+        <Box data-slot="item">
           <StatTile label={m.label} value={m.value} icon={m.icon} hint={m.hint} />
         </Box>
       {/each}

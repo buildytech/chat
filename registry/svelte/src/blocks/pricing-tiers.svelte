@@ -65,7 +65,7 @@
   landmarkLabel={landmarkLabel}
 >
   {#if ((billing as string) !== "off")}
-    <Group gap="4" align="center" justify="center" class="flex-wrap" data-testid="billing">
+    <Group gap="4" align="center" justify="center" class="flex-wrap" data-slot="billing">
       <Switcher label={billingLabels.label}>
         <SwitcherItem active={((billing as string) === "monthly")} onclick={() => onbilling?.("monthly")}>
           {billingLabels.monthly}
@@ -85,7 +85,7 @@
     <Grid
       cols={(((layout as string) === "stack") ? "1" : fitCols(cols, (plans?.length ?? 0)))}
       class="gap-4"
-      data-testid="tiers"
+      data-slot="tiers"
     >
       {#each plans as plan (plan.id)}
         <PricingCard

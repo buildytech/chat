@@ -67,10 +67,10 @@
           class="flex-wrap"
           role="group"
           aria-label={labels.filters}
-          data-testid="template-filters"
+          data-slot="template-filters"
         >
           {#each filters as f (f.id)}
-            <Button variant="outline" size="sm" type="button" class="gap-2" data-testid="template-filter">
+            <Button variant="outline" size="sm" type="button" class="gap-2">
               {#if f.icon}
                 <LucideIcon name={f.icon} size={16} />
               {/if}
@@ -83,20 +83,20 @@
     {#if ((templates?.length ?? 0) === 0)}
       <EmptyState icon="layout-template" title={empty} />
     {:else}
-      <Grid cols={cols} class="w-full gap-6" data-testid="template-grid">
+      <Grid cols={cols} class="w-full gap-6" data-slot="template-grid">
         {#each templates as t (t.id)}
           <Box
             class={cn(
               "flex flex-col gap-2 overflow-hidden rounded p-4 inset-ring inset-ring-border",
               defaults.templates.card
             )}
-            data-testid="template-card"
+            data-slot="template-card"
           >
             <Box class={cn("shrink-0 overflow-hidden", defaults.templates.image)}>
               <MediaFrame alt={t.title} class={cn("size-full", defaults.media.rounded)} />
             </Box>
-            <Group gap="4" align="center" class={cn("w-full", defaults.templates.footer)} data-testid="template-footer">
-              <IconBadge size="sm" class="overflow-hidden" data-testid="template-avatar">
+            <Group gap="4" align="center" class={cn("w-full", defaults.templates.footer)} data-slot="template-footer">
+              <IconBadge size="sm" class="overflow-hidden" data-slot="template-avatar">
                 <LucideIcon name="layout-template" size={16} />
               </IconBadge>
               <Stack gap="0" class="min-w-0 flex-1">
@@ -129,7 +129,7 @@
         {/each}
       </Grid>
     {/if}
-    <Button variant="outline" size="sm" href={urlOf(browseHref)} class="w-full" data-testid="template-browse">
+    <Button variant="outline" size="sm" href={urlOf(browseHref)} class="w-full">
       {labels.browse}
     </Button>
   </Stack>

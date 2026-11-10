@@ -35,7 +35,7 @@
   <OfferMedia alt={alt} card={content.card} />
 {/if}
 {#if (((media as string) === "grid") && ((content.features?.length ?? 0) > 0))}
-  <Box class="grid grid-cols-2 gap-4" data-testid="hero-grid">
+  <Box class="grid grid-cols-2 gap-4" data-slot="hero-grid">
     {#each content.features as f, i (f.id)}
       {#if (i < 4)}
         <FigureBlock class="flex flex-col gap-2" testid="hero-tile">
@@ -49,7 +49,7 @@
   </Box>
 {/if}
 {#if (((media as string) === "plans") && ((content.plans?.length ?? 0) > 0))}
-  <Box class="relative" data-testid="hero-media">
+  <Box class="relative" data-slot="hero-media">
     <MediaFrame alt={alt} ratio="4/3" />
     {#each content.plans as p, i (p.id)}
       {#if (i < 2)}
@@ -59,7 +59,7 @@
             "absolute w-48 rounded bg-card p-4 shadow-lg",
             ((i === 0) ? "top-8 left-4" : "right-4 bottom-8")
           )}
-          data-testid="hero-plan"
+          data-slot="hero-plan"
         >
           <Text size="sm" weight="semibold">
             {p.name}

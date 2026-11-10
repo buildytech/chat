@@ -68,7 +68,7 @@
   landmarkLabel={landmarkLabel}
 >
   {#if (meta?.date || meta?.author || meta?.category)}
-    <Group gap="4" align="center" class="flex-wrap" data-testid="richtext-meta">
+    <Group gap="4" align="center" class="flex-wrap" data-slot="richtext-meta">
       {#if meta?.date}
         <Text size="sm" class="text-muted-foreground">
           {meta?.date}
@@ -97,20 +97,20 @@
     <Grid cols="1" class="gap-8 lg:grid-cols-3">
       <Box class="min-w-0 lg:col-span-2">
         {#if content}
-          <Prose size="base" width="none" data-testid="richtext-content">
+          <Prose size="base" width="none" data-slot="richtext-content">
             {@html htmlOf(content)}
           </Prose>
         {/if}
       </Box>
       {#if aside?.content}
-        <Card variant="compact" class="h-fit" data-testid="richtext-aside">
+        <Card variant="compact" class="h-fit">
           {#if aside?.title}
             <Title as={((level === 1) ? 2 : 3)} size="lg" weight="semibold">
               {aside?.title}
             </Title>
           {/if}
           {#if aside?.content}
-            <Prose size="sm" width="none" data-testid="richtext-aside-content">
+            <Prose size="sm" width="none" data-slot="richtext-aside-content">
               {@html htmlOf(aside?.content)}
             </Prose>
           {/if}
@@ -125,7 +125,7 @@
         : (layout as string) === "hero" ? "narrow"
         : "none"
       }
-      data-testid="richtext-content"
+      data-slot="richtext-content"
     >
       {@html htmlOf(content)}
     </Prose>

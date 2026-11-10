@@ -52,7 +52,7 @@
   {#if ((dishes?.length ?? 0) === 0)}
     <EmptyState icon="scale" title={empty} />
   {:else if ((layout as string) === "table")}
-    <Box class="w-full overflow-x-auto" data-testid="compare-table">
+    <Box class="w-full overflow-x-auto" data-slot="compare-table">
       <Table class="w-full text-sm">
         <TableCaption class="sr-only">
           {labels.caption}
@@ -81,7 +81,7 @@
         </TableHead>
         <TableBody>
           {#each dishes as d (d.id)}
-            <TableRow data-testid="item">
+            <TableRow data-slot="item">
               <TableHeadCell scope="row" class="py-2 font-semibold">
                 {d.name}
               </TableHeadCell>

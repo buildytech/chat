@@ -27,8 +27,8 @@
   let { orders, statuses, labels, density = "default" }: OrderRowsProps = $props();
 </script>
 
-<Box class="w-full overflow-x-auto">
-  <Table class="w-full text-left text-sm" data-testid="order-table">
+<Box class="w-full overflow-x-auto" data-slot="order-rows">
+  <Table class="w-full text-left text-sm" data-slot="order-table">
     <TableCaption class="sr-only">
       {labels.caption}
     </TableCaption>
@@ -53,7 +53,7 @@
     </TableHead>
     <TableBody>
       {#each orders as o (o.id)}
-        <TableRow class="border-t border-border" data-testid="item">
+        <TableRow class="border-t border-border" data-slot="item">
           <TableCell class={cn("font-semibold", (((density as string) === "compact") ? "py-2" : "py-4"))}>
             {o.number}
           </TableCell>

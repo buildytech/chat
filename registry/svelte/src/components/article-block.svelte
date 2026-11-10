@@ -17,6 +17,6 @@
   let { testid, class: className, children }: ArticleBlockProps = $props();
 </script>
 
-<Block tag="article" class={cn(className)} data-testid={testid}>
+<Block tag="article" class={cn(className)} data-slot={(testid ?? "article-block")}>
   {@render children?.()}
 </Block>

@@ -29,7 +29,7 @@
     gap="6"
     align={(((align as string) === "center") ? "center" : "start")}
     class={cn((((align as string) === "center") ? "text-center" : ""), defaults.stats.column)}
-    data-testid="item"
+    data-slot="item"
   >
     {#if ((item as string) === "icon")}
       <LucideIcon name={stat.icon} size={24} />

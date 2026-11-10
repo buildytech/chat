@@ -63,7 +63,7 @@
         "text-8xl text-muted-foreground",
         (((layout as string) === "split") ? "" : "text-center")
       )}
-      data-testid="error-code"
+      data-slot="error-code"
     >
       {status}
     </Text>

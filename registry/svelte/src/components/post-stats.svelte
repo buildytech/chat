@@ -22,7 +22,7 @@
   let { post, extras, labels, align = "start" }: PostStatsProps = $props();
 </script>
 
-<Group gap="4" align="center" justify={align} class="flex-wrap text-muted-foreground" data-testid="post-stats">
+<Group gap="4" align="center" justify={align} class="flex-wrap text-muted-foreground" data-slot="post-stats">
   <Group gap="2" align="center">
     <LucideIcon name="clock" size={16} />
     <Text size="sm">

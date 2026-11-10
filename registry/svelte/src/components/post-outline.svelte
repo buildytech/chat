@@ -23,7 +23,7 @@
   let { post, extras, labels }: PostOutlineProps = $props();
 </script>
 
-<Stack gap="6" align="stretch" data-testid="post-outline">
+<Stack gap="6" align="stretch" data-slot="post-outline">
   <Stack gap="2" align="start" class="text-muted-foreground">
     <Group gap="2" align="center">
       <LucideIcon name="user" size={16} />

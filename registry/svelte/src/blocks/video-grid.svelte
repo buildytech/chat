@@ -56,7 +56,7 @@
   {#if ((quotes?.length ?? 0) === 0)}
     <EmptyState icon="video" title={empty} />
   {:else}
-    <Grid cols={cols} class="gap-4" data-testid="items">
+    <Grid cols={cols} class="gap-4" data-slot="items">
       {#each quotes as q (q.id)}
         <FigureBlock class="m-0 flex flex-col gap-4" testid="item">
           <Box class="relative">
@@ -67,13 +67,12 @@
               type="button"
               class="absolute top-1/2 left-1/2 size-12 -translate-x-1/2 -translate-y-1/2 rounded p-0"
               aria-label={tpl(playLabel, q.author)}
-              data-testid="play"
               onclick={() => onplay?.(q.id)}
             >
               <LucideIcon name="play" size={20} />
             </Button>
             {#if ((caption as string) === "overlay")}
-              <Box class="absolute inset-x-0 bottom-0 rounded bg-background p-4" data-testid="caption">
+              <Box class="absolute inset-x-0 bottom-0 rounded bg-background p-4" data-slot="caption">
                 <Text size="sm" weight="semibold">
                   {q.author}
                 </Text>
@@ -84,7 +83,7 @@
             {/if}
           </Box>
           {#if ((caption as string) === "below")}
-            <Text tag="figcaption" data-testid="caption">
+            <Text tag="figcaption" data-slot="caption">
               <Text size="sm" weight="semibold">
                 {q.author}
               </Text>

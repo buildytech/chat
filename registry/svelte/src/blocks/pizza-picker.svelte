@@ -60,7 +60,7 @@
         (layout as string) === "rows" ? "flex flex-col gap-4"
         : "grid grid-cols-1 gap-4 md:grid-cols-3"
       }
-      data-testid="items"
+      data-slot="items"
     >
       {#each dishes as d (d.id)}
         <Box
@@ -68,7 +68,7 @@
             (layout as string) === "rows" ? "rounded bg-card inset-ring inset-ring-border grid grid-cols-1 gap-4 p-4 md:grid-cols-3"
             : "rounded bg-card inset-ring inset-ring-border flex flex-col gap-4 p-4"
           }
-          data-testid="item"
+          data-slot="item"
         >
           <MediaFrame alt={d.name} ratio="1/1" />
           <Stack gap="4" class={(((layout as string) === "rows") ? "md:col-span-2" : "")}>
@@ -86,7 +86,7 @@
               <Inline class="text-xl font-bold">
                 {fmtMoney(d.price, d.currency)}
               </Inline>
-              <Button variant="default" size="default" type="button" aria-label={tpl(labels.addOf, d.name)} data-testid="add">
+              <Button variant="default" size="default" type="button" aria-label={tpl(labels.addOf, d.name)}>
                 {labels.add}
               </Button>
             </Group>

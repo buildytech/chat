@@ -31,13 +31,13 @@
   let { label, brand, groups, landmarkLabel }: FooterCardProps = $props();
 </script>
 
-<Block tag="footer" class="py-8" data-testid="site-footer" data-layout="card" aria-label={landmarkLabel}>
+<Block tag="footer" class="py-8" data-layout="card" aria-label={landmarkLabel} data-slot="site-footer">
   <Container class={cn(cn("mx-auto w-full px-4", defaults.section.landing), "px-0")} data-slot="container">
     <Box
       class={cn("flex w-full flex-row items-start overflow-hidden bg-muted p-10", defaults.footer.card)}
-      data-testid="footer-card"
+      data-slot="footer-card"
     >
-      <Group gap="4" align="center" class={cn("h-8 shrink-0", defaults.footer.brand)} data-testid="footer-brand">
+      <Group gap="4" align="center" class={cn("h-8 shrink-0", defaults.footer.brand)} data-slot="footer-brand">
         <Inline class="flex size-8 items-center justify-center rounded bg-foreground text-background">
           <LucideIcon name="hexagon" size={16} />
         </Inline>
@@ -54,16 +54,16 @@
             gap="0"
             align="start"
             class={cn("flex w-full flex-nowrap justify-between", defaults.footer.groups)}
-            data-testid="footer-groups"
+            data-slot="footer-groups"
           >
             {#each groups as g (g.id)}
-              <Stack gap="4" data-testid="group">
+              <Stack gap="4" data-slot="group">
                 <Text size="xs" weight="semibold" class="leading-5">
                   {g.title}
                 </Text>
                 <List class="m-0 flex list-none flex-col gap-4 p-0">
                   {#each g.links as item (item.id)}
-                    <ListItem>
+                    <ListItem data-slot="links-row">
                       <MenuEntry href={item.href} class="text-xs leading-5 text-muted-foreground">
                         {item.name}
                       </MenuEntry>

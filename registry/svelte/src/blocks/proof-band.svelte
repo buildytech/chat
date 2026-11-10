@@ -50,9 +50,9 @@
     <EmptyState icon="building-2" title={empty} />
   {:else}
     <Grid cols={(((layout as string) === "beside") ? "1-2" : "1")} class="items-center gap-8">
-      <Group gap="6" justify="center" class="flex-wrap text-muted-foreground" data-testid="logos">
+      <Group gap="6" justify="center" class="flex-wrap text-muted-foreground" data-slot="logos">
         {#each logos as logo (logo.id)}
-          <Group gap="2" align="center" data-testid="logo">
+          <Group gap="2" align="center" data-slot="logo">
             <LucideIcon name={logo.icon} size={24} />
             <Text size="sm" weight="semibold" class={(((logoStyle as string) === "icon") ? "sr-only" : "")}>
               {logo.name}
@@ -60,9 +60,9 @@
           </Group>
         {/each}
       </Group>
-      <Grid cols={(((layout as string) === "beside") ? "2" : "1-4")} class="gap-6 text-center" data-testid="stats">
+      <Grid cols={(((layout as string) === "beside") ? "2" : "1-4")} class="gap-6 text-center" data-slot="stats">
         {#each stats as stat (stat.id)}
-          <Stack gap="0" align="center" data-testid="stat">
+          <Stack gap="0" align="center" data-slot="stat">
             <Text size="4xl" weight="bold">
               {stat.value}
             </Text>

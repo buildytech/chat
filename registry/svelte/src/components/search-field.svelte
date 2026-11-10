@@ -21,7 +21,7 @@
   let { value, placeholder, label, class: className, onvalue }: SearchFieldProps = $props();
 </script>
 
-<Box class={cn("relative min-w-44 flex-1", className)} role="search">
+<Box class={cn("relative min-w-44 flex-1", className)} role="search" data-slot="search-field">
   <LucideIcon name="search" size={16} class="pointer-events-none absolute top-2 left-3 text-muted-foreground" />
   <Input
     size="sm"

@@ -68,7 +68,7 @@
         : fitCols((((cols as string) === "2") ? "1-2" : "1-4"), (packs?.length ?? 0))
       }
       class="gap-4"
-      data-testid="items"
+      data-slot="items"
     >
       {#each packs as pack (pack.id)}
         <Card
@@ -81,7 +81,6 @@
               : ""
             )
           )}
-          data-testid="item"
           data-badge={pack.badge}
         >
           <CardContent
@@ -94,7 +93,7 @@
               {#if (pack.badge || (((item as string) !== "row") && (packs.filter((i) => i["badge"]).length > 0)))}
                 <Box class="flex min-h-6 items-center" data-slot="badge-slot">
                   {#if pack.badge}
-                    <Badge variant="default" size="default" class="w-fit shrink-0" data-testid="badge">
+                    <Badge variant="default" size="default" class="w-fit shrink-0">
                       {at(badges, pack.badge)}
                     </Badge>
                   {/if}
@@ -114,7 +113,6 @@
               size="sm"
               type="button"
               class={cn("w-fit shrink-0", (((item as string) === "row") ? "" : "mt-auto"))}
-              data-testid="buy"
             >
               {buy}
             </Button>

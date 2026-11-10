@@ -32,10 +32,10 @@
     "mx-auto flex w-full flex-col gap-4 bg-background/10 p-6 inset-ring inset-ring-background/30",
     defaults.hero.composer
   )}
-  data-testid="email-form"
+  data-slot="email-form"
 >
   {#if attachLabel}
-    <Group gap="2" align="center" data-testid="composer-attachments">
+    <Group gap="2" align="center" data-slot="composer-attachments">
       <Button
         variant="ghost"
         size="sm"
@@ -43,7 +43,6 @@
           "gap-2 overflow-hidden bg-background/10 text-background hover:bg-background/20",
           defaults.hero.attach
         )}
-        data-testid="composer-attach"
       >
         <LucideIcon name="file-text" size={16} />
         {attachLabel}
@@ -55,7 +54,6 @@
           "gap-2 overflow-hidden bg-background/10 text-background hover:bg-background/20",
           defaults.hero.attach
         )}
-        data-testid="composer-attach"
       >
         <LucideIcon name="paperclip" size={16} />
         {attachLabel}
@@ -66,18 +64,17 @@
     size="xs"
     weight="semibold"
     class={cn("flex w-full items-center leading-5 text-background/80", defaults.hero.promptLine)}
-    data-testid="field"
+    data-slot="field"
   >
     {label}
   </Text>
-  <Group gap="2" align="center" justify="between" class="h-8 w-full" data-testid="composer-tools">
+  <Group gap="2" align="center" justify="between" class="h-8 w-full" data-slot="composer-tools">
     <Group gap="2" align="center">
       <Button
         variant="ghost"
         size="sm"
         layout="icon"
         class="bg-background/10 text-background hover:bg-background/20"
-        data-testid="composer-plus"
         aria-label={(attachLabel ?? "Attach")}
       >
         <LucideIcon name="plus" size={16} />
@@ -87,7 +84,6 @@
           variant="ghost"
           size="sm"
           class={cn("gap-2 bg-background/10 text-background hover:bg-background/20", defaults.hero.model)}
-          data-testid="composer-model"
         >
           <LucideIcon name="sparkles" size={16} />
           {modelLabel}
@@ -95,14 +91,7 @@
         </Button>
       {/if}
     </Group>
-    <Button
-      href={urlOf(href)}
-      variant="secondary"
-      size="sm"
-      layout="icon"
-      data-testid="submit"
-      aria-label={(send ?? "Send")}
-    >
+    <Button href={urlOf(href)} variant="secondary" size="sm" layout="icon" aria-label={(send ?? "Send")}>
       <LucideIcon name="arrow-up" size={16} />
     </Button>
   </Group>

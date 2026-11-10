@@ -23,9 +23,9 @@
   let { features, mediaSide = "end" }: FeatureRowsProps = $props();
 </script>
 
-<Stack gap="8" align="stretch" data-testid="feature-rows">
+<Stack gap="8" align="stretch" data-slot="feature-rows">
   {#each features as feature (feature.id)}
-    <Grid cols="1-2" class="group items-center gap-8" data-testid="feature-card">
+    <Grid cols="1-2" class="group items-center gap-8" data-slot="feature-card">
       <Stack gap="2" class="min-w-0">
         <LucideIcon name={feature.icon} size={24} />
         <Title as={3} size="xl" weight="bold">

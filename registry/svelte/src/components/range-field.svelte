@@ -46,7 +46,7 @@
       max={max}
       aria-label={fromLabel}
       value={(((from as string) === "") ? (min == null ? undefined : String(min)) : from)}
-      data-testid="range-from"
+      data-slot="range-from"
       oninput={(event: Event & { currentTarget: HTMLInputElement }) => onchange?.(event.currentTarget.value, to)}
     />
     <Range
@@ -54,7 +54,7 @@
       max={max}
       aria-label={toLabel}
       value={(((to as string) === "") ? (max == null ? undefined : String(max)) : to)}
-      data-testid="range-to"
+      data-slot="range-to"
       oninput={(event: Event & { currentTarget: HTMLInputElement }) => onchange?.(from, event.currentTarget.value)}
     />
   {/if}

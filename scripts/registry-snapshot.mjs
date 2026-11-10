@@ -154,7 +154,7 @@ function compactProps(props) {
 			defs[name] = def;
 		}
 		// Key order of the published $defs, so the rebuilt schema serializes byte-for-byte like the pinned one.
-		items[item] = { organism: entry.organism, events: entry.events, slots: entry.slots, schema, defs: Object.keys($defs) };
+		items[item] = { organism: entry.organism, events: entry.events, slots: entry.slots, schema, defs: Object.keys($defs), ...(entry.viewMap ? { viewMap: entry.viewMap } : {}) };
 		const reached = reachedDefs(entry.schema, $defs);
 		if (reached.size !== Object.keys($defs).length) throw new Error(`${item}: $defs has entries its schema never reaches`);
 	}

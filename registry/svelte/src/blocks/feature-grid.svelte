@@ -63,7 +63,7 @@
           href={urlOf(action?.href)}
           variant="default"
           class={cn(defaults.text.tiny, "shrink-0 font-medium leading-5")}
-          data-testid="section-action"
+          data-slot="section-action"
         >
           {action?.label}
         </Link>

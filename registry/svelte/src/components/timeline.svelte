@@ -34,7 +34,7 @@
 <Box class={cn("min-w-0", className)} data-slot="timeline">
   <List class="m-0 flex list-none flex-col p-0">
     {#each items as item, i (item.id)}
-      <ListItem class="relative flex min-w-0 gap-4 pb-4 last:pb-0" data-event={item.id}>
+      <ListItem class="relative flex min-w-0 gap-4 pb-4 last:pb-0" data-event={item.id} data-slot="timeline-item">
         <Box class="relative flex w-2 shrink-0 justify-center">
           {#if (i < ((items?.length ?? 0) - 1))}
             <Inline class="absolute top-4 -bottom-0 w-px bg-border" />

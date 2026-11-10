@@ -25,40 +25,40 @@
   let { title, titleId, level = 2, content = "grid" }: ShellContentProps = $props();
 </script>
 
-<Stack gap="6" align="stretch" class="flex-1 p-6" data-testid="content">
+<Stack gap="6" align="stretch" class="flex-1 p-6" data-slot="content">
   <Group gap="4" align="center" justify="between">
     <Title as={level} size="2xl" weight="semibold" id={titleId}>
       {title}
     </Title>
     <Box class="h-10 w-32 rounded bg-muted" aria-hidden="true" />
   </Group>
-  <Box class="flex flex-1 flex-col gap-4" aria-hidden="true" data-testid="panels">
+  <Box class="flex flex-1 flex-col gap-4" aria-hidden="true" data-slot="panels">
     {#if ((content as string) === "grid")}
       <Box class="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Box
           class={cn("flex flex-col gap-4 rounded bg-card p-4 inset-ring inset-ring-border", "h-24")}
-          data-testid="panel"
+          data-slot="panel"
         >
           <Box class={cn("rounded bg-muted", "h-4 w-1/3")} />
           <Box class={cn("rounded bg-muted", "flex-1")} />
         </Box>
         <Box
           class={cn("flex flex-col gap-4 rounded bg-card p-4 inset-ring inset-ring-border", "h-24")}
-          data-testid="panel"
+          data-slot="panel"
         >
           <Box class={cn("rounded bg-muted", "h-4 w-1/3")} />
           <Box class={cn("rounded bg-muted", "flex-1")} />
         </Box>
         <Box
           class={cn("flex flex-col gap-4 rounded bg-card p-4 inset-ring inset-ring-border", "h-24")}
-          data-testid="panel"
+          data-slot="panel"
         >
           <Box class={cn("rounded bg-muted", "h-4 w-1/3")} />
           <Box class={cn("rounded bg-muted", "flex-1")} />
         </Box>
         <Box
           class={cn("flex flex-col gap-4 rounded bg-card p-4 inset-ring inset-ring-border", "h-24")}
-          data-testid="panel"
+          data-slot="panel"
         >
           <Box class={cn("rounded bg-muted", "h-4 w-1/3")} />
           <Box class={cn("rounded bg-muted", "flex-1")} />
@@ -69,7 +69,7 @@
           "flex flex-col gap-4 rounded bg-card p-4 inset-ring inset-ring-border",
           "min-h-64 flex-1"
         )}
-        data-testid="panel"
+        data-slot="panel"
       >
         <Box class={cn("rounded bg-muted", "h-4 w-1/3")} />
         <Box class={cn("rounded bg-muted", "flex-1")} />
@@ -82,14 +82,14 @@
             "flex flex-col gap-4 rounded bg-card p-4 inset-ring inset-ring-border",
             "h-64 lg:col-span-2"
           )}
-          data-testid="panel"
+          data-slot="panel"
         >
           <Box class={cn("rounded bg-muted", "h-4 w-1/3")} />
           <Box class={cn("rounded bg-muted", "flex-1")} />
         </Box>
         <Box
           class={cn("flex flex-col gap-4 rounded bg-card p-4 inset-ring inset-ring-border", "h-64")}
-          data-testid="panel"
+          data-slot="panel"
         >
           <Box class={cn("rounded bg-muted", "h-4 w-1/3")} />
           <Box class={cn("rounded bg-muted", "flex-1")} />
@@ -100,7 +100,7 @@
           "flex flex-col gap-4 rounded bg-card p-4 inset-ring inset-ring-border",
           "min-h-40 flex-1"
         )}
-        data-testid="panel"
+        data-slot="panel"
       >
         <Box class={cn("rounded bg-muted", "h-4 w-1/3")} />
         <Box class={cn("rounded bg-muted", "flex-1")} />
@@ -114,7 +114,7 @@
       </Group>
       <Box
         class={cn("flex flex-col gap-4 rounded bg-card p-4 inset-ring inset-ring-border", "flex-1")}
-        data-testid="panel"
+        data-slot="panel"
       >
         <Box class={cn("rounded bg-muted", "h-8")} />
         <Box class={cn("rounded bg-muted", "h-8")} />

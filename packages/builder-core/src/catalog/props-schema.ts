@@ -11,6 +11,16 @@ import raw from "./props.json" with { type: "json" };
 
 export type JsonSchema = Record<string, unknown>;
 
+/**
+ * The generated view map of a block (codegen-x, alexy-os/chaosbun#149): where each prop lands in the rendered DOM, so
+ * the chat can tie a preview element to the prop it renders and back. `rows` maps a list pointer to the `data-slot`
+ * names its rows carry; `fields` maps a prop pointer (a list index written `[]`) to the places it shows: the slot it
+ * sits inside (`in`), its own element's slot (`s`), and how it shows (`k`: text, html, an attribute `a`, or a Lucide
+ * icon). Never hand-written; `view-map.ts` resolves a pointer to an element and an element to a pointer.
+ */
+export type ViewField = { in?: string; s?: string; k: "text" | "html" | "attr" | "icon"; a?: string; f?: 1 };
+export type ViewMap = { rows: Record<string, string[]>; fields: Record<string, ViewField[]> };
+
 type CompactProps = {
 	format: "buildy-props-compact";
 	version: number;
@@ -18,7 +28,7 @@ type CompactProps = {
 	propsVersion: string;
 	digest: string;
 	defs: Record<string, JsonSchema>;
-	items: Record<string, { organism: string; events: string[]; slots: string[]; schema: JsonSchema; defs: string[] }>;
+	items: Record<string, { organism: string; events: string[]; slots: string[]; schema: JsonSchema; defs: string[]; viewMap?: ViewMap }>;
 };
 
 const props = raw as unknown as CompactProps;
@@ -52,6 +62,11 @@ export function propsSchemaFor(item: string): JsonSchema | null {
 export function propsEventsFor(item: string): { events: string[]; slots: string[] } {
 	const entry = props.items[item];
 	return { events: entry?.events ?? [], slots: entry?.slots ?? [] };
+}
+
+/** The generated view map of a block, or null for an item (or an older registry pin) that carries none. */
+export function viewMapFor(item: string): ViewMap | null {
+	return props.items[item]?.viewMap ?? null;
 }
 
 /** Lucide icon names of the contract (the published `lucideIcon` enum). */

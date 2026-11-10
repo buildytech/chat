@@ -22,7 +22,7 @@
   let { topics, tone = "default" }: TopicChipsProps = $props();
 </script>
 
-<Group gap="2" align="center" justify="center" class="flex-wrap" data-testid="hero-topics">
+<Group gap="2" align="center" justify="center" class="flex-wrap" data-slot="hero-topics">
   {#each topics as topic (topic.id)}
     {#if ((tone as string) === "inverse")}
       <Button
@@ -30,7 +30,6 @@
         variant="ghost"
         size="sm"
         class="gap-2 text-background inset-ring-background/30 hover:bg-background/10"
-        data-testid="hero-topic"
       >
         {#if topic.icon}
           <LucideIcon name={topic.icon} size={16} />
@@ -38,7 +37,7 @@
         {topic.name}
       </Button>
     {:else}
-      <Button href={urlOf(topic.href)} variant="outline" size="sm" data-testid="hero-topic">
+      <Button href={urlOf(topic.href)} variant="outline" size="sm">
         {topic.name}
       </Button>
     {/if}

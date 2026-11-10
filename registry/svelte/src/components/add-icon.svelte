@@ -16,6 +16,6 @@
   let { label, variant = "outline" }: AddIconProps = $props();
 </script>
 
-<Button variant={variant} size="sm" layout="icon" type="button" aria-label={label} data-testid="add">
+<Button variant={variant} size="sm" layout="icon" type="button" aria-label={label}>
   <LucideIcon name="plus" size={16} />
 </Button>

@@ -61,10 +61,10 @@
           (cols as string) === "2" ? "grid grid-cols-1 gap-8 md:grid-cols-2"
           : "flex flex-col gap-8"
         }
-        data-testid="items"
+        data-slot="items"
       >
         {#each sections as s (s.id)}
-          <Stack gap="4" id={tpl("{0}-{1}", id, s.key)} data-testid="menusection">
+          <Stack gap="4" id={tpl("{0}-{1}", id, s.key)} data-slot="menusection">
             <Stack gap="0" class="border-b border-border pb-2">
               <Title as={3} size="xl" weight="bold">
                 {s.title}
@@ -76,7 +76,7 @@
             <List tag="ul" class="flex flex-col gap-4">
               {#each dishes as d (d.id)}
                 {#if (d.tag === s.key)}
-                  <ListItem class="flex flex-col gap-0" data-testid="item">
+                  <ListItem class="flex flex-col gap-0" data-slot="item">
                     <Box class="flex items-baseline gap-2">
                       <Inline class="font-semibold">
                         {d.name}

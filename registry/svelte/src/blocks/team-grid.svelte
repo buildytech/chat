@@ -69,11 +69,11 @@
         : (cols as string) === "1-3" ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
         : "grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4"
       }
-      data-testid="items"
+      data-slot="items"
     >
       {#each members as m (m.id)}
         {#if ((layout as string) === "minimal")}
-          <Stack gap="2" align="center" class="text-center" data-testid="item">
+          <Stack gap="2" align="center" class="text-center" data-slot="item">
             <MediaFrame alt={m.name} ratio="1/1" class={cn("size-16", "shrink-0")} />
             <Text size="sm" weight="semibold">
               {m.name}
@@ -83,7 +83,7 @@
             </Text>
           </Stack>
         {:else if ((layout as string) === "cards")}
-          <Stack gap="4" class="rounded bg-card inset-ring inset-ring-border p-4" data-testid="item">
+          <Stack gap="4" class="rounded bg-card inset-ring inset-ring-border p-4" data-slot="item">
             <MediaFrame alt={m.name} ratio="1/1" />
             <Stack gap="2">
               <Stack gap="0">

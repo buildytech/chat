@@ -81,7 +81,7 @@
         : "3-6"
       }
       class={cn("w-full items-center bg-muted px-6", defaults.stats.panel)}
-      data-testid="items"
+      data-slot="items"
     >
       {#each stats as stat (stat.id)}
         <StatFigure stat={stat} item={item} align={align} />
@@ -97,7 +97,7 @@
         : "3-6"
       }
       class="gap-6"
-      data-testid="items"
+      data-slot="items"
     >
       {#each stats as stat (stat.id)}
         <StatFigure stat={stat} item={item} align={align} />

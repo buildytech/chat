@@ -53,7 +53,7 @@
     <EmptyState icon="table" title={empty} />
   {:else}
     <Box class="relative w-full overflow-x-auto">
-      <Table class="w-full text-left text-sm" data-testid="compare">
+      <Table class="w-full text-left text-sm" data-slot="compare">
         <TableCaption class="sr-only">
           {labels.caption}
         </TableCaption>
@@ -79,7 +79,7 @@
         </TableHead>
         <TableBody>
           {#each rows as row (row.id)}
-            <TableRow class="border-t border-border" data-testid="item">
+            <TableRow class="border-t border-border" data-slot="item">
               <TableHeadCell scope="row" class={cn("font-medium", (((density as string) === "compact") ? "py-2" : "py-4"))}>
                 {row.label}
               </TableHeadCell>

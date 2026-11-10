@@ -20,6 +20,6 @@
   let { testid, class: className, children }: FigureBlockProps = $props();
 </script>
 
-<Block tag="figure" class={cn(className)} data-testid={testid}>
+<Block tag="figure" class={cn(className)} data-slot={(testid ?? "figure-block")}>
   {@render children?.()}
 </Block>

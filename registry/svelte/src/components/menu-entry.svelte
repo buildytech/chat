@@ -43,16 +43,16 @@
     size={size}
     aria-current={(current ? "page" : undefined)}
     class={className}
-    data-testid={testid}
+    data-slot={(testid ?? "menu-entry")}
   >
     {@render children?.()}
   </Link>
 {:else if block}
-  <Box class={className} aria-current={(current ? "page" : undefined)} data-testid={testid}>
+  <Box class={className} aria-current={(current ? "page" : undefined)} data-slot={(testid ?? "menu-entry")}>
     {@render children?.()}
   </Box>
 {:else}
-  <Inline class={className} aria-current={(current ? "page" : undefined)} data-testid={testid}>
+  <Inline class={className} aria-current={(current ? "page" : undefined)} data-slot={(testid ?? "menu-entry")}>
     {@render children?.()}
   </Inline>
 {/if}

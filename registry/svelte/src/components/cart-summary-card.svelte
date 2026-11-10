@@ -50,7 +50,7 @@
   }: CartSummaryCardProps = $props();
 </script>
 
-<Stack gap="6" align="stretch" class="rounded bg-card inset-ring inset-ring-border p-6" data-testid="summary">
+<Stack gap="6" align="stretch" class="rounded bg-card inset-ring inset-ring-border p-6" data-slot="summary">
   <Group gap="4" align="baseline" justify="between">
     <Title as={2} size="lg" weight="semibold">
       {labels.title}
@@ -60,9 +60,9 @@
     </Text>
   </Group>
   {#if (((items as string) === "show") && ((lines?.length ?? 0) > 0))}
-    <List tag="ul" class="flex flex-col gap-4" data-testid="summary-lines">
+    <List tag="ul" class="flex flex-col gap-4" data-slot="summary-lines">
       {#each lines as line (line.id)}
-        <ListItem class="flex items-center gap-4 text-sm">
+        <ListItem class="flex items-center gap-4 text-sm" data-slot="cart-line">
           <MediaFrame alt={line.name} ratio="1/1" class="size-12 shrink-0" />
           <Stack gap="0" class="flex-1">
             <Text size="sm" weight="semibold">
@@ -80,7 +80,7 @@
     </List>
   {/if}
   {#if ((promo as string) === "show")}
-    <Stack gap="2" align="stretch" data-testid="promo">
+    <Stack gap="2" align="stretch" data-slot="promo">
       <Group gap="2" align="center">
         <Input type="text" name={field} aria-label={labels.promo} placeholder={labels.promo} class="min-w-0 flex-1" />
         <Button variant="outline" size="default" type="button">
@@ -93,7 +93,7 @@
             {labels.codes}
           </Text>
           {#each promos as c (c.id)}
-            <Badge variant="outline" size="sm" data-testid="code">
+            <Badge variant="outline" size="sm">
               {c.code}
             </Badge>
           {/each}
@@ -102,7 +102,7 @@
     </Stack>
   {/if}
   {#if ((progress as string) === "show")}
-    <Stack gap="2" align="stretch" class="rounded bg-muted p-4" data-testid="progress">
+    <Stack gap="2" align="stretch" class="rounded bg-muted p-4" data-slot="progress">
       <Text size="sm">
         {labels.progress}
       </Text>
@@ -120,7 +120,7 @@
               : "text-sm text-muted-foreground"
             )
           )}
-          data-testid="row"
+          data-slot="row"
         >
           <Inline>
             {row.label}
@@ -132,7 +132,7 @@
       {/each}
     </List>
   {/if}
-  <Button variant="default" size="lg" class="w-full" data-testid="checkout">
+  <Button variant="default" size="lg" class="w-full">
     {labels.checkout}
   </Button>
   <Text size="xs" class="text-muted-foreground">

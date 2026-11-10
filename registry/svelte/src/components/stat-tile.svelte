@@ -26,7 +26,7 @@
   let { label, value, icon, href, hint }: StatTileProps = $props();
 </script>
 
-<Box class="min-w-0">
+<Box class="min-w-0" data-slot="stat-tile">
   {#if href}
     <Link
       href={urlOf(href)}

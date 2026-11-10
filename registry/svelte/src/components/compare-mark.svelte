@@ -21,7 +21,7 @@
 </script>
 
 {#if ((value as string) === "yes")}
-  <Inline class="inline-flex items-center gap-2" data-mark="yes">
+  <Inline class="inline-flex items-center gap-2" data-mark="yes" data-slot="compare-mark">
     <LucideIcon name="check" size={16} class="text-foreground" />
     <Inline class="sr-only">
       {yes}
@@ -29,7 +29,7 @@
   </Inline>
 {/if}
 {#if ((value as string) === "no")}
-  <Inline class="inline-flex items-center gap-2 text-muted-foreground" data-mark="no">
+  <Inline class="inline-flex items-center gap-2 text-muted-foreground" data-mark="no" data-slot="compare-mark">
     <LucideIcon name="minus" size={16} />
     <Inline class="sr-only">
       {no}
@@ -37,7 +37,7 @@
   </Inline>
 {/if}
 {#if (((value as string) !== "yes") && ((value as string) !== "no"))}
-  <Inline>
+  <Inline data-slot="compare-mark">
     {value}
   </Inline>
 {/if}

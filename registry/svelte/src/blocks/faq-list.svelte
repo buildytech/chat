@@ -90,9 +90,9 @@
     <EmptyState icon="circle-question-mark" title={empty} />
   {/if}
   {#if ((layout as string) === "chat")}
-    <Stack gap="4" align="stretch" data-testid="faq">
+    <Stack gap="4" align="stretch" data-slot="faq">
       {#each shown as item (item.id)}
-        <Stack gap="2" align="stretch" data-testid="faq-item">
+        <Stack gap="2" align="stretch" data-slot="faq-item">
           <Box class="ml-auto max-w-xs sm:max-w-md rounded bg-primary px-4 py-4 text-primary-foreground">
             <Text size="sm" weight="semibold">
               {item.question}
@@ -107,9 +107,9 @@
       {/each}
     </Stack>
   {:else}
-    <Grid cols={(((cols as string) === "2") ? "1-2" : "1")} class="items-start gap-x-8" data-testid="faq">
+    <Grid cols={(((cols as string) === "2") ? "1-2" : "1")} class="items-start gap-x-8" data-slot="faq">
       {#each shown as item (item.id)}
-        <Disclosure variant="item" name={(multiple ? undefined : tpl("{0}-faq", (id ?? "faq")))} data-testid="faq-item">
+        <Disclosure variant="item" name={(multiple ? undefined : tpl("{0}-faq", (id ?? "faq")))} data-slot="faq-item">
           <Summary variant="item">
             {item.question}
           </Summary>

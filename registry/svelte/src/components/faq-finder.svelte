@@ -28,11 +28,11 @@
   let { items, labels, topics }: FaqFinderProps = $props();
 </script>
 
-<Stack gap="6" align="stretch" data-testid="faq-finder">
+<Stack gap="6" align="stretch" data-slot="faq-finder">
   <SearchField label={labels.search} placeholder={labels.search} value={(labels.query ?? "")} />
   <Group gap="2" class="flex-wrap">
     {#each topics as t (t.id)}
-      <Button variant="outline" size="sm" data-testid="faq-topic" data-value={t.value}>
+      <Button variant="outline" size="sm" data-value={t.value}>
         {t.title}
       </Button>
     {/each}
@@ -44,7 +44,7 @@
     <List class="m-0 flex list-none flex-col gap-2 p-0">
       {#each items as q, i (q.id)}
         {#if (i < 3)}
-          <ListItem data-testid="faq-popular">
+          <ListItem data-slot="faq-popular">
             <MenuEntry href={q.href} class="text-sm font-medium" size="sm">
               {q.question}
             </MenuEntry>

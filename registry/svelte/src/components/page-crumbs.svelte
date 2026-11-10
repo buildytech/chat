@@ -27,17 +27,17 @@
   const last = $derived((crumbs?.length ?? 0) - 1);
 </script>
 
-<Block tag="nav" aria-label={(landmarkLabel ?? label)} data-testid="crumbs">
+<Block tag="nav" aria-label={(landmarkLabel ?? label)} data-slot="crumbs">
   <List class="m-0 flex list-none flex-wrap items-center gap-2 p-0 text-sm text-muted-foreground">
     {#each crumbs as c, i (c.id)}
-      <ListItem class="flex items-center gap-2">
+      <ListItem class="flex items-center gap-2" data-slot="crumbs-row">
         {#if (i < last)}
           {#if c.href}
-            <Link href={urlOf(c.href)} variant="muted" size="sm" data-testid="crumb">
+            <Link href={urlOf(c.href)} variant="muted" size="sm" data-slot="crumb">
               {c.name}
             </Link>
           {:else}
-            <Inline data-testid="crumb">
+            <Inline data-slot="crumb">
               {c.name}
             </Inline>
           {/if}

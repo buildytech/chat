@@ -103,6 +103,18 @@ export {
 	type PropShape,
 	type PropsFieldNode
 } from "./catalog/props-schema.ts";
+export {
+	fieldAtElement,
+	listRows,
+	locateField,
+	mapKey,
+	mappedPointers,
+	valueAt,
+	viewMapOf,
+	type ViewElement,
+	type ViewField,
+	type ViewMap
+} from "./catalog/view-map.ts";
 export { contractFingerprint } from "./catalog/fingerprint.ts";
 export { clientProposalGate } from "./client-gate.ts";
 export {

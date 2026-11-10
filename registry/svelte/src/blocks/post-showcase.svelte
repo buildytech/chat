@@ -70,7 +70,7 @@
     media={{ show: true, side: mediaSide }}
     landmarkLabel={landmarkLabel}
   >
-    <Link href={urlOf(action.href)} size="sm" data-testid="section-action">
+    <Link href={urlOf(action.href)} size="sm" data-slot="section-action">
       {action.label}
       <LucideIcon name="arrow-right" size={16} />
     </Link>

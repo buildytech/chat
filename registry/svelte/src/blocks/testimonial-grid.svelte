@@ -64,14 +64,14 @@
         (layout as string) === "masonry" ? "columns-1 gap-4 md:columns-2 xl:columns-3"
         : "flex snap-x gap-4 overflow-x-auto pb-2"
       }
-      data-testid="items"
+      data-slot="items"
     >
       {#each quotes as q (q.id)}
         <QuoteCard q={q} labels={labels} item={item} layout={layout} />
       {/each}
     </Block>
   {:else}
-    <Grid cols={(((layout as string) === "grid") ? cols : "1")} class="gap-4" data-testid="items">
+    <Grid cols={(((layout as string) === "grid") ? cols : "1")} class="gap-4" data-slot="items">
       {#each quotes as q, i (q.id)}
         {#if (((layout as string) !== "single") || (i === 0))}
           <QuoteCard q={q} labels={labels} item={item} layout={layout} />

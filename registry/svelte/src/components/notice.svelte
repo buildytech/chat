@@ -19,7 +19,7 @@
   let { text }: NoticeProps = $props();
 </script>
 
-<Box class="contents" role="status" data-testid="notice">
+<Box class="contents" role="status" data-slot="notice">
   {#if text}
     <Text
       class={"fixed right-4 bottom-4 z-40 m-0 flex items-center gap-2 rounded bg-foreground p-4 text-xs font-bold " +

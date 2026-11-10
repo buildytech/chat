@@ -25,7 +25,7 @@
   gap="6"
   align="center"
   class="rounded bg-card inset-ring inset-ring-border p-8 text-center"
-  data-testid="quote-rating"
+  data-slot="quote-rating"
 >
   <Text size="5xl" weight="bold">
     {extras.score}
@@ -37,7 +37,7 @@
   <Box class="grid w-full grid-cols-2 gap-4 border-t border-border pt-6">
     {#each extras.stats as s, i (s.id)}
       {#if (i < 2)}
-        <Stack gap="0" align="center" data-testid="quote-stat">
+        <Stack gap="0" align="center" data-slot="quote-stat">
           <Text size="2xl" weight="semibold">
             {s.value}
           </Text>

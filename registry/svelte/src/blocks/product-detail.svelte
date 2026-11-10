@@ -76,9 +76,9 @@
     density={density}
     landmarkLabel={landmarkLabel}
   >
-    <Stack gap="4" align="stretch" data-testid="buy-box">
+    <Stack gap="4" align="stretch" data-slot="buy-box">
       {#if product?.category}
-        <Text size="xs" class="uppercase tracking-wide text-muted-foreground" data-testid="category">
+        <Text size="xs" class="uppercase tracking-wide text-muted-foreground" data-slot="category">
           {product?.category}
         </Text>
       {/if}
@@ -99,7 +99,7 @@
         size="sm"
         weight="medium"
         class={(product?.inStock ? "text-foreground" : "text-destructive")}
-        data-testid="stock"
+        data-slot="stock"
       >
         {(product?.inStock ? labels.inStock : labels.soldOut)}
       </Text>
@@ -114,7 +114,7 @@
             increase={labels.increase}
           />
         {/if}
-        <Button disabled={!product?.inStock} data-testid="add" onclick={() => onadd?.(product?.id)}>
+        <Button disabled={!product?.inStock} onclick={() => onadd?.(product?.id)}>
           {labels.add}
         </Button>
       </Group>

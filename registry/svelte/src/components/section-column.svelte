@@ -38,6 +38,6 @@
   let { measure = "default", children }: SectionColumnProps = $props();
 </script>
 
-<Stack gap="6" align="stretch" class={sectionColumnVariants({ measure: measure })}>
+<Stack gap="6" align="stretch" class={sectionColumnVariants({ measure: measure })} data-slot="section-column">
   {@render children?.()}
 </Stack>

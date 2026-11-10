@@ -4,11 +4,11 @@
 	"sources": {
 		"codegenX": {
 			"repo": "codegen-x/ui8kit",
-			"commit": "081a1c5e5cc5db6f6439a37edb666ddfee7aa006",
+			"commit": "ce2a9b90f1e370e869ae39b19c9a24c0b745b3f0",
 			"content": "apps/stock/content",
 			"assetsDigest": "sha256:78a567cf1d0f50fda913d409197455d368260a91974c7a601fd297e57f8397d7",
 			"assetsVersion": "0",
-			"files": {"added.v0.json":{"sha256":"c596d20022e765e0e01da6212ba8c2b4c6fc71c2dde4ab43966850d67efe327e","bytes":388},"assets.v0.json":{"sha256":"5cd8e45f5d73e127a7a1fd9a4958b673a0e0119fbbf7f14918e9f4d227c04706","bytes":686606},"facets.v0.json":{"sha256":"4cf52fc4417263f42412be48f1c04b73578a5397081c76bd51d4cee0cc73c370","bytes":106602},"i18n/locales.json":{"sha256":"1ba54ca2bb4e289c8046e10ef03b77a05c3fb3420971815f2f564e6e9e3e9656","bytes":331},"install.v0.json":{"sha256":"ee93d20cf85a08e2c099bb2c519d0b9cf06ee215c9e9efcf1c7e27ec0f26974f","bytes":177680},"pattern-map.v0.json":{"sha256":"81d95e237d372079b02331b809467bb26902fcc82d752d4520b8a2aa5df8c768","bytes":3752},"previews.v0.json":{"sha256":"73927c2cd1ef85b95cdbc4b785d0e785bfb0a1958e2c74c340e60de5da39e4f4","bytes":242789},"props.v0.json":{"sha256":"2f5e08736cee3dd30abfac5fb20b3d974934383ecc5c95b5d8c13b5288b266a5","bytes":611394},"terms/pattern.v0.json":{"sha256":"8516b8a03d49a4017946f06ace08be4ae6a090b5e7881710e295c23c1677ec91","bytes":14837},"variants.v0.json":{"sha256":"c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4","bytes":124758}}
+			"files": {"added.v0.json":{"sha256":"c596d20022e765e0e01da6212ba8c2b4c6fc71c2dde4ab43966850d67efe327e","bytes":388},"assets.v0.json":{"sha256":"5cd8e45f5d73e127a7a1fd9a4958b673a0e0119fbbf7f14918e9f4d227c04706","bytes":686606},"facets.v0.json":{"sha256":"4cf52fc4417263f42412be48f1c04b73578a5397081c76bd51d4cee0cc73c370","bytes":106602},"i18n/locales.json":{"sha256":"1ba54ca2bb4e289c8046e10ef03b77a05c3fb3420971815f2f564e6e9e3e9656","bytes":331},"install.v0.json":{"sha256":"ee93d20cf85a08e2c099bb2c519d0b9cf06ee215c9e9efcf1c7e27ec0f26974f","bytes":177680},"pattern-map.v0.json":{"sha256":"81d95e237d372079b02331b809467bb26902fcc82d752d4520b8a2aa5df8c768","bytes":3752},"previews.v0.json":{"sha256":"73927c2cd1ef85b95cdbc4b785d0e785bfb0a1958e2c74c340e60de5da39e4f4","bytes":242789},"props.v0.json":{"sha256":"70f8a01df0d2afab5f6fde1c151d31c6b1a6d1a95009f6c5cf9efda7d31ebeab","bytes":720689},"terms/pattern.v0.json":{"sha256":"8516b8a03d49a4017946f06ace08be4ae6a090b5e7881710e295c23c1677ec91","bytes":14837},"variants.v0.json":{"sha256":"c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4","bytes":124758}}
 		},
 		"ui8kit": {
 			"cli": "ui8kit@3.5.0",
@@ -16,9 +16,9 @@
 			"runtime": "svelte",
 			"version": "0.1.0",
 			"contractVersion": "2.0.0",
-			"lastUpdated": "2026-11-10T00:07:21+03:00",
-			"sourceCommit": "3a6d923a3bdf75bba8951a3dfda7f3e97a69ecc5",
-			"files": {"manifest.json":{"sha256":"4b6fa5a6f5a08ed300f2749484122d8a12af2b911e6f0a91811ec4da07257096","bytes":917715},"props/v0.json":{"sha256":"2f5e08736cee3dd30abfac5fb20b3d974934383ecc5c95b5d8c13b5288b266a5","bytes":611394},"registry.json":{"sha256":"25ca5d835d99c4d56bceef660f7ced9c8affd1c887abc37890457dac9c4c0dcb","bytes":1213622},"svelte/index.json":{"sha256":"e337945f474db7e99aa864f865c985a8a16f9527230a3d2c7bb14595c0a9095e","bytes":136550},"variants/v0.json":{"sha256":"c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4","bytes":124758}}
+			"lastUpdated": "2026-11-11T01:17:58+03:00",
+			"sourceCommit": "ce2a9b90f1e370e869ae39b19c9a24c0b745b3f0",
+			"files": {"manifest.json":{"sha256":"c1879b3862689513d75259ca4ab25f02e0519abd5b112f3efb44bcd7ab8169f0","bytes":917715},"props/v0.json":{"sha256":"70f8a01df0d2afab5f6fde1c151d31c6b1a6d1a95009f6c5cf9efda7d31ebeab","bytes":720689},"registry.json":{"sha256":"b04c92296c374dc34e635ce298f7c1f9f85cec7645fc1fd1d7571aed214278c3","bytes":1213622},"svelte/index.json":{"sha256":"c4eb28135bb8e11979b854e19044a02f0d703a8651dcb38982ed6a92af8e9851","bytes":136550},"variants/v0.json":{"sha256":"c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4","bytes":124758}}
 		}
 	},
 	"catalog": {

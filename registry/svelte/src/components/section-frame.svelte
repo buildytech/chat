@@ -92,9 +92,9 @@
   class={cn(sectionFrameVariants({ tone: sectionTone, density: density, align: align }), className)}
   aria-labelledby={(landmarkLabel ? undefined : (((title as string) !== "") ? titleId : undefined))}
   aria-label={(landmarkLabel ?? (((title as string) === "") ? id : undefined))}
-  data-testid="section"
   data-tone={tone}
   data-density={density}
+  data-slot="section"
 >
   <Container
     class={

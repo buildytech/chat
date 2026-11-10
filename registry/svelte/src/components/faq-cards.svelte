@@ -32,7 +32,7 @@
     (cards as string) === "grid4" ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
     : "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
   }
-  data-testid="faq"
+  data-slot="faq"
 >
   {#each items as q (q.id)}
     <ArticleBlock class="rounded bg-card inset-ring inset-ring-border flex flex-col gap-4 p-6" testid="faq-card">

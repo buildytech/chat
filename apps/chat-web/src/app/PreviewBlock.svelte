@@ -2,7 +2,8 @@
   One page block in the preview frame: its UI8Kit registry block (lazy-loaded from the registry tree), or the
   explicit "not in registry" stub. The wrapper carries the block id (`data-block-id` = PageBlock.id) for selection and
   hover; it adds no layout and no editor chrome. Outlines and labels of the Build canvas are drawn by the chat over the
-  frame (CanvasOverlay), never inside the page.
+  frame (CanvasOverlay), never inside the page. A click also picks the field under the pointer through the block's
+  generated viewMap (ADR 0021) and focuses it in the inspector; the block DOM itself gets no attribute.
 -->
 <script lang="ts">
 	import type { Component } from "svelte";
@@ -12,8 +13,10 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { organismFor } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
+	import { tick } from "svelte";
 	import { selectBlock, type PageBlock } from "$lib/page-store";
 	import { canvas } from "$lib/inspector/canvas.svelte";
+	import { fieldAtClick, focusInspectorControl } from "$lib/inspector/field-select";
 
 	type Organism = Component<Record<string, unknown>>;
 	const loaders = import.meta.glob<{ default: Organism }>("$registry/blocks/*.svelte");
@@ -26,6 +29,20 @@
 
 	const render = $derived(organismFor(block));
 	const load = $derived(render ? byFile[render.organism] : undefined);
+
+	async function pick(event: MouseEvent) {
+		selectBlock(block.id);
+		const wrapper = event.currentTarget as Element;
+		const target = event.target as Element | null;
+		const pointer = target ? fieldAtClick(block, wrapper, target) : null;
+		if (!pointer) {
+			canvas.clearField();
+			return;
+		}
+		canvas.selectField(block.id, pointer, "preview");
+		await tick();
+		focusInspectorControl(document, block.id, pointer);
+	}
 </script>
 
 <Block
@@ -36,7 +53,7 @@
 	data-renderer={render && load ? "registry" : "stub"}
 	data-registry-item={render?.item}
 	data-variant={render?.variant}
-	onclick={standalone ? undefined : () => selectBlock(block.id)}
+	onclick={standalone ? undefined : pick}
 	onpointerenter={standalone ? undefined : () => canvas.hover(block.id)}
 	onpointerleave={standalone ? undefined : () => canvas.hover(null)}
 >

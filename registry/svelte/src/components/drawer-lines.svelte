@@ -35,9 +35,9 @@
   let { lines, rows, labels, drawer, media = "image", field = "qty" }: DrawerLinesProps = $props();
 </script>
 
-<Stack gap="4" align="stretch" class="flex-1 p-4" data-testid="lines">
+<Stack gap="4" align="stretch" class="flex-1 p-4" data-slot="lines">
   {#each lines as line (line.id)}
-    <Group gap="4" align="start" data-testid="item">
+    <Group gap="4" align="start" data-slot="item">
       {#if ((media as string) === "image")}
         <MediaFrame alt={line.name} ratio="1/1" class="size-16 shrink-0" />
       {/if}
@@ -65,8 +65,8 @@
     </Group>
   {/each}
 </Stack>
-<Stack gap="4" align="stretch" class="border-t border-border p-4">
-  <Stack gap="2" align="stretch" class="rounded bg-muted p-4" data-testid="progress">
+<Stack gap="4" align="stretch" class="border-t border-border p-4" data-slot="drawer-lines">
+  <Stack gap="2" align="stretch" class="rounded bg-muted p-4" data-slot="progress">
     <Text size="sm">
       {drawer.progress}
     </Text>
@@ -80,6 +80,7 @@
             row.strong ? "flex justify-between text-base font-bold"
             : "flex justify-between text-sm text-muted-foreground"
           }
+          data-slot="summary-row"
         >
           <Inline>
             {row.label}
@@ -91,7 +92,7 @@
       {/if}
     {/each}
   </List>
-  <Button variant="default" size="lg" class="w-full" data-testid="checkout">
+  <Button variant="default" size="lg" class="w-full">
     {labels.checkout}
   </Button>
 </Stack>

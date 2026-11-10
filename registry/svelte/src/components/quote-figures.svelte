@@ -18,10 +18,10 @@
   let { extras }: QuoteFiguresProps = $props();
 </script>
 
-<Box class="grid grid-cols-3 gap-4 border-b border-border pb-8" data-testid="quote-figures">
+<Box class="grid grid-cols-3 gap-4 border-b border-border pb-8" data-slot="quote-figures">
   {#each extras.stats as s, i (s.id)}
     {#if (i < 3)}
-      <Stack gap="0" data-testid="quote-stat">
+      <Stack gap="0" data-slot="quote-stat">
         <Text size="3xl" weight="bold">
           {s.value}
         </Text>

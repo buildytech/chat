@@ -50,8 +50,8 @@
 <Block
   tag="section"
   aria-labelledby={(landmarkLabel ? undefined : ((title && id) ? tpl("{0}-t", id) : undefined))}
-  data-testid="panel-section"
   aria-label={landmarkLabel}
+  data-slot="panel-section"
 >
   <Container class="mx-auto w-full max-w-6xl px-4 py-8" data-slot="container">
     <Panel title={title} description={text} id={id} class={(((tone as string) === "muted") ? "bg-muted" : "")}>
@@ -60,7 +60,7 @@
       {:else if ((chart as string) === "bars")}
         <BarChart bars={series} label={summary} height={(((size as string) === "compact") ? 96 : 176)} />
       {:else}
-        <Stack gap={(((size as string) === "compact") ? "0" : "2")} align="stretch" data-testid="items">
+        <Stack gap={(((size as string) === "compact") ? "0" : "2")} align="stretch" data-slot="items">
           {#each series as s (s.id)}
             <MeterRow label={s.label} value={s.value} caption={tpl(percent, s.value)} />
           {/each}

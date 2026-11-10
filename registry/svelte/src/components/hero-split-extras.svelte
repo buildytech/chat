@@ -26,10 +26,10 @@
 </script>
 
 {#if (((extra as string) === "stats") && ((content.stats?.length ?? 0) > 0))}
-  <Box class="grid grid-cols-3 gap-4" data-testid="hero-stats">
+  <Box class="grid grid-cols-3 gap-4" data-slot="hero-stats">
     {#each content.stats as s, i (s.id)}
       {#if (i < 3)}
-        <Stack gap="0" class="rounded bg-card inset-ring inset-ring-border p-4" data-testid="hero-stat">
+        <Stack gap="0" class="rounded bg-card inset-ring inset-ring-border p-4" data-slot="hero-stat">
           <Text size="2xl" weight="semibold">
             {s.value}
           </Text>
@@ -42,7 +42,7 @@
   </Box>
 {/if}
 {#if (((extra as string) === "avatars") && ((content.people?.length ?? 0) > 0))}
-  <Group gap="4" align="center" class="flex-wrap" data-testid="hero-proof">
+  <Group gap="4" align="center" class="flex-wrap" data-slot="hero-proof">
     <Group gap="2" align="center">
       {#each content.people as p, i (p.id)}
         {#if (i < 4)}
@@ -56,10 +56,10 @@
   </Group>
 {/if}
 {#if (((extra as string) === "minis") && ((content.features?.length ?? 0) > 0))}
-  <Box class="grid grid-cols-1 gap-4 sm:grid-cols-2" data-testid="hero-minis">
+  <Box class="grid grid-cols-1 gap-4 sm:grid-cols-2" data-slot="hero-minis">
     {#each content.features as f, i (f.id)}
       {#if (i < 2)}
-        <Group gap="4" align="start" class="rounded bg-card inset-ring inset-ring-border p-4" data-testid="hero-mini">
+        <Group gap="4" align="start" class="rounded bg-card inset-ring inset-ring-border p-4" data-slot="hero-mini">
           <Box class="flex size-10 shrink-0 items-center justify-center rounded bg-muted">
             <LucideIcon name={f.icon} size={20} />
           </Box>
@@ -77,7 +77,7 @@
   </Box>
 {/if}
 {#if (((extra as string) === "quote") && ((content.people?.length ?? 0) > 0))}
-  <Stack gap="6" align="stretch">
+  <Stack gap="6" align="stretch" data-slot="hero-split-extras">
     {#each content.people as p, i (p.id)}
       {#if (i < 1)}
         <FigureBlock class="flex flex-col gap-4" testid="hero-quote">
@@ -98,10 +98,10 @@
         </FigureBlock>
       {/if}
     {/each}
-    <Box class="grid grid-cols-3 gap-4" data-testid="hero-stats">
+    <Box class="grid grid-cols-3 gap-4" data-slot="hero-stats">
       {#each content.stats as s, i (s.id)}
         {#if (i < 3)}
-          <Stack gap="0" class="rounded bg-card inset-ring inset-ring-border p-4" data-testid="hero-stat">
+          <Stack gap="0" class="rounded bg-card inset-ring inset-ring-border p-4" data-slot="hero-stat">
             <Text size="2xl" weight="semibold">
               {s.value}
             </Text>

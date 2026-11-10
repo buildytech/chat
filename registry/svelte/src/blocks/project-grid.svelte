@@ -59,9 +59,9 @@
   {#if ((projects?.length ?? 0) === 0)}
     <EmptyState icon="folder-open" title={empty} />
   {:else if ((layout as string) === "list")}
-    <Stack gap="4" align="stretch" data-testid="items">
+    <Stack gap="4" align="stretch" data-slot="items">
       {#each projects as p (p.id)}
-        <Group gap="4" align="start" class="border-b border-border pb-4" data-testid="item">
+        <Group gap="4" align="start" class="border-b border-border pb-4" data-slot="item">
           <MediaFrame alt={p.title} ratio="1/1" class="size-16 shrink-0" />
           <Stack gap="2" align="stretch" class="flex-1">
             <Group gap="4" justify="between">
@@ -83,7 +83,7 @@
     <ProjectTiles projects={projects} labels={labels} layout={layout} />
   {/if}
   {#snippet aside()}
-    <Box class="grid grid-cols-2 gap-4" data-testid="collage">
+    <Box class="grid grid-cols-2 gap-4" data-slot="collage">
       <MediaFrame alt={title} ratio="3/4" />
       <MediaFrame alt={title} ratio="3/4" class="mt-8" />
     </Box>

@@ -22,7 +22,7 @@
 
 {#each extras.reviews as r, i (r.id)}
   {#if (i < 1)}
-    <Stack gap="4" align="stretch" class="rounded bg-muted p-6" data-testid="media-review">
+    <Stack gap="4" align="stretch" class="rounded bg-muted p-6" data-slot="media-review">
       <Group gap="4" align="center" justify="between" class="flex-wrap">
         <Text size="sm" weight="medium">
           {labels.featured}

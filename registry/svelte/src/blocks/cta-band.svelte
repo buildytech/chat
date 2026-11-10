@@ -68,10 +68,10 @@
     tag="section"
     class="py-8"
     aria-labelledby={(landmarkLabel ? undefined : tpl("{0}-title", id))}
-    data-testid="section"
     data-tone={tone}
     data-density={density}
     aria-label={landmarkLabel}
+    data-slot="section"
   >
     <Container class="mx-auto w-full max-w-6xl px-4" data-slot="container">
       <Card variant="muted">

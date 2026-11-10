@@ -18,10 +18,10 @@
 </script>
 
 {#if ((extras.stats?.length ?? 0) > 0)}
-  <Group gap="8" class="flex-wrap">
+  <Group gap="8" class="flex-wrap" data-slot="footer-figures">
     {#each extras.stats as s, i (s.id)}
       {#if (i < 3)}
-        <Stack gap="0" data-testid="footer-stat">
+        <Stack gap="0" data-slot="footer-stat">
           <Text size="xl" weight="bold">
             {s.value}
           </Text>

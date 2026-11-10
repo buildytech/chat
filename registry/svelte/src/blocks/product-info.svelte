@@ -58,10 +58,10 @@
         gap="0"
         align="stretch"
         class={(((layout as string) === "split") ? "lg:col-span-2" : "")}
-        data-testid="items"
+        data-slot="items"
       >
         {#each details as d, i (d.id)}
-          <Disclosure variant="item" open={(((expand as string) === "first") && (i === 0))} data-testid="item">
+          <Disclosure variant="item" open={(((expand as string) === "first") && (i === 0))} data-slot="item">
             <Summary variant="item">
               <Inline class="text-base font-semibold">
                 {d.title}
@@ -75,7 +75,7 @@
       </Stack>
     {/if}
     {#if ((specs?.length ?? 0) > 0)}
-      <Stack gap="4" align="stretch" class="rounded bg-card inset-ring inset-ring-border p-6" data-testid="specs">
+      <Stack gap="4" align="stretch" class="rounded bg-card inset-ring inset-ring-border p-6" data-slot="specs">
         <Title as={3} size="lg" weight="bold">
           {labels.specs}
         </Title>
@@ -83,7 +83,7 @@
           {#each specs as s (s.id)}
             <ListItem
               class="flex items-center justify-between gap-4 border-b border-border py-2 text-sm last:border-b-0"
-              data-testid="spec"
+              data-slot="spec"
             >
               <Inline class="text-muted-foreground">
                 {s.label}

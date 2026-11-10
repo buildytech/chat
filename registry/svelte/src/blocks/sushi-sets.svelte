@@ -54,9 +54,9 @@
   {#if ((dishes?.length ?? 0) === 0)}
     <EmptyState icon="package" title={empty} />
   {:else}
-    <Grid cols={(((cols as string) === "3") ? "1-3" : "1-4")} class="gap-4" data-testid="items">
+    <Grid cols={(((cols as string) === "3") ? "1-3" : "1-4")} class="gap-4" data-slot="items">
       {#each dishes as d (d.id)}
-        <Stack gap="4" class="rounded bg-card inset-ring inset-ring-border p-4" data-testid="item">
+        <Stack gap="4" class="rounded bg-card inset-ring inset-ring-border p-4" data-slot="item">
           <Box class="relative">
             <MediaFrame alt={d.name} ratio="1/1" />
             <Badge variant="default" size="default" class="absolute left-2 top-2">
@@ -72,7 +72,7 @@
             aria-label={tpl(labels.pieces, d.name)}
           >
             {#each d.items as r (r)}
-              <ListItem class="flex items-center gap-2">
+              <ListItem class="flex items-center gap-2" data-slot="items-row">
                 <LucideIcon name="check" size={16} />
                 <Inline>
                   {r}
