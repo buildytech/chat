@@ -18,6 +18,7 @@ import {
 	type ProposalContext
 } from "./assemble.ts";
 import { isScenarioId } from "./brief.ts";
+import { checkCollectionPage, collectionRejection, pruneToCollection, unplacedWarnings, type CollectionBounds } from "./collection.ts";
 import { parseLayoutCopyEdits } from "./edits.ts";
 import { checkContentCatalog, parseModelContent } from "./content.ts";
 import { editPage, normalizePatch } from "./patch.ts";
@@ -43,6 +44,8 @@ export type ToolHost = {
 	expectedRevision?: number;
 	/** Chat mode of the turn: a tool the mode does not offer (agent-tools.v1.json) is rejected, never run. */
 	mode?: AgentMode;
+	/** Stock collection bounds of the chat (host input): propose_layout pages stay inside them. */
+	collection?: CollectionBounds | null;
 };
 
 export type CompactSearchItem = {
@@ -442,6 +445,20 @@ export function executeTool(
 				}
 			};
 		}
+		const bounds = host?.collection;
+		if (bounds) {
+			// Collection bounds (contract docs/collection-intake.md): reject a page outside the set so the model fixes it
+			// (ADR 0018 loop); the host repair (prune) drops outside blocks and says so.
+			if (bounds.prune) {
+				const pruned = pruneToCollection(result.page, bounds);
+				return { ok: true, name: call.name, result: { ...result, page: pruned.page, warnings: [...result.warnings, ...pruned.warnings] } };
+			}
+			const check = checkCollectionPage(result.page, bounds);
+			const rejection = collectionRejection(check, bounds);
+			if (rejection) return rejection;
+			const notes = unplacedWarnings(check);
+			if (notes.length) return { ok: true, name: call.name, result: { ...result, warnings: [...result.warnings, ...notes] } };
+		}
 		return { ok: true, name: call.name, result };
 	}
 	return { ok: false, code: "unknown_tool", message: "Unreachable tool" };
@@ -590,7 +607,9 @@ export function runConstructorTools(ctx: ProposalContext): LayoutProposal | Layo
 		currentPage: ctx.currentPage,
 		currentProvenance: ctx.currentProvenance,
 		authorBrief: ctx.authorBrief ?? ctx.brief,
-		sessionDemoData: ctx.sessionDemoData
+		sessionDemoData: ctx.sessionDemoData,
+		// The local assembler has no model to fix a page: it keeps only collection blocks at once.
+		collection: ctx.collection ? { ...ctx.collection, prune: true } : null
 	};
 	const search = executeTool({
 		name: "search_catalog",
@@ -622,7 +641,11 @@ export function runConstructorTools(ctx: ProposalContext): LayoutProposal | Layo
 			scenarioId,
 			screenId: ctx.screenId,
 			expectedRevision: ctx.expectedRevision,
-			pageId: ctx.pageId
+			pageId: ctx.pageId,
+			// Collection items are placed as the model would place them: one entry per required item with a renderer.
+			...(ctx.collection
+				? { blocks: ctx.collection.required.filter((r) => r.kind).map((r) => ({ kind: r.kind, catalogBlock: r.catalogBlock, ...(r.variant ? { variant: r.variant } : {}) })) }
+				: {})
 		}
 	}, host);
 	if (!proposed.ok) return { ok: false, code: proposed.code, message: proposed.message };

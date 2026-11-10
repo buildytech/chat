@@ -11,11 +11,13 @@
 		getSelectedSession,
 		hydrateSessions,
 		listSessions,
+		openCollectionParam,
 		selectSession,
 		sendMessage
 	} from "$lib/chat-core";
 	import { getSelectedModelId, listChatModels, setSelectedModelId } from "$lib/browser/models.svelte";
 	import { installBuildyApi } from "$lib/browser/buildy-api";
+	import { takeCollectionParam } from "$lib/browser/collection-intake";
 	import { t } from "$lib/i18n/dictionary";
 	import { theme } from "$lib/theme/theme.svelte";
 	import CreatorShell from "./CreatorShell.svelte";
@@ -25,7 +27,9 @@
 	let modelEpoch = $state(0);
 
 	onMount(() => {
-		void hydrateSessions();
+		// Open in BuildY (?collection=, also on /build): read once before the session query is synced.
+		const collection = takeCollectionParam();
+		void hydrateSessions().then(() => (collection ? openCollectionParam(collection) : undefined));
 		theme.init();
 		installBuildyApi();
 	});

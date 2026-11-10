@@ -8,7 +8,8 @@ import { catalogProvenance } from "@buildytech/builder-core";
 import { SESSION_FORMAT, SESSION_SCHEMA_URL } from "@buildytech/page-contract/session";
 import snapshotConfig from "../../../../../catalog/snapshot.config.json";
 import chatPackage from "../../../package.json";
-import { exportSessions, importSessions, type ImportResult } from "../chat-core";
+import { exportSessions, importSessions, openCollectionFile, type CollectionIntake, type ImportResult } from "../chat-core";
+import { isCollectionDoc } from "@buildytech/page-contract/collection";
 import { theme, THEME_KEY } from "../theme/theme.svelte";
 import { getSelectedModelId, setSelectedModelId } from "./models.svelte";
 import { creatorLayout } from "../creator-layout.svelte";
@@ -22,7 +23,8 @@ export type BuildyApi = {
 	readonly format: typeof SESSION_FORMAT;
 	readonly schema: string;
 	export(options?: { download?: boolean }): SessionFile;
-	import(json: unknown): Promise<ImportResult>;
+	/** A session file buildy:v1, or a Stock collection buildy-collection:v1 (opened in a new Build chat). */
+	import(json: unknown): Promise<ImportResult | CollectionIntake>;
 };
 
 function app(): SessionApp {
@@ -94,13 +96,34 @@ export async function importSessionFile(json: unknown): Promise<ImportResult> {
 	return result;
 }
 
+/** Parsed JSON of a file or string; null when it is not JSON (the session reader reports that). */
+function parsedJson(json: unknown): unknown {
+	if (typeof json !== "string") return json;
+	try {
+		return JSON.parse(json);
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Settings > Import and `buildy.import(json)`: the reader is picked by `format`. A Stock collection
+ * (buildy-collection:v1, the file Stock downloads when a link would be too long) opens in a new Build chat with the
+ * same checks as an Open in BuildY link; everything else is read as a session file.
+ */
+export async function importFile(json: unknown): Promise<ImportResult | CollectionIntake> {
+	const parsed = parsedJson(json);
+	if (isCollectionDoc(parsed)) return openCollectionFile(parsed);
+	return importSessionFile(json);
+}
+
 export function installBuildyApi(): void {
 	if (typeof window === "undefined") return;
 	const api: BuildyApi = {
 		format: SESSION_FORMAT,
 		schema: SESSION_SCHEMA_URL,
 		export: exportSessionFile,
-		import: importSessionFile
+		import: importFile
 	};
 	Object.defineProperty(window, "buildy", { value: Object.freeze(api), configurable: true, enumerable: false, writable: false });
 }

@@ -10,6 +10,7 @@
 	import Label from "$registry/kit/ui/label/Label.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import Textarea from "$registry/kit/ui/textarea/Textarea.svelte";
+	import CollectionChips from "./CollectionChips.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
 	import { getChatMode, setChatMode, type CreatorRuntimeStatus } from "$lib/chat-core";
@@ -129,6 +130,7 @@
 	)}
 >
 	<Form class="flex flex-col gap-2" onsubmit={submit} onkeydown={onKeydown}>
+		<CollectionChips />
 		<Label for="composer" class="sr-only">{t("composer.label")}</Label>
 		<Textarea
 			id="composer"

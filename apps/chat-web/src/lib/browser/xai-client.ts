@@ -105,7 +105,7 @@ export function platformCode(status: number, code?: string): string {
 }
 
 export async function runXaiProposal(
-	ctx: ProposalContext & { modelId: string; sessionDemoData?: boolean; mode?: AgentMode },
+	ctx: ProposalContext & { modelId: string; sessionDemoData?: boolean; mode?: AgentMode; collectionRequest?: unknown },
 	signal?: AbortSignal
 ): Promise<XaiRunResponse> {
 	try {
@@ -125,7 +125,8 @@ export async function runXaiProposal(
 				currentPage: ctx.currentPage ?? null,
 				currentProvenance: ctx.currentProvenance ?? null,
 				sessionDemoData: Boolean(ctx.sessionDemoData),
-				mode: ctx.mode ?? "build"
+				mode: ctx.mode ?? "build",
+				...(ctx.collectionRequest ? { collection: ctx.collectionRequest } : {})
 			}),
 			signal
 		});

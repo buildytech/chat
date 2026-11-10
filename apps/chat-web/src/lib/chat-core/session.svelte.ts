@@ -20,6 +20,7 @@ import {
 	runConstructorTools,
 	unknownUsage,
 	clientProposalGate,
+	collectionBounds,
 	agentToolNames,
 	isAgentTextReply,
 	type AgentMode,
@@ -91,6 +92,8 @@ import {
 import { markPendingProposals, migrateSessionProposals } from "./proposals";
 import { STORAGE_KEYS, readKey, writeKey } from "../browser/storage-v1.ts";
 import { chatModeOf, variantProposal } from "./modes";
+import { chatCollectionFrom, collectionErrorText, collectionRequest, collectionScreenId, withoutItem, type ChatCollection } from "./collection";
+import { decodeCollectionParam, parseCollection, type CollectionParse } from "@buildytech/page-contract/collection";
 import type {
 	ChatMessage,
 	ChatSession,
@@ -364,6 +367,54 @@ export async function createSession(): Promise<ChatSession> {
 }
 
 
+/** The selected chat's Stock collection (session 1.3.0), or null. */
+export function getChatCollection(): ChatCollection | null {
+	return getSelectedSession()?.collection ?? null;
+}
+
+/** Remove one collection item (a chip) from the selected chat; the next Build turn goes without it. */
+export function removeCollectionItem(index: number): void {
+	const session = getSelectedSession();
+	if (!session?.collection) return;
+	replaceSession({ ...session, collection: withoutItem(session.collection, index) });
+	saveMock(memory);
+}
+
+export type CollectionIntake = { ok: true; sessionId: string; items: number; missing: number } | { ok: false; code: string; message: string };
+
+/**
+ * Open a checked collection in a new Build chat (contract docs/collection-intake.md section 3): titled with the
+ * collection, its skin, its first Stock screen, the present items as chips and the missing ones in the note.
+ */
+async function openCollection(parsed: CollectionParse): Promise<CollectionIntake> {
+	if (!parsed.ok) {
+		const message = collectionErrorText(parsed.code, parsed.issues[0]?.path);
+		lastError = message;
+		return { ok: false, code: parsed.code, message };
+	}
+	const collection = chatCollectionFrom(parsed.doc, nowIso());
+	pendingMode = "build";
+	pendingSkin = parsed.doc.skin ?? null;
+	const created = await createSession();
+	const screenId = collectionScreenId(collection);
+	const session: ChatSession = { ...created, title: collection.title.slice(0, 120), mode: "build", collection, ...(screenId ? { screenId } : {}) };
+	replaceSession(session);
+	saveMock(memory);
+	hydrateSessionContext({ scenarioId: null, screenId });
+	lastError = null;
+	return { ok: true, sessionId: session.id, items: collection.items.length, missing: collection.missing?.length ?? 0 };
+}
+
+/** `?collection=<base64url>` of an Open in BuildY link (read once by the caller, then removed from the URL). */
+export function openCollectionParam(payload: string): Promise<CollectionIntake> {
+	return openCollection(decodeCollectionParam(payload));
+}
+
+/** A `<title>.buildy-collection.json` file (Settings import, `buildy.import(json)`): same checks as the link. */
+export function openCollectionFile(json: unknown): Promise<CollectionIntake> {
+	return openCollection(parseCollection(json));
+}
+
 /** Apply the current URL ?session= (popstate / shared deep-link). */
 export async function applySessionFromUrl(): Promise<void> {
 	const urlSession = readSessionQuery();
@@ -425,7 +476,10 @@ function sessionDemoFromProposals(): boolean {
 	return Boolean(last?.proposal?.demoData);
 }
 
-function constructorContext(brief: string, mode: AgentMode): ProposalContext & { sessionDemoData: boolean } {
+function constructorContext(
+	brief: string,
+	mode: AgentMode
+): ProposalContext & { sessionDemoData: boolean; collectionRequest: ReturnType<typeof collectionRequest> } {
 	// Follow-ups start from what the author sees: pending proposal, else applied page,
 	// else the last proposal (kept after Discard). Never from scratch unless asked.
 	const base = getEditBase();
@@ -438,7 +492,11 @@ function constructorContext(brief: string, mode: AgentMode): ProposalContext & {
 	const scenarioId = isScenarioId(storedScenario) ? storedScenario : getScenarioId();
 	const sessionDemoData = sessionDemoFromProposals();
 	lastSessionDemo = sessionDemoData;
+	// The chat's Stock collection bounds Build turns (the runtime re-checks the items against its own snapshot).
+	const request = mode === "build" ? collectionRequest(getSelectedSession()?.collection) : null;
 	return {
+		collectionRequest: request,
+		collection: collectionBounds(request),
 		brief,
 		mode,
 		authorBrief: brief,

@@ -106,6 +106,8 @@ export type ChatSession = {
 	skin?: string | null;
 	/** Revisions of the applied page, oldest first (session buildy:v1 history; ADR 0015). Last entry <= pageRevision. */
 	history?: SessionRevisionEntry[];
+	/** Stock collection the chat was opened from (session 1.3.0 `collection`): present items bound Build. */
+	collection?: import("./collection").ChatCollection;
 };
 
 export type SessionSummary = Pick<ChatSession, "id" | "title" | "updatedAt">;

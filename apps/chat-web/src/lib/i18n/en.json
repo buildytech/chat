@@ -367,6 +367,18 @@
 		"inspector.variant": "Variant",
 		"inspector.rowActions": "Row {n} actions",
 		"inspector.duplicateRow": "Duplicate row",
-		"inspector.removeRow": "Remove row"
+		"inspector.removeRow": "Remove row",
+		"collection.label": "Collection",
+		"collection.chips": "Collection items for Build",
+		"collection.remove": "Remove {name} from this chat's collection",
+		"collection.kind.screen": "Screen",
+		"collection.kind.block": "Block",
+		"collection.anyVariant": "any variant",
+		"collection.missing": "{count} items are not in this BuildY catalog and were skipped: {list}.",
+		"collection.allMissing": "None of the collection items are in this BuildY catalog; Build runs without a collection.",
+		"collection.otherVersion": "They were picked on another Stock version.",
+		"collection.error": "The collection could not be opened: {code} at {path}. Nothing was imported.",
+		"collection.hint": "Build uses only these blocks.",
+		"settings.collectionOpened": "Collection opened in a new Build chat ({count} items)."
 	}
 }

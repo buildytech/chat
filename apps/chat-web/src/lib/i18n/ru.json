@@ -256,6 +256,18 @@
 		"inspector.variant": "Вариант",
 		"inspector.rowActions": "Действия строки {n}",
 		"inspector.duplicateRow": "Дублировать строку",
-		"inspector.removeRow": "Удалить строку"
+		"inspector.removeRow": "Удалить строку",
+		"collection.label": "Коллекция",
+		"collection.chips": "Элементы коллекции для Build",
+		"collection.remove": "Убрать {name} из коллекции этого чата",
+		"collection.kind.screen": "Экран",
+		"collection.kind.block": "Блок",
+		"collection.anyVariant": "любой вариант",
+		"collection.missing": "{count} элементов нет в каталоге BuildY, они пропущены: {list}.",
+		"collection.allMissing": "Ни одного элемента коллекции нет в каталоге BuildY; Build работает без коллекции.",
+		"collection.otherVersion": "Они выбраны в другой версии Stock.",
+		"collection.error": "Коллекцию не удалось открыть: {code} в {path}. Ничего не импортировано.",
+		"collection.hint": "Build использует только эти блоки.",
+		"settings.collectionOpened": "Коллекция открыта в новом чате Build ({count} элементов)."
 	}
 }

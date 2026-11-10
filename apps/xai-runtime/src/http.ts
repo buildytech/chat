@@ -151,7 +151,8 @@ export async function handleRuntimeFetch(
 						sessionDemoData: mapped.request.sessionDemoData,
 						authorBrief: mapped.request.brief,
 						liveTurn: true,
-						mode: mapped.request.mode
+						mode: mapped.request.mode,
+						collection: mapped.request.collection
 					},
 					signal
 				);

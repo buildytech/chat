@@ -16,6 +16,10 @@ export {
 	setChatSkin,
 	getRuntimeStatus,
 	getSelectedSession,
+	getChatCollection,
+	removeCollectionItem,
+	openCollectionParam,
+	openCollectionFile,
 	applySessionFromUrl,
 	exportSessions,
 	hydrateSessions,
@@ -25,8 +29,10 @@ export {
 	retryLastFailed,
 	selectSession,
 	sendMessage,
+	type CollectionIntake,
 	type ImportResult
 } from "./session.svelte";
+export { collectionItemDetail, collectionItemName, collectionNote, type ChatCollection } from "./collection";
 export { chatModeOf, turnOutcome, variantProposal, variantTarget, DEFAULT_CHAT_MODE } from "./modes";
 export { parseMarkdown, parseInline, type MdBlock, type MdInline } from "./markdown";
 export { isPendingProposal, proposalStatus, markPendingProposals, migrateProposal, migrateSessionProposals } from "./proposals";

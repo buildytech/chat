@@ -13,7 +13,7 @@ import type { Page, PageBlockKind, PageCopyKey } from "./types.ts";
 export const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
 export const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
 /** ui8kit/contract commit the vendored schemas come from. */
-export const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "3b4f9c6" } as const;
+export const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "3bd12c5" } as const;
 
 const registry = new SchemaRegistry();
 registry.add(pageSpecSchema as Record<string, unknown>);

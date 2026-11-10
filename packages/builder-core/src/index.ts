@@ -241,3 +241,23 @@ export {
 export type { EnvMap } from "./env-map.ts";
 export { readEnv } from "./env-map.ts";
 export type { CatalogScreen, CatalogFacetFilter, SearchResult, ScreenCompatibility, CatalogSnapshot } from "./catalog/types.ts";
+export {
+	COLLECTION_CODES,
+	checkCollectionPage,
+	collectionBounds,
+	collectionItemAssetId,
+	collectionPromptContext,
+	collectionRejection,
+	isCollectionCode,
+	pruneToCollection,
+	repairCollectionArgs,
+	snapshotDigest,
+	snapshotHasItem,
+	splitCollection,
+	unplacedWarnings,
+	type CollectionBounds,
+	type CollectionCheck,
+	type CollectionCode,
+	type CollectionItemRef,
+	type CollectionRequired
+} from "./collection.ts";

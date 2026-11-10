@@ -8,6 +8,7 @@
 import sessionSchema from "../schema/session.schema.json" with { type: "json" };
 import pageSpecSchema from "../schema/page-spec.schema.json" with { type: "json" };
 import { SchemaRegistry, type SchemaIssue } from "./json-schema.ts";
+import { addCollectionSchema } from "./collection.ts";
 
 export const SESSION_SCHEMA_URL = "https://schema.buildy.tw/session.schema.json";
 export const SESSION_FORMAT = "buildy:v1" as const;
@@ -18,6 +19,7 @@ export const SESSION_MAX_HISTORY = (sessionSchema as { "x-limits": { maxHistory:
 
 const registry = new SchemaRegistry();
 registry.add(pageSpecSchema as Record<string, unknown>);
+addCollectionSchema(registry);
 registry.add(sessionSchema as Record<string, unknown>);
 
 export { sessionSchema };
@@ -28,7 +30,7 @@ export function sessionFileIssues(input: unknown): SchemaIssue[] {
 }
 
 /** Schema issues against a session $def (one chat, one message, one revision entry). */
-export function sessionDefIssues(input: unknown, def: "session" | "message" | "revisionEntry" | "settings"): SchemaIssue[] {
+export function sessionDefIssues(input: unknown, def: "session" | "message" | "revisionEntry" | "settings" | "collection"): SchemaIssue[] {
 	return registry.check(input, `${SESSION_SCHEMA_URL}#/$defs/${def}`);
 }
 

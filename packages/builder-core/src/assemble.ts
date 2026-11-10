@@ -61,6 +61,12 @@ export type ProposalContext = {
 	 * Computed by the client from the author's own messages, never from model text.
 	 */
 	sessionDemoData?: boolean;
+	/**
+	 * Stock collection bounds of the chat (buildy-collection:v1): computed by the host from the request's collection
+	 * items against the pinned snapshot. propose_layout checks the page against them (outside_collection,
+	 * collection_item_unused). Never from model text.
+	 */
+	collection?: import("./collection.ts").CollectionBounds | null;
 	/** Stock screen the model picked on a follow-up turn (sibling switch, e.g. home to layouts). */
 	targetScreenId?: string | null;
 	/** Saved page metadata for content-only edits. Not accepted from tool JSON layouts. */

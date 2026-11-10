@@ -15,7 +15,7 @@
 	import Input from "$registry/kit/ui/input/Input.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import { exportSessionFile, importSessionFile } from "$lib/browser/buildy-api";
+	import { exportSessionFile, importFile } from "$lib/browser/buildy-api";
 	import { browserQuarantine, type QuarantineEntry } from "$lib/browser/storage-v1";
 
 	let note = $state("");
@@ -31,8 +31,12 @@
 		const file = input.files?.[0];
 		input.value = "";
 		if (!file) return;
-		const result = await importSessionFile(await file.text());
-		if (result.ok) {
+		const result = await importFile(await file.text());
+		if (result.ok && "sessionId" in result) {
+			note = t("settings.collectionOpened").replace("{count}", String(result.items));
+		} else if (!result.ok && !("issues" in result)) {
+			note = result.message;
+		} else if (result.ok) {
 			note = t("settings.imported")
 				.replace("{added}", String(result.added.length))
 				.replace("{replaced}", String(result.replaced.length));
