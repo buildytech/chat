@@ -90,3 +90,9 @@ counted as selected or rejected, so a plan whose other ops all applied is `execu
 one "Already on the page, kept" line. `compactPlanPayload` lists them as `unchanged`, not `invalid`, and
 `planHasInvalid` ignores them, so the forced plan step does not ask the model to fix them. Session 1.4.0 already
 allows this (`issue.code` and `result.code` are free strings, `skipped` is a result status): no schema change.
+
+## Addendum (ADR 0023): replace by another catalog block
+
+A plan op `replace {blockId, catalogBlock, variant?}` swaps a block for another Stock catalog block of the same kind in
+the same place (hero -> storehero). It is checked like the other ops, carries the text the new block renders, names
+the dropped fields on the card and in the reply, and runs in Apply in Build without a model call (session 1.5.0).
