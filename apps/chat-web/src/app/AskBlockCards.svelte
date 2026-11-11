@@ -23,9 +23,10 @@
 	<Box tag="ul" class="flex flex-col gap-4" aria-label={t("ask.cards")}>
 		{#each cards as card (card.spec)}
 			<Box tag="li">
-				<Block tag="article" class="flex items-start gap-4 rounded border border-border p-4" data-spec={card.spec}>
-					<StockThumb src={card.thumb} title={card.title} class="w-40" />
-					<Stack align="stretch" class="min-w-0 flex-1 gap-2">
+				<Block tag="article" class="rounded border border-border p-4" data-spec={card.spec}>
+					<Stack align="stretch" class="gap-2">
+						<!-- picture on top: the chat column is narrow in the compact IDE layout -->
+						<StockThumb src={card.thumb} title={card.title} class="w-full max-w-64" />
 						<Group class="flex-wrap items-center justify-between gap-2">
 							<Title as={3} class="text-sm font-semibold text-foreground">{card.title}</Title>
 							<Link

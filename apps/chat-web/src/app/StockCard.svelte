@@ -41,7 +41,7 @@
 			href={stockAssetUrl(screen.screenId)}
 			target="_blank"
 			rel="noopener noreferrer"
-			class="text-[11px] text-muted-foreground underline underline-offset-4"
+			class="break-all text-[11px] text-muted-foreground underline underline-offset-4"
 			aria-label={t("catalogRefs.open").replace("{title}", `${screen.title} / ${screen.subtitle}`)}
 		>
 			<Text tag="span">{screen.screenId}</Text>
