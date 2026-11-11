@@ -20,7 +20,7 @@ import {
 } from "./layout/prefs.ts";
 
 export const PREFS_KEY = STORAGE_KEYS.prefs;
-/** Breakpoints of the shell: columns from lg (the chat is a tab below), the inspector a sheet below md. */
+/** Breakpoints of the shell: columns from lg (the left panel is a tab below). INSPECTOR_COLUMN_MIN now only sizes the Code file tree (ADR 0024: the inspector is a slide-over at every width). */
 export const COLUMNS_MIN = 1024;
 export const INSPECTOR_COLUMN_MIN = 768;
 
@@ -55,7 +55,9 @@ function createCreatorLayout() {
 	}
 
 	const columns = () => viewport >= COLUMNS_MIN;
-	const inspectorColumn = () => viewport >= INSPECTOR_COLUMN_MIN;
+	// ADR 0024: Build is two areas (left panel | preview). The inspector is no longer a third column at any width; it
+	// opens as a slide-over on the preview (the Workspace sheet), the shape step D of the plan refines.
+	const inspectorColumn = () => false;
 
 	return {
 		get layout() {

@@ -5,10 +5,14 @@
  * and requiredness come from the schema; a field without a page-spec origin is shown read-only (the variant or the
  * schema default sets it). Pure data, no Svelte.
  */
-import { PAGE_LIMITS, PAGE_SLOTS, parsePageSpec, type Page, type PageBlock, type PageBlockCopy, type PageCopyKey } from "@buildytech/page-contract";
-import { proposeLayout } from "./assemble.ts";
+import { PAGE_LIMITS, PAGE_SLOTS, parsePageSpec, type Page, type PageBlock, type PageBlockCopy, type PageBlockKind, type PageCopyKey } from "@buildytech/page-contract";
+import { arrangeShell, CHILD_ONLY_KINDS, localizeEmptyLedes, proposeLayout, stockBlockFor } from "./assemble.ts";
+import { swapCatalogBlock } from "./block-swap.ts";
+import { getScreenById } from "./catalog/search.ts";
+import { catalogEntryBySpec, catalogSourceFor } from "./catalog/sources.ts";
+import { registryItemFor } from "./catalog/organism.ts";
 import { editPage } from "./patch.ts";
-import { validateCatalogProvenance } from "./catalog/provenance.ts";
+import { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } from "./catalog/provenance.ts";
 import { isScenarioId } from "./brief.ts";
 import type { ScenarioId } from "./copy.ts";
 import { organismFor, writableOrigin, type OrganismRender } from "./catalog/organism.ts";
@@ -238,6 +242,7 @@ export function inspectorSetField(page: Page, blockId: string, pointer: string, 
 
 // ---- Block operations (step 4) ---------------------------------------------------------------------------------
 
+/** `add`: a Stock block variant from the Blocks feed, after `blockId` (a section, or one of its rows) or at the end (""). */
 export type InspectorOp =
 	| { op: "set_variant"; blockId: string; variant: string }
 	| { op: "reset"; blockId: string }
@@ -245,7 +250,8 @@ export type InspectorOp =
 	| { op: "duplicate"; blockId: string }
 	| { op: "remove"; blockId: string }
 	| { op: "duplicate_row"; blockId: string; row: number }
-	| { op: "remove_row"; blockId: string; row: number };
+	| { op: "remove_row"; blockId: string; row: number }
+	| { op: "add"; blockId: string; catalogBlock: string; variant?: string | null };
 
 export type InspectorOpContext = {
 	page: Page;
@@ -326,6 +332,62 @@ function gated(ctx: InspectorOpContext, blocks: PageBlock[], changed: string[], 
 	return { ok: true, page: result.page, blockId: select };
 }
 
+/** Why the Blocks feed cannot add this block to the page (null: it can). Cheap: the op runs every gate again. */
+export type AddBlockCheck = { ok: true; kind: PageBlockKind; variant: string | null } | { ok: false; code: "no_page" | "no_screen" | "unknown_block" | "not_a_page_block" | "not_in_screen_family" | "unknown_variant" | "no_renderer"; message: string };
+
+export function canAddCatalogBlock(ctx: Pick<InspectorOpContext, "page" | "provenance"> | { page: null; provenance: null }, catalogBlock: string, variant?: string | null): AddBlockCheck {
+	if (!ctx.page) return { ok: false, code: "no_page", message: "There is no page yet: build one first." };
+	const entry = catalogEntryBySpec(catalogBlock);
+	if (!entry?.available) return { ok: false, code: "unknown_block", message: `${catalogBlock} is not a Stock catalog block.` };
+	const kind = entry.rendererCompatible && entry.rendererKind ? (entry.rendererKind as PageBlockKind) : null;
+	if (!kind || CHILD_ONLY_KINDS.has(kind)) return { ok: false, code: "not_a_page_block", message: `${catalogBlock} has no page section renderer in this BuildY version yet.` };
+	const want = variant ?? catalogSourceFor(catalogBlock)?.defaultVariant ?? null;
+	if (want && !entry.variants.includes(want)) return { ok: false, code: "unknown_variant", message: `${catalogBlock} has no variant ${want}.` };
+	const screen = ctx.provenance?.screenId ? getScreenById(ctx.provenance.screenId) : null;
+	if (!screen) return { ok: false, code: "no_screen", message: "The page has no recorded Stock screen, so blocks cannot be added." };
+	if (!familyLabelForKind(screen, kind)) {
+		return { ok: false, code: "not_in_screen_family", message: `Stock screen ${screen.screenId} and its family have no ${kind} section.` };
+	}
+	if (!registryItemFor(catalogBlock, want)) return { ok: false, code: "no_renderer", message: `${catalogBlock} has no page renderer in this BuildY version yet.` };
+	return { ok: true, kind, variant: want };
+}
+
+/** Ids of `node` and its rows made unique against `taken` (`block-hero` -> `block-hero-2`), within the id length. */
+function withFreshIds(node: PageBlock, taken: Set<string>): PageBlock {
+	const fresh = (id: string) => {
+		if (!taken.has(id)) {
+			taken.add(id);
+			return id;
+		}
+		for (let n = 2; ; n += 1) {
+			const suffix = `-${n}`;
+			const candidate = `${id.slice(0, PAGE_LIMITS.maxIdLength - suffix.length)}${suffix}`;
+			if (!taken.has(candidate)) {
+				taken.add(candidate);
+				return candidate;
+			}
+		}
+	};
+	const copy: PageBlock = { ...node, id: fresh(node.id) };
+	if (node.children?.length) copy.children = node.children.map((child) => withFreshIds(child, taken));
+	return copy;
+}
+
+/** The Stock sample of a catalog block variant as a new section of this page (the page's Stock screen family). */
+function addedBlock(ctx: InspectorOpContext, catalogBlock: string, variant: string | null): PageBlock | InspectorFailure {
+	const check = canAddCatalogBlock(ctx, catalogBlock, variant);
+	if (!check.ok) return fail(check.code, check.message, "");
+	const screen = getScreenById(ctx.provenance!.screenId!)!;
+	const scenarioId: ScenarioId | null = isScenarioId(ctx.provenance?.scenarioId) ? ctx.provenance!.scenarioId : null;
+	let node = attachCatalogSources([stockBlockFor(check.kind, { screen, scenarioId, brief: ctx.page.title, pageTitle: ctx.page.title })], screen)[0]!;
+	if (node.catalogBlock !== catalogBlock || (node.variant ?? null) !== check.variant) {
+		const swap = swapCatalogBlock(node, { catalogBlock, variant: check.variant });
+		if (!swap.ok && swap.code !== "no_change") return fail(swap.code, swap.message, "", swap.allowed);
+		if (swap.ok) node = swap.node;
+	}
+	return localizeEmptyLedes([node], ctx.page.locale)[0]!;
+}
+
 /**
  * Block operations of the inspector. Variant, move and remove are page-patch/v1 operations (editPage); reset puts
  * back the Stock sample of the block in its current variant; duplicate and the row operations are local tree edits.
@@ -333,6 +395,18 @@ function gated(ctx: InspectorOpContext, blocks: PageBlock[], changed: string[], 
  */
 export function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): InspectorResult {
 	const blocks = ctx.page.layout.blocks;
+	if (op.op === "add") {
+		// After the selected section (a row counts as its section), else at the end; then every gate, or nothing changes.
+		const anchor = op.blockId ? blocks.findIndex((node) => node.id === op.blockId || walkIds([node]).has(op.blockId)) : -1;
+		if (op.blockId && anchor < 0) return fail("block_not_found", `No section ${op.blockId} on this page.`, "");
+		const made = addedBlock(ctx, op.catalogBlock, op.variant ?? null);
+		if ("ok" in made) return made;
+		const node = withFreshIds(made, walkIds(blocks));
+		let next = [...blocks];
+		next.splice(anchor < 0 ? blocks.length : anchor + 1, 0, node);
+		if (node.kind === "sidenav" || node.kind === "bottomnav") next = arrangeShell(next, ctx.page.locale).blocks;
+		return gated(ctx, next, [node.id], node.id);
+	}
 	const index = blocks.findIndex((node) => node.id === op.blockId);
 	const block = blocks[index];
 	if (!block) return fail("block_not_found", `No section ${op.blockId} on this page.`, "");

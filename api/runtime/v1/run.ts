@@ -27730,6 +27730,224 @@ exports["sameCatalogRefs"] = sameCatalogRefs;
 
 });
 
+__def("packages/builder-core/src/catalog/stock-search.ts", function (exports) {
+const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
+const { blockAssetUrl, blockThumbUrl, screenThumbUrl, stockAssetUrl } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { getScreenById, searchCatalog } = __req("packages/builder-core/src/catalog/search.ts");
+const { catalogSourceFor } = __req("packages/builder-core/src/catalog/sources.ts");
+const STOCK_SEARCH_FORMAT = "stock-search/v1";
+const STOCK_SEARCH_PAGE_SIZE = 8;
+const STOCK_SEARCH_MAX_PAGE_SIZE = 48;
+
+const STOCK_SEARCH_FACETS: StockSearchFacet[] = ["type", "role", "spec", "site", "variant"];
+
+type Row = StockSearchItem & { text: string; score: number };
+
+const lower = (value: string) => value.toLowerCase();
+const words = (q: string) => lower(q).split(/\s+/).filter(Boolean);
+
+/** Block label (blockId) of a screen slot -> its index entry. */
+function entryByLabel(): Map<string, CatalogBlockIndexEntry> {
+	return new Map(catalogSnapshot.blockIndex.map((entry) => [entry.blockId, entry]));
+}
+
+let blockRowsCache: Row[] | null = null;
+
+/** Every Stock block variant as a row; sites = the sites of the screens whose layout uses the block. */
+function blockRows(): Row[] {
+	if (blockRowsCache) return blockRowsCache;
+	const byLabel = entryByLabel();
+	const sites = new Map<string, Set<string>>();
+	for (const screen of catalogSnapshot.screens) {
+		for (const slot of screen.layout ?? []) {
+			const entry = byLabel.get(slot.block);
+			if (!entry) continue;
+			const set = sites.get(entry.spec) ?? new Set<string>();
+			for (const site of screen.labels.site) set.add(site);
+			sites.set(entry.spec, set);
+		}
+	}
+	const rows: Row[] = [];
+	for (const entry of catalogSnapshot.blockIndex) {
+		if (!entry.available) continue;
+		const role = entry.rendererCompatible && entry.rendererKind ? entry.rendererKind : null;
+		const fallback = catalogSourceFor(entry.spec)?.defaultVariant ?? entry.variants[0];
+		const blockSites = [...(sites.get(entry.spec) ?? [])].sort();
+		for (const variant of entry.variants) {
+			rows.push({
+				type: "block",
+				id: `${entry.spec}/${variant}`,
+				spec: entry.spec,
+				variant,
+				title: entry.title,
+				subtitle: variant,
+				role,
+				roles: role ? [role] : [],
+				sites: blockSites,
+				isDefault: variant === fallback,
+				thumb: blockThumbUrl(entry.spec, variant),
+				url: blockAssetUrl(entry.spec, variant) ?? stockAssetUrl(`${entry.spec}/${variant}`),
+				text: lower(`${entry.spec} ${entry.blockId} ${entry.title} ${variant} ${role ?? ""} ${(entry.jobs ?? []).join(" ")} ${blockSites.join(" ")}`),
+				score: 0
+			});
+		}
+	}
+	// Blocks with a page section renderer (they can be added to a page) first, each group in catalog order.
+	rows.sort((a, b) => Number(!a.role) - Number(!b.role));
+	blockRowsCache = rows;
+	return rows;
+}
+
+function screenRow(screen: CatalogScreen, byLabel: Map<string, CatalogBlockIndexEntry>): Row {
+	const roles = [
+		...new Set(
+			(screen.layout ?? [])
+				.map((slot) => byLabel.get(slot.block))
+				.map((entry) => (entry?.rendererCompatible && entry.rendererKind ? entry.rendererKind : null))
+				.filter((kind): kind is string => Boolean(kind))
+		)
+	].sort();
+	return {
+		type: "screen",
+		id: screen.screenId,
+		spec: screen.spec,
+		variant: screen.variant,
+		title: screen.title,
+		subtitle: screen.subtitle,
+		role: null,
+		roles,
+		sites: [...screen.labels.site],
+		isDefault: false,
+		thumb: screenThumbUrl(screen.screenId),
+		url: stockAssetUrl(screen.screenId),
+		text: lower(`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`),
+		score: 0
+	};
+}
+
+/**
+ * Screens in scope matching q: the catalog text index first (titles, labels, facet values in the catalog's locales
+ * and synonyms, scored), then plain substring hits on id, title and labels; with no q, the catalog order.
+ */
+function screenRows(q: string, scope: StockSearchQuery["scope"]): Row[] {
+	const byLabel = entryByLabel();
+	const filter = { ...(scope ?? {}), type: "screen" as const };
+	const scoped = searchCatalog({ ...filter, page: 1, pageSize: 1000 }).items.map((hit) => getScreenById(hit.screenId)!);
+	if (!q) return scoped.map((screen) => screenRow(screen, byLabel));
+	const scored = searchCatalog({ ...filter, q, page: 1, pageSize: 1000 }).items.map((hit) => getScreenById(hit.screenId)!);
+	const seen = new Set(scored.map((screen) => screen.screenId));
+	const needle = lower(q);
+	const rows = scored.map((screen) => screenRow(screen, byLabel));
+	for (const screen of scoped) {
+		if (seen.has(screen.screenId)) continue;
+		const row = screenRow(screen, byLabel);
+		if (row.text.includes(needle)) rows.push(row);
+	}
+	return rows;
+}
+
+/** Blocks matching every word of q, the ones that hit the title, spec or role first (catalog order otherwise). */
+function blockMatches(q: string): Row[] {
+	const rows = blockRows();
+	const tokens = words(q);
+	if (!tokens.length) return rows;
+	const out: Row[] = [];
+	for (const row of rows) {
+		if (!tokens.every((token) => row.text.includes(token))) continue;
+		const head = lower(`${row.spec} ${row.title} ${row.role ?? ""}`);
+		out.push({ ...row, score: tokens.filter((token) => head.includes(token)).length });
+	}
+	return out.sort((a, b) => b.score - a.score);
+}
+
+function valuesOf(row: Row, facet: StockSearchFacet): string[] {
+	switch (facet) {
+		case "type":
+			return [row.type];
+		case "role":
+			return row.roles;
+		case "spec":
+			return [row.spec];
+		case "site":
+			return row.sites;
+		case "variant":
+			return [row.variant];
+	}
+}
+
+const clean = (value: string | null | undefined): string | null => (typeof value === "string" && value.trim() ? value.trim() : null);
+
+function stockSearch(input: StockSearchQuery = {}): StockSearchResult {
+	const q = (input.q ?? "").trim();
+	const type = input.type === "screen" || input.type === "block" ? input.type : null;
+	const spec = clean(input.spec);
+	const query: StockSearchResult["query"] = {
+		q,
+		type,
+		role: clean(input.role),
+		spec,
+		site: clean(input.site),
+		variant: spec ? clean(input.variant) : null,
+		scope: input.scope && Object.keys(input.scope).length ? { ...input.scope } : null
+	};
+	const active: Partial<Record<StockSearchFacet, string>> = {};
+	if (query.type) active.type = query.type;
+	if (query.role) active.role = query.role;
+	if (query.spec) active.spec = query.spec;
+	if (query.site) active.site = query.site;
+	if (query.variant) active.variant = query.variant;
+
+	// Blocks first: the Build feed is about blocks; type=screen gives the home Stock list alone.
+	const pool: Row[] = [...blockMatches(q), ...screenRows(q, query.scope)];
+	const passes = (row: Row, except: StockSearchFacet | null) =>
+		STOCK_SEARCH_FACETS.every((facet) => facet === except || !active[facet] || valuesOf(row, facet).includes(active[facet]!));
+
+	const facets = {} as StockSearchResult["facets"];
+	for (const facet of STOCK_SEARCH_FACETS) {
+		if (facet === "variant" && !query.spec) {
+			facets.variant = [];
+			continue;
+		}
+		const counts = new Map<string, number>();
+		for (const row of pool) {
+			if (!passes(row, facet)) continue;
+			for (const value of valuesOf(row, facet)) counts.set(value, (counts.get(value) ?? 0) + 1);
+		}
+		if (active[facet] && !counts.has(active[facet]!)) counts.set(active[facet]!, 0);
+		const list = [...counts.entries()].map(([value, count]) => ({ value, count }));
+		// spec and variant keep the catalog order; the others go by count.
+		facets[facet] = facet === "spec" || facet === "variant" ? list : list.sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+	}
+
+	const matched = pool.filter((row) => passes(row, null));
+	const size = Math.round(input.pageSize ?? STOCK_SEARCH_PAGE_SIZE);
+	const pageSize = Number.isFinite(size) ? Math.min(Math.max(size, 1), STOCK_SEARCH_MAX_PAGE_SIZE) : STOCK_SEARCH_PAGE_SIZE;
+	const total = matched.length;
+	const pageCount = Math.max(1, Math.ceil(total / pageSize));
+	const wanted = Math.round(input.page ?? 1);
+	const page = Math.min(Math.max(Number.isFinite(wanted) ? wanted : 1, 1), pageCount);
+	const items = matched.slice((page - 1) * pageSize, page * pageSize).map(({ text: _text, score: _score, ...item }) => item);
+	return {
+		format: STOCK_SEARCH_FORMAT,
+		query,
+		page,
+		pageSize,
+		pageCount,
+		total,
+		items,
+		facets,
+		catalog: { digest: catalogSnapshot.sourceDigest, commit: catalogSnapshot.pinnedCommit }
+	};
+}
+
+exports["STOCK_SEARCH_FORMAT"] = STOCK_SEARCH_FORMAT;
+exports["STOCK_SEARCH_PAGE_SIZE"] = STOCK_SEARCH_PAGE_SIZE;
+exports["STOCK_SEARCH_MAX_PAGE_SIZE"] = STOCK_SEARCH_MAX_PAGE_SIZE;
+exports["STOCK_SEARCH_FACETS"] = STOCK_SEARCH_FACETS;
+exports["stockSearch"] = stockSearch;
+
+});
+
 __def("packages/builder-core/src/catalog/details.ts", function (exports) {
 const { PAGE_BLOCK_KINDS, PAGE_COPY_KEYS } = __req("packages/page-contract/src/index.ts");
 const { catalogProvenance, catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
@@ -30795,9 +31013,13 @@ exports["editPage"] = editPage;
 
 __def("packages/builder-core/src/inspector.ts", function (exports) {
 const { PAGE_LIMITS, PAGE_SLOTS, parsePageSpec } = __req("packages/page-contract/src/index.ts");
-const { proposeLayout } = __req("packages/builder-core/src/assemble.ts");
+const { arrangeShell, CHILD_ONLY_KINDS, localizeEmptyLedes, proposeLayout, stockBlockFor } = __req("packages/builder-core/src/assemble.ts");
+const { swapCatalogBlock } = __req("packages/builder-core/src/block-swap.ts");
+const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
+const { catalogEntryBySpec, catalogSourceFor } = __req("packages/builder-core/src/catalog/sources.ts");
+const { registryItemFor } = __req("packages/builder-core/src/catalog/organism.ts");
 const { editPage } = __req("packages/builder-core/src/patch.ts");
-const { validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
 const { isScenarioId } = __req("packages/builder-core/src/brief.ts");
 const { organismFor, writableOrigin } = __req("packages/builder-core/src/catalog/organism.ts");
 const { checkBlockProps } = __req("packages/builder-core/src/catalog/provenance.ts");
@@ -30977,6 +31199,7 @@ function inspectorSetField(page: Page, blockId: string, pointer: string, value: 
 
 // ---- Block operations (step 4) ---------------------------------------------------------------------------------
 
+/** `add`: a Stock block variant from the Blocks feed, after `blockId` (a section, or one of its rows) or at the end (""). */
 function walkIds(blocks: PageBlock[], out = new Set<string>()): Set<string> {
 	for (const node of blocks) {
 		out.add(node.id);
@@ -31049,6 +31272,60 @@ function gated(ctx: InspectorOpContext, blocks: PageBlock[], changed: string[], 
 	return { ok: true, page: result.page, blockId: select };
 }
 
+/** Why the Blocks feed cannot add this block to the page (null: it can). Cheap: the op runs every gate again. */
+function canAddCatalogBlock(ctx: Pick<InspectorOpContext, "page" | "provenance"> | { page: null; provenance: null }, catalogBlock: string, variant?: string | null): AddBlockCheck {
+	if (!ctx.page) return { ok: false, code: "no_page", message: "There is no page yet: build one first." };
+	const entry = catalogEntryBySpec(catalogBlock);
+	if (!entry?.available) return { ok: false, code: "unknown_block", message: `${catalogBlock} is not a Stock catalog block.` };
+	const kind = entry.rendererCompatible && entry.rendererKind ? (entry.rendererKind as PageBlockKind) : null;
+	if (!kind || CHILD_ONLY_KINDS.has(kind)) return { ok: false, code: "not_a_page_block", message: `${catalogBlock} has no page section renderer in this BuildY version yet.` };
+	const want = variant ?? catalogSourceFor(catalogBlock)?.defaultVariant ?? null;
+	if (want && !entry.variants.includes(want)) return { ok: false, code: "unknown_variant", message: `${catalogBlock} has no variant ${want}.` };
+	const screen = ctx.provenance?.screenId ? getScreenById(ctx.provenance.screenId) : null;
+	if (!screen) return { ok: false, code: "no_screen", message: "The page has no recorded Stock screen, so blocks cannot be added." };
+	if (!familyLabelForKind(screen, kind)) {
+		return { ok: false, code: "not_in_screen_family", message: `Stock screen ${screen.screenId} and its family have no ${kind} section.` };
+	}
+	if (!registryItemFor(catalogBlock, want)) return { ok: false, code: "no_renderer", message: `${catalogBlock} has no page renderer in this BuildY version yet.` };
+	return { ok: true, kind, variant: want };
+}
+
+/** Ids of `node` and its rows made unique against `taken` (`block-hero` -> `block-hero-2`), within the id length. */
+function withFreshIds(node: PageBlock, taken: Set<string>): PageBlock {
+	const fresh = (id: string) => {
+		if (!taken.has(id)) {
+			taken.add(id);
+			return id;
+		}
+		for (let n = 2; ; n += 1) {
+			const suffix = `-${n}`;
+			const candidate = `${id.slice(0, PAGE_LIMITS.maxIdLength - suffix.length)}${suffix}`;
+			if (!taken.has(candidate)) {
+				taken.add(candidate);
+				return candidate;
+			}
+		}
+	};
+	const copy: PageBlock = { ...node, id: fresh(node.id) };
+	if (node.children?.length) copy.children = node.children.map((child) => withFreshIds(child, taken));
+	return copy;
+}
+
+/** The Stock sample of a catalog block variant as a new section of this page (the page's Stock screen family). */
+function addedBlock(ctx: InspectorOpContext, catalogBlock: string, variant: string | null): PageBlock | InspectorFailure {
+	const check = canAddCatalogBlock(ctx, catalogBlock, variant);
+	if (!check.ok) return fail(check.code, check.message, "");
+	const screen = getScreenById(ctx.provenance!.screenId!)!;
+	const scenarioId: ScenarioId | null = isScenarioId(ctx.provenance?.scenarioId) ? ctx.provenance!.scenarioId : null;
+	let node = attachCatalogSources([stockBlockFor(check.kind, { screen, scenarioId, brief: ctx.page.title, pageTitle: ctx.page.title })], screen)[0]!;
+	if (node.catalogBlock !== catalogBlock || (node.variant ?? null) !== check.variant) {
+		const swap = swapCatalogBlock(node, { catalogBlock, variant: check.variant });
+		if (!swap.ok && swap.code !== "no_change") return fail(swap.code, swap.message, "", swap.allowed);
+		if (swap.ok) node = swap.node;
+	}
+	return localizeEmptyLedes([node], ctx.page.locale)[0]!;
+}
+
 /**
  * Block operations of the inspector. Variant, move and remove are page-patch/v1 operations (editPage); reset puts
  * back the Stock sample of the block in its current variant; duplicate and the row operations are local tree edits.
@@ -31056,6 +31333,18 @@ function gated(ctx: InspectorOpContext, blocks: PageBlock[], changed: string[], 
  */
 function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): InspectorResult {
 	const blocks = ctx.page.layout.blocks;
+	if (op.op === "add") {
+		// After the selected section (a row counts as its section), else at the end; then every gate, or nothing changes.
+		const anchor = op.blockId ? blocks.findIndex((node) => node.id === op.blockId || walkIds([node]).has(op.blockId)) : -1;
+		if (op.blockId && anchor < 0) return fail("block_not_found", `No section ${op.blockId} on this page.`, "");
+		const made = addedBlock(ctx, op.catalogBlock, op.variant ?? null);
+		if ("ok" in made) return made;
+		const node = withFreshIds(made, walkIds(blocks));
+		let next = [...blocks];
+		next.splice(anchor < 0 ? blocks.length : anchor + 1, 0, node);
+		if (node.kind === "sidenav" || node.kind === "bottomnav") next = arrangeShell(next, ctx.page.locale).blocks;
+		return gated(ctx, next, [node.id], node.id);
+	}
 	const index = blocks.findIndex((node) => node.id === op.blockId);
 	const block = blocks[index];
 	if (!block) return fail("block_not_found", `No section ${op.blockId} on this page.`, "");
@@ -31110,6 +31399,7 @@ exports["writeOrigin"] = writeOrigin;
 exports["shareUnchanged"] = shareUnchanged;
 exports["gateInspectorPage"] = gateInspectorPage;
 exports["inspectorSetField"] = inspectorSetField;
+exports["canAddCatalogBlock"] = canAddCatalogBlock;
 exports["inspectorOp"] = inspectorOp;
 
 });
@@ -33629,6 +33919,11 @@ exports["DEFAULT_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/search.t
 exports["assertFacetValue"] = __req("packages/builder-core/src/catalog/search.ts")["assertFacetValue"];
 exports["facetVocabulary"] = __req("packages/builder-core/src/catalog/search.ts")["facetVocabulary"];
 exports["misplacedFacet"] = __req("packages/builder-core/src/catalog/search.ts")["misplacedFacet"];
+exports["stockSearch"] = __req("packages/builder-core/src/catalog/stock-search.ts")["stockSearch"];
+exports["STOCK_SEARCH_FACETS"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_FACETS"];
+exports["STOCK_SEARCH_FORMAT"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_FORMAT"];
+exports["STOCK_SEARCH_MAX_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_MAX_PAGE_SIZE"];
+exports["STOCK_SEARCH_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_PAGE_SIZE"];
 exports["compatibilityFor"] = __req("packages/builder-core/src/catalog/compatibility.ts")["compatibilityFor"];
 exports["getBlockIndex"] = __req("packages/builder-core/src/catalog/compatibility.ts")["getBlockIndex"];
 exports["rendererKindForLabel"] = __req("packages/builder-core/src/catalog/compatibility.ts")["rendererKindForLabel"];
@@ -33678,6 +33973,7 @@ exports["writableOrigin"] = __req("packages/builder-core/src/catalog/organism.ts
 exports["gateInspectorPage"] = __req("packages/builder-core/src/inspector.ts")["gateInspectorPage"];
 exports["inspectorModel"] = __req("packages/builder-core/src/inspector.ts")["inspectorModel"];
 exports["inspectorOp"] = __req("packages/builder-core/src/inspector.ts")["inspectorOp"];
+exports["canAddCatalogBlock"] = __req("packages/builder-core/src/inspector.ts")["canAddCatalogBlock"];
 exports["inspectorSetField"] = __req("packages/builder-core/src/inspector.ts")["inspectorSetField"];
 exports["shareUnchanged"] = __req("packages/builder-core/src/inspector.ts")["shareUnchanged"];
 exports["writeOrigin"] = __req("packages/builder-core/src/inspector.ts")["writeOrigin"];

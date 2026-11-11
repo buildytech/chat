@@ -58,7 +58,7 @@
 	tag="section"
 	id="pane-workspace"
 	aria-label={t("workspace.region")}
-	class={cn("min-h-0 min-w-0 flex-col bg-background", visible ? "flex flex-1" : "max-lg:hidden", "lg:flex lg:flex-1")}
+	class={cn("relative min-h-0 min-w-0 flex-col bg-background", visible ? "flex flex-1" : "max-lg:hidden", "lg:flex lg:flex-1")}
 	data-slot="workspace"
 >
 	<WorkspaceHead
@@ -80,7 +80,8 @@
 			{/if}
 		</Group>
 		{#if build && !column}
-			<Sheet open={sheetOpen} side="right" class="h-full w-full bg-transparent" aria-label={t("inspector.column")} data-slot="inspector-sheet">
+			<!-- A slide-over on the preview only (absolute in this section): the left panel stays usable while it is open. -->
+			<Sheet open={sheetOpen} side="right" class="absolute inset-0 z-20 h-full w-full bg-transparent" aria-label={t("inspector.column")} data-slot="inspector-sheet">
 				<Button class="absolute inset-0 h-full w-full bg-foreground/40" aria-label={t("inspector.close")} onclick={() => (sheetOpen = false)}>
 					<Text tag="span" class="sr-only">{t("inspector.close")}</Text>
 				</Button>

@@ -12,6 +12,7 @@
 	import type { ChatSession, CreatorRuntimeStatus, SessionSummary } from "$lib/chat-core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
+	import { feed } from "$lib/feed/feed.svelte";
 	import ChatColumn from "./ChatColumn.svelte";
 	import ChatDrawer from "./ChatDrawer.svelte";
 	import CreatorTabs from "./CreatorTabs.svelte";
@@ -170,7 +171,7 @@
 						<Button size="sm" layout="icon" variant="ghost" aria-label={t("workspace.showChat")} title={`${t("workspace.showChat")} (Ctrl+B)`} aria-expanded="false" aria-controls="creator-chat-column" data-action="chat-expand" onclick={() => creatorLayout.setCollapsed("chat", false)}>
 							<PanelLeftOpen />
 						</Button>
-						<Button size="sm" layout="icon" variant="ghost" aria-label={t("shell.chatColumn")} title={t("shell.chatColumn")} onclick={() => { creatorLayout.setCollapsed("chat", false); queueMicrotask(() => document.querySelector<HTMLTextAreaElement>("#creator-chat-column textarea")?.focus()); }}>
+						<Button size="sm" layout="icon" variant="ghost" aria-label={t("shell.chatColumn")} title={t("shell.chatColumn")} onclick={() => { creatorLayout.setCollapsed("chat", false); feed.tab = "chat"; queueMicrotask(() => document.querySelector<HTMLTextAreaElement>("#creator-chat-column textarea")?.focus()); }}>
 							<MessageSquare />
 						</Button>
 					</Stack>

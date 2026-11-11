@@ -7,11 +7,13 @@ import {
 	getScreenById,
 	paginateScreens,
 	screenCanonicalJson,
+	stockSearch,
 	type CatalogScreen,
 	type PlaceholderMode,
 	type ScenarioId,
 	type ScreenCompatibility,
-	type SearchResult
+	type SearchResult,
+	type StockSearchQuery
 } from "@buildytech/builder-core";
 
 export type ModalKind = "scenario" | "screen" | "model" | null;
@@ -96,47 +98,34 @@ export function setStockQuery(next: string): void {
 	page = 1;
 }
 
-/** Screens of `filter` for the Stock search box: the catalog text index (titles, labels, facet values in the
- * catalog's locales and synonyms, scored by query word) plus plain substring hits on id, title and labels. */
-function stockMatches(filter: ReturnType<typeof catalogQuery>, needle: string): SearchResult["items"] {
-	const raw = paginateScreens({ ...filter, page: 1, pageSize: 500 });
-	if (!needle) return raw.items;
-	const scored = paginateScreens({ ...filter, q: needle, page: 1, pageSize: 500 }).items;
-	const seen = new Set(scored.map((screen) => screen.screenId));
-	const lower = needle.toLowerCase();
-	const plain = raw.items.filter(
-		(screen) =>
-			!seen.has(screen.screenId) &&
-			`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`
-				.toLowerCase()
-				.includes(lower)
-	);
-	return [...scored, ...plain];
-}
-
 export type StockPage = SearchResult & {
 	/** Matches outside the attached scenario's filter (shown when the scenario has none). */
 	outsideScope: number;
 };
 
+/** The scenario's owner filter as a stock-search scope (site / section / job only). */
+function scopeOf(filter: ReturnType<typeof catalogQuery>): StockSearchQuery["scope"] {
+	const { type: _type, ...scope } = filter as { type: string; site?: string; section?: string; job?: string };
+	return Object.keys(scope).length ? scope : null;
+}
+
+/**
+ * The Stock screens field: the shared stockSearch (ADR 0024, the same function and stock-search/v1 result as the
+ * Build Blocks feed) with type=screen and the scenario as scope; the cards still get the full catalog screen.
+ */
 export function catalogPage(): StockPage {
 	const raw = paginateScreens({ ...catalogQuery(), page: 1, pageSize: 500 });
 	const needle = stockQuery.trim();
-	const matched = stockMatches(catalogQuery(), needle);
-	const pageSize = 12;
-	const total = matched.length;
-	const pageCount = Math.max(1, Math.ceil(total / pageSize) || 1);
-	const current = Math.min(Math.max(page, 1), pageCount);
-	const start = (current - 1) * pageSize;
-	const outsideScope = needle && total === 0 && scenarioId ? stockMatches(OWNER_FILTERS.blank, needle).length : 0;
+	const found = stockSearch({ type: "screen", q: needle, scope: scopeOf(catalogQuery()), page, pageSize: 12 });
+	const outsideScope = needle && found.total === 0 && scenarioId ? stockSearch({ type: "screen", q: needle, pageSize: 1 }).total : 0;
 	return {
 		...raw,
-		page: current,
-		pageSize,
-		pageCount,
-		total,
-		items: matched.slice(start, start + pageSize),
-		noFit: total === 0,
+		page: found.page,
+		pageSize: found.pageSize,
+		pageCount: found.pageCount,
+		total: found.total,
+		items: found.items.map((item) => getScreenById(item.id)!).map((screen) => ({ ...screen, compatibility: compatibilityFor(screen) })),
+		noFit: found.total === 0,
 		outsideScope
 	};
 }

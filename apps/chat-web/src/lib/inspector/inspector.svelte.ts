@@ -4,10 +4,10 @@
  * no model call: a passing edit replaces the visible page at once (persisted like any page edit), a rejected one
  * leaves the page as it was and is shown in its field.
  */
-import { inspectorOp, inspectorSetField, type InspectorField, type InspectorOp, type InspectorResult } from "@buildytech/builder-core";
+import { canAddCatalogBlock, inspectorOp, inspectorSetField, type AddBlockCheck, type InspectorField, type InspectorOp, type InspectorResult } from "@buildytech/builder-core";
 import type { Page } from "@buildytech/page-contract";
 import { getChatMode } from "../chat-core";
-import { getBoundPageSessionId, getCurrentPage, getCurrentProvenance, getPageRevision, replaceVisiblePage } from "../page-store";
+import { getBoundPageSessionId, getCurrentPage, getCurrentProvenance, getPageRevision, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
 import { commitChange } from "../page-store/revision";
 import type { FieldIssue } from "./fields";
 import { EditHistory } from "./history";
@@ -129,6 +129,29 @@ export const inspector = {
 		opIssue = null;
 		if (result.page === page) return true;
 		return commit(page, result, null);
+	},
+
+	/** Whether the Blocks feed can add this Stock block variant to the page Preview shows (and why not). */
+	canAdd(catalogBlock: string, variant: string | null): AddBlockCheck {
+		void version;
+		const page = getCurrentPage();
+		const provenance = getCurrentProvenance();
+		return page ? canAddCatalogBlock({ page, provenance }, catalogBlock, variant) : canAddCatalogBlock({ page: null, provenance: null }, catalogBlock, variant);
+	},
+
+	/**
+	 * Blocks feed "+": the Stock block variant after the selected section, or at the end, as one inspector operation
+	 * (every gate, one undo step, no model call). The new section becomes the selection.
+	 */
+	add(catalogBlock: string, variant: string | null): { ok: true; blockId: string } | { ok: false; code: string; message: string } {
+		const page = getCurrentPage();
+		if (!page) return { ok: false, code: "no_page", message: "There is no page yet." };
+		historyFor(page).seal();
+		const result = inspectorOp({ page, provenance: getCurrentProvenance(), revision: getPageRevision() ?? 0 }, { op: "add", blockId: getSelectedBlockId() ?? "", catalogBlock, variant });
+		if (!result.ok) return { ok: false, code: result.code, message: result.message };
+		if (!commit(page, result, null)) return { ok: false, code: "not_committed", message: "The page did not accept the change." };
+		selectBlock(result.blockId);
+		return { ok: true, blockId: result.blockId };
 	},
 
 	/** End the open typing step (blur). */

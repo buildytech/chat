@@ -19,6 +19,18 @@ export {
 	facetVocabulary,
 	misplacedFacet
 } from "./catalog/search.ts";
+export {
+	stockSearch,
+	STOCK_SEARCH_FACETS,
+	STOCK_SEARCH_FORMAT,
+	STOCK_SEARCH_MAX_PAGE_SIZE,
+	STOCK_SEARCH_PAGE_SIZE,
+	type StockSearchFacet,
+	type StockSearchItem,
+	type StockSearchQuery,
+	type StockSearchResult,
+	type StockSearchType
+} from "./catalog/stock-search.ts";
 export { compatibilityFor, getBlockIndex, rendererKindForLabel, sendBlockedByScreen, screenSupport, compareScreenSupport } from "./catalog/compatibility.ts";
 export { getBlockDetails, askBlockCard, screenCanonicalJson, type AskBlockCard } from "./catalog/details.ts";
 export {
@@ -75,6 +87,8 @@ export {
 	gateInspectorPage,
 	inspectorModel,
 	inspectorOp,
+	canAddCatalogBlock,
+	type AddBlockCheck,
 	inspectorSetField,
 	shareUnchanged,
 	writeOrigin,
