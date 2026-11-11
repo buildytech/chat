@@ -21,6 +21,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { theme } from "$lib/theme/theme.svelte";
+	import { THEME_PREFS } from "$lib/theme/theme-pref";
 	import { cn } from "$registry/utils/cn";
 	import { deleteAllSessions, type SessionSummary } from "$lib/chat-core";
 	import { getSelectedModelId, isChatModelAvailable, listChatModels, setSelectedModelId } from "$lib/browser/models.svelte";
@@ -262,7 +263,7 @@
 					</Text>
 				{:else}
 					{#each visibleSessions as session (session.id)}
-						<Group class="min-w-0 gap-0">
+						<Group class="min-w-0 gap-0" data-slot="recent-row">
 							<Button
 								class={cn(
 									"flex min-w-0 flex-1 items-center justify-start gap-2 rounded px-2 py-1 text-left text-sm",
@@ -279,6 +280,7 @@
 								class="shrink-0 rounded p-2 text-muted-foreground hover:bg-accent hover:text-destructive disabled:opacity-40"
 								aria-label={t("sidebar.delete")}
 								aria-haspopup="dialog"
+								data-action="recent-delete"
 								disabled={!canDelete}
 								title={canDelete ? t("sidebar.delete") : t("sidebar.deleteUnavailable")}
 								onclick={() => canDelete && requestDelete(session)}
@@ -347,12 +349,23 @@
 						<Text tag="p" class="px-2 text-xs text-muted-foreground">{t(modelUnavailableCode(model) === "model_too_slow" ? "composer.modelTooSlow" : "composer.modelUnavailable")}</Text>
 					{/if}
 				{/each}
-				<Button
-					class="flex w-full items-center justify-start rounded px-2 py-1 text-xs text-foreground hover:bg-accent/70"
-					onclick={() => theme.toggle()}
-				>
-					{theme.isDark ? t("sidebar.useLight") : t("sidebar.useDark")}
-				</Button>
+				<!-- The chat UI theme (ADR 0026): system / dark / light; the preview keeps its own skin. -->
+				<Text tag="p" class="text-xs font-medium text-foreground" id="creator-settings-theme-label">{t("settings.theme")}</Text>
+				<Group class="items-center gap-1 rounded-full bg-muted p-1" role="group" aria-labelledby="creator-settings-theme-label" data-slot="settings-theme">
+					{#each THEME_PREFS as option (option)}
+						<Button
+							class={cn(
+								"flex-1 rounded-full px-2 py-1 text-xs",
+								theme.pref === option ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+							)}
+							pressed={theme.pref === option}
+							data-action={`theme-${option}`}
+							onclick={() => theme.setPref(option)}
+						>
+							{t(`settings.theme.${option}`)}
+						</Button>
+					{/each}
+				</Group>
 				<Group class="items-center gap-2 px-2 py-1" data-slot="settings-preview-clean">
 					<Checkbox
 						id="creator-settings-preview-clean"

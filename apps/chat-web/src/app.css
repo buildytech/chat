@@ -4,6 +4,8 @@
 @import "../../../registry/svelte/src/styles/kit.css";
 @import "./styles/fonts.css";
 @import "./styles/editor.css";
+/* The chat UI skin (ADR 0026): this document only, never the preview frame. */
+@import "./styles/chat-skin.css";
 /* Classes of the registry components the app shell uses (recipes live in compose/recipes.ts). */
 @source "../../../registry/svelte/src/compose";
 @source "../../../registry/svelte/src/kit";
@@ -14,6 +16,16 @@
 
 @theme {
 	--font-sans: "Istok Web", ui-sans-serif, system-ui, sans-serif;
+	/* chat UI radius (ADR 0026): 8px controls on the 8+4 grid; containers set their own concentric scope in chat-skin.css */
+	--radius: 8px;
+}
+
+@theme inline {
+	--radius-sm: 4px;
+	--radius-md: 8px;
+	--radius-lg: var(--radius);
+	--radius-xl: 12px;
+	--radius-2xl: 16px;
 }
 
 html,

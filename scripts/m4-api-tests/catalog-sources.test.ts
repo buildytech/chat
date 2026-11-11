@@ -227,9 +227,15 @@ test("CSS: theme and tokens only from the registry tree; the chat declares no co
 	assert.match(frame, /@import "\.\.\/\.\.\/\.\.\/registry\/svelte\/src\/styles\/index\.css"/);
 	const theme = readFileSync(join(ROOT, "registry/svelte/src/styles/theme.css"), "utf8");
 	assert.match(theme, /@custom-variant dark \(&:is\(\.dark \*, \[data-theme="dark"\] \*\)\)/);
-	for (const file of walk(join(ROOT, "apps/chat-web/src")).filter((path) => path.endsWith(".css"))) {
-		assert.doesNotMatch(readFileSync(file, "utf8"), /--(background|foreground|primary|border|radius)\s*:/, `${file} redeclares a registry token`);
+	// ADR 0026: the chat UI skin is the one place that maps the shell's own tones and radius onto the kit names
+	// (styles/chat-skin.css, plus the app @theme radius in app.css); the preview frame never loads either.
+	const SKIN = join(ROOT, "apps/chat-web/src/styles/chat-skin.css");
+	for (const file of walk(join(ROOT, "apps/chat-web/src")).filter((path) => path.endsWith(".css") && path !== SKIN)) {
+		const css = readFileSync(file, "utf8");
+		const checked = file.endsWith("/app.css") ? css.replace(/@theme(?: inline)? \{[^}]*\}/g, (block) => block.replace(/--radius[a-z0-9-]*:[^;]*;/g, "")) : css;
+		assert.doesNotMatch(checked, /--(background|foreground|primary|border|radius)\s*:/, `${file} redeclares a registry token`);
 	}
+	assert.doesNotMatch(frame, /chat-skin|app\.css/, "the preview frame never loads the chat UI skin");
 });
 
 test("layout: lib holds only logic (no .svelte), no chat-owned 'compose' path, no own primitives", () => {

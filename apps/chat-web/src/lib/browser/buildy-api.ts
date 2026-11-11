@@ -10,12 +10,11 @@ import snapshotConfig from "../../../../../catalog/snapshot.config.json";
 import chatPackage from "../../../package.json";
 import { exportSessions, importSessions, openCollectionFile, type CollectionIntake, type ImportResult } from "../chat-core";
 import { isCollectionDoc } from "@buildytech/page-contract/collection";
-import { theme, THEME_KEY } from "../theme/theme.svelte";
+import { theme } from "../theme/theme.svelte";
 import { getSelectedModelId, setSelectedModelId } from "./models.svelte";
 import { creatorLayout } from "../creator-layout.svelte";
 import { previewSettings } from "./preview-settings.svelte";
 import type { SessionApp, SessionFile, SessionPins, SessionSettings } from "./session-file.ts";
-import { writeKey } from "./storage-v1.ts";
 
 declare const __BUILDY_APP_COMMIT__: string;
 
@@ -58,10 +57,7 @@ function applySettings(input: SessionSettings | undefined): void {
 	if (!input) return;
 	if (input.selectedModelId) setSelectedModelId(input.selectedModelId);
 	if (typeof input.previewHideServiceLabels === "boolean") previewSettings.setHideServiceLabels(input.previewHideServiceLabels);
-	if (input.theme) {
-		writeKey(THEME_KEY, input.theme);
-		theme.init();
-	}
+	if (input.theme) theme.setPref(input.theme);
 }
 
 function download(file: SessionFile): void {

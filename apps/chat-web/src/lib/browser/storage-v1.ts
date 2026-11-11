@@ -18,7 +18,10 @@ export const STORAGE_KEYS = {
 	layout: "buildy:v1:layout",
 	/** Layout preferences (ADR 0017): `{ layout }`, session file `prefs`. */
 	prefs: "buildy:v1:prefs",
+	/** The resolved light / dark mode of the chat UI (session file settings.theme; /preview follows it). */
 	theme: "buildy:v1:theme",
+	/** The chat UI theme choice (ADR 0026): "system" | "dark" | "light"; absent = system. */
+	themePref: "buildy:v1:themePref",
 	previewHideServiceLabels: "buildy:v1:preview.hideServiceLabels",
 	/** The one imported theme (Settings > Theme import, ADR 0025): `{ v: 1, config }`, config = magazine-theme v2. */
 	customSkin: "buildy:v1:customSkin",
