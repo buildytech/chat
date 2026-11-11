@@ -27730,221 +27730,75 @@ exports["sameCatalogRefs"] = sameCatalogRefs;
 
 });
 
-__def("packages/builder-core/src/catalog/stock-search.ts", function (exports) {
-const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
-const { blockAssetUrl, blockThumbUrl, screenThumbUrl, stockAssetUrl } = __req("packages/builder-core/src/catalog/provenance.ts");
-const { getScreenById, searchCatalog } = __req("packages/builder-core/src/catalog/search.ts");
-const { catalogSourceFor } = __req("packages/builder-core/src/catalog/sources.ts");
-const STOCK_SEARCH_FORMAT = "stock-search/v1";
-const STOCK_SEARCH_PAGE_SIZE = 8;
-const STOCK_SEARCH_MAX_PAGE_SIZE = 48;
-
-const STOCK_SEARCH_FACETS: StockSearchFacet[] = ["type", "role", "spec", "site", "variant"];
-
-type Row = StockSearchItem & { text: string; score: number };
-
-const lower = (value: string) => value.toLowerCase();
-const words = (q: string) => lower(q).split(/\s+/).filter(Boolean);
-
-/** Block label (blockId) of a screen slot -> its index entry. */
-function entryByLabel(): Map<string, CatalogBlockIndexEntry> {
-	return new Map(catalogSnapshot.blockIndex.map((entry) => [entry.blockId, entry]));
-}
-
-let blockRowsCache: Row[] | null = null;
-
-/** Every Stock block variant as a row; sites = the sites of the screens whose layout uses the block. */
-function blockRows(): Row[] {
-	if (blockRowsCache) return blockRowsCache;
-	const byLabel = entryByLabel();
-	const sites = new Map<string, Set<string>>();
-	for (const screen of catalogSnapshot.screens) {
-		for (const slot of screen.layout ?? []) {
-			const entry = byLabel.get(slot.block);
-			if (!entry) continue;
-			const set = sites.get(entry.spec) ?? new Set<string>();
-			for (const site of screen.labels.site) set.add(site);
-			sites.set(entry.spec, set);
-		}
-	}
-	const rows: Row[] = [];
-	for (const entry of catalogSnapshot.blockIndex) {
-		if (!entry.available) continue;
-		const role = entry.rendererCompatible && entry.rendererKind ? entry.rendererKind : null;
-		const fallback = catalogSourceFor(entry.spec)?.defaultVariant ?? entry.variants[0];
-		const blockSites = [...(sites.get(entry.spec) ?? [])].sort();
-		for (const variant of entry.variants) {
-			rows.push({
-				type: "block",
-				id: `${entry.spec}/${variant}`,
-				spec: entry.spec,
-				variant,
-				title: entry.title,
-				subtitle: variant,
-				role,
-				roles: role ? [role] : [],
-				sites: blockSites,
-				isDefault: variant === fallback,
-				thumb: blockThumbUrl(entry.spec, variant),
-				url: blockAssetUrl(entry.spec, variant) ?? stockAssetUrl(`${entry.spec}/${variant}`),
-				text: lower(`${entry.spec} ${entry.blockId} ${entry.title} ${variant} ${role ?? ""} ${(entry.jobs ?? []).join(" ")} ${blockSites.join(" ")}`),
-				score: 0
-			});
-		}
-	}
-	// Blocks with a page section renderer (they can be added to a page) first, each group in catalog order.
-	rows.sort((a, b) => Number(!a.role) - Number(!b.role));
-	blockRowsCache = rows;
-	return rows;
-}
-
-function screenRow(screen: CatalogScreen, byLabel: Map<string, CatalogBlockIndexEntry>): Row {
-	const roles = [
-		...new Set(
-			(screen.layout ?? [])
-				.map((slot) => byLabel.get(slot.block))
-				.map((entry) => (entry?.rendererCompatible && entry.rendererKind ? entry.rendererKind : null))
-				.filter((kind): kind is string => Boolean(kind))
-		)
-	].sort();
-	return {
-		type: "screen",
-		id: screen.screenId,
-		spec: screen.spec,
-		variant: screen.variant,
-		title: screen.title,
-		subtitle: screen.subtitle,
-		role: null,
-		roles,
-		sites: [...screen.labels.site],
-		isDefault: false,
-		thumb: screenThumbUrl(screen.screenId),
-		url: stockAssetUrl(screen.screenId),
-		text: lower(`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`),
-		score: 0
-	};
+__def("packages/builder-core/src/brief.ts", function (exports) {
+const { SCENARIO_IDS } = __req("packages/builder-core/src/copy.ts");
+function isScenarioId(value: unknown): value is ScenarioId {
+	return typeof value === "string" && (SCENARIO_IDS as string[]).includes(value);
 }
 
 /**
- * Screens in scope matching q: the catalog text index first (titles, labels, facet values in the catalog's locales
- * and synonyms, scored), then plain substring hits on id, title and labels; with no q, the catalog order.
+ * Short page/hero title from a brief. Drops synthetic QA prefixes.
+ * Does not invent a business name that is not in the text.
  */
-function screenRows(q: string, scope: StockSearchQuery["scope"]): Row[] {
-	const byLabel = entryByLabel();
-	const filter = { ...(scope ?? {}), type: "screen" as const };
-	const scoped = searchCatalog({ ...filter, page: 1, pageSize: 1000 }).items.map((hit) => getScreenById(hit.screenId)!);
-	if (!q) return scoped.map((screen) => screenRow(screen, byLabel));
-	const scored = searchCatalog({ ...filter, q, page: 1, pageSize: 1000 }).items.map((hit) => getScreenById(hit.screenId)!);
-	const seen = new Set(scored.map((screen) => screen.screenId));
-	const needle = lower(q);
-	const rows = scored.map((screen) => screenRow(screen, byLabel));
-	for (const screen of scoped) {
-		if (seen.has(screen.screenId)) continue;
-		const row = screenRow(screen, byLabel);
-		if (row.text.includes(needle)) rows.push(row);
-	}
-	return rows;
+/** Occasion words already in the brief. Null when none — do not invent a holiday. */
+function occasionFromBrief(brief: string): string | null {
+	if (/\bnew year\b/i.test(brief)) return "New Year";
+	return null;
 }
 
-/** Blocks matching every word of q, the ones that hit the title, spec or role first (catalog order otherwise). */
-function blockMatches(q: string): Row[] {
-	const rows = blockRows();
-	const tokens = words(q);
-	if (!tokens.length) return rows;
-	const out: Row[] = [];
-	for (const row of rows) {
-		if (!tokens.every((token) => row.text.includes(token))) continue;
-		const head = lower(`${row.spec} ${row.title} ${row.role ?? ""}`);
-		out.push({ ...row, score: tokens.filter((token) => head.includes(token)).length });
+/** Keep the saved title unless the follow-up actually names or renames the page. */
+function titleFromSavedEdit(brief: string, current: string): string {
+	const named = brief.match(/\bnamed\s+["']?([^"'.,\n]+)/i);
+	if (named?.[1]?.trim()) return named[1].trim().slice(0, 80);
+	const forMatch = brief.match(/\bfor\s+([^.,\n]+?)(?:,|\s+a\s+|\s+an\s+)/i);
+	if (forMatch?.[1]) {
+		const name = forMatch[1].replace(/\b(?:a|an|the)\s+new year\s+/i, "").trim();
+		if (name && name.split(/\s+/).length <= 8) return name.slice(0, 80);
 	}
-	return out.sort((a, b) => b.score - a.score);
+	const rename = brief.match(/\b(?:rename(?:d)?|title|called)\s+(?:to|as|:)\s+["']?([^"'.,\n]+)/i);
+	if (rename?.[1]?.trim()) return rename[1].trim().slice(0, 80);
+	return current;
 }
 
-function valuesOf(row: Row, facet: StockSearchFacet): string[] {
-	switch (facet) {
-		case "type":
-			return [row.type];
-		case "role":
-			return row.roles;
-		case "spec":
-			return [row.spec];
-		case "site":
-			return row.sites;
-		case "variant":
-			return [row.variant];
+function displayTitleFromBrief(brief: string, fallback = "Draft page"): string {
+	const trimmed = brief.trim();
+	if (!trimmed) return fallback;
+	const named = trimmed.match(/\bnamed\s+["']?([^"'.,\n]+)/i);
+	if (named?.[1]) {
+		const name = named[1].trim();
+		if (name) return name.slice(0, 80);
 	}
-}
-
-const clean = (value: string | null | undefined): string | null => (typeof value === "string" && value.trim() ? value.trim() : null);
-
-function stockSearch(input: StockSearchQuery = {}): StockSearchResult {
-	const q = (input.q ?? "").trim();
-	const type = input.type === "screen" || input.type === "block" ? input.type : null;
-	const spec = clean(input.spec);
-	const query: StockSearchResult["query"] = {
-		q,
-		type,
-		role: clean(input.role),
-		spec,
-		site: clean(input.site),
-		variant: spec ? clean(input.variant) : null,
-		scope: input.scope && Object.keys(input.scope).length ? { ...input.scope } : null
-	};
-	const active: Partial<Record<StockSearchFacet, string>> = {};
-	if (query.type) active.type = query.type;
-	if (query.role) active.role = query.role;
-	if (query.spec) active.spec = query.spec;
-	if (query.site) active.site = query.site;
-	if (query.variant) active.variant = query.variant;
-
-	// Blocks first: the Build feed is about blocks; type=screen gives the home Stock list alone.
-	const pool: Row[] = [...blockMatches(q), ...screenRows(q, query.scope)];
-	const passes = (row: Row, except: StockSearchFacet | null) =>
-		STOCK_SEARCH_FACETS.every((facet) => facet === except || !active[facet] || valuesOf(row, facet).includes(active[facet]!));
-
-	const facets = {} as StockSearchResult["facets"];
-	for (const facet of STOCK_SEARCH_FACETS) {
-		if (facet === "variant" && !query.spec) {
-			facets.variant = [];
-			continue;
+	const forMatch = trimmed.match(/\bfor\s+([^.,\n]+?)(?=,|\s+a\s+|\s+an\s+|\.|$)/i);
+	if (forMatch?.[1]) {
+		const name = forMatch[1].replace(/\b(?:a|an|the)\s+new year\s+/i, "").trim();
+		if (
+			name &&
+			name.split(/\s+/).length <= 8 &&
+			!/^(?:the|a|an|this|that|existing|real)\b/i.test(name)
+		) {
+			return name.slice(0, 80);
 		}
-		const counts = new Map<string, number>();
-		for (const row of pool) {
-			if (!passes(row, facet)) continue;
-			for (const value of valuesOf(row, facet)) counts.set(value, (counts.get(value) ?? 0) + 1);
-		}
-		if (active[facet] && !counts.has(active[facet]!)) counts.set(active[facet]!, 0);
-		const list = [...counts.entries()].map(([value, count]) => ({ value, count }));
-		// spec and variant keep the catalog order; the others go by count.
-		facets[facet] = facet === "spec" || facet === "variant" ? list : list.sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
 	}
-
-	const matched = pool.filter((row) => passes(row, null));
-	const size = Math.round(input.pageSize ?? STOCK_SEARCH_PAGE_SIZE);
-	const pageSize = Number.isFinite(size) ? Math.min(Math.max(size, 1), STOCK_SEARCH_MAX_PAGE_SIZE) : STOCK_SEARCH_PAGE_SIZE;
-	const total = matched.length;
-	const pageCount = Math.max(1, Math.ceil(total / pageSize));
-	const wanted = Math.round(input.page ?? 1);
-	const page = Math.min(Math.max(Number.isFinite(wanted) ? wanted : 1, 1), pageCount);
-	const items = matched.slice((page - 1) * pageSize, page * pageSize).map(({ text: _text, score: _score, ...item }) => item);
-	return {
-		format: STOCK_SEARCH_FORMAT,
-		query,
-		page,
-		pageSize,
-		pageCount,
-		total,
-		items,
-		facets,
-		catalog: { digest: catalogSnapshot.sourceDigest, commit: catalogSnapshot.pinnedCommit }
-	};
+	const withoutPrefix = trimmed
+		.replace(/^qa\s+\w+(?:\s+\w+)?\s+\d{2,4}:\s*/i, "")
+		.replace(/^(?:please\s+)?create\s+(?:a\s+)?(?:new year\s+)?/i, "")
+		.trim();
+	const first = (withoutPrefix.split(/[.!?]/)[0] ?? withoutPrefix).trim();
+	if (
+		!first ||
+		/\b(?:create|build|make|using existing|no invented|keep all other)\b/i.test(first) ||
+		/^(?:a\s+)?(?:landing(?:\s+pages?)?|dashboard|website|page)\b/i.test(first)
+	) {
+		return fallback;
+	}
+	if (first.split(/\s+/).length > 8) return fallback;
+	return first.slice(0, 80) || fallback;
 }
 
-exports["STOCK_SEARCH_FORMAT"] = STOCK_SEARCH_FORMAT;
-exports["STOCK_SEARCH_PAGE_SIZE"] = STOCK_SEARCH_PAGE_SIZE;
-exports["STOCK_SEARCH_MAX_PAGE_SIZE"] = STOCK_SEARCH_MAX_PAGE_SIZE;
-exports["STOCK_SEARCH_FACETS"] = STOCK_SEARCH_FACETS;
-exports["stockSearch"] = stockSearch;
+exports["isScenarioId"] = isScenarioId;
+exports["occasionFromBrief"] = occasionFromBrief;
+exports["titleFromSavedEdit"] = titleFromSavedEdit;
+exports["displayTitleFromBrief"] = displayTitleFromBrief;
 
 });
 
@@ -28112,845 +27966,6 @@ exports["askBlockCard"] = askBlockCard;
 exports["getAskBlock"] = getAskBlock;
 exports["screenCanonicalJson"] = screenCanonicalJson;
 exports["catalogSnapshot"] = catalogSnapshot;
-
-});
-
-__def("packages/builder-core/src/agent/agent-tools.v1.json", function (exports) {
-  exports.default = {
-	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"format": "buildy-agent-tools",
-	"version": 1,
-	"description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
-	"modes": {
-		"ask": {
-			"description": "Read-only conversation about the catalog and the page. The page never changes and no proposal is created. Recommended page changes go to propose_plan (a checked plan the author may run with Apply in Build). Tool choice auto; the model's final text is the answer.",
-			"toolChoice": "auto"
-		},
-		"build": {
-			"description": "Create or edit the page. Tool choice auto: a text-only answer is shown and creates no proposal; a successful propose_layout or edit_page creates one pending proposal the author applies.",
-			"toolChoice": "auto"
-		}
-	},
-	"enumSources": {
-		"catalog.site": "Stock facet vocabulary: site type",
-		"catalog.section": "Stock facet vocabulary: section",
-		"catalog.job": "Stock facet vocabulary: job",
-		"catalog.industry": "Stock search vocabulary: industry",
-		"catalog.blocks": "Stock search vocabulary: block labels",
-		"page.contentKinds": "Page block kinds that take content from the model"
-	},
-	"tools": [
-		{
-			"name": "search_catalog",
-			"modes": [
-				"ask",
-				"build"
-			],
-			"description": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored items and pick.screenId; then call propose_layout. Never a dead end: when no renderable screen matches every facet the host drops the fewest facets and says which in relaxed; zero or weak hits (and browse=true) add facets, the counts of renderable screens per site, section, job, industry and block label for drill-down. Do not repeat a search that returned items: pick one and call propose_layout.",
-			"descriptionByMode": {
-				"ask": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored screens with their block labels. Read-only."
-			},
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"q": {
-						"type": "string",
-						"description": "Free text in catalog terms (English catalog words work best, e.g. sidebar, shell, kanban, pricing). Matched against Stock titles, subtitles, block names and facet labels."
-					},
-					"site": {
-						"type": "string",
-						"x-buildy-enum": "catalog.site",
-						"description": "Site type: landing (one conversion page), website (multi-page site home), app, docs, shop, blog."
-					},
-					"section": {
-						"type": "string",
-						"x-buildy-enum": "catalog.section"
-					},
-					"job": {
-						"type": "string",
-						"x-buildy-enum": "catalog.job"
-					},
-					"industry": {
-						"type": "string",
-						"x-buildy-enum": "catalog.industry"
-					},
-					"blocks": {
-						"type": "array",
-						"items": {
-							"type": "string",
-							"x-buildy-enum": "catalog.blocks"
-						},
-						"description": "Block labels every screen must contain, e.g. [\"sidenav\"] for a built-in sidebar."
-					},
-					"page": {
-						"type": "integer",
-						"minimum": 1
-					},
-					"browse": {
-						"type": "boolean",
-						"description": "true: also return facets (renderable screen counts per facet value for this filter) to drill down with another call."
-					}
-				}
-			}
-		},
-		{
-			"name": "get_block",
-			"modes": [
-				"ask"
-			],
-			"description": "Read one Stock catalog block: title, registry item, every variant with the props that set it apart from the default, row and text fields from the published props schema, and its Stock link. id is a block spec (block.features), a label (features) or an asset id (block.features/grid). Read-only.",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"id": {
-						"type": "string",
-						"description": "Block spec, label or catalog asset id from catalogBlocks or search results."
-					}
-				},
-				"required": [
-					"id"
-				]
-			}
-		},
-		{
-			"name": "propose_plan",
-			"modes": [
-				"ask"
-			],
-			"description": "Ask only. When you recommend changes to currentPage, call this once with the changes as page-patch/v1 ops on currentPage block ids, alongside your text answer: set_variant {blockId, variant from get_block}; set {blockId, field (title or a key of currentPage.blocks[].copyKeys; when copyKeys has headline, headline is the visible heading and title only names the block in the section list), value}; set_items {blockId, items}; add {kind, title, variant?, copy?}; replace {blockId, catalogBlock, variant?}: another Stock catalog block of the same kind in the block's place (e.g. block.hero -> block.storehero; get_block lists its variants; the host carries the text fields the new block renders and names the rest as dropped); remove {blockId}; move {blockId, to}. Each op gets a short reason. The host checks every op against the page and the pinned catalog and returns valid op ids and invalid ops with allowed values; fix invalid ops once with a second call. Nothing changes: the author sees a plan card and may run the ops they tick with Apply in Build.",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"summary": {
-						"type": "string",
-						"description": "One line: what the plan does, in the author's language."
-					},
-					"ops": {
-						"type": "array",
-						"maxItems": 24,
-						"items": {
-							"type": "object",
-							"properties": {
-								"op": {
-									"type": "string",
-									"enum": [
-										"set_variant",
-										"set",
-										"set_items",
-										"add",
-										"replace",
-										"remove",
-										"move"
-									]
-								},
-								"blockId": {
-									"type": "string",
-									"description": "Id of a block on currentPage (currentPage.blocks[].id)."
-								},
-								"field": {
-									"type": "string"
-								},
-								"value": {
-									"type": [
-										"string",
-										"null"
-									]
-								},
-								"kind": {
-									"type": "string"
-								},
-								"catalogBlock": {
-									"type": "string",
-									"description": "replace: the Stock catalog block (block.<label>) that takes the block's place; same kind as the block."
-								},
-								"at": {
-									"type": "integer"
-								},
-								"to": {
-									"type": "integer"
-								},
-								"title": {
-									"type": "string"
-								},
-								"variant": {
-									"type": [
-										"string",
-										"null"
-									]
-								},
-								"copy": {
-									"type": "object",
-									"description": "Copy keys the kind renders (slots).",
-									"additionalProperties": {
-										"type": "string"
-									}
-								},
-								"items": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"label": {
-												"type": "string"
-											},
-											"detail": {
-												"type": "string"
-											},
-											"value": {
-												"type": "string"
-											},
-											"note": {
-												"type": "string"
-											},
-											"group": {
-												"type": "string"
-											},
-											"icon": {
-												"type": "string",
-												"description": "Feature rows: a Lucide icon name (get_block_details lists them)."
-											}
-										},
-										"required": [
-											"label"
-										]
-									}
-								},
-								"reason": {
-									"type": "string",
-									"description": "Why, in one short sentence in the author's language."
-								}
-							},
-							"required": [
-								"op"
-							]
-						}
-					}
-				},
-				"required": [
-					"ops"
-				]
-			}
-		},
-		{
-			"name": "get_block_details",
-			"modes": [
-				"build"
-			],
-			"description": "Optional. Load schema for one unknown block id. Do not call this for every shortlist block. Leave a step for propose_layout.",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"variant": {
-						"type": "string"
-					},
-					"target": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"id"
-				]
-			}
-		},
-		{
-			"name": "propose_layout",
-			"modes": [
-				"build"
-			],
-			"description": "Assemble a Page from screenId (the search pick) and your typed intent (locale, demoData, requireBlocks). Always include blocks: one entry per block kind with title and lede in the page language, nav/sidenav items naming the sections; with demoData=true also items (rows) for overview, metrics, chart and activity. Does not apply. Follow-up copy uses edits. A rejected block choice returns code, path blocks[i].variant or blocks[i].catalogBlock, and fix (the block's kind, the catalog block it renders as, the rejected value, allowedVariants, defaultVariant, catalogBlocksWithVariant); fix only that block. The same error twice on one block, or a run that ends rejected, keeps every other block and uses the catalog default for that block (said in warnings).",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"brief": {
-						"type": "string"
-					},
-					"scenarioId": {
-						"type": "string",
-						"enum": [
-							"dashboard",
-							"landing",
-							"website"
-						]
-					},
-					"screenId": {
-						"type": "string"
-					},
-					"expectedRevision": {
-						"type": "integer"
-					},
-					"title": {
-						"type": "string",
-						"description": "Page title in the page language."
-					},
-					"locale": {
-						"type": "string",
-						"description": "BCP 47 language of the author's request, e.g. ru or en. All copy uses it."
-					},
-					"demoLabel": {
-						"type": "string",
-						"description": "Only when the author asked for demo/fake/sample data: a short marker in the page language, e.g. Demo data."
-					},
-					"blocks": {
-						"type": "array",
-						"description": "Copy per Stock block kind in the page language. The host keeps the Stock block order and falls back to catalog copy for missing fields. Data items (overview, metrics, chart, activity) are kept only when the author explicitly asked for demo data.",
-						"items": {
-							"type": "object",
-							"properties": {
-								"kind": {
-									"type": "string",
-									"x-buildy-enum": "page.contentKinds"
-								},
-								"title": {
-									"type": "string",
-									"description": "Visible section heading in the page language. Required."
-								},
-								"eyebrow": {
-									"type": "string"
-								},
-								"headline": {
-									"type": "string"
-								},
-								"lede": {
-									"type": "string"
-								},
-								"action": {
-									"type": "string",
-									"description": "Label of the block's button or link. On features it is the section link next to the heading (e.g. View all) and needs href on the same block."
-								},
-								"note": {
-									"type": "string"
-								},
-								"brand": {
-									"type": "string"
-								},
-								"contact": {
-									"type": "string"
-								},
-								"legal": {
-									"type": "string"
-								},
-								"days": {
-									"type": "string"
-								},
-								"address": {
-									"type": "string"
-								},
-								"href": {
-									"type": "string",
-									"description": "Target of this block's action: #fragment, /path or https URL. A link the author names for a section goes on that section's block."
-								},
-								"items": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"label": {
-												"type": "string",
-												"description": "Row label, metric name, chart x label, nav link, or event text."
-											},
-											"value": {
-												"type": "string",
-												"description": "Display figure, e.g. 128 or 94%. Metrics, overview, chart, menu only."
-											},
-											"note": {
-												"type": "string",
-												"description": "Delta, status, or time, e.g. +12% or 2 h ago."
-											},
-											"detail": {
-												"type": "string",
-												"description": "Secondary line, e.g. who and which project."
-											},
-											"group": {
-												"type": "string",
-												"description": "Sidenav only: group heading for this link, e.g. Workspace."
-											},
-											"icon": {
-												"type": "string",
-												"description": "A Lucide name from catalogSources.icons, on rows whose slot renders an icon (features). The host validates it against the block's published props schema; other rows ignore it."
-											}
-										},
-										"required": [
-											"label"
-										]
-									}
-								},
-								"variant": {
-									"type": "string",
-									"description": "Catalog variant of this block: one of catalogSources.blocks[<its catalog block>].variants. Without catalogBlock the block renders as the screen's block of this kind, so use that block's variants or also set catalogBlock. The host rejects unknown variants with the allowed list; omit for the catalog default."
-								},
-								"catalogBlock": {
-									"type": "string",
-									"description": "Optional Stock catalog block (block.<label> or a catalog asset id). Default: the block of this kind on the chosen screen."
-								},
-								"edit": {
-									"type": "boolean",
-									"description": "Follow-up turns on currentPage only: true on blocks the author asked to change or add. Other existing blocks keep their copy and rows."
-								}
-							},
-							"required": [
-								"kind",
-								"title"
-							]
-						}
-					},
-					"demoData": {
-						"type": "boolean",
-						"description": "Records whether the author explicitly asked for demo, fake, sample, mock or test data (in any language): true if asked, false if they asked to remove it or use real data, omit otherwise. The host never generates data: when true YOU must write the rows in blocks[].items (overview, metrics, chart, activity)."
-					},
-					"requireBlocks": {
-						"type": "array",
-						"description": "Catalog block labels the author explicitly asked for (search_catalog labels.blocks, e.g. sidenav for a sidebar or app shell, bottomnav, sitemap for a footer). The host only adds them from Stock screens that contain them.",
-						"items": {
-							"type": "string"
-						}
-					},
-					"newPage": {
-						"type": "boolean",
-						"description": "true only when the author asked for a new page instead of editing currentPage."
-					},
-					"remove": {
-						"type": "array",
-						"description": "Follow-up turns only: block kinds the author explicitly asked to remove. Never remove anything else.",
-						"items": {
-							"type": "string",
-							"x-buildy-enum": "page.contentKinds"
-						}
-					},
-					"edits": {
-						"type": "array",
-						"items": {
-							"type": "object",
-							"properties": {
-								"kind": {
-									"type": "string",
-									"enum": [
-										"nav",
-										"hero",
-										"features",
-										"menu",
-										"hours",
-										"cta",
-										"footer"
-									]
-								},
-								"field": {
-									"type": "string",
-									"enum": [
-										"eyebrow",
-										"headline",
-										"lede",
-										"action",
-										"note",
-										"brand",
-										"contact",
-										"legal",
-										"days",
-										"address"
-									]
-								},
-								"value": {
-									"type": "string",
-									"description": "Replacement copy only, never the author's instruction sentence."
-								},
-								"path": {
-									"type": "string",
-									"description": "Optional kind.field path when kind/field are omitted."
-								},
-								"slot": {
-									"type": "string"
-								}
-							},
-							"required": [
-								"value"
-							]
-						}
-					}
-				},
-				"required": [
-					"brief",
-					"screenId",
-					"locale",
-					"blocks"
-				]
-			}
-		},
-		{
-			"name": "edit_page",
-			"modes": [
-				"build"
-			],
-			"description": "Edit currentPage with page-patch/v1 operations (https://schema.buildy.tw/page-patch.schema.json). The host validates every op against the block slots and the Stock catalog and returns an unapplied proposal; a rejected op returns code and path, fix that op and call again. Never send a layout.",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"ops": {
-						"type": "array",
-						"description": "page-patch/v1 operations, applied in order, all or nothing. set {blockId, field: title|summary|copy key, value (null removes a copy key)}; set_items {blockId, items} replaces rows; add {kind, at?, title, variant?, copy?, items?}; replace {blockId, kind, title, variant?, copy?, items?}; remove {blockId}; move {blockId, to}; set_page {field: title|seo.title|seo.description, value}; set_variant {blockId, variant (a catalog variant of the block from get_block_details; null = catalog default)}. Use block ids from currentPage.blocks and only the slots listed there.",
-						"items": {
-							"type": "object",
-							"properties": {
-								"op": {
-									"type": "string",
-									"enum": [
-										"set",
-										"set_items",
-										"add",
-										"replace",
-										"remove",
-										"move",
-										"set_page",
-										"set_variant"
-									]
-								},
-								"blockId": {
-									"type": "string"
-								},
-								"field": {
-									"type": "string"
-								},
-								"value": {
-									"type": [
-										"string",
-										"null"
-									]
-								},
-								"kind": {
-									"type": "string"
-								},
-								"at": {
-									"type": "integer"
-								},
-								"to": {
-									"type": "integer"
-								},
-								"title": {
-									"type": "string"
-								},
-								"variant": {
-									"type": [
-										"string",
-										"null"
-									]
-								},
-								"copy": {
-									"type": "object",
-									"description": "Copy keys the kind renders (slots).",
-									"additionalProperties": {
-										"type": "string"
-									}
-								},
-								"items": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"label": {
-												"type": "string"
-											},
-											"detail": {
-												"type": "string"
-											},
-											"value": {
-												"type": "string"
-											},
-											"note": {
-												"type": "string"
-											},
-											"group": {
-												"type": "string"
-											},
-											"icon": {
-												"type": "string",
-												"description": "Feature rows: a Lucide icon name (get_block_details lists them)."
-											}
-										},
-										"required": [
-											"label"
-										]
-									}
-								}
-							},
-							"required": [
-								"op"
-							]
-						}
-					},
-					"baseRevision": {
-						"type": "integer"
-					},
-					"demoData": {
-						"type": "boolean",
-						"description": "Same typed intent as propose_layout: true only when the author asked for demo data."
-					},
-					"demoLabel": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"ops"
-				]
-			}
-		},
-		{
-			"name": "get_skill",
-			"modes": [
-				"build"
-			],
-			"description": "Read an enabled allowlisted skill by id.",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"id": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"id"
-				]
-			}
-		}
-	]
-};
-});
-
-__def("packages/builder-core/src/agent/agent-tools.ts", function (exports) {
-const raw = __req("packages/builder-core/src/agent/agent-tools.v1.json").default;
-const { facetVocabulary } = __req("packages/builder-core/src/catalog/search.ts");
-const { blockLabelVocabulary, vocabularyValues } = __req("packages/builder-core/src/catalog/text-search.ts");
-const { contentKinds } = __req("packages/builder-core/src/content.ts");
-const AGENT_MODES = ["ask", "build"] as const;
-const agentToolsDocument = raw as unknown as AgentToolsDocument;
-const AGENT_TOOLS_VERSION = `${agentToolsDocument.format}/${agentToolsDocument.version}`;
-
-function isAgentMode(value: unknown): value is AgentMode {
-	return typeof value === "string" && (AGENT_MODES as string[]).includes(value);
-}
-
-/** Value lists named by `x-buildy-enum`: generated from the pinned catalog and the page contract, never typed here. */
-function agentEnumSource(name: string): string[] {
-	switch (name) {
-		case "catalog.site":
-			return [...facetVocabulary().site];
-		case "catalog.section":
-			return [...facetVocabulary().section];
-		case "catalog.job":
-			return [...facetVocabulary().job];
-		case "catalog.industry":
-			return vocabularyValues("industry");
-		case "catalog.blocks":
-			return blockLabelVocabulary();
-		case "page.contentKinds":
-			return contentKinds();
-		default:
-			throw new Error(`agent-tools: unknown x-buildy-enum source ${name}`);
-	}
-}
-
-/** Fill `x-buildy-enum` markers and drop every `x-*` keyword: a plain JSON Schema the provider accepts. */
-function resolveAgentSchema<T>(node: T): T {
-	if (Array.isArray(node)) return node.map((item) => resolveAgentSchema(item)) as T;
-	if (typeof node !== "object" || node === null) return node;
-	const out: Record<string, unknown> = {};
-	for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
-		if (key === "x-buildy-enum") {
-			out.enum = agentEnumSource(String(value));
-			continue;
-		}
-		if (key.startsWith("x-")) continue;
-		out[key] = resolveAgentSchema(value);
-	}
-	return out as T;
-}
-
-function agentTool(name: string): AgentToolDefinition | null {
-	return agentToolsDocument.tools.find((tool) => tool.name === name) ?? null;
-}
-
-/** Tool names one mode offers, in file order. */
-function agentToolNames(mode: AgentMode): string[] {
-	return agentToolsDocument.tools.filter((tool) => tool.modes.includes(mode)).map((tool) => tool.name);
-}
-
-function toolOffersMode(name: string, mode: AgentMode): boolean {
-	return Boolean(agentTool(name)?.modes.includes(mode));
-}
-
-/** Resolved parameters (object schema) of one tool. */
-function agentToolParameters(name: string): JsonSchemaObject {
-	const tool = agentTool(name);
-	if (!tool) throw new Error(`agent-tools: unknown tool ${name}`);
-	return resolveAgentSchema(tool.parameters);
-}
-
-const RESOLVED = new Map<string, OpenAiFunctionTool[]>();
-
-/** OpenAI-compatible tool list of a mode (optionally narrowed to `only`). Cached per mode and subset. */
-function agentOpenAiTools(mode: AgentMode, only?: string[]): OpenAiFunctionTool[] {
-	const key = `${mode}:${only ? only.join(",") : "*"}`;
-	const hit = RESOLVED.get(key);
-	if (hit) return hit;
-	const tools = agentToolsDocument.tools
-		.filter((tool) => tool.modes.includes(mode) && (!only || only.includes(tool.name)))
-		.map((tool) => ({
-			type: "function" as const,
-			function: {
-				name: tool.name,
-				description: tool.descriptionByMode?.[mode] ?? tool.description,
-				parameters: resolveAgentSchema(tool.parameters)
-			}
-		}));
-	RESOLVED.set(key, tools);
-	return tools;
-}
-
-function properties(name: string): Record<string, unknown> {
-	return (agentToolParameters(name).properties ?? {}) as Record<string, unknown>;
-}
-
-/** search_catalog parameter properties (facet enums from the pinned catalog). */
-function catalogToolParameterSchema(): Record<string, Record<string, unknown>> {
-	return properties("search_catalog") as Record<string, Record<string, unknown>>;
-}
-
-/** edit_page parameter properties (page-patch/v1 ops). */
-function editPageParameterSchema(): Record<string, unknown> {
-	return properties("edit_page");
-}
-
-const PROPOSE_FRAME = new Set(["brief", "scenarioId", "screenId", "expectedRevision", "edits"]);
-
-/** propose_layout content properties (title, locale, blocks, typed intent), without the call frame. */
-function proposeContentParameterSchema(): Record<string, unknown> {
-	return Object.fromEntries(Object.entries(properties("propose_layout")).filter(([key]) => !PROPOSE_FRAME.has(key)));
-}
-
-exports["AGENT_MODES"] = AGENT_MODES;
-exports["agentToolsDocument"] = agentToolsDocument;
-exports["AGENT_TOOLS_VERSION"] = AGENT_TOOLS_VERSION;
-exports["isAgentMode"] = isAgentMode;
-exports["agentEnumSource"] = agentEnumSource;
-exports["resolveAgentSchema"] = resolveAgentSchema;
-exports["agentTool"] = agentTool;
-exports["agentToolNames"] = agentToolNames;
-exports["toolOffersMode"] = toolOffersMode;
-exports["agentToolParameters"] = agentToolParameters;
-exports["agentOpenAiTools"] = agentOpenAiTools;
-exports["catalogToolParameterSchema"] = catalogToolParameterSchema;
-exports["editPageParameterSchema"] = editPageParameterSchema;
-exports["proposeContentParameterSchema"] = proposeContentParameterSchema;
-
-});
-
-__def("packages/builder-core/src/agent/reply.ts", function (exports) {
-const { askBlockCard } = __req("packages/builder-core/src/catalog/details.ts");
-function isAgentTextReply(value: unknown): value is AgentTextReply {
-	return Boolean(value && typeof value === "object" && (value as { reply?: unknown }).reply === "text" && (value as { ok?: unknown }).ok === true);
-}
-
-const MAX_TEXT = 12_000;
-const MAX_CARDS = 10;
-
-function agentTextReply(mode: AgentMode, text: string, blocks: string[], plan?: PagePlan | null): AgentTextReply {
-	return {
-		ok: true,
-		reply: "text",
-		mode,
-		text: text.trim().slice(0, MAX_TEXT),
-		blocks: [...new Set(blocks)].slice(0, MAX_CARDS),
-		...(plan ? { plan } : {})
-	};
-}
-
-/** Cards of the blocks a reply referenced, recomputed from the bundled catalog; unknown specs are dropped. */
-function askBlockCards(specs: unknown[] | undefined): AskBlockCard[] {
-	const out: AskBlockCard[] = [];
-	for (const spec of specs ?? []) {
-		if (typeof spec !== "string") continue;
-		const card = askBlockCard(spec);
-		if (card && !out.some((row) => row.spec === card.spec)) out.push(card);
-		if (out.length >= MAX_CARDS) break;
-	}
-	return out;
-}
-
-exports["isAgentTextReply"] = isAgentTextReply;
-exports["agentTextReply"] = agentTextReply;
-exports["askBlockCards"] = askBlockCards;
-
-});
-
-__def("packages/builder-core/src/brief.ts", function (exports) {
-const { SCENARIO_IDS } = __req("packages/builder-core/src/copy.ts");
-function isScenarioId(value: unknown): value is ScenarioId {
-	return typeof value === "string" && (SCENARIO_IDS as string[]).includes(value);
-}
-
-/**
- * Short page/hero title from a brief. Drops synthetic QA prefixes.
- * Does not invent a business name that is not in the text.
- */
-/** Occasion words already in the brief. Null when none — do not invent a holiday. */
-function occasionFromBrief(brief: string): string | null {
-	if (/\bnew year\b/i.test(brief)) return "New Year";
-	return null;
-}
-
-/** Keep the saved title unless the follow-up actually names or renames the page. */
-function titleFromSavedEdit(brief: string, current: string): string {
-	const named = brief.match(/\bnamed\s+["']?([^"'.,\n]+)/i);
-	if (named?.[1]?.trim()) return named[1].trim().slice(0, 80);
-	const forMatch = brief.match(/\bfor\s+([^.,\n]+?)(?:,|\s+a\s+|\s+an\s+)/i);
-	if (forMatch?.[1]) {
-		const name = forMatch[1].replace(/\b(?:a|an|the)\s+new year\s+/i, "").trim();
-		if (name && name.split(/\s+/).length <= 8) return name.slice(0, 80);
-	}
-	const rename = brief.match(/\b(?:rename(?:d)?|title|called)\s+(?:to|as|:)\s+["']?([^"'.,\n]+)/i);
-	if (rename?.[1]?.trim()) return rename[1].trim().slice(0, 80);
-	return current;
-}
-
-function displayTitleFromBrief(brief: string, fallback = "Draft page"): string {
-	const trimmed = brief.trim();
-	if (!trimmed) return fallback;
-	const named = trimmed.match(/\bnamed\s+["']?([^"'.,\n]+)/i);
-	if (named?.[1]) {
-		const name = named[1].trim();
-		if (name) return name.slice(0, 80);
-	}
-	const forMatch = trimmed.match(/\bfor\s+([^.,\n]+?)(?=,|\s+a\s+|\s+an\s+|\.|$)/i);
-	if (forMatch?.[1]) {
-		const name = forMatch[1].replace(/\b(?:a|an|the)\s+new year\s+/i, "").trim();
-		if (
-			name &&
-			name.split(/\s+/).length <= 8 &&
-			!/^(?:the|a|an|this|that|existing|real)\b/i.test(name)
-		) {
-			return name.slice(0, 80);
-		}
-	}
-	const withoutPrefix = trimmed
-		.replace(/^qa\s+\w+(?:\s+\w+)?\s+\d{2,4}:\s*/i, "")
-		.replace(/^(?:please\s+)?create\s+(?:a\s+)?(?:new year\s+)?/i, "")
-		.trim();
-	const first = (withoutPrefix.split(/[.!?]/)[0] ?? withoutPrefix).trim();
-	if (
-		!first ||
-		/\b(?:create|build|make|using existing|no invented|keep all other)\b/i.test(first) ||
-		/^(?:a\s+)?(?:landing(?:\s+pages?)?|dashboard|website|page)\b/i.test(first)
-	) {
-		return fallback;
-	}
-	if (first.split(/\s+/).length > 8) return fallback;
-	return first.slice(0, 80) || fallback;
-}
-
-exports["isScenarioId"] = isScenarioId;
-exports["occasionFromBrief"] = occasionFromBrief;
-exports["titleFromSavedEdit"] = titleFromSavedEdit;
-exports["displayTitleFromBrief"] = displayTitleFromBrief;
 
 });
 
@@ -29779,6 +28794,16 @@ function resolvedScenario(ctx: ProposalContext): ScenarioId | null {
 	return null;
 }
 
+/**
+ * Whether a fresh page can start from this Stock screen with no scenario attached and no model step (the screen
+ * check of resolveCatalogScreen with the screen's own scenario). The Blocks feed reads it as `supported`.
+ */
+function screenStartable(screen: CatalogScreen): boolean {
+	const compat = compatibilityFor(screen);
+	if (!compat.compatible && !compat.partial) return false;
+	return screenSupport(screen).supported || resolvedScenario({ screenId: screen.screenId, scenarioId: null } as ProposalContext) === "dashboard";
+}
+
 function requiredKinds(ctx: ProposalContext): PageBlockKind[] {
 	return ctx.content?.requireBlocks ?? [];
 }
@@ -30527,6 +29552,7 @@ function naturalIndexFor(kind: PageBlockKind, blocks: PageBlock[]): number {
 
 
 exports["isClearPageCommand"] = isClearPageCommand;
+exports["screenStartable"] = screenStartable;
 exports["recordedScreenId"] = recordedScreenId;
 exports["screenIdFromPage"] = screenIdFromPage;
 exports["inheritedScreenId"] = inheritedScreenId;
@@ -30538,6 +29564,994 @@ exports["rejectFabricatedLayout"] = rejectFabricatedLayout;
 exports["stockBlockFor"] = stockBlockFor;
 exports["naturalIndexFor"] = naturalIndexFor;
 exports["CHILD_ONLY_KINDS"] = CHILD_ONLY_KINDS;
+
+});
+
+__def("packages/builder-core/src/catalog/stock-search.ts", function (exports) {
+const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
+const { blockAssetUrl, blockThumbUrl, screenThumbUrl, stockAssetUrl } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { screenStartable } = __req("packages/builder-core/src/assemble.ts");
+const { getScreenById, searchCatalog } = __req("packages/builder-core/src/catalog/search.ts");
+const { catalogSourceFor } = __req("packages/builder-core/src/catalog/sources.ts");
+const STOCK_SEARCH_FORMAT = "stock-search/v1";
+const STOCK_SEARCH_PAGE_SIZE = 8;
+const STOCK_SEARCH_MAX_PAGE_SIZE = 48;
+
+const STOCK_SEARCH_FACETS: StockSearchFacet[] = ["type", "role", "spec", "site", "variant"];
+
+type Row = StockSearchItem & { text: string; score: number };
+
+const lower = (value: string) => value.toLowerCase();
+const words = (q: string) => lower(q).split(/\s+/).filter(Boolean);
+
+/** Block label (blockId) of a screen slot -> its index entry. */
+function entryByLabel(): Map<string, CatalogBlockIndexEntry> {
+	return new Map(catalogSnapshot.blockIndex.map((entry) => [entry.blockId, entry]));
+}
+
+let blockRowsCache: Row[] | null = null;
+
+/** Every Stock block variant as a row; sites = the sites of the screens whose layout uses the block. */
+function blockRows(): Row[] {
+	if (blockRowsCache) return blockRowsCache;
+	const byLabel = entryByLabel();
+	const sites = new Map<string, Set<string>>();
+	for (const screen of catalogSnapshot.screens) {
+		for (const slot of screen.layout ?? []) {
+			const entry = byLabel.get(slot.block);
+			if (!entry) continue;
+			const set = sites.get(entry.spec) ?? new Set<string>();
+			for (const site of screen.labels.site) set.add(site);
+			sites.set(entry.spec, set);
+		}
+	}
+	const rows: Row[] = [];
+	for (const entry of catalogSnapshot.blockIndex) {
+		if (!entry.available) continue;
+		const role = entry.rendererCompatible && entry.rendererKind ? entry.rendererKind : null;
+		const fallback = catalogSourceFor(entry.spec)?.defaultVariant ?? entry.variants[0];
+		const blockSites = [...(sites.get(entry.spec) ?? [])].sort();
+		for (const variant of entry.variants) {
+			rows.push({
+				type: "block",
+				id: `${entry.spec}/${variant}`,
+				spec: entry.spec,
+				variant,
+				title: entry.title,
+				subtitle: variant,
+				role,
+				roles: role ? [role] : [],
+				sites: blockSites,
+				isDefault: variant === fallback,
+				supported: role !== null,
+				thumb: blockThumbUrl(entry.spec, variant),
+				url: blockAssetUrl(entry.spec, variant) ?? stockAssetUrl(`${entry.spec}/${variant}`),
+				text: lower(`${entry.spec} ${entry.blockId} ${entry.title} ${variant} ${role ?? ""} ${(entry.jobs ?? []).join(" ")} ${blockSites.join(" ")}`),
+				score: 0
+			});
+		}
+	}
+	// Blocks with a page section renderer (they can be added to a page) first, each group in catalog order.
+	rows.sort((a, b) => Number(!a.role) - Number(!b.role));
+	blockRowsCache = rows;
+	return rows;
+}
+
+function screenRow(screen: CatalogScreen, byLabel: Map<string, CatalogBlockIndexEntry>): Row {
+	const roles = [
+		...new Set(
+			(screen.layout ?? [])
+				.map((slot) => byLabel.get(slot.block))
+				.map((entry) => (entry?.rendererCompatible && entry.rendererKind ? entry.rendererKind : null))
+				.filter((kind): kind is string => Boolean(kind))
+		)
+	].sort();
+	return {
+		type: "screen",
+		id: screen.screenId,
+		spec: screen.spec,
+		variant: screen.variant,
+		title: screen.title,
+		subtitle: screen.subtitle,
+		role: null,
+		roles,
+		sites: [...screen.labels.site],
+		isDefault: false,
+		supported: screenStartable(screen),
+		thumb: screenThumbUrl(screen.screenId),
+		url: stockAssetUrl(screen.screenId),
+		text: lower(`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`),
+		score: 0
+	};
+}
+
+/**
+ * Screens in scope matching q: the catalog text index first (titles, labels, facet values in the catalog's locales
+ * and synonyms, scored), then plain substring hits on id, title and labels; with no q, the catalog order.
+ */
+function screenRows(q: string, scope: StockSearchQuery["scope"]): Row[] {
+	const byLabel = entryByLabel();
+	const filter = { ...(scope ?? {}), type: "screen" as const };
+	const scoped = searchCatalog({ ...filter, page: 1, pageSize: 1000 }).items.map((hit) => getScreenById(hit.screenId)!);
+	if (!q) return scoped.map((screen) => screenRow(screen, byLabel));
+	const scored = searchCatalog({ ...filter, q, page: 1, pageSize: 1000 }).items.map((hit) => getScreenById(hit.screenId)!);
+	const seen = new Set(scored.map((screen) => screen.screenId));
+	const needle = lower(q);
+	const rows = scored.map((screen) => screenRow(screen, byLabel));
+	for (const screen of scoped) {
+		if (seen.has(screen.screenId)) continue;
+		const row = screenRow(screen, byLabel);
+		if (row.text.includes(needle)) rows.push(row);
+	}
+	return rows;
+}
+
+/** Blocks matching every word of q, the ones that hit the title, spec or role first (catalog order otherwise). */
+function blockMatches(q: string): Row[] {
+	const rows = blockRows();
+	const tokens = words(q);
+	if (!tokens.length) return rows;
+	const out: Row[] = [];
+	for (const row of rows) {
+		if (!tokens.every((token) => row.text.includes(token))) continue;
+		const head = lower(`${row.spec} ${row.title} ${row.role ?? ""}`);
+		out.push({ ...row, score: tokens.filter((token) => head.includes(token)).length });
+	}
+	return out.sort((a, b) => b.score - a.score);
+}
+
+function valuesOf(row: Row, facet: StockSearchFacet): string[] {
+	switch (facet) {
+		case "type":
+			return [row.type];
+		case "role":
+			return row.roles;
+		case "spec":
+			return [row.spec];
+		case "site":
+			return row.sites;
+		case "variant":
+			return [row.variant];
+	}
+}
+
+const clean = (value: string | null | undefined): string | null => (typeof value === "string" && value.trim() ? value.trim() : null);
+
+function stockSearch(input: StockSearchQuery = {}): StockSearchResult {
+	const q = (input.q ?? "").trim();
+	const type = input.type === "screen" || input.type === "block" ? input.type : null;
+	const spec = clean(input.spec);
+	const query: StockSearchResult["query"] = {
+		q,
+		type,
+		role: clean(input.role),
+		spec,
+		site: clean(input.site),
+		variant: spec ? clean(input.variant) : null,
+		scope: input.scope && Object.keys(input.scope).length ? { ...input.scope } : null
+	};
+	const active: Partial<Record<StockSearchFacet, string>> = {};
+	if (query.type) active.type = query.type;
+	if (query.role) active.role = query.role;
+	if (query.spec) active.spec = query.spec;
+	if (query.site) active.site = query.site;
+	if (query.variant) active.variant = query.variant;
+
+	// Blocks first: the Build feed is about blocks; type=screen gives the home Stock list alone.
+	const pool: Row[] = [...blockMatches(q), ...screenRows(q, query.scope)];
+	const passes = (row: Row, except: StockSearchFacet | null) =>
+		STOCK_SEARCH_FACETS.every((facet) => facet === except || !active[facet] || valuesOf(row, facet).includes(active[facet]!));
+
+	const facets = {} as StockSearchResult["facets"];
+	for (const facet of STOCK_SEARCH_FACETS) {
+		if (facet === "variant" && !query.spec) {
+			facets.variant = [];
+			continue;
+		}
+		const counts = new Map<string, number>();
+		for (const row of pool) {
+			if (!passes(row, facet)) continue;
+			for (const value of valuesOf(row, facet)) counts.set(value, (counts.get(value) ?? 0) + 1);
+		}
+		if (active[facet] && !counts.has(active[facet]!)) counts.set(active[facet]!, 0);
+		const list = [...counts.entries()].map(([value, count]) => ({ value, count }));
+		// spec and variant keep the catalog order; the others go by count.
+		facets[facet] = facet === "spec" || facet === "variant" ? list : list.sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+	}
+
+	const matched = pool.filter((row) => passes(row, null));
+	const size = Math.round(input.pageSize ?? STOCK_SEARCH_PAGE_SIZE);
+	const pageSize = Number.isFinite(size) ? Math.min(Math.max(size, 1), STOCK_SEARCH_MAX_PAGE_SIZE) : STOCK_SEARCH_PAGE_SIZE;
+	const total = matched.length;
+	const pageCount = Math.max(1, Math.ceil(total / pageSize));
+	const wanted = Math.round(input.page ?? 1);
+	const page = Math.min(Math.max(Number.isFinite(wanted) ? wanted : 1, 1), pageCount);
+	const items = matched.slice((page - 1) * pageSize, page * pageSize).map(({ text: _text, score: _score, ...item }) => item);
+	return {
+		format: STOCK_SEARCH_FORMAT,
+		query,
+		page,
+		pageSize,
+		pageCount,
+		total,
+		items,
+		facets,
+		catalog: { digest: catalogSnapshot.sourceDigest, commit: catalogSnapshot.pinnedCommit }
+	};
+}
+
+exports["STOCK_SEARCH_FORMAT"] = STOCK_SEARCH_FORMAT;
+exports["STOCK_SEARCH_PAGE_SIZE"] = STOCK_SEARCH_PAGE_SIZE;
+exports["STOCK_SEARCH_MAX_PAGE_SIZE"] = STOCK_SEARCH_MAX_PAGE_SIZE;
+exports["STOCK_SEARCH_FACETS"] = STOCK_SEARCH_FACETS;
+exports["stockSearch"] = stockSearch;
+
+});
+
+__def("packages/builder-core/src/agent/agent-tools.v1.json", function (exports) {
+  exports.default = {
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"format": "buildy-agent-tools",
+	"version": 1,
+	"description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
+	"modes": {
+		"ask": {
+			"description": "Read-only conversation about the catalog and the page. The page never changes and no proposal is created. Recommended page changes go to propose_plan (a checked plan the author may run with Apply in Build). Tool choice auto; the model's final text is the answer.",
+			"toolChoice": "auto"
+		},
+		"build": {
+			"description": "Create or edit the page. Tool choice auto: a text-only answer is shown and creates no proposal; a successful propose_layout or edit_page creates one pending proposal the author applies.",
+			"toolChoice": "auto"
+		}
+	},
+	"enumSources": {
+		"catalog.site": "Stock facet vocabulary: site type",
+		"catalog.section": "Stock facet vocabulary: section",
+		"catalog.job": "Stock facet vocabulary: job",
+		"catalog.industry": "Stock search vocabulary: industry",
+		"catalog.blocks": "Stock search vocabulary: block labels",
+		"page.contentKinds": "Page block kinds that take content from the model"
+	},
+	"tools": [
+		{
+			"name": "search_catalog",
+			"modes": [
+				"ask",
+				"build"
+			],
+			"description": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored items and pick.screenId; then call propose_layout. Never a dead end: when no renderable screen matches every facet the host drops the fewest facets and says which in relaxed; zero or weak hits (and browse=true) add facets, the counts of renderable screens per site, section, job, industry and block label for drill-down. Do not repeat a search that returned items: pick one and call propose_layout.",
+			"descriptionByMode": {
+				"ask": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored screens with their block labels. Read-only."
+			},
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"q": {
+						"type": "string",
+						"description": "Free text in catalog terms (English catalog words work best, e.g. sidebar, shell, kanban, pricing). Matched against Stock titles, subtitles, block names and facet labels."
+					},
+					"site": {
+						"type": "string",
+						"x-buildy-enum": "catalog.site",
+						"description": "Site type: landing (one conversion page), website (multi-page site home), app, docs, shop, blog."
+					},
+					"section": {
+						"type": "string",
+						"x-buildy-enum": "catalog.section"
+					},
+					"job": {
+						"type": "string",
+						"x-buildy-enum": "catalog.job"
+					},
+					"industry": {
+						"type": "string",
+						"x-buildy-enum": "catalog.industry"
+					},
+					"blocks": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"x-buildy-enum": "catalog.blocks"
+						},
+						"description": "Block labels every screen must contain, e.g. [\"sidenav\"] for a built-in sidebar."
+					},
+					"page": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"browse": {
+						"type": "boolean",
+						"description": "true: also return facets (renderable screen counts per facet value for this filter) to drill down with another call."
+					}
+				}
+			}
+		},
+		{
+			"name": "get_block",
+			"modes": [
+				"ask"
+			],
+			"description": "Read one Stock catalog block: title, registry item, every variant with the props that set it apart from the default, row and text fields from the published props schema, and its Stock link. id is a block spec (block.features), a label (features) or an asset id (block.features/grid). Read-only.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Block spec, label or catalog asset id from catalogBlocks or search results."
+					}
+				},
+				"required": [
+					"id"
+				]
+			}
+		},
+		{
+			"name": "propose_plan",
+			"modes": [
+				"ask"
+			],
+			"description": "Ask only. When you recommend changes to currentPage, call this once with the changes as page-patch/v1 ops on currentPage block ids, alongside your text answer: set_variant {blockId, variant from get_block}; set {blockId, field (title or a key of currentPage.blocks[].copyKeys; when copyKeys has headline, headline is the visible heading and title only names the block in the section list), value}; set_items {blockId, items}; add {kind, title, variant?, copy?}; replace {blockId, catalogBlock, variant?}: another Stock catalog block of the same kind in the block's place (e.g. block.hero -> block.storehero; get_block lists its variants; the host carries the text fields the new block renders and names the rest as dropped); remove {blockId}; move {blockId, to}. Each op gets a short reason. The host checks every op against the page and the pinned catalog and returns valid op ids and invalid ops with allowed values; fix invalid ops once with a second call. Nothing changes: the author sees a plan card and may run the ops they tick with Apply in Build.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"summary": {
+						"type": "string",
+						"description": "One line: what the plan does, in the author's language."
+					},
+					"ops": {
+						"type": "array",
+						"maxItems": 24,
+						"items": {
+							"type": "object",
+							"properties": {
+								"op": {
+									"type": "string",
+									"enum": [
+										"set_variant",
+										"set",
+										"set_items",
+										"add",
+										"replace",
+										"remove",
+										"move"
+									]
+								},
+								"blockId": {
+									"type": "string",
+									"description": "Id of a block on currentPage (currentPage.blocks[].id)."
+								},
+								"field": {
+									"type": "string"
+								},
+								"value": {
+									"type": [
+										"string",
+										"null"
+									]
+								},
+								"kind": {
+									"type": "string"
+								},
+								"catalogBlock": {
+									"type": "string",
+									"description": "replace: the Stock catalog block (block.<label>) that takes the block's place; same kind as the block."
+								},
+								"at": {
+									"type": "integer"
+								},
+								"to": {
+									"type": "integer"
+								},
+								"title": {
+									"type": "string"
+								},
+								"variant": {
+									"type": [
+										"string",
+										"null"
+									]
+								},
+								"copy": {
+									"type": "object",
+									"description": "Copy keys the kind renders (slots).",
+									"additionalProperties": {
+										"type": "string"
+									}
+								},
+								"items": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"label": {
+												"type": "string"
+											},
+											"detail": {
+												"type": "string"
+											},
+											"value": {
+												"type": "string"
+											},
+											"note": {
+												"type": "string"
+											},
+											"group": {
+												"type": "string"
+											},
+											"icon": {
+												"type": "string",
+												"description": "Feature rows: a Lucide icon name (get_block_details lists them)."
+											}
+										},
+										"required": [
+											"label"
+										]
+									}
+								},
+								"reason": {
+									"type": "string",
+									"description": "Why, in one short sentence in the author's language."
+								}
+							},
+							"required": [
+								"op"
+							]
+						}
+					}
+				},
+				"required": [
+					"ops"
+				]
+			}
+		},
+		{
+			"name": "get_block_details",
+			"modes": [
+				"build"
+			],
+			"description": "Optional. Load schema for one unknown block id. Do not call this for every shortlist block. Leave a step for propose_layout.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"variant": {
+						"type": "string"
+					},
+					"target": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id"
+				]
+			}
+		},
+		{
+			"name": "propose_layout",
+			"modes": [
+				"build"
+			],
+			"description": "Assemble a Page from screenId (the search pick) and your typed intent (locale, demoData, requireBlocks). Always include blocks: one entry per block kind with title and lede in the page language, nav/sidenav items naming the sections; with demoData=true also items (rows) for overview, metrics, chart and activity. Does not apply. Follow-up copy uses edits. A rejected block choice returns code, path blocks[i].variant or blocks[i].catalogBlock, and fix (the block's kind, the catalog block it renders as, the rejected value, allowedVariants, defaultVariant, catalogBlocksWithVariant); fix only that block. The same error twice on one block, or a run that ends rejected, keeps every other block and uses the catalog default for that block (said in warnings).",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"brief": {
+						"type": "string"
+					},
+					"scenarioId": {
+						"type": "string",
+						"enum": [
+							"dashboard",
+							"landing",
+							"website"
+						]
+					},
+					"screenId": {
+						"type": "string"
+					},
+					"expectedRevision": {
+						"type": "integer"
+					},
+					"title": {
+						"type": "string",
+						"description": "Page title in the page language."
+					},
+					"locale": {
+						"type": "string",
+						"description": "BCP 47 language of the author's request, e.g. ru or en. All copy uses it."
+					},
+					"demoLabel": {
+						"type": "string",
+						"description": "Only when the author asked for demo/fake/sample data: a short marker in the page language, e.g. Demo data."
+					},
+					"blocks": {
+						"type": "array",
+						"description": "Copy per Stock block kind in the page language. The host keeps the Stock block order and falls back to catalog copy for missing fields. Data items (overview, metrics, chart, activity) are kept only when the author explicitly asked for demo data.",
+						"items": {
+							"type": "object",
+							"properties": {
+								"kind": {
+									"type": "string",
+									"x-buildy-enum": "page.contentKinds"
+								},
+								"title": {
+									"type": "string",
+									"description": "Visible section heading in the page language. Required."
+								},
+								"eyebrow": {
+									"type": "string"
+								},
+								"headline": {
+									"type": "string"
+								},
+								"lede": {
+									"type": "string"
+								},
+								"action": {
+									"type": "string",
+									"description": "Label of the block's button or link. On features it is the section link next to the heading (e.g. View all) and needs href on the same block."
+								},
+								"note": {
+									"type": "string"
+								},
+								"brand": {
+									"type": "string"
+								},
+								"contact": {
+									"type": "string"
+								},
+								"legal": {
+									"type": "string"
+								},
+								"days": {
+									"type": "string"
+								},
+								"address": {
+									"type": "string"
+								},
+								"href": {
+									"type": "string",
+									"description": "Target of this block's action: #fragment, /path or https URL. A link the author names for a section goes on that section's block."
+								},
+								"items": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"label": {
+												"type": "string",
+												"description": "Row label, metric name, chart x label, nav link, or event text."
+											},
+											"value": {
+												"type": "string",
+												"description": "Display figure, e.g. 128 or 94%. Metrics, overview, chart, menu only."
+											},
+											"note": {
+												"type": "string",
+												"description": "Delta, status, or time, e.g. +12% or 2 h ago."
+											},
+											"detail": {
+												"type": "string",
+												"description": "Secondary line, e.g. who and which project."
+											},
+											"group": {
+												"type": "string",
+												"description": "Sidenav only: group heading for this link, e.g. Workspace."
+											},
+											"icon": {
+												"type": "string",
+												"description": "A Lucide name from catalogSources.icons, on rows whose slot renders an icon (features). The host validates it against the block's published props schema; other rows ignore it."
+											}
+										},
+										"required": [
+											"label"
+										]
+									}
+								},
+								"variant": {
+									"type": "string",
+									"description": "Catalog variant of this block: one of catalogSources.blocks[<its catalog block>].variants. Without catalogBlock the block renders as the screen's block of this kind, so use that block's variants or also set catalogBlock. The host rejects unknown variants with the allowed list; omit for the catalog default."
+								},
+								"catalogBlock": {
+									"type": "string",
+									"description": "Optional Stock catalog block (block.<label> or a catalog asset id). Default: the block of this kind on the chosen screen."
+								},
+								"edit": {
+									"type": "boolean",
+									"description": "Follow-up turns on currentPage only: true on blocks the author asked to change or add. Other existing blocks keep their copy and rows."
+								}
+							},
+							"required": [
+								"kind",
+								"title"
+							]
+						}
+					},
+					"demoData": {
+						"type": "boolean",
+						"description": "Records whether the author explicitly asked for demo, fake, sample, mock or test data (in any language): true if asked, false if they asked to remove it or use real data, omit otherwise. The host never generates data: when true YOU must write the rows in blocks[].items (overview, metrics, chart, activity)."
+					},
+					"requireBlocks": {
+						"type": "array",
+						"description": "Catalog block labels the author explicitly asked for (search_catalog labels.blocks, e.g. sidenav for a sidebar or app shell, bottomnav, sitemap for a footer). The host only adds them from Stock screens that contain them.",
+						"items": {
+							"type": "string"
+						}
+					},
+					"newPage": {
+						"type": "boolean",
+						"description": "true only when the author asked for a new page instead of editing currentPage."
+					},
+					"remove": {
+						"type": "array",
+						"description": "Follow-up turns only: block kinds the author explicitly asked to remove. Never remove anything else.",
+						"items": {
+							"type": "string",
+							"x-buildy-enum": "page.contentKinds"
+						}
+					},
+					"edits": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"kind": {
+									"type": "string",
+									"enum": [
+										"nav",
+										"hero",
+										"features",
+										"menu",
+										"hours",
+										"cta",
+										"footer"
+									]
+								},
+								"field": {
+									"type": "string",
+									"enum": [
+										"eyebrow",
+										"headline",
+										"lede",
+										"action",
+										"note",
+										"brand",
+										"contact",
+										"legal",
+										"days",
+										"address"
+									]
+								},
+								"value": {
+									"type": "string",
+									"description": "Replacement copy only, never the author's instruction sentence."
+								},
+								"path": {
+									"type": "string",
+									"description": "Optional kind.field path when kind/field are omitted."
+								},
+								"slot": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"value"
+							]
+						}
+					}
+				},
+				"required": [
+					"brief",
+					"screenId",
+					"locale",
+					"blocks"
+				]
+			}
+		},
+		{
+			"name": "edit_page",
+			"modes": [
+				"build"
+			],
+			"description": "Edit currentPage with page-patch/v1 operations (https://schema.buildy.tw/page-patch.schema.json). The host validates every op against the block slots and the Stock catalog and returns an unapplied proposal; a rejected op returns code and path, fix that op and call again. Never send a layout.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"ops": {
+						"type": "array",
+						"description": "page-patch/v1 operations, applied in order, all or nothing. set {blockId, field: title|summary|copy key, value (null removes a copy key)}; set_items {blockId, items} replaces rows; add {kind, at?, title, variant?, copy?, items?}; replace {blockId, kind, title, variant?, copy?, items?}; remove {blockId}; move {blockId, to}; set_page {field: title|seo.title|seo.description, value}; set_variant {blockId, variant (a catalog variant of the block from get_block_details; null = catalog default)}. Use block ids from currentPage.blocks and only the slots listed there.",
+						"items": {
+							"type": "object",
+							"properties": {
+								"op": {
+									"type": "string",
+									"enum": [
+										"set",
+										"set_items",
+										"add",
+										"replace",
+										"remove",
+										"move",
+										"set_page",
+										"set_variant"
+									]
+								},
+								"blockId": {
+									"type": "string"
+								},
+								"field": {
+									"type": "string"
+								},
+								"value": {
+									"type": [
+										"string",
+										"null"
+									]
+								},
+								"kind": {
+									"type": "string"
+								},
+								"at": {
+									"type": "integer"
+								},
+								"to": {
+									"type": "integer"
+								},
+								"title": {
+									"type": "string"
+								},
+								"variant": {
+									"type": [
+										"string",
+										"null"
+									]
+								},
+								"copy": {
+									"type": "object",
+									"description": "Copy keys the kind renders (slots).",
+									"additionalProperties": {
+										"type": "string"
+									}
+								},
+								"items": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"label": {
+												"type": "string"
+											},
+											"detail": {
+												"type": "string"
+											},
+											"value": {
+												"type": "string"
+											},
+											"note": {
+												"type": "string"
+											},
+											"group": {
+												"type": "string"
+											},
+											"icon": {
+												"type": "string",
+												"description": "Feature rows: a Lucide icon name (get_block_details lists them)."
+											}
+										},
+										"required": [
+											"label"
+										]
+									}
+								}
+							},
+							"required": [
+								"op"
+							]
+						}
+					},
+					"baseRevision": {
+						"type": "integer"
+					},
+					"demoData": {
+						"type": "boolean",
+						"description": "Same typed intent as propose_layout: true only when the author asked for demo data."
+					},
+					"demoLabel": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"ops"
+				]
+			}
+		},
+		{
+			"name": "get_skill",
+			"modes": [
+				"build"
+			],
+			"description": "Read an enabled allowlisted skill by id.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id"
+				]
+			}
+		}
+	]
+};
+});
+
+__def("packages/builder-core/src/agent/agent-tools.ts", function (exports) {
+const raw = __req("packages/builder-core/src/agent/agent-tools.v1.json").default;
+const { facetVocabulary } = __req("packages/builder-core/src/catalog/search.ts");
+const { blockLabelVocabulary, vocabularyValues } = __req("packages/builder-core/src/catalog/text-search.ts");
+const { contentKinds } = __req("packages/builder-core/src/content.ts");
+const AGENT_MODES = ["ask", "build"] as const;
+const agentToolsDocument = raw as unknown as AgentToolsDocument;
+const AGENT_TOOLS_VERSION = `${agentToolsDocument.format}/${agentToolsDocument.version}`;
+
+function isAgentMode(value: unknown): value is AgentMode {
+	return typeof value === "string" && (AGENT_MODES as string[]).includes(value);
+}
+
+/** Value lists named by `x-buildy-enum`: generated from the pinned catalog and the page contract, never typed here. */
+function agentEnumSource(name: string): string[] {
+	switch (name) {
+		case "catalog.site":
+			return [...facetVocabulary().site];
+		case "catalog.section":
+			return [...facetVocabulary().section];
+		case "catalog.job":
+			return [...facetVocabulary().job];
+		case "catalog.industry":
+			return vocabularyValues("industry");
+		case "catalog.blocks":
+			return blockLabelVocabulary();
+		case "page.contentKinds":
+			return contentKinds();
+		default:
+			throw new Error(`agent-tools: unknown x-buildy-enum source ${name}`);
+	}
+}
+
+/** Fill `x-buildy-enum` markers and drop every `x-*` keyword: a plain JSON Schema the provider accepts. */
+function resolveAgentSchema<T>(node: T): T {
+	if (Array.isArray(node)) return node.map((item) => resolveAgentSchema(item)) as T;
+	if (typeof node !== "object" || node === null) return node;
+	const out: Record<string, unknown> = {};
+	for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+		if (key === "x-buildy-enum") {
+			out.enum = agentEnumSource(String(value));
+			continue;
+		}
+		if (key.startsWith("x-")) continue;
+		out[key] = resolveAgentSchema(value);
+	}
+	return out as T;
+}
+
+function agentTool(name: string): AgentToolDefinition | null {
+	return agentToolsDocument.tools.find((tool) => tool.name === name) ?? null;
+}
+
+/** Tool names one mode offers, in file order. */
+function agentToolNames(mode: AgentMode): string[] {
+	return agentToolsDocument.tools.filter((tool) => tool.modes.includes(mode)).map((tool) => tool.name);
+}
+
+function toolOffersMode(name: string, mode: AgentMode): boolean {
+	return Boolean(agentTool(name)?.modes.includes(mode));
+}
+
+/** Resolved parameters (object schema) of one tool. */
+function agentToolParameters(name: string): JsonSchemaObject {
+	const tool = agentTool(name);
+	if (!tool) throw new Error(`agent-tools: unknown tool ${name}`);
+	return resolveAgentSchema(tool.parameters);
+}
+
+const RESOLVED = new Map<string, OpenAiFunctionTool[]>();
+
+/** OpenAI-compatible tool list of a mode (optionally narrowed to `only`). Cached per mode and subset. */
+function agentOpenAiTools(mode: AgentMode, only?: string[]): OpenAiFunctionTool[] {
+	const key = `${mode}:${only ? only.join(",") : "*"}`;
+	const hit = RESOLVED.get(key);
+	if (hit) return hit;
+	const tools = agentToolsDocument.tools
+		.filter((tool) => tool.modes.includes(mode) && (!only || only.includes(tool.name)))
+		.map((tool) => ({
+			type: "function" as const,
+			function: {
+				name: tool.name,
+				description: tool.descriptionByMode?.[mode] ?? tool.description,
+				parameters: resolveAgentSchema(tool.parameters)
+			}
+		}));
+	RESOLVED.set(key, tools);
+	return tools;
+}
+
+function properties(name: string): Record<string, unknown> {
+	return (agentToolParameters(name).properties ?? {}) as Record<string, unknown>;
+}
+
+/** search_catalog parameter properties (facet enums from the pinned catalog). */
+function catalogToolParameterSchema(): Record<string, Record<string, unknown>> {
+	return properties("search_catalog") as Record<string, Record<string, unknown>>;
+}
+
+/** edit_page parameter properties (page-patch/v1 ops). */
+function editPageParameterSchema(): Record<string, unknown> {
+	return properties("edit_page");
+}
+
+const PROPOSE_FRAME = new Set(["brief", "scenarioId", "screenId", "expectedRevision", "edits"]);
+
+/** propose_layout content properties (title, locale, blocks, typed intent), without the call frame. */
+function proposeContentParameterSchema(): Record<string, unknown> {
+	return Object.fromEntries(Object.entries(properties("propose_layout")).filter(([key]) => !PROPOSE_FRAME.has(key)));
+}
+
+exports["AGENT_MODES"] = AGENT_MODES;
+exports["agentToolsDocument"] = agentToolsDocument;
+exports["AGENT_TOOLS_VERSION"] = AGENT_TOOLS_VERSION;
+exports["isAgentMode"] = isAgentMode;
+exports["agentEnumSource"] = agentEnumSource;
+exports["resolveAgentSchema"] = resolveAgentSchema;
+exports["agentTool"] = agentTool;
+exports["agentToolNames"] = agentToolNames;
+exports["toolOffersMode"] = toolOffersMode;
+exports["agentToolParameters"] = agentToolParameters;
+exports["agentOpenAiTools"] = agentOpenAiTools;
+exports["catalogToolParameterSchema"] = catalogToolParameterSchema;
+exports["editPageParameterSchema"] = editPageParameterSchema;
+exports["proposeContentParameterSchema"] = proposeContentParameterSchema;
+
+});
+
+__def("packages/builder-core/src/agent/reply.ts", function (exports) {
+const { askBlockCard } = __req("packages/builder-core/src/catalog/details.ts");
+function isAgentTextReply(value: unknown): value is AgentTextReply {
+	return Boolean(value && typeof value === "object" && (value as { reply?: unknown }).reply === "text" && (value as { ok?: unknown }).ok === true);
+}
+
+const MAX_TEXT = 12_000;
+const MAX_CARDS = 10;
+
+function agentTextReply(mode: AgentMode, text: string, blocks: string[], plan?: PagePlan | null): AgentTextReply {
+	return {
+		ok: true,
+		reply: "text",
+		mode,
+		text: text.trim().slice(0, MAX_TEXT),
+		blocks: [...new Set(blocks)].slice(0, MAX_CARDS),
+		...(plan ? { plan } : {})
+	};
+}
+
+/** Cards of the blocks a reply referenced, recomputed from the bundled catalog; unknown specs are dropped. */
+function askBlockCards(specs: unknown[] | undefined): AskBlockCard[] {
+	const out: AskBlockCard[] = [];
+	for (const spec of specs ?? []) {
+		if (typeof spec !== "string") continue;
+		const card = askBlockCard(spec);
+		if (card && !out.some((row) => row.spec === card.spec)) out.push(card);
+		if (out.length >= MAX_CARDS) break;
+	}
+	return out;
+}
+
+exports["isAgentTextReply"] = isAgentTextReply;
+exports["agentTextReply"] = agentTextReply;
+exports["askBlockCards"] = askBlockCards;
 
 });
 
@@ -32954,6 +32968,35 @@ function runConstructorTools(ctx: ProposalContext): LayoutProposal | LayoutPropo
 }
 
 /** One block of a collection intake draft: what the host placed and the variants the model may pick from. */
+function stockScreenDraft(input: {
+	screenId: string;
+	scenarioId?: ScenarioId | null;
+	/** Page locale (the UI language); the blocks keep their Stock sample text either way. */
+	locale?: string | null;
+}): { ok: true; proposal: LayoutProposal } | { ok: false; code: string; message: string; suggestedScreenIds?: string[] } {
+	const screenId = recordedScreenId(input.screenId);
+	if (!screenId) return { ok: false, code: "unknown_screen", message: `${input.screenId || "(empty)"} is not a Stock screen.` };
+	const made = executeTool(
+		{
+			name: "propose_layout",
+			arguments: {
+				brief: getScreenById(screenId)?.title ?? screenId,
+				screenId,
+				scenarioId: input.scenarioId ?? null,
+				expectedRevision: 0,
+				newPage: true,
+				...(input.locale ? { locale: input.locale } : {})
+			}
+		},
+		{}
+	);
+	if (!made.ok) {
+		const suggested = (made.result as { suggestedScreenIds?: string[] } | undefined)?.suggestedScreenIds;
+		return { ok: false, code: made.code, message: made.message, ...(suggested?.length ? { suggestedScreenIds: suggested } : {}) };
+	}
+	return { ok: true, proposal: made.result as LayoutProposal };
+}
+
 function collectionIntakeDraft(input: {
 	bounds: CollectionBounds;
 	brief: string;
@@ -33093,6 +33136,7 @@ exports["executeTool"] = executeTool;
 exports["checkContentVariants"] = checkContentVariants;
 exports["repairProposeArgs"] = repairProposeArgs;
 exports["runConstructorTools"] = runConstructorTools;
+exports["stockScreenDraft"] = stockScreenDraft;
 exports["collectionIntakeDraft"] = collectionIntakeDraft;
 exports["placeCollectionDraft"] = placeCollectionDraft;
 exports["placeCollectionDraftWithNotes"] = placeCollectionDraftWithNotes;
@@ -34013,6 +34057,7 @@ exports["toolLoopProposalFailure"] = __req("packages/builder-core/src/tools.ts")
 exports["repairProposeArgs"] = __req("packages/builder-core/src/tools.ts")["repairProposeArgs"];
 exports["checkContentVariants"] = __req("packages/builder-core/src/tools.ts")["checkContentVariants"];
 exports["collectionIntakeDraft"] = __req("packages/builder-core/src/tools.ts")["collectionIntakeDraft"];
+exports["stockScreenDraft"] = __req("packages/builder-core/src/tools.ts")["stockScreenDraft"];
 exports["placeCollectionDraft"] = __req("packages/builder-core/src/tools.ts")["placeCollectionDraft"];
 exports["placeCollectionDraftWithNotes"] = __req("packages/builder-core/src/tools.ts")["placeCollectionDraftWithNotes"];
 exports["searchRelaxed"] = __req("packages/builder-core/src/tools.ts")["searchRelaxed"];

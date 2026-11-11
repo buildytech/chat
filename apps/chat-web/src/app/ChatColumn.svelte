@@ -10,7 +10,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { feed } from "$lib/feed/feed.svelte";
 	import { LEFT_TABS } from "$lib/feed/prefs";
-	import BlockTree from "./BlockTree.svelte";
+	import SectionsList from "./SectionsList.svelte";
 	import BlocksFeed from "./BlocksFeed.svelte";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
 	import { t } from "$lib/i18n/dictionary";
@@ -51,7 +51,7 @@
 		chatHidden?: boolean;
 	} = $props();
 
-	// Left panel (ADR 0024): Blocks feed, Sections (the page outline) and Chat share the ~320px column. Every panel
+	// Left panel (ADR 0024): Blocks feed, Sections (the sortable page sections) and Chat share the ~320px column. Every panel
 	// stays mounted, so the chat keeps its draft, scroll and running turn while another tab is open.
 	const icons = { blocks: Blocks, sections: ListTree, chat: MessageSquare } as const;
 	const tab = $derived(feed.tab);
@@ -93,10 +93,7 @@
 		<BlocksFeed />
 	</Box>
 	<Box id="left-panel-sections" role="tabpanel" aria-labelledby="left-tab-sections" hidden={tab !== "sections"} class={panelClass}>
-		<Text tag="p" class="shrink-0 px-4 pt-2 text-xs text-muted-foreground">{t("sections.hint")}</Text>
-		<Box class="min-h-0 flex-1 overflow-y-auto">
-			<BlockTree />
-		</Box>
+		<SectionsList />
 	</Box>
 	<Box id="left-panel-chat" role="tabpanel" aria-labelledby="left-tab-chat" hidden={tab !== "chat"} class={panelClass}>
 	<ChatThread

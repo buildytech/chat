@@ -10,6 +10,7 @@ export {
 	deleteAllSessions,
 	discardProposal,
 	applyVariantFromAsk,
+	startPageFromScreen,
 	applyPlanInBuild,
 	getChatMode,
 	setChatMode,

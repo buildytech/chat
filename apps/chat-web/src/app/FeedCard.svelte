@@ -1,10 +1,12 @@
 <!--
   One Blocks feed result (ADR 0024): the Stock WebP thumbnail, title, spec / variant, a link to the codegen-x asset
-  page and, for a block, "+" that adds it to the page through the inspector gates (no model call). One column: thumb
+  page and, for a block, "+" that adds it to the page through the inspector gates (no model call); for a screen,
+  "Start page" that makes a fresh page from it (program assembly, no model call). One column: thumb
   left of the text; two columns: thumb on top. A block the page cannot take keeps "+" disabled with the reason.
 -->
 <script lang="ts">
 	import ExternalLink from "@lucide/svelte/icons/external-link";
+	import FilePlus from "@lucide/svelte/icons/file-plus";
 	import Plus from "@lucide/svelte/icons/plus";
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";
@@ -22,8 +24,17 @@
 		item,
 		columns,
 		check,
-		onAdd
-	}: { item: StockSearchItem; columns: 1 | 2; check: AddBlockCheck | null; onAdd: (item: StockSearchItem) => void } = $props();
+		onAdd,
+		onStart,
+		starting = false
+	}: {
+		item: StockSearchItem;
+		columns: 1 | 2;
+		check: AddBlockCheck | null;
+		onAdd: (item: StockSearchItem) => void;
+		onStart: (item: StockSearchItem) => void;
+		starting?: boolean;
+	} = $props();
 
 	const fill = (key: string) => t(key).replace("{title}", item.title).replace("{variant}", item.variant);
 	const why = $derived(check && !check.ok ? t(`feed.why.${check.code}`).replace("{role}", item.role ?? "") : null);
@@ -66,6 +77,20 @@
 					>
 						<Plus />
 					</Button>
+				{:else}
+					<Button
+						size="sm"
+						layout="icon"
+						variant="outline"
+						class="size-6 px-0"
+						disabled={!item.supported || starting}
+						aria-label={fill("feed.start")}
+						title={item.supported ? fill("feed.start") : t("feed.why.screen_not_renderable")}
+						data-action="feed-start"
+						onclick={() => onStart(item)}
+					>
+						<FilePlus />
+					</Button>
 				{/if}
 			</Group>
 		</Group>
@@ -74,6 +99,9 @@
 		</Text>
 		{#if item.type === "screen"}
 			<Text tag="span" class="text-[11px] text-muted-foreground">{t("feed.screen")} · {item.subtitle}</Text>
+			{#if !item.supported}
+				<Text tag="span" class="text-[11px] text-muted-foreground" data-slot="feed-why">{t("feed.why.screen_not_renderable")}</Text>
+			{/if}
 		{:else if item.isDefault}
 			<Text tag="span" class="text-[11px] text-muted-foreground">{t("feed.default")}</Text>
 		{/if}

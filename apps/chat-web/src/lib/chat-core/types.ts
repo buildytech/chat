@@ -48,7 +48,7 @@ export type ChatProposalState = {
 	/** Program-generated from the pinned Stock catalog after validation. Persisted with the chat. */
 	catalogRefs?: CatalogRefs;
 	/** ask-card: Apply variant on an Ask block card; ask-plan: Apply in Build on an Ask plan (no model call). */
-	origin?: "ask-card" | "ask-plan";
+	origin?: "ask-card" | "ask-plan" | "feed-screen";
 	/** Follow-up turns: block kinds added, kept, and removed versus the base page. */
 	changes?: { added: string[]; kept: string[]; removed: string[] };
 };

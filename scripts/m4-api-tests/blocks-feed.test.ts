@@ -132,7 +132,7 @@ test("Build is two areas: left panel tabs (Blocks / Sections / Chat), inspector 
 	assert.match(column, /role="tablist"/);
 	for (const name of ["blocks", "sections", "chat"]) assert.match(column, new RegExp(`id="left-panel-${name}" role="tabpanel"[^>]*hidden=\\{tab !== "${name}"\\}`));
 	assert.match(column, /<BlocksFeed \/>/);
-	assert.match(column, /<BlockTree \/>/);
+	assert.match(column, /<SectionsList \/>/);
 	assert.match(column, /<ChatThread/);
 	assert.match(web("lib/creator-layout.svelte.ts"), /const inspectorColumn = \(\) => false;/);
 	assert.match(web("app/Workspace.svelte"), /<Sheet open=\{sheetOpen\} side="right" class="absolute inset-0/);

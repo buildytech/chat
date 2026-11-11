@@ -727,6 +727,41 @@ export type CollectionDraft = {
 	stock?: Page;
 };
 
+/**
+ * A fresh Stock page from one screen, program only (ADR 0024 step B, "Start page from this screen"): the same
+ * propose_layout assembly the collection intake draft runs, with no model step and no copy, so every block keeps its
+ * Stock sample. The result is an ordinary layout proposal for the client / server gates, or the tool error (for
+ * example screen_not_renderable with suggestedScreenIds).
+ */
+export function stockScreenDraft(input: {
+	screenId: string;
+	scenarioId?: ScenarioId | null;
+	/** Page locale (the UI language); the blocks keep their Stock sample text either way. */
+	locale?: string | null;
+}): { ok: true; proposal: LayoutProposal } | { ok: false; code: string; message: string; suggestedScreenIds?: string[] } {
+	const screenId = recordedScreenId(input.screenId);
+	if (!screenId) return { ok: false, code: "unknown_screen", message: `${input.screenId || "(empty)"} is not a Stock screen.` };
+	const made = executeTool(
+		{
+			name: "propose_layout",
+			arguments: {
+				brief: getScreenById(screenId)?.title ?? screenId,
+				screenId,
+				scenarioId: input.scenarioId ?? null,
+				expectedRevision: 0,
+				newPage: true,
+				...(input.locale ? { locale: input.locale } : {})
+			}
+		},
+		{}
+	);
+	if (!made.ok) {
+		const suggested = (made.result as { suggestedScreenIds?: string[] } | undefined)?.suggestedScreenIds;
+		return { ok: false, code: made.code, message: made.message, ...(suggested?.length ? { suggestedScreenIds: suggested } : {}) };
+	}
+	return { ok: true, proposal: made.result as LayoutProposal };
+}
+
 export function collectionIntakeDraft(input: {
 	bounds: CollectionBounds;
 	brief: string;

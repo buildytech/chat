@@ -24,12 +24,14 @@
 	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { canvas } from "$lib/inspector/canvas.svelte";
 	import { getCurrentPage, getCurrentProvenance } from "$lib/page-store";
+	import { startPageFromScreen } from "$lib/chat-core";
 	import type { AddBlockCheck, StockSearchItem } from "@buildytech/builder-core";
 	import FeedCard from "./FeedCard.svelte";
 
 	const result = $derived(feed.result);
 	const filters = $derived(feed.filters);
 	let status = $state<{ ok: boolean; text: string } | null>(null);
+	let starting = $state<string | null>(null);
 
 	// The page the cards add to: read so the checks follow page and screen changes.
 	const checks = $derived.by(() => {
@@ -59,6 +61,21 @@
 			canvas.requestReveal(done.blockId);
 			status = { ok: true, text: name("feed.added") };
 		} else status = { ok: false, text: t("feed.addFailed").replace("{message}", done.message) };
+	}
+
+	async function start(item: StockSearchItem) {
+		if (starting) return;
+		starting = item.id;
+		try {
+			const done = await startPageFromScreen(item.id);
+			status = done.ok
+				? { ok: true, text: t("feed.started").replace("{title}", item.title) }
+				: { ok: false, text: t("feed.startFailed").replace("{message}", done.message) };
+			// The page has sections now: the feed shows the blocks it can take.
+			if (done.ok) feed.setFilter("type", "block");
+		} finally {
+			starting = null;
+		}
 	}
 </script>
 
@@ -135,7 +152,7 @@
 		{:else}
 			<Box tag="ul" class={cn("grid gap-2", feed.columns === 2 ? "grid-cols-2" : "grid-cols-1")} aria-label={t("feed.list")} data-slot="feed-list" data-columns={feed.columns}>
 				{#each result.items as item (item.id)}
-					<FeedCard {item} columns={feed.columns} check={item.type === "block" ? (checks[item.id] ?? null) : null} onAdd={add} />
+					<FeedCard {item} columns={feed.columns} check={item.type === "block" ? (checks[item.id] ?? null) : null} onAdd={add} onStart={start} starting={starting !== null} />
 				{/each}
 			</Box>
 		{/if}

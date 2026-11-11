@@ -763,6 +763,16 @@ function resolvedScenario(ctx: ProposalContext): ScenarioId | null {
 	return null;
 }
 
+/**
+ * Whether a fresh page can start from this Stock screen with no scenario attached and no model step (the screen
+ * check of resolveCatalogScreen with the screen's own scenario). The Blocks feed reads it as `supported`.
+ */
+export function screenStartable(screen: CatalogScreen): boolean {
+	const compat = compatibilityFor(screen);
+	if (!compat.compatible && !compat.partial) return false;
+	return screenSupport(screen).supported || resolvedScenario({ screenId: screen.screenId, scenarioId: null } as ProposalContext) === "dashboard";
+}
+
 function requiredKinds(ctx: ProposalContext): PageBlockKind[] {
 	return ctx.content?.requireBlocks ?? [];
 }

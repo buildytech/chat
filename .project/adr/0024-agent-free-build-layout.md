@@ -58,3 +58,29 @@ Step A is this change.
   (a screen card "start a page from this screen" without the model is a candidate for step B).
 - Added sections carry the Stock sample copy; on a non-English page that copy stays in the catalog language until
   edited.
+
+## Addendum: step B (Sections tab, start a page from a screen)
+
+- **Sections tab = the page's sortable section list.** `SectionsList` replaces the read-only outline in the left
+  panel: one row per top-level section in page order with its Stock WebP thumbnail, title and `spec/variant`.
+  Reorder three ways, all one `move` inspector operation: drag the grip handle (pointer capture; the row border shows
+  where it lands; `dropIndex` in `lib/feed/sections.ts`), the up / down buttons, or Alt+Arrow Up / Down on a focused
+  row (plain arrows / Home / End move the focus). Each move is announced in an assertive live region ("Hero moved to
+  position 3 of 8") and the focus stays on the moved row. Remove is the `remove` op; the selected row shows a variant
+  select that runs `set_variant` (the same catalog swap and gates as the inspector). Undo / redo buttons sit in the
+  tab header (Ctrl+Z / Ctrl+Shift+Z still work). Every action is an inspector operation: page-spec and props gates,
+  one undo step, zero model calls; a rejected one shows its reason under the header.
+- **Selection is shared.** A row click selects the section in the page store and reveals it in the preview; a pick
+  in the preview (a section or one of its rows) highlights its section row and scrolls it into view
+  (`topLevelBlockId`). Rows (children) are edited in the inspector, not reordered here.
+- **"Start page from this screen".** Screen cards in the Blocks feed get a start button. `stockScreenDraft`
+  (builder-core, next to `collectionIntakeDraft`) runs the same program `propose_layout` assembly as the collection
+  intake draft, with no copy and no model step, so every block keeps its Stock sample. The browser takes the result
+  as an ordinary proposal (client catalog gate, change report, `origin: "feed-screen"`) and applies it at once as
+  the next revision; a chat that already has messages or a page gets a new chat, so nothing is overwritten.
+- **`supported` in stock-search/v1.** Each item says whether this BuildY renders it: a block variant with a page
+  renderer, or a screen the draft path accepts (`screenStartable`, the screen check of `propose_layout` with the
+  screen's own scenario). The flag is additive (old readers ignore it); a test keeps it equal to the draft result for
+  every Stock screen. Today 15 of 80 screens can start a page; the others stay listed with the reason.
+- **No contract change.** The page, session and collection schemas are unchanged; the proposal `origin` is a chat
+  app field.

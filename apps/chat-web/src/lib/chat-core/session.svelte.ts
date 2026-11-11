@@ -27,6 +27,8 @@ import {
 	describePageChanges,
 	executePagePlan,
 	manualEditsSince,
+	stockScreenDraft,
+	getScreenById,
 	type AgentMode,
 	type AgentTextReply,
 	type ProposalContext,
@@ -901,6 +903,50 @@ export function applyProposal(): boolean {
 	replaceSession(next);
 	saveMock(memory);
 	return true;
+}
+
+/**
+ * "Start page from this screen" (Blocks feed, ADR 0024 step B): a fresh page from one Stock screen with no model
+ * call. The program assembles it (stockScreenDraft: the propose_layout path of the collection intake, no copy, so the
+ * blocks keep their Stock sample), the browser catalog gate checks it, and it is applied at once as the chat's next
+ * revision. A chat that already has a page or messages gets a new chat, so nothing is overwritten.
+ */
+export async function startPageFromScreen(screenId: string): Promise<{ ok: true } | { ok: false; code: string; message: string }> {
+	const screen = getScreenById(screenId);
+	if (!screen) return { ok: false, code: "unknown_screen", message: `${screenId} is not a Stock screen.` };
+	await loadPropsGate();
+	const draft = stockScreenDraft({ screenId: screen.screenId });
+	if (!draft.ok) return { ok: false, code: draft.code, message: draft.message };
+	let session = getSelectedSession();
+	if (!session || session.messages.length || getEditBase()?.page) session = await createSession();
+	setChatMode("build");
+	hydrateSessionContext({ scenarioId: null, screenId: screen.screenId });
+	const request: ChatMessage = {
+		id: uid("msg"),
+		role: "user",
+		text: t("feed.startRequest").replace("{title}", screen.title).replace("{screen}", screen.screenId),
+		createdAt: nowIso(),
+		mode: "build"
+	};
+	const reply: ChatMessage = { ...proposalMessage(draft.proposal, getSelectedModelId(), false, localRunUsage(), { basePage: null }), mode: "build" };
+	delete reply.run;
+	if (!reply.proposal) {
+		discardCandidate();
+		return { ok: false, code: "catalog_rejected", message: reply.text };
+	}
+	reply.proposal = { ...reply.proposal, origin: "feed-screen" };
+	const current = getSelectedSession() ?? session;
+	replaceSession({
+		...current,
+		mode: "build",
+		title: screen.title,
+		updatedAt: nowIso(),
+		screenId: screen.screenId,
+		messages: [...current.messages, request, reply]
+	});
+	saveMock(memory);
+	if (!applyProposal()) return { ok: false, code: "not_applied", message: "The page did not apply." };
+	return { ok: true };
 }
 
 /**

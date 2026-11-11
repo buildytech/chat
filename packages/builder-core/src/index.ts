@@ -152,6 +152,7 @@ export {
 	repairProposeArgs,
 	checkContentVariants,
 	collectionIntakeDraft,
+	stockScreenDraft,
 	placeCollectionDraft,
 	placeCollectionDraftWithNotes,
 	searchRelaxed,

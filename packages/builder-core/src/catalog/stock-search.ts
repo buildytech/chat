@@ -11,6 +11,7 @@
  */
 import { catalogSnapshot } from "./snapshot.ts";
 import { blockAssetUrl, blockThumbUrl, screenThumbUrl, stockAssetUrl } from "./provenance.ts";
+import { screenStartable } from "../assemble.ts";
 import { getScreenById, searchCatalog } from "./search.ts";
 import { catalogSourceFor } from "./sources.ts";
 import type { CatalogBlockIndexEntry, CatalogFacetFilter, CatalogScreen } from "./types.ts";
@@ -55,6 +56,11 @@ export type StockSearchItem = {
 	sites: string[];
 	/** The block's catalog default variant. */
 	isDefault: boolean;
+	/**
+	 * Whether this BuildY renders it: a block variant with a page renderer, a screen the program can start a page
+	 * from (no model call). Unsupported items still list, for browsing and the asset page.
+	 */
+	supported: boolean;
 	/** Absolute WebP thumbnail URL, or null when Stock has none. */
 	thumb: string | null;
 	/** The codegen-x Stock asset page. */
@@ -125,6 +131,7 @@ function blockRows(): Row[] {
 				roles: role ? [role] : [],
 				sites: blockSites,
 				isDefault: variant === fallback,
+				supported: role !== null,
 				thumb: blockThumbUrl(entry.spec, variant),
 				url: blockAssetUrl(entry.spec, variant) ?? stockAssetUrl(`${entry.spec}/${variant}`),
 				text: lower(`${entry.spec} ${entry.blockId} ${entry.title} ${variant} ${role ?? ""} ${(entry.jobs ?? []).join(" ")} ${blockSites.join(" ")}`),
@@ -158,6 +165,7 @@ function screenRow(screen: CatalogScreen, byLabel: Map<string, CatalogBlockIndex
 		roles,
 		sites: [...screen.labels.site],
 		isDefault: false,
+		supported: screenStartable(screen),
 		thumb: screenThumbUrl(screen.screenId),
 		url: stockAssetUrl(screen.screenId),
 		text: lower(`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`),
