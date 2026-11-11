@@ -56,4 +56,23 @@ way out.
 
 ## Live measurement after the change
 
-Filled in after the staging deploy (see below).
+Staging (byc-staging-7q4), same model, same two collections and briefs, 2026-11-11 (UTC+3):
+
+| Run | Commit | Collection | Steps | Prompt | Completion | Total | Page |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| before | e5f0505 | site | 8 | 135,224 | 1,868 | 137,092 | other screen, 7 blocks pruned |
+| before | e5f0505 | grill | 8 | 101,440 | 2,815 | 104,255 | 422, no page |
+| after | b87cac8 | site | 1 | 3,782 | 247 | 4,029 | `screen.site/home`: header, hero/split, features/grid2, cta/banner, footer |
+| after | b87cac8 | grill | 1 | 3,892 | 196 | 4,088 | marketing-landing/home: navbar, hero/centered, faq, sitemap |
+| after | 073232e | site / grill | 1 / 1 | 3,946 / 4,044 | 173 / 133 | 4,119 / 4,177 | as above |
+| after | 7c1ff91 | site (two runs) | 2 / 1 | 11,007 / 4,025 | 855 / 189 | 11,862 / 4,214 | as above; the 2-step run wrote rows with icons outside the schema, ADR 0018 repair dropped those icons |
+| after | 7c1ff91 | grill | 1 | 4,125 | 154 | 4,279 | as above, the screen switch said first in warnings |
+
+About 97% fewer tokens per intake turn (137k to 4-12k), 1-2 steps instead of 8, and the grill collection, which had
+no page before, now gets one built only from its blocks. Every page held only collection blocks; `block.about/split`
+(no renderer), `block.dishshowcase`, `block.grillbuilder` (no renderer) and `block.menuboard` (no free menu block on
+the screen) are said in warnings.
+
+Open: copy quality of the non-reasoning model varies on the compact prompt (one site run wrote topic copy for the
+hero and the rows, another left catalog copy on the hero and features; the hero heading was not the model's copy
+before this change either). Row icons are sometimes written in kebab case and dropped by the props gate.
