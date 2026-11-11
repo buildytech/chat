@@ -422,6 +422,10 @@
 		"plan.op.set_items": "{block}: {n} rows",
 		"plan.op.add": "Add {kind}: {title}",
 		"plan.op.replace": "Replace {block} with {kind}",
+		"change.block": "catalog block {from} → {to}",
+		"plan.droppedLine": "- {op}: not shown by the new block, dropped: {list}",
+		"plan.op.replaceBlock": "Replace {block} with {to}",
+		"plan.dropped": "Drops: {list}",
 		"plan.op.remove": "Remove {block}",
 		"plan.op.move": "Move {block} to position {to}"
 	}

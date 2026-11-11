@@ -63,6 +63,9 @@
 							{#if op.reason}
 								<Text tag="p" class="text-xs text-muted-foreground">{op.reason}</Text>
 							{/if}
+							{#if op.dropped?.length && !keep && !op.issue}
+								<Text tag="p" class="text-xs text-muted-foreground" data-slot="ask-plan-dropped">{t("plan.dropped").replace("{list}", op.dropped.join(", "))}</Text>
+							{/if}
 							{#if keep}
 								<Text tag="p" id={`${headingId}-${op.id}-issue`} class="text-xs text-muted-foreground" data-slot="ask-plan-keep">{t("plan.keep")}</Text>
 							{:else if op.issue}

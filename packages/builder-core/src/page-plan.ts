@@ -3,6 +3,7 @@ import type { LayoutProposal, LayoutProposalError, ProposalContext } from "./ass
 import { askBlockCard } from "./catalog/details.ts";
 import { catalogVariantsFor } from "./catalog/sources.ts";
 import { editPage, normalizePatch } from "./patch.ts";
+import { catalogBlocksForKind, swapCatalogBlock } from "./block-swap.ts";
 
 /**
  * Ask page plans (ADR 0020): when Ask recommends page changes it sends them as page-patch/v1 ops on the current
@@ -25,6 +26,10 @@ export type PagePlanOp = {
 	value?: string | null;
 	variant?: string | null;
 	kind?: string;
+	/** replace (ADR 0023): the Stock catalog block that takes the block's place, same kind. */
+	catalogBlock?: string;
+	/** replace: text fields the new catalog block does not render (dropped when it runs). */
+	dropped?: string[];
 	title?: string;
 	copy?: Record<string, string>;
 	items?: PlanItem[];
@@ -147,7 +152,7 @@ function str(value: unknown, max = 4000): string | undefined {
 
 /** The page-patch/v1 op of a plan op (host fields dropped). */
 function patchOp(op: PagePlanOp): Record<string, unknown> {
-	const { id: _id, reason: _r, label: _l, from: _f, valid: _v, issue: _i, result: _res, ...rest } = op;
+	const { id: _id, reason: _r, label: _l, from: _f, valid: _v, issue: _i, result: _res, dropped: _d, ...rest } = op;
 	return rest;
 }
 
@@ -165,6 +170,12 @@ function rawOp(raw: unknown, page: Page, index: number): PagePlanOp {
 	if (typeof rec.value === "string" || rec.value === null) op.value = rec.value as string | null;
 	if (typeof rec.variant === "string" || (rec.variant === null && name === "set_variant")) op.variant = rec.variant as string | null;
 	if (typeof rec.kind === "string") op.kind = rec.kind;
+	if (name === "replace" && typeof rec.catalogBlock === "string" && rec.catalogBlock.trim()) {
+		// block.storehero, storehero or storehero/overlay; the variant after the slash when none is given.
+		const [spec, inline] = rec.catalogBlock.trim().split("/");
+		op.catalogBlock = spec!.startsWith("block.") ? spec! : `block.${spec}`;
+		if (inline && typeof rec.variant !== "string") op.variant = inline;
+	}
 	if (typeof rec.title === "string") op.title = rec.title;
 	if (rec.copy && typeof rec.copy === "object" && !Array.isArray(rec.copy)) {
 		op.copy = Object.fromEntries(Object.entries(rec.copy as Record<string, unknown>).filter(([, v]) => typeof v === "string")) as Record<string, string>;
@@ -176,6 +187,10 @@ function rawOp(raw: unknown, page: Page, index: number): PagePlanOp {
 	if (target) {
 		op.label = target.catalogBlock ? `${target.title} (${target.catalogBlock})` : target.title;
 		if (op.op === "set_variant" && target.variant) op.from = target.variant;
+		if (op.op === "replace" && op.catalogBlock) {
+			if (!op.kind) op.kind = target.kind;
+			if (target.catalogBlock) op.from = `${target.catalogBlock}${target.variant ? `/${target.variant}` : ""}`;
+		}
 	}
 	return op;
 }
@@ -197,6 +212,12 @@ function runOps(base: Base, ops: Array<Record<string, unknown>>): LayoutProposal
 /** The values a rejected op could take (unknown_variant: the block's catalog variants). */
 function allowedFor(op: PagePlanOp, page: Page, code: string): string[] | undefined {
 	const target = op.blockId ? page.layout.blocks.find((node) => node.id === op.blockId) : undefined;
+	if (op.op === "replace" && op.catalogBlock) {
+		if (code === "unknown_variant") return catalogVariantsFor(op.catalogBlock);
+		if (target && (code === "catalog_block_kind_mismatch" || code === "unknown_catalog_block" || code === "no_renderer")) {
+			return catalogBlocksForKind(target.kind).filter((spec) => spec !== target.catalogBlock);
+		}
+	}
 	if (code === "unknown_variant" && target?.catalogBlock) return catalogVariantsFor(target.catalogBlock);
 	if (code === "block_not_found") return page.layout.blocks.map((node) => node.id);
 	return undefined;
@@ -219,7 +240,7 @@ export function checkPagePlan(input: Base & { raw: unknown }): PagePlan | null {
 		}
 		const result = runOps(input, [patchOp(op)]);
 		if (result.ok && unchanged(input.page, result.page)) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
-		if (result.ok) return { ...op, valid: true };
+		if (result.ok) return { ...op, valid: true, ...swapDropped(op, target) };
 		if (result.code === PLAN_NOOP) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
 		const allowed = allowedFor(op, input.page, result.code);
 		return { ...op, issue: { code: result.code, message: result.message.slice(0, 600), ...(allowed ? { allowed } : {}) } };
@@ -228,12 +249,22 @@ export function checkPagePlan(input: Base & { raw: unknown }): PagePlan | null {
 	return { status: "proposed", pageId: input.page.id, baseRevision: input.revision, ...(summary ? { summary } : {}), ops };
 }
 
+/** replace with a catalog block: the fields the new block does not render, against the block as it is now. */
+function swapDropped(op: PagePlanOp, target: PageBlock | undefined): { dropped?: string[] } {
+	if (op.op !== "replace" || !op.catalogBlock || !target) return {};
+	const swap = swapCatalogBlock(target, { catalogBlock: op.catalogBlock, variant: op.variant ?? null });
+	return swap.ok && swap.dropped.length ? { dropped: swap.dropped } : {};
+}
+
 /** Plan result for the tool loop: valid ops, and each invalid op with its code, message and allowed values. */
 export function compactPlanPayload(plan: PagePlan | null): Record<string, unknown> {
 	if (!plan) return { ok: false, code: "plan_empty", message: "propose_plan needs ops on currentPage block ids." };
 	return {
 		ok: true,
 		valid: plan.ops.filter((op) => op.valid).map((op) => op.id),
+		...(plan.ops.some((op) => op.dropped?.length)
+			? { dropped: plan.ops.filter((op) => op.dropped?.length).map((op) => ({ id: op.id, fields: op.dropped })) }
+			: {}),
 		invalid: plan.ops.filter((op) => !op.valid && !isPlanNoop(op)).map((op) => ({ id: op.id, op: op.op, blockId: op.blockId, ...op.issue })),
 		...(plan.ops.some(isPlanNoop) ? { unchanged: plan.ops.filter(isPlanNoop).map((op) => op.id) } : {}),
 		note: "Shown to the author as a plan card; nothing changed. Fix invalid ops once with the allowed values, or explain them in text. Unchanged ops already match the page: do not resend them."
@@ -269,9 +300,16 @@ export function executePagePlan(input: Base & { plan: PagePlan; selected: readon
 		if (!step.ok && step.code === PLAN_NOOP) return keep(op, noopMessage(op));
 		if (!step.ok) return { ...op, result: { status: "rejected", code: step.code, message: step.message.slice(0, 600) } };
 		if (unchanged(page, step.page)) return keep(op, noopMessage(op));
+		// The block as it is now (hand edits since the plan included) decides what the new catalog block drops.
+		const swap = swapDropped(op, target);
+		const ran: PagePlanOp = { ...op };
+		if (op.op === "replace" && op.catalogBlock) {
+			if (swap.dropped) ran.dropped = swap.dropped;
+			else delete ran.dropped;
+		}
 		page = step.page;
-		applied.push(op);
-		return { ...op, result: { status: "applied" } };
+		applied.push(ran);
+		return { ...ran, result: { status: "applied", ...(ran.dropped?.length ? { message: `Dropped (not rendered by ${op.catalogBlock}): ${ran.dropped.join(", ")}.` } : {}) } };
 	});
 	const proposal = applied.length ? runOps(input, applied.map(patchOp)) : null;
 	// No-ops (kept) are not counted: a plan whose ticked ops all applied is executed even if some ops were kept.
@@ -283,7 +321,12 @@ export function executePagePlan(input: Base & { plan: PagePlan; selected: readon
 	return { plan: { ...input.plan, ops, status, executedAt: input.at ?? new Date().toISOString() }, proposal };
 }
 
-export type PageChange = BlockRef & { fields: string[]; variant?: { from: string | null; to: string | null } };
+export type PageChange = BlockRef & {
+	fields: string[];
+	variant?: { from: string | null; to: string | null };
+	/** Another catalog block in the same place (replace, ADR 0023). */
+	block?: { from: string | null; to: string | null };
+};
 
 export type PageChangeReport = {
 	added: BlockRef[];
@@ -320,7 +363,8 @@ export function describePageChanges(base: Page | null | undefined, next: Page): 
 		if (!same(old.copy, node.copy) || old.summary !== node.summary) fields.push("copy");
 		if (!same(old.children, node.children)) fields.push("rows");
 		const variant = (old.variant ?? null) !== (node.variant ?? null) ? { from: old.variant ?? null, to: node.variant ?? null } : undefined;
-		if (fields.length || variant) report.changed.push({ ...blockRef(node), fields, ...(variant ? { variant } : {}) });
+		const swapped = old.catalogBlock !== node.catalogBlock ? { from: old.catalogBlock ?? null, to: node.catalogBlock ?? null } : undefined;
+		if (fields.length || variant) report.changed.push({ ...blockRef(node), fields, ...(variant ? { variant } : {}), ...(swapped ? { block: swapped } : {}) });
 		else if (commonBefore.indexOf(node.id) !== commonAfter.indexOf(node.id)) report.moved.push(blockRef(node));
 		else report.kept.push(blockRef(node));
 	}

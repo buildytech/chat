@@ -432,3 +432,130 @@ test("no-op plan ops (same variant, same text) are kept, not errors; partial app
 	assert.deepEqual(run.plan.ops.map((op) => op.result?.status), ["applied", "skipped"]);
 	assert.equal(run.plan.status, "executed");
 });
+
+/** A landing page whose hero has an eyebrow (block.storehero renders no eyebrow) and feature rows with icons. */
+function swapPage(): Page {
+	const made = executeTool(
+		{
+			name: "propose_layout",
+			arguments: {
+				brief: "grill delivery promo",
+				screenId: OWNER_SCREEN,
+				scenarioId: "landing",
+				locale: "en",
+				blocks: [{ kind: "hero", title: "Grill at home", eyebrow: "New Year", headline: "Hot grill at your door", lede: "Skewers delivered hot.", action: "Order now" }]
+			}
+		},
+		{ liveTurn: true, mode: "build" }
+	);
+	assert.equal(made.ok, true);
+	return (made.result as LayoutProposal).page;
+}
+
+test("replace op: another catalog block of the same kind, checked on the page and the catalog; text carried, dropped fields named", () => {
+	const page = swapPage();
+	const raw = {
+		ops: [
+			{ op: "replace", blockId: "Grill at home", catalogBlock: "storehero", reason: "store look" },
+			{ op: "replace", blockId: "block-hero", catalogBlock: "block.storehero", variant: "nope" },
+			{ op: "replace", blockId: "block-hero", catalogBlock: "block.faq" },
+			{ op: "replace", blockId: "block-hero", catalogBlock: "block.hero", variant: page.layout.blocks.find((node) => node.id === "block-hero")!.variant },
+			{ op: "replace", blockId: "block-hero", kind: "cta", catalogBlock: "block.storehero" }
+		]
+	};
+	const plan = checkPagePlan({ page, provenance, revision: 1, raw })!;
+	const [swap, badVariant, otherRole, same, otherKind] = plan.ops;
+	assert.equal(swap!.valid, true, JSON.stringify(swap));
+	assert.equal(swap!.blockId, "block-hero");
+	assert.equal(swap!.catalogBlock, "block.storehero");
+	assert.equal(swap!.kind, "hero");
+	assert.match(swap!.from ?? "", /^block\.hero\//);
+	assert.deepEqual(swap!.dropped, ["eyebrow"]);
+	assert.equal(badVariant!.issue?.code, "unknown_variant");
+	assert.deepEqual(badVariant!.issue?.allowed, ["overlay", "overlayStart", "backdrop", "muted"]);
+	assert.equal(otherRole!.issue?.code, "catalog_block_kind_mismatch");
+	assert.ok(otherRole!.issue?.allowed?.includes("block.storehero"));
+	assert.ok(!otherRole!.issue?.allowed?.includes("block.hero"), "the block's own catalog block is not offered");
+	assert.equal(same!.issue?.code, "no_change");
+	assert.equal(isPlanNoop(same!), true);
+	assert.equal(otherKind!.issue?.code, "catalog_block_kind_mismatch");
+	const payload = compactPlanPayload(plan) as { dropped?: Array<{ id: string; fields: string[] }> };
+	assert.deepEqual(payload.dropped, [{ id: swap!.id, fields: ["eyebrow"] }]);
+
+	// Apply in Build: no provider call, same id and title, headline / lede / action carried, eyebrow dropped.
+	const original = globalThis.fetch;
+	globalThis.fetch = (async () => {
+		throw new Error("no network in Apply in Build");
+	}) as typeof fetch;
+	try {
+		const exec = executePagePlan({ page, provenance, plan, selected: [swap!.id], revision: 1, at: NOW });
+		assert.equal(exec.plan.status, "executed");
+		assert.equal(exec.proposal?.ok, true, JSON.stringify(exec.proposal));
+		const next = (exec.proposal as LayoutProposal).page;
+		const hero = next.layout.blocks.find((node) => node.id === "block-hero")!;
+		assert.equal(hero.catalogBlock, "block.storehero");
+		assert.equal(hero.variant, "overlay");
+		assert.equal(hero.title, "Grill at home");
+		assert.deepEqual(hero.copy, { headline: "Hot grill at your door", lede: "Skewers delivered hot.", action: "Order now" });
+		assert.deepEqual(next.layout.blocks.map((node) => node.id), page.layout.blocks.map((node) => node.id));
+		const ran = exec.plan.ops.find((op) => op.id === swap!.id)!;
+		assert.equal(ran.result?.status, "applied");
+		assert.match(ran.result?.message ?? "", /eyebrow/);
+		// Reply text comes from the actual change: block from -> to and the dropped field.
+		const report = describePageChanges(page, next);
+		assert.deepEqual(report.changed.map((row) => row.id), ["block-hero"]);
+		assert.equal(report.changed[0]!.block?.to, "block.storehero");
+		const text = changeReportText(report, t, { title: next.title, fresh: false });
+		assert.match(text, /catalog block block\.hero → block\.storehero/);
+		assert.match(planResultText(exec.plan, t), /Replace Grill at home \(block\.hero\) with block\.storehero: not shown by the new block, dropped: eyebrow/);
+		// Session 1.5.0: catalogBlock and dropped are plan op fields.
+		for (const stored of [plan, exec.plan]) {
+			const message = { id: "msg-1", role: "assistant", text: "Plan", createdAt: NOW, mode: "ask", answer: { blocks: [] }, plan: stored };
+			assert.deepEqual(sessionDefIssues(message, "message"), []);
+		}
+	} finally {
+		globalThis.fetch = original;
+	}
+});
+
+test("replace op respects hand edits since the plan and accepts partially", () => {
+	const page = swapPage();
+	const plan = checkPagePlan({
+		page,
+		provenance,
+		revision: 1,
+		raw: { ops: [{ op: "replace", blockId: "block-hero", catalogBlock: "block.storehero" }, { op: "set", blockId: "block-logos", field: "title", value: "Partners" }] }
+	})!;
+	assert.deepEqual(plan.ops[0]!.dropped, ["eyebrow"]);
+	// By hand since the plan: the hero headline was rewritten and its eyebrow cleared; the logos block was removed.
+	const edited = editPage({
+		page,
+		provenance,
+		patch: { ops: [{ op: "set", blockId: "block-hero", field: "headline", value: "Grill by hand" }, { op: "set", blockId: "block-hero", field: "eyebrow", value: null }, { op: "remove", blockId: "block-logos" }] },
+		expectedRevision: 1,
+		now: NOW
+	});
+	assert.equal(edited.ok, true, JSON.stringify(edited));
+	const exec = executePagePlan({ page: (edited as LayoutProposal).page, provenance, plan, selected: plan.ops.map((op) => op.id), revision: 2, at: NOW });
+	assert.equal(exec.plan.status, "partial");
+	const [swap, setTitle] = exec.plan.ops;
+	assert.equal(swap!.result?.status, "applied");
+	assert.equal(swap!.dropped, undefined, "nothing is dropped any more: the eyebrow was cleared by hand");
+	assert.equal(setTitle!.result?.status, "rejected");
+	assert.equal(setTitle!.result?.code, "block_not_found");
+	const hero = (exec.proposal as LayoutProposal).page.layout.blocks.find((node) => node.id === "block-hero")!;
+	assert.equal(hero.catalogBlock, "block.storehero");
+	assert.equal(hero.copy?.headline, "Grill by hand");
+});
+
+test("edit_page replace with catalogBlock (page-patch/v1, additive) keeps the block in place; another kind's block is rejected", () => {
+	const page = swapPage();
+	const ok = editPage({ page, provenance, patch: { ops: [{ op: "replace", blockId: "block-hero", kind: "hero", catalogBlock: "block.storehero", variant: "muted" }] }, expectedRevision: 1, now: NOW });
+	assert.equal(ok.ok, true, JSON.stringify(ok));
+	const hero = (ok as LayoutProposal).page.layout.blocks.find((node) => node.id === "block-hero")!;
+	assert.equal(`${hero.catalogBlock}/${hero.variant}`, "block.storehero/muted");
+	assert.ok((ok as LayoutProposal).warnings.some((w) => /dropped: eyebrow/.test(w)));
+	const bad = editPage({ page, provenance, patch: { ops: [{ op: "replace", blockId: "block-hero", kind: "hero", catalogBlock: "block.logos" }] }, expectedRevision: 1, now: NOW });
+	assert.equal(bad.ok, false);
+	assert.equal((bad as { code: string }).code, "catalog_block_kind_mismatch");
+});

@@ -311,6 +311,10 @@
 		"plan.op.set_items": "{block}: строк {n}",
 		"plan.op.add": "Добавить {kind}: {title}",
 		"plan.op.replace": "Заменить {block} на {kind}",
+		"change.block": "блок каталога {from} → {to}",
+		"plan.droppedLine": "- {op}: новый блок это не показывает, убрано: {list}",
+		"plan.op.replaceBlock": "Заменить {block} на {to}",
+		"plan.dropped": "Уберёт: {list}",
 		"plan.op.remove": "Удалить {block}",
 		"plan.op.move": "Переместить {block} на позицию {to}"
 	}

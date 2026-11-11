@@ -27,8 +27,9 @@ export function changeReportText(
 		lines.push(t("change.proposal").replace("{title}", opts.title));
 		for (const row of report.changed) {
 			const parts: string[] = [];
+			if (row.block) parts.push(t("change.block").replace("{from}", row.block.from ?? "-").replace("{to}", row.block.to ?? "-"));
 			if (row.variant) parts.push(t("change.variant").replace("{from}", row.variant.from ?? t("ask.default")).replace("{to}", row.variant.to ?? t("ask.default")));
-			for (const field of row.fields) parts.push(t(`change.field.${field}`));
+			for (const field of row.fields) if (!(field === "block" && row.block)) parts.push(t(`change.field.${field}`));
 			lines.push(t("change.changed").replace("{block}", ref(row)).replace("{what}", parts.join(", ")));
 		}
 		if (report.added.length) lines.push(t("change.added").replace("{list}", report.added.map(ref).join(", ")));
@@ -51,6 +52,9 @@ export function planResultText(plan: PagePlan, t: T): string {
 	const chosen = plan.ops.filter((op) => op.result && op.result.status !== "skipped").length;
 	lines.push(t("plan.resultLine").replace("{applied}", String(applied)).replace("{n}", String(chosen)));
 	for (const op of plan.ops) {
+		if (op.result?.status === "applied" && op.dropped?.length) {
+			lines.push(t("plan.droppedLine").replace("{op}", planOpText(op, t)).replace("{list}", op.dropped.join(", ")));
+		}
 		if (op.result?.status !== "rejected") continue;
 		lines.push(
 			t("plan.rejectedLine")
@@ -77,6 +81,10 @@ export function planOpText(op: PagePlan["ops"][number], t: T): string {
 		case "add":
 			return t("plan.op.add").replace("{kind}", op.kind ?? "").replace("{title}", op.title ?? "");
 		case "replace":
+			if (op.catalogBlock) {
+				const to = `${op.catalogBlock}${op.variant ? `/${op.variant}` : ""}`;
+				return t("plan.op.replaceBlock").replace("{block}", block).replace("{to}", to);
+			}
 			return t("plan.op.replace").replace("{block}", block).replace("{kind}", op.kind ?? "");
 		case "remove":
 			return t("plan.op.remove").replace("{block}", block);

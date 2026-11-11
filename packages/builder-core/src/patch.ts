@@ -25,6 +25,7 @@ import { catalogProvenance } from "./catalog/snapshot.ts";
 import { getScreenById } from "./catalog/search.ts";
 import { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } from "./catalog/provenance.ts";
 import { catalogSourceFor, resolveCatalogChoice } from "./catalog/sources.ts";
+import { swapCatalogBlock } from "./block-swap.ts";
 import { DATA_KINDS, defaultDemoLabel, demoLabelForLocale } from "./content.ts";
 import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } from "./policy.ts";
 
@@ -207,6 +208,7 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 	const removed: string[] = [];
 	const applied: string[] = [];
 	let shellAdded = false;
+	const swapNotes: string[] = [];
 
 	const fromCatalog = (kind: PageBlockKind, at: string, op: PatchOp): PageBlock | Failure => {
 		if (CHILD_ONLY_KINDS.has(kind)) return fail("slot_no_rows", `${kind} is a row kind; use set_items on its list block.`, `${at}.kind`);
@@ -291,6 +293,30 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 			blocks.splice(index, 0, node);
 			added.push(kind);
 			if (kind === "sidenav" || kind === "bottomnav") shellAdded = true;
+		} else if (op.op === "replace" && target && found && typeof op.catalogBlock === "string") {
+			// Another Stock catalog block in the same place (ADR 0023): same kind, text carried by the props mapping.
+			if (found.parent) return fail("not_top_level", "replace works on top-level blocks; use set_items for rows.", `${at}.blockId`);
+			if (typeof op.kind === "string" && op.kind !== target.kind) {
+				return fail("catalog_block_kind_mismatch", `replace with catalogBlock keeps the block's kind ${target.kind}; ${op.kind} is another page role.`, `${at}.kind`);
+			}
+			const swap = swapCatalogBlock(target, { catalogBlock: op.catalogBlock, variant: typeof op.variant === "string" ? op.variant : null });
+			if (!swap.ok) return fail(swap.code, swap.message, swap.code === "unknown_variant" ? `${at}.variant` : `${at}.catalogBlock`);
+			let node = swap.node;
+			const copy = op.copy as Record<string, string> | undefined;
+			if (copy) {
+				const bad = checkCopy(target.kind, copy, `${at}.copy`);
+				if (bad) return bad;
+				node = withCopy(node, copy);
+			}
+			if (typeof op.title === "string") node = { ...node, title: op.title };
+			if (Array.isArray(op.items)) {
+				const rows = rowsFor(node, op.items as Item[], `${at}.items`);
+				if (!Array.isArray(rows)) return rows;
+				node = { ...node, children: rows };
+			}
+			found.list[found.index] = node;
+			changed.add(target.kind);
+			if (swap.dropped.length) swapNotes.push(`${target.id} -> ${node.catalogBlock}${node.variant ? `/${node.variant}` : ""}: not shown by the new block, dropped: ${swap.dropped.join(", ")}.`);
 		} else if (op.op === "replace" && target && found) {
 			if (found.parent) return fail("not_top_level", "replace works on top-level blocks; use set_items for rows.", `${at}.blockId`);
 			const kind = op.kind as PageBlockKind;
@@ -379,7 +405,7 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 		liveModel: Boolean(ctx.liveTurn),
 		page,
 		baseRevision: ctx.expectedRevision,
-		warnings: [`page-patch/v1 applied: ${applied.join("; ")}.`],
+		warnings: [`page-patch/v1 applied: ${applied.join("; ")}.`, ...swapNotes],
 		inspected: [],
 		missing: ctx.provenance?.missing ?? [],
 		diff: {
