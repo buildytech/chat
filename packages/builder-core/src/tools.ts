@@ -721,6 +721,8 @@ export type CollectionDraft = {
 	blocks: CollectionDraftBlock[];
 	remove: string[];
 	warnings: string[];
+	/** Set when the collection's own screen cannot render and the draft uses another one (said in the proposal). */
+	screenNote?: string;
 };
 
 export function collectionIntakeDraft(input: {
@@ -779,10 +781,12 @@ export function collectionIntakeDraft(input: {
 		const score = (own.includes(screenId) ? 1000 : 0) + blocks.filter((row) => row.required).length * 10 + blocks.length;
 		if (best && best.score >= score) return;
 		const warnings = proposal.warnings.filter((w) => /collection/i.test(w));
-		if (!own.includes(screenId) && notRenderable.length) {
-			warnings.unshift(`${notRenderable.join(", ")} cannot render in this BuildY version yet; the page uses ${screenId} with the collection's blocks only.`);
-		}
-		best = { draft: { screenId, blocks, remove, warnings }, score };
+		const screenNote =
+			!own.includes(screenId) && notRenderable.length
+				? `${notRenderable.join(", ")} cannot render in this BuildY version yet; the page uses ${screenId} with the collection's blocks only.`
+				: undefined;
+		if (screenNote) warnings.unshift(screenNote);
+		best = { draft: { screenId, blocks, remove, warnings, ...(screenNote ? { screenNote } : {}) }, score };
 	};
 	for (let i = 0; i < queue.length && i < 6; i += 1) consider(queue[i]!);
 	if (!best || (best as { score: number }).score < 1000) {
@@ -841,5 +845,6 @@ export function placeCollectionDraftWithNotes(
 		if (row.required) blocks.push({ kind: row.kind, catalogBlock: row.catalogBlock, ...(row.variant ? { variant: row.variant } : {}) });
 	}
 	const remove = [...new Set([...(Array.isArray(args.remove) ? args.remove.filter((k): k is string => typeof k === "string") : []), ...draft.remove])];
+	if (draft.screenNote && screenId === draft.screenId) warnings.unshift(draft.screenNote);
 	return { args: { ...args, screenId, blocks, ...(remove.length ? { remove } : {}) }, warnings };
 }

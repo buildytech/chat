@@ -21,6 +21,7 @@ import {
 	executeTool,
 	modelCatalogSources,
 	placeCollectionDraft,
+	placeCollectionDraftWithNotes,
 	mapChatRunRequest,
 	repairCollectionArgs,
 	snapshotDigest,
@@ -305,4 +306,8 @@ test("intake draft: a collection whose screen cannot render yet gets a renderabl
 	assert.ok(draft.blocks.every((row) => grill.allowed.includes(row.catalogBlock)));
 	assert.ok(draft.blocks.some((row) => row.catalogBlock === "block.hero" && row.variant === "centered" && row.required));
 	assert.match(draft.warnings[0]!, /screen\.theme-food-grill\/home cannot render in this BuildY version yet/);
+	// The switch is said on the proposal too (pre-placement notes).
+	const placed = placeCollectionDraftWithNotes({ locale: "en" }, draft, grill);
+	assert.equal(placed.args.screenId, draft.screenId);
+	assert.equal(placed.warnings[0], draft.screenNote);
 });
