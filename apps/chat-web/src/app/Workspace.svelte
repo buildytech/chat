@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { packSkinOptions } from "$lib/theme/custom-skin.svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import { cn } from "$registry/utils/cn";
@@ -35,7 +36,7 @@
 	function onDownloadZip() {
 		const page = getCurrentPage();
 		if (!page) return;
-		void downloadPageZip(page, { skin: getChatSkin() });
+		void downloadPageZip(page, packSkinOptions(getChatSkin()));
 	}
 
 	function toggleInspector() {

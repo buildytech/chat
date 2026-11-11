@@ -11,6 +11,7 @@
 	import { blocksOf, readPreviewPage, type Page } from "$lib/page-store";
 	import { THEME_KEY, theme } from "$lib/theme/theme.svelte";
 	import { applySkin, readSessionSkin } from "$lib/theme/skins";
+	import { storedCustomSkin } from "$lib/theme/custom-skin.svelte";
 	import PreviewBlock from "./PreviewBlock.svelte";
 
 	let ready = $state(false);
@@ -20,7 +21,8 @@
 	function load() {
 		const session = new URLSearchParams(location.search).get("session");
 		page = readPreviewPage(session);
-		void applySkin(document, readSessionSkin(session));
+		// The Custom Skin (ADR 0025) fixes its own light / dark mode, after the chat's mode.
+		void applySkin(document, readSessionSkin(session), storedCustomSkin());
 	}
 
 	onMount(() => {
@@ -29,7 +31,7 @@
 		ready = true;
 		const onStorage = (event: StorageEvent) => {
 			if (event.key === THEME_KEY) theme.init();
-			else load();
+			load();
 		};
 		window.addEventListener("storage", onStorage);
 		return () => window.removeEventListener("storage", onStorage);

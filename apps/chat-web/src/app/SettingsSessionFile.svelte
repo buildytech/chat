@@ -64,7 +64,7 @@
 	<Text tag="p" class="text-xs font-medium text-foreground">{t("settings.sessionFile")}</Text>
 	<Group class="gap-2">
 		<Button
-			class="inline-flex flex-1 items-center justify-center gap-2 rounded border border-border px-2 py-2 text-sm text-foreground hover:bg-accent/70"
+			class="inline-flex flex-1 items-center justify-center gap-2 rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-accent/70"
 			data-action="session-export"
 			onclick={onExport}
 		>
@@ -72,7 +72,7 @@
 			{t("settings.export")}
 		</Button>
 		<Button
-			class="inline-flex flex-1 items-center justify-center gap-2 rounded border border-border px-2 py-2 text-sm text-foreground hover:bg-accent/70"
+			class="inline-flex flex-1 items-center justify-center gap-2 rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-accent/70"
 			data-action="session-import"
 			onclick={() => document.getElementById("settings-session-import")?.click()}
 		>
@@ -94,7 +94,7 @@
 	{/if}
 	<Disclosure variant="ghost" data-slot="settings-quarantine" ontoggle={() => (entries = browserQuarantine())}>
 		<Summary size="sm">{t("settings.quarantine").replace("{count}", String(entries.length))}</Summary>
-		<Stack align="stretch" class="gap-2 py-2">
+		<Stack align="stretch" class="gap-2 py-1">
 			{#if entries.length === 0}
 				<Text tag="p" class="text-xs text-muted-foreground">{t("settings.quarantineEmpty")}</Text>
 			{:else}
@@ -107,7 +107,7 @@
 					</Stack>
 				{/each}
 				<Button
-					class="w-full justify-start rounded px-2 py-2 text-sm text-foreground hover:bg-accent/70"
+					class="w-full justify-start rounded px-2 py-1 text-xs text-foreground hover:bg-accent/70"
 					data-action="quarantine-download"
 					onclick={onDownloadQuarantine}
 				>

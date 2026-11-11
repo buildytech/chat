@@ -20,6 +20,8 @@ export const STORAGE_KEYS = {
 	prefs: "buildy:v1:prefs",
 	theme: "buildy:v1:theme",
 	previewHideServiceLabels: "buildy:v1:preview.hideServiceLabels",
+	/** The one imported theme (Settings > Theme import, ADR 0025): `{ v: 1, config }`, config = magazine-theme v2. */
+	customSkin: "buildy:v1:customSkin",
 	/** Left panel tab, Blocks feed view and inspector slide-over open (ADR 0024): `{ tab, columns, inspector }`. */
 	feed: "buildy:v1:feed",
 	migration: "buildy:v1:migration",

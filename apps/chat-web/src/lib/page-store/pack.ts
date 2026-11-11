@@ -1,6 +1,7 @@
 import { parsePage, type CreatorPage } from "./page.ts";
 import { registrySkin, type RegistrySkin } from "@buildytech/builder-core";
 import chatPackage from "../../../package.json" with { type: "json" };
+import { configText, CUSTOM_SKIN_BASE_CSS, renderCustomSkin, renderStyleText, type CustomSkinRender, type ThemeConfig } from "../theme/custom-skin.ts";
 import { INSTALL_ROOT, registryItemsOf, registryLockItemsOf, registryPathsOf, svelteFromPage, sveltePackFiles } from "./svelte-code.ts";
 
 export type PackFile = {
@@ -189,8 +190,16 @@ export const CLI_LOCK = "ui8kit.lock.json";
 /** Reads registry snapshot files by path relative to registry/svelte (`ui8kit.config.json`, `src/blocks/x.svelte`). */
 export type RegistryReader = (paths: string[]) => Promise<Record<string, string>>;
 
-/** Export options: the chat's skin (session `skin`, ADR 0016); null or unknown is the default theme. */
-export type PackOptions = { skin?: string | null };
+/**
+ * Export options: the chat's skin (session `skin`, ADR 0016); null or unknown is the default theme. `theme`: the Custom
+ * Skin (ADR 0025), a magazine-theme v2 config; its base skin is the registry skin, the rest goes on <html> and in theme.json.
+ */
+export type PackOptions = { skin?: string | null; theme?: ThemeConfig | null };
+
+/** The file of the exported project that carries the Custom Skin config (Stock's Export format, re-importable). */
+export const THEME_FILE = "theme.json";
+/** Stock's base rules under a themed render (CUSTOM_SKIN_BASE_CSS), imported after the skin when a Custom Skin is on. */
+export const CUSTOM_SKIN_CSS = `${INSTALL_ROOT}/custom-skin.css`;
 
 function generatorOf(page: CreatorPage, skin: string | null) {
 	return {
@@ -212,10 +221,15 @@ function generatorOf(page: CreatorPage, skin: string | null) {
  */
 export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}): PackFile[] {
 	const valid = parsePage(page);
-	const theme = registrySkin(options.skin);
+	const custom = options.theme ? renderCustomSkin(options.theme) : null;
+	const theme = registrySkin(custom ? custom.skin : options.skin);
 	const skin = theme?.id ?? null;
-	const files: PackFile[] = [...scaffold(valid.slug || "page", valid.title, theme), ...sveltePackFiles(valid)];
+	const files: PackFile[] = [...scaffold(valid.slug || "page", valid.title, theme, custom), ...sveltePackFiles(valid)];
 	files.push({ path: "page.json", content: `${JSON.stringify(valid, null, 2)}\n` });
+	if (options.theme) {
+		files.push({ path: THEME_FILE, content: `${configText(options.theme)}\n` });
+		files.push({ path: CUSTOM_SKIN_CSS, content: CUSTOM_SKIN_BASE_CSS });
+	}
 	const generator = generatorOf(valid, skin);
 	files.push({ path: "GENERATOR.json", content: `${JSON.stringify(generator, null, 2)}\n` });
 	const paths = [...files.map((file) => file.path), CLI_CONFIG, CLI_LOCK, ...registryPathsOf(valid, skin), "manifest.json"];
@@ -227,6 +241,7 @@ export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}):
 		locale: valid.locale,
 		seo: valid.seo,
 		skin,
+		...(options.theme ? { customSkin: { file: THEME_FILE, format: options.theme.format, version: options.theme.version } } : {}),
 		files: paths,
 		generator: { name: generator.name, emitter: generator.emitter, appSvelteSha256: generator.appSvelteSha256 }
 	};
@@ -245,8 +260,8 @@ export function lockFor(fullLock: string, items: readonly string[]): string {
 /** The whole exported project: packFilesFromPage plus the registry files of the page, read from the pinned snapshot. */
 export async function packZipFiles(page: CreatorPage, read: RegistryReader, options: PackOptions = {}): Promise<PackFile[]> {
 	const valid = parsePage(page);
-	const skin = registrySkin(options.skin)?.id ?? null;
-	const own = packFilesFromPage(valid, { skin });
+	const skin = registrySkin(options.theme ? renderCustomSkin(options.theme).skin : options.skin)?.id ?? null;
+	const own = packFilesFromPage(valid, { skin, theme: options.theme ?? null });
 	const registryPaths = registryPathsOf(valid, skin);
 	const registry = await read([CLI_CONFIG, CLI_LOCK, ...registryPaths]);
 	for (const path of [CLI_CONFIG, CLI_LOCK, ...registryPaths]) {
@@ -262,10 +277,32 @@ export async function packZipFiles(page: CreatorPage, read: RegistryReader, opti
 	];
 }
 
-function scaffold(slug: string, title: string, skin: RegistrySkin | null): PackFile[] {
+const attr = (value: string): string => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+function scaffold(slug: string, title: string, skin: RegistrySkin | null, custom: CustomSkinRender | null = null): PackFile[] {
 	// A skin is on with its CSS after the styles entry and data-skin on <html> (what `npx ui8kit add theme-<skin>` prints).
-	const htmlAttrs = skin ? ` data-skin="${skin.id}"` : "";
-	const skinImport = skin ? `// Skin ${skin.title} (registry item ${skin.item}): brand tokens only, on with data-skin on <html>.\nimport "./${skin.file.slice(`${INSTALL_ROOT}/`.length)}";\n` : "";
+	// A Custom Skin adds what Stock puts on its root: density attributes, the inline variables, its fixed mode, fonts.
+	const htmlAttrs = custom
+		? [
+				...Object.entries(custom.attrs).map(([name, value]) => ` ${name}="${attr(value)}"`),
+				custom.mode === "dark" ? ` class="dark" data-theme="dark"` : ` data-theme="light"`,
+				` style="${attr(renderStyleText(custom))}"`
+			].join("")
+		: skin
+			? ` data-skin="${skin.id}"`
+			: "";
+	const modeScript = custom
+		? `		<!-- Custom Skin (theme.json, magazine-theme v2): fonts it names; its ${custom.mode} mode is fixed on <html>. -->
+${custom.fonts.map((href) => `		<link rel="stylesheet" href="${attr(href)}" />`).join("\n")}
+`
+		: `		<script>
+			// Dark theme follows the system; set class="dark" (or data-theme="dark") on <html> to force it.
+			if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("dark");
+		</script>
+`;
+	const skinImport =
+		(skin ? `// Skin ${skin.title} (registry item ${skin.item}): brand tokens only, on with data-skin on <html>.\nimport "./${skin.file.slice(`${INSTALL_ROOT}/`.length)}";\n` : "") +
+		(custom ? `// Custom Skin (theme.json): Stock's base rules; its tokens are inline on <html> in index.html.\nimport "./${CUSTOM_SKIN_CSS.slice(`${INSTALL_ROOT}/`.length)}";\n` : "");
 	const safeTitle = title.replace(/[<>&"]/g, "");
 	const pkg = {
 		name: `${slug.replace(/[^a-z0-9-]/gi, "-").toLowerCase() || "page"}`,
@@ -285,11 +322,7 @@ function scaffold(slug: string, title: string, skin: RegistrySkin | null): PackF
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>${safeTitle}</title>
-		<script>
-			// Dark theme follows the system; set class="dark" (or data-theme="dark") on <html> to force it.
-			if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("dark");
-		</script>
-	</head>
+${modeScript}	</head>
 	<body>
 		<div id="app"></div>
 		<script type="module" src="/${INSTALL_ROOT}/main.ts"></script>
@@ -343,7 +376,7 @@ npm i && npm run dev
   \`ui8kit.config.json\` / \`ui8kit.lock.json\` are exactly what \`npx ui8kit init\` + \`npx ui8kit add\` write for
   the items in \`GENERATOR.json\` (\`registryItems\`). Check them with \`npx ui8kit check\`; do not edit them.
 - Dark theme: \`class="dark"\` or \`data-theme="dark"\` on \`<html>\`.
-${skin ? `- Skin: ${skin.title} (\`npx ui8kit add ${skin.item}\`): \`${skin.file}\` is imported in \`${INSTALL_ROOT}/main.ts\` and \`<html data-skin="${skin.id}">\` turns it on. Remove both lines for the default theme.\n` : ""}`
+${skin ? `- Skin: ${skin.title} (\`npx ui8kit add ${skin.item}\`): \`${skin.file}\` is imported in \`${INSTALL_ROOT}/main.ts\` and \`<html data-skin="${skin.id}">\` turns it on. Remove both lines for the default theme.\n` : ""}${custom ? `- Custom Skin: \`${THEME_FILE}\` is the theme as the Stock theme editor exports it (format magazine-theme, version 2; import it again in BuildY Settings or in Stock). \`index.html\` carries what it sets on \`<html>\`: ${skin ? "the base skin above, " : ""}the density attributes, the inline variables (radius, fonts, per-element tokens, palette, type scale), its ${custom.mode} mode and the Google Fonts links.\n` : ""}`
 		}
 	];
 }

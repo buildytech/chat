@@ -20,7 +20,9 @@
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
 	import { applyProposal, discardProposal, getChatSkin, getSelectedSession, proposalStatus, setChatSkin } from "$lib/chat-core";
-	import { applySkin, skins } from "$lib/theme/skins";
+	import { applySkin, forcedPreviewMode, skins } from "$lib/theme/skins";
+	import { customSkin } from "$lib/theme/custom-skin.svelte";
+	import { CUSTOM_SKIN_ID } from "$lib/theme/custom-skin";
 	import {
 		blocksOf,
 		getCurrentPage,
@@ -89,6 +91,13 @@
 		if (source.dataset.theme) target.dataset.theme = source.dataset.theme;
 		else delete target.dataset.theme;
 		target.style.colorScheme = source.style.colorScheme;
+		// A Custom Skin (ADR 0025) fixes its own mode on the preview; the chat's mode never reaches it then.
+		const forced = forcedPreviewMode(doc);
+		if (forced) {
+			target.classList.toggle("dark", forced === "dark");
+			target.dataset.theme = forced;
+			target.style.colorScheme = forced;
+		}
 	}
 
 	async function onFrameLoad() {
@@ -114,10 +123,14 @@
 	// Skin of this chat's page (session `skin`, registry item theme-<skin>): on the preview document only, as in the ZIP.
 	const skinOptions = skins();
 	const skin = $derived(getChatSkin());
+	// The imported theme (Settings > Theme import) is one more option, "Custom Skin"; it renders on the frame only.
+	const custom = $derived(customSkin.config);
+	const skinValue = $derived(skin === CUSTOM_SKIN_ID && !custom ? "" : (skin ?? ""));
 	$effect(() => {
 		const doc = frameDoc;
 		const id = skin;
-		if (doc) void applySkin(doc, id);
+		const config = custom;
+		if (doc) void applySkin(doc, id, config).then(() => syncTheme(doc));
 	});
 
 	function onSkin(event: Event) {
@@ -303,13 +316,16 @@
 					id="preview-skin"
 					size="sm"
 					class="w-auto"
-					value={skin ?? ""}
+					value={skinValue}
 					aria-label={t("preview.skin")}
 					title={t("preview.skin")}
 					data-slot="preview-skin"
 					onchange={onSkin}
 				>
 					<SelectOption value="">{t("preview.skinDefault")}</SelectOption>
+					{#if custom}
+						<SelectOption value={CUSTOM_SKIN_ID} data-slot="preview-skin-custom">{t("preview.skinCustom")}</SelectOption>
+					{/if}
 					{#each skinOptions as option (option.id)}
 						<SelectOption value={option.id}>{option.title}</SelectOption>
 					{/each}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { packSkinOptions } from "$lib/theme/custom-skin.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import ChevronLeft from "@lucide/svelte/icons/chevron-left";
 	import Copy from "@lucide/svelte/icons/copy";
@@ -29,7 +30,7 @@
 
 	const page = $derived(getCurrentPage());
 	const savedRevision = $derived(getPageRevision());
-	const pack = $derived(page ? packFilesFromPage(page, { skin: getChatSkin() }) : []);
+	const pack = $derived(page ? packFilesFromPage(page, packSkinOptions(getChatSkin())) : []);
 
 	let openFolders = $state<Record<string, boolean>>({ "src/sections": true });
 

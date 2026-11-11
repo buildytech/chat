@@ -1,0 +1,24 @@
+{
+  "format": "magazine-theme",
+  "version": 2,
+  "mode": "light",
+  "skin": "claude",
+  "font": "manrope",
+  "headingFont": "merriweather",
+  "radius": 12,
+  "tokens": {
+    "radius-button": 8,
+    "radius-card": 16,
+    "density-button": "comfortable",
+    "shadow-card": "md"
+  },
+  "palette": {
+    "harmony": "tetradic",
+    "h": 160,
+    "s": 70,
+    "l": 38
+  },
+  "fontScale": 105,
+  "fontWeight": 500,
+  "tracking": 0.025
+}

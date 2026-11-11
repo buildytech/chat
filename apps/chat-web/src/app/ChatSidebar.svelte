@@ -27,6 +27,7 @@
 	import { modelUnavailableCode } from "@buildytech/builder-core";
 	import ConfirmDialog from "./ConfirmDialog.svelte";
 	import SettingsSessionFile from "./SettingsSessionFile.svelte";
+	import SettingsThemeImport from "./SettingsThemeImport.svelte";
 	import Checkbox from "$registry/compose/Checkbox.svelte";
 	import Label from "$registry/compose/Label.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
@@ -149,7 +150,7 @@
 	aria-label={t("sidebar.mainNav")}
 	data-nav={collapsed ? "collapsed" : "expanded"}
 >
-	<Stack align="stretch" class="gap-2 p-2 in-data-[nav=collapsed]:items-center">
+	<Stack align="stretch" class="min-h-0 shrink gap-2 overflow-y-auto p-2 in-data-[nav=collapsed]:items-center">
 		<Group class="justify-between gap-2 in-data-[nav=collapsed]:flex-col in-data-[nav=collapsed]:items-center">
 			<Group class="min-w-0 gap-2 in-data-[nav=collapsed]:hidden">
 				<Box
@@ -286,7 +287,8 @@
 		{/if}
 	</Stack>
 
-	<Stack align="stretch" class="gap-0 p-2 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.preferences")}>
+	<!-- Preferences: at most 3/4 of the sidebar; an open Settings region scrolls on its own (ADR 0025, compact IDE density). -->
+	<Stack align="stretch" class="max-h-[75%] min-h-0 shrink-0 gap-0 p-2 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.preferences")} data-slot="sidebar-preferences">
 		<Separator class="in-data-[nav=collapsed]:hidden" />
 		<Button
 			class={cn(
@@ -311,9 +313,11 @@
 		{#if settingsOpen && !collapsed}
 			<Stack align="stretch"
 				id="creator-settings"
-				class="gap-2 rounded border border-border p-2"
+				class="min-h-0 shrink gap-2 overflow-y-auto overscroll-contain rounded border border-border p-2"
 				role="region"
+				tabindex={-1}
 				aria-label={t("sidebar.settingsRegion")}
+				data-slot="settings-region"
 			>
 				<Text tag="p" class="text-xs text-muted-foreground">{t("sidebar.settingsHint")}</Text>
 				<Text tag="p" class="text-xs font-medium text-foreground">{t("sidebar.settingsModel")}</Text>
@@ -321,7 +325,7 @@
 					<Button
 						id={index === 0 ? "creator-settings-model" : undefined}
 						class={cn(
-							"flex w-full items-center justify-start rounded px-2 py-1 text-left text-sm",
+							"flex w-full items-center justify-start rounded px-2 py-1 text-left text-xs",
 							isChatModelAvailable(model.id) ? "hover:bg-accent/70" : "cursor-not-allowed opacity-60",
 							model.id === selectedModelId ? "bg-accent text-accent-foreground" : "text-foreground"
 						)}
@@ -337,22 +341,23 @@
 					{/if}
 				{/each}
 				<Button
-					class="flex w-full items-center justify-start rounded px-2 py-1 text-sm text-foreground hover:bg-accent/70"
+					class="flex w-full items-center justify-start rounded px-2 py-1 text-xs text-foreground hover:bg-accent/70"
 					onclick={() => theme.toggle()}
 				>
 					{theme.isDark ? t("sidebar.useLight") : t("sidebar.useDark")}
 				</Button>
-				<Group class="items-center gap-2 px-2 py-2" data-slot="settings-preview-clean">
+				<Group class="items-center gap-2 px-2 py-1" data-slot="settings-preview-clean">
 					<Checkbox
 						id="creator-settings-preview-clean"
 						checked={previewSettings.hideServiceLabels}
 						onchange={(event: Event) => previewSettings.setHideServiceLabels((event.currentTarget as HTMLInputElement).checked)}
 					/>
-					<Label for="creator-settings-preview-clean" class="text-sm text-foreground">{t("settings.hidePreviewLabels")}</Label>
+					<Label for="creator-settings-preview-clean" class="text-xs text-foreground">{t("settings.hidePreviewLabels")}</Label>
 				</Group>
+				<SettingsThemeImport />
 				<SettingsSessionFile />
 				<Button
-					class="flex w-full items-center justify-start rounded px-2 py-1 text-sm text-destructive hover:bg-accent/70"
+					class="flex w-full items-center justify-start rounded px-2 py-1 text-xs text-destructive hover:bg-accent/70"
 					aria-haspopup="dialog"
 					onclick={() => (pendingDelete = { kind: "all" })}
 				>
