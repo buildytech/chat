@@ -453,7 +453,7 @@
 		"feed.view": "Feed view",
 		"feed.oneColumn": "One column",
 		"feed.twoColumns": "Two columns",
-		"feed.results": "{n} results",
+		"feed.results": "Results: {n}",
 		"feed.empty": "Nothing matches. Clear a filter or the search.",
 		"feed.clear": "Clear filters",
 		"feed.list": "Results",
