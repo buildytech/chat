@@ -58,7 +58,8 @@ reads the stored shape `{ v: 1, theme }`, a bare theme and the old format-1 pres
 
 The Settings region is compact (xs text, py-1 rows) and scrolls on its own: the preferences block takes at most 3/4
 of the sidebar height and the region inside it is `overflow-y-auto overscroll-contain`; the upper part of the sidebar
-scrolls separately. Focused controls scroll into view natively.
+scrolls separately. A `focusin` handler on the region scrolls the whole focused control into view (`block: nearest`);
+the browser's own focus scroll left the tall theme textarea half clipped at 1024x640.
 
 The xs size is set on the region itself: app.css has an unlayered `button, input, textarea, select { font: inherit }`,
 which beats a `text-xs` utility on the control (utilities live in a cascade layer), so the controls take the region's

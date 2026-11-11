@@ -139,6 +139,12 @@
 		}
 		pendingDelete = null;
 	}
+
+	// Keyboard focus inside the scrolling Settings region: show the whole control, not only its caret (a tall textarea
+	// was left half clipped by the browser's own focus scroll at 1024x640).
+	function revealFocused(event: FocusEvent) {
+		(event.target as HTMLElement | null)?.scrollIntoView?.({ block: "nearest" });
+	}
 </script>
 
 <svelte:window onkeydown={onSearchKey} />
@@ -318,6 +324,7 @@
 				tabindex={-1}
 				aria-label={t("sidebar.settingsRegion")}
 				data-slot="settings-region"
+				onfocusin={revealFocused}
 			>
 				<Text tag="p" class="text-xs text-muted-foreground">{t("sidebar.settingsHint")}</Text>
 				<Text tag="p" class="text-xs font-medium text-foreground">{t("sidebar.settingsModel")}</Text>
