@@ -31028,7 +31028,7 @@ const { catalogBlocksWithVariant, catalogSourceFor, catalogVariantsFor } = __req
 const { getBlockIndex } = __req("packages/builder-core/src/catalog/compatibility.ts");
 const { lucideIcons } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { screenSupport } = __req("packages/builder-core/src/catalog/compatibility.ts");
-const { getAskBlock, getBlockDetails } = __req("packages/builder-core/src/catalog/details.ts");
+const { askBlockCard, getAskBlock, getBlockDetails } = __req("packages/builder-core/src/catalog/details.ts");
 const { toolOffersMode } = __req("packages/builder-core/src/agent/agent-tools.ts");
 const { blockLabelVocabulary, vocabularyValues } = __req("packages/builder-core/src/catalog/text-search.ts");
 const { checkPagePlan, resolveBlockRef } = __req("packages/builder-core/src/page-plan.ts");
@@ -31734,8 +31734,13 @@ function placeCollectionDraftWithNotes(
 		const spec = asked && !outside ? asked : pick.catalogBlock;
 		const sameBlock = spec === pick.catalogBlock;
 		const variant = !outside && typeof rec.variant === "string" && rec.variant ? rec.variant : sameBlock ? pick.variant : null;
+		// A section title that only names the kind or catalog block (e.g. "Hero") takes the model's own headline.
+		const title = typeof rec.title === "string" ? rec.title.trim().toLowerCase() : "";
+		const generic = !title || title === kind.toLowerCase() || title === spec.replace(/^block\./, "").toLowerCase() || title === (askBlockCard(spec)?.title ?? "").toLowerCase();
+		const headline = typeof rec.headline === "string" ? rec.headline.trim() : "";
+		const named = generic && headline ? { title: headline.slice(0, 80) } : {};
 		// A required item keeps the author's variant unless the model picked another variant of the same block.
-		return { ...rec, catalogBlock: spec, ...(variant ? { variant } : {}) };
+		return { ...rec, ...named, catalogBlock: spec, ...(variant ? { variant } : {}) };
 	});
 	for (const row of draft.blocks) {
 		if (seen.has(row.kind)) continue;
@@ -32980,7 +32985,9 @@ function intakeTools(draft: CollectionDraft): ReturnType<typeof INTAKE_TOOLS> {
 					catalogBlock: { type: "string", enum: [row.catalogBlock] },
 					...variants(row.variants),
 					title: props.title,
-					...Object.fromEntries(keys.map((key) => [key, props[key]])),
+					...Object.fromEntries(
+						keys.map((key) => [key, key === "legal" ? { type: "string", description: "Short legal line with no year or company form unless the author gave them." } : props[key]])
+					),
 					...items
 				},
 				required

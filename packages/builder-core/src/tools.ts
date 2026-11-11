@@ -5,7 +5,7 @@ import { getBlockIndex } from "./catalog/compatibility.ts";
 import { lucideIcons } from "./catalog/props-schema.ts";
 import type { ModelPageContent } from "./content.ts";
 import { screenSupport } from "./catalog/compatibility.ts";
-import { getAskBlock, getBlockDetails } from "./catalog/details.ts";
+import { askBlockCard, getAskBlock, getBlockDetails } from "./catalog/details.ts";
 import { toolOffersMode, type AgentMode } from "./agent/agent-tools.ts";
 import { blockLabelVocabulary, vocabularyValues } from "./catalog/text-search.ts";
 import { checkPagePlan, resolveBlockRef } from "./page-plan.ts";
@@ -838,8 +838,13 @@ export function placeCollectionDraftWithNotes(
 		const spec = asked && !outside ? asked : pick.catalogBlock;
 		const sameBlock = spec === pick.catalogBlock;
 		const variant = !outside && typeof rec.variant === "string" && rec.variant ? rec.variant : sameBlock ? pick.variant : null;
+		// A section title that only names the kind or catalog block (e.g. "Hero") takes the model's own headline.
+		const title = typeof rec.title === "string" ? rec.title.trim().toLowerCase() : "";
+		const generic = !title || title === kind.toLowerCase() || title === spec.replace(/^block\./, "").toLowerCase() || title === (askBlockCard(spec)?.title ?? "").toLowerCase();
+		const headline = typeof rec.headline === "string" ? rec.headline.trim() : "";
+		const named = generic && headline ? { title: headline.slice(0, 80) } : {};
 		// A required item keeps the author's variant unless the model picked another variant of the same block.
-		return { ...rec, catalogBlock: spec, ...(variant ? { variant } : {}) };
+		return { ...rec, ...named, catalogBlock: spec, ...(variant ? { variant } : {}) };
 	});
 	for (const row of draft.blocks) {
 		if (seen.has(row.kind)) continue;

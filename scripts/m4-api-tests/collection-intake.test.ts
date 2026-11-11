@@ -341,8 +341,9 @@ test("intake placeholders: the draft's catalog copy is shown to the model; copy 
 		const user = JSON.parse(String(body(requests[0]!)[1]!.content));
 		assert.ok(user.draft.blocks.find((row: { kind: string }) => row.kind === "hero").placeholder.lede);
 		const note = turn.proposal.warnings.find((w) => /Catalog placeholder copy is still on/.test(w)) ?? "";
-		assert.match(note, /hero\.title/);
-		assert.doesNotMatch(note, /hero\.(headline|lede|action)/);
+		// "Hero" as the title only names the kind: the host takes the model's headline, so only the eyebrow it left out is said on hero.
+		assert.doesNotMatch(note, /hero\.(title|headline|lede|action)/);
+		assert.match(note, /hero\.eyebrow/);
 		assert.match(note, /cta\.lede/);
 	});
 });
@@ -373,4 +374,12 @@ test("intake tool: propose_layout narrowed to the draft blocks, visible copy and
 	if (features) assert.ok(features.required.includes("items"));
 	const footer = shapes.find((row) => row.properties.kind!.enum![0] === "footer");
 	if (footer) assert.ok(!footer.required.includes("legal"));
+});
+
+test("intake placement: a section title that only names the kind takes the model's headline", () => {
+	const draft = collectionIntakeDraft({ bounds, brief: "Bakery landing", screenId: SCREEN })!;
+	const placed = placeCollectionDraftWithNotes({ blocks: [{ kind: "hero", title: "Hero", headline: "Bread at dawn" }, { kind: "cta", title: "Order ahead", headline: "x" }] }, draft, bounds);
+	const blocks = placed.args.blocks as Array<{ kind: string; title: string }>;
+	assert.equal(blocks.find((b) => b.kind === "hero")!.title, "Bread at dawn");
+	assert.equal(blocks.find((b) => b.kind === "cta")!.title, "Order ahead");
 });

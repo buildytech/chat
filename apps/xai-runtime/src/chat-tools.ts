@@ -149,7 +149,9 @@ export function intakeTools(draft: CollectionDraft): ReturnType<typeof INTAKE_TO
 					catalogBlock: { type: "string", enum: [row.catalogBlock] },
 					...variants(row.variants),
 					title: props.title,
-					...Object.fromEntries(keys.map((key) => [key, props[key]])),
+					...Object.fromEntries(
+						keys.map((key) => [key, key === "legal" ? { type: "string", description: "Short legal line with no year or company form unless the author gave them." } : props[key]])
+					),
 					...items
 				},
 				required
