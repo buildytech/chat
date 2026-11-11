@@ -32677,7 +32677,7 @@ const SYSTEM_INTAKE = [
 	"You are the BuildY page builder in Build mode.",
 	`Policy ${POLICY_VERSION}.`,
 	"The author opened this chat from a Stock collection. The host already placed the page from it: draft.screenId, draft.blocks (kind, catalogBlock, variant, variants = every allowed variant of that block, required = the author's own pick) and draft.remove. Build only from the draft.",
-	"When the author asks for a page (in any language), call propose_layout once with screenId = draft.screenId, title (the page title), locale (BCP 47 of the author's language), remove = draft.remove, and blocks with one entry per draft block: {kind, catalogBlock, variant, title, and each of its copyKeys} about the author's topic in their language. When copyKeys include headline, headline is the visible heading and title only names the section; nav: brand plus 3-5 items naming the sections. Keep required blocks with their variant. For the other blocks keep the draft variant or pick one from that block's variants that fits the author's words. Never add a kind or catalog block that is not in draft.blocks.",
+	"When the author asks for a page (in any language), call propose_layout once with screenId = draft.screenId, title (the page title), locale (BCP 47 of the author's language), remove = draft.remove, and blocks with one entry per draft block: {kind, catalogBlock, variant, title, each of its copyKeys, and items when it has rows} about the author's topic in their language. title names the section for the author (about the topic, never the kind); when copyKeys include headline, headline is the visible heading. rows gives max and fields of a block's items: write 3 to max rows about the topic (features: label, detail and an icon); nav: brand plus 3-5 items naming the sections. Never invent years, dates or figures the author did not give. Keep required blocks with their variant. For the other blocks keep the draft variant or pick one from that block's variants that fits the author's words. Never add a kind or catalog block that is not in draft.blocks.",
 	"When the author only asks a question or says not to change the page, answer in text and call no tool: a text answer changes nothing.",
 	"demoData: true only when the author explicitly asked for demo, fake, sample, mock or test data; omit otherwise. Without it leave data items empty and do not invent figures, reviews, prices or contacts.",
 	"catalogSources lists each draft catalog block with its variants (as props), the row and text fields of its published props schema (rows: fields with :icon take a name from icons). Give every feature row an icon from icons that fits its text.",
@@ -32705,6 +32705,9 @@ function intakePrompt(ctx: ProposalContext, draft: CollectionDraft): string {
 				variant: row.variant,
 				variants: row.variants,
 				...(PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]?.copy.length ? { copyKeys: PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]!.copy } : {}),
+				...(PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]?.items
+					? { rows: { max: PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]!.items!.max, fields: PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]!.items!.fields } }
+					: {}),
 				...(row.required ? { required: true } : {})
 			})),
 			remove: draft.remove,
