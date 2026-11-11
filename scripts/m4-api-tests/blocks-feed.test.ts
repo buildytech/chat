@@ -71,7 +71,7 @@ test("stockSearch type=screen is the home Stock field (scope = scenario filter)"
 	assert.ok(scoped.items.every((item) => ids.has(item.id)));
 	const onboarding = web("lib/browser/onboarding.svelte.ts");
 	assert.match(onboarding, /stockSearch\(\{ type: "screen", q: needle, scope: scopeOf\(catalogQuery\(\)\), page, pageSize: 12 \}\)/);
-	assert.match(web("lib/feed/feed.svelte.ts"), /stockSearch\(\{ q, \.\.\.filters, page, pageSize: FEED_PAGE_SIZE \}\)/);
+	assert.match(web("lib/feed/feed.svelte.ts"), /stockSearch\(\{ q, \.\.\.filters, page, pageSize: FEED_PAGE_SIZE, boostRoles: family \? familyKinds\(family\) : null \}\)/);
 });
 
 test("Blocks feed add: after the selected section or at the end, every gate, no model call", () => {
@@ -97,12 +97,13 @@ test("Blocks feed add: after the selected section or at the end, every gate, no 
 		const r = canAddCatalogBlock({ page, provenance }, spec, variant);
 		return r.ok ? "ok" : r.code;
 	};
-	assert.equal(check("block.metrics"), "not_in_screen_family");
+	// ADR 0027: the screen family never rejects a block that has a renderer.
+	assert.equal(check("block.metrics"), "ok");
 	assert.equal(check("block.about"), "not_a_page_block");
 	assert.equal(check("block.features", "nosuch"), "unknown_variant");
 	assert.equal(canAddCatalogBlock({ page, provenance: null }, "block.hero", null).ok ? "ok" : "no_screen", "no_screen");
-	const rejected = inspectorOp(ctx, { op: "add", blockId: "", catalogBlock: "block.metrics" });
-	assert.equal(rejected.ok, false);
+	const mixed = inspectorOp(ctx, { op: "add", blockId: "", catalogBlock: "block.metrics" });
+	assert.ok(mixed.ok, JSON.stringify(mixed));
 	// Every block the feed offers as addable on this page passes the full gate.
 	for (let n = 1; n <= stockSearch({ type: "block", pageSize: 48 }).pageCount; n += 1) {
 		for (const item of stockSearch({ type: "block", page: n, pageSize: 48 }).items) {

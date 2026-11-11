@@ -24,8 +24,8 @@
 	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { canvas } from "$lib/inspector/canvas.svelte";
 	import { getCurrentPage, getCurrentProvenance } from "$lib/page-store";
-	import { startPageFromScreen } from "$lib/chat-core";
-	import type { AddBlockCheck, StockSearchItem } from "@buildytech/builder-core";
+	import { createSession, getSelectedSession, startPageFromScreen } from "$lib/chat-core";
+	import type { StockSearchItem } from "@buildytech/builder-core";
 	import FeedCard from "./FeedCard.svelte";
 	import { feedDrag } from "$lib/feed/drag.svelte";
 
@@ -33,17 +33,10 @@
 	const filters = $derived(feed.filters);
 	let starting = $state<string | null>(null);
 
-	// The page the cards add to: read so the checks follow page and screen changes.
-	const checks = $derived.by(() => {
-		void getCurrentPage();
-		void getCurrentProvenance();
-		const out: Record<string, AddBlockCheck> = {};
-		for (const item of result.items) if (item.type === "block") out[item.id] = inspector.canAdd(item.spec, item.variant);
-		return out;
-	});
+	// t150u: no per-page check map; each card computes its own availability (FeedCard). The page note only needs the page.
 	const pageNote = $derived.by(() => {
-		const first = Object.values(checks)[0];
-		return first && !first.ok && (first.code === "no_screen") ? t(`feed.why.${first.code}`) : null;
+		const page = getCurrentPage();
+		return page && page.layout.blocks.length > 0 && !getCurrentProvenance()?.screenId ? t("feed.why.no_screen") : null;
 	});
 
 	const facet = (name: "type" | "role" | "spec" | "site" | "variant") => result.facets[name];
@@ -63,11 +56,23 @@
 		} else feedDrag.status = { ok: false, text: t("feed.addFailed").replace("{message}", done.message) };
 	}
 
+	async function startFromSections(screenId: string): Promise<{ ok: true } | { ok: false; code: string; message: string }> {
+		// A fresh chat when this one already has a page or messages, as Start page does: nothing is overwritten.
+		const session = getSelectedSession();
+		if (!session || session.messages.length || getCurrentPage()) await createSession();
+		const added = inspector.addScreen(screenId);
+		if (!added.ok) return added;
+		canvas.requestReveal(added.blockId);
+		return { ok: true };
+	}
+
 	async function start(item: StockSearchItem) {
 		if (starting) return;
 		starting = item.id;
 		try {
-			const done = await startPageFromScreen(item.id);
+			let done = await startPageFromScreen(item.id);
+			// t150u: a screen with sections this version cannot render starts from the ones it can (listed, not invented).
+			if (!done.ok && done.code !== "unknown_screen") done = await startFromSections(item.id);
 			feedDrag.status = done.ok
 				? { ok: true, text: t("feed.started").replace("{title}", item.title) }
 				: { ok: false, text: t("feed.startFailed").replace("{message}", done.message) };
@@ -152,7 +157,7 @@
 		{:else}
 			<Box tag="ul" class={cn("grid gap-2", feed.columns === 2 ? "grid-cols-2" : "grid-cols-1")} aria-label={t("feed.list")} data-slot="feed-list" data-columns={feed.columns}>
 				{#each result.items as item (item.id)}
-					<FeedCard {item} columns={feed.columns} check={item.type === "block" ? (checks[item.id] ?? null) : null} onAdd={add} onStart={start} starting={starting !== null} />
+					<FeedCard {item} columns={feed.columns} onAdd={add} onStart={start} starting={starting !== null} />
 				{/each}
 			</Box>
 		{/if}

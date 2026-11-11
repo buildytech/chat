@@ -254,16 +254,25 @@ export type { VisibleChange };
  * change (coalesced typing is one change, matching one undo step); a pending proposal stays pending and keeps no
  * revision. Block objects are kept as given, so unchanged blocks do not re-render.
  */
-export function replaceVisiblePage(page: Page, selectId: string | null = null, change: VisibleChange = "edit", meta?: RevisionMeta): boolean {
+export function replaceVisiblePage(
+	page: Page,
+	selectId: string | null = null,
+	change: VisibleChange = "edit",
+	meta?: RevisionMeta,
+	provenance?: StoredPageProvenance | null
+): boolean {
 	if (!candidatePage && !currentPage) return false;
 	// The visible page is the pending proposal when there is one (no revision), else the applied page.
 	const step = nextRevision(pageRevision, change, !candidatePage);
 	if (candidatePage) {
 		if (lastProposedPage === candidatePage) lastProposedPage = page;
 		candidatePage = page;
+		// The screen family (ADR 0027) rides with the page it describes; undo / redo restore it with the page.
+		if (provenance !== undefined) candidateProvenance = provenance;
 	} else {
 		currentPage = page;
 		pageRevision = step.revision;
+		if (provenance !== undefined) appliedProvenance = provenance;
 	}
 	if (selectId && hasBlock(page.layout.blocks, selectId)) selectedBlockId = selectId;
 	else syncSelection(page);

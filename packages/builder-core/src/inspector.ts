@@ -13,7 +13,7 @@ import type { CatalogScreen } from "./catalog/types.ts";
 import { catalogEntryBySpec, catalogSourceFor } from "./catalog/sources.ts";
 import { registryItemFor } from "./catalog/organism.ts";
 import { editPage } from "./patch.ts";
-import { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } from "./catalog/provenance.ts";
+import { attachCatalogSources, FAMILY_HOME_SCREENS, familyLabelForKind, kindSourceFor, validateCatalogProvenance } from "./catalog/provenance.ts";
 import { isScenarioId } from "./brief.ts";
 import type { ScenarioId } from "./copy.ts";
 import { organismFor, pageListName, variantPreset, writableOrigin, type OrganismRender } from "./catalog/organism.ts";
@@ -22,6 +22,7 @@ import { newPropsListRow } from "./catalog/props-schema.ts";
 import { checkBlockProps } from "./catalog/provenance.ts";
 import { propsEventsFor, propsFieldTree, type PropsFieldNode } from "./catalog/props-schema.ts";
 import { catalogVariantsFor } from "./catalog/sources.ts";
+import { screenSections } from "./catalog/screen-sections.ts";
 
 export type InspectorLock = "variant" | "sample" | "no_page_field";
 
@@ -512,7 +513,7 @@ function gated(ctx: InspectorOpContext, blocks: PageBlock[], changed: string[], 
 /** Why the Blocks feed cannot add this block to the page (null: it can). Cheap: the op runs every gate again. */
 export type AddBlockCheck =
 	| { ok: true; kind: PageBlockKind; variant: string | null; /** Set when there is no page yet: the Stock screen the empty page starts on. */ startScreenId?: string }
-	| { ok: false; code: "no_screen" | "no_start_screen" | "unknown_block" | "not_a_page_block" | "not_in_screen_family" | "unknown_variant" | "no_renderer"; message: string };
+	| { ok: false; code: "no_screen" | "no_start_screen" | "unknown_block" | "not_a_page_block" | "unknown_variant" | "no_renderer"; message: string };
 
 /**
  * Stock screens an empty page starts on (ADR 0024, empty start), in preference order: the first whose spec family
@@ -520,12 +521,7 @@ export type AddBlockCheck =
  * catalog provenance gate keeps checking it). Marketing landing first: hero, features (stats, testimonials, FAQ,
  * logos ...), CTA, header and footer; then food (menu), restaurant (dish) and the dashboard console.
  */
-export const EMPTY_PAGE_SCREENS = [
-	"screen.theme-marketing-landing/home",
-	"screen.theme-food-grill/home",
-	"screen.theme-restaurant-house/home",
-	"screen.theme-dashboard-console/home"
-] as const;
+export const EMPTY_PAGE_SCREENS = FAMILY_HOME_SCREENS;
 
 /** The Stock screen an empty page starts on for a first section of `kind` (null kind: the default). */
 export function emptyPageScreenFor(kind: PageBlockKind | null): CatalogScreen | null {
@@ -556,9 +552,8 @@ export function canAddCatalogBlock(ctx: Pick<InspectorOpContext, "page" | "prove
 			? { ok: false, code: "no_start_screen", message: `No Stock screen family has a ${kind} section to start a page with.` }
 			: { ok: false, code: "no_screen", message: "The page has no recorded Stock screen, so blocks cannot be added." };
 	}
-	if (!familyLabelForKind(screen, kind)) {
-		return { ok: false, code: "not_in_screen_family", message: `Stock screen ${screen.screenId} and its family have no ${kind} section.` };
-	}
+	// ADR 0027: the screen family is advisory; a section of another family takes its Stock sample from that family.
+	if (!kindSourceFor(screen, kind)) return { ok: false, code: "not_a_page_block", message: `No Stock screen has a ${kind} section.` };
 	if (!registryItemFor(catalogBlock, want)) return { ok: false, code: "no_renderer", message: `${catalogBlock} has no page renderer in this BuildY version yet.` };
 	return { ok: true, kind, variant: want, ...(starting ? { startScreenId: screen.screenId } : {}) };
 }
@@ -600,6 +595,11 @@ const TOP_KINDS = new Set<PageBlockKind>(["sidenav", "nav"]);
 const BOTTOM_KINDS = new Set<PageBlockKind>(["footer", "bottomnav"]);
 
 export type AddSlotCheck = { ok: true } | { ok: false; code: "index_out_of_range" | "above_header" | "below_footer" | "header_top" | "footer_end"; message: string };
+
+/** Which edge a chrome kind keeps to: "top" (header, side navigation), "bottom" (footer, bottom navigation), or null. */
+export function chromeEdge(kind: PageBlockKind): "top" | "bottom" | null {
+	return TOP_KINDS.has(kind) ? "top" : BOTTOM_KINDS.has(kind) ? "bottom" : null;
+}
 
 /**
  * Whether a new section of `kind` may go to top-level slot `at` (0 = before the first section, length = after the
@@ -656,8 +656,11 @@ function withFreshIds(node: PageBlock, taken: Set<string>): PageBlock {
 function addedBlock(ctx: InspectorOpContext, catalogBlock: string, variant: string | null): PageBlock | InspectorFailure {
 	const check = canAddCatalogBlock(ctx, catalogBlock, variant);
 	if (!check.ok) return fail(check.code, check.message, "");
-	const screen = getScreenById(ctx.provenance!.screenId!)!;
-	const scenarioId: ScenarioId | null = isScenarioId(ctx.provenance?.scenarioId) ? ctx.provenance!.scenarioId : null;
+	const pageScreen = getScreenById(ctx.provenance!.screenId!)!;
+	// The sample comes from the page's screen family, else from the first family with this kind (ADR 0027).
+	const source = familyLabelForKind(pageScreen, check.kind) ? null : kindSourceFor(pageScreen, check.kind);
+	const screen = source ? (getScreenById(source.screenId) ?? pageScreen) : pageScreen;
+	const scenarioId: ScenarioId | null = source ? null : isScenarioId(ctx.provenance?.scenarioId) ? ctx.provenance!.scenarioId : null;
 	let node = attachCatalogSources([stockBlockFor(check.kind, { screen, scenarioId, brief: ctx.page.title, pageTitle: ctx.page.title })], screen)[0]!;
 	if (node.catalogBlock !== catalogBlock || (node.variant ?? null) !== check.variant) {
 		const swap = swapCatalogBlock(node, { catalogBlock, variant: check.variant });
@@ -841,4 +844,51 @@ function listRow(ctx: InspectorOpContext, index: number, block: PageBlock, op: E
 	next[index] = withPropsOverride(block, op.pointer, rows);
 	const result = gated(ctx, next, [block.id], block.id);
 	return result.ok ? { ...result, op: opName, path: op.action === "add" ? `${op.pointer}/${rows.length - 1}` : `${op.pointer}/${row}` } : result;
+}
+
+export type ScreenAddResult =
+	| (InspectorSuccess & { added: string[]; skipped: string[] })
+	| { ok: false; code: "unknown_screen" | "no_sections" | "nothing_added"; message: string; skipped: string[] };
+
+/**
+ * Drop a Stock screen into a page (t150u): the screen's renderable sections (screenSections) as inspector adds at
+ * slot `at` (default: the end), every gate per section, one result for one undo step. Hard rules only: a header
+ * goes to the top and a footer to the end, and one the page already has (same kind) is skipped; a section a gate
+ * refuses is skipped with its catalog block, never invented. The screen family stays advisory (ADR 0027).
+ */
+export function addScreenSections(ctx: InspectorOpContext, screenId: string, at?: number): ScreenAddResult {
+	if (!getScreenById(screenId)) return { ok: false, code: "unknown_screen", message: `${screenId} is not a Stock screen.`, skipped: [] };
+	const { sections, missing } = screenSections(screenId);
+	const skipped = [...missing];
+	if (!sections.length) return { ok: false, code: "no_sections", message: `${screenId} has no section this BuildY version renders.`, skipped };
+	let page = ctx.page;
+	let slot = Math.max(0, Math.min(at ?? page.layout.blocks.length, page.layout.blocks.length));
+	let last: InspectorSuccess | null = null;
+	const added: string[] = [];
+	for (const section of sections) {
+		const blocks = page.layout.blocks;
+		const edge = chromeEdge(section.kind);
+		if (edge && blocks.some((node) => node.kind === section.kind)) {
+			skipped.push(section.catalogBlock);
+			continue;
+		}
+		const target = edge === "top" ? 0 : edge === "bottom" ? blocks.length : slot;
+		if (!addSlotCheck(blocks, section.kind, target).ok) {
+			skipped.push(section.catalogBlock);
+			continue;
+		}
+		const result = inspectorOp({ ...ctx, page }, { op: "add", blockId: "", catalogBlock: section.catalogBlock, variant: section.variant, at: target });
+		if (!result.ok) {
+			skipped.push(section.catalogBlock);
+			continue;
+		}
+		page = result.page;
+		last = result;
+		added.push(result.blockId);
+		// Content keeps screen order after the slot; a header inserted above shifts the slot down by one.
+		if (edge === "top") slot += 1;
+		else if (!edge) slot = target + 1;
+	}
+	if (!last) return { ok: false, code: "nothing_added", message: `No section of ${screenId} fits this page.`, skipped };
+	return { ...last, blockId: added[0]!, op: "add", added, skipped };
 }

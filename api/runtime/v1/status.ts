@@ -10585,7 +10585,7 @@ __def("packages/page-contract/schema/page-spec.schema.json", function (exports) 
   "$id": "https://schema.buildy.tw/page-spec.schema.json",
   "title": "Page spec page-spec/v1 — a page as Stock catalog blocks with their copy",
   "x-page-spec-profile": "page-spec/v1",
-  "x-page-spec-version": "1.3.0",
+  "x-page-spec-version": "1.4.0",
   "description": "The primary artifact of a BuildY page: an agent proposes it (propose_layout), the host validates it against the Stock catalog, saves it, and regenerates code from it for a UI8Kit target (Svelte today). History, edits (page-patch/v1) and rollback work on this JSON; code is never the source. Root: the page (identical to buildytech/chat Page DTO, layout.version 1: every saved page validates unchanged). $defs: provenance, record and store describe the browser page store. Not a Codex v0.4 entry. After the schema, consumers run x-program-checks (duplicate ids, block count, payload size). x-page-slots lists the copy keys each kind renders and the rows of list kinds; a saved page may hold other copy keys, a patch may only write slots.",
   "x-program-checks": [
     "duplicate_id",
@@ -11403,6 +11403,21 @@ __def("packages/page-contract/schema/page-spec.schema.json", function (exports) 
         "assembler": {
           "type": "string",
           "maxLength": 80
+        },
+        "family": {
+          "enum": [
+            "dashboard",
+            "landing",
+            "food-grill",
+            "restaurant",
+            "generic",
+            null
+          ],
+          "description": "1.4.0, optional, advisory: the page's screen family, derived from its composition after every operation (role majority; mixed -> generic) unless familyPinned. Never rejects a block."
+        },
+        "familyPinned": {
+          "type": "boolean",
+          "description": "1.4.0, optional: the author pinned family; the host stops deriving it until the pin is reset."
         }
       }
     },
@@ -11517,7 +11532,7 @@ __def("packages/page-contract/schema/page-patch.schema.json", function (exports)
   "$id": "https://schema.buildy.tw/page-patch.schema.json",
   "title": "Page patch page-patch/v1 — edit operations on a page spec",
   "x-page-patch-profile": "page-patch/v1",
-  "x-page-spec-version": "1.3.0",
+  "x-page-spec-version": "1.4.0",
   "description": "An edit of a page-spec/v1 page as an ordered list of operations, applied in order to a copy of the base page; the whole patch is rejected if any operation fails. Unchanged blocks keep their content. Slot validation: set / add / replace may only write copy keys and row fields the target kind renders (page-spec x-page-slots); rows beyond the kind's limit are rejected. The result must be a valid page-spec/v1 page. baseRevision, when sent, must equal the page revision the patch was made for.",
   "type": "object",
   "additionalProperties": false,
@@ -27932,7 +27947,7 @@ function attachCatalogSources(blocks: PageBlock[], screen: CatalogScreen | null)
 	return blocks.map((node) => {
 		let next = node;
 		if (!next.catalogBlock && screen) {
-			const found = familyLabelForKind(screen, next.kind);
+			const found = kindSourceFor(screen, next.kind);
 			const entry = found ? getBlockIndex(found.label) : null;
 			if (entry?.available) next = { ...next, catalogBlock: entry.spec };
 		}
@@ -27950,6 +27965,33 @@ function familyLabelForKind(
 	for (const row of screenFamily(screen)) {
 		const label = labelForKind(screenSlots(row).map((slot) => slot.block), kind);
 		if (label) return { label, screenId: row.screenId };
+	}
+	return null;
+}
+
+/**
+ * Screens a block of any kind is sourced from when the page's own screen family has no such section (ADR 0027): the
+ * four start families in order, then every other catalog screen. A screen family is advisory and never rejects a
+ * block that has a Stock catalog block and a renderer.
+ */
+const FAMILY_HOME_SCREENS = [
+	"screen.theme-marketing-landing/home",
+	"screen.theme-food-grill/home",
+	"screen.theme-restaurant-house/home",
+	"screen.theme-dashboard-console/home"
+] as const;
+
+/** The Stock label of `kind` in the screen's family, else in the first screen family that has it (null: none has). */
+function kindSourceFor(screen: CatalogScreen | null, kind: PageBlockKind): { label: string; screenId: string } | null {
+	const own = screen ? familyLabelForKind(screen, kind) : null;
+	if (own) return own;
+	const seen = new Set<string>(screen ? [screen.spec] : []);
+	const order = [...FAMILY_HOME_SCREENS.map((id) => getScreenById(id)).filter((row): row is CatalogScreen => row !== null), ...catalogSnapshot.screens];
+	for (const row of order) {
+		if (seen.has(row.spec)) continue;
+		seen.add(row.spec);
+		const found = familyLabelForKind(row, kind);
+		if (found && getBlockIndex(found.label)?.available) return found;
 	}
 	return null;
 }
@@ -28081,18 +28123,24 @@ function validateCatalogProvenance(input: {
 	const refs: CatalogBlockRef[] = [];
 	for (const [index, node] of blocks.entries()) {
 		const path = `layout.blocks[${index}]`;
-		const found = familyLabelForKind(screen, node.kind);
+		// ADR 0027: the screen family is advisory; a kind outside it is sourced from the first family that has it.
+		const found = kindSourceFor(screen, node.kind);
 		const label = found?.label ?? null;
 		if (!found || !label) {
-			const anywhere = catalogSnapshot.blockIndex.some(
-				(entry) => entry.available && rendererKindForLabel(entry.blockId) === node.kind
-			);
 			return {
 				ok: false,
-				code: anywhere ? "catalog_block_not_in_screen" : "catalog_block_unknown",
-				message: anywhere
-					? `Block ${node.id} (${node.kind}) is not part of Stock screen ${screen.screenId} or its ${screen.spec} family. Nothing was rendered.`
-					: `Block ${node.id} (${node.kind}) has no Stock catalog block. Invented blocks are rejected. Nothing was rendered.`,
+				code: "catalog_block_unknown",
+				message: `Block ${node.id} (${node.kind}) has no Stock catalog block. Invented blocks are rejected. Nothing was rendered.`,
+				path
+			};
+		}
+		// Outside the screen's own family a section must name its catalog block (the feed and edit ops always do):
+		// a bare kind there is how an invented or tampered block would look.
+		if (!familyLabelForKind(screen, node.kind) && !node.catalogBlock) {
+			return {
+				ok: false,
+				code: "catalog_block_not_in_screen",
+				message: `Block ${node.id} (${node.kind}) is outside the ${screen.spec} family and names no catalogBlock. Nothing was rendered.`,
 				path
 			};
 		}
@@ -28183,6 +28231,8 @@ exports["checkBlockProps"] = checkBlockProps;
 exports["screenFamily"] = screenFamily;
 exports["attachCatalogSources"] = attachCatalogSources;
 exports["familyLabelForKind"] = familyLabelForKind;
+exports["FAMILY_HOME_SCREENS"] = FAMILY_HOME_SCREENS;
+exports["kindSourceFor"] = kindSourceFor;
 exports["stockAssetUrl"] = stockAssetUrl;
 exports["stockThumbUrl"] = stockThumbUrl;
 exports["stockVariantOf"] = stockVariantOf;
@@ -30035,10 +30085,40 @@ exports["CHILD_ONLY_KINDS"] = CHILD_ONLY_KINDS;
 
 });
 
+__def("packages/builder-core/src/catalog/screen-sections.ts", function (exports) {
+const { CHILD_ONLY_KINDS } = __req("packages/builder-core/src/assemble.ts");
+const { registryItemFor } = __req("packages/builder-core/src/catalog/organism.ts");
+const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
+const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
+const { catalogSourceFor } = __req("packages/builder-core/src/catalog/sources.ts");
+const cache = new Map<string, ScreenSections>();
+
+function screenSections(screenId: string): ScreenSections {
+	const hit = cache.get(screenId);
+	if (hit) return hit;
+	const screen = getScreenById(screenId);
+	const out: ScreenSections = { sections: [], missing: [] };
+	for (const slot of screen?.layout ?? []) {
+		const entry = catalogSnapshot.blockIndex.find((row) => row.blockId === slot.block);
+		const kind = entry?.available && entry.rendererCompatible && entry.rendererKind ? (entry.rendererKind as PageBlockKind) : null;
+		const variant = !entry || !kind || CHILD_ONLY_KINDS.has(kind)
+			? null
+			: [slot.variant, catalogSourceFor(entry.spec)?.defaultVariant].find((want) => want && entry.variants.includes(want) && registryItemFor(entry.spec, want)) ?? null;
+		if (entry && kind && variant) out.sections.push({ catalogBlock: entry.spec, variant, kind });
+		else out.missing.push(slot.block);
+	}
+	if (screen) cache.set(screenId, out);
+	return out;
+}
+
+exports["screenSections"] = screenSections;
+
+});
+
 __def("packages/builder-core/src/catalog/stock-search.ts", function (exports) {
 const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
 const { blockAssetUrl, blockThumbUrl, screenThumbUrl, stockAssetUrl } = __req("packages/builder-core/src/catalog/provenance.ts");
-const { screenStartable } = __req("packages/builder-core/src/assemble.ts");
+const { screenSections } = __req("packages/builder-core/src/catalog/screen-sections.ts");
 const { getScreenById, searchCatalog } = __req("packages/builder-core/src/catalog/search.ts");
 const { catalogSourceFor } = __req("packages/builder-core/src/catalog/sources.ts");
 const STOCK_SEARCH_FORMAT = "stock-search/v1";
@@ -30125,7 +30205,8 @@ function screenRow(screen: CatalogScreen, byLabel: Map<string, CatalogBlockIndex
 		roles,
 		sites: [...screen.labels.site],
 		isDefault: false,
-		supported: screenStartable(screen),
+		// t150u: a pure property of the screen, the same on every result page: it has a section the page renders.
+		supported: screenSections(screen.screenId).sections.length > 0,
 		thumb: screenThumbUrl(screen.screenId),
 		url: stockAssetUrl(screen.screenId),
 		text: lower(`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`),
@@ -30227,7 +30308,10 @@ function stockSearch(input: StockSearchQuery = {}): StockSearchResult {
 		facets[facet] = facet === "spec" || facet === "variant" ? list : list.sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
 	}
 
-	const matched = pool.filter((row) => passes(row, null));
+	const filtered = pool.filter((row) => passes(row, null));
+	const boost = new Set(input.boostRoles ?? []);
+	const boosted = (row: Row) => row.type === "block" && row.role !== null && boost.has(row.role);
+	const matched = boost.size ? [...filtered.filter(boosted), ...filtered.filter((row) => !boosted(row))] : filtered;
 	const size = Math.round(input.pageSize ?? STOCK_SEARCH_PAGE_SIZE);
 	const pageSize = Number.isFinite(size) ? Math.min(Math.max(size, 1), STOCK_SEARCH_MAX_PAGE_SIZE) : STOCK_SEARCH_PAGE_SIZE;
 	const total = matched.length;
@@ -31117,7 +31201,7 @@ const { PAGE_LIMITS, PAGE_SLOTS, pagePatchIssues, pagePatchSchema, parsePageSpec
 const { arrangeShell, CHILD_ONLY_KINDS, localizeEmptyLedes, naturalIndexFor, stockBlockFor } = __req("packages/builder-core/src/assemble.ts");
 const { catalogProvenance } = __req("packages/builder-core/src/catalog/snapshot.ts");
 const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
-const { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { attachCatalogSources, familyLabelForKind, kindSourceFor, validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
 const { catalogSourceFor, resolveCatalogChoice } = __req("packages/builder-core/src/catalog/sources.ts");
 const { swapCatalogBlock } = __req("packages/builder-core/src/block-swap.ts");
 const { DATA_KINDS, defaultDemoLabel, demoLabelForLocale } = __req("packages/builder-core/src/content.ts");
@@ -31278,13 +31362,16 @@ function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposalError {
 	const fromCatalog = (kind: PageBlockKind, at: string, op: PatchOp): PageBlock | Failure => {
 		if (CHILD_ONLY_KINDS.has(kind)) return fail("slot_no_rows", `${kind} is a row kind; use set_items on its list block.`, `${at}.kind`);
 		if (!screen) return fail("screen_unknown", "The page has no recorded Stock screen, so blocks cannot be added. Use propose_layout.", `${at}.kind`);
-		if (!familyLabelForKind(screen, kind)) {
-			return fail("block_not_in_catalog", `Stock screen ${screen.screenId} and its family have no ${kind} block. Not invented.`, `${at}.kind`);
+		// ADR 0027: the screen family is advisory; a kind from another family is sampled there. Unknown kinds stay out.
+		const source = familyLabelForKind(screen, kind) ? null : kindSourceFor(screen, kind);
+		if (!familyLabelForKind(screen, kind) && !source) {
+			return fail("block_not_in_catalog", `No Stock screen has a ${kind} block. Not invented.`, `${at}.kind`);
 		}
+		const sampleScreen = source ? (getScreenById(source.screenId) ?? screen) : screen;
 		if (!english && typeof op.title !== "string") {
 			return fail("slot_required", `The page language is ${base.locale}: send title (and copy) for the new ${kind} block.`, `${at}.title`);
 		}
-		let node = attachCatalogSources([stockBlockFor(kind, { screen, scenarioId, brief: ctx.brief ?? title, pageTitle: title })], screen)[0]!;
+		let node = attachCatalogSources([stockBlockFor(kind, { screen: sampleScreen, scenarioId: source ? null : scenarioId, brief: ctx.brief ?? title, pageTitle: title })], sampleScreen)[0]!;
 		if (typeof op.variant === "string") {
 			const choice = resolveCatalogChoice({ kind, catalogBlock: node.catalogBlock, variant: op.variant });
 			if (!choice.ok) return fail(choice.code, choice.message, `${at}.variant`);
@@ -31512,7 +31599,7 @@ const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
 const { catalogEntryBySpec, catalogSourceFor } = __req("packages/builder-core/src/catalog/sources.ts");
 const { registryItemFor } = __req("packages/builder-core/src/catalog/organism.ts");
 const { editPage } = __req("packages/builder-core/src/patch.ts");
-const { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { attachCatalogSources, FAMILY_HOME_SCREENS, familyLabelForKind, kindSourceFor, validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
 const { isScenarioId } = __req("packages/builder-core/src/brief.ts");
 const { organismFor, pageListName, variantPreset, writableOrigin } = __req("packages/builder-core/src/catalog/organism.ts");
 const { propsNodeAt, remapRowOverrides, valueAtPointer, withPropsOverride } = __req("packages/builder-core/src/catalog/props-overrides.ts");
@@ -31520,6 +31607,7 @@ const { newPropsListRow } = __req("packages/builder-core/src/catalog/props-schem
 const { checkBlockProps } = __req("packages/builder-core/src/catalog/provenance.ts");
 const { propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { catalogVariantsFor } = __req("packages/builder-core/src/catalog/sources.ts");
+const { screenSections } = __req("packages/builder-core/src/catalog/screen-sections.ts");
 const HIDDEN = new Set(["id", "class", "className"]);
 /** Page-spec origins of long text (a summary / lede) get a multi-line widget. */
 const LONG_ORIGIN = /(?:^|\.)(?:summary|copy\.lede)$/;
@@ -31899,12 +31987,7 @@ function gated(ctx: InspectorOpContext, blocks: PageBlock[], changed: string[], 
 }
 
 /** Why the Blocks feed cannot add this block to the page (null: it can). Cheap: the op runs every gate again. */
-const EMPTY_PAGE_SCREENS = [
-	"screen.theme-marketing-landing/home",
-	"screen.theme-food-grill/home",
-	"screen.theme-restaurant-house/home",
-	"screen.theme-dashboard-console/home"
-] as const;
+const EMPTY_PAGE_SCREENS = FAMILY_HOME_SCREENS;
 
 /** The Stock screen an empty page starts on for a first section of `kind` (null kind: the default). */
 function emptyPageScreenFor(kind: PageBlockKind | null): CatalogScreen | null {
@@ -31935,9 +32018,8 @@ function canAddCatalogBlock(ctx: Pick<InspectorOpContext, "page" | "provenance">
 			? { ok: false, code: "no_start_screen", message: `No Stock screen family has a ${kind} section to start a page with.` }
 			: { ok: false, code: "no_screen", message: "The page has no recorded Stock screen, so blocks cannot be added." };
 	}
-	if (!familyLabelForKind(screen, kind)) {
-		return { ok: false, code: "not_in_screen_family", message: `Stock screen ${screen.screenId} and its family have no ${kind} section.` };
-	}
+	// ADR 0027: the screen family is advisory; a section of another family takes its Stock sample from that family.
+	if (!kindSourceFor(screen, kind)) return { ok: false, code: "not_a_page_block", message: `No Stock screen has a ${kind} section.` };
 	if (!registryItemFor(catalogBlock, want)) return { ok: false, code: "no_renderer", message: `${catalogBlock} has no page renderer in this BuildY version yet.` };
 	return { ok: true, kind, variant: want, ...(starting ? { startScreenId: screen.screenId } : {}) };
 }
@@ -31971,6 +32053,15 @@ function emptyPageStart(input: { kind?: PageBlockKind | null; screenId?: string 
 const TOP_KINDS = new Set<PageBlockKind>(["sidenav", "nav"]);
 const BOTTOM_KINDS = new Set<PageBlockKind>(["footer", "bottomnav"]);
 
+function chromeEdge(kind: PageBlockKind): "top" | "bottom" | null {
+	return TOP_KINDS.has(kind) ? "top" : BOTTOM_KINDS.has(kind) ? "bottom" : null;
+}
+
+/**
+ * Whether a new section of `kind` may go to top-level slot `at` (0 = before the first section, length = after the
+ * last): content stays between the leading header run and the trailing footer run; a header goes in the leading run,
+ * a footer in the trailing one. Pure, for drop feedback while dragging and for the add op itself.
+ */
 function addSlotCheck(blocks: Pick<PageBlock, "kind">[], kind: PageBlockKind, at: number): AddSlotCheck {
 	if (!Number.isInteger(at) || at < 0 || at > blocks.length) return { ok: false, code: "index_out_of_range", message: `A section goes to slot 0..${blocks.length}.` };
 	let leading = 0;
@@ -32021,8 +32112,11 @@ function withFreshIds(node: PageBlock, taken: Set<string>): PageBlock {
 function addedBlock(ctx: InspectorOpContext, catalogBlock: string, variant: string | null): PageBlock | InspectorFailure {
 	const check = canAddCatalogBlock(ctx, catalogBlock, variant);
 	if (!check.ok) return fail(check.code, check.message, "");
-	const screen = getScreenById(ctx.provenance!.screenId!)!;
-	const scenarioId: ScenarioId | null = isScenarioId(ctx.provenance?.scenarioId) ? ctx.provenance!.scenarioId : null;
+	const pageScreen = getScreenById(ctx.provenance!.screenId!)!;
+	// The sample comes from the page's screen family, else from the first family with this kind (ADR 0027).
+	const source = familyLabelForKind(pageScreen, check.kind) ? null : kindSourceFor(pageScreen, check.kind);
+	const screen = source ? (getScreenById(source.screenId) ?? pageScreen) : pageScreen;
+	const scenarioId: ScenarioId | null = source ? null : isScenarioId(ctx.provenance?.scenarioId) ? ctx.provenance!.scenarioId : null;
 	let node = attachCatalogSources([stockBlockFor(check.kind, { screen, scenarioId, brief: ctx.page.title, pageTitle: ctx.page.title })], screen)[0]!;
 	if (node.catalogBlock !== catalogBlock || (node.variant ?? null) !== check.variant) {
 		const swap = swapCatalogBlock(node, { catalogBlock, variant: check.variant });
@@ -32208,6 +32302,43 @@ function listRow(ctx: InspectorOpContext, index: number, block: PageBlock, op: E
 	return result.ok ? { ...result, op: opName, path: op.action === "add" ? `${op.pointer}/${rows.length - 1}` : `${op.pointer}/${row}` } : result;
 }
 
+function addScreenSections(ctx: InspectorOpContext, screenId: string, at?: number): ScreenAddResult {
+	if (!getScreenById(screenId)) return { ok: false, code: "unknown_screen", message: `${screenId} is not a Stock screen.`, skipped: [] };
+	const { sections, missing } = screenSections(screenId);
+	const skipped = [...missing];
+	if (!sections.length) return { ok: false, code: "no_sections", message: `${screenId} has no section this BuildY version renders.`, skipped };
+	let page = ctx.page;
+	let slot = Math.max(0, Math.min(at ?? page.layout.blocks.length, page.layout.blocks.length));
+	let last: InspectorSuccess | null = null;
+	const added: string[] = [];
+	for (const section of sections) {
+		const blocks = page.layout.blocks;
+		const edge = chromeEdge(section.kind);
+		if (edge && blocks.some((node) => node.kind === section.kind)) {
+			skipped.push(section.catalogBlock);
+			continue;
+		}
+		const target = edge === "top" ? 0 : edge === "bottom" ? blocks.length : slot;
+		if (!addSlotCheck(blocks, section.kind, target).ok) {
+			skipped.push(section.catalogBlock);
+			continue;
+		}
+		const result = inspectorOp({ ...ctx, page }, { op: "add", blockId: "", catalogBlock: section.catalogBlock, variant: section.variant, at: target });
+		if (!result.ok) {
+			skipped.push(section.catalogBlock);
+			continue;
+		}
+		page = result.page;
+		last = result;
+		added.push(result.blockId);
+		// Content keeps screen order after the slot; a header inserted above shifts the slot down by one.
+		if (edge === "top") slot += 1;
+		else if (!edge) slot = target + 1;
+	}
+	if (!last) return { ok: false, code: "nothing_added", message: `No section of ${screenId} fits this page.`, skipped };
+	return { ...last, blockId: added[0]!, op: "add", added, skipped };
+}
+
 exports["inspectorModel"] = inspectorModel;
 exports["writeOrigin"] = writeOrigin;
 exports["shareUnchanged"] = shareUnchanged;
@@ -32217,9 +32348,11 @@ exports["EMPTY_PAGE_SCREENS"] = EMPTY_PAGE_SCREENS;
 exports["emptyPageScreenFor"] = emptyPageScreenFor;
 exports["canAddCatalogBlock"] = canAddCatalogBlock;
 exports["emptyPageStart"] = emptyPageStart;
+exports["chromeEdge"] = chromeEdge;
 exports["addSlotCheck"] = addSlotCheck;
 exports["moveSlotCheck"] = moveSlotCheck;
 exports["inspectorOp"] = inspectorOp;
+exports["addScreenSections"] = addScreenSections;
 
 });
 
@@ -34749,6 +34882,113 @@ exports["placeholderWarning"] = placeholderWarning;
 
 });
 
+__def("packages/builder-core/src/catalog/page-family.ts", function (exports) {
+const { familyLabelForKind, FAMILY_HOME_SCREENS } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
+const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
+const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const PAGE_FAMILIES = ["dashboard", "landing", "food-grill", "restaurant", "generic"] as const;
+const NAMED_FAMILIES = ["landing", "food-grill", "restaurant", "dashboard"] as const satisfies PageFamily[];
+type NamedFamily = (typeof NAMED_FAMILIES)[number];
+
+const HOME: Record<NamedFamily, string> = {
+	landing: FAMILY_HOME_SCREENS[0],
+	"food-grill": FAMILY_HOME_SCREENS[1],
+	restaurant: FAMILY_HOME_SCREENS[2],
+	dashboard: FAMILY_HOME_SCREENS[3]
+};
+
+function isPageFamily(value: unknown): value is PageFamily {
+	return typeof value === "string" && (PAGE_FAMILIES as string[]).includes(value);
+}
+
+/** The Stock home screen of a named family (null for generic). */
+function familyScreenId(family: PageFamily): string | null {
+	return family === "generic" ? null : HOME[family];
+}
+
+/** The family a Stock screen belongs to (null: another theme). */
+function familyOfScreen(screenId: string | null | undefined): NamedFamily | null {
+	const screen = screenId ? getScreenById(screenId) : null;
+	if (!screen) return null;
+	for (const family of NAMED_FAMILIES) if (getScreenById(HOME[family])?.spec === screen.spec) return family;
+	return null;
+}
+
+const kindCache = new Map<PageBlockKind, NamedFamily[]>();
+/** The named families whose Stock screens have a section of this kind. */
+function familiesOfKind(kind: PageBlockKind): NamedFamily[] {
+	const hit = kindCache.get(kind);
+	if (hit) return hit;
+	const found = NAMED_FAMILIES.filter((family) => {
+		const screen = getScreenById(HOME[family]);
+		return screen ? familyLabelForKind(screen, kind) !== null : false;
+	});
+	kindCache.set(kind, found);
+	return found;
+}
+
+/** Kinds that every named family has (header, footer, ...) say nothing about the family. */
+function telling(kind: PageBlockKind): NamedFamily[] | null {
+	const families = familiesOfKind(kind);
+	return families.length === 0 || families.length === NAMED_FAMILIES.length ? null : families;
+}
+
+/**
+ * The family of a composition: the named family the most top-level sections belong to, when more than half of the
+ * telling sections belong to it (ties go by NAMED_FAMILIES order); otherwise generic. No telling section: generic.
+ */
+function deriveFamily(blocks: Pick<PageBlock, "kind">[]): PageFamily {
+	const votes = blocks.map((node) => telling(node.kind)).filter((families): families is NamedFamily[] => families !== null);
+	if (votes.length === 0) return "generic";
+	let best: NamedFamily | null = null;
+	let bestScore = 0;
+	for (const family of NAMED_FAMILIES) {
+		const score = votes.filter((families) => families.includes(family)).length;
+		if (score > bestScore) {
+			best = family;
+			bestScore = score;
+		}
+	}
+	return best && bestScore * 2 > votes.length ? best : "generic";
+}
+
+/** Page kinds the family's screens have: the feed ranks blocks of these kinds first (generic: none, no boost). */
+function familyKinds(family: PageFamily): PageBlockKind[] {
+	if (family === "generic") return [];
+	const kinds = new Set<PageBlockKind>();
+	for (const entry of catalogSnapshot.blockIndex) {
+		const kind = entry.available ? rendererKindForLabel(entry.blockId) : null;
+		if (kind) kinds.add(kind);
+	}
+	return [...kinds].filter((kind) => telling(kind)?.includes(family));
+}
+
+function nextFamilyState<T extends FamilyState>(current: T, blocks: Pick<PageBlock, "kind">[]): T {
+	if (current.familyPinned) return current;
+	const family = deriveFamily(blocks);
+	if (family === (current.family ?? null)) return current;
+	return withFamily(current, family, false);
+}
+
+/** Set (or pin) a family; only the advisory fields change. */
+function withFamily<T extends FamilyState>(current: T, family: PageFamily, pinned: boolean): T {
+	return { ...current, family, familyPinned: pinned };
+}
+
+exports["PAGE_FAMILIES"] = PAGE_FAMILIES;
+exports["NAMED_FAMILIES"] = NAMED_FAMILIES;
+exports["isPageFamily"] = isPageFamily;
+exports["familyScreenId"] = familyScreenId;
+exports["familyOfScreen"] = familyOfScreen;
+exports["familiesOfKind"] = familiesOfKind;
+exports["deriveFamily"] = deriveFamily;
+exports["familyKinds"] = familyKinds;
+exports["nextFamilyState"] = nextFamilyState;
+exports["withFamily"] = withFamily;
+
+});
+
 __def("packages/builder-core/src/index.ts", function (exports) {
 exports["SCENARIO_IDS"] = __req("packages/builder-core/src/copy.ts")["SCENARIO_IDS"];
 exports["SCENARIO_PROMPTS"] = __req("packages/builder-core/src/copy.ts")["SCENARIO_PROMPTS"];
@@ -34829,6 +35069,8 @@ exports["emptyPageScreenFor"] = __req("packages/builder-core/src/inspector.ts")[
 exports["EMPTY_PAGE_SCREENS"] = __req("packages/builder-core/src/inspector.ts")["EMPTY_PAGE_SCREENS"];
 exports["canAddCatalogBlock"] = __req("packages/builder-core/src/inspector.ts")["canAddCatalogBlock"];
 exports["addSlotCheck"] = __req("packages/builder-core/src/inspector.ts")["addSlotCheck"];
+exports["addScreenSections"] = __req("packages/builder-core/src/inspector.ts")["addScreenSections"];
+exports["chromeEdge"] = __req("packages/builder-core/src/inspector.ts")["chromeEdge"];
 exports["moveSlotCheck"] = __req("packages/builder-core/src/inspector.ts")["moveSlotCheck"];
 exports["inspectorSetField"] = __req("packages/builder-core/src/inspector.ts")["inspectorSetField"];
 exports["shareUnchanged"] = __req("packages/builder-core/src/inspector.ts")["shareUnchanged"];
@@ -34915,6 +35157,8 @@ exports["SEARCH_INDEX_SOURCES"] = __req("packages/builder-core/src/catalog/text-
 exports["STOCK_APP_URL"] = __req("packages/builder-core/src/catalog/provenance.ts")["STOCK_APP_URL"];
 exports["attachCatalogSources"] = __req("packages/builder-core/src/catalog/provenance.ts")["attachCatalogSources"];
 exports["familyLabelForKind"] = __req("packages/builder-core/src/catalog/provenance.ts")["familyLabelForKind"];
+exports["kindSourceFor"] = __req("packages/builder-core/src/catalog/provenance.ts")["kindSourceFor"];
+exports["FAMILY_HOME_SCREENS"] = __req("packages/builder-core/src/catalog/provenance.ts")["FAMILY_HOME_SCREENS"];
 exports["sameCatalogRefs"] = __req("packages/builder-core/src/catalog/provenance.ts")["sameCatalogRefs"];
 exports["screenFamily"] = __req("packages/builder-core/src/catalog/provenance.ts")["screenFamily"];
 exports["stockAssetUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["stockAssetUrl"];
@@ -35001,6 +35245,17 @@ exports["iconFixWarning"] = __req("packages/builder-core/src/icon-name.ts")["ico
 exports["stripInventedYears"] = __req("packages/builder-core/src/intents.ts")["stripInventedYears"];
 exports["swapCatalogBlock"] = __req("packages/builder-core/src/block-swap.ts")["swapCatalogBlock"];
 exports["catalogBlocksForKind"] = __req("packages/builder-core/src/block-swap.ts")["catalogBlocksForKind"];
+exports["PAGE_FAMILIES"] = __req("packages/builder-core/src/catalog/page-family.ts")["PAGE_FAMILIES"];
+exports["NAMED_FAMILIES"] = __req("packages/builder-core/src/catalog/page-family.ts")["NAMED_FAMILIES"];
+exports["isPageFamily"] = __req("packages/builder-core/src/catalog/page-family.ts")["isPageFamily"];
+exports["familyScreenId"] = __req("packages/builder-core/src/catalog/page-family.ts")["familyScreenId"];
+exports["familyOfScreen"] = __req("packages/builder-core/src/catalog/page-family.ts")["familyOfScreen"];
+exports["familiesOfKind"] = __req("packages/builder-core/src/catalog/page-family.ts")["familiesOfKind"];
+exports["familyKinds"] = __req("packages/builder-core/src/catalog/page-family.ts")["familyKinds"];
+exports["deriveFamily"] = __req("packages/builder-core/src/catalog/page-family.ts")["deriveFamily"];
+exports["nextFamilyState"] = __req("packages/builder-core/src/catalog/page-family.ts")["nextFamilyState"];
+exports["withFamily"] = __req("packages/builder-core/src/catalog/page-family.ts")["withFamily"];
+exports["screenSections"] = __req("packages/builder-core/src/catalog/screen-sections.ts")["screenSections"];
 
 
 
@@ -35086,7 +35341,7 @@ exports["installPropsGate"] = installPropsGate;
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, agentOpenAiTools, agentTextReply, aggregateStepUsage, askBlockCard, compactPlanPayload, planHasInvalid, pageDirectory, assertNoFallback, catalogProvenance, collectionPromptContext, collectionIntakeDraft, placeCollectionDraft, placeCollectionDraftWithNotes, placeholderFields, placeholderHints, placeholderWarning, executeTool, isCollectionCode, repairCollectionArgs, facetVocabulary, inheritedScreenId, isScenarioId, modelCatalogSources, searchVocabulary, readProviderUsage, recordedScreenId, rejectFabricatedLayout, safeErrorMessage, scenarioCatalogContext, toolLoopProposalFailure, toolLoopRejection, repairProposeArgs, unknownUsage, validateCatalogProvenance } = __req("packages/builder-core/src/index.ts");
+const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, agentOpenAiTools, agentTextReply, aggregateStepUsage, askBlockCard, compactPlanPayload, planHasInvalid, pageDirectory, deriveFamily, assertNoFallback, catalogProvenance, collectionPromptContext, collectionIntakeDraft, placeCollectionDraft, placeCollectionDraftWithNotes, placeholderFields, placeholderHints, placeholderWarning, executeTool, isCollectionCode, repairCollectionArgs, facetVocabulary, inheritedScreenId, isScenarioId, modelCatalogSources, searchVocabulary, readProviderUsage, recordedScreenId, rejectFabricatedLayout, safeErrorMessage, scenarioCatalogContext, toolLoopProposalFailure, toolLoopRejection, repairProposeArgs, unknownUsage, validateCatalogProvenance } = __req("packages/builder-core/src/index.ts");
 const { PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
@@ -35891,6 +36146,8 @@ function askPrompt(ctx: ProposalContext): string {
 					locale: current.locale,
 					revision: ctx.expectedRevision,
 					blocks: pageDirectory(current),
+					// ADR 0027: the advisory screen family (recommend sections that fit it; any section may still be added).
+					screenFamily: (ctx.currentProvenance as { family?: string | null } | null | undefined)?.family ?? deriveFamily(current.layout.blocks),
 					...(ctx.manualEdits?.length ? { manualEdits: ctx.manualEdits } : {})
 				}
 			: null,

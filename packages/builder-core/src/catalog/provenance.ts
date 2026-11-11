@@ -190,7 +190,7 @@ export function attachCatalogSources(blocks: PageBlock[], screen: CatalogScreen 
 	return blocks.map((node) => {
 		let next = node;
 		if (!next.catalogBlock && screen) {
-			const found = familyLabelForKind(screen, next.kind);
+			const found = kindSourceFor(screen, next.kind);
 			const entry = found ? getBlockIndex(found.label) : null;
 			if (entry?.available) next = { ...next, catalogBlock: entry.spec };
 		}
@@ -208,6 +208,33 @@ export function familyLabelForKind(
 	for (const row of screenFamily(screen)) {
 		const label = labelForKind(screenSlots(row).map((slot) => slot.block), kind);
 		if (label) return { label, screenId: row.screenId };
+	}
+	return null;
+}
+
+/**
+ * Screens a block of any kind is sourced from when the page's own screen family has no such section (ADR 0027): the
+ * four start families in order, then every other catalog screen. A screen family is advisory and never rejects a
+ * block that has a Stock catalog block and a renderer.
+ */
+export const FAMILY_HOME_SCREENS = [
+	"screen.theme-marketing-landing/home",
+	"screen.theme-food-grill/home",
+	"screen.theme-restaurant-house/home",
+	"screen.theme-dashboard-console/home"
+] as const;
+
+/** The Stock label of `kind` in the screen's family, else in the first screen family that has it (null: none has). */
+export function kindSourceFor(screen: CatalogScreen | null, kind: PageBlockKind): { label: string; screenId: string } | null {
+	const own = screen ? familyLabelForKind(screen, kind) : null;
+	if (own) return own;
+	const seen = new Set<string>(screen ? [screen.spec] : []);
+	const order = [...FAMILY_HOME_SCREENS.map((id) => getScreenById(id)).filter((row): row is CatalogScreen => row !== null), ...catalogSnapshot.screens];
+	for (const row of order) {
+		if (seen.has(row.spec)) continue;
+		seen.add(row.spec);
+		const found = familyLabelForKind(row, kind);
+		if (found && getBlockIndex(found.label)?.available) return found;
 	}
 	return null;
 }
@@ -339,18 +366,24 @@ export function validateCatalogProvenance(input: {
 	const refs: CatalogBlockRef[] = [];
 	for (const [index, node] of blocks.entries()) {
 		const path = `layout.blocks[${index}]`;
-		const found = familyLabelForKind(screen, node.kind);
+		// ADR 0027: the screen family is advisory; a kind outside it is sourced from the first family that has it.
+		const found = kindSourceFor(screen, node.kind);
 		const label = found?.label ?? null;
 		if (!found || !label) {
-			const anywhere = catalogSnapshot.blockIndex.some(
-				(entry) => entry.available && rendererKindForLabel(entry.blockId) === node.kind
-			);
 			return {
 				ok: false,
-				code: anywhere ? "catalog_block_not_in_screen" : "catalog_block_unknown",
-				message: anywhere
-					? `Block ${node.id} (${node.kind}) is not part of Stock screen ${screen.screenId} or its ${screen.spec} family. Nothing was rendered.`
-					: `Block ${node.id} (${node.kind}) has no Stock catalog block. Invented blocks are rejected. Nothing was rendered.`,
+				code: "catalog_block_unknown",
+				message: `Block ${node.id} (${node.kind}) has no Stock catalog block. Invented blocks are rejected. Nothing was rendered.`,
+				path
+			};
+		}
+		// Outside the screen's own family a section must name its catalog block (the feed and edit ops always do):
+		// a bare kind there is how an invented or tampered block would look.
+		if (!familyLabelForKind(screen, node.kind) && !node.catalogBlock) {
+			return {
+				ok: false,
+				code: "catalog_block_not_in_screen",
+				message: `Block ${node.id} (${node.kind}) is outside the ${screen.spec} family and names no catalogBlock. Nothing was rendered.`,
 				path
 			};
 		}

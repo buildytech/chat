@@ -24,7 +24,7 @@ import {
 } from "./assemble.ts";
 import { catalogProvenance } from "./catalog/snapshot.ts";
 import { getScreenById } from "./catalog/search.ts";
-import { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } from "./catalog/provenance.ts";
+import { attachCatalogSources, familyLabelForKind, kindSourceFor, validateCatalogProvenance } from "./catalog/provenance.ts";
 import { catalogSourceFor, resolveCatalogChoice } from "./catalog/sources.ts";
 import { swapCatalogBlock } from "./block-swap.ts";
 import { DATA_KINDS, defaultDemoLabel, demoLabelForLocale } from "./content.ts";
@@ -214,13 +214,16 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 	const fromCatalog = (kind: PageBlockKind, at: string, op: PatchOp): PageBlock | Failure => {
 		if (CHILD_ONLY_KINDS.has(kind)) return fail("slot_no_rows", `${kind} is a row kind; use set_items on its list block.`, `${at}.kind`);
 		if (!screen) return fail("screen_unknown", "The page has no recorded Stock screen, so blocks cannot be added. Use propose_layout.", `${at}.kind`);
-		if (!familyLabelForKind(screen, kind)) {
-			return fail("block_not_in_catalog", `Stock screen ${screen.screenId} and its family have no ${kind} block. Not invented.`, `${at}.kind`);
+		// ADR 0027: the screen family is advisory; a kind from another family is sampled there. Unknown kinds stay out.
+		const source = familyLabelForKind(screen, kind) ? null : kindSourceFor(screen, kind);
+		if (!familyLabelForKind(screen, kind) && !source) {
+			return fail("block_not_in_catalog", `No Stock screen has a ${kind} block. Not invented.`, `${at}.kind`);
 		}
+		const sampleScreen = source ? (getScreenById(source.screenId) ?? screen) : screen;
 		if (!english && typeof op.title !== "string") {
 			return fail("slot_required", `The page language is ${base.locale}: send title (and copy) for the new ${kind} block.`, `${at}.title`);
 		}
-		let node = attachCatalogSources([stockBlockFor(kind, { screen, scenarioId, brief: ctx.brief ?? title, pageTitle: title })], screen)[0]!;
+		let node = attachCatalogSources([stockBlockFor(kind, { screen: sampleScreen, scenarioId: source ? null : scenarioId, brief: ctx.brief ?? title, pageTitle: title })], sampleScreen)[0]!;
 		if (typeof op.variant === "string") {
 			const choice = resolveCatalogChoice({ kind, catalogBlock: node.catalogBlock, variant: op.variant });
 			if (!choice.ok) return fail(choice.code, choice.message, `${at}.variant`);

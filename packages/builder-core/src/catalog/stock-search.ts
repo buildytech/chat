@@ -11,7 +11,7 @@
  */
 import { catalogSnapshot } from "./snapshot.ts";
 import { blockAssetUrl, blockThumbUrl, screenThumbUrl, stockAssetUrl } from "./provenance.ts";
-import { screenStartable } from "../assemble.ts";
+import { screenSections } from "./screen-sections.ts";
 import { getScreenById, searchCatalog } from "./search.ts";
 import { catalogSourceFor } from "./sources.ts";
 import type { CatalogBlockIndexEntry, CatalogFacetFilter, CatalogScreen } from "./types.ts";
@@ -39,6 +39,8 @@ export type StockSearchQuery = {
 	scope?: Pick<CatalogFacetFilter, "site" | "section" | "job"> | null;
 	page?: number | null;
 	pageSize?: number | null;
+	/** Page kinds to list first (ADR 0027: the kinds of the page's screen family); order otherwise unchanged. Advisory. */
+	boostRoles?: readonly string[] | null;
 };
 
 export type StockSearchItem = {
@@ -165,7 +167,8 @@ function screenRow(screen: CatalogScreen, byLabel: Map<string, CatalogBlockIndex
 		roles,
 		sites: [...screen.labels.site],
 		isDefault: false,
-		supported: screenStartable(screen),
+		// t150u: a pure property of the screen, the same on every result page: it has a section the page renders.
+		supported: screenSections(screen.screenId).sections.length > 0,
 		thumb: screenThumbUrl(screen.screenId),
 		url: stockAssetUrl(screen.screenId),
 		text: lower(`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`),
@@ -267,7 +270,10 @@ export function stockSearch(input: StockSearchQuery = {}): StockSearchResult {
 		facets[facet] = facet === "spec" || facet === "variant" ? list : list.sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
 	}
 
-	const matched = pool.filter((row) => passes(row, null));
+	const filtered = pool.filter((row) => passes(row, null));
+	const boost = new Set(input.boostRoles ?? []);
+	const boosted = (row: Row) => row.type === "block" && row.role !== null && boost.has(row.role);
+	const matched = boost.size ? [...filtered.filter(boosted), ...filtered.filter((row) => !boosted(row))] : filtered;
 	const size = Math.round(input.pageSize ?? STOCK_SEARCH_PAGE_SIZE);
 	const pageSize = Number.isFinite(size) ? Math.min(Math.max(size, 1), STOCK_SEARCH_MAX_PAGE_SIZE) : STOCK_SEARCH_PAGE_SIZE;
 	const total = matched.length;

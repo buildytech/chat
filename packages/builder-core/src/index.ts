@@ -96,6 +96,9 @@ export {
 	canAddCatalogBlock,
 	type AddBlockCheck,
 	addSlotCheck,
+	addScreenSections,
+	chromeEdge,
+	type ScreenAddResult,
 	moveSlotCheck,
 	type AddSlotCheck,
 	inspectorSetField,
@@ -217,6 +220,8 @@ export {
 	STOCK_APP_URL,
 	attachCatalogSources,
 	familyLabelForKind,
+	kindSourceFor,
+	FAMILY_HOME_SCREENS,
 	sameCatalogRefs,
 	screenFamily,
 	stockAssetUrl,
@@ -329,3 +334,18 @@ export { placeholderFields, placeholderHints, placeholderWarning, type Placehold
 export { resolveIconName, iconFixWarning, type IconFix } from "./icon-name.ts";
 export { stripInventedYears } from "./intents.ts";
 export { swapCatalogBlock, catalogBlocksForKind, type BlockSwap } from "./block-swap.ts";
+export {
+	PAGE_FAMILIES,
+	NAMED_FAMILIES,
+	type PageFamily,
+	type FamilyState,
+	isPageFamily,
+	familyScreenId,
+	familyOfScreen,
+	familiesOfKind,
+	familyKinds,
+	deriveFamily,
+	nextFamilyState,
+	withFamily
+} from "./catalog/page-family.ts";
+export { screenSections, type ScreenSection, type ScreenSections } from "./catalog/screen-sections.ts";

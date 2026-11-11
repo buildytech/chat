@@ -72,11 +72,12 @@ test("drag UI: host drop layer over the preview iframe, Sections list drop, '+' 
 	assert.match(overlay, /dropRefusal\(/);
 	assert.match(overlay, /scrollBy\(/, "the frame scrolls near its edges while dragging");
 	const card = web("app/FeedCard.svelte");
-	assert.match(card, /draggable=\{item\.type === "block" \? "true" : undefined\}/);
+	assert.match(card, /draggable=\{canDrag \? "true" : undefined\}/);
 	assert.match(card, /setData\(FEED_DRAG_TYPE, item\.id\)/);
 	assert.match(card, /data-action="feed-add"/, "'+' stays the keyboard path");
 	const drop = web("lib/feed/drop.svelte.ts");
 	assert.match(drop, /inspector\.add\(item\.spec, item\.variant, at\)/);
+	assert.match(drop, /inspector\.addScreen\(item\.id, at\)/, "a screen card drops its sections");
 	assert.match(drop, /addSlotCheck\(page \? blocksOf\(page\) : \[\], check\.kind, at\)/);
 	assert.doesNotMatch(drop, /no_page/, "no page yet is not a refusal: the drop starts an empty page");
 	const sections = web("app/SectionsList.svelte");

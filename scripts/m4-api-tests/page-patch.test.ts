@@ -121,10 +121,15 @@ test("data rows need the demo-data intent and get the demo badge", () => {
 	assert.ok(sticky.ok);
 });
 
-test("add / replace build Stock blocks from the page's screen family only", () => {
+test("add / replace build Stock blocks from the page's screen family first, any family when it has none (ADR 0027)", () => {
 	const { page, provenance } = website();
-	const notFamily = editPage({ page, provenance, expectedRevision: 0, now: NOW, patch: { ops: [{ op: "add", kind: "metrics" }] } });
-	assert.equal((notFamily as { code: string }).code, "block_not_in_catalog");
+	// The family is advisory: a kind the website family has no block for comes from the family that has it.
+	const otherFamily = editPage({ page, provenance, expectedRevision: 0, now: NOW, patch: { ops: [{ op: "add", kind: "metrics" }] } });
+	assert.ok(otherFamily.ok, JSON.stringify(otherFamily));
+	const metrics = (otherFamily as LayoutProposal).page.layout.blocks.find((node) => node.kind === "metrics")!;
+	assert.ok(metrics.catalogBlock, "a section outside the family names its catalog block");
+	const invented = editPage({ page, provenance, expectedRevision: 0, now: NOW, patch: { ops: [{ op: "add", kind: "nosuchkind" as never }] } });
+	assert.equal(invented.ok, false);
 	const exists = editPage({ page, provenance, expectedRevision: 0, now: NOW, patch: { ops: [{ op: "add", kind: "hero" }] } });
 	assert.equal((exists as { code: string }).code, "block_exists");
 	const row = editPage({ page, provenance, expectedRevision: 0, now: NOW, patch: { ops: [{ op: "add", kind: "metric" }] } });

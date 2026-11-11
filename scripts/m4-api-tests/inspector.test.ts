@@ -634,9 +634,9 @@ test("P1 export: the Svelte source passes the merged props (overrides included) 
 });
 
 test("P1 history: inspector results carry op + path; revisions record them; session 1.6.0 accepts them", () => {
-	assert.deepEqual([...SESSION_REVISION_OPS], ["set_field", "set_variant", "add", "move", "remove", "insert", "replace"]);
+	assert.deepEqual([...SESSION_REVISION_OPS], ["set_field", "set_variant", "add", "move", "remove", "insert", "replace", "set_family"]);
 	const store = web("lib/inspector/inspector.svelte.ts");
-	assert.match(store, /replaceVisiblePage\(result\.page, result\.blockId, commitChange\(steps\.continues\(key\)\), meta\)/);
+	assert.match(store, /replaceVisiblePage\(result\.page, result\.blockId, commitChange\(steps\.continues\(key\)\), meta, pageProv\)/);
 	const pageStore = web("lib/page-store/mock.svelte.ts");
 	assert.match(pageStore, /announce\(step\.cause, selectId, step\.cause === "edit" \? meta : undefined\)/);
 	assert.match(web("lib/chat-core/session.svelte.ts"), /event\.op \? \{ op: event\.op \}/);

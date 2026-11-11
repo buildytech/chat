@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
 	catalogSnapshot,
+	screenSections,
 	catalogVariantsFor,
 	clientProposalGate,
 	inspectorOp,
@@ -46,11 +47,14 @@ test("Start page from this screen: program draft, no model, passes the browser c
 	assert.ok(draft.proposal.page.layout.blocks.length > 2);
 	assert.ok(clientProposalGate(draft.proposal).ok);
 	assert.equal(stockScreenDraft({ screenId: "screen.nope/none" }).ok, false);
-	// The feed's `supported` flag is exactly what the draft path accepts, for every Stock screen.
+	// t150u: the feed's `supported` flag is a property of the screen (it has a section the page renders); a screen the
+	// full draft cannot assemble starts from its renderable sections (BlocksFeed startFromSections).
 	const screens = [1, 2].flatMap((page) => stockSearch({ type: "screen", page, pageSize: 48 }).items);
 	assert.equal(screens.length, catalogSnapshot.screens.length);
-	for (const item of screens) assert.equal(stockScreenDraft({ screenId: item.id }).ok, item.supported, item.id);
-	assert.ok(screens.some((item) => item.supported) && screens.some((item) => !item.supported));
+	for (const item of screens) {
+		assert.equal(item.supported, screenSections(item.id).sections.length > 0, item.id);
+		if (stockScreenDraft({ screenId: item.id }).ok) assert.ok(item.supported, item.id);
+	}
 	const session = web("lib/chat-core/session.svelte.ts");
 	const body = session.slice(session.indexOf("export async function startPageFromScreen"), session.indexOf("export function applyVariantFromAsk"));
 	assert.match(body, /stockScreenDraft\(/);

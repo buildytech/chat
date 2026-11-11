@@ -9,12 +9,13 @@ import { inspector } from "$lib/inspector/inspector.svelte";
 import { blocksOf, getCurrentPage } from "$lib/page-store";
 import { feedDrag } from "./drag.svelte";
 
-/** Null when the dragged card may go to slot `at`, else the reason to show. */
+/** Null when the dragged card may go to slot `at`, else the reason to show (computed now, from the item and the page). */
 export function dropRefusal(at: number): string | null {
 	const item = feedDrag.item;
-	const check = feedDrag.check;
 	if (!item) return null;
-	if (!check) return t("feed.why.not_a_page_block");
+	// A screen: its sections take the slot; header / footer go to their edge and ones the page has are skipped.
+	if (item.type === "screen") return item.supported ? null : t("feed.why.screen_not_renderable");
+	const check = inspector.canAdd(item.spec, item.variant);
 	if (!check.ok) return t(`feed.why.${check.code}`).replace("{role}", item.role ?? "");
 	// No page yet: the drop starts an empty page, so the only slot is the first.
 	const page = getCurrentPage();
@@ -27,11 +28,11 @@ export function dropAt(at: number): boolean {
 	const item = feedDrag.item;
 	feedDrag.end();
 	if (!item) return false;
-	const done = inspector.add(item.spec, item.variant, at);
+	const done = item.type === "screen" ? inspector.addScreen(item.id, at) : inspector.add(item.spec, item.variant, at);
 	const name = (key: string) => t(key).replace("{title}", item.title).replace("{variant}", item.variant).replace("{position}", String(at + 1));
 	if (done.ok) {
 		canvas.requestReveal(done.blockId);
-		feedDrag.status = { ok: true, text: name("dnd.dropped") };
+		feedDrag.status = { ok: true, text: name(item.type === "screen" ? "dnd.droppedScreen" : "dnd.dropped") };
 	} else feedDrag.status = { ok: false, text: t("feed.addFailed").replace("{message}", done.message) };
 	return done.ok;
 }

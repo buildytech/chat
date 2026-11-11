@@ -5,7 +5,7 @@
  * that fails goes to quarantine (`buildy:v1:quarantine`) with its reason and the rest loads. Nothing is dropped silently.
  */
 
-import { isScenarioId, type ScenarioId } from "@buildytech/builder-core";
+import { isPageFamily, isScenarioId, type PageFamily, type ScenarioId } from "@buildytech/builder-core";
 import { pageSpecDefIssues } from "@buildytech/page-contract";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
 import { STORAGE_KEYS, browserStorage, quarantine, type StorageLike } from "./storage-v1.ts";
@@ -26,6 +26,9 @@ export type StoredPageProvenance = {
 	scenarioId: ScenarioId | null;
 	missing: string[];
 	assembler?: string;
+	/** page-spec 1.4.0 (ADR 0027): the advisory screen family, derived after every operation unless pinned. */
+	family?: PageFamily | null;
+	familyPinned?: boolean;
 };
 
 export type StoredPageRecord = {
@@ -77,7 +80,9 @@ function normalizeProvenance(raw: unknown, page: unknown): StoredPageProvenance 
 		screenId: recordedId(rec?.screenId) ?? inferScreenIdFromUnknown(page),
 		scenarioId: isScenarioId(rec?.scenarioId) ? rec.scenarioId : null,
 		missing: Array.isArray(rec?.missing) ? rec.missing.filter((row): row is string => typeof row === "string") : [],
-		assembler: typeof rec?.assembler === "string" ? rec.assembler : undefined
+		assembler: typeof rec?.assembler === "string" ? rec.assembler : undefined,
+		...(isPageFamily(rec?.family) ? { family: rec.family } : {}),
+		...(rec?.familyPinned === true ? { familyPinned: true } : {})
 	};
 }
 

@@ -3,6 +3,8 @@
   page and, for a block, "+" that adds it to the page through the inspector gates (no model call); for a screen,
   "Start page" that makes a fresh page from it (program assembly, no model call). One column: full-bleed thumb
   on the left edge; two columns: full-bleed thumb on top (StockMediaCard). A block the page cannot take keeps "+" disabled with the reason.
+  t150u: whether the card can be added, started or dragged is computed here, per card, from the item (stockSearch's
+  supported flag) and the current page's hard rules; nothing is cached from the first result page.
 -->
 <script lang="ts">
 	import ExternalLink from "@lucide/svelte/icons/external-link";
@@ -15,34 +17,40 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import type { AddBlockCheck, StockSearchItem } from "@buildytech/builder-core";
+	import type { StockSearchItem } from "@buildytech/builder-core";
+	import { inspector } from "$lib/inspector/inspector.svelte";
 	import StockMediaCard from "./StockMediaCard.svelte";
 	import { FEED_DRAG_TYPE, feedDrag } from "$lib/feed/drag.svelte";
 
 	let {
 		item,
 		columns,
-		check,
 		onAdd,
 		onStart,
 		starting = false
 	}: {
 		item: StockSearchItem;
 		columns: 1 | 2;
-		check: AddBlockCheck | null;
 		onAdd: (item: StockSearchItem) => void;
 		onStart: (item: StockSearchItem) => void;
 		starting?: boolean;
 	} = $props();
 
 	const fill = (key: string) => t(key).replace("{title}", item.title).replace("{variant}", item.variant);
-	// A block card drags into the preview or the Sections list (ADR 0024 step C); "+" stays the keyboard path.
+	// A pure function of this item and the page (inspector.canAdd reads the page): the same on every result page.
+	const check = $derived(item.type === "block" ? inspector.canAdd(item.spec, item.variant) : null);
+	const canDrag = $derived(item.type === "block" ? check?.ok === true : item.supported);
+	// A card drags into the preview or the Sections list (ADR 0024 step C; a screen brings its sections, t150u);
+	// "+" / Start page stay the keyboard path.
 	function onDragStart(event: DragEvent) {
-		if (item.type !== "block" || !event.dataTransfer) return;
+		if (!canDrag || !event.dataTransfer) {
+			event.preventDefault();
+			return;
+		}
 		event.dataTransfer.setData(FEED_DRAG_TYPE, item.id);
 		event.dataTransfer.setData("text/plain", item.id);
 		event.dataTransfer.effectAllowed = "copy";
-		feedDrag.start(item, check);
+		feedDrag.start(item);
 	}
 
 	const why = $derived(check && !check.ok ? t(`feed.why.${check.code}`).replace("{role}", item.role ?? "") : null);
@@ -53,9 +61,9 @@
 	thumb={item.thumb}
 	thumbTitle={`${item.title} (${item.variant})`}
 	layout={columns === 1 ? "row" : "stack"}
-	class={cn(item.type === "block" && "cursor-grab", feedDrag.item?.id === item.id && "opacity-60")}
-	draggable={item.type === "block" ? "true" : undefined}
-	title={item.type === "block" ? t("feed.dragHint") : undefined}
+	class={cn(canDrag && "cursor-grab", feedDrag.item?.id === item.id && "opacity-60")}
+	draggable={canDrag ? "true" : undefined}
+	title={canDrag ? t(item.type === "block" ? "feed.dragHint" : "feed.dragScreenHint") : undefined}
 	ondragstart={onDragStart}
 	ondragend={() => feedDrag.end()}
 	data-slot="feed-card"

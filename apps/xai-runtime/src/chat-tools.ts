@@ -10,6 +10,7 @@ import {
 	compactPlanPayload,
 	planHasInvalid,
 	pageDirectory,
+	deriveFamily,
 	type PagePlan,
 	assertNoFallback,
 	catalogProvenance,
@@ -872,6 +873,8 @@ function askPrompt(ctx: ProposalContext): string {
 					locale: current.locale,
 					revision: ctx.expectedRevision,
 					blocks: pageDirectory(current),
+					// ADR 0027: the advisory screen family (recommend sections that fit it; any section may still be added).
+					screenFamily: (ctx.currentProvenance as { family?: string | null } | null | undefined)?.family ?? deriveFamily(current.layout.blocks),
 					...(ctx.manualEdits?.length ? { manualEdits: ctx.manualEdits } : {})
 				}
 			: null,

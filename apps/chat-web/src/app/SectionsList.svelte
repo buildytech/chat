@@ -32,7 +32,7 @@
 	import { feedDrag } from "$lib/feed/drag.svelte";
 	import { dropAt, dropRefusal, refuseDrop } from "$lib/feed/drop.svelte";
 	import { blocksOf, getCurrentPage, getSelectedBlockId, selectBlock, type PageBlock } from "$lib/page-store";
-	import { blockThumbUrl, catalogVariantsFor, moveSlotCheck } from "@buildytech/builder-core";
+	import { blockThumbUrl, catalogVariantsFor, moveSlotCheck, PAGE_FAMILIES, type PageFamily } from "@buildytech/builder-core";
 	import { inspectorPanel } from "$lib/inspector/panel.svelte";
 	import StockThumb from "./StockThumb.svelte";
 
@@ -194,6 +194,12 @@
 		if (!selected) return;
 		listEl()?.querySelector<HTMLElement>(`[data-section-id="${CSS.escape(selected)}"]`)?.scrollIntoView({ block: "nearest" });
 	});
+	// ADR 0027: the screen family is advisory; Auto follows the composition, a pick pins it (one undo step).
+	const family = $derived(inspector.family);
+	function pickFamily(event: Event) {
+		const value = (event.currentTarget as HTMLSelectElement).value;
+		inspector.pinFamily(value ? (value as PageFamily) : null);
+	}
 </script>
 
 <Block tag="section" class="flex min-h-0 flex-1 flex-col" aria-label={t("leftPanel.sections")} data-slot="sections">
@@ -208,6 +214,25 @@
 			</Button>
 		</Group>
 	</Group>
+	{#if family}
+		<Group class="h-8 shrink-0 items-center gap-2 px-2" data-slot="sections-family">
+			<Text tag="span" class="shrink-0 text-xs text-muted-foreground" id="sections-family-label">{t("family.label")}</Text>
+			<Select
+				size="sm"
+				class="h-6 min-w-0 flex-1 text-xs"
+				value={family.pinned ? family.family : ""}
+				aria-labelledby="sections-family-label"
+				title={family.pinned ? t("family.pinned") : t("family.select")}
+				data-action="family-pin"
+				onchange={pickFamily}
+			>
+				<SelectOption value="">{t("family.auto").replace("{family}", t(`family.${family.derived}`))}</SelectOption>
+				{#each PAGE_FAMILIES as option (option)}
+					<SelectOption value={option}>{t(`family.${option}`)}</SelectOption>
+				{/each}
+			</Select>
+		</Group>
+	{/if}
 	<Text tag="p" class="sr-only" role="status" aria-live="assertive" data-slot="sections-live">{announcement}</Text>
 	{#if drag?.refusal}
 		<Text tag="p" class="shrink-0 px-2 pt-2 text-xs text-destructive" data-slot="sections-move-refusal">{drag.refusal}</Text>

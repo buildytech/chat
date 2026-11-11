@@ -4,7 +4,8 @@
  * home Stock screens field. Adding a card is an inspector operation (`inspector.add`): page-spec, props and catalog
  * provenance gates, one undo step, no model call.
  */
-import { stockSearch, type StockSearchResult, type StockSearchType } from "@buildytech/builder-core";
+import { deriveFamily, familyKinds, stockSearch, type StockSearchResult, type StockSearchType } from "@buildytech/builder-core";
+import { getCurrentPage, getCurrentProvenance } from "../page-store/index.ts";
 import { browserStorage } from "../browser/storage-v1.ts";
 import { FEED_PAGE_SIZE, loadFeedPrefs, saveFeedPrefs, type FeedColumns, type FeedPrefs, type LeftTab } from "./prefs.ts";
 
@@ -84,7 +85,10 @@ function createFeed() {
 			page = Math.max(1, Math.round(next));
 		},
 		get result(): StockSearchResult {
-			return stockSearch({ q, ...filters, page, pageSize: FEED_PAGE_SIZE });
+			// ADR 0027: the page's screen family ranks its kinds first (advisory: nothing is filtered out).
+			const current = getCurrentPage();
+			const family = current ? (getCurrentProvenance()?.family ?? deriveFamily(current.layout.blocks)) : null;
+			return stockSearch({ q, ...filters, page, pageSize: FEED_PAGE_SIZE, boostRoles: family ? familyKinds(family) : null });
 		}
 	};
 }
