@@ -311,3 +311,15 @@ test("intake draft: a collection whose screen cannot render yet gets a renderabl
 	assert.equal(placed.args.screenId, draft.screenId);
 	assert.equal(placed.warnings[0], draft.screenNote);
 });
+
+test("intake turn: the screen switch is said on the proposal, also after the host's collection repair", async () => {
+	const grill = collectionBounds(fixture("grill-delivery"))!;
+	const call = { name: "propose_layout", arguments: { locale: "en", blocks: [{ kind: "hero", title: "Hot grill" }] } };
+	await withProvider([{ calls: [call] }], async (requests) => {
+		const turn = await runXaiCatalogTurn("test-key", MODEL, { ...CTX, screenId: null, collection: grill }, AbortSignal.timeout(5000));
+		assert.ok(turn.proposal.ok && "page" in turn.proposal, JSON.stringify(turn.proposal));
+		assert.equal(requests.length, 1);
+		assert.match(turn.proposal.warnings[0]!, /screen\.theme-food-grill\/home cannot render in this BuildY version yet/);
+		assert.ok(specsOf(turn.proposal).every((spec) => grill.allowed.includes(spec.split("/")[0]!)));
+	});
+});

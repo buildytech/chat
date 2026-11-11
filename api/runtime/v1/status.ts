@@ -33230,10 +33230,6 @@ async function buildToolLoop(
 				placeNotes = placed.warnings;
 			}
 			let result = executeTool({ name, arguments: args }, host);
-			if (placeNotes.length && name === "propose_layout" && result.ok) {
-				const made = result.result as LayoutProposal;
-				result = { ...result, result: { ...made, warnings: [...made.warnings, ...placeNotes] } };
-			}
 			if (name === "propose_layout" && !result.ok) {
 				lastRejected = { args, result };
 				// The same block error twice: keep the other blocks, use the catalog default for that block. In an intake
@@ -33245,6 +33241,11 @@ async function buildToolLoop(
 					result = { ok: true, name: "propose_layout", result: partial.proposal };
 					args = partial.args;
 				}
+			}
+			// What pre-placement changed is said on the proposal (also after a host repair).
+			if (placeNotes.length && name === "propose_layout" && result.ok) {
+				const made = result.result as LayoutProposal;
+				result = { ...result, result: { ...made, warnings: [...placeNotes, ...made.warnings] } };
 			}
 			if (name === "search_catalog" && result.ok) {
 				const ids = screenIdsOf(result.result);
