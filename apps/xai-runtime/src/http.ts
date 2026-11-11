@@ -212,7 +212,8 @@ export async function handleRuntimeFetch(
 					path: meta.path,
 					runId: meta.runId,
 					toolsUsed: meta.toolsCalled,
-					usage: meta.usage
+					usage: meta.usage,
+					...(meta.modelFields ? { modelFields: meta.modelFields } : {})
 				});
 			} catch (err) {
 				const safe = safeErrorMessage(err);

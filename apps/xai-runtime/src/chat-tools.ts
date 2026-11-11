@@ -99,6 +99,20 @@ const SYSTEM_INTAKE = [
 const INTAKE_TOOLS = () => agentOpenAiTools("build", ["propose_layout"]);
 export const INTAKE_BUDGET = { maxSteps: 3 } as const;
 
+/** The non-empty field names of each block the model sent (values are never kept). */
+function modelFieldNames(args: Record<string, unknown>): Array<{ kind: string; fields: string[] }> {
+	const blocks = Array.isArray(args.blocks) ? args.blocks : [];
+	return blocks.slice(0, 24).map((row) => {
+		const entry = row && typeof row === "object" ? (row as Record<string, unknown>) : {};
+		const fields = Object.keys(entry).filter((key) => {
+			const value = entry[key];
+			return key !== "kind" && value !== undefined && value !== null && value !== "" && !(Array.isArray(value) && !value.length);
+		});
+		const items = Array.isArray(entry.items) ? entry.items.length : 0;
+		return { kind: String(entry.kind ?? ""), fields: items ? fields.map((key) => (key === "items" ? `items:${items}` : key)) : fields };
+	});
+}
+
 function intakePrompt(ctx: ProposalContext, draft: CollectionDraft): string {
 	const bounds = ctx.collection!;
 	const hints = draft.stock ? placeholderHints(draft.stock) : {};
@@ -272,6 +286,8 @@ export type LiveTurnMeta = {
 	providerStatus?: number;
 	/** Wall time of the failed provider request in ms. */
 	providerMs?: number;
+	/** Field names (never values) the model wrote per block on its propose_layout calls: what it filled, for intake QA. */
+	modelFields?: Array<{ kind: string; fields: string[] }>;
 };
 
 function newRunId(): string {
@@ -608,6 +624,7 @@ async function buildToolLoop(
 	const blocks: string[] = [];
 	let lastRejected: { args: Record<string, unknown>; result: { code: string; path?: string; result?: unknown } } | null = null;
 	let nearestScreens: string[] = [];
+	let modelFields: Array<{ kind: string; fields: string[] }> | undefined;
 
 	while (trace.steps < maxSteps) {
 		trace.steps += 1;
@@ -652,7 +669,10 @@ async function buildToolLoop(
 				messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
 				continue;
 			}
-			if (name === "propose_layout") args = bindProposeArgs(args, ctx);
+			if (name === "propose_layout") {
+				modelFields = modelFieldNames(args);
+				args = bindProposeArgs(args, ctx);
+			}
 			// Intake: the draft's screen, catalog blocks and variants fill what the model left out (pre-placement).
 			let placeNotes: string[] = [];
 			if (name === "propose_layout" && draft) {
@@ -708,7 +728,10 @@ async function buildToolLoop(
 	}
 
 	const usage = aggregateStepUsage(stepUsage);
-	const meta = turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId);
+	const meta: LiveTurnMeta = {
+		...turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId),
+		...(modelFields ? { modelFields } : {})
+	};
 	if (!lastProposal?.ok && fallback) lastProposal = fallback;
 	// Budget spent on a rejected page: accept it without the rejected block choice(s), said in warnings.
 	if (!lastProposal?.ok && lastRejected) {
