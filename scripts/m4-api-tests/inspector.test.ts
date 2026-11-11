@@ -134,6 +134,11 @@ test("inspector fields: dom ids, content first, closest allowed values", () => {
 	const { main, more } = partitionFields(fields);
 	assert.deepEqual(main.map((f) => f.name), ["b", "c"]);
 	assert.deepEqual(more.map((f) => f.name), ["a"]);
+	// P1: a field keeps its group while the block stays selected (first keystroke into "More" keeps focus).
+	const placed = new Map<string, "main" | "more">();
+	partitionFields(fields, placed);
+	const typed = partitionFields([{ ...fields[0]!, value: "x" }, fields[1]!, fields[2]!], placed);
+	assert.deepEqual(typed.more.map((f) => f.name), ["a"], "stays in More after the first character");
 	assert.deepEqual(closestAllowed("rockett", ["arrow-right", "rocket", "rows"], 2), ["rocket", "rows"]);
 	assert.deepEqual(closestAllowed("ro", ["arrow-right", "rocket", "rows"], 3), ["rocket", "rows", "arrow-right"]);
 });

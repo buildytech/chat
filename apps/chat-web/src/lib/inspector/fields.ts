@@ -18,10 +18,16 @@ export function hasContent(field: InspectorField): boolean {
 }
 
 /** Fields with content first (schema order kept); unset read-only props go to a collapsed group. */
-export function partitionFields(fields: readonly InspectorField[]): { main: InspectorField[]; more: InspectorField[] } {
+export function partitionFields(fields: readonly InspectorField[], placed?: Map<string, "main" | "more">): { main: InspectorField[]; more: InspectorField[] } {
 	const main: InspectorField[] = [];
 	const more: InspectorField[] = [];
-	for (const field of fields) (hasContent(field) ? main : more).push(field);
+	for (const field of fields) {
+		// A field keeps the group it was first shown in while its block stays selected: typing the first character
+		// into an empty "More" field (or clearing a shown one) must not remount the control and drop focus.
+		const where = placed?.get(field.pointer) ?? (hasContent(field) ? "main" : "more");
+		placed?.set(field.pointer, where);
+		(where === "main" ? main : more).push(field);
+	}
 	return { main, more };
 }
 

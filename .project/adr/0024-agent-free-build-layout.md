@@ -248,3 +248,6 @@ step did. Contract first: ui8kit/contract fa09858 (page-spec 1.3.0, session 1.6.
   entry. Typing coalesced into one step records the first keystroke's op / path.
 - **UI.** Fields written to props show where their value comes from until overridden (variant preset, schema
   placeholder, unset) and "Your value, saved in the section's props" after; en + ru.
+- **Stable groups.** Live verify found that the first character typed into an empty field under "More" moved the
+  field to the main group, remounted the control and dropped the rest of the typing. A field now keeps the group it
+  was first shown in while its block stays selected.

@@ -46,7 +46,13 @@
 		return blocks.find((node) => node.id === id) ?? null;
 	});
 	const model = $derived(block ? inspectorModel(block) : null);
-	const parts = $derived(model?.ok ? partitionFields(model.fields) : { main: [], more: [] });
+	// Field groups stay put per selected block (see partitionFields); a new selection starts fresh.
+	let placedFor: { blockId: string; placed: Map<string, "main" | "more"> } | null = null;
+	const parts = $derived.by(() => {
+		if (!model?.ok) return { main: [], more: [] };
+		if (placedFor?.blockId !== model.blockId) placedFor = { blockId: model.blockId, placed: new Map() };
+		return partitionFields(model.fields, placedFor.placed);
+	});
 	const issues = $derived(model ? inspector.issuesFor(model.blockId) : {});
 	const index = $derived(model ? blocks.findIndex((node) => node.id === model.blockId) : -1);
 	const opIssue = $derived(model ? inspector.opIssueFor(model.blockId) : null);
