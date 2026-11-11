@@ -293,3 +293,6 @@ export {
 	type CollectionItemRef,
 	type CollectionRequired
 } from "./collection.ts";
+export { placeholderFields, placeholderHints, placeholderWarning, type PlaceholderField } from "./placeholder.ts";
+export { resolveIconName, iconFixWarning, type IconFix } from "./icon-name.ts";
+export { stripInventedYears } from "./intents.ts";

@@ -28,7 +28,8 @@ import {
 	shellTitle,
 	type ModelPageContent
 } from "./content.ts";
-import { stripInventedFooterYears } from "./intents.ts";
+import { modelTexts, stripInventedFooterYears, stripInventedYears } from "./intents.ts";
+import { iconFixWarning } from "./icon-name.ts";
 import type { AgentMode } from "./agent/agent-tools.ts";
 
 export type ProposalContext = {
@@ -930,7 +931,8 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 		onlyKinds
 	});
 	const shell = arrangeShell(localizeEmptyLedes(overlay.blocks, locale), locale);
-	const years = stripInventedFooterYears(shell.blocks, author);
+	const footerYears = stripInventedFooterYears(shell.blocks, author);
+	const years = stripInventedYears(footerYears.blocks, author, footerYears.stripped, modelTexts(working.content));
 	if (years.stripped.length) warnings.push(`Removed invented years from ${years.stripped.join(", ")}. Add a year in the request to keep one.`);
 	let blocks = years.blocks;
 	const changed = [...shell.changed];
@@ -1141,7 +1143,8 @@ export function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProp
 	const demoRequested = working.content?.demoData === true;
 	const overlay = overlayModelContent(working, blocks, locale, warnings, { demo: demoRequested });
 	const shell = arrangeShell(localizeEmptyLedes(overlay.blocks, locale), locale);
-	const years = stripInventedFooterYears(shell.blocks, authorText(working));
+	const footerYears = stripInventedFooterYears(shell.blocks, authorText(working));
+	const years = stripInventedYears(footerYears.blocks, authorText(working), footerYears.stripped, modelTexts(working.content));
 	if (years.stripped.length) {
 		warnings.push(`Removed invented years from ${years.stripped.join(", ")}. Add a year in the request to keep one.`);
 	}
@@ -1272,6 +1275,11 @@ export function localizeEmptyLedes(blocks: PageBlock[], locale: string): PageBlo
 
 /** requireBlocks the renderer cannot place: catalog labels without a renderer, or not catalog labels at all. */
 function unknownBlockNotes(ctx: ProposalContext): string[] {
+	const icons = iconFixWarning(ctx.content?.iconFixes ?? []);
+	return [...(icons ? [icons] : []), ...unknownLabelNotes(ctx)];
+}
+
+function unknownLabelNotes(ctx: ProposalContext): string[] {
 	const unknown = ctx.content?.unknownBlocks ?? [];
 	if (!unknown.length) return [];
 	const labels = new Set(blockLabelVocabulary());

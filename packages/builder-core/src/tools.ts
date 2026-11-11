@@ -723,6 +723,8 @@ export type CollectionDraft = {
 	warnings: string[];
 	/** Set when the collection's own screen cannot render and the draft uses another one (said in the proposal). */
 	screenNote?: string;
+	/** The draft page itself (catalog copy, no model copy): the base of placeholder detection (ADR 0023). */
+	stock?: Page;
 };
 
 export function collectionIntakeDraft(input: {
@@ -786,7 +788,7 @@ export function collectionIntakeDraft(input: {
 				? `${notRenderable.join(", ")} cannot render in this BuildY version yet; the page uses ${screenId} with the collection's blocks only.`
 				: undefined;
 		if (screenNote) warnings.unshift(screenNote);
-		best = { draft: { screenId, blocks, remove, warnings, ...(screenNote ? { screenNote } : {}) }, score };
+		best = { draft: { screenId, blocks, remove, warnings, ...(screenNote ? { screenNote } : {}), stock: proposal.page }, score };
 	};
 	for (let i = 0; i < queue.length && i < 6; i += 1) consider(queue[i]!);
 	if (!best || (best as { score: number }).score < 1000) {

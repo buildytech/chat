@@ -8,6 +8,7 @@ import {
 } from "@buildytech/page-contract";
 import { rendererKindForLabel } from "./catalog/compatibility.ts";
 import { resolveCatalogChoice } from "./catalog/sources.ts";
+import { resolveIconName, type IconFix } from "./icon-name.ts";
 
 /**
  * Model-supplied page content for propose_layout.
@@ -62,6 +63,8 @@ export type ModelPageContent = {
 	unknownBlocks?: string[];
 	/** The author asked for a brand-new page instead of editing the current one. */
 	newPage?: boolean;
+	/** Row icons the host mapped to a published Lucide name or dropped (ADR 0023), said in warnings. */
+	iconFixes?: IconFix[];
 };
 
 /** Kinds whose rows are figures or events. Rows are kept only when the author asked for demo data. */
@@ -229,7 +232,7 @@ function parseItem(raw: unknown): ModelContentItem | null {
 	if (detail) item.detail = detail;
 	const group = cleanText(rec.group ?? rec.section, 40);
 	if (group) item.group = group;
-	// The icon is kept as sent (a malformed one too) so the catalog gate can reject it with its path.
+	// The icon is resolved against the published Lucide names in parseModelContent (mapped or dropped, said).
 	if (typeof rec.icon === "string" && rec.icon.trim()) item.icon = rec.icon.trim().slice(0, 64);
 	return item;
 }
@@ -273,6 +276,14 @@ export function parseModelContent(args: Record<string, unknown>): ModelPageConte
 					.filter((item) => rule.child !== "metric" || Boolean(item.value))
 					.slice(0, rule.max)
 			: [];
+		for (const item of items) {
+			if (!item.icon) continue;
+			const resolved = resolveIconName(item.icon);
+			if (resolved === item.icon) continue;
+			(out.iconFixes ??= []).push({ from: item.icon, to: resolved });
+			if (resolved) item.icon = resolved;
+			else delete item.icon;
+		}
 		const blockTitle = cleanText(rec.title, 80);
 		const catalogBlock = cleanToken(rec.catalogBlock, 120);
 		const variant = typeof rec.variant === "string" && rec.variant.trim() ? rec.variant.trim().slice(0, 60) : undefined;

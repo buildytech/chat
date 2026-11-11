@@ -95,23 +95,25 @@ test("schema gate fails: an enum axis, an unknown prop and a wrong type are repo
 	assert.ok(type.every((issue) => issue.message !== "must have required property '$'"));
 });
 
-test("propose_layout: an unknown icon is rejected by the schema enum, the allowed names are the schema's own", () => {
+test("propose_layout: icons outside the schema enum are dropped and said, no rejection; the gate itself still rejects them", () => {
 	const r = executeTool(
-		{ name: "propose_layout", arguments: { brief: "Landing", screenId: "screen.site/home", locale: "en", blocks: [{ kind: "features", title: "Features", items: [{ label: "Home", icon: "home" }, { label: "Bars", icon: "bar-chart" }] }] } },
-		{ liveTurn: true, authorBrief: "Landing with features" }
-	) as { ok: false; code: string; message: string; path: string };
-	assert.equal(r.ok, false);
-	assert.equal(r.code, "props_invalid");
-	assert.match(r.path, /^layout\.blocks\[\d+\]\.children\[0\]\.copy\.icon$/);
-	assert.match(r.message, /\/features\/0\/icon "home".*Allowed: .*\bhouse\b/);
-	// Every allowed name is the schema's own enum, inline, so one retry needs no other tool call.
-	const allowed = r.message.slice(r.message.indexOf("Allowed: ") + "Allowed: ".length).split(".")[0]!.split(", ");
-	assert.deepEqual(allowed, lucideIcons());
-	const fixed = executeTool(
-		{ name: "propose_layout", arguments: { brief: "Landing", screenId: "screen.site/home", locale: "en", blocks: [{ kind: "features", title: "Features", items: [{ label: "Home", icon: "house" }] }] } },
+		{ name: "propose_layout", arguments: { brief: "Landing", screenId: "screen.site/home", locale: "en", blocks: [{ kind: "features", title: "Features", items: [{ label: "Home", icon: "home" }, { label: "Fast", icon: "Zap" }] }] } },
 		{ liveTurn: true, authorBrief: "Landing with features" }
 	);
-	assert.equal(fixed.ok, true, JSON.stringify(fixed));
+	assert.equal(r.ok, true, JSON.stringify(r));
+	const proposal = r.result as LayoutProposal;
+	const rows = proposal.page.layout.blocks.find((block) => block.kind === "features")!.children!;
+	assert.equal(rows[0]!.copy?.icon, undefined);
+	assert.equal(rows[1]!.copy?.icon, "zap");
+	assert.ok(proposal.warnings.some((w) => /mapped to the published Lucide names: Zap -> zap/.test(w) && /dropped .*: home/.test(w)), proposal.warnings.join(" | "));
+	// The schema enum stays the gate (edit_page / inspector writes): the allowed names are the schema's own.
+	const page = proposal.page;
+	const features = page.layout.blocks.find((block) => block.kind === "features")!;
+	const bad = editPage({ page, provenance: proposal.provenance, patch: { ops: [{ op: "set_items", blockId: features.id, items: [{ label: "Home", icon: "home" }] }] }, expectedRevision: 0 }) as { ok: boolean; code?: string; message?: string };
+	assert.equal(bad.ok, false);
+	assert.equal(bad.code, "props_invalid");
+	const allowed = bad.message!.slice(bad.message!.indexOf("Allowed: ") + "Allowed: ".length).split(".")[0]!.split(", ");
+	assert.deepEqual(allowed, lucideIcons());
 });
 
 test("propose_layout: an icon on a row whose page-spec slot renders none is not carried (no rejection)", () => {

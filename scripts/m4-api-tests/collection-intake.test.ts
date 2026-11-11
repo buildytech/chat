@@ -22,6 +22,8 @@ import {
 	modelCatalogSources,
 	placeCollectionDraft,
 	placeCollectionDraftWithNotes,
+	placeholderFields,
+	placeholderHints,
 	mapChatRunRequest,
 	repairCollectionArgs,
 	snapshotDigest,
@@ -322,4 +324,36 @@ test("intake turn: the screen switch is said on the proposal, also after the hos
 		assert.match(turn.proposal.warnings[0]!, /screen\.theme-food-grill\/home cannot render in this BuildY version yet/);
 		assert.ok(specsOf(turn.proposal).every((spec) => grill.allowed.includes(spec.split("/")[0]!)));
 	});
+});
+
+test("intake placeholders: the draft's catalog copy is shown to the model; copy left from it is said, the model's own is not", async () => {
+	const draft = collectionIntakeDraft({ bounds, brief: "Bakery landing", screenId: SCREEN })!;
+	assert.ok(draft.stock);
+	const hints = placeholderHints(draft.stock!);
+	assert.ok(typeof hints.hero?.lede === "string");
+	// Every field of the untouched draft is a placeholder; a kind-name title is one too.
+	const all = placeholderFields(draft.stock!, draft.stock!);
+	assert.ok(all.some((row) => row.kind === "hero" && row.field === "lede"));
+	const own = { name: "propose_layout", arguments: { screenId: SCREEN, locale: "en", blocks: [{ kind: "hero", title: "Hero", headline: "Bread at dawn", lede: "Baked by the family each morning.", action: "Pre-order" }] } };
+	await withProvider([{ calls: [own] }], async (requests) => {
+		const turn = await runXaiCatalogTurn("test-key", MODEL, CTX, AbortSignal.timeout(5000));
+		assert.ok(turn.proposal.ok && "page" in turn.proposal, JSON.stringify(turn.proposal));
+		const user = JSON.parse(String(body(requests[0]!)[1]!.content));
+		assert.ok(user.draft.blocks.find((row: { kind: string }) => row.kind === "hero").placeholder.lede);
+		const note = turn.proposal.warnings.find((w) => /Catalog placeholder copy is still on/.test(w)) ?? "";
+		assert.match(note, /hero\.title/);
+		assert.doesNotMatch(note, /hero\.(headline|lede|action)/);
+		assert.match(note, /cta\.lede/);
+	});
+});
+
+test("year guard: a model sentence with a year the author did not give is dropped on any block; the author's year stays", () => {
+	const r = executeTool({ name: "propose_layout", arguments: { brief: "bakery", screenId: SCREEN, locale: "en", remove: ["nav", "features", "footer"], blocks: [{ kind: "hero", catalogBlock: "block.hero", variant: "split", title: "Bread", headline: "Bread at dawn", lede: "Fresh loaves daily. Serving the town since 1985." }] } }, { ...HOST, authorBrief: "bakery page" });
+	assert.ok(r.ok, JSON.stringify(r));
+	const proposal = r.result as { page: { layout: { blocks: Array<{ kind: string; copy?: Record<string, string> }> } }; warnings: string[] };
+	assert.equal(proposal.page.layout.blocks.find((b) => b.kind === "hero")!.copy!.lede, "Fresh loaves daily.");
+	assert.ok(proposal.warnings.some((w) => /Removed invented years from .*hero\.lede/.test(w)));
+	const kept = executeTool({ name: "propose_layout", arguments: { brief: "bakery", screenId: SCREEN, locale: "en", remove: ["nav", "features", "footer"], blocks: [{ kind: "hero", catalogBlock: "block.hero", variant: "split", title: "Bread", lede: "Serving the town since 1985." }] } }, { ...HOST, authorBrief: "bakery page, open since 1985" });
+	assert.ok(kept.ok);
+	assert.equal((kept.result as typeof proposal).page.layout.blocks.find((b) => b.kind === "hero")!.copy!.lede, "Serving the town since 1985.");
 });

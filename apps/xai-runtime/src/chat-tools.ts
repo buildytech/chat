@@ -17,6 +17,9 @@ import {
 	collectionIntakeDraft,
 	placeCollectionDraft,
 	placeCollectionDraftWithNotes,
+	placeholderFields,
+	placeholderHints,
+	placeholderWarning,
 	type CollectionDraft,
 	executeTool,
 	isCollectionCode,
@@ -83,7 +86,7 @@ const SYSTEM_INTAKE = [
 	"You are the BuildY page builder in Build mode.",
 	`Policy ${POLICY_VERSION}.`,
 	"The author opened this chat from a Stock collection. The host already placed the page from it: draft.screenId, draft.blocks (kind, catalogBlock, variant, variants = every allowed variant of that block, required = the author's own pick) and draft.remove. Build only from the draft.",
-	`When the author asks for a page (in any language), call propose_layout once with screenId = draft.screenId, title (the page title), locale (BCP 47 of the author's language), remove = draft.remove, and blocks with one entry per draft block: {kind, catalogBlock, variant, title, every key of its copyKeys as a top-level field, and items when it has rows}, all written for the author's topic in their language (not catalog or placeholder text). Shape: {"kind":"hero","catalogBlock":"block.hero","variant":"split","title":"<section name>","eyebrow":"...","headline":"<visible heading>","lede":"<one or two sentences>","action":"<button label>"}, {"kind":"features","catalogBlock":"block.features","title":"<visible heading>","items":[{"label":"...","detail":"...","icon":"<a name from icons>"}]}. title names the section (about the topic, never the kind name); when copyKeys include headline, headline is the visible heading, otherwise title is. rows gives max and fields of a block's items: write 3 to max rows about the topic; nav: brand and 3-5 items naming the sections. Never invent years, dates or figures the author did not give. Keep required blocks with their variant. For the other blocks keep the draft variant or pick one from that block's variants that fits the author's words. Never add a kind or catalog block that is not in draft.blocks.`,
+	`When the author asks for a page (in any language), call propose_layout once with screenId = draft.screenId, title (the page title), locale (BCP 47 of the author's language), remove = draft.remove, and blocks with one entry per draft block: {kind, catalogBlock, variant, title, every key of its copyKeys as a top-level field, and items when it has rows}, all written for the author's topic in their language (not catalog or placeholder text). Shape: {"kind":"hero","catalogBlock":"block.hero","variant":"split","title":"<section name>","eyebrow":"...","headline":"<visible heading>","lede":"<one or two sentences>","action":"<button label>"}, {"kind":"features","catalogBlock":"block.features","title":"<visible heading>","items":[{"label":"...","detail":"...","icon":"<a name from icons>"}]}. title names the section (about the topic, never the kind name); when copyKeys include headline, headline is the visible heading, otherwise title is. rows gives max and fields of a block's items: write 3 to max rows about the topic; nav: brand and 3-5 items naming the sections. placeholder shows the catalog text the block has now: replace every one of those fields and rows with your own copy; a placeholder left on the page is reported to the author. Never invent years, dates or figures the author did not give (the host removes a sentence with a year the author did not write). Keep required blocks with their variant. For the other blocks keep the draft variant or pick one from that block's variants that fits the author's words. Never add a kind or catalog block that is not in draft.blocks.`,
 	"When the author only asks a question or says not to change the page, answer in text and call no tool: a text answer changes nothing.",
 	"demoData: true only when the author explicitly asked for demo, fake, sample, mock or test data; omit otherwise. Without it leave data items empty and do not invent figures, reviews, prices or contacts.",
 	"catalogSources lists each draft catalog block with its variants (as props), the row and text fields of its published props schema (rows: fields with :icon take a name from icons). Give every feature row an icon from icons that fits its text.",
@@ -98,6 +101,7 @@ export const INTAKE_BUDGET = { maxSteps: 3 } as const;
 
 function intakePrompt(ctx: ProposalContext, draft: CollectionDraft): string {
 	const bounds = ctx.collection!;
+	const hints = draft.stock ? placeholderHints(draft.stock) : {};
 	return JSON.stringify({
 		brief: ctx.brief,
 		expectedRevision: ctx.expectedRevision,
@@ -114,6 +118,7 @@ function intakePrompt(ctx: ProposalContext, draft: CollectionDraft): string {
 				...(PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]?.items
 					? { rows: { max: PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]!.items!.max, fields: PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]!.items!.fields } }
 					: {}),
+				...(hints[row.kind] ? { placeholder: hints[row.kind] } : {}),
 				...(row.required ? { required: true } : {})
 			})),
 			remove: draft.remove,
@@ -720,6 +725,11 @@ async function buildToolLoop(
 			const proposal = placed.result as LayoutProposal;
 			lastProposal = markLiveProposal({ ...proposal, warnings: [...proposal.warnings, "The model's page did not assemble; the host placed the collection draft (catalog copy)."] });
 		}
+	}
+	// Intake: catalog placeholder copy still on the page is said (compared with the draft, no word lists).
+	if (lastProposal?.ok && draft?.stock) {
+		const note = placeholderWarning(placeholderFields(lastProposal.page, draft.stock));
+		if (note) lastProposal = { ...lastProposal, warnings: [...lastProposal.warnings, note] };
 	}
 	if (lastProposal?.ok) return { proposal: text ? { ...lastProposal, modelText: text.slice(0, 4000) } : lastProposal, meta };
 	// The model answered in text and proposed nothing: show the text, create no proposal.

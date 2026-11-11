@@ -175,22 +175,16 @@ test("budget spent without propose_layout: honest summary with the nearest scree
 	});
 });
 
-test("props_invalid on a row icon: repair drops only icons outside the contract enum", () => {
+test("row icons outside the contract enum are dropped before the gate (no repair round); the others stay", () => {
 	const list = [
 		{ kind: "hero", title: "h" },
-		{ kind: "features", title: "Меню", items: [{ label: "Шашлык", icon: "salad" }, { label: "Доставка", icon: "truck" }] }
+		{ kind: "features", title: "Menu", items: [{ label: "Skewers", icon: "salad" }, { label: "Delivery", icon: "truck" }] }
 	];
-	const r = executeTool({ name: "propose_layout", arguments: { brief: "x", scenarioId: "landing", screenId: "screen.theme-marketing-landing/home", locale: "ru", blocks: list } }, HOST);
-	assert.equal(r.ok, false);
-	if (r.ok) return;
-	assert.equal(r.code, "props_invalid");
-	const repair = repairProposeArgs({ blocks: list }, r);
-	assert.ok(repair);
-	const items = (repair!.args.blocks as Array<{ items?: Array<Record<string, unknown>> }>)[1]!.items!;
-	assert.equal(items[0]!.icon, undefined);
-	assert.equal(items[0]!.label, "Шашлык");
-	assert.equal(items[1]!.icon, "truck");
-	assert.match(repair!.warning, /salad/);
-	const fixed = executeTool({ name: "propose_layout", arguments: { brief: "x", scenarioId: "landing", screenId: "screen.theme-marketing-landing/home", locale: "ru", blocks: repair!.args.blocks } }, HOST);
-	assert.ok(fixed.ok);
+	const r = executeTool({ name: "propose_layout", arguments: { brief: "x", scenarioId: "landing", screenId: "screen.theme-marketing-landing/home", locale: "en", blocks: list } }, HOST);
+	assert.ok(r.ok, JSON.stringify(r));
+	const proposal = r.result as LayoutProposal;
+	const rows = proposal.page.layout.blocks.find((block) => block.kind === "features" && block.children?.some((child) => child.title === "Delivery"))!.children!;
+	assert.equal(rows.find((child) => child.title === "Skewers")!.copy?.icon, undefined);
+	assert.equal(rows.find((child) => child.title === "Delivery")!.copy?.icon, "truck");
+	assert.ok(proposal.warnings.some((w) => /dropped .*salad/.test(w)));
 });

@@ -116,13 +116,13 @@ test("unknown variant and non-Lucide icon are rejected with a code and path", ()
 	const variant = propose({ variant: "mosaic" });
 	assert.equal(variant.ok, false);
 	assert.equal((variant as { code: string }).code, "unknown_variant");
-	const icon = propose({ items: [{ label: "Fast", icon: "rocketship" }] });
-	assert.equal(icon.ok, false);
-	// The published props schema rejects it (the lucideIcon enum), not a list of the chat's own.
-	assert.equal((icon as { code: string }).code, "props_invalid");
-	assert.match((icon as { path: string }).path, /children\[0\]\.copy\.icon$/);
-	// The allowed names travel with the error, so the model can retry without another tool call.
-	assert.match((icon as { message: string }).message, /"rocketship".*Allowed: .*\bzap\b/);
+	// A non-Lucide row icon never reaches the gate: dropped and said (ADR 0023); a spelling variant maps.
+	const icon = propose({ items: [{ label: "Fast", icon: "rocketship" }, { label: "Faster", icon: "lucide-zap-icon" }] });
+	assert.equal(icon.ok, true, JSON.stringify(icon));
+	const rows = features((icon.result as LayoutProposal).page).children!;
+	assert.equal(rows[0]!.copy?.icon, undefined);
+	assert.equal(rows[1]!.copy?.icon, "zap");
+	assert.ok((icon.result as LayoutProposal).warnings.some((w) => /rocketship/.test(w)));
 });
 
 test("get_block_details keeps the requested variant and returns the registry presets", () => {

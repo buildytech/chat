@@ -25728,10 +25728,87 @@ exports["blockVariantSummary"] = blockVariantSummary;
 
 });
 
+__def("packages/builder-core/src/icon-name.ts", function (exports) {
+const { lucideIcons } = __req("packages/builder-core/src/catalog/props-schema.ts");
+let INDEX: { names: Set<string>; byKey: Map<string, string> } | null = null;
+
+function key(name: string): string {
+	return name.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function index() {
+	if (INDEX) return INDEX;
+	const names = new Set(lucideIcons());
+	const byKey = new Map<string, string>();
+	for (const name of names) if (!byKey.has(key(name))) byKey.set(key(name), name);
+	INDEX = { names, byKey };
+	return INDEX;
+}
+
+function kebab(raw: string): string {
+	return raw
+		.trim()
+		.replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+		.replace(/[\s_.]+/g, "-")
+		.toLowerCase()
+		.replace(/^(?:lucide|icon)-/, "")
+		.replace(/-(?:icon)$/, "");
+}
+
+function distance(a: string, b: string, max: number): number {
+	if (Math.abs(a.length - b.length) > max) return max + 1;
+	let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+	for (let i = 1; i <= a.length; i += 1) {
+		const row = [i];
+		let best = i;
+		for (let j = 1; j <= b.length; j += 1) {
+			row[j] = Math.min(prev[j]! + 1, row[j - 1]! + 1, prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1));
+			best = Math.min(best, row[j]!);
+		}
+		if (best > max) return max + 1;
+		prev = row;
+	}
+	return prev[b.length]!;
+}
+
+/** The published icon name for a model's name, or null when none is close enough. */
+function resolveIconName(raw: string): string | null {
+	const { names, byKey } = index();
+	if (!names.size) return raw;
+	if (names.has(raw)) return raw;
+	const name = kebab(raw);
+	if (names.has(name)) return name;
+	const hit = byKey.get(key(name)) ?? (name.endsWith("s") ? byKey.get(key(name.slice(0, -1))) : undefined);
+	if (hit) return hit;
+	// Typos only: one edit from 5 characters, two from 8; never a short or loose guess.
+	const max = name.length >= 8 ? 2 : name.length >= 5 ? 1 : 0;
+	if (!max) return null;
+	const near = [...names].filter((candidate) => distance(name, candidate, max) <= max);
+	return near.length === 1 ? near[0]! : null;
+}
+
+/** Warning text for the icon fixes of one proposal (mapped and dropped). */
+function iconFixWarning(fixes: IconFix[]): string | null {
+	if (!fixes.length) return null;
+	const mapped = fixes.filter((fix) => fix.to);
+	const dropped = [...new Set(fixes.filter((fix) => !fix.to).map((fix) => fix.from))];
+	const parts: string[] = [];
+	if (mapped.length) parts.push(`row icons mapped to the published Lucide names: ${[...new Set(mapped.map((fix) => `${fix.from} -> ${fix.to}`))].join(", ")}`);
+	if (dropped.length) parts.push(`row icons not in the published Lucide names were dropped (those rows render without an icon): ${dropped.join(", ")}`);
+	const text = parts.join("; ");
+	return `${text.charAt(0).toUpperCase()}${text.slice(1)}.`;
+}
+
+exports["resolveIconName"] = resolveIconName;
+exports["iconFixWarning"] = iconFixWarning;
+
+});
+
 __def("packages/builder-core/src/content.ts", function (exports) {
 const { PAGE_LIMITS, PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
 const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/compatibility.ts");
 const { resolveCatalogChoice } = __req("packages/builder-core/src/catalog/sources.ts");
+const { resolveIconName } = __req("packages/builder-core/src/icon-name.ts");
 const DATA_KINDS: ReadonlySet<PageBlockKind> = new Set<PageBlockKind>(["overview", "metrics", "chart", "activity"]);
 
 /** Child kind and row limit per parent kind. */
@@ -25896,7 +25973,7 @@ function parseItem(raw: unknown): ModelContentItem | null {
 	if (detail) item.detail = detail;
 	const group = cleanText(rec.group ?? rec.section, 40);
 	if (group) item.group = group;
-	// The icon is kept as sent (a malformed one too) so the catalog gate can reject it with its path.
+	// The icon is resolved against the published Lucide names in parseModelContent (mapped or dropped, said).
 	if (typeof rec.icon === "string" && rec.icon.trim()) item.icon = rec.icon.trim().slice(0, 64);
 	return item;
 }
@@ -25940,6 +26017,14 @@ function parseModelContent(args: Record<string, unknown>): ModelPageContent {
 					.filter((item) => rule.child !== "metric" || Boolean(item.value))
 					.slice(0, rule.max)
 			: [];
+		for (const item of items) {
+			if (!item.icon) continue;
+			const resolved = resolveIconName(item.icon);
+			if (resolved === item.icon) continue;
+			(out.iconFixes ??= []).push({ from: item.icon, to: resolved });
+			if (resolved) item.icon = resolved;
+			else delete item.icon;
+		}
 		const blockTitle = cleanText(rec.title, 80);
 		const catalogBlock = cleanToken(rec.catalogBlock, 120);
 		const variant = typeof rec.variant === "string" && rec.variant.trim() ? rec.variant.trim().slice(0, 60) : undefined;
@@ -27859,7 +27944,80 @@ function stripInventedFooterYears(
 	return { blocks: next, stripped: [...new Set(stripped)] };
 }
 
+const YEAR_TOKEN = /\b(?:19|20)\d{2}\b/g;
+const SENTENCE = /[^.!?]+(?:[.!?]+|$)/g;
+
+/** Every text the model wrote in this propose_layout call (copy, titles, rows): the only text the guard touches. */
+function modelTexts(content: { title?: string; blocks: Array<{ title?: string; copy: Record<string, unknown>; items: Array<Record<string, unknown>> }> } | undefined): Set<string> {
+	const out = new Set<string>();
+	if (!content) return out;
+	if (content.title) out.add(content.title);
+	for (const entry of content.blocks) {
+		if (entry.title) out.add(entry.title);
+		for (const value of Object.values(entry.copy)) if (typeof value === "string") out.add(value);
+		for (const item of entry.items) for (const field of ["label", "detail", "note"]) if (typeof item[field] === "string") out.add(item[field] as string);
+	}
+	return out;
+}
+
+function withoutYearSentences(value: string, allowed: Set<string>): string | null {
+	const years = value.match(YEAR_TOKEN) ?? [];
+	if (!years.length || years.every((y) => allowed.has(y))) return null;
+	const kept = (value.match(SENTENCE) ?? [value]).filter((part) => (part.match(YEAR_TOKEN) ?? []).every((y) => allowed.has(y)));
+	return kept.join("").replace(/\s{2,}/g, " ").trim();
+}
+
+/**
+ * Years the author never gave are not invented anywhere on the page (ADR 0023; the footer has its own guard): a
+ * sentence of model copy (copy fields, titles, row label / detail / note) with a year missing from the author's
+ * message is dropped; an emptied field falls back to nothing. Only text the model wrote this turn is touched (hand
+ * edits and earlier copy stay); data rows of an explicit demo are figures, not facts, and stay.
+ */
+function stripInventedYears(
+	blocks: PageBlock[],
+	authorText: string,
+	prior: string[] = [],
+	fromModel: ReadonlySet<string> = new Set(),
+	skipKinds: ReadonlySet<string> = new Set(["footer", "overview", "metrics", "chart", "activity"])
+): { blocks: PageBlock[]; stripped: string[] } {
+	const stripped = [...prior];
+	const allowed = new Set((authorText.match(YEAR_TOKEN) ?? []).map(String));
+	const clean = (node: PageBlock, path: string): PageBlock => {
+		let next = node;
+		const copy = { ...(node.copy ?? {}) } as Record<string, unknown>;
+		let touched = false;
+		for (const [field, value] of Object.entries(copy)) {
+			if (typeof value !== "string" || !fromModel.has(value)) continue;
+			const cleaned = withoutYearSentences(value, allowed);
+			if (cleaned === null) continue;
+			touched = true;
+			stripped.push(`${path}.${field}`);
+			if (cleaned) copy[field] = cleaned;
+			else delete copy[field];
+		}
+		if (touched) next = { ...next, copy: copy as PageBlock["copy"] };
+		for (const field of ["title", "summary"] as const) {
+			const value = next[field];
+			if (typeof value !== "string" || !fromModel.has(value)) continue;
+			const cleaned = withoutYearSentences(value, allowed);
+			if (cleaned === null || !cleaned) continue;
+			stripped.push(`${path}.${field}`);
+			next = { ...next, [field]: cleaned };
+		}
+		return next;
+	};
+	const out = blocks.map((node) => {
+		if (skipKinds.has(node.kind)) return node;
+		const top = clean(node, node.kind);
+		if (!top.children?.length) return top;
+		return { ...top, children: top.children.map((child, index) => clean(child, `${node.kind}.rows[${index}]`)) };
+	});
+	return { blocks: out, stripped: [...new Set(stripped)] };
+}
+
 exports["stripInventedFooterYears"] = stripInventedFooterYears;
+exports["modelTexts"] = modelTexts;
+exports["stripInventedYears"] = stripInventedYears;
 
 });
 
@@ -27877,7 +28035,8 @@ const { OWNER_FILTERS } = __req("packages/builder-core/src/copy.ts");
 const { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } = __req("packages/builder-core/src/policy.ts");
 const { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
 const { DATA_KINDS, defaultDemoLabel, demoLabelForLocale, isShellDefaultTitle, mergeModelContent, resolvePageLocale, shellTitle } = __req("packages/builder-core/src/content.ts");
-const { stripInventedFooterYears } = __req("packages/builder-core/src/intents.ts");
+const { modelTexts, stripInventedFooterYears, stripInventedYears } = __req("packages/builder-core/src/intents.ts");
+const { iconFixWarning } = __req("packages/builder-core/src/icon-name.ts");
 const INSPECTED = new Set<string>();
 
 function iso(now?: string): string {
@@ -28672,7 +28831,8 @@ function editExistingPage(ctx: ProposalContext, brief: string): LayoutProposal |
 		onlyKinds
 	});
 	const shell = arrangeShell(localizeEmptyLedes(overlay.blocks, locale), locale);
-	const years = stripInventedFooterYears(shell.blocks, author);
+	const footerYears = stripInventedFooterYears(shell.blocks, author);
+	const years = stripInventedYears(footerYears.blocks, author, footerYears.stripped, modelTexts(working.content));
 	if (years.stripped.length) warnings.push(`Removed invented years from ${years.stripped.join(", ")}. Add a year in the request to keep one.`);
 	let blocks = years.blocks;
 	const changed = [...shell.changed];
@@ -28883,7 +29043,8 @@ function proposeLayout(ctx: ProposalContext): LayoutProposal | LayoutProposalErr
 	const demoRequested = working.content?.demoData === true;
 	const overlay = overlayModelContent(working, blocks, locale, warnings, { demo: demoRequested });
 	const shell = arrangeShell(localizeEmptyLedes(overlay.blocks, locale), locale);
-	const years = stripInventedFooterYears(shell.blocks, authorText(working));
+	const footerYears = stripInventedFooterYears(shell.blocks, authorText(working));
+	const years = stripInventedYears(footerYears.blocks, authorText(working), footerYears.stripped, modelTexts(working.content));
 	if (years.stripped.length) {
 		warnings.push(`Removed invented years from ${years.stripped.join(", ")}. Add a year in the request to keep one.`);
 	}
@@ -29014,6 +29175,11 @@ function localizeEmptyLedes(blocks: PageBlock[], locale: string): PageBlock[] {
 
 /** requireBlocks the renderer cannot place: catalog labels without a renderer, or not catalog labels at all. */
 function unknownBlockNotes(ctx: ProposalContext): string[] {
+	const icons = iconFixWarning(ctx.content?.iconFixes ?? []);
+	return [...(icons ? [icons] : []), ...unknownLabelNotes(ctx)];
+}
+
+function unknownLabelNotes(ctx: ProposalContext): string[] {
 	const unknown = ctx.content?.unknownBlocks ?? [];
 	if (!unknown.length) return [];
 	const labels = new Set(blockLabelVocabulary());
@@ -31518,7 +31684,7 @@ function collectionIntakeDraft(input: {
 				? `${notRenderable.join(", ")} cannot render in this BuildY version yet; the page uses ${screenId} with the collection's blocks only.`
 				: undefined;
 		if (screenNote) warnings.unshift(screenNote);
-		best = { draft: { screenId, blocks, remove, warnings, ...(screenNote ? { screenNote } : {}) }, score };
+		best = { draft: { screenId, blocks, remove, warnings, ...(screenNote ? { screenNote } : {}), stock: proposal.page }, score };
 	};
 	for (let i = 0; i < queue.length && i < 6; i += 1) consider(queue[i]!);
 	if (!best || (best as { score: number }).score < 1000) {
@@ -32330,6 +32496,71 @@ exports["stripRuntimePrefix"] = stripRuntimePrefix;
 
 });
 
+__def("packages/builder-core/src/placeholder.ts", function (exports) {
+const { PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
+const { askBlockCard } = __req("packages/builder-core/src/catalog/details.ts");
+const SKIP_KEYS = new Set(["badge", "href", "note"]);
+
+function names(node: PageBlock): Set<string> {
+	const out = new Set([node.kind.toLowerCase()]);
+	if (node.catalogBlock) {
+		out.add(node.catalogBlock.replace(/^block\./, "").toLowerCase());
+		const card = askBlockCard(node.catalogBlock);
+		if (card) {
+			out.add(card.title.toLowerCase());
+			out.add(card.label.toLowerCase());
+		}
+	}
+	return out;
+}
+
+/** Text fields of a block the author sees: its copy keys (not badge / href / note), title, and rows. */
+function placeholderFields(page: Page, stock: Page | null | undefined): PlaceholderField[] {
+	const out: PlaceholderField[] = [];
+	const stockById = new Map((stock?.layout.blocks ?? []).map((node) => [node.id, node]));
+	for (const node of page.layout.blocks) {
+		const base = stockById.get(node.id) ?? stock?.layout.blocks.find((row) => row.kind === node.kind && row.catalogBlock === node.catalogBlock);
+		const push = (field: string) => out.push({ blockId: node.id, kind: node.kind, field });
+		if (names(node).has(node.title.trim().toLowerCase()) || (base && base.title === node.title)) push("title");
+		for (const key of PAGE_SLOTS[node.kind]?.copy ?? []) {
+			if (SKIP_KEYS.has(key)) continue;
+			const value = node.copy?.[key];
+			if (typeof value === "string" && value && base?.copy?.[key] === value) push(key);
+		}
+		const rows = node.children ?? [];
+		const stockRows = new Set((base?.children ?? []).map((child) => child.title));
+		if (rows.length && stockRows.size && rows.every((child) => stockRows.has(child.title))) push("rows");
+	}
+	return out;
+}
+
+/** The placeholder values of the draft page, per block kind, for the model to replace (copy keys and row labels). */
+function placeholderHints(stock: Page): Record<string, Record<string, unknown>> {
+	const out: Record<string, Record<string, unknown>> = {};
+	for (const node of stock.layout.blocks) {
+		const hint: Record<string, unknown> = {};
+		for (const key of PAGE_SLOTS[node.kind]?.copy ?? []) {
+			if (SKIP_KEYS.has(key)) continue;
+			const value = node.copy?.[key];
+			if (typeof value === "string" && value) hint[key] = value.slice(0, 120);
+		}
+		if (node.children?.length) hint.rows = node.children.map((child) => child.title).slice(0, 6);
+		if (Object.keys(hint).length) out[node.kind] = hint;
+	}
+	return out;
+}
+
+function placeholderWarning(fields: PlaceholderField[]): string | null {
+	if (!fields.length) return null;
+	return `Catalog placeholder copy is still on ${fields.map((row) => `${row.kind}.${row.field}`).join(", ")}: write it in the inspector or ask Build to change it.`;
+}
+
+exports["placeholderFields"] = placeholderFields;
+exports["placeholderHints"] = placeholderHints;
+exports["placeholderWarning"] = placeholderWarning;
+
+});
+
 __def("packages/builder-core/src/index.ts", function (exports) {
 exports["SCENARIO_IDS"] = __req("packages/builder-core/src/copy.ts")["SCENARIO_IDS"];
 exports["SCENARIO_PROMPTS"] = __req("packages/builder-core/src/copy.ts")["SCENARIO_PROMPTS"];
@@ -32554,6 +32785,12 @@ exports["snapshotDigest"] = __req("packages/builder-core/src/collection.ts")["sn
 exports["snapshotHasItem"] = __req("packages/builder-core/src/collection.ts")["snapshotHasItem"];
 exports["splitCollection"] = __req("packages/builder-core/src/collection.ts")["splitCollection"];
 exports["unplacedWarnings"] = __req("packages/builder-core/src/collection.ts")["unplacedWarnings"];
+exports["placeholderFields"] = __req("packages/builder-core/src/placeholder.ts")["placeholderFields"];
+exports["placeholderHints"] = __req("packages/builder-core/src/placeholder.ts")["placeholderHints"];
+exports["placeholderWarning"] = __req("packages/builder-core/src/placeholder.ts")["placeholderWarning"];
+exports["resolveIconName"] = __req("packages/builder-core/src/icon-name.ts")["resolveIconName"];
+exports["iconFixWarning"] = __req("packages/builder-core/src/icon-name.ts")["iconFixWarning"];
+exports["stripInventedYears"] = __req("packages/builder-core/src/intents.ts")["stripInventedYears"];
 
 
 
@@ -32639,7 +32876,7 @@ exports["installPropsGate"] = installPropsGate;
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, agentOpenAiTools, agentTextReply, aggregateStepUsage, askBlockCard, compactPlanPayload, planHasInvalid, pageDirectory, assertNoFallback, catalogProvenance, collectionPromptContext, collectionIntakeDraft, placeCollectionDraft, placeCollectionDraftWithNotes, executeTool, isCollectionCode, repairCollectionArgs, facetVocabulary, inheritedScreenId, isScenarioId, modelCatalogSources, searchVocabulary, readProviderUsage, recordedScreenId, rejectFabricatedLayout, safeErrorMessage, scenarioCatalogContext, toolLoopProposalFailure, toolLoopRejection, repairProposeArgs, unknownUsage, validateCatalogProvenance } = __req("packages/builder-core/src/index.ts");
+const { ALLOWED_TOOLS, POLICY_VERSION, RUN_BUDGET, XAI_BASE_URL, agentOpenAiTools, agentTextReply, aggregateStepUsage, askBlockCard, compactPlanPayload, planHasInvalid, pageDirectory, assertNoFallback, catalogProvenance, collectionPromptContext, collectionIntakeDraft, placeCollectionDraft, placeCollectionDraftWithNotes, placeholderFields, placeholderHints, placeholderWarning, executeTool, isCollectionCode, repairCollectionArgs, facetVocabulary, inheritedScreenId, isScenarioId, modelCatalogSources, searchVocabulary, readProviderUsage, recordedScreenId, rejectFabricatedLayout, safeErrorMessage, scenarioCatalogContext, toolLoopProposalFailure, toolLoopRejection, repairProposeArgs, unknownUsage, validateCatalogProvenance } = __req("packages/builder-core/src/index.ts");
 const { PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
@@ -32677,7 +32914,7 @@ const SYSTEM_INTAKE = [
 	"You are the BuildY page builder in Build mode.",
 	`Policy ${POLICY_VERSION}.`,
 	"The author opened this chat from a Stock collection. The host already placed the page from it: draft.screenId, draft.blocks (kind, catalogBlock, variant, variants = every allowed variant of that block, required = the author's own pick) and draft.remove. Build only from the draft.",
-	`When the author asks for a page (in any language), call propose_layout once with screenId = draft.screenId, title (the page title), locale (BCP 47 of the author's language), remove = draft.remove, and blocks with one entry per draft block: {kind, catalogBlock, variant, title, every key of its copyKeys as a top-level field, and items when it has rows}, all written for the author's topic in their language (not catalog or placeholder text). Shape: {"kind":"hero","catalogBlock":"block.hero","variant":"split","title":"<section name>","eyebrow":"...","headline":"<visible heading>","lede":"<one or two sentences>","action":"<button label>"}, {"kind":"features","catalogBlock":"block.features","title":"<visible heading>","items":[{"label":"...","detail":"...","icon":"<a name from icons>"}]}. title names the section (about the topic, never the kind name); when copyKeys include headline, headline is the visible heading, otherwise title is. rows gives max and fields of a block's items: write 3 to max rows about the topic; nav: brand and 3-5 items naming the sections. Never invent years, dates or figures the author did not give. Keep required blocks with their variant. For the other blocks keep the draft variant or pick one from that block's variants that fits the author's words. Never add a kind or catalog block that is not in draft.blocks.`,
+	`When the author asks for a page (in any language), call propose_layout once with screenId = draft.screenId, title (the page title), locale (BCP 47 of the author's language), remove = draft.remove, and blocks with one entry per draft block: {kind, catalogBlock, variant, title, every key of its copyKeys as a top-level field, and items when it has rows}, all written for the author's topic in their language (not catalog or placeholder text). Shape: {"kind":"hero","catalogBlock":"block.hero","variant":"split","title":"<section name>","eyebrow":"...","headline":"<visible heading>","lede":"<one or two sentences>","action":"<button label>"}, {"kind":"features","catalogBlock":"block.features","title":"<visible heading>","items":[{"label":"...","detail":"...","icon":"<a name from icons>"}]}. title names the section (about the topic, never the kind name); when copyKeys include headline, headline is the visible heading, otherwise title is. rows gives max and fields of a block's items: write 3 to max rows about the topic; nav: brand and 3-5 items naming the sections. placeholder shows the catalog text the block has now: replace every one of those fields and rows with your own copy; a placeholder left on the page is reported to the author. Never invent years, dates or figures the author did not give (the host removes a sentence with a year the author did not write). Keep required blocks with their variant. For the other blocks keep the draft variant or pick one from that block's variants that fits the author's words. Never add a kind or catalog block that is not in draft.blocks.`,
 	"When the author only asks a question or says not to change the page, answer in text and call no tool: a text answer changes nothing.",
 	"demoData: true only when the author explicitly asked for demo, fake, sample, mock or test data; omit otherwise. Without it leave data items empty and do not invent figures, reviews, prices or contacts.",
 	"catalogSources lists each draft catalog block with its variants (as props), the row and text fields of its published props schema (rows: fields with :icon take a name from icons). Give every feature row an icon from icons that fits its text.",
@@ -32692,6 +32929,7 @@ const INTAKE_BUDGET = { maxSteps: 3 } as const;
 
 function intakePrompt(ctx: ProposalContext, draft: CollectionDraft): string {
 	const bounds = ctx.collection!;
+	const hints = draft.stock ? placeholderHints(draft.stock) : {};
 	return JSON.stringify({
 		brief: ctx.brief,
 		expectedRevision: ctx.expectedRevision,
@@ -32708,6 +32946,7 @@ function intakePrompt(ctx: ProposalContext, draft: CollectionDraft): string {
 				...(PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]?.items
 					? { rows: { max: PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]!.items!.max, fields: PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]!.items!.fields } }
 					: {}),
+				...(hints[row.kind] ? { placeholder: hints[row.kind] } : {}),
 				...(row.required ? { required: true } : {})
 			})),
 			remove: draft.remove,
@@ -33297,6 +33536,11 @@ async function buildToolLoop(
 			const proposal = placed.result as LayoutProposal;
 			lastProposal = markLiveProposal({ ...proposal, warnings: [...proposal.warnings, "The model's page did not assemble; the host placed the collection draft (catalog copy)."] });
 		}
+	}
+	// Intake: catalog placeholder copy still on the page is said (compared with the draft, no word lists).
+	if (lastProposal?.ok && draft?.stock) {
+		const note = placeholderWarning(placeholderFields(lastProposal.page, draft.stock));
+		if (note) lastProposal = { ...lastProposal, warnings: [...lastProposal.warnings, note] };
 	}
 	if (lastProposal?.ok) return { proposal: text ? { ...lastProposal, modelText: text.slice(0, 4000) } : lastProposal, meta };
 	// The model answered in text and proposed nothing: show the text, create no proposal.
