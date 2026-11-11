@@ -357,3 +357,20 @@ test("year guard: a model sentence with a year the author did not give is droppe
 	assert.ok(kept.ok);
 	assert.equal((kept.result as typeof proposal).page.layout.blocks.find((b) => b.kind === "hero")!.copy!.lede, "Serving the town since 1985.");
 });
+
+test("intake tool: propose_layout narrowed to the draft blocks, visible copy and rows required, no edit flag", async () => {
+	const { intakeTools } = await import("../../apps/xai-runtime/src/chat-tools.ts");
+	const draft = collectionIntakeDraft({ bounds, brief: "Bakery landing", screenId: SCREEN })!;
+	const tool = intakeTools(draft).find((row) => row.function.name === "propose_layout")!;
+	const params = tool.function.parameters as { required: string[]; properties: { blocks: { minItems: number; items: { anyOf: Array<{ properties: Record<string, { enum?: string[] }>; required: string[] }> } } } };
+	assert.ok(["screenId", "title", "locale", "blocks"].every((key) => params.required.includes(key)));
+	const shapes = params.properties.blocks.items.anyOf;
+	assert.equal(params.properties.blocks.minItems, draft.blocks.length);
+	const hero = shapes.find((row) => row.properties.kind!.enum![0] === "hero")!;
+	for (const key of ["title", "headline", "lede", "action"]) assert.ok(hero.required.includes(key), key);
+	assert.ok(!("edit" in hero.properties));
+	const features = shapes.find((row) => row.properties.kind!.enum![0] === "features");
+	if (features) assert.ok(features.required.includes("items"));
+	const footer = shapes.find((row) => row.properties.kind!.enum![0] === "footer");
+	if (footer) assert.ok(!footer.required.includes("legal"));
+});

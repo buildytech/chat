@@ -28,6 +28,8 @@ export function placeholderFields(page: Page, stock: Page | null | undefined): P
 	const out: PlaceholderField[] = [];
 	const stockById = new Map((stock?.layout.blocks ?? []).map((node) => [node.id, node]));
 	for (const node of page.layout.blocks) {
+		// Footer contact / legal defaults are the honest "not invented" text, not placeholders to rewrite.
+		if (node.kind === "footer") continue;
 		const base = stockById.get(node.id) ?? stock?.layout.blocks.find((row) => row.kind === node.kind && row.catalogBlock === node.catalogBlock);
 		const push = (field: string) => out.push({ blockId: node.id, kind: node.kind, field });
 		if (names(node).has(node.title.trim().toLowerCase()) || (base && base.title === node.title)) push("title");
@@ -47,6 +49,7 @@ export function placeholderFields(page: Page, stock: Page | null | undefined): P
 export function placeholderHints(stock: Page): Record<string, Record<string, unknown>> {
 	const out: Record<string, Record<string, unknown>> = {};
 	for (const node of stock.layout.blocks) {
+		if (node.kind === "footer") continue;
 		const hint: Record<string, unknown> = {};
 		for (const key of PAGE_SLOTS[node.kind]?.copy ?? []) {
 			if (SKIP_KEYS.has(key)) continue;

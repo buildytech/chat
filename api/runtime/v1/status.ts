@@ -32519,6 +32519,8 @@ function placeholderFields(page: Page, stock: Page | null | undefined): Placehol
 	const out: PlaceholderField[] = [];
 	const stockById = new Map((stock?.layout.blocks ?? []).map((node) => [node.id, node]));
 	for (const node of page.layout.blocks) {
+		// Footer contact / legal defaults are the honest "not invented" text, not placeholders to rewrite.
+		if (node.kind === "footer") continue;
 		const base = stockById.get(node.id) ?? stock?.layout.blocks.find((row) => row.kind === node.kind && row.catalogBlock === node.catalogBlock);
 		const push = (field: string) => out.push({ blockId: node.id, kind: node.kind, field });
 		if (names(node).has(node.title.trim().toLowerCase()) || (base && base.title === node.title)) push("title");
@@ -32538,6 +32540,7 @@ function placeholderFields(page: Page, stock: Page | null | undefined): Placehol
 function placeholderHints(stock: Page): Record<string, Record<string, unknown>> {
 	const out: Record<string, Record<string, unknown>> = {};
 	for (const node of stock.layout.blocks) {
+		if (node.kind === "footer") continue;
 		const hint: Record<string, unknown> = {};
 		for (const key of PAGE_SLOTS[node.kind]?.copy ?? []) {
 			if (SKIP_KEYS.has(key)) continue;
@@ -32913,8 +32916,8 @@ const SYSTEM = [
 const SYSTEM_INTAKE = [
 	"You are the BuildY page builder in Build mode.",
 	`Policy ${POLICY_VERSION}.`,
-	"The author opened this chat from a Stock collection. The host already placed the page from it: draft.screenId, draft.blocks (kind, catalogBlock, variant, variants = every allowed variant of that block, required = the author's own pick) and draft.remove. Build only from the draft.",
-	`When the author asks for a page (in any language), call propose_layout once with screenId = draft.screenId, title (the page title), locale (BCP 47 of the author's language), remove = draft.remove, and blocks with one entry per draft block: {kind, catalogBlock, variant, title, every key of its copyKeys as a top-level field, and items when it has rows}, all written for the author's topic in their language (not catalog or placeholder text). Shape: {"kind":"hero","catalogBlock":"block.hero","variant":"split","title":"<section name>","eyebrow":"...","headline":"<visible heading>","lede":"<one or two sentences>","action":"<button label>"}, {"kind":"features","catalogBlock":"block.features","title":"<visible heading>","items":[{"label":"...","detail":"...","icon":"<a name from icons>"}]}. title names the section (about the topic, never the kind name); when copyKeys include headline, headline is the visible heading, otherwise title is. rows gives max and fields of a block's items: write 3 to max rows about the topic; nav: brand and 3-5 items naming the sections. placeholder shows the catalog text the block has now: replace every one of those fields and rows with your own copy; a placeholder left on the page is reported to the author. Never invent years, dates or figures the author did not give (the host removes a sentence with a year the author did not write). Keep required blocks with their variant. For the other blocks keep the draft variant or pick one from that block's variants that fits the author's words. Never add a kind or catalog block that is not in draft.blocks.`,
+	"The author opened this chat from a Stock collection. The host already placed the page from it: draft.screenId, draft.blocks (kind, catalogBlock, variant, required = the author's own pick) and draft.remove. Build only from the draft.",
+	`When the author asks for a page (in any language), call propose_layout once with screenId = draft.screenId, title (the page title), locale (BCP 47 of the author's language), remove = draft.remove and one blocks entry per draft block in the tool's shape: every required field written by you for the author's topic in their language. The host writes no copy. title names the section for the topic (never the kind name); when a block has headline, headline is its visible heading, otherwise title is. Rows (items) are about the topic; nav items name the page sections. placeholder shows the catalog text a block has now: none of it may stay. Never invent years, dates or figures the author did not give (the host removes a sentence with a year the author did not write). Keep required blocks with their variant; other blocks keep the draft variant or another variant from the tool's enum that fits the author's words.`,
 	"When the author only asks a question or says not to change the page, answer in text and call no tool: a text answer changes nothing.",
 	"demoData: true only when the author explicitly asked for demo, fake, sample, mock or test data; omit otherwise. Without it leave data items empty and do not invent figures, reviews, prices or contacts.",
 	"catalogSources lists each draft catalog block with its variants (as props), the row and text fields of its published props schema (rows: fields with :icon take a name from icons). Give every feature row an icon from icons that fits its text.",
@@ -32926,6 +32929,81 @@ const SYSTEM_INTAKE = [
 /** Intake turns: propose_layout only, at most 3 model steps (1 + one variant fix + the host's repair). */
 const INTAKE_TOOLS = () => agentOpenAiTools("build", ["propose_layout"]);
 const INTAKE_BUDGET = { maxSteps: 3 } as const;
+
+/** Copy keys the model must write on an intake block: the visible ones; footer contact/legal keep the honest defaults. */
+const OPTIONAL_COPY = new Set(["badge", "href", "note"]);
+function intakeRequiredKeys(kind: string): string[] {
+	if (kind === "footer") return [];
+	return (PAGE_SLOTS[kind as keyof typeof PAGE_SLOTS]?.copy ?? []).filter((key) => !OPTIONAL_COPY.has(key));
+}
+
+/**
+ * propose_layout for an intake turn (ADR 0023): the one definition's tool with blocks narrowed to the draft, one
+ * schema per draft block (its kind, catalog block, allowed variants) whose visible copy keys and rows are required.
+ * The general schema says the host falls back to catalog copy, so models left copy out; here nothing is optional.
+ */
+function intakeTools(draft: CollectionDraft): ReturnType<typeof INTAKE_TOOLS> {
+	return INTAKE_TOOLS().map((tool) => {
+		if (tool.function.name !== "propose_layout") return tool;
+		const params = tool.function.parameters as { properties: Record<string, unknown>; required?: string[] };
+		const blocksSchema = params.properties.blocks as { items: { properties: Record<string, unknown> } };
+		const base = blocksSchema.items.properties;
+		const { edit: _edit, ...props } = base;
+		const variants = (rows: string[] | undefined) => (rows?.length ? { variant: { type: "string", enum: [...rows] } } : {});
+		const shapes = draft.blocks.map((row) => {
+			const slot = PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS];
+			const keys = (slot?.copy ?? []).filter((key) => key in props);
+			const required = ["kind", "catalogBlock", "title", ...intakeRequiredKeys(row.kind).filter((key) => key in props)];
+			const rowProps = ((props.items as { items?: { properties?: Record<string, unknown> } }).items?.properties ?? {}) as Record<string, unknown>;
+			const rowFields = (slot?.items?.fields ?? []).filter((field) => field in rowProps);
+			const items = slot?.items
+				? {
+						items: {
+							type: "array",
+							minItems: Math.min(3, slot.items.max),
+							maxItems: slot.items.max,
+							items: {
+								type: "object",
+								properties: Object.fromEntries(
+									rowFields.map((field) => [field, field === "icon" ? { type: "string", description: "A name from catalogSources.icons." } : { type: "string" }])
+								),
+								required: rowFields
+							}
+						}
+					}
+				: {};
+			if (slot?.items) required.push("items");
+			return {
+				type: "object",
+				properties: {
+					kind: { type: "string", enum: [row.kind] },
+					catalogBlock: { type: "string", enum: [row.catalogBlock] },
+					...variants(row.variants),
+					title: props.title,
+					...Object.fromEntries(keys.map((key) => [key, props[key]])),
+					...items
+				},
+				required
+			};
+		});
+		return {
+			...tool,
+			function: {
+				...tool.function,
+				description:
+					"Write the drafted page: screenId = draft.screenId, title, locale, remove = draft.remove, and one blocks entry per draft block with all of its required copy written for the author's topic in their language. The host writes no copy: every visible field comes from you.",
+				parameters: {
+					...params,
+					properties: {
+						...params.properties,
+						blocks: { type: "array", minItems: shapes.length, maxItems: shapes.length, items: { anyOf: shapes } }
+					},
+					required: [...new Set([...(params.required ?? []), "screenId", "title", "locale", "blocks"])]
+				}
+			}
+		};
+	});
+}
 
 /** The non-empty field names of each block the model sent (values are never kept). */
 function modelFieldNames(args: Record<string, unknown>): Array<{ kind: string; fields: string[] }> {
@@ -32955,11 +33033,6 @@ function intakePrompt(ctx: ProposalContext, draft: CollectionDraft): string {
 				kind: row.kind,
 				catalogBlock: row.catalogBlock,
 				variant: row.variant,
-				variants: row.variants,
-				...(PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]?.copy.length ? { copyKeys: PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]!.copy.filter((key) => key !== "badge") } : {}),
-				...(PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]?.items
-					? { rows: { max: PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]!.items!.max, fields: PAGE_SLOTS[row.kind as keyof typeof PAGE_SLOTS]!.items!.fields } }
-					: {}),
 				...(hints[row.kind] ? { placeholder: hints[row.kind] } : {}),
 				...(row.required ? { required: true } : {})
 			})),
@@ -33444,7 +33517,7 @@ async function buildToolLoop(
 			apiKey,
 			modelId,
 			messages,
-			tools: draft ? INTAKE_TOOLS() : editTurn ? EDIT_TOOLS() : BUILD_TOOLS(),
+			tools: draft ? intakeTools(draft) : editTurn ? EDIT_TOOLS() : BUILD_TOOLS(),
 			toolChoice: "auto",
 			maxTokens: 3200,
 			signal,
@@ -33774,6 +33847,8 @@ function revalidateProposal(proposal: LayoutProposal | LayoutProposalError): Lay
 }
 
 exports["INTAKE_BUDGET"] = INTAKE_BUDGET;
+exports["intakeRequiredKeys"] = intakeRequiredKeys;
+exports["intakeTools"] = intakeTools;
 exports["recommendsPageChanges"] = recommendsPageChanges;
 exports["runXaiCatalogTurn"] = runXaiCatalogTurn;
 exports["revalidateProposal"] = revalidateProposal;
