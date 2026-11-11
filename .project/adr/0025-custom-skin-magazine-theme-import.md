@@ -60,6 +60,10 @@ The Settings region is compact (xs text, py-1 rows) and scrolls on its own: the 
 of the sidebar height and the region inside it is `overflow-y-auto overscroll-contain`; the upper part of the sidebar
 scrolls separately. Focused controls scroll into view natively.
 
+The xs size is set on the region itself: app.css has an unlayered `button, input, textarea, select { font: inherit }`,
+which beats a `text-xs` utility on the control (utilities live in a cascade layer), so the controls take the region's
+size by inheritance. Measured live after 77f2e2a: every Settings button was 16px with `text-xs` on it.
+
 ## Open
 
 - A published JSON Schema for magazine-theme v2 belongs in ui8kit/contract (generated from Stock's `THEME_SCHEMA`), and

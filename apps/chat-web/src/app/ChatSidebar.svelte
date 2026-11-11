@@ -313,7 +313,7 @@
 		{#if settingsOpen && !collapsed}
 			<Stack align="stretch"
 				id="creator-settings"
-				class="min-h-0 shrink gap-2 overflow-y-auto overscroll-contain rounded border border-border p-2"
+				class="min-h-0 shrink gap-2 overflow-y-auto overscroll-contain rounded border border-border p-2 text-xs"
 				role="region"
 				tabindex={-1}
 				aria-label={t("sidebar.settingsRegion")}
