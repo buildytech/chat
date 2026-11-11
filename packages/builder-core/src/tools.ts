@@ -423,6 +423,27 @@ export function executeTool(
 		const content = parseModelContent(args);
 		const catalogCheck = checkContentCatalog(content);
 		if (!catalogCheck.ok) {
+			// A named catalog block without that variant: the caller's block with every allowed value and the default
+			// (ADR 0018 fix), so the model fixes it once and the host repair can fall back to the default.
+			const at = catalogCheck.code === "unknown_variant" ? /^blocks\[(\d+)\]\.variant$/.exec(catalogCheck.path ?? "") : null;
+			const entry = at ? content.blocks.find((row, index) => (row.at ?? index) === Number(at[1])) : undefined;
+			if (at && entry?.catalogBlock) {
+				return {
+					ok: false,
+					code: "unknown_variant",
+					message: catalogCheck.message,
+					path: catalogCheck.path,
+					result: {
+						path: catalogCheck.path,
+						blockIndex: Number(at[1]),
+						kind: entry.kind,
+						catalogBlock: entry.catalogBlock,
+						variant: entry.variant,
+						allowedVariants: catalogVariantsFor(entry.catalogBlock),
+						defaultVariant: catalogSourceDefault(entry.catalogBlock)
+					}
+				};
+			}
 			return { ok: false, code: catalogCheck.code, message: catalogCheck.message, path: catalogCheck.path, result: { path: catalogCheck.path } };
 		}
 		const scenarioId = isScenarioId(scenarioRaw) ? scenarioRaw : (host?.scenarioId ?? null);
@@ -674,4 +695,151 @@ export function runConstructorTools(ctx: ProposalContext): LayoutProposal | Layo
 	}, host);
 	if (!proposed.ok) return { ok: false, code: proposed.code, message: proposed.message };
 	return proposed.result as LayoutProposal;
+}
+
+/** One block of a collection intake draft: what the host placed and the variants the model may pick from. */
+export type CollectionDraftBlock = {
+	kind: string;
+	catalogBlock: string;
+	variant: string | null;
+	/** Catalog default of the block (used when a model variant is not allowed, ADR 0018). */
+	defaultVariant: string | null;
+	/** Every allowed variant of the catalog block (pinned catalog). */
+	variants: string[];
+	/** A collection block item (the author picked this block and variant). */
+	required: boolean;
+};
+
+/**
+ * Collection intake draft (ADR 0022): the page the host assembles deterministically from the collection before the
+ * first model call. The screen is the collection's first screen (else the chat screen, else the first renderable
+ * screen with the required blocks), the required items sit on the blocks of their kind with their variants, kinds the
+ * collection has no block for are removed. The model only writes copy and may refine variants from `variants`.
+ */
+export type CollectionDraft = {
+	screenId: string;
+	blocks: CollectionDraftBlock[];
+	remove: string[];
+	warnings: string[];
+};
+
+export function collectionIntakeDraft(input: {
+	bounds: CollectionBounds;
+	brief: string;
+	screenId?: string | null;
+	scenarioId?: ScenarioId | null;
+}): CollectionDraft | null {
+	const { bounds } = input;
+	const placed = bounds.required.filter((r) => r.kind).map((r) => ({ kind: r.kind, catalogBlock: r.catalogBlock, ...(r.variant ? { variant: r.variant } : {}) }));
+	const requiredSpecs = new Set(bounds.required.map((r) => r.catalogBlock));
+	const own = [...bounds.screens, ...(recordedScreenId(input.screenId) ? [recordedScreenId(input.screenId)!] : [])];
+	const queue: string[] = [...own];
+	const notRenderable: string[] = [];
+	const tried = new Set<string>();
+	let best: { draft: CollectionDraft; score: number } | null = null;
+	const consider = (screenId: string) => {
+		if (tried.has(screenId)) return;
+		tried.add(screenId);
+		const base = { brief: input.brief, screenId, scenarioId: input.scenarioId ?? null, expectedRevision: 0, blocks: placed };
+		// Kinds of the screen whose every block is outside the collection go to remove (one model step saved).
+		const full = executeTool({ name: "propose_layout", arguments: base }, {});
+		if (!full.ok) {
+			if (full.code === "screen_not_renderable" && own.includes(screenId)) {
+				notRenderable.push(screenId);
+				const next = (full.result as { suggestedScreenIds?: string[] } | undefined)?.suggestedScreenIds ?? [];
+				for (const id of next) if (!queue.includes(id)) queue.push(id);
+			}
+			return;
+		}
+		const fullPage = (full.result as LayoutProposal).page;
+		const check = checkCollectionPage(fullPage, bounds);
+		const outsideKinds = new Set(check.outside.map((o) => o.kind));
+		const remove = [...outsideKinds].filter((kind) =>
+			fullPage.layout.blocks.every((node, index) => node.kind !== kind || check.outside.some((o) => o.index === index))
+		);
+		const made = executeTool(
+			{ name: "propose_layout", arguments: { ...base, ...(remove.length ? { remove } : {}) } },
+			{ collection: { ...bounds, prune: true } }
+		);
+		if (!made.ok) return;
+		const proposal = made.result as LayoutProposal;
+		const blocks = proposal.page.layout.blocks
+			.filter((node) => node.catalogBlock)
+			.map((node) => ({
+				kind: node.kind,
+				catalogBlock: node.catalogBlock!,
+				variant: node.variant ?? null,
+				defaultVariant: catalogSourceFor(node.catalogBlock)?.defaultVariant ?? null,
+				variants: catalogVariantsFor(node.catalogBlock!),
+				required: requiredSpecs.has(node.catalogBlock!)
+			}));
+		if (!blocks.length) return;
+		// The collection's own screen wins; another screen only when none of them renders, then the one that carries
+		// the most required items, then the most collection blocks.
+		const score = (own.includes(screenId) ? 1000 : 0) + blocks.filter((row) => row.required).length * 10 + blocks.length;
+		if (best && best.score >= score) return;
+		const warnings = proposal.warnings.filter((w) => /collection/i.test(w));
+		if (!own.includes(screenId) && notRenderable.length) {
+			warnings.unshift(`${notRenderable.join(", ")} cannot render in this BuildY version yet; the page uses ${screenId} with the collection's blocks only.`);
+		}
+		best = { draft: { screenId, blocks, remove, warnings }, score };
+	};
+	for (let i = 0; i < queue.length && i < 6; i += 1) consider(queue[i]!);
+	if (!best || (best as { score: number }).score < 1000) {
+		// No own screen renders (or the collection has none): renderable screens that carry the required blocks.
+		const labels = [...new Set(bounds.required.filter((r) => r.kind).map((r) => r.label))];
+		const found = executeTool({ name: "search_catalog", arguments: labels.length ? { blocks: labels } : {} }, {});
+		const items = found.ok ? ((found.result as { items?: Array<{ screenId?: string; supported?: boolean }> }).items ?? []) : [];
+		for (const item of items) if (item.supported !== false && item.screenId && !queue.includes(item.screenId)) queue.push(item.screenId);
+		for (let i = 0; i < queue.length && tried.size < 10; i += 1) consider(queue[i]!);
+	}
+	return best ? (best as { draft: CollectionDraft }).draft : null;
+}
+
+/**
+ * Pre-placement of a model's propose_layout call in an intake turn: the draft screen when the model names none (or one
+ * outside the collection's screens), the draft catalog block and variant on every entry of a draft kind that names
+ * none, and the draft's removed kinds. The model's copy and its own allowed variant choices are kept; invalid choices
+ * still come back as unknown_variant with the allowed list (ADR 0018).
+ */
+export function placeCollectionDraft(args: Record<string, unknown>, draft: CollectionDraft, bounds: CollectionBounds): Record<string, unknown> {
+	return placeCollectionDraftWithNotes(args, draft, bounds).args;
+}
+
+/** placeCollectionDraft plus what the host changed (a catalog block outside the collection is put back to the draft's). */
+export function placeCollectionDraftWithNotes(
+	args: Record<string, unknown>,
+	draft: CollectionDraft,
+	bounds: CollectionBounds
+): { args: Record<string, unknown>; warnings: string[] } {
+	const warnings: string[] = [];
+	const allowed = new Set(bounds.allowed);
+	const asked = recordedScreenId(args.screenId);
+	const screenId = asked && (bounds.screens.length === 0 ? asked === draft.screenId : bounds.screens.includes(asked)) ? asked : draft.screenId;
+	const entries: unknown[] = Array.isArray(args.blocks) ? [...args.blocks] : [];
+	const seen = new Set<string>();
+	const blocks = entries.map((raw) => {
+		if (!raw || typeof raw !== "object") return raw;
+		const rec = raw as Record<string, unknown>;
+		const kind = typeof rec.kind === "string" ? rec.kind : "";
+		const pick = draft.blocks.find((row) => row.kind === kind);
+		if (!pick || seen.has(kind)) return raw;
+		seen.add(kind);
+		const asked = typeof rec.catalogBlock === "string" && rec.catalogBlock ? rec.catalogBlock : null;
+		// A catalog block outside the collection is never rendered: the entry keeps its copy on the draft's block.
+		const outside = Boolean(asked && !allowed.has(asked));
+		if (outside) warnings.push(`${asked} (${kind}) is not in the collection "${bounds.title}"; the ${kind} block stays ${pick.catalogBlock}${pick.variant ? `/${pick.variant}` : ""}.`);
+		const spec = asked && !outside ? asked : pick.catalogBlock;
+		const sameBlock = spec === pick.catalogBlock;
+		const variant = !outside && typeof rec.variant === "string" && rec.variant ? rec.variant : sameBlock ? pick.variant : null;
+		// A required item keeps the author's variant unless the model picked another variant of the same block.
+		return { ...rec, catalogBlock: spec, ...(variant ? { variant } : {}) };
+	});
+	for (const row of draft.blocks) {
+		if (seen.has(row.kind)) continue;
+		seen.add(row.kind);
+		if (row.required) blocks.push({ kind: row.kind, catalogBlock: row.catalogBlock, ...(row.variant ? { variant: row.variant } : {}) });
+	}
+	const remove = [...new Set([...(Array.isArray(args.remove) ? args.remove.filter((k): k is string => typeof k === "string") : []), ...draft.remove])];
+	return { args: { ...args, screenId, blocks, ...(remove.length ? { remove } : {}) }, warnings };
 }

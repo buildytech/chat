@@ -15,8 +15,12 @@ import {
 import { sessionDefIssues } from "../../packages/page-contract/src/session.ts";
 import {
 	collectionBounds,
+	catalogVariantsFor,
+	collectionIntakeDraft,
 	collectionPromptContext,
 	executeTool,
+	modelCatalogSources,
+	placeCollectionDraft,
 	mapChatRunRequest,
 	repairCollectionArgs,
 	snapshotDigest,
@@ -181,31 +185,124 @@ async function withProvider<T>(script: Scripted[], run: (requests: Array<Record<
 const CTX = { brief: "Bakery landing", mode: "build" as const, scenarioId: null, screenId: SCREEN, expectedRevision: 0, collection: bounds };
 const outside = { name: "propose_layout", arguments: { screenId: SCREEN, locale: "en" } };
 
-test("live loop: the collection reaches the model; the same page twice is repaired by the host (prune, items placed)", async () => {
-	await withProvider([{ calls: [outside] }, { calls: [outside] }], async (requests) => {
+const body = (request: Record<string, unknown>) => request.messages as Array<{ role: string; content?: string }>;
+const specsOf = (proposal: unknown) =>
+	(proposal as { page: { layout: { blocks: Array<{ catalogBlock?: string; variant?: string }> } } }).page.layout.blocks.map((b) => `${b.catalogBlock}/${b.variant}`);
+
+test("intake draft: the host places the collection before the model (screen, required items, removed kinds, variants)", () => {
+	const draft = collectionIntakeDraft({ bounds, brief: "Bakery landing", screenId: SCREEN })!;
+	assert.ok(draft);
+	assert.equal(draft.screenId, SCREEN);
+	assert.deepEqual(draft.blocks.map((row) => `${row.catalogBlock}/${row.variant}`), ["block.hero/split", "block.cta/card"]);
+	assert.deepEqual(draft.remove.sort(), ["features", "footer", "nav"]);
+	const hero = draft.blocks.find((row) => row.kind === "hero")!;
+	assert.equal(hero.required, true);
+	assert.deepEqual(hero.variants, catalogVariantsFor("block.hero"));
+	assert.ok(hero.defaultVariant && hero.variants.includes(hero.defaultVariant));
+	assert.ok(draft.warnings.some((w) => /block\.about\/split/.test(w)));
+	// Pre-placement: a bare model call gets the draft screen, blocks and removed kinds; copy and allowed choices stay.
+	const placed = placeCollectionDraft({ locale: "en", blocks: [{ kind: "hero", title: "Fresh bread" }, { kind: "cta", variant: "banner" }] }, draft, bounds);
+	assert.equal(placed.screenId, SCREEN);
+	assert.deepEqual(placed.blocks, [
+		{ kind: "hero", title: "Fresh bread", catalogBlock: "block.hero", variant: "split" },
+		{ kind: "cta", variant: "banner", catalogBlock: "block.cta" }
+	]);
+	assert.deepEqual((placed.remove as string[]).sort(), ["features", "footer", "nav"]);
+	// A screen-only collection: every block of the screen is allowed, nothing is removed.
+	const screenOnly = collectionBounds({ id: "c2", title: "Site", items: [{ kind: "screen", id: SCREEN }] })!;
+	const whole = collectionIntakeDraft({ bounds: screenOnly, brief: "site" })!;
+	assert.equal(whole.screenId, SCREEN);
+	assert.deepEqual(whole.remove, []);
+	assert.ok(whole.blocks.every((row) => screenOnly.allowed.includes(row.catalogBlock)));
+});
+
+test("intake turn: one model step, compact prompt (draft, collection blocks only, one tool), page only from the collection", async () => {
+	await withProvider([{ calls: [outside] }], async (requests) => {
 		const turn = await runXaiCatalogTurn("test-key", MODEL, CTX, AbortSignal.timeout(5000));
-		assert.ok(turn.proposal.ok, JSON.stringify(turn.proposal));
-		assert.equal(requests.length, 2);
-		const user = JSON.parse(String((requests[0]!.messages as Array<{ role: string; content: string }>)[1]!.content));
-		assert.deepEqual(user.collection.allowedCatalogBlocks, bounds.allowed);
-		const tool = (requests[1]!.messages as Array<{ role: string; content?: string }>).filter((m) => m.role === "tool").at(-1);
-		const reply = JSON.parse(tool!.content!);
-		assert.equal(reply.code, "outside_collection");
-		assert.deepEqual(reply.fix.allowedCatalogBlocks, bounds.allowed);
-		if (!turn.proposal.ok || !("page" in turn.proposal)) return;
-		const specs = turn.proposal.page.layout.blocks.map((b) => `${b.catalogBlock}/${b.variant}`);
-		assert.deepEqual(specs, ["block.hero/split", "block.cta/card"]);
-		assert.ok(turn.proposal.warnings.some((w) => /placed by the host: block\.hero\/split/.test(w)));
+		assert.ok(turn.proposal.ok && "page" in turn.proposal, JSON.stringify(turn.proposal));
+		assert.equal(requests.length, 1);
+		assert.equal(turn.meta.steps, 1);
+		assert.deepEqual(specsOf(turn.proposal), ["block.hero/split", "block.cta/card"]);
+		const user = JSON.parse(String(body(requests[0]!)[1]!.content));
+		assert.equal(user.draft.screenId, SCREEN);
+		assert.deepEqual(Object.keys(user.catalogSources.blocks).sort(), ["block.cta", "block.hero"]);
+		assert.equal(user.catalogVocabulary, undefined);
+		assert.deepEqual((requests[0]!.tools as Array<{ function: { name: string } }>).map((tool) => tool.function.name), ["propose_layout"]);
+		// The same author message without a collection: the ordinary Build prompt is several times larger.
+		await withProvider([{ calls: [{ name: "propose_layout", arguments: { screenId: SCREEN, locale: "en" } }] }], async (plain) => {
+			await runXaiCatalogTurn("test-key", MODEL, { ...CTX, collection: null }, AbortSignal.timeout(5000));
+			const size = (r: Record<string, unknown>) => JSON.stringify({ messages: r.messages, tools: r.tools }).length;
+			assert.ok(size(requests[0]!) * 2.5 < size(plain[0]!), `${size(requests[0]!)} vs ${size(plain[0]!)}`);
+		});
 	});
 });
 
-test("live loop: a fixed page on the second call is accepted as the model sent it", async () => {
-	const fixed = { name: "propose_layout", arguments: { screenId: SCREEN, locale: "en", remove: ["nav", "features", "footer"], blocks: [{ kind: "hero", catalogBlock: "block.hero", variant: "split" }] } };
-	await withProvider([{ calls: [outside] }, { calls: [fixed] }], async () => {
+test("intake turn: a block outside the collection is repaired by the host at once (no second model step)", async () => {
+	const other = Object.entries((modelCatalogSources() as { blocks: Record<string, { kind: string }> }).blocks).find(([spec, row]) => row.kind === "hero" && !bounds.allowed.includes(spec))![0];
+	const call = { name: "propose_layout", arguments: { screenId: SCREEN, locale: "en", blocks: [{ kind: "hero", catalogBlock: other, title: "Fresh bread" }] } };
+	await withProvider([{ calls: [call] }, { calls: [call] }], async (requests) => {
 		const turn = await runXaiCatalogTurn("test-key", MODEL, CTX, AbortSignal.timeout(5000));
-		assert.ok(turn.proposal.ok && "page" in turn.proposal);
-		if (!turn.proposal.ok || !("page" in turn.proposal)) return;
-		assert.deepEqual(turn.proposal.page.layout.blocks.map((b) => b.catalogBlock), ["block.hero", "block.cta"]);
-		assert.ok(!turn.proposal.warnings.some((w) => /placed by the host/.test(w)));
+		assert.ok(turn.proposal.ok && "page" in turn.proposal, JSON.stringify(turn.proposal));
+		assert.equal(requests.length, 1);
+		const specs = specsOf(turn.proposal);
+		assert.ok(specs.every((spec) => bounds.allowed.includes(spec.split("/")[0]!)), specs.join());
+		assert.ok(specs.includes("block.hero/split"));
+		assert.ok(turn.proposal.warnings.some((w) => /is not in the collection "Shelf"; the hero block stays block\.hero\/split/.test(w)));
 	});
+});
+
+test("intake turn: an invalid variant comes back with the allowed list; the same again uses the catalog default (said)", async () => {
+	const bad = { name: "propose_layout", arguments: { screenId: SCREEN, locale: "en", blocks: [{ kind: "cta", catalogBlock: "block.cta", variant: "nosuch" }] } };
+	await withProvider([{ calls: [bad] }, { calls: [bad] }], async (requests) => {
+		const turn = await runXaiCatalogTurn("test-key", MODEL, CTX, AbortSignal.timeout(5000));
+		assert.ok(turn.proposal.ok && "page" in turn.proposal, JSON.stringify(turn.proposal));
+		assert.equal(requests.length, 2);
+		const reply = JSON.parse(body(requests[1]!).filter((m) => m.role === "tool").at(-1)!.content!);
+		assert.equal(reply.code, "unknown_variant");
+		assert.deepEqual(reply.fix.allowedVariants, catalogVariantsFor("block.cta"));
+		assert.equal(reply.budget.maxSteps, 3);
+		assert.deepEqual(specsOf(turn.proposal), ["block.hero/split", "block.cta/card"]);
+		assert.ok(turn.proposal.warnings.some((w) => /nosuch/.test(w)));
+	});
+});
+
+test("intake turn: an invalid variant on a required item never leaves the turn stuck; the author's variant is placed", async () => {
+	const bad = { name: "propose_layout", arguments: { screenId: SCREEN, locale: "en", blocks: [{ kind: "hero", catalogBlock: "block.hero", variant: "nosuch" }] } };
+	await withProvider([{ calls: [bad] }], async (requests) => {
+		const turn = await runXaiCatalogTurn("test-key", MODEL, CTX, AbortSignal.timeout(5000));
+		assert.ok(turn.proposal.ok && "page" in turn.proposal, JSON.stringify(turn.proposal));
+		assert.ok(requests.length <= 3);
+		assert.deepEqual(specsOf(turn.proposal), ["block.hero/split", "block.cta/card"]);
+	});
+});
+
+test("intake turn: a text-only answer creates no proposal", async () => {
+	await withProvider([{ calls: [] }], async (requests) => {
+		const turn = await runXaiCatalogTurn("test-key", MODEL, CTX, AbortSignal.timeout(5000));
+		assert.equal(requests.length, 1);
+		assert.equal("page" in turn.proposal, false);
+	});
+});
+
+test("collection chat with a current page: the ordinary edit loop, catalog sources limited to the collection", async () => {
+	const made = executeTool({ name: "propose_layout", arguments: { brief: "bakery", screenId: SCREEN, locale: "en", remove: ["nav", "features", "footer"], blocks: [{ kind: "hero", catalogBlock: "block.hero", variant: "split" }] } }, HOST);
+	assert.ok(made.ok);
+	const page = (made.result as { page: Record<string, unknown> }).page;
+	await withProvider([{ calls: [] }], async (requests) => {
+		await runXaiCatalogTurn("test-key", MODEL, { ...CTX, currentPage: page as never, expectedRevision: 1 }, AbortSignal.timeout(5000));
+		const user = JSON.parse(String(body(requests[0]!)[1]!.content));
+		assert.equal(user.draft, undefined);
+		assert.deepEqual(Object.keys(user.catalogSources.blocks).sort(), bounds.allowed.filter((spec) => spec !== "block.about").sort());
+	});
+});
+
+test("intake draft: a collection whose screen cannot render yet gets a renderable screen with only its blocks (said)", () => {
+	const doc = fixture("grill-delivery");
+	const grill = collectionBounds(doc)!;
+	const draft = collectionIntakeDraft({ bounds: grill, brief: "grill promo" })!;
+	assert.ok(draft, "never stuck: a draft exists");
+	assert.notEqual(draft.screenId, "screen.theme-food-grill/home");
+	assert.ok(draft.blocks.every((row) => grill.allowed.includes(row.catalogBlock)));
+	assert.ok(draft.blocks.some((row) => row.catalogBlock === "block.hero" && row.variant === "centered" && row.required));
+	assert.match(draft.warnings[0]!, /screen\.theme-food-grill\/home cannot render in this BuildY version yet/);
 });

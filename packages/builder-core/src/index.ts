@@ -136,25 +136,31 @@ export {
 	toolLoopProposalFailure,
 	repairProposeArgs,
 	checkContentVariants,
+	collectionIntakeDraft,
+	placeCollectionDraft,
+	placeCollectionDraftWithNotes,
 	searchRelaxed,
 	toolLoopRejection
 } from "./tools.ts";
-export type { ToolHost, CompactSearchItem, CompactSearchPayload, ToolLoopRejection } from "./tools.ts";
+export type { ToolHost, CompactSearchItem, CompactSearchPayload, ToolLoopRejection, CollectionDraft, CollectionDraftBlock } from "./tools.ts";
 export { isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
 export { parseLayoutCopyEdits } from "./edits.ts";
 export { editPage, normalizePatch } from "./patch.ts";
 export type { PagePatchContext, PatchOp } from "./patch.ts";
 export {
 	PLAN_LIMITS,
+	PLAN_NOOP,
 	PLAN_OPS,
 	blockRef,
 	checkPagePlan,
 	compactPlanPayload,
 	describePageChanges,
 	executePagePlan,
+	isPlanNoop,
 	manualEditsSince,
 	pageDirectory,
 	parseManualEdits,
+	planHasInvalid,
 	resolveBlockRef
 } from "./page-plan.ts";
 export type { BlockRef, ManualEdit, PageChange, PageChangeReport, PagePlan, PagePlanOp, PagePlanStatus, PlanExecution, PlanOpName } from "./page-plan.ts";

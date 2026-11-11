@@ -55,6 +55,35 @@ export type PagePlan = {
 
 type Provenance = ProposalContext["currentProvenance"];
 
+/** Issue / result code of an op that would not change the page (same variant, same value): a no-op, not an error. */
+export const PLAN_NOOP = "no_change";
+
+/**
+ * A plan op that changes nothing on the page it was checked against (ADR 0020 follow-up): the card shows it as
+ * "keep" (unticked, muted), it is never run and never counted as rejected. Stored with the session 1.4.0 shape:
+ * `valid: false` with `issue.code` no_change, or a `skipped` result with code no_change.
+ */
+export function isPlanNoop(op: Pick<PagePlanOp, "issue" | "result">): boolean {
+	return op.issue?.code === PLAN_NOOP || op.result?.code === PLAN_NOOP;
+}
+
+/** True when some op is really invalid (needs a fix); no-ops do not count. */
+export function planHasInvalid(plan: PagePlan | null | undefined): boolean {
+	return Boolean(plan?.ops.some((op) => !op.valid && !isPlanNoop(op)));
+}
+
+/** True when the patch result is the same page (no block, order or page field changed). */
+function unchanged(base: Page, next: Page): boolean {
+	const report = describePageChanges(base, next);
+	return !report.added.length && !report.removed.length && !report.changed.length && !report.moved.length && !report.pageFields.length;
+}
+
+function noopMessage(op: PagePlanOp): string {
+	if (op.op === "set_variant") return `${op.blockId} already uses ${op.variant}.`;
+	if (op.op === "set") return `${op.blockId ?? "page"} ${op.field ?? ""} already has this value.`.replace(/\s+/g, " ");
+	return `${op.blockId ?? op.kind ?? "page"} already matches this op.`;
+}
+
 /** A short reference to a page block: title, catalog block (or kind) and id. */
 export type BlockRef = { id: string; title: string; name: string };
 
@@ -186,10 +215,12 @@ export function checkPagePlan(input: Base & { raw: unknown }): PagePlan | null {
 		if (op.issue) return op;
 		const target = op.blockId ? input.page.layout.blocks.find((node) => node.id === op.blockId) : undefined;
 		if (op.op === "set_variant" && target && op.variant && target.variant === op.variant) {
-			return { ...op, issue: { code: "no_change", message: `${op.blockId} already uses ${op.variant}.` } };
+			return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
 		}
 		const result = runOps(input, [patchOp(op)]);
+		if (result.ok && unchanged(input.page, result.page)) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
 		if (result.ok) return { ...op, valid: true };
+		if (result.code === PLAN_NOOP) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
 		const allowed = allowedFor(op, input.page, result.code);
 		return { ...op, issue: { code: result.code, message: result.message.slice(0, 600), ...(allowed ? { allowed } : {}) } };
 	});
@@ -203,8 +234,9 @@ export function compactPlanPayload(plan: PagePlan | null): Record<string, unknow
 	return {
 		ok: true,
 		valid: plan.ops.filter((op) => op.valid).map((op) => op.id),
-		invalid: plan.ops.filter((op) => !op.valid).map((op) => ({ id: op.id, op: op.op, blockId: op.blockId, ...op.issue })),
-		note: "Shown to the author as a plan card; nothing changed. Fix invalid ops once with the allowed values, or explain them in text."
+		invalid: plan.ops.filter((op) => !op.valid && !isPlanNoop(op)).map((op) => ({ id: op.id, op: op.op, blockId: op.blockId, ...op.issue })),
+		...(plan.ops.some(isPlanNoop) ? { unchanged: plan.ops.filter(isPlanNoop).map((op) => op.id) } : {}),
+		note: "Shown to the author as a plan card; nothing changed. Fix invalid ops once with the allowed values, or explain them in text. Unchanged ops already match the page: do not resend them."
 	};
 }
 
@@ -222,23 +254,32 @@ export function executePagePlan(input: Base & { plan: PagePlan; selected: readon
 	const pick = new Set(input.selected);
 	const applied: PagePlanOp[] = [];
 	let page = input.page;
+	const keep = (op: PagePlanOp, message?: string): PagePlanOp => ({
+		...op,
+		result: { status: "skipped", code: PLAN_NOOP, message: message ?? op.issue?.message ?? noopMessage(op) }
+	});
 	const ops = input.plan.ops.map((op): PagePlanOp => {
+		if (isPlanNoop(op) && !op.valid) return keep(op);
 		if (!pick.has(op.id)) return { ...op, result: { status: "skipped" } };
 		if (!op.valid) return { ...op, result: { status: "rejected", code: op.issue?.code ?? "invalid", message: op.issue?.message } };
 		const target = op.blockId ? page.layout.blocks.find((node) => node.id === op.blockId) : undefined;
-		if (op.op === "set_variant" && target && op.variant && target.variant === op.variant) {
-			return { ...op, result: { status: "rejected", code: "no_change", message: `${op.blockId} already uses ${op.variant}.` } };
-		}
+		// The page may already have what the op asks for (hand edit since the plan, an earlier op): keep, not an error.
+		if (op.op === "set_variant" && target && op.variant && target.variant === op.variant) return keep(op, noopMessage(op));
 		const step = runOps({ ...input, page }, [patchOp(op)]);
+		if (!step.ok && step.code === PLAN_NOOP) return keep(op, noopMessage(op));
 		if (!step.ok) return { ...op, result: { status: "rejected", code: step.code, message: step.message.slice(0, 600) } };
+		if (unchanged(page, step.page)) return keep(op, noopMessage(op));
 		page = step.page;
 		applied.push(op);
 		return { ...op, result: { status: "applied" } };
 	});
 	const proposal = applied.length ? runOps(input, applied.map(patchOp)) : null;
-	const chosen = ops.filter((op) => pick.has(op.id));
+	// No-ops (kept) are not counted: a plan whose ticked ops all applied is executed even if some ops were kept.
+	const chosen = ops.filter((op) => pick.has(op.id) && !isPlanNoop(op));
 	const done = chosen.filter((op) => op.result?.status === "applied").length;
-	const status: PagePlanStatus = done === 0 || (proposal && !proposal.ok) ? "failed" : done === chosen.length ? "executed" : "partial";
+	const kept = ops.some((op) => pick.has(op.id) && isPlanNoop(op));
+	const status: PagePlanStatus =
+		proposal && !proposal.ok ? "failed" : chosen.length === 0 ? (kept ? "executed" : "failed") : done === 0 ? "failed" : done === chosen.length ? "executed" : "partial";
 	return { plan: { ...input.plan, ops, status, executedAt: input.at ?? new Date().toISOString() }, proposal };
 }
 

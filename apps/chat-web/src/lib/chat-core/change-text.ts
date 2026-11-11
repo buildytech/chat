@@ -3,7 +3,7 @@
  * catalog block, variant swaps, the rest unchanged, and the plan ops that were not applied with their reason. Pure:
  * no DOM, no runes; `t` is passed in.
  */
-import type { BlockRef, PageChangeReport, PagePlan } from "@buildytech/builder-core";
+import { isPlanNoop, type BlockRef, type PageChangeReport, type PagePlan } from "@buildytech/builder-core";
 
 type T = (key: string) => string;
 
@@ -47,6 +47,7 @@ export function changeReportText(
 export function planResultText(plan: PagePlan, t: T): string {
 	const lines: string[] = [];
 	const applied = plan.ops.filter((op) => op.result?.status === "applied").length;
+	// No-ops (already on the page) are not counted as selected changes and never as rejected.
 	const chosen = plan.ops.filter((op) => op.result && op.result.status !== "skipped").length;
 	lines.push(t("plan.resultLine").replace("{applied}", String(applied)).replace("{n}", String(chosen)));
 	for (const op of plan.ops) {
@@ -58,6 +59,8 @@ export function planResultText(plan: PagePlan, t: T): string {
 				.replace("{message}", op.result.message ?? "")
 		);
 	}
+	const kept = plan.ops.filter(isPlanNoop);
+	if (kept.length) lines.push(t("plan.keptLine").replace("{list}", kept.map((op) => planOpText(op, t)).join("; ")));
 	return lines.join("\n");
 }
 

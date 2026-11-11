@@ -77,3 +77,16 @@ handoff in this change.
 - Ask turns may spend one more step on `propose_plan` (forced when the answer recommends page changes without it); Ask prompts carry headings and row counts (a few hundred tokens).
 - Tests: `scripts/m4-api-tests/ask-build-plan.test.ts` replays the owner's session (`fixtures-askbuild.ts`, structure
   only): plan check, Apply in Build without network, Logo cloud targeting, manual edits, reply text, demo warning.
+
+## Addendum (2026-11-11): ops that change nothing
+
+An op that would not change the page (`set_variant` to the variant the block has, `set` of the value it has, any op
+whose result equals the page) is a no-op, not an error (owner decision t126u, Build improvement 2). `checkPagePlan`
+gives it `valid: false` and `issue.code: "no_change"` (`PLAN_NOOP`, `isPlanNoop`); the plan card shows it as a muted
+"Keep: already on the page." row (unticked, disabled, `data-noop`), never the red "Cannot apply", and the summary counts
+it apart ("N changes, V can be applied, K already on the page"). Apply in Build gives no-ops (and ticked ops that became
+no-ops since: a hand edit, an earlier op of the same plan) the result `skipped` with code `no_change`; they are not
+counted as selected or rejected, so a plan whose other ops all applied is `executed`, and the reply text lists them on
+one "Already on the page, kept" line. `compactPlanPayload` lists them as `unchanged`, not `invalid`, and
+`planHasInvalid` ignores them, so the forced plan step does not ask the model to fix them. Session 1.4.0 already
+allows this (`issue.code` and `result.code` are free strings, `skipped` is a result status): no schema change.

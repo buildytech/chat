@@ -166,9 +166,12 @@ function flat(value: unknown, prefix = ""): Array<[string, string]> {
  * its default variant, the block's row and text fields from its published props schema, and the contract's Lucide
  * names. Generated data; the model picks, the program validates against the schema.
  */
-export function modelCatalogSources(): Record<string, unknown> {
+export function modelCatalogSources(only?: readonly string[]): Record<string, unknown> {
 	const blocks: Record<string, unknown> = {};
+	// Collection turns (ADR 0022): only the collection's catalog blocks; every other block is rejected anyway.
+	const keep = only ? new Set(only) : null;
 	for (const entry of catalogSnapshot.blockIndex) {
+		if (keep && !keep.has(entry.spec)) continue;
 		const summary = blockVariantSummary(entry.spec);
 		if (summary) blocks[entry.spec] = summary;
 	}

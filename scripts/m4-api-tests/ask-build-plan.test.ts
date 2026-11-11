@@ -11,6 +11,8 @@ import {
 	editPage,
 	executePagePlan,
 	executeTool,
+	isPlanNoop,
+	planHasInvalid,
 	isAgentTextReply,
 	manualEditsSince,
 	mapChatRunRequest,
@@ -197,8 +199,12 @@ test("manual edits since the last agent turn are kept: plan ops re-check against
 	const next = (exec.proposal as LayoutProposal).page;
 	assert.equal(next.layout.blocks.find((node) => node.id === "block-logos")?.title, "Our partners");
 	const steps = exec.plan.ops.find((op) => op.blockId === "block-steps")!;
-	assert.equal(steps.result?.status, "rejected");
+	// Already on the page by hand: kept (a no-op), not an error.
+	assert.equal(steps.result?.status, "skipped");
 	assert.equal(steps.result?.code, "no_change");
+	assert.equal(isPlanNoop(steps), true);
+	assert.doesNotMatch(planResultText(exec.plan, t), /Not applied: .*block\.steps/);
+	assert.match(planResultText(exec.plan, t), /Already on the page, kept: .*block\.steps/);
 	// The history of the owner's chat: hand edits per block since the last agent turn.
 	const history = OWNER_HISTORY_EDITS.flatMap(({ blockId, edits }) =>
 		Array.from({ length: edits }, (_, i) => ({ revision: i + 4, at: `2026-11-10T13:${String(i).padStart(2, "0")}:00.000Z`, cause: "edit", blockId }))
@@ -357,4 +363,72 @@ test("token cost of the accept step: the owner's model turn vs Apply in Build", 
 	const plan = checkPagePlan({ page, provenance, revision: 3, raw: OWNER_ASK_PLAN })!;
 	const exec = executePagePlan({ page, provenance, plan, selected: [plan.ops[0]!.id], revision: 3, at: NOW });
 	assert.equal(exec.plan.status, "executed");
+});
+
+test("no-op plan ops (same variant, same text) are kept, not errors; partial apply, reply text and session 1.4.0 stay consistent", () => {
+	const page = ownerPage();
+	const steps = page.layout.blocks.find((node) => node.id === "block-steps")!;
+	const logos = page.layout.blocks.find((node) => node.id === "block-logos")!;
+	const raw = {
+		summary: "rework",
+		ops: [
+			{ op: "set_variant", blockId: "block-steps", variant: steps.variant, reason: "same variant" },
+			{ op: "set", blockId: "block-logos", field: "title", value: logos.title, reason: "same text" },
+			{ op: "set", blockId: "block-logos", field: "title", value: "Our partners", reason: "new text" },
+			{ op: "set_variant", blockId: "block-logos", variant: "nope", reason: "invalid" }
+		]
+	};
+	const plan = checkPagePlan({ page, provenance, revision: 3, raw })!;
+	const [sameVariant, sameText, real, bad] = plan.ops;
+	assert.equal(sameVariant!.valid, false);
+	assert.equal(sameVariant!.issue?.code, "no_change");
+	assert.equal(sameText!.valid, false);
+	assert.equal(sameText!.issue?.code, "no_change");
+	assert.equal(isPlanNoop(sameVariant!) && isPlanNoop(sameText!), true);
+	assert.equal(real!.valid, true);
+	assert.equal(isPlanNoop(bad!), false);
+	assert.equal(bad!.issue?.code, "unknown_variant");
+	assert.equal(planHasInvalid(plan), true);
+	// The model is told which ops already match the page; only the real error is "invalid".
+	const payload = compactPlanPayload(plan) as { invalid: Array<{ id: string }>; unchanged?: string[] };
+	assert.deepEqual(payload.invalid.map((row) => row.id), [bad!.id]);
+	assert.deepEqual(payload.unchanged, [sameVariant!.id, sameText!.id]);
+	// A plan of only no-ops and valid ops needs no fix step.
+	assert.equal(planHasInvalid({ ...plan, ops: [sameVariant!, real!] }), false);
+
+	// Apply in Build with the only tickable op: executed (kept ops are not counted), never "rejected".
+	const exec = executePagePlan({ page, provenance, plan, selected: [real!.id], revision: 3, at: NOW });
+	assert.equal(exec.plan.status, "executed");
+	const byId = new Map(exec.plan.ops.map((op) => [op.id, op]));
+	assert.deepEqual(byId.get(sameVariant!.id)!.result, { status: "skipped", code: "no_change", message: sameVariant!.issue!.message });
+	assert.equal(byId.get(sameText!.id)!.result?.status, "skipped");
+	assert.equal(byId.get(real!.id)!.result?.status, "applied");
+	assert.equal(byId.get(bad!.id)!.result?.status, "skipped");
+	assert.equal(exec.proposal?.ok, true);
+	const next = (exec.proposal as LayoutProposal).page;
+	const report = describePageChanges(page, next);
+	assert.deepEqual(report.changed.map((row) => row.id), ["block-logos"]);
+	const text = planResultText(exec.plan, t);
+	assert.match(text, /Ask plan: 1 of 1 selected changes applied\./);
+	assert.doesNotMatch(text, /Not applied/);
+	assert.match(text, /Already on the page, kept: /);
+	// The stored plan is valid session 1.4.0 (no new status values).
+	for (const stored of [plan, exec.plan]) {
+		const message = { id: "msg-1", role: "assistant", text: "Plan", createdAt: NOW, mode: "ask", answer: { blocks: [] }, plan: stored };
+		assert.deepEqual(sessionDefIssues(message, "message"), []);
+	}
+
+	// A ticked op that became a no-op since the plan (hand edit) is kept; with no other op the plan is executed, no proposal.
+	const handEdited = (editPage({ page, provenance, patch: { ops: [{ op: "set", blockId: "block-logos", field: "title", value: "Our partners" }] }, expectedRevision: 3, now: NOW }) as LayoutProposal).page;
+	const again = executePagePlan({ page: handEdited, provenance, plan, selected: [real!.id], revision: 4, at: NOW });
+	assert.equal(again.proposal, null);
+	assert.equal(again.plan.status, "executed");
+	assert.equal(again.plan.ops.find((op) => op.id === real!.id)!.result?.code, "no_change");
+	assert.doesNotMatch(planResultText(again.plan, t), /Not applied/);
+
+	// Two identical ops: the second is kept, not rejected and not a second change.
+	const twice = checkPagePlan({ page, provenance, revision: 3, raw: { ops: [raw.ops[2], raw.ops[2]] } })!;
+	const run = executePagePlan({ page, provenance, plan: twice, selected: twice.ops.map((op) => op.id), revision: 3, at: NOW });
+	assert.deepEqual(run.plan.ops.map((op) => op.result?.status), ["applied", "skipped"]);
+	assert.equal(run.plan.status, "executed");
 });
