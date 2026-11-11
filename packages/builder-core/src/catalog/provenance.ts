@@ -1,3 +1,4 @@
+import { unknownOverridePointers } from "./props-overrides.ts";
 import type { Page, PageBlock, PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, rendererKindForLabel, screenSlots } from "./compatibility.ts";
@@ -115,6 +116,7 @@ function originOf(render: OrganismRender, pointer: string): string | null {
 	let at = pointer;
 	while (at) {
 		if (render.origins[at]) return render.origins[at]!;
+		if (render.overrides.includes(at)) return `props["${at}"]`;
 		at = at.slice(0, Math.max(0, at.lastIndexOf("/")));
 	}
 	return null;
@@ -130,7 +132,21 @@ function issueText(issue: PropsIssue): string {
 /** Merged props (variant preset + page content + schema defaults) of a top-level block against its props schema. */
 export function checkBlockProps(node: PageBlock, path: string): CatalogValidationError | null {
 	const render = organismFor(node);
-	if (!render) return null;
+	if (!render) {
+		return node.props && Object.keys(node.props).length
+			? { ok: false, code: "props_invalid", message: `Block ${node.id} has props overrides but no registry block to apply them to. Remove props.`, path: `${path}.props` }
+			: null;
+	}
+	const unknown = unknownOverridePointers(render.item, node.props);
+	if (unknown.length) {
+		return {
+			ok: false,
+			code: "props_invalid",
+			message: `Block ${node.id} (registry ${render.item}) has no prop ${unknown.slice(0, 3).join(", ")} in its published props schema. Use a pointer of registry.buildy.tw/props/v0.json ${render.item}.`,
+			path: `${path}.props["${unknown[0]}"]`,
+			issues: unknown.slice(0, 5).map((pointer) => ({ pointer, keyword: "unknown_prop", message: "no such prop in the published schema" }))
+		};
+	}
 	if (!PROPS_VALIDATOR) {
 		return {
 			ok: false,

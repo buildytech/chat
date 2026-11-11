@@ -5,8 +5,8 @@
  * required props from the published props schema (registry.buildy.tw/props/v0.json). Pure data, no Svelte; safe to
  * import in the browser bundle.
  *
- * props = fill(merge(variant props, content of the page block)): the schema fills every required prop the variant and
- * the content leave out. Dictionary refs (`{"$": "ui.*"}`) of the published variant props are dropped (the en
+ * props = fill(merge(variant props, content of the page block) + block.props overrides): the schema fills every
+ * required prop the variant, the content and the overrides (page-spec 1.3.0) leave out. Dictionary refs (`{"$": "ui.*"}`) of the published variant props are dropped (the en
  * dictionary is not published), so the page content fills those slots; the page content wins over sample literals of
  * a variant (an action href), the variant sets the layout axes. The props gate (props-gate.ts) validates the result.
  */
@@ -14,6 +14,7 @@ import raw from "./sources.json" with { type: "json" };
 import { PAGE_SLOTS, type PageBlock, type PageBlockKind } from "@buildytech/page-contract";
 import type { CatalogSources } from "./sources.ts";
 import { fillProps, propShapeFor, propsEventsFor, type PropShape } from "./props-schema.ts";
+import { applyPropsOverrides, propsNodeAt } from "./props-overrides.ts";
 
 const sources = raw as unknown as CatalogSources;
 
@@ -27,6 +28,8 @@ export type OrganismRender = {
 	props: Record<string, unknown>;
 	/** JSON Pointer of a prop -> the page-block field it came from (`copy.headline`, `children[2].copy.icon`). */
 	origins: Record<string, string>;
+	/** Pointers of `block.props` (page-spec 1.3.0 overrides) merged last; the props they cover have no page origin. */
+	overrides: string[];
 	/** Callbacks (`onadd`) and snippets (`footer`) of the block: wired by the host, never page data. */
 	events: string[];
 	slots: string[];
@@ -194,9 +197,13 @@ export function organismFor(block: PageBlock): OrganismRender | null {
 	if (!shape) return null;
 	const origins: Origins = {};
 	const merged = merge(withoutRefs(source.variants[hit.variant]), content(block, shape, origins)) as Record<string, unknown>;
-	const props = fillProps(hit.item, merged);
+	const overrides = Object.keys(block.props ?? {});
+	for (const pointer of overrides) {
+		for (const key of Object.keys(origins)) if (key === pointer || key.startsWith(`${pointer}/`)) delete origins[key];
+	}
+	const props = fillProps(hit.item, applyPropsOverrides(merged, block.props));
 	const { events, slots } = propsEventsFor(hit.item);
-	return { catalogBlock: block.catalogBlock, item: hit.item, organism: source.organism, variant: hit.variant, props, origins, events, slots };
+	return { catalogBlock: block.catalogBlock, item: hit.item, organism: source.organism, variant: hit.variant, props, origins, overrides, events, slots };
 }
 
 /** Page-spec fields a prop can be written back to: a block or row title / summary or a copy key. */
@@ -307,6 +314,77 @@ export function variantPresets(item: string): Record<string, Record<string, unkn
 	const out: Record<string, Record<string, unknown>> = {};
 	for (const name of Object.keys(sources.blocks[item]?.variants ?? {})) out[name] = variantPreset(item, name);
 	return out;
+}
+
+/** The list prop the page rows (`children`) of a block fill: the first list of the schema, required ones first. */
+export function pageListName(item: string): string | null {
+	const shape = propShapeFor(item);
+	if (!shape) return null;
+	const lists = Object.entries(shape.lists).sort(([, a], [, b]) => Number(b.required) - Number(a.required));
+	return lists[0]?.[0] ?? null;
+}
+
+/** Top-level props the named variants of an item set (its layout axes): a variant switch resets their overrides. */
+export function variantAxisProps(item: string): Set<string> {
+	const out = new Set<string>();
+	for (const preset of Object.values(variantPresets(item))) for (const key of Object.keys(preset)) out.add(key);
+	return out;
+}
+
+/**
+ * Props overrides of a block after its variant or catalog block changed (`next` renders another variant or item):
+ * overrides of the variant axes are dropped (the chosen variant sets them), so are pointers the new item's schema
+ * does not have. Returns the block with the kept overrides, the pointers dropped because the new item has no such prop
+ * (`dropped`) and the axis overrides the new variant replaced (`axes`).
+ */
+export function stripAxisOverrides(next: PageBlock, before?: PageBlock | null): { node: PageBlock; dropped: string[]; axes: string[] } {
+	if (!next.props) return { node: next, dropped: [], axes: [] };
+	const hit = registryItemFor(next.catalogBlock, next.variant);
+	const prev = before ? registryItemFor(before.catalogBlock, before.variant) : null;
+	const axes = new Set<string>([...(hit ? variantAxisProps(hit.item) : []), ...(prev ? variantAxisProps(prev.item) : [])]);
+	const props: Record<string, NonNullable<PageBlock["props"]>[string]> = {};
+	const dropped: string[] = [];
+	const replaced: string[] = [];
+	for (const [pointer, value] of Object.entries(next.props)) {
+		const top = pointer.split("/")[1] ?? "";
+		if (axes.has(top) && pointer === `/${top}`) {
+			replaced.push(pointer);
+			continue;
+		}
+		if (!hit || !propsNodeAt(hit.item, pointer)) {
+			dropped.push(pointer);
+			continue;
+		}
+		props[pointer] = value;
+	}
+	const node: PageBlock = { ...next, props };
+	if (!Object.keys(props).length) delete node.props;
+	return { node, dropped, axes: replaced };
+}
+
+/**
+ * Carry the props overrides of the blocks of `before` onto the same blocks (same id) of a freshly assembled `after`
+ * (a Chat / Ask proposal that rebuilt the page): a block that already has overrides keeps them; pointers the new
+ * item does not have are dropped and named in `notes`.
+ */
+export function carryPropsOverrides(before: readonly PageBlock[], after: PageBlock[], notes: string[]): PageBlock[] {
+	const old = new Map(before.filter((node) => node.props).map((node) => [node.id, node]));
+	if (!old.size) return after;
+	return after.map((node) => {
+		const from = old.get(node.id);
+		if (!from || node.props) return node;
+		const kept = stripAxisOverrides({ ...node, props: from.props }, from);
+		// The same variant keeps its axis overrides too.
+		if (from.catalogBlock === node.catalogBlock && from.variant === node.variant) {
+			const axisKept = Object.fromEntries(Object.entries(from.props!).filter(([pointer]) => !kept.dropped.includes(pointer)));
+			const result: PageBlock = { ...node, props: axisKept };
+			if (!Object.keys(axisKept).length) delete result.props;
+			if (kept.dropped.length) notes.push(`${node.id}: props overrides not carried (no such prop): ${kept.dropped.join(", ")}.`);
+			return result;
+		}
+		if (kept.dropped.length) notes.push(`${node.id}: props overrides not carried (no such prop): ${kept.dropped.join(", ")}.`);
+		return kept.node;
+	});
 }
 
 /** npm packages the registry tree imports (clsx, tailwind-merge; svelte is the framework). */

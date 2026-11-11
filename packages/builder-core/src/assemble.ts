@@ -1,3 +1,4 @@
+import { carryPropsOverrides } from "./catalog/organism.ts";
 import {
 	PAGE_LAYOUT_VERSION,
 	parsePageSpec,
@@ -1391,7 +1392,9 @@ function finishProposal(
 		: `${title} draft. Not published. Catalog blocks only.`;
 	// Catalog source of each top-level block (catalogBlock, default variant of a registry organism).
 	const sourceScreen = screen ?? (inheritedScreenId(ctx) ? getScreenById(inheritedScreenId(ctx)!) : null);
-	const sourced = attachCatalogSources(blocks, sourceScreen);
+	const attached = attachCatalogSources(blocks, sourceScreen);
+	// A proposal that rebuilt the current page keeps the props overrides of its blocks (page-spec 1.3.0).
+	const sourced = ctx.currentPage && ctx.content?.newPage !== true ? carryPropsOverrides(ctx.currentPage.layout.blocks, attached, warnings) : attached;
 	try {
 		const raw = {
 			id,

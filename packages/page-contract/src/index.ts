@@ -4,6 +4,8 @@ export {
 	PAGE_COPY_KEYS,
 	PAGE_LAYOUT_VERSION,
 	PAGE_LIMITS,
+	PAGE_PROPS_LIMITS,
+	PAGE_PROPS_POINTER_PATTERN,
 	PAGE_STATUSES,
 	blocksOf,
 	type CreatorPage,
@@ -13,6 +15,7 @@ export {
 	type PageBlockKind,
 	type PageCopyKey,
 	type PageLayout,
+	type PagePropValue,
 	type PageSeo,
 	type PageStatus,
 	type PageSummary

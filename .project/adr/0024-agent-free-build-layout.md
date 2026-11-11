@@ -219,3 +219,32 @@ without a contract change (the props override map and history op / path are a se
   as locked "Not shown by this block" rows instead of dropping them silently.
 - **Open.** Free edits of the other props (content lists, the card, the secondary action) need the page-spec
   `props` override map; history entries still carry only the block id (op / path come with the contract bump).
+
+### Addendum: inspector P1, block props overrides and history op / path (2026-11-11)
+
+The owner chose (widget, 2026-11-11) to make every field of a registry block editable and to record what each history
+step did. Contract first: ui8kit/contract fa09858 (page-spec 1.3.0, session 1.6.0), vendored here (schema:check).
+
+- **`block.props` (page-spec 1.3.0).** An optional map on top-level blocks: JSON Pointer into the item's
+  `props/v0.json` -> value (string / number / boolean / null / list / object, limits in `PAGE_PROPS_LIMITS`). The
+  schema checks the shape; the program checks values against the item's props schema (`props_invalid`, unknown
+  pointers included). Old pages stay valid.
+- **Copy slots still win.** `inspectorSetField` writes the page-spec copy slot when one maps the field (and drops an
+  override at the same pointer); otherwise it writes `block.props[pointer]`, coerced to the schema type, links
+  checked like `copy.href`, enum values listed on rejection. Overrides never overlap: a list is overridden whole at
+  its pointer, a write under an overridden list or object updates that entry.
+- **Render = export.** `organismFor` merges preset + page content and then applies the overrides, so the preview,
+  the code pane and the ZIP sections pass exactly the same props.
+- **Lists.** `list_row` (add / remove / up / down) works on page rows (children, row overrides follow their row,
+  removed rows take theirs along) and on props lists (the new row is the schema's sample row, the list is written
+  whole). The UI has add, move up / down and remove per row.
+- **Variant axes.** A select value with a named variant still switches to it (set_variant); any other value is an
+  override. `set_variant` (inspector or model patch) drops axis overrides and pointers the new variant has not, and
+  names them (`dropped`, patch warning). Replace with another catalog block keeps compatible overrides and lists the
+  rest as `props /pointer` among the dropped fields. A Chat / Ask proposal that rebuilds the current page carries
+  the overrides by block id (`carryPropsOverrides`), naming what it could not carry.
+- **History (session 1.6.0).** Inspector results carry `op` (set_field, set_variant, add, move, remove, insert,
+  replace) and `path` (the pointer; no values). `replaceVisiblePage(..., meta)` -> revision event -> session file
+  entry. Typing coalesced into one step records the first keystroke's op / path.
+- **UI.** Fields written to props show where their value comes from until overridden (variant preset, schema
+  placeholder, unset) and "Your value, saved in the section's props" after; en + ru.

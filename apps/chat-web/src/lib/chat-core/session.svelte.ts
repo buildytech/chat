@@ -182,7 +182,9 @@ onPageRevision((event) => {
 			at: nowIso(),
 			cause: event.cause,
 			pageId: event.pageId,
-			...(event.blockId ? { blockId: event.blockId } : {})
+			...(event.blockId ? { blockId: event.blockId } : {}),
+			...(event.op ? { op: event.op } : {}),
+			...(event.path ? { path: event.path } : {})
 		})
 	);
 	saveMock(memory);

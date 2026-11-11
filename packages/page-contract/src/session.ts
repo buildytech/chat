@@ -14,7 +14,11 @@ export const SESSION_SCHEMA_URL = "https://schema.buildy.tw/session.schema.json"
 export const SESSION_FORMAT = "buildy:v1" as const;
 export const SESSION_REVISION_CAUSES = ["apply", "edit", "undo", "redo"] as const;
 export type SessionRevisionCause = (typeof SESSION_REVISION_CAUSES)[number];
-export type SessionRevisionEntry = { revision: number; at: string; cause: SessionRevisionCause; pageId?: string; blockId?: string };
+/** What a revision did (session 1.6.0): one field, a variant, a section or row added / moved / removed / inserted / replaced. */
+export const SESSION_REVISION_OPS = ["set_field", "set_variant", "add", "move", "remove", "insert", "replace"] as const;
+export type SessionRevisionOp = (typeof SESSION_REVISION_OPS)[number];
+/** `path` (1.6.0): JSON Pointer of the field or row in the block's render props; never a value. */
+export type SessionRevisionEntry = { revision: number; at: string; cause: SessionRevisionCause; pageId?: string; blockId?: string; op?: SessionRevisionOp; path?: string };
 export const SESSION_MAX_HISTORY = (sessionSchema as { "x-limits": { maxHistory: number } })["x-limits"].maxHistory;
 
 const registry = new SchemaRegistry();

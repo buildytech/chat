@@ -60,6 +60,8 @@ export type FieldHandlers = {
 	onseal: () => void;
 	/** A variant axis select picked a value: switch the block to this named variant (set_variant). */
 	onvariant?: (variant: string) => void;
+	/** A list prop: add a row, or remove / move row `row` (page rows or a props override list). */
+	onlist?: (pointer: string, action: "add" | "remove" | "up" | "down", row?: number) => void;
 	/** Page rows of a list (row origin `children[i]`): duplicate or remove row `index`. */
 	onrow?: (index: number, action: "duplicate" | "remove") => void;
 };
@@ -68,11 +70,19 @@ export type FieldHandlers = {
 export const LOCKED_CONTROL = "cursor-not-allowed bg-muted text-muted-foreground";
 
 /**
- * The message key of why a field is locked (null: editable). A variant axis whose values have no other named variant
- * says to choose in Variant above; one that switches variants says so.
+ * The message key of the hint under a field (null: none). A locked field says why; a field written to the block props
+ * says it overrides the variant, or where its value comes from until then (a variant preset, a schema placeholder).
+ * A variant axis says how its select works.
  */
 export function lockHint(field: InspectorField): string | null {
 	if (field.origin) return null;
+	if (field.choices && field.prop) return field.overridden ? "inspector.prop.axisOverridden" : "inspector.prop.axis";
+	if (field.prop) {
+		if (field.overridden) return "inspector.prop.overridden";
+		if (field.from === "variant") return "inspector.prop.variant";
+		if (field.from === "sample") return "inspector.prop.sample";
+		return "inspector.prop.unset";
+	}
 	switch (field.lock) {
 		case "variant":
 			if (field.choices) return axisSwitchable(field) ? "inspector.lock.axis" : "inspector.lock.axisNone";
@@ -90,13 +100,24 @@ function axisSwitchable(field: InspectorField): boolean {
 	return Boolean(field.choices?.some((choice) => choice.variant && choice.value !== String(field.value ?? "")));
 }
 
-/** Whether a variant axis select is live: the host can switch variants and another value has a named variant. */
+/** Whether a variant axis select is live: it can override the axis (props), or another value has a named variant. */
 export function axisSwitch(field: InspectorField, canSwitch: boolean): boolean {
-	return canSwitch && axisSwitchable(field);
+	return canSwitch && (Boolean(field.prop) || axisSwitchable(field));
+}
+
+/**
+ * What picking `value` on a variant axis does: switch to the named variant of that combination when there is one
+ * (and it is not the current variant), else write the axis as a props override.
+ */
+export function axisAction(field: InspectorField, value: string, current: string): { variant: string } | { override: string } | null {
+	const target = field.choices?.find((choice) => choice.value === value)?.variant;
+	if (target && target !== current) return { variant: target };
+	return field.prop ? { override: value } : null;
 }
 
 /** The text of a rejected edit: a known code reads from the dictionary, anything else is the gate's own message. */
 export function issueText(issue: FieldIssue, t: (key: string) => string): string {
 	if (issue.code === "link_invalid") return t("inspector.linkInvalid").replace("{value}", issue.value ?? "");
+	if (issue.code === "props_invalid") return `${t("inspector.propsInvalid")} ${issue.message}`;
 	return issue.message;
 }

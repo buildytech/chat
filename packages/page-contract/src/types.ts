@@ -116,8 +116,21 @@ export type PageBlock = {
 	/** Catalog variant of catalogBlock (`block.<name>/<variant>` is the catalog asset id), page-spec 1.1.0. */
 	variant?: string;
 	copy?: PageBlockCopy;
+	/**
+	 * Props overrides of a top-level block (page-spec 1.3.0): JSON Pointer of a prop of the registry item its catalog
+	 * variant renders (`/actions/secondary`, `/content/features`) -> plain JSON value. Merged over the variant preset and
+	 * the page content; the host validates the merged props against the item's props schema (props_invalid).
+	 */
+	props?: Record<string, PagePropValue>;
 	children?: PageBlock[];
 };
+
+/** A props override value (page-spec 1.3.0): plain JSON; strings are page safe text. */
+export type PagePropValue = string | number | boolean | null | PagePropValue[] | { [key: string]: PagePropValue };
+
+/** Limits of block props overrides (page-spec 1.3.0, PAGE_PROPS_LIMITS_V1 of the contract). */
+export const PAGE_PROPS_LIMITS = { maxEntries: 64, maxPointerLength: 200, maxListItems: 24, maxObjectKeys: 32 } as const;
+export const PAGE_PROPS_POINTER_PATTERN = /^(?:\/(?:[A-Za-z][A-Za-z0-9_]{0,47}|[0-9]{1,2}))+$/;
 
 export type PageLayout = {
 	version: typeof PAGE_LAYOUT_VERSION;

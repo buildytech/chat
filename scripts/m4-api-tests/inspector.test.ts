@@ -197,8 +197,9 @@ test("write-back gate: invalid enum, pattern and empty required values are rejec
 	const empty = inspectorSetField(page, "block-features", "/title", "", NOW);
 	assert.equal(empty.ok, false);
 	assert.ok(!empty.ok && empty.pointer === "/title");
-	const axis = inspectorSetField(page, "block-features", "/layout", "grid", NOW);
-	assert.ok(!axis.ok && axis.code === "field_not_editable", "variant axes are not page content");
+	// P1 (page-spec 1.3.0): a field no copy slot maps is a props override, checked against the item's props schema.
+	const axis = inspectorSetField(page, "block-features", "/layout", "neon", NOW);
+	assert.ok(!axis.ok && axis.code === "props_invalid" && axis.allowed?.includes("grid"), "an enum outside the schema is rejected");
 	assert.equal(inspectorSetField(page, "nope", "/title", "x", NOW).ok, false);
 });
 
@@ -343,7 +344,7 @@ test("write-back: writing the current value is a no-op (same page object, no his
 // ---- Inspector P0 (ADR 0024 addendum): honest locks, axis selects, empty mapped fields, link reasons ---------------
 
 import { emptyPageStart, writableOrigin as writableOriginOf, organismFor as organismOf } from "../../packages/builder-core/src/index.ts";
-import { axisSwitch, issueText, lockHint, LOCKED_CONTROL } from "../../apps/chat-web/src/lib/inspector/fields.ts";
+import { axisAction, axisSwitch, issueText, lockHint, LOCKED_CONTROL } from "../../apps/chat-web/src/lib/inspector/fields.ts";
 
 function emptyStartWith(adds: Array<[string, string]>) {
 	const start = emptyPageStart({ kind: "hero", title: "New page", now: NOW })!;
@@ -356,30 +357,34 @@ function emptyStartWith(adds: Array<[string, string]>) {
 	return { page, provenance: start.provenance };
 }
 
-test("P0 locks: every locked field names its reason (variant / sample / no page field)", () => {
+test("P0/P1 sources: every non-copy field names where its value comes from (variant / sample / no page field)", () => {
 	const { page } = emptyStartWith([["block.herosplit", "miniCards"]]);
 	const hero = page.layout.blocks[0]!;
 	const model = inspectorModel(hero);
 	assert.ok(model.ok);
 	assert.equal(model.item, "hero-split");
 	const f = (p: string) => byPointer(model.fields, p)!;
-	assert.equal(f("/extra").lock, "variant");
-	assert.equal(f("/content/card/title").lock, "sample", "the schema fills \"Title\"; not the variant");
-	assert.equal(f("/content/proof").lock, "sample");
-	assert.equal(f("/actions/secondary").lock, "no_page_field");
-	assert.equal(f("/landmarkLabel").lock, "no_page_field");
-	assert.equal(f("/title").lock, undefined, "editable fields carry no lock");
+	assert.equal(f("/extra").from, "variant");
+	assert.equal(f("/content/card/title").from, "sample", "the schema fills \"Title\"; not the variant");
+	assert.equal(f("/content/proof").from, "sample");
+	assert.equal(f("/actions/secondary").from, "no_page_field");
+	assert.equal(f("/landmarkLabel").from, "no_page_field");
+	for (const pointer of ["/extra", "/content/card/title", "/actions/secondary", "/landmarkLabel"]) {
+		assert.equal(f(pointer).prop, true, `${pointer} is a props override`);
+		assert.equal(f(pointer).lock, undefined, `${pointer} is not locked any more`);
+	}
+	assert.equal(f("/title").from, undefined, "copy fields carry no source note");
 	assert.equal(f("/content").lock, undefined, "objects carry no lock; their fields do");
-	assert.equal(lockHint(f("/content/card/title")), "inspector.lock.sample");
-	assert.equal(lockHint(f("/actions/secondary")), "inspector.lock.noField");
+	assert.equal(lockHint(f("/content/card/title")), "inspector.prop.sample");
+	assert.equal(lockHint(f("/actions/secondary")), "inspector.prop.unset");
 	assert.equal(lockHint(f("/title")), null);
 	const classic = inspectorModel(emptyStartWith([["block.hero", "centered"]]).page.layout.blocks[0]!);
 	assert.ok(classic.ok);
-	assert.equal(byPointer(classic.fields, "/actions/mode")?.lock, "variant", "a value the variant preset sets");
-	assert.equal(lockHint(byPointer(classic.fields, "/actions/mode")!), "inspector.lock.variant");
+	assert.equal(byPointer(classic.fields, "/actions/mode")?.from, "variant", "a value the variant preset sets");
+	assert.equal(lockHint(byPointer(classic.fields, "/actions/mode")!), "inspector.prop.variant");
 });
 
-test("P0 axes: each axis value maps to the named variant of that combo, else choose in Variant above", () => {
+test("P0/P1 axes: a value with a named variant switches to it, any other value overrides the axis", () => {
 	const { page } = emptyStartWith([["block.hero", "centered"], ["block.herosplit", "miniCards"]]);
 	const classic = inspectorModel(page.layout.blocks[0]!);
 	assert.ok(classic.ok);
@@ -387,18 +392,20 @@ test("P0 axes: each axis value maps to the named variant of that combo, else cho
 	assert.deepEqual(scale.choices, [{ value: "default", variant: "centered" }, { value: "display", variant: "display" }]);
 	assert.equal(axisSwitch(scale, true), true);
 	assert.equal(axisSwitch(scale, false), false, "no host handler: no switch");
-	assert.equal(lockHint(scale), "inspector.lock.axis");
+	assert.equal(lockHint(scale), "inspector.prop.axis");
+	assert.deepEqual(axisAction(scale, "display", "centered"), { variant: "display" });
 	const split = inspectorModel(page.layout.blocks[1]!);
 	assert.ok(split.ok);
 	const side = byPointer(split.fields, "/mediaSide")!;
 	assert.deepEqual(side.choices, [{ value: "end", variant: "miniCards" }, { value: "start", variant: null }], "no named preset with start");
-	assert.equal(axisSwitch(side, true), false);
-	assert.equal(lockHint(side), "inspector.lock.axisNone");
+	assert.equal(axisSwitch(side, true), true, "the axis is overridable");
+	assert.deepEqual(axisAction(side, "start", "miniCards"), { override: "start" });
 	// The switch is an ordinary set_variant through every gate.
 	const ctx = { page, provenance: emptyStartWith([]).provenance, revision: 1, now: NOW };
 	const r = inspectorOp(ctx, { op: "set_variant", blockId: page.layout.blocks[0]!.id, variant: "display" });
 	assert.ok(r.ok, JSON.stringify(r));
 	assert.equal(r.page.layout.blocks[0]!.variant, "display");
+	assert.equal(r.op, "set_variant");
 });
 
 test("P0 empty mapped fields: action label / href, lead and empty state are writable via writableOrigin", () => {
@@ -457,7 +464,7 @@ test("P0 ui: locked controls are muted, aria-readonly, with a lock icon; axis se
 	assert.match(view, /aria-readonly=\{canEdit \? undefined : "true"\}/);
 	assert.match(view, /class=\{canEdit \? undefined : LOCKED_CONTROL\}/);
 	assert.match(view, /@lucide\/svelte\/icons\/lock/);
-	assert.match(view, /handlers\?\.onvariant\?\.\(target\)/);
+	assert.match(view, /handlers\?\.onvariant\?\.\(action\.variant\)/);
 	assert.match(LOCKED_CONTROL, /cursor-not-allowed/);
 	assert.match(LOCKED_CONTROL, /bg-muted/);
 	const panel = web("app/InspectorPanel.svelte");
@@ -466,6 +473,182 @@ test("P0 ui: locked controls are muted, aria-readonly, with a lock icon; axis se
 	for (const locale of ["en", "ru"]) {
 		const messages = JSON.parse(web(`lib/i18n/${locale}.json`)).messages;
 		for (const key of ["inspector.locked", "inspector.lock.axis", "inspector.lock.axisNone", "inspector.lock.variant", "inspector.lock.sample", "inspector.lock.noField", "inspector.notShown", "inspector.notShownTitle", "inspector.linkInvalid"]) {
+			assert.ok(messages[key], `${locale}: ${key}`);
+		}
+	}
+});
+
+// ---- Inspector P1 (ADR 0024 addendum): block props overrides (page-spec 1.3.0) and history op/path (session 1.6.0) --
+
+import { editPage, swapCatalogBlock } from "../../packages/builder-core/src/index.ts";
+import { carryPropsOverrides } from "../../packages/builder-core/src/catalog/organism.ts";
+import { checkBlockProps } from "../../packages/builder-core/src/catalog/provenance.ts";
+import { parsePage as parsePageOf } from "../../packages/page-contract/src/index.ts";
+import { SESSION_REVISION_OPS } from "../../packages/page-contract/src/session.ts";
+import { sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
+
+function miniCards() {
+	const { page, provenance } = emptyStartWith([["block.herosplit", "miniCards"]]);
+	return { page, provenance, id: page.layout.blocks[0]!.id };
+}
+const blockOf = (page: { layout: { blocks: PageBlock[] } }, id: string) => page.layout.blocks.find((node) => node.id === id)!;
+
+test("P1 override: a field no copy slot maps is written to block.props, shows in the render, and survives parse", () => {
+	const { page, id } = miniCards();
+	const r = inspectorSetField(page, id, "/actions/secondary", "Book a call", NOW);
+	assert.ok(r.ok, JSON.stringify(r));
+	assert.equal(r.op, "set_field");
+	assert.equal(r.path, "/actions/secondary");
+	const block = blockOf(r.page, id);
+	assert.deepEqual(block.props, { "/actions/secondary": "Book a call" });
+	const model = inspectorModel(block);
+	assert.ok(model.ok);
+	const field = byPointer(model.fields, "/actions/secondary")!;
+	assert.equal(field.value, "Book a call");
+	assert.equal(field.overridden, true);
+	assert.equal(lockHint(field), "inspector.prop.overridden");
+	assert.deepEqual(parsePageOf(JSON.parse(JSON.stringify(r.page))).layout.blocks[0]!.props, block.props, "page-spec 1.3.0 accepts it");
+	// Sample placeholders and variant values are overridable too; enums and links go through the schema.
+	const card = inspectorSetField(r.page, id, "/content/card/title", "Roastery tour", NOW);
+	assert.ok(card.ok, JSON.stringify(card));
+	const tone = inspectorSetField(card.page, id, "/tone", "default", NOW);
+	assert.ok(tone.ok, JSON.stringify(tone));
+	assert.equal(blockOf(tone.page, id).props?.["/tone"], "default");
+	const badEnum = inspectorSetField(card.page, id, "/tone", "neon", NOW);
+	assert.ok(!badEnum.ok && badEnum.code === "props_invalid" && badEnum.allowed?.includes("muted"));
+	const badLink = inspectorSetField(card.page, id, "/actions/secondaryHref", "Probe text", NOW);
+	assert.ok(!badLink.ok && badLink.code === "link_invalid");
+	// Copy slots still win: the headline writes copy.headline, never props.
+	const title = inspectorSetField(card.page, id, "/title", "Fresh", NOW);
+	assert.ok(title.ok);
+	assert.equal(blockOf(title.page, id).copy?.headline, "Fresh");
+	assert.equal(blockOf(title.page, id).props?.["/title"], undefined);
+});
+
+test("P1 lists: props list rows add, edit, move and remove; page rows move and keep their row overrides", () => {
+	const { page, provenance, id } = miniCards();
+	const ctx = { page, provenance, revision: 1, now: NOW };
+	const add = inspectorOp(ctx, { op: "list_row", blockId: id, pointer: "/content/features", action: "add" });
+	assert.ok(add.ok, JSON.stringify(add));
+	assert.equal(add.op, "insert");
+	assert.equal(add.path, "/content/features/0", "the path names the new row");
+	const two = inspectorOp({ ...ctx, page: add.page }, { op: "list_row", blockId: id, pointer: "/content/features", action: "add" });
+	assert.ok(two.ok, JSON.stringify(two));
+	let model = inspectorModel(blockOf(two.page, id));
+	assert.ok(model.ok);
+	const list = byPointer(model.fields, "/content/features")!;
+	assert.equal(list.rows?.length, 2);
+	const rowTitle = byPointer(model.fields, "/content/features/1/title");
+	assert.ok(rowTitle?.prop, "props list row fields are overridable");
+	const edit = inspectorSetField(two.page, id, "/content/features/1/title", "Second", NOW);
+	assert.ok(edit.ok, JSON.stringify(edit));
+	assert.equal(Object.keys(blockOf(edit.page, id).props ?? {}).join(), "/content/features", "a list is overridden whole at the list pointer");
+	const up = inspectorOp({ ...ctx, page: edit.page }, { op: "list_row", blockId: id, pointer: "/content/features", action: "up", row: 1 });
+	assert.ok(up.ok, JSON.stringify(up));
+	assert.equal(up.op, "move");
+	model = inspectorModel(blockOf(up.page, id));
+	assert.ok(model.ok);
+	assert.equal(byPointer(model.fields, "/content/features/0/title")?.value, "Second");
+	const removed = inspectorOp({ ...ctx, page: up.page }, { op: "list_row", blockId: id, pointer: "/content/features", action: "remove", row: 0 });
+	assert.ok(removed.ok && removed.op === "remove");
+	model = inspectorModel(blockOf(removed.page, id));
+	assert.ok(model.ok);
+	assert.equal(byPointer(model.fields, "/content/features")?.rows?.length, 1);
+
+	const grid = emptyStartWith([["block.features", "grid2"]]);
+	const fid = grid.page.layout.blocks[0]!.id;
+	const href = inspectorSetField(grid.page, fid, "/features/1/href", "#evidence", NOW);
+	assert.ok(href.ok, JSON.stringify(href));
+	const titles = (p: typeof grid.page) => (blockOf(p, fid).children ?? []).map((row) => row.title);
+	const before = titles(href.page);
+	const moved = inspectorOp({ page: href.page, provenance: grid.provenance, revision: 1, now: NOW }, { op: "list_row", blockId: fid, pointer: "/features", action: "up", row: 1 });
+	assert.ok(moved.ok, JSON.stringify(moved));
+	assert.deepEqual(titles(moved.page), [before[1], before[0], ...before.slice(2)]);
+	assert.deepEqual(blockOf(moved.page, fid).props, { "/features/0/href": "#evidence" }, "the row override follows its row");
+	const addRow = inspectorOp({ page: moved.page, provenance: grid.provenance, revision: 1, now: NOW }, { op: "list_row", blockId: fid, pointer: "/features", action: "add" });
+	assert.ok(addRow.ok && (blockOf(addRow.page, fid).children ?? []).length === before.length + 1);
+	const dropRow = inspectorOp({ page: moved.page, provenance: grid.provenance, revision: 1, now: NOW }, { op: "list_row", blockId: fid, pointer: "/features", action: "remove", row: 0 });
+	assert.ok(dropRow.ok);
+	assert.equal(blockOf(dropRow.page, fid).props, undefined, "a removed row takes its overrides with it");
+});
+
+test("P1 gate: unknown pointers and values outside the props schema fail closed (props_invalid)", () => {
+	const { page, id } = miniCards();
+	const block = blockOf(page, id);
+	assert.equal(checkBlockProps({ ...block, props: { "/actions/secondary": "ok" } }, "$.layout.blocks[0]"), null);
+	const unknown = checkBlockProps({ ...block, props: { "/nope": "x" } }, "$.layout.blocks[0]");
+	assert.equal(unknown?.code, "props_invalid");
+	const wrongType = checkBlockProps({ ...block, props: { "/tone": "neon" } }, "$.layout.blocks[0]");
+	assert.equal(wrongType?.code, "props_invalid");
+	assert.throws(() => parsePageOf({ ...JSON.parse(JSON.stringify(page)), layout: { blocks: [{ ...block, props: { "no-slash": "x" } }] } }));
+});
+
+test("P1 carry: variant change drops axis overrides; swap keeps compatible ones and names dropped; proposals keep them", () => {
+	const { page, provenance, id } = miniCards();
+	const a = inspectorSetField(page, id, "/actions/secondary", "Book a call", NOW);
+	assert.ok(a.ok);
+	const b = inspectorSetField(a.page, id, "/mediaSide", "start", NOW);
+	assert.ok(b.ok, JSON.stringify(b));
+	assert.deepEqual(Object.keys(blockOf(b.page, id).props ?? {}).sort(), ["/actions/secondary", "/mediaSide"]);
+	const variants = inspectorModel(blockOf(b.page, id));
+	assert.ok(variants.ok);
+	const other = variants.variants.find((name) => name !== "miniCards")!;
+	const sv = inspectorOp({ page: b.page, provenance, revision: 1, now: NOW }, { op: "set_variant", blockId: id, variant: other });
+	assert.ok(sv.ok, JSON.stringify(sv));
+	assert.deepEqual(blockOf(sv.page, id).props, { "/actions/secondary": "Book a call" }, "the new variant sets its own axes");
+	assert.ok(sv.ok && sv.dropped?.includes("/mediaSide"), "the dropped axis override is named");
+	// Swap to another item of the kind: /actions/secondary exists on hero-classic, /mediaSide does not.
+	const swap = swapCatalogBlock(blockOf(b.page, id), { catalogBlock: "block.hero", variant: "centered" });
+	assert.ok(swap.ok, JSON.stringify(swap));
+	if (swap.ok) {
+		assert.deepEqual(swap.node.props, { "/actions/secondary": "Book a call" });
+		assert.ok(swap.dropped.includes("props /mediaSide"), JSON.stringify(swap.dropped));
+	}
+	// A model rebuild of the same blocks keeps the overrides (Chat / Ask never drop them silently).
+	const rebuilt = blockOf(b.page, id);
+	const bare = { ...rebuilt };
+	delete bare.props;
+	const warnings: string[] = [];
+	const carried = carryPropsOverrides(b.page.layout.blocks, [bare], warnings);
+	assert.deepEqual(carried[0]!.props, rebuilt.props);
+	// A model edit_page patch keeps them too.
+	const edited = editPage({ page: b.page, provenance, patch: { ops: [{ op: "set", blockId: id, field: "headline", value: "Renamed" }] }, expectedRevision: 1, now: NOW });
+	assert.ok(edited.ok, JSON.stringify(edited).slice(0, 300));
+	if (edited.ok) assert.deepEqual(blockOf(edited.page, id).props, rebuilt.props);
+});
+
+test("P1 export: the Svelte source passes the merged props (overrides included) to the registry block", () => {
+	const { page, id } = miniCards();
+	const a = inspectorSetField(page, id, "/actions/secondary", "Book a call", NOW);
+	assert.ok(a.ok);
+	const b = inspectorSetField(a.page, id, "/content/card/title", "Roastery tour", NOW);
+	assert.ok(b.ok);
+	const source = sveltePackFiles(b.page as never).map((file) => file.content).join("\n");
+	assert.match(source, /Book a call/);
+	assert.match(source, /Roastery tour/);
+});
+
+test("P1 history: inspector results carry op + path; revisions record them; session 1.6.0 accepts them", () => {
+	assert.deepEqual([...SESSION_REVISION_OPS], ["set_field", "set_variant", "add", "move", "remove", "insert", "replace"]);
+	const store = web("lib/inspector/inspector.svelte.ts");
+	assert.match(store, /replaceVisiblePage\(result\.page, result\.blockId, commitChange\(steps\.continues\(key\)\), meta\)/);
+	const pageStore = web("lib/page-store/mock.svelte.ts");
+	assert.match(pageStore, /announce\(step\.cause, selectId, step\.cause === "edit" \? meta : undefined\)/);
+	assert.match(web("lib/chat-core/session.svelte.ts"), /event\.op \? \{ op: event\.op \}/);
+	const { page, provenance, id } = miniCards();
+	const moved = inspectorOp({ page, provenance, revision: 1, now: NOW }, { op: "duplicate", blockId: id });
+	assert.ok(moved.ok && moved.op === "insert");
+});
+
+test("P1 ui: prop fields are editable controls; list rows have add / up / down / remove; en + ru", () => {
+	const view = web("app/InspectorFields.svelte");
+	assert.match(view, /field\.origin \|\| field\.prop/);
+	for (const action of ["row-up", "row-down", "remove-row", "add-row"]) assert.match(view, new RegExp(`data-action="${action}"`));
+	assert.match(view, /handlers!\.onlist!\(field\.pointer, "add"\)/);
+	assert.match(web("app/InspectorPanel.svelte"), /op: "list_row"/);
+	for (const locale of ["en", "ru"]) {
+		const messages = JSON.parse(web(`lib/i18n/${locale}.json`)).messages;
+		for (const key of ["inspector.prop.axis", "inspector.prop.axisOverridden", "inspector.prop.overridden", "inspector.prop.variant", "inspector.prop.sample", "inspector.prop.unset", "inspector.propsInvalid", "inspector.rowUp", "inspector.rowDown", "inspector.addRow"]) {
 			assert.ok(messages[key], `${locale}: ${key}`);
 		}
 	}

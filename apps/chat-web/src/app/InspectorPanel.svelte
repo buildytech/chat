@@ -61,6 +61,9 @@
 		onvariant: (variant) => {
 			if (model) inspector.run({ op: "set_variant", blockId: model.blockId, variant });
 		},
+		onlist: (pointer, action, row) => {
+			if (model) inspector.run({ op: "list_row", blockId: model.blockId, pointer, action, ...(row !== undefined ? { row } : {}) });
+		},
 		onrow: (row, action) => {
 			if (model) inspector.run({ op: action === "duplicate" ? "duplicate_row" : "remove_row", blockId: model.blockId, row });
 		}

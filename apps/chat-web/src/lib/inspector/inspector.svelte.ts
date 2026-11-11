@@ -47,7 +47,8 @@ function commit(before: Page, result: InspectorResult, key: string | null): bool
 	if (result.page === before) return true;
 	const steps = historyFor(before);
 	// Coalesced typing extends the open undo step and keeps its revision: one undo step = one page revision.
-	if (!replaceVisiblePage(result.page, result.blockId, commitChange(steps.continues(key)))) return false;
+	const meta = result.op ? { op: result.op, ...(result.path ? { path: result.path } : {}) } : undefined;
+	if (!replaceVisiblePage(result.page, result.blockId, commitChange(steps.continues(key)), meta)) return false;
 	steps.record(before, result.page, key);
 	version += 1;
 	return true;

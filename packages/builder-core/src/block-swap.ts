@@ -1,6 +1,6 @@
 import type { PageBlock } from "@buildytech/page-contract";
 import sourcesRaw from "./catalog/sources.json" with { type: "json" };
-import { organismFor, registryItemFor } from "./catalog/organism.ts";
+import { organismFor, registryItemFor, stripAxisOverrides } from "./catalog/organism.ts";
 import { catalogSourceFor, catalogVariantsFor, resolveCatalogChoice } from "./catalog/sources.ts";
 
 /**
@@ -47,9 +47,12 @@ export function swapCatalogBlock(target: PageBlock, want: { catalogBlock: string
 	if (!registryItemFor(choice.catalogBlock, variant)) {
 		return { ok: false, code: "no_renderer", message: `${choice.catalogBlock} has no page renderer in this BuildY version yet.` };
 	}
-	const draft: PageBlock = { ...structuredClone(target), catalogBlock: choice.catalogBlock };
+	let draft: PageBlock = { ...structuredClone(target), catalogBlock: choice.catalogBlock };
 	if (variant) draft.variant = variant;
 	else delete draft.variant;
+	// Props overrides (page-spec 1.3.0) carry over where the new item has the same prop; the rest is dropped and named.
+	const carried = stripAxisOverrides(draft, target);
+	draft = carried.node;
 	const render = organismFor(draft);
 	if (!render) return { ok: false, code: "no_renderer", message: `${choice.catalogBlock} has no page renderer in this BuildY version yet.` };
 	const read = new Set(Object.values(render.origins));
@@ -78,7 +81,10 @@ export function swapCatalogBlock(target: PageBlock, want: { catalogBlock: string
 	}
 	if (node.copy && !Object.keys(node.copy).length) delete node.copy;
 	for (const child of node.children ?? []) if (child.copy && !Object.keys(child.copy).length) delete child.copy;
-	const dropped = [...new Set(lost.filter((path) => !/^children\[\d+\]\./.test(path) || !droppedRows.has(Number(/\d+/.exec(path)![0]))).map(fieldName))];
+	const dropped = [
+		...new Set(lost.filter((path) => !/^children\[\d+\]\./.test(path) || !droppedRows.has(Number(/\d+/.exec(path)![0]))).map(fieldName)),
+		...[...carried.axes, ...carried.dropped].map((pointer) => `props ${pointer}`)
+	];
 	return { ok: true, node, dropped };
 }
 

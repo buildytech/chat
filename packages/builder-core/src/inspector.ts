@@ -5,7 +5,7 @@
  * and requiredness come from the schema; a field without a page-spec origin is shown read-only (the variant or the
  * schema default sets it). Pure data, no Svelte.
  */
-import { PAGE_LIMITS, PAGE_SLOTS, parsePageSpec, type Page, type PageBlock, type PageBlockCopy, type PageBlockKind, type PageCopyKey } from "@buildytech/page-contract";
+import { PAGE_LIMITS, PAGE_PROPS_LIMITS, PAGE_SLOTS, parsePageSpec, type PagePropValue, type Page, type PageBlock, type PageBlockCopy, type PageBlockKind, type PageCopyKey } from "@buildytech/page-contract";
 import { arrangeShell, CHILD_ONLY_KINDS, localizeEmptyLedes, proposeLayout, stockBlockFor } from "./assemble.ts";
 import { swapCatalogBlock } from "./block-swap.ts";
 import { getScreenById } from "./catalog/search.ts";
@@ -16,7 +16,9 @@ import { editPage } from "./patch.ts";
 import { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } from "./catalog/provenance.ts";
 import { isScenarioId } from "./brief.ts";
 import type { ScenarioId } from "./copy.ts";
-import { organismFor, variantPreset, writableOrigin, type OrganismRender } from "./catalog/organism.ts";
+import { organismFor, pageListName, variantPreset, writableOrigin, type OrganismRender } from "./catalog/organism.ts";
+import { propsNodeAt, remapRowOverrides, valueAtPointer, withPropsOverride } from "./catalog/props-overrides.ts";
+import { newPropsListRow } from "./catalog/props-schema.ts";
 import { checkBlockProps } from "./catalog/provenance.ts";
 import { propsEventsFor, propsFieldTree, type PropsFieldNode } from "./catalog/props-schema.ts";
 import { catalogVariantsFor } from "./catalog/sources.ts";
@@ -45,6 +47,18 @@ export type InspectorField = {
 	lock?: InspectorLock;
 	/** Variant axis (top-level enum the variant presets set): per value, the named variant it switches to, or null. */
 	choices?: Array<{ value: string; variant: string | null }>;
+	/**
+	 * Writable as a block props override (page-spec 1.3.0, `block.props[pointer]`): no copy slot maps the field, so an
+	 * edit goes to the override map, validated against the item's props schema. Copy slots are preferred: a field
+	 * with an `origin` never gets `prop`.
+	 */
+	prop?: boolean;
+	/** Where the shown value of a `prop` field comes from until it is overridden (same reasons as `lock`). */
+	from?: InspectorLock;
+	/** The value comes from a props override (the pointer or a list / object above it is in `block.props`). */
+	overridden?: boolean;
+	/** list: where its rows live (page rows of the block, or a props override list) and how many it may hold. */
+	list?: { source: "page" | "props"; max: number };
 	/** enum: the schema's values. */
 	options?: string[];
 	maxLength?: number;
@@ -103,7 +117,16 @@ function widgetFor(node: PropsFieldNode, origin: string | null): InspectorWidget
 	}
 }
 
-type Ctx = { block: PageBlock; render: OrganismRender; preset: Record<string, unknown>; axes: Record<string, Array<{ value: string; variant: string | null }>> };
+type Ctx = {
+	block: PageBlock;
+	render: OrganismRender;
+	preset: Record<string, unknown>;
+	axes: Record<string, Array<{ value: string; variant: string | null }>>;
+	/** Top-level blocks take props overrides (page-spec 1.3.0); rows do not. */
+	overridable: boolean;
+};
+
+const LEAF_WIDGETS = new Set<InspectorWidget>(["text", "longtext", "icon", "enum", "boolean", "number"]);
 
 function lockFor(ctx: Ctx, field: InspectorField): InspectorLock | undefined {
 	if (field.origin || field.widget === "object" || field.widget === "list") return undefined;
@@ -112,6 +135,8 @@ function lockFor(ctx: Ctx, field: InspectorField): InspectorLock | undefined {
 	if (value !== undefined && value !== null && value !== "" && !(Array.isArray(value) && value.length === 0)) return "sample";
 	return "no_page_field";
 }
+
+const coveredBy = (overrides: readonly string[], pointer: string): boolean => overrides.some((key) => pointer === key || pointer.startsWith(`${key}/`));
 
 function fieldsOf(ctx: Ctx, nodes: PropsFieldNode[], base: string, hidden: ReadonlySet<string>): InspectorField[] {
 	const { block, render } = ctx;
@@ -131,11 +156,17 @@ function fieldsOf(ctx: Ctx, nodes: PropsFieldNode[], base: string, hidden: Reado
 		if (node.enum) field.options = node.enum;
 		if (base === "" && ctx.axes[node.name]) field.choices = ctx.axes[node.name];
 		if (node.maxLength !== undefined) field.maxLength = node.maxLength;
+		if (!origin && ctx.overridable && LEAF_WIDGETS.has(field.widget)) field.prop = true;
+		if (coveredBy(render.overrides, pointer)) field.overridden = true;
 		const lock = lockFor(ctx, field);
-		if (lock) field.lock = lock;
+		if (lock && field.prop) {
+			if (!field.overridden) field.from = lock;
+		} else if (lock) field.lock = lock;
 		if (field.widget === "object" && node.fields) field.fields = fieldsOf(ctx, node.fields, pointer, new Set());
 		if (field.widget === "list" && node.fields) {
 			const rows = Array.isArray(field.value) ? field.value : [];
+			const source = pageRowList(block, render, pointer) ? "page" : ctx.overridable ? "props" : null;
+			if (source) field.list = { source, max: source === "page" ? (PAGE_SLOTS[block.kind]?.items?.max ?? 0) : Math.min(node.maxItems ?? PAGE_PROPS_LIMITS.maxListItems, PAGE_PROPS_LIMITS.maxListItems) };
 			field.rows = rows.map((_, index) => {
 				const at = `${pointer}/${index}`;
 				const row = render.origins[at];
@@ -145,6 +176,17 @@ function fieldsOf(ctx: Ctx, nodes: PropsFieldNode[], base: string, hidden: Reado
 		out.push(field);
 	}
 	return out;
+}
+
+/**
+ * Whether a list prop holds the block's page rows (`children`): the one list content() maps rows into, on a kind
+ * with rows, unless a props override replaced that list.
+ */
+function pageRowList(block: PageBlock, render: OrganismRender, pointer: string): boolean {
+	if (coveredBy(render.overrides, pointer)) return false;
+	if (Object.entries(render.origins).some(([key, from]) => key.startsWith(`${pointer}/`) && /^children\[\d+\]$/.test(from))) return true;
+	if (!PAGE_SLOTS[block.kind]?.items) return false;
+	return pageListName(render.item) === pointer.slice(1);
 }
 
 /**
@@ -200,7 +242,7 @@ export function inspectorModel(block: PageBlock): InspectorModel {
 	if (!tree) return { ok: false, ...head, reason: "no_schema" };
 	const { events, slots } = propsEventsFor(render.item);
 	const preset = variantPreset(render.item, render.variant);
-	const ctx: Ctx = { block, render, preset, axes: variantAxes(block, render, preset) };
+	const ctx: Ctx = { block, render, preset, axes: variantAxes(block, render, render.props), overridable: true };
 	const fields = fieldsOf(ctx, tree, "", new Set([...events, ...slots]));
 	return {
 		ok: true,
@@ -225,7 +267,21 @@ export type InspectorFailure = {
 	/** enum / icon rejections: every allowed value of the schema. */
 	allowed?: string[];
 };
-export type InspectorSuccess = { ok: true; page: Page; /** The block to keep selected. */ blockId: string };
+export type InspectorSuccess = {
+	ok: true;
+	page: Page;
+	/** The block to keep selected. */
+	blockId: string;
+	/** What the change did, for the session history (session 1.6.0); never the value. */
+	op?: SessionRevisionOp;
+	/** JSON Pointer of the field or row in the block's render props. */
+	path?: string;
+	/** Props overrides a variant switch or a swap could not carry (pointers). */
+	dropped?: string[];
+};
+
+/** session 1.6.0 history op (the page-contract session entry is not imported here: the runtime bundle stays small). */
+export type SessionRevisionOp = "set_field" | "set_variant" | "add" | "move" | "remove" | "insert" | "replace";
 export type InspectorResult = InspectorSuccess | InspectorFailure;
 
 const fail = (code: string, message: string, pointer: string, allowed?: string[]): InspectorFailure =>
@@ -310,18 +366,50 @@ export function inspectorSetField(page: Page, blockId: string, pointer: string, 
 	const render = organismFor(block);
 	if (!render) return fail("not_in_registry", `Section ${blockId} has no registry block.`, pointer);
 	const origin = writableOrigin(block, render, pointer);
-	if (!origin) return fail("field_not_editable", `${pointer} has no page field (variant ${render.variant} or the schema sets it).`, pointer);
-	if (/(?:^|\.)copy\.href$/.test(origin) && !LINK.test(value)) {
+	if (origin) {
+		if (/(?:^|\.)copy\.href$/.test(origin) && !LINK.test(value)) {
+			return fail("link_invalid", `${pointer} "${value}": a link starts with #, /, http://, https:// or mailto:.`, pointer);
+		}
+		const written = writeOrigin(block, origin, value);
+		if (!written) return fail("field_not_editable", `${pointer} has no page field ${origin}.`, pointer);
+		// A copy slot wins: an override left at the same pointer would hide the edit, so it goes.
+		const next = block.props?.[pointer] !== undefined ? withPropsOverride(written, pointer, undefined) : written;
+		return commitBlock(page, index, block, next, pointer, now);
+	}
+	// No copy slot maps it: the block props override map (page-spec 1.3.0), checked against the item's props schema.
+	const node = propsNodeAt(render.item, pointer);
+	if (!node || !["text", "icon", "enum", "boolean", "number"].includes(node.kind)) {
+		return fail("field_not_editable", `${pointer} is not a field of ${render.item} the inspector can write.`, pointer);
+	}
+	const coerced = coerceProp(node, value);
+	if (!coerced.ok) return fail(coerced.code, `${pointer} "${value}": ${coerced.message}`, pointer, coerced.allowed);
+	if (typeof coerced.value === "string" && /href$/i.test(node.name) && coerced.value !== "" && !LINK.test(coerced.value)) {
 		return fail("link_invalid", `${pointer} "${value}": a link starts with #, /, http://, https:// or mailto:.`, pointer);
 	}
-	const next = writeOrigin(block, origin, value);
-	if (!next) return fail("field_not_editable", `${pointer} has no page field ${origin}.`, pointer);
+	return commitBlock(page, index, block, withPropsOverride(block, pointer, coerced.value), pointer, now);
+}
+
+/** A typed value for a schema field: enum values as the schema writes them (numbers stay numbers), numbers, booleans. */
+function coerceProp(node: PropsFieldNode, value: string): { ok: true; value: PagePropValue } | { ok: false; code: string; message: string; allowed?: string[] } {
+	if (node.kind === "enum") {
+		const raw = (node.enumValues ?? node.enum ?? []).find((entry) => String(entry) === value);
+		return raw === undefined ? { ok: false, code: "props_invalid", message: "not an allowed value.", allowed: node.enum } : { ok: true, value: raw };
+	}
+	if (node.kind === "number") {
+		const number = Number(value);
+		return value.trim() !== "" && Number.isFinite(number) ? { ok: true, value: number } : { ok: false, code: "props_invalid", message: "not a number." };
+	}
+	if (node.kind === "boolean") return { ok: true, value: value === "true" };
+	return { ok: true, value };
+}
+
+function commitBlock(page: Page, index: number, block: PageBlock, next: PageBlock, pointer: string, now?: string): InspectorResult {
 	// Writing the value the page already has is a no-op: same page, no history step, no revision.
-	if (JSON.stringify(next) === JSON.stringify(block)) return { ok: true, page, blockId };
+	if (JSON.stringify(next) === JSON.stringify(block)) return { ok: true, page, blockId: block.id };
 	const blocks = [...page.layout.blocks];
 	blocks[index] = next;
-	const gated = gateInspectorPage(page, blocks, [blockId], pointer, now);
-	return gated.ok ? { ok: true, page: gated.page, blockId } : gated;
+	const gated = gateInspectorPage(page, blocks, [block.id], pointer, now);
+	return gated.ok ? { ok: true, page: gated.page, blockId: block.id, op: "set_field", path: pointer } : gated;
 }
 
 // ---- Block operations (step 4) ---------------------------------------------------------------------------------
@@ -338,7 +426,9 @@ export type InspectorOp =
 	| { op: "remove"; blockId: string }
 	| { op: "duplicate_row"; blockId: string; row: number }
 	| { op: "remove_row"; blockId: string; row: number }
-	| { op: "add"; blockId: string; catalogBlock: string; variant?: string | null; at?: number };
+	| { op: "add"; blockId: string; catalogBlock: string; variant?: string | null; at?: number }
+	/** A row of a list prop: page rows of the block (children) or a props override list (`/content/features`). */
+	| { op: "list_row"; blockId: string; pointer: string; action: "add" | "remove" | "up" | "down"; row?: number };
 
 export type InspectorOpContext = {
 	page: Page;
@@ -583,6 +673,30 @@ function addedBlock(ctx: InspectorOpContext, catalogBlock: string, variant: stri
  * Every result passes page-spec, the props gate and (with a screen) the catalog provenance gate, or nothing changes.
  */
 export function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): InspectorResult {
+	const result = runOp(ctx, op);
+	if (!result.ok || result.page === ctx.page) return result;
+	return { ...result, op: result.op ?? HISTORY_OP[op.op], ...(result.path ? {} : pathOf(op) ? { path: pathOf(op) } : {}) };
+}
+
+/** Session history op of each inspector operation (session 1.6.0). */
+const HISTORY_OP: Record<InspectorOp["op"], SessionRevisionOp> = {
+	set_variant: "set_variant",
+	reset: "replace",
+	move: "move",
+	duplicate: "insert",
+	remove: "remove",
+	duplicate_row: "insert",
+	remove_row: "remove",
+	add: "add",
+	list_row: "insert"
+};
+
+function pathOf(op: InspectorOp): string | undefined {
+	if (op.op === "list_row") return op.row !== undefined ? `${op.pointer}/${op.row}` : op.pointer;
+	return undefined;
+}
+
+function runOp(ctx: InspectorOpContext, op: InspectorOp): InspectorResult {
 	const blocks = ctx.page.layout.blocks;
 	if (op.op === "add") {
 		// After the selected section (a row counts as its section), else at the end; then every gate, or nothing changes.
@@ -604,9 +718,15 @@ export function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): Inspector
 	const block = blocks[index];
 	if (!block) return fail("block_not_found", `No section ${op.blockId} on this page.`, "");
 	switch (op.op) {
-		case "set_variant":
+		case "set_variant": {
 			if (op.variant === block.variant) return { ok: true, page: ctx.page, blockId: block.id };
-			return viaPatch(ctx, { op: "set_variant", blockId: block.id, variant: op.variant }, block.id);
+			const result = viaPatch(ctx, { op: "set_variant", blockId: block.id, variant: op.variant }, block.id);
+			if (!result.ok || !block.props) return result;
+			// The patch dropped axis overrides (the variant sets them) and pointers the variant has not: name them.
+			const kept = new Set(Object.keys(result.page.layout.blocks.find((node) => node.id === block.id)?.props ?? {}));
+			const dropped = Object.keys(block.props).filter((pointer) => !kept.has(pointer));
+			return dropped.length ? { ...result, dropped } : result;
+		}
 		case "move":
 			if (op.to < 0 || op.to >= blocks.length) return fail("index_out_of_range", `A section moves to 1..${blocks.length}.`, "");
 			if (op.to === index) return { ok: true, page: ctx.page, blockId: block.id };
@@ -637,6 +757,7 @@ export function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): Inspector
 			const rows = block.children ?? [];
 			const row = rows[op.row];
 			if (!row) return fail("row_not_found", `Section ${block.id} has no row ${op.row + 1}.`, "");
+			const list = pageListName(organismFor(block)?.item ?? "");
 			const nextRows = [...rows];
 			if (op.op === "remove_row") nextRows.splice(op.row, 1);
 			else {
@@ -644,11 +765,80 @@ export function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): Inspector
 				if (rows.length >= max) return fail("rows_over_limit", `${block.kind} renders at most ${max} rows.`, "");
 				nextRows.splice(op.row + 1, 0, cloneWithIds(row, walkIds(blocks)));
 			}
-			const nextBlock: PageBlock = { ...block, children: nextRows };
+			let nextBlock: PageBlock = { ...block, children: nextRows };
 			if (!nextRows.length) delete nextBlock.children;
+			if (list) {
+				nextBlock = op.op === "remove_row"
+					? remapRowOverrides(nextBlock, list, (i) => (i === op.row ? null : i > op.row ? i - 1 : i))
+					: remapRowOverrides(nextBlock, list, (i) => (i > op.row ? i + 1 : i));
+			}
 			const next = [...blocks];
 			next[index] = nextBlock;
-			return gated(ctx, next, [block.id], block.id);
+			const result = gated(ctx, next, [block.id], block.id);
+			return result.ok && list ? { ...result, path: `/${list}/${op.row}` } : result;
+		}
+		case "list_row":
+			return listRow(ctx, index, block, op);
+	}
+}
+
+/** Add, remove or move a row of a list prop: the block's page rows, or a props override list written whole. */
+function listRow(ctx: InspectorOpContext, index: number, block: PageBlock, op: Extract<InspectorOp, { op: "list_row" }>): InspectorResult {
+	const render = organismFor(block);
+	if (!render) return fail("not_in_registry", `Section ${block.id} has no registry block.`, op.pointer);
+	const node = propsNodeAt(render.item, op.pointer);
+	if (!node || node.kind !== "list" || !node.fields) return fail("not_a_list", `${op.pointer} is not a list of rows of ${render.item}.`, op.pointer);
+	const blocks = ctx.page.layout.blocks;
+	const row = op.row ?? -1;
+	const moveTo = op.action === "up" ? row - 1 : op.action === "down" ? row + 1 : row;
+	if (pageRowList(block, render, op.pointer)) {
+		const rows = block.children ?? [];
+		const list = op.pointer.slice(1);
+		if (op.action === "add") {
+			const max = PAGE_SLOTS[block.kind]?.items?.max ?? 0;
+			if (rows.length >= max) return fail("rows_over_limit", `${block.kind} renders at most ${max} rows.`, op.pointer);
+			const kind = PAGE_SLOTS[block.kind]!.items!.kind as PageBlockKind;
+			const template: PageBlock = rows.at(-1) ? cloneWithIds(rows.at(-1)!, walkIds(blocks)) : { id: freeId(`${block.id}-row`, walkIds(blocks)), kind, title: "New item", summary: "Describe this item." };
+			const nextBlock: PageBlock = { ...block, children: [...rows, { ...template, title: "New item" }] };
+			const next = [...blocks];
+			next[index] = nextBlock;
+			const result = gated(ctx, next, [block.id], block.id);
+			return result.ok ? { ...result, op: "insert", path: `${op.pointer}/${rows.length}` } : result;
+		}
+		if (!rows[row]) return fail("row_not_found", `Section ${block.id} has no row ${row + 1}.`, op.pointer);
+		if (op.action === "remove") return runOp(ctx, { op: "remove_row", blockId: block.id, row });
+		if (moveTo < 0 || moveTo >= rows.length) return fail("index_out_of_range", `Row ${row + 1} cannot move ${op.action}.`, op.pointer);
+		const nextRows = [...rows];
+		[nextRows[row], nextRows[moveTo]] = [nextRows[moveTo]!, nextRows[row]!];
+		const nextBlock = remapRowOverrides({ ...block, children: nextRows }, list, (i) => (i === row ? moveTo : i === moveTo ? row : i));
+		const next = [...blocks];
+		next[index] = nextBlock;
+		const result = gated(ctx, next, [block.id], block.id);
+		return result.ok ? { ...result, op: "move", path: `${op.pointer}/${row}` } : result;
+	}
+	// A props list: the rendered rows (variant sample or override) become the override, then the change.
+	const current = valueAtPointer(render.props, op.pointer);
+	const rows = Array.isArray(current) ? [...(current as PagePropValue[])] : [];
+	let opName: SessionRevisionOp = "insert";
+	if (op.action === "add") {
+		const max = Math.min(node.maxItems ?? PAGE_PROPS_LIMITS.maxListItems, PAGE_PROPS_LIMITS.maxListItems);
+		if (rows.length >= max) return fail("rows_over_limit", `${op.pointer} holds at most ${max} rows.`, op.pointer);
+		const fresh = newPropsListRow(render.item, op.pointer, rows);
+		if (!fresh) return fail("not_a_list", `${op.pointer} has no row schema.`, op.pointer);
+		rows.push(fresh as PagePropValue);
+	} else {
+		if (!rows[row]) return fail("row_not_found", `${op.pointer} has no row ${row + 1}.`, op.pointer);
+		if (op.action === "remove") {
+			rows.splice(row, 1);
+			opName = "remove";
+		} else {
+			if (moveTo < 0 || moveTo >= rows.length) return fail("index_out_of_range", `Row ${row + 1} cannot move ${op.action}.`, op.pointer);
+			[rows[row], rows[moveTo]] = [rows[moveTo]!, rows[row]!];
+			opName = "move";
 		}
 	}
+	const next = [...blocks];
+	next[index] = withPropsOverride(block, op.pointer, rows);
+	const result = gated(ctx, next, [block.id], block.id);
+	return result.ok ? { ...result, op: opName, path: op.action === "add" ? `${op.pointer}/${rows.length - 1}` : `${op.pointer}/${row}` } : result;
 }

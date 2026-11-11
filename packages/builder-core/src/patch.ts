@@ -1,3 +1,4 @@
+import { stripAxisOverrides } from "./catalog/organism.ts";
 import {
 	PAGE_LIMITS,
 	PAGE_SLOTS,
@@ -358,7 +359,11 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 				if (!choice.ok) return fail(choice.code, choice.message, `${at}.variant`);
 				next.variant = variant;
 			}
-			found.list[found.index] = next;
+			// The chosen variant sets the layout axes: their props overrides go; content overrides stay (page-spec 1.3.0).
+			const carried = stripAxisOverrides(next, target);
+			const gone = [...carried.axes, ...carried.dropped];
+			if (gone.length) swapNotes.push(`${target.id}: props overrides replaced by the variant ${variant ?? "default"} or not in it, dropped: ${gone.join(", ")}.`);
+			found.list[found.index] = carried.node;
 			changed.add(target.kind);
 		} else if (op.op === "set_page") {
 			const value = String(op.value);

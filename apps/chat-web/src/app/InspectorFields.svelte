@@ -1,14 +1,18 @@
 <!--
   Inspector fields of one level of a block's props (top level, an object prop or a list row), one registry widget per
-  schema kind. A field is editable only with a page-spec origin and host handlers; every other field shows its value
-  locked (muted, lock icon, not-allowed cursor, aria-readonly) with the real reason: a variant axis (its select
-  switches to the named variant of that value, or says to choose in Variant above), a sample placeholder of the
-  schema, or no page field yet. Rejected edits show the gate's message and, for an enum, the allowed values in the field. Focus in a field
-  selects it on the canvas (ADR 0021): the overlay outlines where the preview shows it.
+  schema kind. A field is editable with host handlers when a page-spec copy slot maps it (origin) or, otherwise, as a
+  block props override (page-spec 1.3.0, `prop`), validated against the item's props schema. A field that is neither
+  renders locked (muted, lock icon, not-allowed cursor, aria-readonly) with the real reason. A variant axis select
+  switches to the named variant of the picked combination, else overrides the axis. Lists add, remove and reorder
+  rows (page rows or a props list). Rejected edits show the gate's message and, for an enum, the allowed values. Focus
+  in a field selects it on the canvas (ADR 0021): the overlay outlines where the preview shows it.
 -->
 <script lang="ts">
+	import ArrowDown from "@lucide/svelte/icons/arrow-down";
+	import ArrowUp from "@lucide/svelte/icons/arrow-up";
 	import Copy from "@lucide/svelte/icons/copy";
 	import Lock from "@lucide/svelte/icons/lock";
+	import Plus from "@lucide/svelte/icons/plus";
 	import Trash2 from "@lucide/svelte/icons/trash-2";
 	import Box from "$registry/compose/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";
@@ -28,7 +32,7 @@
 	import type { InspectorField } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { canvas } from "$lib/inspector/canvas.svelte";
-	import { axisSwitch, closestAllowed, fieldDomId, issueText, lockHint, LOCKED_CONTROL, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
+	import { axisAction, axisSwitch, closestAllowed, fieldDomId, issueText, lockHint, LOCKED_CONTROL, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
 	import Self from "./InspectorFields.svelte";
 
 	let {
@@ -47,7 +51,7 @@
 	} = $props();
 
 	function editable(field: InspectorField): boolean {
-		return Boolean(handlers && field.origin);
+		return Boolean(handlers && (field.origin || field.prop));
 	}
 
 	function text(value: unknown): string {
@@ -68,12 +72,6 @@
 		return `${message} ${t("inspector.allowed").replace("{list}", issue.allowed.join(", "))}`;
 	}
 
-	function onAxis(field: InspectorField, event: Event) {
-		const value = (event.currentTarget as HTMLSelectElement).value;
-		const target = field.choices?.find((choice) => choice.value === value)?.variant;
-		if (target && target !== variant) handlers?.onvariant?.(target);
-	}
-
 	function label(field: InspectorField): string {
 		return field.required ? `${field.name} *` : field.name;
 	}
@@ -85,6 +83,21 @@
 
 	function valueOf(event: Event): string {
 		return (event.currentTarget as HTMLInputElement | HTMLTextAreaElement).value;
+	}
+
+	function onEnum(field: InspectorField, event: Event) {
+		const value = (event.currentTarget as HTMLSelectElement).value;
+		if (field.choices) {
+			const action = axisAction(field, value, variant);
+			if (action && "variant" in action) handlers?.onvariant?.(action.variant);
+			else if (action) handlers?.onedit(field, action.override, false);
+			return;
+		}
+		handlers?.onedit(field, value, false);
+	}
+
+	function rowActions(field: InspectorField): boolean {
+		return Boolean(handlers?.onlist && field.list);
 	}
 </script>
 
@@ -113,6 +126,7 @@
 						aria-readonly={canEdit ? undefined : "true"}
 						title={canEdit ? undefined : hint(field)}
 						data-locked={canEdit ? undefined : field.lock ?? "readonly"}
+						data-write={canEdit ? (field.origin ? "copy" : "props") : undefined}
 						data-pointer={field.pointer}
 						oninput={canEdit ? (event: Event) => handlers!.onedit(field, valueOf(event), true) : undefined}
 						onblur={canEdit ? () => handlers!.onseal() : undefined}
@@ -128,6 +142,7 @@
 						aria-readonly={canEdit ? undefined : "true"}
 						title={canEdit ? undefined : hint(field)}
 						data-locked={canEdit ? undefined : field.lock ?? "readonly"}
+						data-write={canEdit ? (field.origin ? "copy" : "props") : undefined}
 						data-pointer={field.pointer}
 						oninput={canEdit ? (event: Event) => handlers!.onedit(field, valueOf(event), true) : undefined}
 						onblur={canEdit ? () => handlers!.onseal() : undefined}
@@ -148,6 +163,7 @@
 					aria-readonly={canEdit ? undefined : "true"}
 					title={canEdit ? undefined : hint(field)}
 					data-locked={canEdit ? undefined : field.lock ?? "readonly"}
+					data-write={canEdit ? (field.origin ? "copy" : "props") : undefined}
 					autocomplete="off"
 					spellcheck="false"
 					data-pointer={field.pointer}
@@ -162,41 +178,62 @@
 				{/if}
 			</Field>
 		{:else if field.widget === "enum"}
-			{@const axis = axisSwitch(field, Boolean(handlers?.onvariant))}
+			{@const live = field.choices ? axisSwitch(field, Boolean(handlers?.onvariant)) : canEdit}
 			<Field label={label(field)} htmlFor={id} hint={hint(field)} error={errorOf(field)}>
-				{#if !axis}{@render lockMark()}{/if}
+				{#if !live}{@render lockMark()}{/if}
 				<Select
 					{id}
 					size="sm"
 					value={text(field.value)}
-					disabled={!axis}
+					disabled={!live}
 					title={hint(field)}
-					data-locked={axis ? undefined : field.lock ?? "readonly"}
-					data-action={axis ? "axis-variant" : undefined}
+					data-locked={live ? undefined : field.lock ?? "readonly"}
+					data-action={live && field.choices ? "axis-variant" : undefined}
+					data-write={live ? (field.choices ? "axis" : "props") : undefined}
 					data-pointer={field.pointer}
-					onchange={axis ? (event: Event) => onAxis(field, event) : undefined}
+					onchange={live ? (event: Event) => onEnum(field, event) : undefined}
 				>
 					{#if field.value === undefined}
 						<SelectOption value="">{t("inspector.unset")}</SelectOption>
 					{/if}
 					{#each field.options ?? [] as option (option)}
 						{@const choice = field.choices?.find((entry) => entry.value === option)}
-						<SelectOption value={option} disabled={axis && option !== text(field.value) && !choice?.variant}>{option}{choice?.variant && option !== text(field.value) ? ` · ${choice.variant}` : ""}</SelectOption>
+						<SelectOption value={option} disabled={Boolean(field.choices) && !field.prop && option !== text(field.value) && !choice?.variant}>{option}{choice?.variant && choice.variant !== variant ? ` · ${choice.variant}` : ""}</SelectOption>
 					{/each}
 				</Select>
 			</Field>
 		{:else if field.widget === "boolean"}
 			<Group class="gap-2">
-				<Checkbox {id} checked={field.value === true} disabled data-pointer={field.pointer} />
+				<Checkbox
+					{id}
+					checked={field.value === true}
+					disabled={!canEdit}
+					data-write={canEdit ? "props" : undefined}
+					data-pointer={field.pointer}
+					onchange={canEdit ? (event: Event) => handlers!.onedit(field, String((event.currentTarget as HTMLInputElement).checked), false) : undefined}
+				/>
 				<Label for={id}>{label(field)}</Label>
 				{#if hint(field)}
 					<Text tag="span" class="text-xs text-muted-foreground">{hint(field)}</Text>
 				{/if}
 			</Group>
 		{:else if field.widget === "number"}
-			<Field label={label(field)} htmlFor={id} hint={hint(field)}>
-				{@render lockMark()}
-				<Input {id} size="sm" type="number" class={LOCKED_CONTROL} value={text(field.value)} readOnly aria-readonly="true" title={hint(field)} data-locked={field.lock ?? "readonly"} data-pointer={field.pointer} />
+			<Field label={label(field)} htmlFor={id} hint={hint(field)} error={errorOf(field)}>
+				{#if !canEdit}{@render lockMark()}{/if}
+				<Input
+					{id}
+					size="sm"
+					type="number"
+					class={canEdit ? undefined : LOCKED_CONTROL}
+					value={text(field.value)}
+					readOnly={!canEdit}
+					aria-readonly={canEdit ? undefined : "true"}
+					title={canEdit ? undefined : hint(field)}
+					data-locked={canEdit ? undefined : field.lock ?? "readonly"}
+					data-write={canEdit ? "props" : undefined}
+					data-pointer={field.pointer}
+					onchange={canEdit ? (event: Event) => handlers!.onedit(field, valueOf(event), false) : undefined}
+				/>
 			</Field>
 		{:else if field.widget === "object"}
 			<Fieldset variant="card" data-pointer={field.pointer}>
@@ -204,20 +241,32 @@
 				<Self fields={field.fields ?? []} {blockId} {variant} {issues} {handlers} />
 			</Fieldset>
 		{:else if field.widget === "list"}
-			<Fieldset variant="card" data-pointer={field.pointer}>
-				<Legend class="text-xs">{label(field)} · {t("inspector.rows").replace("{count}", String(field.rows?.length ?? 0))}</Legend>
-				{#if !field.rows?.length}
-					<Text tag="p" class="text-xs text-muted-foreground">{hint(field) ?? t("inspector.noRows")}</Text>
+			{@const count = field.rows?.length ?? 0}
+			<Fieldset variant="card" data-pointer={field.pointer} data-list={field.list?.source}>
+				<Legend class="text-xs">{label(field)} · {t("inspector.rows").replace("{count}", String(count))}</Legend>
+				{#if errorOf(field)}
+					<Text tag="p" class="text-xs font-semibold text-destructive" role="alert">{errorOf(field)}</Text>
+				{/if}
+				{#if !count}
+					<Text tag="p" class="text-xs text-muted-foreground">{t("inspector.noRows")}</Text>
 				{/if}
 				{#each field.rows ?? [] as row, index (row.pointer)}
 					<Fieldset variant="card" data-pointer={row.pointer}>
 						<Legend class="text-xs">{t("inspector.row").replace("{n}", String(index + 1))}</Legend>
-						{#if handlers?.onrow && row.origin}
+						{#if rowActions(field)}
 							<Group gap="2" justify="end" role="group" aria-label={t("inspector.rowActions").replace("{n}", String(index + 1))}>
-								<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.duplicateRow")} title={t("inspector.duplicateRow")} data-action="duplicate-row" onclick={() => handlers!.onrow!(index, "duplicate")}>
-									<Copy />
+								<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.rowUp")} title={t("inspector.rowUp")} disabled={index === 0} data-action="row-up" onclick={() => handlers!.onlist!(field.pointer, "up", index)}>
+									<ArrowUp />
 								</Button>
-								<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.removeRow")} title={t("inspector.removeRow")} data-action="remove-row" onclick={() => handlers!.onrow!(index, "remove")}>
+								<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.rowDown")} title={t("inspector.rowDown")} disabled={index >= count - 1} data-action="row-down" onclick={() => handlers!.onlist!(field.pointer, "down", index)}>
+									<ArrowDown />
+								</Button>
+								{#if handlers?.onrow && row.origin}
+									<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.duplicateRow")} title={t("inspector.duplicateRow")} disabled={count >= (field.list?.max ?? 0)} data-action="duplicate-row" onclick={() => handlers!.onrow!(index, "duplicate")}>
+										<Copy />
+									</Button>
+								{/if}
+								<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.removeRow")} title={t("inspector.removeRow")} data-action="remove-row" onclick={() => handlers!.onlist!(field.pointer, "remove", index)}>
 									<Trash2 />
 								</Button>
 							</Group>
@@ -225,6 +274,12 @@
 						<Self fields={row.fields} {blockId} {variant} {issues} {handlers} />
 					</Fieldset>
 				{/each}
+				{#if rowActions(field)}
+					<Button size="sm" variant="outline" disabled={count >= (field.list?.max ?? 0)} data-action="add-row" onclick={() => handlers!.onlist!(field.pointer, "add")}>
+						<Plus />
+						{t("inspector.addRow")}
+					</Button>
+				{/if}
 			</Fieldset>
 		{:else}
 			<Field label={label(field)} htmlFor={id} hint={hint(field)}>

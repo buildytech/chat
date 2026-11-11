@@ -2,7 +2,7 @@
  * Dependency-free JSON Schema (draft 2020-12) checker for the subset the published
  * page-spec / page-patch schemas use: $ref (local and absolute to a registered $id), allOf, anyOf,
  * oneOf, not, type, enum, const, pattern, minLength, maxLength, minimum, maximum, minItems, maxItems, items,
- * properties, required, additionalProperties. Annotation keywords (title, description, x-*) are ignored.
+ * properties, required, additionalProperties, maxProperties, propertyNames (page-spec 1.3.0 block props). Annotation keywords (title, description, x-*) are ignored.
  * An unknown assertion keyword throws: the vendored schema must stay inside this subset.
  */
 
@@ -12,7 +12,8 @@ type Schema = Record<string, unknown> | boolean;
 const ANNOTATIONS = new Set(["$schema", "$id", "$defs", "title", "description", "default", "examples"]);
 const ASSERTIONS = new Set([
 	"$ref", "allOf", "anyOf", "oneOf", "not", "type", "enum", "const", "pattern", "minLength", "maxLength",
-	"minimum", "maximum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties"
+	"minimum", "maximum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties",
+	"maxProperties", "propertyNames"
 ]);
 
 function typeOf(value: unknown): string {
@@ -133,6 +134,10 @@ export class SchemaRegistry {
 			const props = (schema.properties ?? {}) as Record<string, unknown>;
 			if (Array.isArray(schema.required)) {
 				for (const key of schema.required) if (!(String(key) in obj)) fail("required", `${path}.${String(key)}`);
+			}
+			if (typeof schema.maxProperties === "number" && Object.keys(obj).length > schema.maxProperties) fail("maxProperties");
+			if (schema.propertyNames !== undefined) {
+				for (const key of Object.keys(obj)) if (sub(key, schema.propertyNames, `${path}.${key}`).length) fail("propertyNames", `${path}.${key}`);
 			}
 			for (const [key, v] of Object.entries(obj)) {
 				if (key in props) out.push(...sub(v, props[key], `${path}.${key}`));

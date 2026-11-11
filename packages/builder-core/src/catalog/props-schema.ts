@@ -197,6 +197,10 @@ export type PropsFieldNode = {
 	required: boolean;
 	/** enum: the allowed values (layout axes and the like); the icon enum is lucideIcons(). */
 	enum?: string[];
+	/** enum: the schema's values as written (numbers stay numbers: `level` 1 | 2). */
+	enumValues?: Array<string | number | boolean | null>;
+	/** list: the schema's maxItems, when it sets one. */
+	maxItems?: number;
 	/** text: the schema's maxLength, when it sets one. */
 	maxLength?: number;
 	/** object: its fields; list: the fields of one record (lists of plain values have none). */
@@ -211,7 +215,11 @@ function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
 		const kind = kindOf(inner);
 		const target = valueOf(inner);
 		const out: PropsFieldNode = { name, kind, required: required.includes(name) };
-		if (kind === "enum") out.enum = (target.enum as unknown[]).map(String);
+		if (kind === "enum") {
+			out.enum = (target.enum as unknown[]).map(String);
+			out.enumValues = target.enum as Array<string | number | boolean | null>;
+		}
+		if (kind === "list" && typeof target.maxItems === "number") out.maxItems = target.maxItems;
 		if (kind === "text" && typeof target.maxLength === "number") out.maxLength = target.maxLength;
 		if (depth < 6 && kind === "object") out.fields = fieldTree(inner, depth + 1);
 		if (depth < 6 && kind === "list" && isObject(target.items) && kindOf(target.items as JsonSchema) === "object") {
@@ -225,6 +233,45 @@ function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
 export function propsFieldTree(item: string): PropsFieldNode[] | null {
 	const schema = props.items[item]?.schema;
 	return schema ? fieldTree(schema, 0) : null;
+}
+
+/** The schema node of a prop pointer (`/content/features`), list indices stepping into the row schema. */
+function schemaAt(item: string, pointer: string): JsonSchema | null {
+	const schema = props.items[item]?.schema;
+	if (!schema) return null;
+	let node: JsonSchema = schema;
+	for (const part of pointer.split("/").slice(1)) {
+		const value = valueOf(node);
+		if (value.type === "array" && /^\d+$/.test(part) && isObject(value.items)) {
+			node = value.items as JsonSchema;
+			continue;
+		}
+		const properties = isObject(value.properties) ? (value.properties as Record<string, JsonSchema>) : null;
+		if (!properties?.[part]) return null;
+		node = properties[part]!;
+	}
+	return node;
+}
+
+/**
+ * A new row for the list prop at `pointer` (`/content/features`): every required field from the schema (defaults,
+ * first enum value, readable placeholders "Title" / "Text", the placeholder icon), a fresh `id` when the row has one.
+ * Null when the pointer is not a list of records.
+ */
+export function newPropsListRow(item: string, pointer: string, taken: readonly unknown[] = []): Record<string, unknown> | null {
+	const node = schemaAt(item, pointer);
+	if (!node) return null;
+	const value = valueOf(node);
+	if (value.type !== "array" || !isObject(value.items)) return null;
+	const row = fill(value.items as JsonSchema, {}, 1);
+	if (!isObject(row)) return null;
+	if (typeof row.id === "string") {
+		const ids = new Set(taken.map((entry) => (isObject(entry) ? entry.id : undefined)));
+		let n = taken.length + 1;
+		while (ids.has(`item-${n}`)) n += 1;
+		row.id = `item-${n}`;
+	}
+	return row;
 }
 
 /** "addToCart" -> "Add to cart": a readable placeholder for a required label the content does not fill. */

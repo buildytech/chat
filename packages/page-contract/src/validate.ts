@@ -4,7 +4,10 @@ import {
 	PAGE_COPY_KEYS,
 	PAGE_LAYOUT_VERSION,
 	PAGE_LIMITS,
+	PAGE_PROPS_LIMITS,
+	PAGE_PROPS_POINTER_PATTERN,
 	PAGE_STATUSES,
+	type PagePropValue,
 	type Page,
 	type PageBlock,
 	type PageBlockCopy,
@@ -39,7 +42,8 @@ const PAGE_KEYS = new Set([
 	"updatedAt"
 ]);
 const LAYOUT_KEYS = new Set(["version", "blocks"]);
-const BLOCK_KEYS = new Set(["id", "kind", "title", "summary", "catalogBlock", "variant", "copy", "children"]);
+const BLOCK_KEYS = new Set(["id", "kind", "title", "summary", "catalogBlock", "variant", "copy", "props", "children"]);
+const PROP_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9_]{0,47}$/;
 const SEO_KEYS = new Set(["title", "description"]);
 const COPY_KEY_SET = new Set<string>(PAGE_COPY_KEYS);
 const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
@@ -166,6 +170,42 @@ function parseCopy(value: unknown, path: string): PageBlockCopy {
 	return copy;
 }
 
+function parsePropValue(value: unknown, path: string, depth: number): PagePropValue {
+	if (depth > 8) fail("too_deep", path, "props value nested deeper than 8");
+	if (value === null || typeof value === "boolean") return value;
+	if (typeof value === "number") {
+		if (!Number.isFinite(value)) fail("invalid_type", path, "expected a finite number");
+		return value;
+	}
+	if (typeof value === "string") return parseBoundedText(value, path, PAGE_LIMITS.maxCopyLength);
+	if (Array.isArray(value)) {
+		if (value.length > PAGE_PROPS_LIMITS.maxListItems) fail("too_many_items", path, `more than ${PAGE_PROPS_LIMITS.maxListItems} items`);
+		return value.map((item, index) => parsePropValue(item, `${path}[${index}]`, depth + 1));
+	}
+	const obj = asObject(value, path);
+	const keys = Object.keys(obj);
+	if (keys.length > PAGE_PROPS_LIMITS.maxObjectKeys) fail("too_many_keys", path, `more than ${PAGE_PROPS_LIMITS.maxObjectKeys} keys`);
+	const out: Record<string, PagePropValue> = {};
+	for (const key of keys) {
+		if (!PROP_KEY_PATTERN.test(key)) fail("invalid_prop_key", `${path}.${key}`, "not a prop name");
+		out[key] = parsePropValue(obj[key], `${path}.${key}`, depth + 1);
+	}
+	return out;
+}
+
+/** page-spec 1.3.0 block props: pointer -> plain JSON (the props schema of the registry item is a host check). */
+function parseProps(value: unknown, path: string): Record<string, PagePropValue> {
+	const obj = asObject(value, path);
+	const keys = Object.keys(obj);
+	if (keys.length > PAGE_PROPS_LIMITS.maxEntries) fail("too_many_keys", path, `more than ${PAGE_PROPS_LIMITS.maxEntries} overrides`);
+	const out: Record<string, PagePropValue> = {};
+	for (const key of keys) {
+		if (key.length > PAGE_PROPS_LIMITS.maxPointerLength || !PAGE_PROPS_POINTER_PATTERN.test(key)) fail("invalid_props_pointer", `${path}.${key}`, "not a props JSON Pointer");
+		out[key] = parsePropValue(obj[key], `${path}["${key}"]`, 1);
+	}
+	return out;
+}
+
 function parseBlock(
 	value: unknown,
 	path: string,
@@ -218,6 +258,10 @@ function parseBlock(
 	}
 	if ("copy" in obj) {
 		block.copy = parseCopy(obj.copy, `${path}.copy`);
+	}
+	if ("props" in obj) {
+		if (depth !== 1) fail("unexpected_key", path, 'unexpected key "props" (top-level blocks only)');
+		block.props = parseProps(obj.props, `${path}.props`);
 	}
 	if ("children" in obj) {
 		if (!Array.isArray(obj.children)) fail("invalid_type", `${path}.children`, "expected array");

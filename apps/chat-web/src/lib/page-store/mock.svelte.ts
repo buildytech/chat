@@ -1,5 +1,5 @@
 import { parsePageSpec, type Page, type PageBlock } from "@buildytech/page-contract";
-import type { SessionRevisionCause } from "@buildytech/page-contract/session";
+import type { SessionRevisionCause, SessionRevisionOp } from "@buildytech/page-contract/session";
 import { mockLandingPage } from "./fixture";
 import { findBlock, firstBlockId, hasBlock } from "./tree";
 import { nextRevision, type VisibleChange } from "./revision";
@@ -33,16 +33,30 @@ export type RevisionEvent = {
 	cause: SessionRevisionCause;
 	pageId: string;
 	blockId?: string;
+	/** session 1.6.0: what the change did and where (JSON Pointer in the block's render props); never a value. */
+	op?: SessionRevisionOp;
+	path?: string;
 };
+
+/** What an inspector change did, for the history entry of its revision (session 1.6.0). */
+export type RevisionMeta = { op?: SessionRevisionOp; path?: string };
 let revisionListener: ((event: RevisionEvent) => void) | null = null;
 
 export function onPageRevision(listener: ((event: RevisionEvent) => void) | null): void {
 	revisionListener = listener;
 }
 
-function announce(cause: SessionRevisionCause, blockId?: string | null): void {
+function announce(cause: SessionRevisionCause, blockId?: string | null, meta?: RevisionMeta): void {
 	if (!boundSessionId || !currentPage || pageRevision == null) return;
-	revisionListener?.({ sessionId: boundSessionId, revision: pageRevision, cause, pageId: currentPage.id, ...(blockId ? { blockId } : {}) });
+	revisionListener?.({
+		sessionId: boundSessionId,
+		revision: pageRevision,
+		cause,
+		pageId: currentPage.id,
+		...(blockId ? { blockId } : {}),
+		...(meta?.op ? { op: meta.op } : {}),
+		...(meta?.path ? { path: meta.path } : {})
+	});
 }
 
 /** Saved pages are page-spec/v1 documents: the published schema, then the parsePage program checks. */
@@ -240,7 +254,7 @@ export type { VisibleChange };
  * change (coalesced typing is one change, matching one undo step); a pending proposal stays pending and keeps no
  * revision. Block objects are kept as given, so unchanged blocks do not re-render.
  */
-export function replaceVisiblePage(page: Page, selectId: string | null = null, change: VisibleChange = "edit"): boolean {
+export function replaceVisiblePage(page: Page, selectId: string | null = null, change: VisibleChange = "edit", meta?: RevisionMeta): boolean {
 	if (!candidatePage && !currentPage) return false;
 	// The visible page is the pending proposal when there is one (no revision), else the applied page.
 	const step = nextRevision(pageRevision, change, !candidatePage);
@@ -254,7 +268,7 @@ export function replaceVisiblePage(page: Page, selectId: string | null = null, c
 	if (selectId && hasBlock(page.layout.blocks, selectId)) selectedBlockId = selectId;
 	else syncSelection(page);
 	persistBound();
-	if (step.cause) announce(step.cause, selectId);
+	if (step.cause) announce(step.cause, selectId, step.cause === "edit" ? meta : undefined);
 	return true;
 }
 
