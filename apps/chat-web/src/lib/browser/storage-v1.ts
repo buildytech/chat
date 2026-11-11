@@ -20,7 +20,7 @@ export const STORAGE_KEYS = {
 	prefs: "buildy:v1:prefs",
 	theme: "buildy:v1:theme",
 	previewHideServiceLabels: "buildy:v1:preview.hideServiceLabels",
-	/** Left panel tab and Blocks feed view (ADR 0024): `{ tab, columns }`. */
+	/** Left panel tab, Blocks feed view and inspector slide-over open (ADR 0024): `{ tab, columns, inspector }`. */
 	feed: "buildy:v1:feed",
 	migration: "buildy:v1:migration",
 	quarantine: "buildy:v1:quarantine"

@@ -15,6 +15,7 @@
 	import { t } from "$lib/i18n/dictionary";
 	import { tick } from "svelte";
 	import { selectBlock, type PageBlock } from "$lib/page-store";
+	import { inspectorPanel } from "$lib/inspector/panel.svelte";
 	import { canvas } from "$lib/inspector/canvas.svelte";
 	import { fieldAtClick, focusInspectorControl } from "$lib/inspector/field-select";
 
@@ -32,6 +33,8 @@
 
 	async function pick(event: MouseEvent) {
 		selectBlock(block.id);
+		// The inspector slide-over opens on this section (ADR 0024 step D): no extra click to edit.
+		inspectorPanel.show();
 		const wrapper = event.currentTarget as Element;
 		const target = event.target as Element | null;
 		const pointer = target ? fieldAtClick(block, wrapper, target) : null;
@@ -41,7 +44,10 @@
 		}
 		canvas.selectField(block.id, pointer, "preview");
 		await tick();
-		focusInspectorControl(document, block.id, pointer);
+		// A panel that just opened renders its fields after the props gate chunk: try for a few frames.
+		for (let i = 0; i < 20 && !focusInspectorControl(document, block.id, pointer); i += 1) {
+			await new Promise((resolve) => requestAnimationFrame(resolve));
+		}
 	}
 </script>
 

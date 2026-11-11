@@ -379,6 +379,18 @@ export function addSlotCheck(blocks: readonly Pick<PageBlock, "kind">[], kind: P
 	return { ok: true };
 }
 
+/**
+ * The same rules for a section that moves (Sections buttons, Alt+Arrow, drag, inspector up / down): from `from` to
+ * final index `to`, checked as a slot among the other sections. A header stays in the leading run, a footer in the
+ * trailing one, content between them.
+ */
+export function moveSlotCheck(blocks: readonly Pick<PageBlock, "kind">[], from: number, to: number): AddSlotCheck {
+	const moving = blocks[from];
+	if (!moving || !Number.isInteger(to) || to < 0 || to >= blocks.length) return { ok: false, code: "index_out_of_range", message: `A section moves to 1..${blocks.length}.` };
+	const others = blocks.filter((_, index) => index !== from);
+	return addSlotCheck(others, moving.kind, to);
+}
+
 /** Ids of `node` and its rows made unique against `taken` (`block-hero` -> `block-hero-2`), within the id length. */
 function withFreshIds(node: PageBlock, taken: Set<string>): PageBlock {
 	const fresh = (id: string) => {
@@ -448,6 +460,10 @@ export function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): Inspector
 		case "move":
 			if (op.to < 0 || op.to >= blocks.length) return fail("index_out_of_range", `A section moves to 1..${blocks.length}.`, "");
 			if (op.to === index) return { ok: true, page: ctx.page, blockId: block.id };
+			{
+				const slot = moveSlotCheck(blocks, index, op.to);
+				if (!slot.ok) return fail(slot.code, slot.message, "");
+			}
 			return viaPatch(ctx, { op: "move", blockId: block.id, to: op.to }, block.id);
 		case "remove": {
 			const neighbour = blocks[index + 1] ?? blocks[index - 1];

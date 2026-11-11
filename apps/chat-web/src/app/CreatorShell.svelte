@@ -19,6 +19,7 @@
 	import CreatorTopBar from "./CreatorTopBar.svelte";
 	import PaneSplitter from "./PaneSplitter.svelte";
 	import Workspace from "./Workspace.svelte";
+	import { inspectorPanel } from "$lib/inspector/panel.svelte";
 
 	let {
 		sidebarOpen,
@@ -65,7 +66,6 @@
 	} = $props();
 
 	let mobileSurface = $state<"chat" | "workspace">("chat");
-	let inspectorSheet = $state(false);
 	const sidebarCollapsed = $derived(creatorLayout.collapsed("nav"));
 	const chatHidden = $derived(creatorLayout.collapsed("chat"));
 	const columns = $derived(creatorLayout.columns);
@@ -95,11 +95,8 @@
 
 	function handleToggleInspector() {
 		if (getChatMode() !== "build") return;
-		if (creatorLayout.inspectorColumn) creatorLayout.toggle("inspector");
-		else {
-			mobileSurface = "workspace";
-			inspectorSheet = !inspectorSheet;
-		}
+		mobileSurface = "workspace";
+		inspectorPanel.toggle();
 	}
 
 	// Ctrl/Cmd+B chat column, Ctrl/Cmd+I inspector, Ctrl/Cmd+\ preview-only focus (not inside the code editor).
@@ -181,7 +178,6 @@
 				{/if}
 				<Workspace
 					visible={mobileSurface === "workspace"}
-					bind:sheetOpen={inspectorSheet}
 					ontogglechat={handleToggleChat}
 				/>
 			</Group>

@@ -15,6 +15,7 @@
 	import Trash2 from "@lucide/svelte/icons/trash-2";
 	import Undo2 from "@lucide/svelte/icons/undo-2";
 	import Block from "$registry/compose/Block.svelte";
+	import Badge from "$registry/compose/Badge.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -31,7 +32,8 @@
 	import { feedDrag } from "$lib/feed/drag.svelte";
 	import { dropAt, dropRefusal, refuseDrop } from "$lib/feed/drop.svelte";
 	import { blocksOf, getCurrentPage, getSelectedBlockId, selectBlock, type PageBlock } from "$lib/page-store";
-	import { blockThumbUrl, catalogVariantsFor } from "@buildytech/builder-core";
+	import { blockThumbUrl, catalogVariantsFor, moveSlotCheck } from "@buildytech/builder-core";
+	import { inspectorPanel } from "$lib/inspector/panel.svelte";
 	import StockThumb from "./StockThumb.svelte";
 
 	const page = $derived(getCurrentPage());
@@ -39,7 +41,9 @@
 	const selected = $derived(topLevelBlockId(sections, getSelectedBlockId()));
 	let announcement = $state("");
 	let issue = $state<string | null>(null);
-	let drag = $state<{ id: string; from: number; to: number; pointer: number } | null>(null);
+	let drag = $state<{ id: string; from: number; to: number; pointer: number; refusal: string | null } | null>(null);
+	/** Codes of the header / footer position rules (moves and drops say them the same way). */
+	const SLOT_CODES = new Set(["index_out_of_range", "above_header", "below_footer", "header_top", "footer_end"]);
 	const listEl = () => document.querySelector<HTMLElement>('[data-slot="sections-list"]');
 
 	const fill = (key: string, block: PageBlock, extra: Record<string, string | number> = {}) => {
@@ -54,15 +58,24 @@
 		queueMicrotask(() => document.getElementById(itemId(id))?.focus());
 	}
 
+	// A row click selects the section, reveals it in the preview and opens the inspector on it (focus stays here).
 	function pick(block: PageBlock) {
 		selectBlock(block.id);
 		canvas.requestReveal(block.id);
+		inspectorPanel.show(document.getElementById(itemId(block.id)));
+	}
+
+	function moveRefusal(from: number, to: number): string | null {
+		if (from === to) return null;
+		const check = moveSlotCheck(sections, from, to);
+		return check.ok ? null : t(`dnd.why.${check.code}`);
 	}
 
 	function run(ok: boolean, text: string, block: PageBlock) {
 		const failed = ok ? null : inspector.opIssueFor(block.id);
-		issue = failed ? failed.message : null;
-		announcement = ok ? text : t("sections.failed").replace("{message}", failed?.message ?? "");
+		const message = failed ? (SLOT_CODES.has(failed.code) ? t(`dnd.why.${failed.code}`) : failed.message) : "";
+		issue = failed ? message : null;
+		announcement = ok ? text : t("sections.failed").replace("{message}", message);
 	}
 
 	function move(block: PageBlock, to: number) {
@@ -116,12 +129,13 @@
 	function onPointerDown(event: PointerEvent, block: PageBlock, index: number) {
 		if (event.button !== 0) return;
 		(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-		drag = { id: block.id, from: index, to: index, pointer: event.pointerId };
+		drag = { id: block.id, from: index, to: index, pointer: event.pointerId, refusal: null };
 	}
 
 	function onPointerMove(event: PointerEvent) {
 		if (!drag || event.pointerId !== drag.pointer) return;
-		drag = { ...drag, to: dropIndex(boxes(), event.clientY, drag.from) };
+		const to = dropIndex(boxes(), event.clientY, drag.from);
+		drag = { ...drag, to, refusal: moveRefusal(drag.from, to) };
 	}
 
 	function onPointerUp(event: PointerEvent, block: PageBlock) {
@@ -195,7 +209,9 @@
 		</Group>
 	</Group>
 	<Text tag="p" class="sr-only" role="status" aria-live="assertive" data-slot="sections-live">{announcement}</Text>
-	{#if feedTarget?.refusal}
+	{#if drag?.refusal}
+		<Text tag="p" class="shrink-0 px-2 pt-2 text-xs text-destructive" data-slot="sections-move-refusal">{drag.refusal}</Text>
+	{:else if feedTarget?.refusal}
 		<Text tag="p" class="shrink-0 px-2 pt-2 text-xs text-destructive" data-slot="sections-drop-refusal">{feedTarget.refusal}</Text>
 	{:else if issue}
 		<Text tag="p" class="shrink-0 px-2 pt-2 text-xs text-destructive" data-slot="sections-issue">{issue}</Text>
@@ -217,10 +233,11 @@
 					<Box
 						tag="li"
 						class={cn(
-							"rounded border bg-card p-1",
+							"relative rounded border bg-card p-1",
 							isSelected ? "border-primary" : "border-border",
 							drag?.id === block.id && "opacity-60",
-							drag && drag.id !== block.id && drag.to === index && (drag.to < drag.from ? "border-t-2 border-t-primary" : "border-b-2 border-b-primary"),
+							drag && drag.id !== block.id && drag.to === index && (drag.to < drag.from ? "border-t-2" : "border-b-2"),
+							drag && drag.id !== block.id && drag.to === index && (drag.refusal ? (drag.to < drag.from ? "border-t-destructive" : "border-b-destructive") : drag.to < drag.from ? "border-t-primary" : "border-b-primary"),
 							feedTarget && feedTarget.slot === index && (feedTarget.refusal ? "border-t-2 border-t-destructive" : "border-t-2 border-t-primary"),
 							feedTarget && index === sections.length - 1 && feedTarget.slot === sections.length && (feedTarget.refusal ? "border-b-2 border-b-destructive" : "border-b-2 border-b-primary")
 						)}
@@ -228,6 +245,16 @@
 						data-section-id={block.id}
 						data-index={index}
 					>
+						{#if feedTarget && (feedTarget.slot === index || (index === sections.length - 1 && feedTarget.slot === sections.length))}
+							<Badge
+								size="sm"
+								variant={feedTarget.refusal ? "destructive" : "default"}
+								class={cn("pointer-events-none absolute left-8 z-10", feedTarget.slot === index ? "-top-3" : "-bottom-3")}
+								data-slot="sections-drop-label"
+							>
+								{feedTarget.refusal ?? t("dnd.insertAt").replace("{position}", String(feedTarget.slot + 1))}
+							</Badge>
+						{/if}
 						<Group class="min-w-0 items-center gap-1">
 							<Button
 								size="sm"

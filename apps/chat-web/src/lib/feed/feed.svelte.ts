@@ -33,6 +33,15 @@ function createFeed() {
 			prefs = { ...prefs, columns: next };
 			persist();
 		},
+		/** The inspector slide-over over the preview (ADR 0024 step D); remembered across reloads. */
+		get inspector(): boolean {
+			return prefs.inspector;
+		},
+		set inspector(next: boolean) {
+			if (prefs.inspector === next) return;
+			prefs = { ...prefs, inspector: next };
+			persist();
+		},
 		get q(): string {
 			return q;
 		},

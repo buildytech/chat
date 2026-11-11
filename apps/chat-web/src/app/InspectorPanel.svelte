@@ -49,6 +49,9 @@
 	const issues = $derived(model ? inspector.issuesFor(model.blockId) : {});
 	const index = $derived(model ? blocks.findIndex((node) => node.id === model.blockId) : -1);
 	const opIssue = $derived(model ? inspector.opIssueFor(model.blockId) : null);
+	// The header / footer position rules read the same here as in Sections and on drops (ADR 0024 step D).
+	const SLOT_CODES = new Set(["index_out_of_range", "above_header", "below_footer", "header_top", "footer_end"]);
+	const opMessage = $derived(opIssue ? (SLOT_CODES.has(opIssue.code) ? t(`dnd.why.${opIssue.code}`) : opIssue.message) : "");
 	const handlers: FieldHandlers = {
 		onedit: (field, value, typing) => {
 			if (model) inspector.edit(model.blockId, field, value, typing);
@@ -127,7 +130,7 @@
 				</Button>
 			</Group>
 			{#if opIssue}
-				<Alert variant="destructive" role="alert" data-slot="inspector-op-issue">{opIssue.message}</Alert>
+				<Alert variant="destructive" role="alert" data-slot="inspector-op-issue">{opMessage}</Alert>
 			{/if}
 			{#if !model.ok}
 				<Alert variant="warning" data-slot="inspector-stub">{t(`inspector.stub.${model.reason}`)}</Alert>

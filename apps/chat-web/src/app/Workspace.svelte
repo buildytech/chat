@@ -1,42 +1,34 @@
 <script lang="ts">
 	import Block from "$registry/compose/Block.svelte";
-	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Group from "$registry/compose/Group.svelte";
-	import Sheet from "$registry/compose/Sheet.svelte";
-	import Button from "$registry/kit/ui/button/Button.svelte";
-	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { cn } from "$registry/utils/cn";
 	import { getChatMode, getChatSkin } from "$lib/chat-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
 	import { downloadPageZip, getCurrentPage } from "$lib/page-store";
 	import CodePane from "./CodePane.svelte";
-	import InspectorColumn from "./InspectorColumn.svelte";
-	import PaneSplitter from "./PaneSplitter.svelte";
+	import InspectorSlideOver from "./InspectorSlideOver.svelte";
+	import { inspectorPanel } from "$lib/inspector/panel.svelte";
 	import PreviewPane from "./PreviewPane.svelte";
 	import WorkspaceHead from "./WorkspaceHead.svelte";
 
 	let {
 		visible = true,
-		sheetOpen = $bindable(false),
 		ontogglechat
 	}: {
 		visible?: boolean;
-		/** Below md the inspector is a sheet over the canvas (Ctrl+I and the head button open it). */
-		sheetOpen?: boolean;
 		ontogglechat?: () => void;
 	} = $props();
 
-	// Build is the editor: canvas + inspector column (Layers over Properties). Ask shows the canvas alone.
+	// Build is the editor: the preview, with the inspector as a slide-over on its right edge (ADR 0024 step D). Ask
+	// shows the preview alone.
 	const build = $derived(getChatMode() === "build");
-	const column = $derived(creatorLayout.inspectorColumn);
-	const inspectorCollapsed = $derived(creatorLayout.collapsed("inspector"));
 
-	// The sheet is a non-modal native dialog: Escape closes it here.
+	// The slide-over is non-modal: Escape closes it unless something else (a menu, the composer) took the key.
 	function onWindowKey(event: KeyboardEvent) {
-		if (sheetOpen && event.key === "Escape") {
+		if (inspectorPanel.open && event.key === "Escape" && !event.defaultPrevented) {
 			event.preventDefault();
-			sheetOpen = false;
+			inspectorPanel.close();
 		}
 	}
 
@@ -47,8 +39,7 @@
 	}
 
 	function toggleInspector() {
-		if (column) creatorLayout.toggle("inspector");
-		else sheetOpen = !sheetOpen;
+		inspectorPanel.toggle();
 	}
 </script>
 
@@ -64,32 +55,19 @@
 	<WorkspaceHead
 		bind:view={creatorLayout.view}
 		{build}
-		inspectorOpen={column ? !inspectorCollapsed : sheetOpen}
+		inspectorOpen={inspectorPanel.open}
 		{ontogglechat}
 		ontoggleinspector={toggleInspector}
 		{onDownloadZip}
 	/>
 	{#if creatorLayout.view === "preview"}
-		<Group align="stretch" class="min-h-0 flex-1 gap-0" data-slot="build-editor" data-mode={build ? "build" : "ask"}>
+		<Group align="stretch" class="relative min-h-0 flex-1 gap-0" data-slot="build-editor" data-mode={build ? "build" : "ask"}>
 			<PreviewPane />
-			{#if build && column}
-				{#if !inspectorCollapsed}
-					<PaneSplitter pane="inspector" controls="creator-inspector" edge="end" class="border-l border-border" />
-				{/if}
-				<InspectorColumn />
+			{#if build && inspectorPanel.open}
+				<!-- Over the preview only (absolute in the editor): the left panel stays usable while it is open. -->
+				<InspectorSlideOver />
 			{/if}
 		</Group>
-		{#if build && !column}
-			<!-- A slide-over on the preview only (absolute in this section): the left panel stays usable while it is open. -->
-			<Sheet open={sheetOpen} side="right" class="absolute inset-0 z-20 h-full w-full bg-transparent" aria-label={t("inspector.column")} data-slot="inspector-sheet">
-				<Button class="absolute inset-0 h-full w-full bg-foreground/40" aria-label={t("inspector.close")} onclick={() => (sheetOpen = false)}>
-					<Text tag="span" class="sr-only">{t("inspector.close")}</Text>
-				</Button>
-				<Box class="relative h-full w-full max-w-sm bg-card shadow-lg">
-					<InspectorColumn sheet onclose={() => (sheetOpen = false)} />
-				</Box>
-			</Sheet>
-		{/if}
 	{:else}
 		<CodePane />
 	{/if}

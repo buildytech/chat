@@ -113,14 +113,14 @@ test("Blocks feed add: after the selected section or at the end, every gate, no 
 
 test("feed prefs: tab and 1 / 2 columns persist; the page size does not depend on the view", () => {
 	assert.equal(FEED_PAGE_SIZE, 8);
-	assert.deepEqual(defaultFeedPrefs(), { tab: "chat", columns: 1 });
-	assert.deepEqual(parseFeedPrefs({ tab: "blocks", columns: 2 }), { tab: "blocks", columns: 2 });
+	assert.deepEqual(defaultFeedPrefs(), { tab: "chat", columns: 1, inspector: false });
+	assert.deepEqual(parseFeedPrefs({ tab: "blocks", columns: 2 }), { tab: "blocks", columns: 2, inspector: false });
 	assert.deepEqual(parseFeedPrefs({ tab: "x", columns: 3 }), defaultFeedPrefs());
 	const mem = new Map<string, string>();
 	const store = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v), removeItem: (k: string) => void mem.delete(k) };
-	assert.equal(saveFeedPrefs(store, { tab: "sections", columns: 2 }), true);
-	assert.deepEqual(JSON.parse(mem.get(STORAGE_KEYS.feed)!), { tab: "sections", columns: 2 });
-	assert.deepEqual(loadFeedPrefs(store), { tab: "sections", columns: 2 });
+	assert.equal(saveFeedPrefs(store, { tab: "sections", columns: 2, inspector: true }), true);
+	assert.deepEqual(JSON.parse(mem.get(STORAGE_KEYS.feed)!), { tab: "sections", columns: 2, inspector: true });
+	assert.deepEqual(loadFeedPrefs(store), { tab: "sections", columns: 2, inspector: true });
 	mem.set(STORAGE_KEYS.feed, "{broken");
 	assert.deepEqual(loadFeedPrefs(store), defaultFeedPrefs());
 	const feedSource = web("lib/feed/feed.svelte.ts");
@@ -135,7 +135,7 @@ test("Build is two areas: left panel tabs (Blocks / Sections / Chat), inspector 
 	assert.match(column, /<SectionsList \/>/);
 	assert.match(column, /<ChatThread/);
 	assert.match(web("lib/creator-layout.svelte.ts"), /const inspectorColumn = \(\) => false;/);
-	assert.match(web("app/Workspace.svelte"), /<Sheet open=\{sheetOpen\} side="right" class="absolute inset-0/);
+	assert.match(web("app/Workspace.svelte"), /<Group align="stretch" class="relative min-h-0 flex-1 gap-0" data-slot="build-editor"/);
 	const card = web("app/FeedCard.svelte");
 	assert.match(card, /<StockThumb/);
 	assert.match(card, /data-action="feed-add"/);

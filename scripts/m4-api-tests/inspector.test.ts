@@ -48,9 +48,8 @@ test("canvas: blocks carry data-block-id; chrome lives in the chat document, not
 	assert.match(overlay, /addEventListener\("scroll"/);
 	assert.doesNotMatch(overlay, /\sstyle=/, "geometry is set by an attachment, not a style attribute");
 	assert.doesNotMatch(web("app/StandalonePreview.svelte"), /CanvasOverlay|BlockTree/);
-	assert.match(web("app/Workspace.svelte"), /\{#if build && column\}[\s\S]*<InspectorColumn/);
-	assert.match(web("app/InspectorColumn.svelte"), /<BlockTree \/>/);
-	assert.match(web("app/BlockTree.svelte"), /canvas\.hover\(block\.id\)/);
+	assert.match(web("app/Workspace.svelte"), /\{#if build && inspectorPanel\.open\}[\s\S]*<InspectorSlideOver/);
+	assert.match(web("app/SectionsList.svelte"), /canvas\.hover\(block\.id\)/);
 });
 
 // ---- Step 2: schema-driven field model -------------------------------------------------------------------------
@@ -143,10 +142,8 @@ test("inspector panel: registry widgets only, mounted in Build", () => {
 	const fieldsView = web("app/InspectorFields.svelte");
 	for (const widget of ["Input", "Textarea", "Select", "Checkbox", "Fieldset"]) assert.match(fieldsView, new RegExp(`\\$registry/compose/${widget}\\.svelte`));
 	assert.doesNotMatch(fieldsView, /<(input|textarea|select|div|span|button)\b/);
-	// ADR 0017: one inspector column (Layers over Properties) in Build, a sheet below md.
-	assert.match(web("app/Workspace.svelte"), /\{#if build && column\}[\s\S]*<InspectorColumn \/>/);
-	assert.match(web("app/Workspace.svelte"), /\{#if build && !column\}[\s\S]*<InspectorColumn sheet/);
-	assert.match(web("app/InspectorColumn.svelte"), /<BlockTree \/>[\s\S]*<InspectorPanel \/>/);
+	// ADR 0024 step D: the inspector is a slide-over on the preview (Sections is the outline in the left panel).
+	assert.match(web("app/InspectorSlideOver.svelte"), /<InspectorPanel \/>/);
 	assert.match(web("app/InspectorPanel.svelte"), /inspectorModel\(block\)/);
 });
 

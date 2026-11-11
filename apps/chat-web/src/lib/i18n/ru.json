@@ -232,7 +232,7 @@
 		"preview.standaloneTitle": "Предпросмотр",
 		"preview.standaloneEmpty": "В этом чате ещё нет страницы. Создайте её в чате и откройте предпросмотр снова.",
 		"inspector.title": "Инспектор",
-		"inspector.empty": "Выберите секцию в превью или в дереве.",
+		"inspector.empty": "Выберите секцию в превью или во вкладке Sections.",
 		"inspector.stub.not_in_registry": "У этой секции нет блока в реестре, поэтому нет полей схемы. Здесь ничего не придумывается.",
 		"inspector.stub.no_schema": "У блока этой секции в реестре нет опубликованной схемы props. Здесь ничего не придумывается.",
 		"inspector.fromVariant": "Задано вариантом {variant}",
@@ -392,6 +392,7 @@
 		"dnd.why.below_footer": "Секции идут выше подвала.",
 		"dnd.why.header_top": "Шапка стоит в начале страницы.",
 		"dnd.why.footer_end": "Подвал стоит в конце страницы.",
-		"feed.dragHint": "Перетащите в превью или на Sections, или нажмите +"
+		"feed.dragHint": "Перетащите в превью или на Sections, или нажмите +",
+		"inspector.on": "Инспектор: {title}"
 	}
 }

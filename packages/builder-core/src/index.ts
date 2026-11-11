@@ -90,6 +90,7 @@ export {
 	canAddCatalogBlock,
 	type AddBlockCheck,
 	addSlotCheck,
+	moveSlotCheck,
 	type AddSlotCheck,
 	inspectorSetField,
 	shareUnchanged,

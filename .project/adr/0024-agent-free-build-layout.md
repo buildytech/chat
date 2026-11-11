@@ -108,3 +108,26 @@ Step A is this change.
   keyboard and assistive-technology path; drag is an extra, never the only way.
 - **No contract change.** `at` is a host inspector operation field; page-spec, page-patch, session and collection
   schemas are unchanged.
+
+## Addendum: step D (inspector slide-over, position rules for moves)
+
+- **The inspector is a slide-over, not a column or a sheet.** `InspectorSlideOver` sits on the right edge of the
+  preview (absolute in the Build editor, fixed 320px, `max-w-full`), so at 1024px about 330px of the preview stays
+  visible beside it; there is no backdrop and no dimming. It is a complementary landmark (`aside`, labelled by its
+  heading "Inspector: <section>"), non-modal: the left panel (Blocks, Sections, Chat) stays fully usable while it is
+  open. The old column (`InspectorColumn`) and its Layers tree (`BlockTree`) are removed: Sections is the outline.
+- **Opens where you pick, no extra click.** A click on a section in the preview selects it and opens the panel on
+  it; a click on a field also focuses that field's control (retried for a few frames while a newly opened panel
+  renders). A Sections row click opens it on that section and keeps focus on the row. Adds and drops do not open it.
+  Escape (unless something else handled the key) and the close button close it; focus goes back to where it was if
+  focus was in the panel. Ctrl+I and the head button toggle it. The open state is remembered in the Build panel prefs
+  (`buildy:v1:feed` gains `inspector`). Field editing, row duplicate / remove, validation and undo are unchanged
+  (`InspectorPanel`).
+- **Moves follow the same position rules as adds.** `moveSlotCheck` (builder-core) checks a section's final index
+  as a slot among the other sections with `addSlotCheck`, and the inspector `move` op refuses with its code: the
+  header stays in the leading run, the footer in the trailing one, content between them. The Sections buttons,
+  Alt+Arrow, the pointer drag (red indicator and the reason while dragging) and the inspector's up / down all run it,
+  and every refusal reads the same localized reason as a refused drop. The model's page-patch `move` (chat
+  proposals) is not changed by this step.
+- **Sections drops show where.** A feed card over the Sections list shows "Insert at position N" (or the reason, in
+  red) on the row border where it lands, like the preview drop line.

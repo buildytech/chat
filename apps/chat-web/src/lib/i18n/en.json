@@ -343,7 +343,7 @@
 		"preview.standaloneTitle": "Preview",
 		"preview.standaloneEmpty": "This chat has no page yet. Create one in the chat, then open the preview again.",
 		"inspector.title": "Inspector",
-		"inspector.empty": "Select a section in the preview or in the tree.",
+		"inspector.empty": "Select a section in the preview or in Sections.",
 		"inspector.stub.not_in_registry": "This section has no registry block, so it has no schema fields. Nothing is invented here.",
 		"inspector.stub.no_schema": "The registry block of this section has no published props schema. Nothing is invented here.",
 		"inspector.fromVariant": "Set by the variant {variant}",
@@ -503,6 +503,7 @@
 		"dnd.why.below_footer": "Sections go above the footer.",
 		"dnd.why.header_top": "A header goes at the top of the page.",
 		"dnd.why.footer_end": "A footer goes at the end of the page.",
-		"feed.dragHint": "Drag into the preview or onto Sections, or press +"
+		"feed.dragHint": "Drag into the preview or onto Sections, or press +",
+		"inspector.on": "Inspector: {title}"
 	}
 }
