@@ -12,7 +12,8 @@
 	import Link from "$registry/kit/ui/link/Link.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import type { CatalogFilters, CatalogRefs } from "@buildytech/builder-core";
+	import { blockAssetUrl, blockThumbUrl, screenThumbUrl, type CatalogFilters, type CatalogRefs } from "@buildytech/builder-core";
+	import StockThumb from "./StockThumb.svelte";
 
 	let { refs, demo = false }: { refs: CatalogRefs; demo?: boolean } = $props();
 
@@ -47,7 +48,9 @@
 			<Text tag="p" class="text-xs text-muted-foreground">{t("catalogRefs.demo")}</Text>
 		{/if}
 		{#if refs.screen}
-			<Stack align="stretch" class="gap-1">
+			<Group class="items-start gap-2">
+			<StockThumb src={screenThumbUrl(refs.screen.catalogId)} title={refs.screen.title} class="w-32" />
+			<Stack align="stretch" class="min-w-0 flex-1 gap-1">
 				<Group class="flex-wrap items-center gap-2">
 					<Text tag="span" class="text-xs text-muted-foreground">{t("catalogRefs.screen")}</Text>
 					<Link
@@ -73,13 +76,16 @@
 				</Group>
 				<Text tag="p" class="font-mono text-xs break-all text-muted-foreground">{filterLine(refs.screen.filters)}</Text>
 			</Stack>
+			</Group>
 		{/if}
 		<Box tag="ul" class="flex flex-col gap-2">
 			{#each refs.blocks as ref (ref.blockId)}
-				<Box tag="li" class="flex flex-col gap-1">
+				<Box tag="li" class="flex items-start gap-2">
+					<StockThumb src={blockThumbUrl(ref.catalogId, ref.variant)} title={ref.title} class="w-24" />
+					<Stack align="stretch" class="min-w-0 flex-1 gap-1">
 					<Group class="flex-wrap items-center gap-2">
 						<Link
-							href={ref.url}
+							href={blockAssetUrl(ref.catalogId, ref.variant) ?? ref.url}
 							target="_blank"
 							rel="noopener noreferrer"
 							class="inline-flex items-center gap-1 text-sm font-medium text-foreground underline underline-offset-4"
@@ -110,6 +116,7 @@
 							.replace("{label}", ref.catalogLabel)
 							.replace("{variants}", ref.variants.join(","))}
 					</Text>
+					</Stack>
 				</Box>
 			{/each}
 		</Box>

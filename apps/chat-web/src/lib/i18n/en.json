@@ -284,6 +284,8 @@
 		"catalogRefs.title": "Catalog blocks",
 		"catalogRefs.label": "Stock catalog blocks used by this proposal",
 		"catalogRefs.screen": "Stock screen",
+		"thumb.alt": "Preview of {title}",
+		"thumb.missing": "No preview",
 		"catalogRefs.open": "Open {title} in Stock",
 		"catalogRefs.copyId": "Copy catalog id {id}",
 		"catalogRefs.copied": "Copied {id}",

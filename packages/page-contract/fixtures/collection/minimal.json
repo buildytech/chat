@@ -3,6 +3,6 @@
   "id": "col-1",
   "title": "One screen",
   "createdAt": "2026-11-11T09:00:00Z",
-  "pins": { "stock": { "repo": "codegen-x/ui8kit", "assetsDigest": "sha256:78a567cf1d0f50fda913d409197455d368260a91974c7a601fd297e57f8397d7" } },
+  "pins": { "stock": { "repo": "codegen-x/ui8kit", "assetsDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c" } },
   "items": [{ "kind": "screen", "id": "screen.site/home" }]
 }

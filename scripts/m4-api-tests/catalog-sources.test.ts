@@ -12,6 +12,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { pageSpecIssues, type Page } from "../../packages/page-contract/src/index.ts";
 import {
+	blockAssetUrl,
+	blockThumbUrl,
 	catalogSnapshot,
 	catalogSourceFor,
 	catalogSources,
@@ -23,6 +25,9 @@ import {
 	proposeContentParameterSchema,
 	proposeLayout,
 	registryItemFor,
+	screenThumbUrl,
+	stockThumbUrl,
+	stockVariantOf,
 	variantProps,
 	type LayoutProposal
 } from "../../packages/builder-core/src/index.ts";
@@ -240,4 +245,22 @@ test("layout: lib holds only logic (no .svelte), no chat-owned 'compose' path, n
 			assert.ok(["$registry/", "$lib/", "./", "../app/", "../../app/"].some((prefix) => spec!.startsWith(prefix)), `${file} imports ${spec}`);
 		}
 	}
+});
+
+test("Stock thumbnails and asset pages: exact variant pages, versioned WebP thumbnails, null when Stock has none", () => {
+	assert.equal(blockAssetUrl("block.features", "grid2"), "https://app.codegen-x.com/#/asset/block.features/grid2");
+	assert.match(String(blockThumbUrl("block.features", "grid2")), /^https:\/\/app\.codegen-x\.com\/thumbs\/block\.features--grid2\.webp\?v=[0-9a-f]{8}$/);
+	// an unknown variant falls back to the default variant's page and picture, an unknown block has neither
+	assert.equal(blockAssetUrl("block.features", "nosuch"), blockAssetUrl("block.features", stockVariantOf("block.features")));
+	assert.equal(blockAssetUrl("block.nosuch", "x"), null);
+	assert.equal(blockThumbUrl("block.nosuch", "x"), null);
+	assert.match(String(screenThumbUrl("screen.site/home")), /^https:\/\/app\.codegen-x\.com\/thumbs\/screen\.site--home\.webp\?v=[0-9a-f]{8}$/);
+	assert.equal(screenThumbUrl("screen.nosuch/home"), null);
+	// only snapshot-shaped paths become URLs
+	assert.equal(stockThumbUrl("https://evil.test/x.webp"), null);
+	assert.equal(stockThumbUrl("thumbs/../x.webp"), null);
+	// coverage: every screen and nearly every block variant has a picture
+	const variants = catalogSnapshot.blockIndex.flatMap((b) => b.variants.map((v) => blockThumbUrl(b.spec, v) !== null && b.thumbs?.[v] !== undefined));
+	assert.ok(variants.filter(Boolean).length >= 520, `${variants.filter(Boolean).length} of ${variants.length} variants`);
+	assert.equal(catalogSnapshot.screens.filter((s) => s.thumb).length, catalogSnapshot.screens.length);
 });

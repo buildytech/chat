@@ -22,6 +22,8 @@ export type CatalogScreen = {
 	group: string;
 	order: number;
 	preview: unknown;
+	/** Stock thumbnail relative to the Stock app (thumbs/<id>.webp?v=<sha8>), when Stock has one (stockThumbUrl). */
+	thumb?: string;
 	labels: {
 		type: string[];
 		site: string[];
@@ -44,6 +46,8 @@ export type CatalogBlockIndexEntry = {
 	spec: string;
 	catalogIds: string[];
 	variants: string[];
+	/** Stock thumbnails by variant, relative to the Stock app (stockThumbUrl); a variant without a picture is absent. */
+	thumbs?: Record<string, string>;
 	title: string;
 	available: boolean;
 	rendererKind: string | null;

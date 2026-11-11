@@ -95,6 +95,7 @@ function parseScreen(value: unknown, path: string): CatalogScreen {
 		labels: parseLabels(rec.labels, `${path}.labels`)
 	};
 	if (rec.added !== undefined) screen.added = asString(rec.added, `${path}.added`);
+	if (rec.thumb !== undefined) screen.thumb = asString(rec.thumb, `${path}.thumb`);
 	if (rec.missingFacets !== undefined) {
 		screen.missingFacets = asStringArray(rec.missingFacets, `${path}.missingFacets`);
 	}
@@ -128,6 +129,10 @@ function parseBlockIndexEntry(value: unknown, path: string): CatalogBlockIndexEn
 		rendererCompatible: asBoolean(rec.rendererCompatible, `${path}.rendererCompatible`)
 	};
 	if (rec.jobs !== undefined) entry.jobs = asStringArray(rec.jobs, `${path}.jobs`);
+	if (rec.thumbs !== undefined) {
+		const thumbs = asRecord(rec.thumbs, `${path}.thumbs`);
+		entry.thumbs = Object.fromEntries(Object.entries(thumbs).map(([variant, thumb]) => [variant, asString(thumb, `${path}.thumbs.${variant}`)]));
+	}
 	return entry;
 }
 

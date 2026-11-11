@@ -121,7 +121,9 @@ test("executeTool rejects a tool the mode does not offer; get_block reads all Fe
 		assert.equal(result.variants.length, 8);
 		assert.deepEqual(Object.keys(result.variantProps).sort(), [...result.variants].sort());
 		assert.equal(result.registryItem, "feature-grid");
-		assert.match(result.stockUrl, /^https:\/\/app\.codegen-x\.com\/#\/search\?type=block&spec=block\.features$/);
+		// the exact Stock asset page of the default variant, and its thumbnail
+		assert.match(result.stockUrl, /^https:\/\/app\.codegen-x\.com\/#\/asset\/block\.features\/[\w-]+$/);
+		assert.match(String((result as { thumb?: string }).thumb), /^https:\/\/app\.codegen-x\.com\/thumbs\/block\.features--[\w-]+\.webp\?v=[0-9a-f]{8}$/);
 		assert.equal(result.icons, undefined, "Ask get_block stays small: no icon list");
 	}
 	const unknown = executeTool({ name: "get_block", arguments: { id: "block.nope" } }, { mode: "ask" });

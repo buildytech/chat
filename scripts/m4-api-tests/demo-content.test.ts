@@ -8,6 +8,7 @@ import {
 	proposeLayout,
 	resolvePageLocale,
 	stockSearchUrl,
+	stockVariantOf,
 	validateCatalogProvenance,
 	type LayoutProposal
 } from "../../packages/builder-core/src/index.ts";
@@ -224,7 +225,8 @@ test("catalog refs are generated from the pinned catalog with Stock links", () =
 	assert.equal(refs.blocks.find((ref) => ref.kind === "metrics")?.sourceScreenId, DASH);
 	const metrics = refs.blocks.find((ref) => ref.kind === "metrics")!;
 	assert.equal(metrics.title, "Metric tiles");
-	assert.equal(metrics.url, "https://app.codegen-x.com/#/search?type=block&spec=block.metrics");
+	// the exact Stock asset page of the variant the block renders (its default when none is set)
+	assert.equal(metrics.url, `https://app.codegen-x.com/#/asset/block.metrics/${metrics.variant ?? stockVariantOf("block.metrics")}`);
 	assert.equal(metrics.rows, 2);
 	assert.deepEqual(metrics.filters.section, ["marketing", "dashboard"]);
 	// Never model text.

@@ -131,7 +131,7 @@ test("Dashboard is an app shell: Stock sidenav and bottomnav, no sitemap footer 
 	assert.equal(refs.find((ref) => ref.kind === "sidenav")?.catalogId, "block.sidenav");
 	assert.equal(refs.find((ref) => ref.kind === "bottomnav")?.catalogId, "block.bottomnav");
 	assert.equal(refs.find((ref) => ref.kind === "sidenav")?.sourceScreenId, LAYOUTS);
-	assert.match(String(refs.find((ref) => ref.kind === "sidenav")?.url), /#\/search\?type=block&spec=block\.sidenav$/);
+	assert.match(String(refs.find((ref) => ref.kind === "sidenav")?.url), /#\/asset\/block\.sidenav\/[\w-]+$/);
 	const landing = validateCatalogProvenance({ page, screenId: "screen.theme-saas-launch/home" });
 	if (landing.ok) assert.fail("a sidenav outside its Stock family must be rejected");
 });

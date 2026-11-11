@@ -204,6 +204,41 @@ export function stockAssetUrl(catalogId: string): string {
 	return `${STOCK_APP_URL}#/asset/${catalogId}`;
 }
 
+/** Absolute URL of a Stock thumbnail path (`thumbs/<id>.webp?v=...` of the snapshot), or null when there is none. */
+export function stockThumbUrl(thumb: string | null | undefined): string | null {
+	return thumb && /^thumbs\/[\w.-]+\.webp(\?v=[0-9a-f]+)?$/.test(thumb) ? `${STOCK_APP_URL}${thumb}` : null;
+}
+
+function blockBySpec(spec: string) {
+	return catalogSnapshot.blockIndex.find((row) => row.spec === spec) ?? null;
+}
+
+/** The Stock variant a block card shows: the given one when the block has it, else the registry default, else the first. */
+export function stockVariantOf(spec: string, variant?: string | null): string | null {
+	const entry = blockBySpec(spec);
+	if (!entry || entry.variants.length === 0) return null;
+	if (variant && entry.variants.includes(variant)) return variant;
+	const fallback = catalogSourceFor(spec)?.defaultVariant;
+	return fallback && entry.variants.includes(fallback) ? fallback : entry.variants[0]!;
+}
+
+/** Stock asset page of one block variant (`#/asset/<spec>/<variant>`), or null for an unknown block. */
+export function blockAssetUrl(spec: string, variant?: string | null): string | null {
+	const shown = stockVariantOf(spec, variant);
+	return shown ? stockAssetUrl(`${spec}/${shown}`) : null;
+}
+
+/** Thumbnail URL of one block variant (same variant choice as blockAssetUrl), or null when Stock has no picture. */
+export function blockThumbUrl(spec: string, variant?: string | null): string | null {
+	const shown = stockVariantOf(spec, variant);
+	return shown ? stockThumbUrl(blockBySpec(spec)?.thumbs?.[shown]) : null;
+}
+
+/** Thumbnail URL of a Stock screen, or null. */
+export function screenThumbUrl(screenId: string): string | null {
+	return stockThumbUrl(getScreenById(screenId)?.thumb);
+}
+
 /** Stock search URL. Keys follow the app's own serializer: q, facets (type, section, job, industry, ...), spec. */
 export function stockSearchUrl(params: Array<[string, string]>): string {
 	const query = params
@@ -354,7 +389,7 @@ export function validateCatalogProvenance(input: {
 			catalogId: entry.spec,
 			title: entry.title,
 			variants: [...entry.variants],
-			url: stockSearchUrl(facets),
+			url: blockAssetUrl(entry.spec, node.variant) ?? stockSearchUrl(facets),
 			filters: {
 				type: "block",
 				spec: entry.spec,

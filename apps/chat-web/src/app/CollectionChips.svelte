@@ -11,7 +11,15 @@
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
+	import Link from "$registry/kit/ui/link/Link.svelte";
 	import { collectionItemDetail, collectionItemName, collectionNote, getChatCollection, removeCollectionItem } from "$lib/chat-core";
+	import { blockAssetUrl, blockThumbUrl, screenThumbUrl, stockAssetUrl } from "@buildytech/builder-core";
+	import StockThumb from "./StockThumb.svelte";
+	import type { CollectionItem } from "@buildytech/page-contract/collection";
+
+	// Stock picture and asset page of a chip: the screen, or the block's variant (its default when any variant is allowed)
+	const thumbOf = (item: CollectionItem) => (item.kind === "screen" ? screenThumbUrl(item.id) : blockThumbUrl(item.id, "variant" in item ? item.variant : null));
+	const pageOf = (item: CollectionItem) => (item.kind === "screen" ? stockAssetUrl(item.id) : blockAssetUrl(item.id, "variant" in item ? item.variant : null));
 
 	const collection = $derived(getChatCollection());
 	const note = $derived(collection ? collectionNote(collection) : "");
@@ -30,8 +38,21 @@
 			<Group class="flex-wrap gap-2" role="list">
 				{#each collection.items as item, index (`${item.kind}:${item.id}:${"variant" in item ? (item.variant ?? "") : ""}`)}
 					<Group class="items-center gap-1 rounded border border-border bg-card py-1 pl-2 pr-1" role="listitem" data-slot="collection-chip" data-item={item.id}>
+						<StockThumb src={thumbOf(item)} title={collectionItemName(item)} class="w-12" />
 						<Stack align="stretch" class="min-w-0 gap-0">
-							<Text tag="span" class="truncate text-xs text-foreground">{collectionItemName(item)}</Text>
+							{#if pageOf(item)}
+								<Link
+									href={pageOf(item)}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="truncate text-xs text-foreground underline-offset-4 hover:underline"
+									aria-label={t("catalogRefs.open").replace("{title}", collectionItemName(item))}
+								>
+									<Text tag="span">{collectionItemName(item)}</Text>
+								</Link>
+							{:else}
+								<Text tag="span" class="truncate text-xs text-foreground">{collectionItemName(item)}</Text>
+							{/if}
 							<Text tag="span" class="truncate text-[11px] text-muted-foreground">{collectionItemDetail(item)}</Text>
 						</Stack>
 						<Button

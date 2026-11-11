@@ -173,6 +173,8 @@
 		"catalogRefs.title": "Блоки каталога",
 		"catalogRefs.label": "Блоки каталога Stock в этом предложении",
 		"catalogRefs.screen": "Экран Stock",
+		"thumb.alt": "Превью: {title}",
+		"thumb.missing": "Нет превью",
 		"catalogRefs.open": "Открыть {title} в Stock",
 		"catalogRefs.copyId": "Скопировать id каталога {id}",
 		"catalogRefs.copied": "Скопировано {id}",

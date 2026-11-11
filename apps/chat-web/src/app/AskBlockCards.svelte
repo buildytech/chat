@@ -11,6 +11,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { askBlockCards } from "@buildytech/builder-core";
+	import StockThumb from "./StockThumb.svelte";
 
 	// Cards are rebuilt from the bundled catalog (askBlockCards), never taken from the wire.
 	let { blocks, onApplyVariant }: { blocks: string[]; onApplyVariant?: (spec: string, variant: string) => void } = $props();
@@ -22,8 +23,9 @@
 	<Box tag="ul" class="flex flex-col gap-4" aria-label={t("ask.cards")}>
 		{#each cards as card (card.spec)}
 			<Box tag="li">
-				<Block tag="article" class="rounded border border-border p-4" data-spec={card.spec}>
-					<Stack align="stretch" class="gap-2">
+				<Block tag="article" class="flex items-start gap-4 rounded border border-border p-4" data-spec={card.spec}>
+					<StockThumb src={card.thumb} title={card.title} class="w-40" />
+					<Stack align="stretch" class="min-w-0 flex-1 gap-2">
 						<Group class="flex-wrap items-center justify-between gap-2">
 							<Title as={3} class="text-sm font-semibold text-foreground">{card.title}</Title>
 							<Link

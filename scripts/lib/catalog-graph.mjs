@@ -150,6 +150,7 @@ export function buildGraph(inputs, pins) {
 			order: asset.order,
 			added: asset.added,
 			preview: asset.preview,
+			...(asset.thumb ? { thumb: asset.thumb } : {}),
 			...(pv?.set && Object.keys(pv.set).length ? { set: pv.set } : {}),
 			...(pv?.props ? { sample: pv.props } : {}),
 			weak: asset.weak,
@@ -176,7 +177,7 @@ export function buildGraph(inputs, pins) {
 	const screenAssets = assets.assets.filter((asset) => asset.type === "screen");
 	for (const asset of screenAssets) {
 		entities.screen[asset.id] = {
-			...pick(asset, ["title", "subtitle", "spec", "variant", "group", "order", "added", "preview"]),
+			...pick(asset, ["title", "subtitle", "spec", "variant", "group", "order", "added", "preview", "thumb"]),
 			weak: asset.weak,
 			missing: asset.missing,
 			fields: asset.fields
@@ -433,6 +434,7 @@ export function deriveSnapshot(graph, policy) {
 			group: screen.group,
 			order: screen.order,
 			preview: screen.preview,
+			...(screen.thumb ? { thumb: screen.thumb } : {}),
 			labels: { type: labels.type ?? [], site: labels.site ?? [], section: labels.section ?? [], job: labels.job ?? [], blocks: labels.blocks ?? [], industry: labels.industry ?? [] },
 			added: screen.added,
 			missingFacets: screen.missing,
@@ -449,6 +451,8 @@ export function deriveSnapshot(graph, policy) {
 				spec,
 				catalogIds: variants,
 				variants: variants.map((id) => E.variant[id].variant),
+				// Stock thumbnails by variant (thumbs/<id>.webp?v=..., relative to the Stock app), for the variants that have one
+				thumbs: Object.fromEntries(variants.filter((id) => E.variant[id].thumb).map((id) => [E.variant[id].variant, E.variant[id].thumb])),
 				title: block.title,
 				available: true,
 				rendererKind: kind,

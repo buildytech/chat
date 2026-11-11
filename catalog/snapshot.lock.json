@@ -3,7 +3,7 @@
 	"version": 0,
 	"config": {
 		"path": "catalog/snapshot.config.json",
-		"sha256": "06375b67d5deffe77dfcef168f8a8eccbdc7ab9c8ce8cb794104e6cb018eb11b"
+		"sha256": "9182e66c4f70ee4647260fbbcb0c794eb931b216bc7373b59dd7ccd5d5b77e01"
 	},
 	"policy": {
 		"path": "catalog/policy.v0.json",
@@ -11,15 +11,15 @@
 	},
 	"codegenX": {
 		"repo": "codegen-x/ui8kit",
-		"commit": "9e57f9ccaf710eb3b50d5599e6e49355fcc32136",
+		"commit": "afc826c13dcf32dd356a694fea12905c446df2cd",
 		"files": {
 			"added.v0.json": {
 				"sha256": "c596d20022e765e0e01da6212ba8c2b4c6fc71c2dde4ab43966850d67efe327e",
 				"bytes": 388
 			},
 			"assets.v0.json": {
-				"sha256": "5cd8e45f5d73e127a7a1fd9a4958b673a0e0119fbbf7f14918e9f4d227c04706",
-				"bytes": 686606
+				"sha256": "27089c6f9e17877a0d3b50f2f97a770e71432939e5ce6bca272f260cdc708c1c",
+				"bytes": 721676
 			},
 			"facets.v0.json": {
 				"sha256": "4cf52fc4417263f42412be48f1c04b73578a5397081c76bd51d4cee0cc73c370",
@@ -96,16 +96,16 @@
 	},
 	"outputs": {
 		"catalog/stock-registry.v0.json": {
-			"sha256": "4bfa49f5223d907ad9e3d4ae4a27fec32170a3de3058e5e44504a8056c237d00"
+			"sha256": "6e4e18a5d983c2224c452dc722eba579870e5537b515ce8806e1aa10ed2e8476"
 		},
 		"catalog/coverage.json": {
 			"sha256": "33e21c669e670b7b3e96ff7c8cd0678099e01456957c7bfe55cf77f3e9fade9d"
 		},
 		"packages/builder-core/src/catalog/snapshot.json": {
-			"sha256": "346d165306a75cfb8b02c43eff9749b981f31a3466bd8f32f63c52f792354076"
+			"sha256": "cfb1613ec596d764e974ba36497ed300270c10ad9a4b86e58c1422f0766d3821"
 		},
 		"packages/builder-core/src/catalog/search-index.json": {
-			"sha256": "22a0bcca9a6b11e944a518dbd1fcb7eb526d4a8c05a7848c075b71f3052622cb"
+			"sha256": "9f0b4f3b8c0184859e6208959ca01e0a1012efd1ac4d9341686c5b391cb3f062"
 		}
 	}
 }

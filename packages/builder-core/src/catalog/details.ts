@@ -3,7 +3,7 @@ import { catalogProvenance, catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, getBlockIndexByCatalogId, rendererKindForLabel } from "./compatibility.ts";
 import { getScreenById } from "./search.ts";
 import { blockVariantSummary, catalogSourceFor, catalogVariantsFor, variantProps } from "./sources.ts";
-import { stockSearchUrl } from "./provenance.ts";
+import { blockAssetUrl, blockThumbUrl, stockSearchUrl } from "./provenance.ts";
 import { LUCIDE_ICON_HINT, propsSummaryFor } from "./props-schema.ts";
 
 export type BlockDetails = {
@@ -135,7 +135,10 @@ export type AskBlockCard = {
 	install: string | null;
 	defaultVariant: string | null;
 	variants: string[];
+	/** Stock asset page of the default variant (`#/asset/<spec>/<variant>`). */
 	stockUrl: string;
+	/** Stock thumbnail of the default variant, or null when Stock has no picture. */
+	thumb: string | null;
 };
 
 function catalogEntryFor(rawId: string) {
@@ -165,10 +168,13 @@ export function askBlockCard(id: string): AskBlockCard | null {
 		install: source ? `npx ui8kit add ${source.item} --framework svelte` : null,
 		defaultVariant: source?.defaultVariant ?? null,
 		variants: catalogVariantsFor(entry.spec),
-		stockUrl: stockSearchUrl([
-			["type", "block"],
-			["spec", entry.spec]
-		])
+		stockUrl:
+			blockAssetUrl(entry.spec, source?.defaultVariant) ??
+			stockSearchUrl([
+				["type", "block"],
+				["spec", entry.spec]
+			]),
+		thumb: blockThumbUrl(entry.spec, source?.defaultVariant)
 	};
 }
 
