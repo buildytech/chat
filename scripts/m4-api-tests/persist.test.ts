@@ -12,6 +12,7 @@ import {
 	deleteSessionPages,
 	migrateStoredPageRecord,
 	readSessionPages,
+	repairSession,
 	saveSessionsJson,
 	writeSessionPages
 } from "../../apps/chat-web/src/lib/browser/persist.ts";
@@ -160,4 +161,51 @@ test("quota errors are truthful and leave the last good blob", () => {
 	assert.equal(getPersistError()?.code, "quota");
 	memory.quota = false;
 	assert.deepEqual(loadSessionsJson(), [{ id: "session-1" }]);
+});
+
+// ---- ADR 0024 step D fix: "Start page from this screen" proposals --------------------------------------------------
+
+const NOW_D = "2026-11-11T17:00:00.000Z";
+const screenChat = (origin?: string) => ({
+	id: "session-screen",
+	title: "Bakery",
+	updatedAt: NOW_D,
+	mode: "build",
+	messages: [
+		{
+			id: "msg-1",
+			role: "assistant",
+			text: "Started a page from the screen",
+			createdAt: NOW_D,
+			proposal: {
+				applied: true,
+				status: "applied",
+				source: "local-catalog-assembler",
+				liveModel: false,
+				warnings: [],
+				missing: [],
+				title: "Bakery",
+				catalogRefs: { catalogDigest: "sha256:x", pinnedCommit: "081a1c5", screen: null, blocks: [] },
+				...(origin ? { origin } : {})
+			}
+		}
+	]
+});
+
+test("a session from 'Start page from this screen' is schema-valid and survives a reload", () => {
+	memory.setItem(SESSIONS_KEY, JSON.stringify([screenChat()]));
+	assert.deepEqual(loadSessionsJson(), [screenChat()]);
+	assert.equal(getPersistError(), null, "nothing goes to quarantine");
+	assert.equal(memory.getItem("buildy:v1:quarantine"), null);
+});
+
+test("chats saved with the retired origin 'feed-screen' are repaired on load, not quarantined", () => {
+	memory.setItem(SESSIONS_KEY, JSON.stringify([screenChat("feed-screen")]));
+	const loaded = loadSessionsJson();
+	assert.deepEqual(loaded, [screenChat()], "the origin field is dropped, everything else kept");
+	assert.equal(getPersistError(), null);
+	assert.equal(memory.getItem("buildy:v1:quarantine"), null);
+	assert.deepEqual(JSON.parse(memory.getItem(SESSIONS_KEY)!), [screenChat()], "the repaired list is written back");
+	const ask = screenChat("ask-plan");
+	assert.equal(repairSession(ask), ask, "valid origins are left alone (identity)");
 });

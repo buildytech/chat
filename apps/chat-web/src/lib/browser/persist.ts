@@ -212,20 +212,40 @@ export function loadSessionsJson(): unknown[] {
 	}
 	if (trusted.get(SESSIONS_KEY) === raw) return list;
 	const valid: unknown[] = [];
-	let dropped = false;
-	list.forEach((item, i) => {
+	let rewrite = false;
+	list.forEach((entry, i) => {
+		const item = repairSession(entry);
+		if (item !== entry) rewrite = true;
 		const issues = sessionDefIssues(item, "session");
 		if (!issues.length) {
 			valid.push(item);
 			return;
 		}
 		const first = issues[0]!;
-		if (keepAside(store, SESSIONS_KEY, `session_invalid:${first.keyword}`, JSON.stringify(item), `$[${i}]${first.path.slice(1)}`)) dropped = true;
+		if (keepAside(store, SESSIONS_KEY, `session_invalid:${first.keyword}`, JSON.stringify(item), `$[${i}]${first.path.slice(1)}`)) rewrite = true;
 		else valid.push(item);
 	});
-	if (dropped) writeRaw(store, SESSIONS_KEY, JSON.stringify(valid));
+	if (rewrite) writeRaw(store, SESSIONS_KEY, JSON.stringify(valid));
 	else trusted.set(SESSIONS_KEY, raw);
 	return valid;
+}
+
+/**
+ * Known fixes applied before validation. 2026-11-11 (one day on staging): "Start page from this screen" wrote
+ * `proposal.origin: "feed-screen"`, which the session schema does not allow; the field is dropped (the proposal is
+ * an ordinary program proposal) so those chats load instead of going to quarantine. Identity when nothing changes.
+ */
+export function repairSession(item: unknown): unknown {
+	const rec = item as { messages?: Array<{ proposal?: { origin?: unknown } }> } | null;
+	if (!rec || !Array.isArray(rec.messages) || !rec.messages.some((m) => m?.proposal?.origin === "feed-screen")) return item;
+	return {
+		...rec,
+		messages: rec.messages.map((m) => {
+			if (m?.proposal?.origin !== "feed-screen") return m;
+			const { origin: _origin, ...proposal } = m.proposal;
+			return { ...m, proposal };
+		})
+	};
 }
 
 function writeRaw(store: StorageLike, key: string, value: string): void {

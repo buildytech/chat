@@ -76,14 +76,13 @@ Step A is this change.
 - **"Start page from this screen".** Screen cards in the Blocks feed get a start button. `stockScreenDraft`
   (builder-core, next to `collectionIntakeDraft`) runs the same program `propose_layout` assembly as the collection
   intake draft, with no copy and no model step, so every block keeps its Stock sample. The browser takes the result
-  as an ordinary proposal (client catalog gate, change report, `origin: "feed-screen"`) and applies it at once as
+  as an ordinary proposal (client catalog gate, change report, no `origin`; see the step D correction) and applies it at once as
   the next revision; a chat that already has messages or a page gets a new chat, so nothing is overwritten.
 - **`supported` in stock-search/v1.** Each item says whether this BuildY renders it: a block variant with a page
   renderer, or a screen the draft path accepts (`screenStartable`, the screen check of `propose_layout` with the
   screen's own scenario). The flag is additive (old readers ignore it); a test keeps it equal to the draft result for
   every Stock screen. Today 15 of 80 screens can start a page; the others stay listed with the reason.
-- **No contract change.** The page, session and collection schemas are unchanged; the proposal `origin` is a chat
-  app field.
+- **No contract change.** The page, session and collection schemas are unchanged.
 
 ## Addendum: step C (drag feed cards into the preview and the Sections list)
 
@@ -131,3 +130,14 @@ Step A is this change.
   proposals) is not changed by this step.
 - **Sections drops show where.** A feed card over the Sections list shows "Insert at position N" (or the reason, in
   red) on the row border where it lands, like the preview drop line.
+
+### Step D correction: screen-start chats survived a reload only in the same tab
+
+Step B tagged the started proposal `origin: "feed-screen"`, but the session schema allows only `ask-card` and
+`ask-plan`. The value lived in the tab; on the next load the chat failed `session.schema.json` and went to
+quarantine (the live step D check at 1024 showed "Some saved data did not pass the session schema"). The proposal now
+carries no `origin` (it is an ordinary program proposal: local catalog assembler, no run record), and
+`loadSessionsJson` repairs chats saved during the window (`repairSession` drops that one value before validation and
+writes the list back), so they load instead of being quarantined. Chats already moved to quarantine on staging stay
+there (`buildy:v1:quarantine`, raw kept). Tests: a screen-start session validates and survives a reload; a chat with
+the retired origin is repaired, other origins are left alone.

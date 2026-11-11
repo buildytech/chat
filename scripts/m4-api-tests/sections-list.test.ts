@@ -55,7 +55,7 @@ test("Start page from this screen: program draft, no model, passes the browser c
 	const body = session.slice(session.indexOf("export async function startPageFromScreen"), session.indexOf("export function applyVariantFromAsk"));
 	assert.match(body, /stockScreenDraft\(/);
 	assert.match(body, /applyProposal\(\)/);
-	assert.match(body, /origin: "feed-screen"/);
+	assert.doesNotMatch(body, /origin:/, "no proposal origin outside the session schema enum");
 	assert.doesNotMatch(body, /runConstructor|runXaiProposal|fetchXaiStatus|sendMessage/, "no model call");
 	const card = web("app/FeedCard.svelte");
 	assert.match(card, /data-action="feed-start"/);

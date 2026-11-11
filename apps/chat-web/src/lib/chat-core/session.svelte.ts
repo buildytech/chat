@@ -934,7 +934,8 @@ export async function startPageFromScreen(screenId: string): Promise<{ ok: true 
 		discardCandidate();
 		return { ok: false, code: "catalog_rejected", message: reply.text };
 	}
-	reply.proposal = { ...reply.proposal, origin: "feed-screen" };
+	// No `origin`: the session schema allows only the Ask origins; this proposal is an ordinary program proposal
+	// (local catalog assembler, no run record), applied at once.
 	const current = getSelectedSession() ?? session;
 	replaceSession({
 		...current,
