@@ -23,6 +23,7 @@
 	import Select from "$registry/compose/Select.svelte";
 	import SelectOption from "$registry/compose/SelectOption.svelte";
 	import Field from "$registry/components/field.svelte";
+	import Input from "$registry/compose/Input.svelte";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import Summary from "$registry/compose/Summary.svelte";
@@ -30,7 +31,7 @@
 	import { inspectorModel } from "@buildytech/builder-core";
 	import { loadPropsGate } from "$lib/chat-core";
 	import { t } from "$lib/i18n/dictionary";
-	import { partitionFields, type FieldHandlers } from "$lib/inspector/fields";
+	import { fieldDomId, LOCKED_CONTROL, partitionFields, type FieldHandlers } from "$lib/inspector/fields";
 	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { topLevelBlockId } from "$lib/inspector/geometry";
 	import { blocksOf, getCurrentPage, getSelectedBlockId } from "$lib/page-store";
@@ -57,6 +58,9 @@
 			if (model) inspector.edit(model.blockId, field, value, typing);
 		},
 		onseal: () => inspector.seal(),
+		onvariant: (variant) => {
+			if (model) inspector.run({ op: "set_variant", blockId: model.blockId, variant });
+		},
 		onrow: (row, action) => {
 			if (model) inspector.run({ op: action === "duplicate" ? "duplicate_row" : "remove_row", blockId: model.blockId, row });
 		}
@@ -145,6 +149,16 @@
 					</Field>
 				{/if}
 				<InspectorFields fields={parts.main} blockId={model.blockId} variant={model.variant} {issues} {handlers} />
+				{#if model.unshown.length}
+					<Stack align="stretch" gap="2" role="group" aria-label={t("inspector.notShownTitle")} data-slot="inspector-unshown">
+						{#each model.unshown as entry (entry.key)}
+							{@const id = fieldDomId(model.blockId, `/~copy/${entry.key}`)}
+							<Field label={entry.key} htmlFor={id} hint={t("inspector.notShown")}>
+								<Input {id} size="sm" class={LOCKED_CONTROL} value={entry.value ?? t("inspector.unset")} readOnly aria-readonly="true" title={t("inspector.notShown")} data-locked="not_shown" data-copy-key={entry.key} />
+							</Field>
+						{/each}
+					</Stack>
+				{/if}
 				{#if parts.more.length}
 					<Disclosure variant="ghost" data-slot="inspector-more">
 						<Summary size="sm">{t("inspector.more").replace("{count}", String(parts.more.length))}</Summary>

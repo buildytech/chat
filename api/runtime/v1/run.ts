@@ -27266,30 +27266,107 @@ function slotCopy(kind: PageBlockKind): string[] {
 	return (PAGE_SLOTS[kind]?.copy ?? []) as string[];
 }
 
+/** Where the lede of a block (or row) lives: `copy.lede` when its kind renders that copy key, else its summary. */
+function ledeOrigin(kind: PageBlockKind): string {
+	return slotCopy(kind).includes("lede") ? "copy.lede" : "summary";
+}
+
+/** The action object of a shape (`action`, `actions` or `cta`) and its label field, in the order content() reads them. */
+function actionFields(shape: PropShape): { name: string; label: string; href: boolean } | null {
+	for (const name of ["action", "actions", "cta"]) {
+		const fields = shape.objects[name];
+		if (!fields) continue;
+		const label = Object.keys(fields).find((field) => ACTION_LABEL.has(field) && fields[field] === "text");
+		if (label) return { name, label, href: fields.href === "text" };
+	}
+	return null;
+}
+
+/** The page-spec field an empty top-level text prop would be read from (the same rules as content()). */
+function emptyTopLevel(block: PageBlock, shape: PropShape, name: string): string | null {
+	if (!shape.text.includes(name)) return null;
+	const title = shape.text.find((prop) => TITLE.has(prop) && prop !== "brand");
+	if (name === title) return slotCopy(block.kind).includes("headline") ? "copy.headline" : "title";
+	const lead = shape.text.find((prop) => TEXT.has(prop));
+	if (name === lead) return ledeOrigin(block.kind);
+	// The empty state reads the lede while the block has no rows.
+	if (name === "empty" && !(block.children ?? []).length && Object.keys(shape.lists).length) return ledeOrigin(block.kind);
+	const key = COPY_FIELDS[name];
+	if (key && slotCopy(block.kind).includes(key)) return `copy.${key}`;
+	return null;
+}
+
+/** The page-spec field an empty text field of an object prop (`/action/label`, `/labels/brand`) would be read from. */
+function emptyInObject(block: PageBlock, shape: PropShape, object: string, field: string): string | null {
+	const fields = shape.objects[object];
+	if (fields?.[field] !== "text") return null;
+	const slot = slotCopy(block.kind);
+	const action = actionFields(shape);
+	if (action && action.name === object && slot.includes("action")) {
+		if (field === action.label) return "copy.action";
+		if (field === "href" && action.href) return "copy.href";
+	}
+	if (object === "labels" && field === "brand" && slot.includes("brand")) return "copy.brand";
+	if (object === "labels" && field === "empty" && !shape.text.includes("empty") && !(block.children ?? []).length && Object.keys(shape.lists).length) {
+		return ledeOrigin(block.kind);
+	}
+	const key = COPY_FIELDS[object];
+	if (key && !shape.text.includes(object) && slot.includes(key)) {
+		const label = Object.entries(fields).find(([name, kind]) => LABEL_FIELDS.has(name) && kind === "text")?.[0];
+		if (label === field) return `copy.${key}`;
+	}
+	return null;
+}
+
+/** The row field (`children[i]...`) an empty field of a page row would be read from (the same rules as record()). */
+function emptyInRow(child: PageBlock, kind: string | undefined, field: string): string | null {
+	const slot = slotCopy(child.kind);
+	if (field === "icon" && kind === "icon") return slot.includes("icon") ? "copy.icon" : null;
+	if (kind !== "text" || field === "id") return null;
+	if (TITLE.has(field)) return slot.includes("headline") ? "copy.headline" : "title";
+	if (TEXT.has(field)) return ledeOrigin(child.kind);
+	if (field === "href") return slot.includes("href") ? "copy.href" : null;
+	const key = COPY_FIELDS[field];
+	return key && slot.includes(key) ? `copy.${key}` : null;
+}
+
 /**
  * The page-spec field a prop of the block's render is written back to (the inverse of the mapping above), or null
  * when the prop is not page content (a variant axis, a schema default, an id). A prop that has content today keeps
- * its origin; an empty one is writable when the mapping above would read it: a top-level text prop that names a
- * copy key the block kind renders (`eyebrow`, `badge`, ...), or the icon of a row whose kind renders `copy.icon`.
+ * its origin; an empty one is writable when the mapping above would read it once set: the title / lead / empty
+ * state of the block, a copy key the block kind renders (`eyebrow`, `badge`, ...), the label and link of its action,
+ * and the title / text / icon / link of a page row whose kind renders that field.
  */
 function writableOrigin(block: PageBlock, render: Pick<OrganismRender, "item" | "origins">, pointer: string): string | null {
 	const known = render.origins[pointer];
 	if (known) return WRITABLE_ORIGIN.test(known) ? known : null;
+	const shape = propShapeFor(render.item);
+	if (!shape) return null;
 	const parts = pointer.split("/").slice(1);
-	if (parts.length === 3 && /^\d+$/.test(parts[1]!) && parts[2] === "icon") {
+	if (parts.length === 1) return emptyTopLevel(block, shape, parts[0]!);
+	if (parts.length === 2) return emptyInObject(block, shape, parts[0]!, parts[1]!);
+	if (parts.length === 3 && /^\d+$/.test(parts[1]!)) {
 		const row = render.origins[`/${parts[0]}/${parts[1]}`];
 		const index = row ? /^children\[(\d+)\]$/.exec(row)?.[1] : undefined;
 		const child = index !== undefined ? block.children?.[Number(index)] : undefined;
-		const shape = propShapeFor(render.item);
-		const iconField = shape?.lists[parts[0]!]?.record.icon === "icon";
-		return child && iconField && slotCopy(child.kind).includes("icon") ? `${row}.copy.icon` : null;
-	}
-	if (parts.length === 1) {
-		const key = COPY_FIELDS[parts[0]!];
-		const shape = propShapeFor(render.item);
-		if (key && shape?.text.includes(parts[0]!) && slotCopy(block.kind).includes(key)) return `copy.${key}`;
+		if (!child) return null;
+		const field = emptyInRow(child, shape.lists[parts[0]!]?.record[parts[2]!], parts[2]!);
+		return field ? `${row}.${field}` : null;
 	}
 	return null;
+}
+
+/** The published props of a variant without dictionary refs: what the variant itself sets (axes, sample literals). */
+function variantPreset(item: string, variant: string): Record<string, unknown> {
+	const value = sources.blocks[item]?.variants[variant];
+	return isObject(value) ? (withoutRefs(value) as Record<string, unknown>) : {};
+}
+
+/** Named variants of a registry item with their published props (the presets the Variant select offers). */
+function variantPresets(item: string): Record<string, Record<string, unknown>> {
+	const out: Record<string, Record<string, unknown>> = {};
+	for (const name of Object.keys(sources.blocks[item]?.variants ?? {})) out[name] = variantPreset(item, name);
+	return out;
 }
 
 /** npm packages the registry tree imports (clsx, tailwind-merge; svelte is the framework). */
@@ -27364,6 +27441,8 @@ function registryItemClosure(items: string[]): string[] {
 exports["registryItemFor"] = registryItemFor;
 exports["organismFor"] = organismFor;
 exports["writableOrigin"] = writableOrigin;
+exports["variantPreset"] = variantPreset;
+exports["variantPresets"] = variantPresets;
 exports["registryNpmDependencies"] = registryNpmDependencies;
 exports["registryInitItems"] = registryInitItems;
 exports["registryClosure"] = registryClosure;
@@ -31035,7 +31114,7 @@ const { registryItemFor } = __req("packages/builder-core/src/catalog/organism.ts
 const { editPage } = __req("packages/builder-core/src/patch.ts");
 const { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } = __req("packages/builder-core/src/catalog/provenance.ts");
 const { isScenarioId } = __req("packages/builder-core/src/brief.ts");
-const { organismFor, writableOrigin } = __req("packages/builder-core/src/catalog/organism.ts");
+const { organismFor, variantPreset, writableOrigin } = __req("packages/builder-core/src/catalog/organism.ts");
 const { checkBlockProps } = __req("packages/builder-core/src/catalog/provenance.ts");
 const { propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { catalogVariantsFor } = __req("packages/builder-core/src/catalog/sources.ts");
@@ -31070,7 +31149,18 @@ function widgetFor(node: PropsFieldNode, origin: string | null): InspectorWidget
 	}
 }
 
-function fieldsOf(block: PageBlock, render: OrganismRender, nodes: PropsFieldNode[], base: string, hidden: ReadonlySet<string>): InspectorField[] {
+type Ctx = { block: PageBlock; render: OrganismRender; preset: Record<string, unknown>; axes: Record<string, Array<{ value: string; variant: string | null }>> };
+
+function lockFor(ctx: Ctx, field: InspectorField): InspectorLock | undefined {
+	if (field.origin || field.widget === "object" || field.widget === "list") return undefined;
+	if (field.choices || valueAt(ctx.preset, field.pointer) !== undefined) return "variant";
+	const value = field.value;
+	if (value !== undefined && value !== null && value !== "" && !(Array.isArray(value) && value.length === 0)) return "sample";
+	return "no_page_field";
+}
+
+function fieldsOf(ctx: Ctx, nodes: PropsFieldNode[], base: string, hidden: ReadonlySet<string>): InspectorField[] {
+	const { block, render } = ctx;
 	const out: InspectorField[] = [];
 	for (const node of nodes) {
 		if (HIDDEN.has(node.name) || hidden.has(node.name)) continue;
@@ -31085,19 +31175,66 @@ function fieldsOf(block: PageBlock, render: OrganismRender, nodes: PropsFieldNod
 			origin
 		};
 		if (node.enum) field.options = node.enum;
+		if (base === "" && ctx.axes[node.name]) field.choices = ctx.axes[node.name];
 		if (node.maxLength !== undefined) field.maxLength = node.maxLength;
-		if (field.widget === "object" && node.fields) field.fields = fieldsOf(block, render, node.fields, pointer, new Set());
+		const lock = lockFor(ctx, field);
+		if (lock) field.lock = lock;
+		if (field.widget === "object" && node.fields) field.fields = fieldsOf(ctx, node.fields, pointer, new Set());
 		if (field.widget === "list" && node.fields) {
 			const rows = Array.isArray(field.value) ? field.value : [];
 			field.rows = rows.map((_, index) => {
 				const at = `${pointer}/${index}`;
 				const row = render.origins[at];
-				return { pointer: at, origin: row && /^children\[\d+\]$/.test(row) ? row : null, fields: fieldsOf(block, render, node.fields!, at, new Set()) };
+				return { pointer: at, origin: row && /^children\[\d+\]$/.test(row) ? row : null, fields: fieldsOf(ctx, node.fields!, at, new Set()) };
 			});
 		}
 		out.push(field);
 	}
 	return out;
+}
+
+/**
+ * Variant axes of a block: every top-level enum prop the variant presets set, each value mapped to the named catalog
+ * variant whose preset equals the current one with only that axis changed (null when no named preset matches).
+ */
+function variantAxes(block: PageBlock, render: OrganismRender, current: Record<string, unknown>): Ctx["axes"] {
+	const named: Array<{ variant: string; preset: Record<string, unknown> }> = [];
+	for (const variant of catalogVariantsFor(render.catalogBlock)) {
+		const hit = registryItemFor(block.catalogBlock, variant);
+		if (hit?.item === render.item) named.push({ variant, preset: variantPreset(hit.item, hit.variant) });
+	}
+	const tree = propsFieldTree(render.item) ?? [];
+	const keys = tree.filter((node) => node.kind === "enum" && named.some((entry) => entry.preset[node.name] !== undefined)).map((node) => node.name);
+	const axisOf = (preset: Record<string, unknown>, key: string) => preset[key] ?? render.props[key];
+	const axes: Ctx["axes"] = {};
+	for (const key of keys) {
+		const node = tree.find((entry) => entry.name === key)!;
+		axes[key] = (node.enum ?? []).map((value) => {
+			const want = (other: string) => (other === key ? value : axisOf(current, other));
+			const hit = named.find((entry) => keys.every((other) => String(axisOf(entry.preset, other)) === String(want(other))));
+			return { value, variant: hit?.variant ?? null };
+		});
+	}
+	return axes;
+}
+
+/** Copy keys the page kind renders that no field of this registry block reads or writes (a hero-split has no eyebrow). */
+function unshownCopy(block: PageBlock, fields: InspectorField[]): InspectorUnshown[] {
+	const used = new Set<string>();
+	const walk = (list: InspectorField[]) => {
+		for (const field of list) {
+			if (field.origin && !field.origin.startsWith("children[")) used.add(field.origin);
+			walk(field.fields ?? []);
+		}
+	};
+	walk(fields);
+	// headline / lede are the block title / summary when the copy key is not set.
+	if (used.has("title")) used.add("copy.headline");
+	if (used.has("summary")) used.add("copy.lede");
+	const keys = [...new Set([...((PAGE_SLOTS[block.kind]?.copy ?? []) as string[]), ...Object.keys(block.copy ?? {})])];
+	return keys
+		.filter((key) => !used.has(`copy.${key}`) && (block.copy?.[key as PageCopyKey] !== undefined || (PAGE_SLOTS[block.kind]?.copy as string[] | undefined)?.includes(key)))
+		.map((key) => ({ key, value: block.copy?.[key as PageCopyKey] }));
 }
 
 /** The inspector fields of a page block, or an honest stub when it has no registry item or no published schema. */
@@ -31108,6 +31245,9 @@ function inspectorModel(block: PageBlock): InspectorModel {
 	const tree = propsFieldTree(render.item);
 	if (!tree) return { ok: false, ...head, reason: "no_schema" };
 	const { events, slots } = propsEventsFor(render.item);
+	const preset = variantPreset(render.item, render.variant);
+	const ctx: Ctx = { block, render, preset, axes: variantAxes(block, render, preset) };
+	const fields = fieldsOf(ctx, tree, "", new Set([...events, ...slots]));
 	return {
 		ok: true,
 		...head,
@@ -31115,7 +31255,8 @@ function inspectorModel(block: PageBlock): InspectorModel {
 		item: render.item,
 		variant: render.variant,
 		variants: catalogVariantsFor(render.catalogBlock),
-		fields: fieldsOf(block, render, tree, "", new Set([...events, ...slots]))
+		fields,
+		unshown: unshownCopy(block, fields)
 	};
 }
 
@@ -31123,6 +31264,9 @@ function inspectorModel(block: PageBlock): InspectorModel {
 
 const fail = (code: string, message: string, pointer: string, allowed?: string[]): InspectorFailure =>
 	allowed?.length ? { ok: false, code, message, pointer, allowed } : { ok: false, code, message, pointer };
+
+/** page-spec copy.href: `#fragment`, `/path`, an http(s) URL or mailto (the contract pattern). */
+const LINK = /^(?:#|\/|https?:\/\/|mailto:)/;
 
 const ORIGIN = /^((?:children\[\d+\]\.)*)(title|summary|copy\.([a-z]+))$/;
 
@@ -31200,7 +31344,10 @@ function inspectorSetField(page: Page, blockId: string, pointer: string, value: 
 	const render = organismFor(block);
 	if (!render) return fail("not_in_registry", `Section ${blockId} has no registry block.`, pointer);
 	const origin = writableOrigin(block, render, pointer);
-	if (!origin) return fail("field_not_editable", `${pointer} is set by the variant ${render.variant}, not by the page.`, pointer);
+	if (!origin) return fail("field_not_editable", `${pointer} has no page field (variant ${render.variant} or the schema sets it).`, pointer);
+	if (/(?:^|\.)copy\.href$/.test(origin) && !LINK.test(value)) {
+		return fail("link_invalid", `${pointer} "${value}": a link starts with #, /, http://, https:// or mailto:.`, pointer);
+	}
 	const next = writeOrigin(block, origin, value);
 	if (!next) return fail("field_not_editable", `${pointer} has no page field ${origin}.`, pointer);
 	// Writing the value the page already has is a no-op: same page, no history step, no revision.
@@ -34110,6 +34257,8 @@ exports["registryItemClosure"] = __req("packages/builder-core/src/catalog/organi
 exports["registryItemFor"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFor"];
 exports["registryNpmDependencies"] = __req("packages/builder-core/src/catalog/organism.ts")["registryNpmDependencies"];
 exports["writableOrigin"] = __req("packages/builder-core/src/catalog/organism.ts")["writableOrigin"];
+exports["variantPreset"] = __req("packages/builder-core/src/catalog/organism.ts")["variantPreset"];
+exports["variantPresets"] = __req("packages/builder-core/src/catalog/organism.ts")["variantPresets"];
 exports["gateInspectorPage"] = __req("packages/builder-core/src/inspector.ts")["gateInspectorPage"];
 exports["inspectorModel"] = __req("packages/builder-core/src/inspector.ts")["inspectorModel"];
 exports["inspectorOp"] = __req("packages/builder-core/src/inspector.ts")["inspectorOp"];

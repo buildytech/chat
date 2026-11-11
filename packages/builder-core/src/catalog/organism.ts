@@ -206,30 +206,107 @@ function slotCopy(kind: PageBlockKind): readonly string[] {
 	return (PAGE_SLOTS[kind]?.copy ?? []) as readonly string[];
 }
 
+/** Where the lede of a block (or row) lives: `copy.lede` when its kind renders that copy key, else its summary. */
+function ledeOrigin(kind: PageBlockKind): string {
+	return slotCopy(kind).includes("lede") ? "copy.lede" : "summary";
+}
+
+/** The action object of a shape (`action`, `actions` or `cta`) and its label field, in the order content() reads them. */
+function actionFields(shape: PropShape): { name: string; label: string; href: boolean } | null {
+	for (const name of ["action", "actions", "cta"]) {
+		const fields = shape.objects[name];
+		if (!fields) continue;
+		const label = Object.keys(fields).find((field) => ACTION_LABEL.has(field) && fields[field] === "text");
+		if (label) return { name, label, href: fields.href === "text" };
+	}
+	return null;
+}
+
+/** The page-spec field an empty top-level text prop would be read from (the same rules as content()). */
+function emptyTopLevel(block: PageBlock, shape: PropShape, name: string): string | null {
+	if (!shape.text.includes(name)) return null;
+	const title = shape.text.find((prop) => TITLE.has(prop) && prop !== "brand");
+	if (name === title) return slotCopy(block.kind).includes("headline") ? "copy.headline" : "title";
+	const lead = shape.text.find((prop) => TEXT.has(prop));
+	if (name === lead) return ledeOrigin(block.kind);
+	// The empty state reads the lede while the block has no rows.
+	if (name === "empty" && !(block.children ?? []).length && Object.keys(shape.lists).length) return ledeOrigin(block.kind);
+	const key = COPY_FIELDS[name];
+	if (key && slotCopy(block.kind).includes(key)) return `copy.${key}`;
+	return null;
+}
+
+/** The page-spec field an empty text field of an object prop (`/action/label`, `/labels/brand`) would be read from. */
+function emptyInObject(block: PageBlock, shape: PropShape, object: string, field: string): string | null {
+	const fields = shape.objects[object];
+	if (fields?.[field] !== "text") return null;
+	const slot = slotCopy(block.kind);
+	const action = actionFields(shape);
+	if (action && action.name === object && slot.includes("action")) {
+		if (field === action.label) return "copy.action";
+		if (field === "href" && action.href) return "copy.href";
+	}
+	if (object === "labels" && field === "brand" && slot.includes("brand")) return "copy.brand";
+	if (object === "labels" && field === "empty" && !shape.text.includes("empty") && !(block.children ?? []).length && Object.keys(shape.lists).length) {
+		return ledeOrigin(block.kind);
+	}
+	const key = COPY_FIELDS[object];
+	if (key && !shape.text.includes(object) && slot.includes(key)) {
+		const label = Object.entries(fields).find(([name, kind]) => LABEL_FIELDS.has(name) && kind === "text")?.[0];
+		if (label === field) return `copy.${key}`;
+	}
+	return null;
+}
+
+/** The row field (`children[i]...`) an empty field of a page row would be read from (the same rules as record()). */
+function emptyInRow(child: PageBlock, kind: string | undefined, field: string): string | null {
+	const slot = slotCopy(child.kind);
+	if (field === "icon" && kind === "icon") return slot.includes("icon") ? "copy.icon" : null;
+	if (kind !== "text" || field === "id") return null;
+	if (TITLE.has(field)) return slot.includes("headline") ? "copy.headline" : "title";
+	if (TEXT.has(field)) return ledeOrigin(child.kind);
+	if (field === "href") return slot.includes("href") ? "copy.href" : null;
+	const key = COPY_FIELDS[field];
+	return key && slot.includes(key) ? `copy.${key}` : null;
+}
+
 /**
  * The page-spec field a prop of the block's render is written back to (the inverse of the mapping above), or null
  * when the prop is not page content (a variant axis, a schema default, an id). A prop that has content today keeps
- * its origin; an empty one is writable when the mapping above would read it: a top-level text prop that names a
- * copy key the block kind renders (`eyebrow`, `badge`, ...), or the icon of a row whose kind renders `copy.icon`.
+ * its origin; an empty one is writable when the mapping above would read it once set: the title / lead / empty
+ * state of the block, a copy key the block kind renders (`eyebrow`, `badge`, ...), the label and link of its action,
+ * and the title / text / icon / link of a page row whose kind renders that field.
  */
 export function writableOrigin(block: PageBlock, render: Pick<OrganismRender, "item" | "origins">, pointer: string): string | null {
 	const known = render.origins[pointer];
 	if (known) return WRITABLE_ORIGIN.test(known) ? known : null;
+	const shape = propShapeFor(render.item);
+	if (!shape) return null;
 	const parts = pointer.split("/").slice(1);
-	if (parts.length === 3 && /^\d+$/.test(parts[1]!) && parts[2] === "icon") {
+	if (parts.length === 1) return emptyTopLevel(block, shape, parts[0]!);
+	if (parts.length === 2) return emptyInObject(block, shape, parts[0]!, parts[1]!);
+	if (parts.length === 3 && /^\d+$/.test(parts[1]!)) {
 		const row = render.origins[`/${parts[0]}/${parts[1]}`];
 		const index = row ? /^children\[(\d+)\]$/.exec(row)?.[1] : undefined;
 		const child = index !== undefined ? block.children?.[Number(index)] : undefined;
-		const shape = propShapeFor(render.item);
-		const iconField = shape?.lists[parts[0]!]?.record.icon === "icon";
-		return child && iconField && slotCopy(child.kind).includes("icon") ? `${row}.copy.icon` : null;
-	}
-	if (parts.length === 1) {
-		const key = COPY_FIELDS[parts[0]!];
-		const shape = propShapeFor(render.item);
-		if (key && shape?.text.includes(parts[0]!) && slotCopy(block.kind).includes(key)) return `copy.${key}`;
+		if (!child) return null;
+		const field = emptyInRow(child, shape.lists[parts[0]!]?.record[parts[2]!], parts[2]!);
+		return field ? `${row}.${field}` : null;
 	}
 	return null;
+}
+
+/** The published props of a variant without dictionary refs: what the variant itself sets (axes, sample literals). */
+export function variantPreset(item: string, variant: string): Record<string, unknown> {
+	const value = sources.blocks[item]?.variants[variant];
+	return isObject(value) ? (withoutRefs(value) as Record<string, unknown>) : {};
+}
+
+/** Named variants of a registry item with their published props (the presets the Variant select offers). */
+export function variantPresets(item: string): Record<string, Record<string, unknown>> {
+	const out: Record<string, Record<string, unknown>> = {};
+	for (const name of Object.keys(sources.blocks[item]?.variants ?? {})) out[name] = variantPreset(item, name);
+	return out;
 }
 
 /** npm packages the registry tree imports (clsx, tailwind-merge; svelte is the framework). */

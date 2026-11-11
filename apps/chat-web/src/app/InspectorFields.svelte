@@ -1,11 +1,14 @@
 <!--
   Inspector fields of one level of a block's props (top level, an object prop or a list row), one registry widget per
   schema kind. A field is editable only with a page-spec origin and host handlers; every other field shows its value
-  read-only. Rejected edits show the gate's message and, for an enum, the allowed values in the field. Focus in a field
+  locked (muted, lock icon, not-allowed cursor, aria-readonly) with the real reason: a variant axis (its select
+  switches to the named variant of that value, or says to choose in Variant above), a sample placeholder of the
+  schema, or no page field yet. Rejected edits show the gate's message and, for an enum, the allowed values in the field. Focus in a field
   selects it on the canvas (ADR 0021): the overlay outlines where the preview shows it.
 -->
 <script lang="ts">
 	import Copy from "@lucide/svelte/icons/copy";
+	import Lock from "@lucide/svelte/icons/lock";
 	import Trash2 from "@lucide/svelte/icons/trash-2";
 	import Box from "$registry/compose/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";
@@ -21,10 +24,11 @@
 	import Text from "$registry/compose/Text.svelte";
 	import Textarea from "$registry/compose/Textarea.svelte";
 	import Field from "$registry/components/field.svelte";
+	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import type { InspectorField } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { canvas } from "$lib/inspector/canvas.svelte";
-	import { closestAllowed, fieldDomId, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
+	import { axisSwitch, closestAllowed, fieldDomId, issueText, lockHint, LOCKED_CONTROL, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
 	import Self from "./InspectorFields.svelte";
 
 	let {
@@ -52,15 +56,22 @@
 	}
 
 	function hint(field: InspectorField): string | undefined {
-		if (field.origin) return undefined;
-		return field.value === undefined ? t("inspector.unset") : t("inspector.fromVariant").replace("{variant}", variant);
+		const key = lockHint(field);
+		return key ? t(key).replace("{variant}", variant) : undefined;
 	}
 
 	function errorOf(field: InspectorField): string | undefined {
 		const issue = issues[field.pointer];
 		if (!issue) return undefined;
-		if (!issue.allowed?.length || field.widget === "icon") return issue.message;
-		return `${issue.message} ${t("inspector.allowed").replace("{list}", issue.allowed.join(", "))}`;
+		const message = issueText(issue, t);
+		if (!issue.allowed?.length || field.widget === "icon") return message;
+		return `${message} ${t("inspector.allowed").replace("{list}", issue.allowed.join(", "))}`;
+	}
+
+	function onAxis(field: InspectorField, event: Event) {
+		const value = (event.currentTarget as HTMLSelectElement).value;
+		const target = field.choices?.find((choice) => choice.value === value)?.variant;
+		if (target && target !== variant) handlers?.onvariant?.(target);
 	}
 
 	function label(field: InspectorField): string {
@@ -77,19 +88,31 @@
 	}
 </script>
 
+{#snippet lockMark()}
+	<Group gap="2" class="text-xs text-muted-foreground" data-slot="inspector-lock">
+		<Icon size="sm"><Lock /></Icon>
+		<Text tag="span" class="text-xs">{t("inspector.locked")}</Text>
+	</Group>
+{/snippet}
+
 <Stack align="stretch" gap="4" data-slot="inspector-fields" onfocusin={onFocus}>
 	{#each fields as field (field.pointer)}
 		{@const id = fieldDomId(blockId, field.pointer)}
 		{@const canEdit = editable(field)}
 		{#if field.widget === "text" || field.widget === "longtext"}
 			<Field label={label(field)} htmlFor={id} hint={hint(field)} error={errorOf(field)}>
+				{#if !canEdit}{@render lockMark()}{/if}
 				{#if field.widget === "longtext"}
 					<Textarea
 						{id}
 						size="sm"
+						class={canEdit ? undefined : LOCKED_CONTROL}
 						state={issues[field.pointer] ? "error" : undefined}
 						value={text(field.value)}
 						readOnly={!canEdit}
+						aria-readonly={canEdit ? undefined : "true"}
+						title={canEdit ? undefined : hint(field)}
+						data-locked={canEdit ? undefined : field.lock ?? "readonly"}
 						data-pointer={field.pointer}
 						oninput={canEdit ? (event: Event) => handlers!.onedit(field, valueOf(event), true) : undefined}
 						onblur={canEdit ? () => handlers!.onseal() : undefined}
@@ -98,9 +121,13 @@
 					<Input
 						{id}
 						size="sm"
+						class={canEdit ? undefined : LOCKED_CONTROL}
 						state={issues[field.pointer] ? "error" : undefined}
 						value={text(field.value)}
 						readOnly={!canEdit}
+						aria-readonly={canEdit ? undefined : "true"}
+						title={canEdit ? undefined : hint(field)}
+						data-locked={canEdit ? undefined : field.lock ?? "readonly"}
 						data-pointer={field.pointer}
 						oninput={canEdit ? (event: Event) => handlers!.onedit(field, valueOf(event), true) : undefined}
 						onblur={canEdit ? () => handlers!.onseal() : undefined}
@@ -110,12 +137,17 @@
 		{:else if field.widget === "icon"}
 			{@const issue = issues[field.pointer]}
 			<Field label={label(field)} htmlFor={id} hint={hint(field) ?? t("inspector.iconHint")} error={errorOf(field)}>
+				{#if !canEdit}{@render lockMark()}{/if}
 				<Input
 					{id}
 					size="sm"
+					class={canEdit ? undefined : LOCKED_CONTROL}
 					state={issue ? "error" : undefined}
 					value={text(field.value)}
 					readOnly={!canEdit}
+					aria-readonly={canEdit ? undefined : "true"}
+					title={canEdit ? undefined : hint(field)}
+					data-locked={canEdit ? undefined : field.lock ?? "readonly"}
 					autocomplete="off"
 					spellcheck="false"
 					data-pointer={field.pointer}
@@ -130,13 +162,26 @@
 				{/if}
 			</Field>
 		{:else if field.widget === "enum"}
+			{@const axis = axisSwitch(field, Boolean(handlers?.onvariant))}
 			<Field label={label(field)} htmlFor={id} hint={hint(field)} error={errorOf(field)}>
-				<Select {id} size="sm" value={text(field.value)} disabled data-pointer={field.pointer}>
+				{#if !axis}{@render lockMark()}{/if}
+				<Select
+					{id}
+					size="sm"
+					value={text(field.value)}
+					disabled={!axis}
+					title={hint(field)}
+					data-locked={axis ? undefined : field.lock ?? "readonly"}
+					data-action={axis ? "axis-variant" : undefined}
+					data-pointer={field.pointer}
+					onchange={axis ? (event: Event) => onAxis(field, event) : undefined}
+				>
 					{#if field.value === undefined}
 						<SelectOption value="">{t("inspector.unset")}</SelectOption>
 					{/if}
 					{#each field.options ?? [] as option (option)}
-						<SelectOption value={option}>{option}</SelectOption>
+						{@const choice = field.choices?.find((entry) => entry.value === option)}
+						<SelectOption value={option} disabled={axis && option !== text(field.value) && !choice?.variant}>{option}{choice?.variant && option !== text(field.value) ? ` · ${choice.variant}` : ""}</SelectOption>
 					{/each}
 				</Select>
 			</Field>
@@ -150,7 +195,8 @@
 			</Group>
 		{:else if field.widget === "number"}
 			<Field label={label(field)} htmlFor={id} hint={hint(field)}>
-				<Input {id} size="sm" type="number" value={text(field.value)} readOnly data-pointer={field.pointer} />
+				{@render lockMark()}
+				<Input {id} size="sm" type="number" class={LOCKED_CONTROL} value={text(field.value)} readOnly aria-readonly="true" title={hint(field)} data-locked={field.lock ?? "readonly"} data-pointer={field.pointer} />
 			</Field>
 		{:else if field.widget === "object"}
 			<Fieldset variant="card" data-pointer={field.pointer}>

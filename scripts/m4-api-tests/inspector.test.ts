@@ -339,3 +339,134 @@ test("write-back: writing the current value is a no-op (same page object, no his
 	assert.match(store, /result\.page === before\) return true/);
 	assert.match(store, /!typing && value === String\(field\.value/);
 });
+
+// ---- Inspector P0 (ADR 0024 addendum): honest locks, axis selects, empty mapped fields, link reasons ---------------
+
+import { emptyPageStart, writableOrigin as writableOriginOf, organismFor as organismOf } from "../../packages/builder-core/src/index.ts";
+import { axisSwitch, issueText, lockHint, LOCKED_CONTROL } from "../../apps/chat-web/src/lib/inspector/fields.ts";
+
+function emptyStartWith(adds: Array<[string, string]>) {
+	const start = emptyPageStart({ kind: "hero", title: "New page", now: NOW })!;
+	let page = start.page;
+	for (const [catalogBlock, variant] of adds) {
+		const r = inspectorOp({ page, provenance: start.provenance, revision: 1, now: NOW }, { op: "add", blockId: "", catalogBlock, variant });
+		assert.ok(r.ok, JSON.stringify(r));
+		page = r.page;
+	}
+	return { page, provenance: start.provenance };
+}
+
+test("P0 locks: every locked field names its reason (variant / sample / no page field)", () => {
+	const { page } = emptyStartWith([["block.herosplit", "miniCards"]]);
+	const hero = page.layout.blocks[0]!;
+	const model = inspectorModel(hero);
+	assert.ok(model.ok);
+	assert.equal(model.item, "hero-split");
+	const f = (p: string) => byPointer(model.fields, p)!;
+	assert.equal(f("/extra").lock, "variant");
+	assert.equal(f("/content/card/title").lock, "sample", "the schema fills \"Title\"; not the variant");
+	assert.equal(f("/content/proof").lock, "sample");
+	assert.equal(f("/actions/secondary").lock, "no_page_field");
+	assert.equal(f("/landmarkLabel").lock, "no_page_field");
+	assert.equal(f("/title").lock, undefined, "editable fields carry no lock");
+	assert.equal(f("/content").lock, undefined, "objects carry no lock; their fields do");
+	assert.equal(lockHint(f("/content/card/title")), "inspector.lock.sample");
+	assert.equal(lockHint(f("/actions/secondary")), "inspector.lock.noField");
+	assert.equal(lockHint(f("/title")), null);
+	const classic = inspectorModel(emptyStartWith([["block.hero", "centered"]]).page.layout.blocks[0]!);
+	assert.ok(classic.ok);
+	assert.equal(byPointer(classic.fields, "/actions/mode")?.lock, "variant", "a value the variant preset sets");
+	assert.equal(lockHint(byPointer(classic.fields, "/actions/mode")!), "inspector.lock.variant");
+});
+
+test("P0 axes: each axis value maps to the named variant of that combo, else choose in Variant above", () => {
+	const { page } = emptyStartWith([["block.hero", "centered"], ["block.herosplit", "miniCards"]]);
+	const classic = inspectorModel(page.layout.blocks[0]!);
+	assert.ok(classic.ok);
+	const scale = byPointer(classic.fields, "/scale")!;
+	assert.deepEqual(scale.choices, [{ value: "default", variant: "centered" }, { value: "display", variant: "display" }]);
+	assert.equal(axisSwitch(scale, true), true);
+	assert.equal(axisSwitch(scale, false), false, "no host handler: no switch");
+	assert.equal(lockHint(scale), "inspector.lock.axis");
+	const split = inspectorModel(page.layout.blocks[1]!);
+	assert.ok(split.ok);
+	const side = byPointer(split.fields, "/mediaSide")!;
+	assert.deepEqual(side.choices, [{ value: "end", variant: "miniCards" }, { value: "start", variant: null }], "no named preset with start");
+	assert.equal(axisSwitch(side, true), false);
+	assert.equal(lockHint(side), "inspector.lock.axisNone");
+	// The switch is an ordinary set_variant through every gate.
+	const ctx = { page, provenance: emptyStartWith([]).provenance, revision: 1, now: NOW };
+	const r = inspectorOp(ctx, { op: "set_variant", blockId: page.layout.blocks[0]!.id, variant: "display" });
+	assert.ok(r.ok, JSON.stringify(r));
+	assert.equal(r.page.layout.blocks[0]!.variant, "display");
+});
+
+test("P0 empty mapped fields: action label / href, lead and empty state are writable via writableOrigin", () => {
+	const { page } = emptyStartWith([["block.features", "grid2"]]);
+	const features = page.layout.blocks[0]!;
+	const model = inspectorModel(features);
+	assert.ok(model.ok);
+	assert.equal(byPointer(model.fields, "/action/label")?.origin, "copy.action");
+	assert.equal(byPointer(model.fields, "/action/href")?.origin, "copy.href");
+	assert.equal(byPointer(model.fields, "/empty")?.origin, null, "rows exist: the empty state is not shown");
+	const r = inspectorSetField(page, features.id, "/action/label", "See all", NOW);
+	assert.ok(r.ok, JSON.stringify(r));
+	assert.equal(r.page.layout.blocks[0]!.copy?.action, "See all");
+	const after = inspectorModel(r.page.layout.blocks[0]!);
+	assert.ok(after.ok);
+	assert.equal(byPointer(after.fields, "/action/label")?.value, "See all", "the render shows it");
+	// No rows: the empty state reads (and writes) the block lede.
+	const bare: PageBlock = { ...features, children: undefined };
+	delete (bare as { children?: unknown }).children;
+	const render = organismOf(bare)!;
+	const noSummary = { ...bare, summary: undefined } as unknown as PageBlock;
+	assert.equal(writableOriginOf(noSummary, organismOf(noSummary)!, "/empty"), "summary");
+	void render;
+	// A hero with no lede yet: its lead prop writes copy.lede.
+	const hero = emptyStartWith([["block.herosplit", "miniCards"]]).page.layout.blocks[0]!;
+	const noLede: PageBlock = { ...hero, copy: { ...hero.copy, lede: undefined } };
+	delete noLede.copy!.lede;
+	const bareHero = { ...noLede, summary: undefined } as unknown as PageBlock;
+	assert.equal(writableOriginOf(bareHero, organismOf(bareHero)!, "/lead"), "copy.lede");
+});
+
+test("P0 links: a rejected link says why, in the field's words", () => {
+	const { page } = emptyStartWith([["block.herosplit", "miniCards"]]);
+	const id = page.layout.blocks[0]!.id;
+	const bad = inspectorSetField(page, id, "/actions/href", "Probe text", NOW);
+	assert.ok(!bad.ok);
+	assert.equal(bad.code, "link_invalid");
+	assert.equal(bad.pointer, "/actions/href");
+	for (const good of ["#offer", "/pricing", "https://example.com", "mailto:a@b.co"]) assert.ok(inspectorSetField(page, id, "/actions/href", good, NOW).ok, good);
+	const text = issueText({ pointer: "/actions/href", code: "link_invalid", message: bad.message, value: "Probe text" }, (key) => (key === "inspector.linkInvalid" ? "\"{value}\" is not a link." : key));
+	assert.equal(text, "\"Probe text\" is not a link.");
+});
+
+test("P0 unshown copy: a hero eyebrow this block cannot show is listed, not dropped silently", () => {
+	const { page } = emptyStartWith([["block.hero", "centered"]]);
+	const model = inspectorModel(page.layout.blocks[0]!);
+	assert.ok(model.ok);
+	const eyebrow = model.unshown.find((entry) => entry.key === "eyebrow");
+	assert.ok(eyebrow, "hero-classic has no eyebrow prop");
+	assert.equal(eyebrow.value, page.layout.blocks[0]!.copy?.eyebrow);
+	assert.equal(model.unshown.some((entry) => entry.key === "headline" || entry.key === "lede" || entry.key === "action"), false, "shown keys are not listed");
+});
+
+test("P0 ui: locked controls are muted, aria-readonly, with a lock icon; axis selects run set_variant; en + ru", () => {
+	const view = web("app/InspectorFields.svelte");
+	assert.match(view, /aria-readonly=\{canEdit \? undefined : "true"\}/);
+	assert.match(view, /class=\{canEdit \? undefined : LOCKED_CONTROL\}/);
+	assert.match(view, /@lucide\/svelte\/icons\/lock/);
+	assert.match(view, /handlers\?\.onvariant\?\.\(target\)/);
+	assert.match(LOCKED_CONTROL, /cursor-not-allowed/);
+	assert.match(LOCKED_CONTROL, /bg-muted/);
+	const panel = web("app/InspectorPanel.svelte");
+	assert.match(panel, /onvariant: \(variant\) =>[\s\S]*op: "set_variant"/);
+	assert.match(panel, /data-slot="inspector-unshown"/);
+	for (const locale of ["en", "ru"]) {
+		const messages = JSON.parse(web(`lib/i18n/${locale}.json`)).messages;
+		for (const key of ["inspector.locked", "inspector.lock.axis", "inspector.lock.axisNone", "inspector.lock.variant", "inspector.lock.sample", "inspector.lock.noField", "inspector.notShown", "inspector.notShownTitle", "inspector.linkInvalid"]) {
+			assert.ok(messages[key], `${locale}: ${key}`);
+		}
+	}
+});

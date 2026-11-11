@@ -16,10 +16,15 @@ import { editPage } from "./patch.ts";
 import { attachCatalogSources, familyLabelForKind, validateCatalogProvenance } from "./catalog/provenance.ts";
 import { isScenarioId } from "./brief.ts";
 import type { ScenarioId } from "./copy.ts";
-import { organismFor, writableOrigin, type OrganismRender } from "./catalog/organism.ts";
+import { organismFor, variantPreset, writableOrigin, type OrganismRender } from "./catalog/organism.ts";
 import { checkBlockProps } from "./catalog/provenance.ts";
 import { propsEventsFor, propsFieldTree, type PropsFieldNode } from "./catalog/props-schema.ts";
 import { catalogVariantsFor } from "./catalog/sources.ts";
+
+export type InspectorLock = "variant" | "sample" | "no_page_field";
+
+/** A copy key of the block kind that this registry block does not render (e.g. a hero eyebrow): shown, not edited. */
+export type InspectorUnshown = { key: string; value: string | undefined };
 
 export type InspectorWidget = "text" | "longtext" | "icon" | "enum" | "boolean" | "number" | "object" | "list" | "other";
 
@@ -32,6 +37,14 @@ export type InspectorField = {
 	value: unknown;
 	/** Page-spec field an edit writes (`copy.headline`, `children[2].copy.icon`); null: read-only. */
 	origin: string | null;
+	/**
+	 * Why a field without an origin is locked: `variant` (a variant axis or a value the variant preset sets),
+	 * `sample` (a placeholder the props schema fills in, e.g. "Title"), `no_page_field` (the page has no field for it
+	 * yet). Absent on editable fields and on objects / lists (their fields carry their own reason).
+	 */
+	lock?: InspectorLock;
+	/** Variant axis (top-level enum the variant presets set): per value, the named variant it switches to, or null. */
+	choices?: Array<{ value: string; variant: string | null }>;
 	/** enum: the schema's values. */
 	options?: string[];
 	maxLength?: number;
@@ -53,6 +66,8 @@ export type InspectorModel =
 			/** Variants the catalog block offers (set_variant). */
 			variants: string[];
 			fields: InspectorField[];
+			/** Copy keys of the page block kind this registry block does not show. */
+			unshown: InspectorUnshown[];
 	  }
 	| { ok: false; blockId: string; kind: string; title: string; reason: "not_in_registry" | "no_schema" };
 
@@ -88,7 +103,18 @@ function widgetFor(node: PropsFieldNode, origin: string | null): InspectorWidget
 	}
 }
 
-function fieldsOf(block: PageBlock, render: OrganismRender, nodes: PropsFieldNode[], base: string, hidden: ReadonlySet<string>): InspectorField[] {
+type Ctx = { block: PageBlock; render: OrganismRender; preset: Record<string, unknown>; axes: Record<string, Array<{ value: string; variant: string | null }>> };
+
+function lockFor(ctx: Ctx, field: InspectorField): InspectorLock | undefined {
+	if (field.origin || field.widget === "object" || field.widget === "list") return undefined;
+	if (field.choices || valueAt(ctx.preset, field.pointer) !== undefined) return "variant";
+	const value = field.value;
+	if (value !== undefined && value !== null && value !== "" && !(Array.isArray(value) && value.length === 0)) return "sample";
+	return "no_page_field";
+}
+
+function fieldsOf(ctx: Ctx, nodes: PropsFieldNode[], base: string, hidden: ReadonlySet<string>): InspectorField[] {
+	const { block, render } = ctx;
 	const out: InspectorField[] = [];
 	for (const node of nodes) {
 		if (HIDDEN.has(node.name) || hidden.has(node.name)) continue;
@@ -103,19 +129,66 @@ function fieldsOf(block: PageBlock, render: OrganismRender, nodes: PropsFieldNod
 			origin
 		};
 		if (node.enum) field.options = node.enum;
+		if (base === "" && ctx.axes[node.name]) field.choices = ctx.axes[node.name];
 		if (node.maxLength !== undefined) field.maxLength = node.maxLength;
-		if (field.widget === "object" && node.fields) field.fields = fieldsOf(block, render, node.fields, pointer, new Set());
+		const lock = lockFor(ctx, field);
+		if (lock) field.lock = lock;
+		if (field.widget === "object" && node.fields) field.fields = fieldsOf(ctx, node.fields, pointer, new Set());
 		if (field.widget === "list" && node.fields) {
 			const rows = Array.isArray(field.value) ? field.value : [];
 			field.rows = rows.map((_, index) => {
 				const at = `${pointer}/${index}`;
 				const row = render.origins[at];
-				return { pointer: at, origin: row && /^children\[\d+\]$/.test(row) ? row : null, fields: fieldsOf(block, render, node.fields!, at, new Set()) };
+				return { pointer: at, origin: row && /^children\[\d+\]$/.test(row) ? row : null, fields: fieldsOf(ctx, node.fields!, at, new Set()) };
 			});
 		}
 		out.push(field);
 	}
 	return out;
+}
+
+/**
+ * Variant axes of a block: every top-level enum prop the variant presets set, each value mapped to the named catalog
+ * variant whose preset equals the current one with only that axis changed (null when no named preset matches).
+ */
+function variantAxes(block: PageBlock, render: OrganismRender, current: Record<string, unknown>): Ctx["axes"] {
+	const named: Array<{ variant: string; preset: Record<string, unknown> }> = [];
+	for (const variant of catalogVariantsFor(render.catalogBlock)) {
+		const hit = registryItemFor(block.catalogBlock, variant);
+		if (hit?.item === render.item) named.push({ variant, preset: variantPreset(hit.item, hit.variant) });
+	}
+	const tree = propsFieldTree(render.item) ?? [];
+	const keys = tree.filter((node) => node.kind === "enum" && named.some((entry) => entry.preset[node.name] !== undefined)).map((node) => node.name);
+	const axisOf = (preset: Record<string, unknown>, key: string) => preset[key] ?? render.props[key];
+	const axes: Ctx["axes"] = {};
+	for (const key of keys) {
+		const node = tree.find((entry) => entry.name === key)!;
+		axes[key] = (node.enum ?? []).map((value) => {
+			const want = (other: string) => (other === key ? value : axisOf(current, other));
+			const hit = named.find((entry) => keys.every((other) => String(axisOf(entry.preset, other)) === String(want(other))));
+			return { value, variant: hit?.variant ?? null };
+		});
+	}
+	return axes;
+}
+
+/** Copy keys the page kind renders that no field of this registry block reads or writes (a hero-split has no eyebrow). */
+function unshownCopy(block: PageBlock, fields: InspectorField[]): InspectorUnshown[] {
+	const used = new Set<string>();
+	const walk = (list: InspectorField[]) => {
+		for (const field of list) {
+			if (field.origin && !field.origin.startsWith("children[")) used.add(field.origin);
+			walk(field.fields ?? []);
+		}
+	};
+	walk(fields);
+	// headline / lede are the block title / summary when the copy key is not set.
+	if (used.has("title")) used.add("copy.headline");
+	if (used.has("summary")) used.add("copy.lede");
+	const keys = [...new Set([...((PAGE_SLOTS[block.kind]?.copy ?? []) as readonly string[]), ...Object.keys(block.copy ?? {})])];
+	return keys
+		.filter((key) => !used.has(`copy.${key}`) && (block.copy?.[key as PageCopyKey] !== undefined || (PAGE_SLOTS[block.kind]?.copy as readonly string[] | undefined)?.includes(key)))
+		.map((key) => ({ key, value: block.copy?.[key as PageCopyKey] }));
 }
 
 /** The inspector fields of a page block, or an honest stub when it has no registry item or no published schema. */
@@ -126,6 +199,9 @@ export function inspectorModel(block: PageBlock): InspectorModel {
 	const tree = propsFieldTree(render.item);
 	if (!tree) return { ok: false, ...head, reason: "no_schema" };
 	const { events, slots } = propsEventsFor(render.item);
+	const preset = variantPreset(render.item, render.variant);
+	const ctx: Ctx = { block, render, preset, axes: variantAxes(block, render, preset) };
+	const fields = fieldsOf(ctx, tree, "", new Set([...events, ...slots]));
 	return {
 		ok: true,
 		...head,
@@ -133,7 +209,8 @@ export function inspectorModel(block: PageBlock): InspectorModel {
 		item: render.item,
 		variant: render.variant,
 		variants: catalogVariantsFor(render.catalogBlock),
-		fields: fieldsOf(block, render, tree, "", new Set([...events, ...slots]))
+		fields,
+		unshown: unshownCopy(block, fields)
 	};
 }
 
@@ -153,6 +230,9 @@ export type InspectorResult = InspectorSuccess | InspectorFailure;
 
 const fail = (code: string, message: string, pointer: string, allowed?: string[]): InspectorFailure =>
 	allowed?.length ? { ok: false, code, message, pointer, allowed } : { ok: false, code, message, pointer };
+
+/** page-spec copy.href: `#fragment`, `/path`, an http(s) URL or mailto (the contract pattern). */
+const LINK = /^(?:#|\/|https?:\/\/|mailto:)/;
 
 const ORIGIN = /^((?:children\[\d+\]\.)*)(title|summary|copy\.([a-z]+))$/;
 
@@ -230,7 +310,10 @@ export function inspectorSetField(page: Page, blockId: string, pointer: string, 
 	const render = organismFor(block);
 	if (!render) return fail("not_in_registry", `Section ${blockId} has no registry block.`, pointer);
 	const origin = writableOrigin(block, render, pointer);
-	if (!origin) return fail("field_not_editable", `${pointer} is set by the variant ${render.variant}, not by the page.`, pointer);
+	if (!origin) return fail("field_not_editable", `${pointer} has no page field (variant ${render.variant} or the schema sets it).`, pointer);
+	if (/(?:^|\.)copy\.href$/.test(origin) && !LINK.test(value)) {
+		return fail("link_invalid", `${pointer} "${value}": a link starts with #, /, http://, https:// or mailto:.`, pointer);
+	}
 	const next = writeOrigin(block, origin, value);
 	if (!next) return fail("field_not_editable", `${pointer} has no page field ${origin}.`, pointer);
 	// Writing the value the page already has is a no-op: same page, no history step, no revision.

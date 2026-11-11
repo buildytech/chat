@@ -186,3 +186,36 @@ should start on Blocks, and header and footer must be optional (many promos have
   and keep their small framed thumbnail.
 - **Open.** The start screens are a fixed list: a kind outside them (e.g. `hours`) cannot start a page; Ask "apply
   variant" with no page still asks for a page first.
+
+## Addendum: inspector P0, honest locks (diagnosis t140u, 2026-11-11)
+
+The owner's Hero (hero-split / miniCards) showed fields that were greyed out and others that looked live but took
+no typing. Not a regression from steps A-D (the model is the same before 09d1031, since ADR 0014 step 2): the page
+kind `hero` holds only title, summary and a few copy keys, so most props of the registry block have no page field;
+variant axes were always disabled; read-only text inputs had the live style. P0 fixes what the chat can fix alone,
+without a contract change (the props override map and history op / path are a separate step).
+
+- **Locked looks locked.** A field without a page origin renders muted (`bg-muted text-muted-foreground`),
+  `cursor-not-allowed`, `aria-readonly="true"`, with a lock icon and "Locked" above it and the reason as its hint
+  and title. `data-locked` names the reason for tests.
+- **Three real reasons.** `InspectorField.lock` (builder-core): `variant` (a variant axis or a value the variant
+  preset sets, e.g. `actions.mode`), `sample` (a placeholder the props schema fills in: the miniCards card "Title" /
+  "Text" / `circle-dot`, `content.proof`), `no_page_field` (the page has no field for it yet: secondary action,
+  `landmarkLabel`, `level`, row links). en + ru hints; the old "Set by the variant" text no longer covers schema
+  placeholders.
+- **Axis selects switch variants.** Each top-level enum the variant presets set gets `choices`: per value, the named
+  catalog variant whose preset equals the current one with only that axis changed (`hero-classic` scale display ->
+  `display`). The select is live when another value has a named variant; it runs the ordinary `set_variant` op
+  (every gate, one undo step); values with no named variant are disabled options. With none it stays disabled with
+  "Choose in Variant above".
+- **Mapped but empty fields unlock.** `writableOrigin` now mirrors the read mapping for empty values: the block's
+  title / lead (`copy.lede` where the kind renders it, else summary), the empty state while there are no rows, the
+  label and link of the action object (`/action/label` -> `copy.action`, `/action/href` -> `copy.href`), labels
+  brand / empty, copy-key objects, and row title / text / icon / link where the row kind renders that field.
+- **Links say why.** A `copy.href` value outside the page-spec pattern fails before the gate with `link_invalid`; the
+  field shows "\"...\" is not a link. Start it with #, /, http://, https:// or mailto:" (en / ru).
+- **Eyebrow.** No registry block has an `eyebrow` / `kicker` / `overline` prop today, so the hero eyebrow is not
+  mapped; the inspector lists copy keys of the page kind that the block does not show (`InspectorModel.unshown`)
+  as locked "Not shown by this block" rows instead of dropping them silently.
+- **Open.** Free edits of the other props (content lists, the card, the secondary action) need the page-spec
+  `props` override map; history entries still carry only the block id (op / path come with the contract bump).

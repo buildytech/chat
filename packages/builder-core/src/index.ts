@@ -81,6 +81,8 @@ export {
 	registryItemFor,
 	registryNpmDependencies,
 	writableOrigin,
+	variantPreset,
+	variantPresets,
 	type OrganismRender
 } from "./catalog/organism.ts";
 export {
@@ -106,7 +108,9 @@ export {
 	type InspectorOpContext,
 	type InspectorResult,
 	type InspectorSuccess,
-	type InspectorWidget
+	type InspectorWidget,
+	type InspectorLock,
+	type InspectorUnshown
 } from "./inspector.ts";
 export {
 	fillProps,

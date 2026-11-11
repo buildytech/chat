@@ -58,6 +58,45 @@ export type FieldIssue = { pointer: string; code: string; message: string; allow
 export type FieldHandlers = {
 	onedit: (field: InspectorField, value: string, typing: boolean) => void;
 	onseal: () => void;
+	/** A variant axis select picked a value: switch the block to this named variant (set_variant). */
+	onvariant?: (variant: string) => void;
 	/** Page rows of a list (row origin `children[i]`): duplicate or remove row `index`. */
 	onrow?: (index: number, action: "duplicate" | "remove") => void;
 };
+
+/** Classes of a locked control: muted (UI8Kit tokens), not-allowed cursor; it never looks like a live input. */
+export const LOCKED_CONTROL = "cursor-not-allowed bg-muted text-muted-foreground";
+
+/**
+ * The message key of why a field is locked (null: editable). A variant axis whose values have no other named variant
+ * says to choose in Variant above; one that switches variants says so.
+ */
+export function lockHint(field: InspectorField): string | null {
+	if (field.origin) return null;
+	switch (field.lock) {
+		case "variant":
+			if (field.choices) return axisSwitchable(field) ? "inspector.lock.axis" : "inspector.lock.axisNone";
+			return "inspector.lock.variant";
+		case "sample":
+			return "inspector.lock.sample";
+		case "no_page_field":
+			return "inspector.lock.noField";
+		default:
+			return null;
+	}
+}
+
+function axisSwitchable(field: InspectorField): boolean {
+	return Boolean(field.choices?.some((choice) => choice.variant && choice.value !== String(field.value ?? "")));
+}
+
+/** Whether a variant axis select is live: the host can switch variants and another value has a named variant. */
+export function axisSwitch(field: InspectorField, canSwitch: boolean): boolean {
+	return canSwitch && axisSwitchable(field);
+}
+
+/** The text of a rejected edit: a known code reads from the dictionary, anything else is the gate's own message. */
+export function issueText(issue: FieldIssue, t: (key: string) => string): string {
+	if (issue.code === "link_invalid") return t("inspector.linkInvalid").replace("{value}", issue.value ?? "");
+	return issue.message;
+}
