@@ -393,6 +393,9 @@
 					selectedId={canvasSelectedId}
 					selectedLabel={canvasSelectedLabel}
 				/>
+			{/if}
+			<!-- Drops work with service labels hidden too (the layer exists only while a feed card is dragged). -->
+			{#if frameDoc}
 				<DropOverlay doc={frameDoc} scale={frameScale} />
 			{/if}
 		</Box>

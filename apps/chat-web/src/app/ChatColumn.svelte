@@ -10,13 +10,15 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { feed } from "$lib/feed/feed.svelte";
 	import { feedDrag } from "$lib/feed/drag.svelte";
-	import { LEFT_TABS } from "$lib/feed/prefs";
+	import { LEFT_TABS, landingTab } from "$lib/feed/prefs";
+	import { readPreviewPage } from "$lib/page-store";
+	import { untrack } from "svelte";
 	import SectionsList from "./SectionsList.svelte";
 	import BlocksFeed from "./BlocksFeed.svelte";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import type { ChatSession, CreatorRuntimeStatus } from "$lib/chat-core";
+	import { createdInThisTab, type ChatSession, type CreatorRuntimeStatus } from "$lib/chat-core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
 	import ChatThread from "./ChatThread.svelte";
 
@@ -56,6 +58,22 @@
 	// stays mounted, so the chat keeps its draft, scroll and running turn while another tab is open.
 	const icons = { blocks: Blocks, sections: ListTree, chat: MessageSquare } as const;
 	const tab = $derived(feed.tab);
+	// The tab a chat opens on (landingTab): an empty chat lands on Blocks, the remembered tab is kept only when it has
+	// something to show. Runs when another chat opens; a chat created in place (first message, first block) keeps the
+	// tab the author is working in.
+	let landedFor: string | null | undefined = undefined;
+	$effect(() => {
+		const id = session?.id ?? null;
+		if (id === landedFor) return;
+		// Restored chats arrive after hydration (null -> id) and land like any other; only a chat made in this tab keeps the tab.
+		const createdInPlace = landedFor === null && createdInThisTab(id);
+		landedFor = id;
+		if (createdInPlace) return;
+		untrack(() => {
+			const hasPage = Boolean(readPreviewPage(id)?.layout.blocks.length);
+			feed.land(landingTab(feed.savedTab, { hasPage, hasMessages: Boolean(session?.messages.length) }));
+		});
+	});
 	// A feed card dragged onto the Sections tab opens it after a short rest, so the card can drop between sections.
 	let springTimer: ReturnType<typeof setTimeout> | null = null;
 	function springOpen(name: string) {

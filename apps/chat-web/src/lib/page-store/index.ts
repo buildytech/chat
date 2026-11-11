@@ -33,6 +33,7 @@ export {
 	selectBlock,
 	setCandidatePage,
 	setCurrentPage,
+	startEmptyPage,
 	type RevisionEvent,
 	type VisibleChange
 } from "./mock.svelte";

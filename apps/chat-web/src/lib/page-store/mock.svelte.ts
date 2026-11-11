@@ -258,6 +258,22 @@ export function replaceVisiblePage(page: Page, selectId: string | null = null, c
 	return true;
 }
 
+/**
+ * Empty start (ADR 0024): the bound chat gets an empty page (no sections) on its start Stock screen as the applied
+ * page, revision 0 and no history entry; the first section is the next change (revision 1, one undo step back to
+ * this empty page). A chat that already shows a page or a pending proposal is left alone (false).
+ */
+export function startEmptyPage(page: Page, provenance: StoredPageProvenance): boolean {
+	if (!boundSessionId || candidatePage || (currentPage && currentPage.layout.blocks.length > 0)) return false;
+	currentPage = parsePageSpec(page, { draft: true });
+	appliedProvenance = provenance;
+	candidateProvenance = null;
+	pageRevision = pageRevision ?? 0;
+	selectedBlockId = null;
+	persistBound();
+	return true;
+}
+
 /** Blank Workspace for a new / unbound session. Never loads the demo fixture. */
 export function clearCurrentPage(): void {
 	currentPage = null;

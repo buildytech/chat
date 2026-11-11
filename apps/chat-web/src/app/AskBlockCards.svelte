@@ -23,10 +23,10 @@
 	<Box tag="ul" class="flex flex-col gap-4" aria-label={t("ask.cards")}>
 		{#each cards as card (card.spec)}
 			<Box tag="li">
-				<Block tag="article" class="rounded border border-border p-4" data-spec={card.spec}>
-					<Stack align="stretch" class="gap-2">
-						<!-- picture on top: the chat column is narrow in the compact IDE layout -->
-						<StockThumb src={card.thumb} title={card.title} class="w-full max-w-64" />
+				<Block tag="article" class="overflow-hidden rounded border border-border" data-spec={card.spec}>
+					<!-- full-bleed picture on top (the card radius clips it): the chat column is narrow in the compact IDE layout -->
+					<StockThumb src={card.thumb} title={card.title} bleed class="w-full border-b" />
+					<Stack align="stretch" class="gap-2 p-3">
 						<Group class="flex-wrap items-center justify-between gap-2">
 							<Title as={3} class="text-sm font-semibold text-foreground">{card.title}</Title>
 							<Link

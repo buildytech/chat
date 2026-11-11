@@ -6,7 +6,7 @@
  */
 import { canAddCatalogBlock, inspectorOp, inspectorSetField, type AddBlockCheck, type InspectorField, type InspectorOp, type InspectorResult } from "@buildytech/builder-core";
 import type { Page } from "@buildytech/page-contract";
-import { getChatMode } from "../chat-core";
+import { getChatMode, startEmptyPageInChat } from "../chat-core";
 import { getBoundPageSessionId, getCurrentPage, getCurrentProvenance, getPageRevision, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
 import { commitChange } from "../page-store/revision";
 import type { FieldIssue } from "./fields";
@@ -144,8 +144,15 @@ export const inspector = {
 	 * (every gate, one undo step, no model call). The new section becomes the selection.
 	 */
 	add(catalogBlock: string, variant: string | null, at?: number): { ok: true; blockId: string } | { ok: false; code: string; message: string } {
+		// Empty start: no page yet (or an empty one with no screen). The chat gets an empty page on the start screen
+		// first, with no history step, so the section below is the one undo step (undo goes back to the empty page).
+		const check = inspector.canAdd(catalogBlock, variant);
+		if (!check.ok) return { ok: false, code: check.code, message: check.message };
+		if (check.startScreenId && !startEmptyPageInChat(check.startScreenId)) {
+			return { ok: false, code: "not_started", message: "The empty page could not be started." };
+		}
 		const page = getCurrentPage();
-		if (!page) return { ok: false, code: "no_page", message: "There is no page yet." };
+		if (!page) return { ok: false, code: "not_started", message: "The empty page could not be started." };
 		historyFor(page).seal();
 		// A drop names its slot (`at`); "+" adds after the selected section or at the end.
 		const op = at === undefined ? { op: "add" as const, blockId: getSelectedBlockId() ?? "", catalogBlock, variant } : { op: "add" as const, blockId: "", catalogBlock, variant, at };

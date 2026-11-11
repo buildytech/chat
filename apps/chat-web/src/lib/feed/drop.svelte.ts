@@ -16,9 +16,9 @@ export function dropRefusal(at: number): string | null {
 	if (!item) return null;
 	if (!check) return t("feed.why.not_a_page_block");
 	if (!check.ok) return t(`feed.why.${check.code}`).replace("{role}", item.role ?? "");
+	// No page yet: the drop starts an empty page, so the only slot is the first.
 	const page = getCurrentPage();
-	if (!page) return t("feed.why.no_page");
-	const slot = addSlotCheck(blocksOf(page), check.kind, at);
+	const slot = addSlotCheck(page ? blocksOf(page) : [], check.kind, at);
 	return slot.ok ? null : t(`dnd.why.${slot.code}`);
 }
 

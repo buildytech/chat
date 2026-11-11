@@ -20,7 +20,16 @@
 <Box class="min-h-screen bg-background text-foreground" data-slot="preview-frame">
 	{#key frame.reload}
 		{#if blocks.length === 0}
-			<Text tag="p" class="p-4 text-sm text-muted-foreground">{t("workspace.empty")}</Text>
+			<!-- Empty page (or none yet): the drop zone. Drag events land on the host drop layer over the frame; "+" adds too. -->
+			<Box class="p-4" data-slot="preview-empty">
+				<Box
+					class="flex min-h-64 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-8 text-center"
+					data-slot="preview-empty-drop"
+				>
+					<Text tag="p" class="text-base font-semibold text-foreground">{t("preview.emptyDrop")}</Text>
+					<Text tag="p" class="max-w-md text-sm text-muted-foreground">{t("preview.emptyHint")}</Text>
+				</Box>
+			</Box>
 		{:else}
 			{#each blocks as block (block.id)}
 				<PreviewBlock {block} clean={previewSettings.hideServiceLabels} />

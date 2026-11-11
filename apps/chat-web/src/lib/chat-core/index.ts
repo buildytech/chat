@@ -11,6 +11,8 @@ export {
 	discardProposal,
 	applyVariantFromAsk,
 	startPageFromScreen,
+	startEmptyPageInChat,
+	createdInThisTab,
 	applyPlanInBuild,
 	getChatMode,
 	setChatMode,

@@ -111,6 +111,13 @@
 		ondragleave={onDragLeave}
 		ondrop={onDrop}
 	>
+		{#if target && !sections.length}
+			<!-- Empty page: the whole drop zone lights up. -->
+			<Box
+				class={cn("pointer-events-none absolute inset-2 rounded-lg border-2 border-dashed", target.refusal ? "border-destructive bg-destructive/5" : "border-primary bg-primary/5")}
+				data-slot="drop-empty"
+			></Box>
+		{/if}
 		{#if target}
 			<Box
 				class={cn("pointer-events-none absolute inset-x-2 top-0 h-1 -translate-y-0.5 rounded", target.refusal ? "bg-destructive" : "bg-primary")}

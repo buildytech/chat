@@ -13,7 +13,17 @@ export type FeedPrefs = { tab: LeftTab; columns: FeedColumns; inspector: boolean
 /** Cards per feed page, the same in both views. */
 export const FEED_PAGE_SIZE = 8;
 
-export const defaultFeedPrefs = (): FeedPrefs => ({ tab: "chat", columns: 1, inspector: false });
+export const defaultFeedPrefs = (): FeedPrefs => ({ tab: "blocks", columns: 1, inspector: false });
+
+/**
+ * The tab a chat opens on (ADR 0024, empty start): an empty chat (no page, no messages) always lands on Blocks; a
+ * remembered Sections with no page has nothing to show, so Blocks too; otherwise the remembered tab.
+ */
+export function landingTab(remembered: LeftTab, chat: { hasPage: boolean; hasMessages: boolean }): LeftTab {
+	if (!chat.hasPage && !chat.hasMessages) return "blocks";
+	if (remembered === "sections" && !chat.hasPage) return "blocks";
+	return remembered;
+}
 
 /** Known values only; anything else is the default (never throws). */
 export function parseFeedPrefs(input: unknown): FeedPrefs {

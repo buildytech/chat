@@ -31290,21 +31290,72 @@ function gated(ctx: InspectorOpContext, blocks: PageBlock[], changed: string[], 
 }
 
 /** Why the Blocks feed cannot add this block to the page (null: it can). Cheap: the op runs every gate again. */
+const EMPTY_PAGE_SCREENS = [
+	"screen.theme-marketing-landing/home",
+	"screen.theme-food-grill/home",
+	"screen.theme-restaurant-house/home",
+	"screen.theme-dashboard-console/home"
+] as const;
+
+/** The Stock screen an empty page starts on for a first section of `kind` (null kind: the default). */
+function emptyPageScreenFor(kind: PageBlockKind | null): CatalogScreen | null {
+	for (const id of EMPTY_PAGE_SCREENS) {
+		const screen = getScreenById(id);
+		if (screen && (!kind || familyLabelForKind(screen, kind))) return screen;
+	}
+	return null;
+}
+
+/** Whether a page counts as not started: none at all, or no sections and no recorded Stock screen. */
+function notStarted(ctx: { page: Page | null; provenance?: InspectorOpContext["provenance"] | null }): boolean {
+	return !ctx.page || (ctx.page.layout.blocks.length === 0 && !ctx.provenance?.screenId);
+}
+
 function canAddCatalogBlock(ctx: Pick<InspectorOpContext, "page" | "provenance"> | { page: null; provenance: null }, catalogBlock: string, variant?: string | null): AddBlockCheck {
-	if (!ctx.page) return { ok: false, code: "no_page", message: "There is no page yet: build one first." };
 	const entry = catalogEntryBySpec(catalogBlock);
 	if (!entry?.available) return { ok: false, code: "unknown_block", message: `${catalogBlock} is not a Stock catalog block.` };
 	const kind = entry.rendererCompatible && entry.rendererKind ? (entry.rendererKind as PageBlockKind) : null;
 	if (!kind || CHILD_ONLY_KINDS.has(kind)) return { ok: false, code: "not_a_page_block", message: `${catalogBlock} has no page section renderer in this BuildY version yet.` };
 	const want = variant ?? catalogSourceFor(catalogBlock)?.defaultVariant ?? null;
 	if (want && !entry.variants.includes(want)) return { ok: false, code: "unknown_variant", message: `${catalogBlock} has no variant ${want}.` };
-	const screen = ctx.provenance?.screenId ? getScreenById(ctx.provenance.screenId) : null;
-	if (!screen) return { ok: false, code: "no_screen", message: "The page has no recorded Stock screen, so blocks cannot be added." };
+	// No page yet (or an empty one without a screen): the first section starts an empty page on a default Stock screen.
+	const starting = notStarted(ctx);
+	const screen = starting ? emptyPageScreenFor(kind) : ctx.provenance?.screenId ? getScreenById(ctx.provenance.screenId) : null;
+	if (!screen) {
+		return starting
+			? { ok: false, code: "no_start_screen", message: `No Stock screen family has a ${kind} section to start a page with.` }
+			: { ok: false, code: "no_screen", message: "The page has no recorded Stock screen, so blocks cannot be added." };
+	}
 	if (!familyLabelForKind(screen, kind)) {
 		return { ok: false, code: "not_in_screen_family", message: `Stock screen ${screen.screenId} and its family have no ${kind} section.` };
 	}
 	if (!registryItemFor(catalogBlock, want)) return { ok: false, code: "no_renderer", message: `${catalogBlock} has no page renderer in this BuildY version yet.` };
-	return { ok: true, kind, variant: want };
+	return { ok: true, kind, variant: want, ...(starting ? { startScreenId: screen.screenId } : {}) };
+}
+
+function emptyPageStart(input: { kind?: PageBlockKind | null; screenId?: string | null; title: string; locale?: string | null; now?: Date | string; id?: string }): EmptyPageStart | null {
+	const screen = input.screenId ? getScreenById(input.screenId) : emptyPageScreenFor(input.kind ?? null);
+	if (!screen) return null;
+	const stamp = (input.now ? new Date(input.now) : new Date()).toISOString();
+	const title = input.title.trim().slice(0, 160) || "New page";
+	const page = parsePageSpec(
+		{
+			id: input.id ?? "page-draft",
+			slug: "home",
+			status: "draft",
+			title,
+			layout: { version: 1, blocks: [] },
+			seo: { title: title.slice(0, 200), description: `${title} draft. Not published. Catalog blocks only.`.slice(0, 200) },
+			locale: input.locale && /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(input.locale) ? input.locale : "en",
+			createdAt: stamp,
+			updatedAt: stamp
+		},
+		{ draft: true }
+	);
+	const checked = validateCatalogProvenance({ page, screenId: screen.screenId });
+	if (!checked.ok) return null;
+	const scenarioId: ScenarioId = /dashboard/.test(screen.spec) ? "dashboard" : "landing";
+	return { page, provenance: { screenId: screen.screenId, scenarioId, missing: [], assembler: "empty-page" } };
 }
 
 /** Page chrome that stays at the top (header, side navigation) or at the bottom (footer, bottom navigation). */
@@ -31453,7 +31504,10 @@ exports["writeOrigin"] = writeOrigin;
 exports["shareUnchanged"] = shareUnchanged;
 exports["gateInspectorPage"] = gateInspectorPage;
 exports["inspectorSetField"] = inspectorSetField;
+exports["EMPTY_PAGE_SCREENS"] = EMPTY_PAGE_SCREENS;
+exports["emptyPageScreenFor"] = emptyPageScreenFor;
 exports["canAddCatalogBlock"] = canAddCatalogBlock;
+exports["emptyPageStart"] = emptyPageStart;
 exports["addSlotCheck"] = addSlotCheck;
 exports["moveSlotCheck"] = moveSlotCheck;
 exports["inspectorOp"] = inspectorOp;
@@ -34059,6 +34113,9 @@ exports["writableOrigin"] = __req("packages/builder-core/src/catalog/organism.ts
 exports["gateInspectorPage"] = __req("packages/builder-core/src/inspector.ts")["gateInspectorPage"];
 exports["inspectorModel"] = __req("packages/builder-core/src/inspector.ts")["inspectorModel"];
 exports["inspectorOp"] = __req("packages/builder-core/src/inspector.ts")["inspectorOp"];
+exports["emptyPageStart"] = __req("packages/builder-core/src/inspector.ts")["emptyPageStart"];
+exports["emptyPageScreenFor"] = __req("packages/builder-core/src/inspector.ts")["emptyPageScreenFor"];
+exports["EMPTY_PAGE_SCREENS"] = __req("packages/builder-core/src/inspector.ts")["EMPTY_PAGE_SCREENS"];
 exports["canAddCatalogBlock"] = __req("packages/builder-core/src/inspector.ts")["canAddCatalogBlock"];
 exports["addSlotCheck"] = __req("packages/builder-core/src/inspector.ts")["addSlotCheck"];
 exports["moveSlotCheck"] = __req("packages/builder-core/src/inspector.ts")["moveSlotCheck"];

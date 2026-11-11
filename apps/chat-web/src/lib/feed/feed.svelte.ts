@@ -15,16 +15,28 @@ function createFeed() {
 	let q = $state("");
 	let filters = $state<FeedFilters>({ type: "block", role: null, spec: null, site: null, variant: null });
 	let page = $state(1);
+	/** The tab shown for this chat when it differs from the remembered one (landingTab); never saved. */
+	let landed = $state<LeftTab | null>(null);
 
 	const persist = () => saveFeedPrefs(browserStorage(), prefs);
 
 	return {
 		get tab(): LeftTab {
-			return prefs.tab;
+			return landed ?? prefs.tab;
 		},
+		/** The author's choice: shown and remembered. */
 		set tab(next: LeftTab) {
+			landed = null;
 			prefs = { ...prefs, tab: next };
 			persist();
+		},
+		/** The remembered tab (the author's last choice). */
+		get savedTab(): LeftTab {
+			return prefs.tab;
+		},
+		/** Show `next` for the chat just opened without changing the remembered choice. */
+		land(next: LeftTab): void {
+			landed = next === prefs.tab ? null : next;
 		},
 		get columns(): FeedColumns {
 			return prefs.columns;

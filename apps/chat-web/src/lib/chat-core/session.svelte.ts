@@ -28,6 +28,7 @@ import {
 	executePagePlan,
 	manualEditsSince,
 	stockScreenDraft,
+	emptyPageStart,
 	getScreenById,
 	type AgentMode,
 	type AgentTextReply,
@@ -93,7 +94,8 @@ import {
 	getLastAppliedPage,
 	getPageRevision,
 	onPageRevision,
-	setCandidatePage
+	setCandidatePage,
+	startEmptyPage
 } from "../page-store";
 import { markPendingProposals, migrateSessionProposals } from "./proposals";
 import { STORAGE_KEYS, readKey, writeKey } from "../browser/storage-v1.ts";
@@ -354,6 +356,12 @@ export async function selectSession(
 	}
 }
 
+/** Chats created in this tab (not restored from storage): the left panel keeps its tab for a chat made in place. */
+const createdHere = new Set<string>();
+export function createdInThisTab(id: string | null | undefined): boolean {
+	return Boolean(id && createdHere.has(id));
+}
+
 export async function createSession(): Promise<ChatSession> {
 	abortInflight();
 	const session: ChatSession = {
@@ -364,6 +372,7 @@ export async function createSession(): Promise<ChatSession> {
 		mode: pendingMode,
 		...(pendingSkin ? { skin: pendingSkin } : {})
 	};
+	createdHere.add(session.id);
 	memory = [session, ...memory];
 	rememberSelection(session.id);
 	syncSessionQuery(session.id, { mode: "push" });
@@ -948,6 +957,29 @@ export async function startPageFromScreen(screenId: string): Promise<{ ok: true 
 	saveMock(memory);
 	if (!applyProposal()) return { ok: false, code: "not_applied", message: "The page did not apply." };
 	return { ok: true };
+}
+
+/**
+ * Empty start (ADR 0024): the first "+" or drop on a chat with no page. The selected chat (a new one when none is
+ * selected) switches to Build and gets an empty page on the start Stock screen (emptyPageStart), with no model call
+ * and no chat message; the caller adds the section right after, so the page and the section are one undo step.
+ */
+export function startEmptyPageInChat(screenId: string): boolean {
+	const start = emptyPageStart({ screenId, title: t("page.untitled"), locale: "en" });
+	if (!start) return false;
+	let session = getSelectedSession();
+	if (!session) {
+		void createSession();
+		session = getSelectedSession();
+	}
+	if (!session) return false;
+	if (!startEmptyPage(start.page, start.provenance)) return false;
+	setChatMode("build");
+	hydrateSessionContext({ scenarioId: start.provenance.scenarioId, screenId: start.provenance.screenId });
+	const current = getSelectedSession() ?? session;
+	replaceSession({ ...current, mode: "build", updatedAt: nowIso(), pageId: start.page.id, pageRevision: 0, scenarioId: start.provenance.scenarioId, screenId: start.provenance.screenId });
+	saveMock(memory);
+	return true;
 }
 
 /**

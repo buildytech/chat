@@ -12,7 +12,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parsePage, type Page } from "../../packages/page-contract/src/index.ts";
-import { executeTool, proposeLayout, registrySkins, SCENARIO_IDS, type LayoutProposal } from "../../packages/builder-core/src/index.ts";
+import { emptyPageStart, executeTool, inspectorOp, proposeLayout, registrySkins, SCENARIO_IDS, type LayoutProposal } from "../../packages/builder-core/src/index.ts";
 import { APP_FILE, registryItemsOf, stubAlertImport, svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
 import {
 	buildStoreZip,
@@ -195,6 +195,49 @@ test("mixed ZIP (registry blocks + stub, with a skin) unzips and builds with vit
 	} finally {
 		rmSync(dir, { recursive: true, force: true });
 	}
+});
+
+/** ADR 0024 empty start: Hero, Features and CTA added from the Blocks feed to an empty page, no header or footer. */
+function headerlessPage(): Page {
+	const start = emptyPageStart({ kind: "hero", title: "Spring promo", locale: "en", now: NOW })!;
+	let page = start.page;
+	let selected = "";
+	for (const [catalogBlock, variant] of [["block.hero", null], ["block.features", "grid2"], ["block.cta", null]] as const) {
+		const r = inspectorOp({ page, provenance: start.provenance, revision: 0, now: NOW }, { op: "add", blockId: selected, catalogBlock, variant });
+		assert.ok(r.ok, JSON.stringify(r));
+		page = r.page;
+		selected = r.blockId;
+	}
+	return page;
+}
+
+test("headerless page (starts with Hero, no footer): ZIP and `npx ui8kit add` list carry only its sections and it builds with vite", async () => {
+	const page = headerlessPage();
+	assert.deepEqual(page.layout.blocks.map((node) => node.kind), ["hero", "features", "cta"]);
+	const items = registryItemsOf(page);
+	assert.ok(items.length >= 1 && !items.includes("alert"), `no stub: ${items.join(", ")}`);
+	assert.ok(!items.some((item) => /navbar|nav-bar|sitemap|footer/.test(item)), `no header or footer item: ${items.join(", ")}`);
+	const files = await packZipFiles(page, readSnapshot);
+	assertSelfContained("headerless", files);
+	const sections = files.filter((file) => file.path.startsWith("src/sections/"));
+	assert.equal(sections.length, page.layout.blocks.length, "one section file per block, nothing else");
+	const entries = unzipStore(buildStoreZip(files));
+	const dir = mkdtempSync(path.join(tmpdir(), "buildy-headerless-"));
+	try {
+		for (const entry of entries) {
+			const target = path.join(dir, entry.path);
+			mkdirSync(path.dirname(target), { recursive: true });
+			writeFileSync(target, entry.content);
+		}
+		symlinkSync(path.join(ROOT, "node_modules"), path.join(dir, "node_modules"), "dir");
+		const run = spawnSync(process.execPath, [path.join(ROOT, "node_modules/vite/bin/vite.js"), "build", "--logLevel", "warn"], { cwd: dir, encoding: "utf8", timeout: 180_000 });
+		assert.equal(run.status, 0, `vite build failed:\n${run.stdout}\n${run.stderr}`);
+	} finally {
+		rmSync(dir, { recursive: true, force: true });
+	}
+	// An empty page (undo back to the start) still packs to a valid, compiling project.
+	const empty = emptyPageStart({ title: "Empty", now: NOW })!.page;
+	assertSelfContained("empty", await packZipFiles(empty, readSnapshot));
 });
 
 test("exported code carries no preview attributes; the stub imports Alert from the path `npx ui8kit add alert` writes", async () => {

@@ -43,7 +43,7 @@
 	});
 	const pageNote = $derived.by(() => {
 		const first = Object.values(checks)[0];
-		return first && !first.ok && (first.code === "no_page" || first.code === "no_screen") ? t(`feed.why.${first.code}`) : null;
+		return first && !first.ok && (first.code === "no_screen") ? t(`feed.why.${first.code}`) : null;
 	});
 
 	const facet = (name: "type" | "role" | "spec" | "site" | "variant") => result.facets[name];

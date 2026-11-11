@@ -141,3 +141,48 @@ carries no `origin` (it is an ordinary program proposal: local catalog assembler
 writes the list back), so they load instead of being quarantined. Chats already moved to quarantine on staging stay
 there (`buildy:v1:quarantine`, raw kept). Tests: a screen-start session validates and survives a reload; a chat with
 the retired origin is repaired, other origins are left alone.
+
+## Addendum: empty start, optional header and footer, Stock cards (owner feedback 2026-11-11)
+
+The owner hit "No page yet: start one from a screen card, or build it in the Chat tab." on his first drop: Build
+should start on Blocks, and header and footer must be optional (many promos have no navbar and start with Hero).
+
+- **Build opens on Blocks.** The default left tab is Blocks (`defaultFeedPrefs`). A chat that opens lands on
+  `landingTab(remembered, { hasPage, hasMessages })`: an empty chat always on Blocks, a remembered Sections without a
+  page on Blocks, else the remembered tab. Landing is a view state (`feed.land`) and never overwrites the author's
+  remembered choice; a chat created in this tab (first message, first block) keeps the tab the author works in.
+- **Empty start, no contract change.** page-spec already allows `layout.blocks: []`, the provenance `screenId` is
+  nullable, and `validateCatalogProvenance` passes an empty page on any screen; the session schema needs nothing new.
+  What an empty page lacks is its renderer context: blocks are Stock samples of the page's screen family, and the
+  catalog gate checks every later block against it. So the first block picks the screen: `emptyPageScreenFor(kind)`
+  takes the first of `EMPTY_PAGE_SCREENS` (marketing landing, food grill, restaurant house, dashboard console) whose
+  family has the kind; `emptyPageStart` makes the empty page (title "New page", slug `home`, page locale, provenance
+  `assembler: "empty-page"`, scenario landing or dashboard). The skin stays the chat's (default theme when none), as
+  for any page. `canAddCatalogBlock` with no page (or an empty page without a screen) returns `ok` with
+  `startScreenId` instead of the old `no_page` refusal; a kind no start family has is `no_start_screen`.
+- **One undo step, no model call.** `inspector.add` starts the page first (`startEmptyPageInChat`: the selected chat,
+  or a new one, gets the empty page as the applied page at revision 0 with no history entry, no chat message), then
+  runs the ordinary add op on it; the add is revision 1 and the one undo step, so undo goes back to the empty page
+  (the preview shows the drop zone again), redo forward. The page persists like any page (reload keeps it).
+- **Empty preview is a drop zone.** An empty page (or none yet) shows "Drag a block here or press +" with a note that
+  no header or footer is required; while a card is dragged the zone lights up (`drop-empty`) and the label says
+  "Insert at position 1". The drop layer now also works with service labels hidden.
+- **Header and footer optional everywhere.** Nothing in the program required them: the add / move rules already
+  counted the leading header run and the trailing footer run from zero, so with neither present any order is
+  valid; a header that is added must go first and a footer last (with the same refusal reasons). Tests pin it: a
+  page of hero, features, CTA passes page-spec, props and catalog gates; a Chat follow-up and an Ask plan op on it
+  put no header back; a new page from a screen may drop header and footer (`content.remove`) and starts with Hero;
+  the ZIP and the `npx ui8kit add` list of a headerless page carry only its sections and the unzipped project
+  builds with vite; an empty page packs to a compiling project.
+- **Copy.** `feed.why.no_page` is removed; new en / ru keys `preview.emptyDrop`, `preview.emptyHint`,
+  `page.untitled`, `feed.why.no_start_screen`; `sections.empty` points to "+" and drag.
+- **Stock cards (owner, same day).** `StockMediaCard` is the one card frame of the Blocks feed and the home Stock
+  screens: the WebP thumbnail is full-bleed (no padding around it; the card's radius and `overflow-hidden` clip it,
+  a 1px divider separates it from the body), on top in the stacked layout or on the left edge in the feed's one-column
+  layout; only the body is padded (8px). `StockThumb` gets `bleed` for that; the Ask block cards use it too. The home
+  Stock screens drop the 3-column cards with wrapping titles and long ids for the feed card in the same 2-column grid
+  (`gap-2`): title row with actions (open in Stock, attach), the screen id on one truncated line, the subtitle, the
+  missing-renderer note. Row thumbnails in lists (Sections rows, collection chips, catalog refs) are not card media
+  and keep their small framed thumbnail.
+- **Open.** The start screens are a fixed list: a kind outside them (e.g. `hours`) cannot start a page; Ask "apply
+  variant" with no page still asks for a page first.

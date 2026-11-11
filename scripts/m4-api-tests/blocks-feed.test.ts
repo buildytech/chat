@@ -90,7 +90,9 @@ test("Blocks feed add: after the selected section or at the end, every gate, no 
 	assert.equal(end.page.layout.blocks.at(-1)!.catalogBlock, "block.featureshowcase");
 	assert.equal(page.layout.blocks.length, 5, "the base page is never modified");
 	// The reasons the feed shows on a disabled "+".
-	assert.equal(canAddCatalogBlock({ page: null, provenance: null }, "block.hero", null).ok, false);
+	// No page yet: the first block starts an empty page on a default Stock screen (ADR 0024 empty start).
+	const start = canAddCatalogBlock({ page: null, provenance: null }, "block.hero", null);
+	assert.ok(start.ok && start.startScreenId === "screen.theme-marketing-landing/home", JSON.stringify(start));
 	const check = (spec: string, variant: string | null = null) => {
 		const r = canAddCatalogBlock({ page, provenance }, spec, variant);
 		return r.ok ? "ok" : r.code;
@@ -113,7 +115,7 @@ test("Blocks feed add: after the selected section or at the end, every gate, no 
 
 test("feed prefs: tab and 1 / 2 columns persist; the page size does not depend on the view", () => {
 	assert.equal(FEED_PAGE_SIZE, 8);
-	assert.deepEqual(defaultFeedPrefs(), { tab: "chat", columns: 1, inspector: false });
+	assert.deepEqual(defaultFeedPrefs(), { tab: "blocks", columns: 1, inspector: false });
 	assert.deepEqual(parseFeedPrefs({ tab: "blocks", columns: 2 }), { tab: "blocks", columns: 2, inspector: false });
 	assert.deepEqual(parseFeedPrefs({ tab: "x", columns: 3 }), defaultFeedPrefs());
 	const mem = new Map<string, string>();
@@ -137,7 +139,7 @@ test("Build is two areas: left panel tabs (Blocks / Sections / Chat), inspector 
 	assert.match(web("lib/creator-layout.svelte.ts"), /const inspectorColumn = \(\) => false;/);
 	assert.match(web("app/Workspace.svelte"), /<Group align="stretch" class="relative min-h-0 flex-1 gap-0" data-slot="build-editor"/);
 	const card = web("app/FeedCard.svelte");
-	assert.match(card, /<StockThumb/);
+	assert.match(card, /<StockMediaCard/, "full-bleed Stock thumbnail through the shared card frame");
 	assert.match(card, /data-action="feed-add"/);
 	assert.match(card, /href=\{item\.url\}/);
 	const feedUi = web("app/BlocksFeed.svelte");

@@ -234,7 +234,7 @@
 					</Group>
 				{/if}
 			{:else}
-				<Stack align="stretch" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				<Stack align="stretch" class="grid grid-cols-1 gap-2 sm:grid-cols-2" data-slot="stock-grid">
 					{#each result.items as item (item.screenId)}
 						<StockCard
 							screen={item}
