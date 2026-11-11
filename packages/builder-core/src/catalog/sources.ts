@@ -9,7 +9,7 @@ import type { PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
 import { rendererKindForLabel } from "./compatibility.ts";
 import type { CatalogBlockIndexEntry } from "./types.ts";
-import { lucideIcons, propShapeFor, propsSummaryFor } from "./props-schema.ts";
+import { LUCIDE_ICON_HINT, propShapeFor, propsSummaryFor } from "./props-schema.ts";
 
 /** A registry block of the snapshot (sources.json `blocks`, keyed by registry item name). */
 export type RegistryBlock = {
@@ -163,8 +163,8 @@ function flat(value: unknown, prefix = ""): Array<[string, string]> {
 
 /**
  * Compact model context: the catalog blocks a page block kind can use, each variant as the props that differ from
- * its default variant, the block's row and text fields from its published props schema, and the contract's Lucide
- * names. Generated data; the model picks, the program validates against the schema.
+ * its default variant, the block's row and text fields from its published props schema, and how icons are named
+ * (any Lucide kebab-case name, not the list). Generated data; the model picks, the program validates against the schema.
  */
 export function modelCatalogSources(only?: readonly string[]): Record<string, unknown> {
 	const blocks: Record<string, unknown> = {};
@@ -175,7 +175,7 @@ export function modelCatalogSources(only?: readonly string[]): Record<string, un
 		const summary = blockVariantSummary(entry.spec);
 		if (summary) blocks[entry.spec] = summary;
 	}
-	return { blocks, icons: lucideIcons() };
+	return { blocks, icons: LUCIDE_ICON_HINT };
 }
 
 /**

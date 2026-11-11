@@ -91,6 +91,7 @@ export {
 	fillProps,
 	hasPropsSchema,
 	lucideIcons,
+	LUCIDE_ICON_HINT,
 	propShapeFor,
 	propsDigest,
 	propsEventsFor,

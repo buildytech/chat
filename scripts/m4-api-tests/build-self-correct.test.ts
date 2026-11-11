@@ -178,7 +178,7 @@ test("budget spent without propose_layout: honest summary with the nearest scree
 test("row icons outside the contract enum are dropped before the gate (no repair round); the others stay", () => {
 	const list = [
 		{ kind: "hero", title: "h" },
-		{ kind: "features", title: "Menu", items: [{ label: "Skewers", icon: "salad" }, { label: "Delivery", icon: "truck" }] }
+		{ kind: "features", title: "Menu", items: [{ label: "Skewers", icon: "zzqq-glyph" }, { label: "Delivery", icon: "truck" }] }
 	];
 	const r = executeTool({ name: "propose_layout", arguments: { brief: "x", scenarioId: "landing", screenId: "screen.theme-marketing-landing/home", locale: "en", blocks: list } }, HOST);
 	assert.ok(r.ok, JSON.stringify(r));
@@ -186,5 +186,5 @@ test("row icons outside the contract enum are dropped before the gate (no repair
 	const rows = proposal.page.layout.blocks.find((block) => block.kind === "features" && block.children?.some((child) => child.title === "Delivery"))!.children!;
 	assert.equal(rows.find((child) => child.title === "Skewers")!.copy?.icon, undefined);
 	assert.equal(rows.find((child) => child.title === "Delivery")!.copy?.icon, "truck");
-	assert.ok(proposal.warnings.some((w) => /dropped .*salad/.test(w)));
+	assert.ok(proposal.warnings.some((w) => /dropped .*zzqq-glyph/.test(w)));
 });

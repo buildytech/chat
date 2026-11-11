@@ -27,7 +27,9 @@ store hero instead of the hero" in prose: replacing a block by another catalog b
   block (footer as before); the intake legal field asks for no year. Only text the model wrote this turn is touched.
 - Icons: `resolveIconName` maps near-misses to the published Lucide names (case, separators, `lucide-` / `-icon`,
   plural, one unambiguous typo) and drops the rest before the props gate, said in warnings: no repair round for icons.
-  The model already gets the 278 names once in `catalogSources.icons`.
+  Addendum (icon-any): the registry pins every glyph of Lucide (1890 names, codegen-x 9e57f9c renders them through npm
+  `lucide`), so the model no longer gets a name list: `catalogSources.icons` and block details say "any Lucide icon name
+  in kebab-case" (`LUCIDE_ICON_HINT`) and the host checks against the full published set.
 - The run response carries `modelFields` (field names per block, never values) so intake runs can be audited.
 
 ## Decision (B: replace in the Ask plan)

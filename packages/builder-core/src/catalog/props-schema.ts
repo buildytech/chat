@@ -69,11 +69,17 @@ export function viewMapFor(item: string): ViewMap | null {
 	return props.items[item]?.viewMap ?? null;
 }
 
-/** Lucide icon names of the contract (the published `lucideIcon` enum). */
+/** Lucide icon names of the contract (the published `lucideIcon` enum: every glyph of the registry's pinned Lucide). */
 export function lucideIcons(): string[] {
 	const def = props.defs[ICON_DEF];
 	return Array.isArray(def?.enum) ? (def.enum as string[]) : [];
 }
+
+/**
+ * What the model is told about icons instead of the name list (about 1.9k names): any Lucide name in kebab-case. The
+ * host checks it against lucideIcons(), maps spelling variants and drops what Lucide does not have (icon-name.ts).
+ */
+export const LUCIDE_ICON_HINT = "any Lucide icon name in kebab-case (lucide.dev/icons); the host checks it against the full Lucide set and drops unknown names";
 
 function isObject(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -285,7 +291,7 @@ function kindLabel(kind: FieldKind): string {
 /**
  * Compact model view of a block's schema: the list prop the page rows become (`features[]: id title text icon href?`,
  * optional fields with `?`), the object props, and events / slots. Enums of layout axes are left to the variants
- * (each variant already names its axis values); the icon enum is listed once in catalogSources.icons.
+ * (each variant already names its axis values); icons are described once in catalogSources.icons (LUCIDE_ICON_HINT).
  */
 export function propsSummaryFor(item: string): Record<string, string> | null {
 	const shape = propShapeFor(item);

@@ -1785,8 +1785,8 @@
       "runtime": "svelte",
       "files": {
         "src/compose/LucideIcon.svelte": "4ff30d8033601bfc6436caa67a292d6d77403ac261da5eb4c33ad88ce81a3be9",
-        "src/icons/LucideIcon.svelte": "e9e3c39b2456deb9ac245f8653da1767bfda34ac92a27842f69438d17b7d8fe2",
-        "src/icons/lucide-icons.ts": "e2823949165fb24483703a2731b531bb8a141b85dda32b2fc3768507c34ab640"
+        "src/icons/LucideIcon.svelte": "f667771c625e6b11301200d1afb8aa2eda5b9c20cdeb8584657a98a98cd02ab4",
+        "src/icons/lucide-icons.ts": "303c9788f45ead9f11c455bb8336f74b8df907296132f50905929c47498805b4"
       }
     },
     "registry.buildy.tw|svelte|meat-cards": {

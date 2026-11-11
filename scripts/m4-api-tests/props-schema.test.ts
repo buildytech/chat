@@ -15,6 +15,7 @@ import {
 	editPage,
 	executeTool,
 	getBlockDetails,
+	LUCIDE_ICON_HINT,
 	lucideIcons,
 	modelCatalogSources,
 	organismFor,
@@ -168,13 +169,17 @@ test("events and slots stay next to the schema: never data props, wired by the h
 	}
 });
 
-test("model context and block details come from the schema: no hand-written field hints, icons from the enum", () => {
-	const context = modelCatalogSources() as { blocks: Record<string, Record<string, string>>; icons: string[] };
-	assert.deepEqual(context.icons, lucideIcons());
+test("model context and block details come from the schema: no hand-written field hints, icons as a rule, not the list", () => {
+	const context = modelCatalogSources() as { blocks: Record<string, Record<string, string>>; icons: string };
+	// any Lucide kebab-case name: the full set (~1.9k names) is the host's check, never prompt text
+	assert.equal(context.icons, LUCIDE_ICON_HINT);
+	assert.ok(lucideIcons().length > 1500, `${lucideIcons().length} Lucide names`);
+	for (const name of ["chef-hat", "flame", "fish", "circle-alert"]) assert.ok(lucideIcons().includes(name), name);
+	assert.ok(JSON.stringify(modelCatalogSources()).length < 20000);
 	assert.match(context.blocks["block.features"]!.rows!, /^features\[\]: .*\bicon:icon\b/);
 	assert.doesNotMatch(JSON.stringify(context), /"rowIcon"/);
-	const details = getBlockDetails({ id: "features" }) as { registry: { icons: string[]; schema: Record<string, string> } };
-	assert.deepEqual(details.registry.icons, lucideIcons());
+	const details = getBlockDetails({ id: "features" }) as { registry: { icons: string; schema: Record<string, string> } };
+	assert.equal(details.registry.icons, LUCIDE_ICON_HINT);
 	assert.match(details.registry.schema.rows!, /features\[\]/);
 });
 

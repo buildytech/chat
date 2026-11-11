@@ -3,7 +3,7 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:0f5557cfa302ae6ddcb09fc925b46f980edb480b63a692230fde5c950735277b",
+	"lockDigest": "sha256:161d25a2a1983e4bba4bcf811eb5099fcc4da4daa6a57fb857ae736ed5268621",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
 		"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4",
@@ -11,8 +11,8 @@
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "70f8a01df0d2afab5f6fde1c151d31c6b1a6d1a95009f6c5cf9efda7d31ebeab",
-		"digest": "sha256:730d228c09b753b48bb00dc9b9c0130b314446d6d2b3e1f9a348e0a2450fc01a"
+		"sha256": "eee29ee17b714110532d994b8cfff8bf8b8f7baab09398f33f3b91c43305b3af",
+		"digest": "sha256:bb4ae0ac537ba08d921557046bf75ee59ea592da181dc5ba3a020ccce9b31896"
 	},
 	"initItems": [
 		"presets",
@@ -21,6 +21,7 @@
 	],
 	"npmDependencies": [
 		"clsx",
+		"lucide",
 		"tailwind-merge"
 	],
 	"items": {
@@ -2895,7 +2896,9 @@
 				"recipes",
 				"utils"
 			],
-			"dependencies": [],
+			"dependencies": [
+				"lucide"
+			],
 			"files": [
 				"src/compose/LucideIcon.svelte",
 				"src/icons/LucideIcon.svelte",
@@ -5811,6 +5814,7 @@
 			"registryDependencies": [],
 			"dependencies": [
 				"clsx",
+				"lucide",
 				"tailwind-merge"
 			],
 			"files": [

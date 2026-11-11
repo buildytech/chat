@@ -4,7 +4,7 @@ import { getBlockIndex, getBlockIndexByCatalogId, rendererKindForLabel } from ".
 import { getScreenById } from "./search.ts";
 import { blockVariantSummary, catalogSourceFor, catalogVariantsFor, variantProps } from "./sources.ts";
 import { stockSearchUrl } from "./provenance.ts";
-import { lucideIcons, propsSummaryFor } from "./props-schema.ts";
+import { LUCIDE_ICON_HINT, propsSummaryFor } from "./props-schema.ts";
 
 export type BlockDetails = {
 	id: string;
@@ -29,8 +29,8 @@ export type BlockDetails = {
 		variantProps: Record<string, unknown>;
 		/** page-spec slot -> organism prop. */
 		slots: unknown;
-		/** Lucide names allowed in copy.icon / items[].icon (the props schema's enum). */
-		icons: string[];
+		/** How copy.icon / items[].icon are named: any Lucide kebab-case name, checked against the props schema's enum. */
+		icons: string;
 		/** Rows, text props, events and slots from the published props schema. */
 		schema: Record<string, string>;
 	};
@@ -117,7 +117,7 @@ export function getBlockDetails(input: {
 						defaultVariant: source.defaultVariant,
 						variantProps: variantProps(entry.spec, requested) ?? {},
 						slots: source.props,
-						icons: lucideIcons(),
+						icons: LUCIDE_ICON_HINT,
 						schema: propsSummaryFor(source.item) ?? {}
 					}
 				}

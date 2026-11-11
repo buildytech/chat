@@ -174,7 +174,7 @@ function sha256Hex(data: Uint8Array): string {
  * npm packages of the exported project, pinned to the exact versions the chat builds with (a unit test compares them
  * with node_modules). Runtime: svelte plus the registry's npm dependencies; tooling: what vite.config.ts uses.
  */
-export const PACK_DEPENDENCIES = { clsx: "2.1.1", svelte: "5.57.3", "tailwind-merge": "3.7.0" } as const;
+export const PACK_DEPENDENCIES = { clsx: "2.1.1", lucide: "1.72.0", svelte: "5.57.3", "tailwind-merge": "3.7.0" } as const;
 export const PACK_DEV_DEPENDENCIES = {
 	"@sveltejs/vite-plugin-svelte": "6.2.4",
 	"@tailwindcss/vite": "4.3.4",
