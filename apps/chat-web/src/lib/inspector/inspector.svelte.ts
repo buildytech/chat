@@ -140,14 +140,16 @@ export const inspector = {
 	},
 
 	/**
-	 * Blocks feed "+": the Stock block variant after the selected section, or at the end, as one inspector operation
+	 * Blocks feed "+" (or a drop at slot `at`): the Stock block variant after the selected section, or at the end, as one inspector operation
 	 * (every gate, one undo step, no model call). The new section becomes the selection.
 	 */
-	add(catalogBlock: string, variant: string | null): { ok: true; blockId: string } | { ok: false; code: string; message: string } {
+	add(catalogBlock: string, variant: string | null, at?: number): { ok: true; blockId: string } | { ok: false; code: string; message: string } {
 		const page = getCurrentPage();
 		if (!page) return { ok: false, code: "no_page", message: "There is no page yet." };
 		historyFor(page).seal();
-		const result = inspectorOp({ page, provenance: getCurrentProvenance(), revision: getPageRevision() ?? 0 }, { op: "add", blockId: getSelectedBlockId() ?? "", catalogBlock, variant });
+		// A drop names its slot (`at`); "+" adds after the selected section or at the end.
+		const op = at === undefined ? { op: "add" as const, blockId: getSelectedBlockId() ?? "", catalogBlock, variant } : { op: "add" as const, blockId: "", catalogBlock, variant, at };
+		const result = inspectorOp({ page, provenance: getCurrentProvenance(), revision: getPageRevision() ?? 0 }, op);
 		if (!result.ok) return { ok: false, code: result.code, message: result.message };
 		if (!commit(page, result, null)) return { ok: false, code: "not_committed", message: "The page did not accept the change." };
 		selectBlock(result.blockId);

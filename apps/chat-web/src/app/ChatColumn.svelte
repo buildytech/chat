@@ -9,6 +9,7 @@
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { feed } from "$lib/feed/feed.svelte";
+	import { feedDrag } from "$lib/feed/drag.svelte";
 	import { LEFT_TABS } from "$lib/feed/prefs";
 	import SectionsList from "./SectionsList.svelte";
 	import BlocksFeed from "./BlocksFeed.svelte";
@@ -55,6 +56,29 @@
 	// stays mounted, so the chat keeps its draft, scroll and running turn while another tab is open.
 	const icons = { blocks: Blocks, sections: ListTree, chat: MessageSquare } as const;
 	const tab = $derived(feed.tab);
+	// A feed card dragged onto the Sections tab opens it after a short rest, so the card can drop between sections.
+	let springTimer: ReturnType<typeof setTimeout> | null = null;
+	function springOpen(name: string) {
+		if (!feedDrag.active || name !== "sections" || tab === "sections") return;
+		springTimer ??= setTimeout(() => {
+			springTimer = null;
+			if (feedDrag.active) feed.tab = "sections";
+		}, 400);
+	}
+	// A drag that ends anywhere (drop, Escape, outside the window) clears the dragged card; drop targets read it first.
+	$effect(() => {
+		const end = () => setTimeout(() => feedDrag.end(), 0);
+		window.addEventListener("dragend", end);
+		window.addEventListener("drop", end);
+		return () => {
+			window.removeEventListener("dragend", end);
+			window.removeEventListener("drop", end);
+		};
+	});
+	function springCancel() {
+		if (springTimer) clearTimeout(springTimer);
+		springTimer = null;
+	}
 	// An inactive panel carries the native `hidden` attribute (display: none in the base styles), never removed from the DOM.
 	const panelClass = "min-h-0 flex-1 flex-col flex";
 </script>
@@ -83,6 +107,8 @@
 				aria-controls={`left-panel-${name}`}
 				data-tab={name}
 				onclick={() => (feed.tab = name)}
+				ondragenter={() => springOpen(name)}
+				ondragleave={springCancel}
 			>
 				<Icon size="sm"><TabIcon /></Icon>
 				<Text tag="span">{t(`leftPanel.${name}`)}</Text>

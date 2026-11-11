@@ -4,7 +4,8 @@
   Up / Down on a focused section (announced in a live region); remove a section; change the selected section's
   variant. Every action is an inspector operation (page-spec, props and catalog gates, one undo step, no model
   call). Selection is the page store's: a click here selects and reveals the section in the preview, a pick in the
-  preview highlights it here.
+  preview highlights it here. A Blocks feed card dragged here (the Sections tab opens when the drag rests on it)
+  drops between rows through the same add operation as "+" (ADR 0024 step C).
 -->
 <script lang="ts">
 	import ArrowDown from "@lucide/svelte/icons/arrow-down";
@@ -26,7 +27,9 @@
 	import { canvas } from "$lib/inspector/canvas.svelte";
 	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { topLevelBlockId } from "$lib/inspector/geometry";
-	import { dropIndex, stepIndex } from "$lib/feed/sections";
+	import { dropIndex, insertionSlot, stepIndex } from "$lib/feed/sections";
+	import { feedDrag } from "$lib/feed/drag.svelte";
+	import { dropAt, dropRefusal, refuseDrop } from "$lib/feed/drop.svelte";
 	import { blocksOf, getCurrentPage, getSelectedBlockId, selectBlock, type PageBlock } from "$lib/page-store";
 	import { blockThumbUrl, catalogVariantsFor } from "@buildytech/builder-core";
 	import StockThumb from "./StockThumb.svelte";
@@ -132,6 +135,45 @@
 		drag = null;
 	}
 
+	// A Blocks feed card dropped between rows (ADR 0024 step C): the same add operation as "+", at that slot.
+	let feedTarget = $state<{ slot: number; refusal: string | null } | null>(null);
+
+	function onFeedOver(event: DragEvent) {
+		if (!feedDrag.active) return;
+		const { slot } = insertionSlot(boxes(), event.clientY);
+		const refusal = dropRefusal(sections.length ? slot : 0);
+		feedTarget = { slot, refusal };
+		// The drop is always taken, so a refused one is said (red line and label now, the reason in the status on release).
+		event.preventDefault();
+		if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+	}
+
+	function onFeedDrop(event: DragEvent) {
+		event.preventDefault();
+		const target = feedTarget;
+		const item = feedDrag.item;
+		feedTarget = null;
+		if (!target || !item) return;
+		if (target.refusal) {
+			refuseDrop(target.refusal);
+			announcement = feedDrag.status?.text ?? "";
+			return;
+		}
+		dropAt(target.slot);
+		announcement = feedDrag.status?.text ?? "";
+		issue = feedDrag.status?.ok === false ? feedDrag.status.text : null;
+	}
+
+	function onFeedLeave(event: DragEvent) {
+		const zone = event.currentTarget as HTMLElement;
+		if (event.relatedTarget instanceof Node && zone.contains(event.relatedTarget)) return;
+		feedTarget = null;
+	}
+
+	$effect(() => {
+		if (!feedDrag.active) feedTarget = null;
+	});
+
 	// A pick in the preview scrolls its section into view here.
 	$effect(() => {
 		void sections;
@@ -153,10 +195,18 @@
 		</Group>
 	</Group>
 	<Text tag="p" class="sr-only" role="status" aria-live="assertive" data-slot="sections-live">{announcement}</Text>
-	{#if issue}
+	{#if feedTarget?.refusal}
+		<Text tag="p" class="shrink-0 px-2 pt-2 text-xs text-destructive" data-slot="sections-drop-refusal">{feedTarget.refusal}</Text>
+	{:else if issue}
 		<Text tag="p" class="shrink-0 px-2 pt-2 text-xs text-destructive" data-slot="sections-issue">{issue}</Text>
 	{/if}
-	<Box class="min-h-0 flex-1 overflow-y-auto p-2">
+	<Box
+		class={cn("min-h-0 flex-1 overflow-y-auto p-2", feedDrag.active && "bg-accent/40")}
+		data-slot="sections-drop"
+		ondragover={onFeedOver}
+		ondragleave={onFeedLeave}
+		ondrop={onFeedDrop}
+	>
 		{#if sections.length === 0}
 			<Text tag="p" class="text-xs text-muted-foreground">{t("sections.empty")}</Text>
 		{:else}
@@ -170,8 +220,11 @@
 							"rounded border bg-card p-1",
 							isSelected ? "border-primary" : "border-border",
 							drag?.id === block.id && "opacity-60",
-							drag && drag.id !== block.id && drag.to === index && (drag.to < drag.from ? "border-t-2 border-t-primary" : "border-b-2 border-b-primary")
+							drag && drag.id !== block.id && drag.to === index && (drag.to < drag.from ? "border-t-2 border-t-primary" : "border-b-2 border-b-primary"),
+							feedTarget && feedTarget.slot === index && (feedTarget.refusal ? "border-t-2 border-t-destructive" : "border-t-2 border-t-primary"),
+							feedTarget && index === sections.length - 1 && feedTarget.slot === sections.length && (feedTarget.refusal ? "border-b-2 border-b-destructive" : "border-b-2 border-b-primary")
 						)}
+						data-drop-before={feedTarget?.slot === index ? (feedTarget.refusal ? "refused" : "ok") : undefined}
 						data-section-id={block.id}
 						data-index={index}
 					>

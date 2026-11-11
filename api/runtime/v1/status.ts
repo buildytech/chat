@@ -31213,7 +31213,10 @@ function inspectorSetField(page: Page, blockId: string, pointer: string, value: 
 
 // ---- Block operations (step 4) ---------------------------------------------------------------------------------
 
-/** `add`: a Stock block variant from the Blocks feed, after `blockId` (a section, or one of its rows) or at the end (""). */
+/**
+ * `add`: a Stock block variant from the Blocks feed, after `blockId` (a section, or one of its rows) or at the end
+ * (""); with `at` (a drop between sections, 0..sections) at that top-level slot instead, checked by addSlotCheck.
+ */
 function walkIds(blocks: PageBlock[], out = new Set<string>()): Set<string> {
 	for (const node of blocks) {
 		out.add(node.id);
@@ -31304,6 +31307,23 @@ function canAddCatalogBlock(ctx: Pick<InspectorOpContext, "page" | "provenance">
 	return { ok: true, kind, variant: want };
 }
 
+/** Page chrome that stays at the top (header, side navigation) or at the bottom (footer, bottom navigation). */
+const TOP_KINDS = new Set<PageBlockKind>(["sidenav", "nav"]);
+const BOTTOM_KINDS = new Set<PageBlockKind>(["footer", "bottomnav"]);
+
+function addSlotCheck(blocks: Pick<PageBlock, "kind">[], kind: PageBlockKind, at: number): AddSlotCheck {
+	if (!Number.isInteger(at) || at < 0 || at > blocks.length) return { ok: false, code: "index_out_of_range", message: `A section goes to slot 0..${blocks.length}.` };
+	let leading = 0;
+	while (leading < blocks.length && TOP_KINDS.has(blocks[leading]!.kind)) leading += 1;
+	let trailing = blocks.length;
+	while (trailing > leading && BOTTOM_KINDS.has(blocks[trailing - 1]!.kind)) trailing -= 1;
+	if (TOP_KINDS.has(kind)) return at <= leading ? { ok: true } : { ok: false, code: "header_top", message: "A header goes at the top of the page." };
+	if (BOTTOM_KINDS.has(kind)) return at >= trailing ? { ok: true } : { ok: false, code: "footer_end", message: "A footer goes at the end of the page." };
+	if (at < leading) return { ok: false, code: "above_header", message: "Sections go below the header." };
+	if (at > trailing) return { ok: false, code: "below_footer", message: "Sections go above the footer." };
+	return { ok: true };
+}
+
 /** Ids of `node` and its rows made unique against `taken` (`block-hero` -> `block-hero-2`), within the id length. */
 function withFreshIds(node: PageBlock, taken: Set<string>): PageBlock {
 	const fresh = (id: string) => {
@@ -31353,9 +31373,13 @@ function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): InspectorResult 
 		if (op.blockId && anchor < 0) return fail("block_not_found", `No section ${op.blockId} on this page.`, "");
 		const made = addedBlock(ctx, op.catalogBlock, op.variant ?? null);
 		if ("ok" in made) return made;
+		if (op.at !== undefined) {
+			const slot = addSlotCheck(blocks, made.kind, op.at);
+			if (!slot.ok) return fail(slot.code, slot.message, "");
+		}
 		const node = withFreshIds(made, walkIds(blocks));
 		let next = [...blocks];
-		next.splice(anchor < 0 ? blocks.length : anchor + 1, 0, node);
+		next.splice(op.at ?? (anchor < 0 ? blocks.length : anchor + 1), 0, node);
 		if (node.kind === "sidenav" || node.kind === "bottomnav") next = arrangeShell(next, ctx.page.locale).blocks;
 		return gated(ctx, next, [node.id], node.id);
 	}
@@ -31414,6 +31438,7 @@ exports["shareUnchanged"] = shareUnchanged;
 exports["gateInspectorPage"] = gateInspectorPage;
 exports["inspectorSetField"] = inspectorSetField;
 exports["canAddCatalogBlock"] = canAddCatalogBlock;
+exports["addSlotCheck"] = addSlotCheck;
 exports["inspectorOp"] = inspectorOp;
 
 });
@@ -34018,6 +34043,7 @@ exports["gateInspectorPage"] = __req("packages/builder-core/src/inspector.ts")["
 exports["inspectorModel"] = __req("packages/builder-core/src/inspector.ts")["inspectorModel"];
 exports["inspectorOp"] = __req("packages/builder-core/src/inspector.ts")["inspectorOp"];
 exports["canAddCatalogBlock"] = __req("packages/builder-core/src/inspector.ts")["canAddCatalogBlock"];
+exports["addSlotCheck"] = __req("packages/builder-core/src/inspector.ts")["addSlotCheck"];
 exports["inspectorSetField"] = __req("packages/builder-core/src/inspector.ts")["inspectorSetField"];
 exports["shareUnchanged"] = __req("packages/builder-core/src/inspector.ts")["shareUnchanged"];
 exports["writeOrigin"] = __req("packages/builder-core/src/inspector.ts")["writeOrigin"];

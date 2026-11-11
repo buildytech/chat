@@ -382,6 +382,16 @@
 		"feed.started": "Страница начата с {title}. Без вызова модели.",
 		"feed.startFailed": "Страница не начата: {message}",
 		"feed.startRequest": "Начать страницу с экрана {title} ({screen})",
-		"feed.why.screen_not_renderable": "Этот экран пока не рендерится в BuildY."
+		"feed.why.screen_not_renderable": "Этот экран пока не рендерится в BuildY.",
+		"dnd.region": "Перетащите блок на страницу",
+		"dnd.insertAt": "Вставить на позицию {position}",
+		"dnd.dropped": "{title} ({variant}) добавлен на позицию {position}.",
+		"dnd.refused": "Не добавлено: {reason}",
+		"dnd.why.index_out_of_range": "Такого места на странице нет.",
+		"dnd.why.above_header": "Секции идут ниже шапки.",
+		"dnd.why.below_footer": "Секции идут выше подвала.",
+		"dnd.why.header_top": "Шапка стоит в начале страницы.",
+		"dnd.why.footer_end": "Подвал стоит в конце страницы.",
+		"feed.dragHint": "Перетащите в превью или на Sections, или нажмите +"
 	}
 }

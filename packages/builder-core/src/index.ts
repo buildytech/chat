@@ -89,6 +89,8 @@ export {
 	inspectorOp,
 	canAddCatalogBlock,
 	type AddBlockCheck,
+	addSlotCheck,
+	type AddSlotCheck,
 	inspectorSetField,
 	shareUnchanged,
 	writeOrigin,

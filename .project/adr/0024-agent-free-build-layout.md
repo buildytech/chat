@@ -84,3 +84,27 @@ Step A is this change.
   every Stock screen. Today 15 of 80 screens can start a page; the others stay listed with the reason.
 - **No contract change.** The page, session and collection schemas are unchanged; the proposal `origin` is a chat
   app field.
+
+## Addendum: step C (drag feed cards into the preview and the Sections list)
+
+- **Native drag from block cards, a host drop layer over the preview.** Block cards in the Blocks feed are
+  draggable (HTML drag and drop, `application/x-buildy-block`); the dragged card and its add check live in a small
+  store (`lib/feed/drag.svelte.ts`), because DataTransfer data is unreadable during dragover. Drag events never
+  cross into the preview iframe document, so while a card is dragged `DropOverlay` (in the chat document, the same
+  stage as the canvas overlay, same top-left corner and scale) covers the frame and takes the drag. It measures the
+  page's top-level sections in the frame, draws the insertion line in the gap between two sections (or at the top
+  of the first / bottom of the last; `insertionSlot`) with "Insert at position N", and scrolls the frame while the
+  pointer rests near its top or bottom edge. Nothing is inserted into the page DOM.
+- **A drop is the "+" operation at a slot.** The inspector `add` op gains `at` (top-level slot 0..sections): the
+  same Stock sample, fresh ids and gates as "+", one undo step, the new section selected and revealed, zero model
+  calls. `addSlotCheck` (builder-core, pure) says which slots a kind may take: content between the leading header
+  run (nav, sidenav) and the trailing footer run (footer, bottomnav); a header only in the leading run, a footer only
+  in the trailing one.
+- **Refusals are visible.** A card the page cannot take (same reasons as a disabled "+") or a slot it may not take
+  turns the line and label red with the reason; the drop is still received and answered in the feed status line
+  ("Not dropped: Sections go below the header."), so the page never changes silently or by accident.
+- **Sections list as a drop target.** Resting a drag on the Sections tab opens it (400 ms); the list then shows the
+  insertion line on the row border and drops through the same op, announced in its live region. "+" remains the
+  keyboard and assistive-technology path; drag is an extra, never the only way.
+- **No contract change.** `at` is a host inspector operation field; page-spec, page-patch, session and collection
+  schemas are unchanged.

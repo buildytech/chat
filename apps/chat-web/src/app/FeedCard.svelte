@@ -19,6 +19,7 @@
 	import { cn } from "$registry/utils/cn";
 	import type { AddBlockCheck, StockSearchItem } from "@buildytech/builder-core";
 	import StockThumb from "./StockThumb.svelte";
+	import { FEED_DRAG_TYPE, feedDrag } from "$lib/feed/drag.svelte";
 
 	let {
 		item,
@@ -37,12 +38,25 @@
 	} = $props();
 
 	const fill = (key: string) => t(key).replace("{title}", item.title).replace("{variant}", item.variant);
+	// A block card drags into the preview or the Sections list (ADR 0024 step C); "+" stays the keyboard path.
+	function onDragStart(event: DragEvent) {
+		if (item.type !== "block" || !event.dataTransfer) return;
+		event.dataTransfer.setData(FEED_DRAG_TYPE, item.id);
+		event.dataTransfer.setData("text/plain", item.id);
+		event.dataTransfer.effectAllowed = "copy";
+		feedDrag.start(item, check);
+	}
+
 	const why = $derived(check && !check.ok ? t(`feed.why.${check.code}`).replace("{role}", item.role ?? "") : null);
 </script>
 
 <Box
 	tag="li"
-	class={cn("min-w-0 rounded border border-border bg-card p-2", columns === 1 ? "flex items-start gap-2" : "flex flex-col gap-2")}
+	class={cn("min-w-0 rounded border border-border bg-card p-2", columns === 1 ? "flex items-start gap-2" : "flex flex-col gap-2", item.type === "block" && "cursor-grab", feedDrag.item?.id === item.id && "opacity-60")}
+	draggable={item.type === "block" ? "true" : undefined}
+	title={item.type === "block" ? t("feed.dragHint") : undefined}
+	ondragstart={onDragStart}
+	ondragend={() => feedDrag.end()}
 	data-slot="feed-card"
 	data-id={item.id}
 	data-type={item.type}

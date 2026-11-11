@@ -27,10 +27,10 @@
 	import { startPageFromScreen } from "$lib/chat-core";
 	import type { AddBlockCheck, StockSearchItem } from "@buildytech/builder-core";
 	import FeedCard from "./FeedCard.svelte";
+	import { feedDrag } from "$lib/feed/drag.svelte";
 
 	const result = $derived(feed.result);
 	const filters = $derived(feed.filters);
-	let status = $state<{ ok: boolean; text: string } | null>(null);
 	let starting = $state<string | null>(null);
 
 	// The page the cards add to: read so the checks follow page and screen changes.
@@ -59,8 +59,8 @@
 		const name = (key: string) => t(key).replace("{title}", item.title).replace("{variant}", item.variant);
 		if (done.ok) {
 			canvas.requestReveal(done.blockId);
-			status = { ok: true, text: name("feed.added") };
-		} else status = { ok: false, text: t("feed.addFailed").replace("{message}", done.message) };
+			feedDrag.status = { ok: true, text: name("feed.added") };
+		} else feedDrag.status = { ok: false, text: t("feed.addFailed").replace("{message}", done.message) };
 	}
 
 	async function start(item: StockSearchItem) {
@@ -68,7 +68,7 @@
 		starting = item.id;
 		try {
 			const done = await startPageFromScreen(item.id);
-			status = done.ok
+			feedDrag.status = done.ok
 				? { ok: true, text: t("feed.started").replace("{title}", item.title) }
 				: { ok: false, text: t("feed.startFailed").replace("{message}", done.message) };
 			// The page has sections now: the feed shows the blocks it can take.
@@ -144,7 +144,7 @@
 		{#if pageNote}
 			<Text tag="p" class="text-xs text-muted-foreground" data-slot="feed-page-note">{pageNote}</Text>
 		{/if}
-		<Text tag="p" class={cn("text-xs", status?.ok === false ? "text-destructive" : "text-muted-foreground", !status && "sr-only")} role="status" aria-live="polite" data-slot="feed-status">{status?.text ?? ""}</Text>
+		<Text tag="p" class={cn("text-xs", feedDrag.status?.ok === false ? "text-destructive" : "text-muted-foreground", !feedDrag.status && "sr-only")} role="status" aria-live="polite" data-slot="feed-status">{feedDrag.status?.text ?? ""}</Text>
 	</Stack>
 	<Box class="min-h-0 flex-1 overflow-y-auto p-2">
 		{#if result.total === 0}

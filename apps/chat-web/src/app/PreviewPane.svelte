@@ -31,6 +31,7 @@
 	} from "$lib/page-store";
 	import { topLevelBlockId } from "$lib/inspector/geometry";
 	import CanvasOverlay from "./CanvasOverlay.svelte";
+	import DropOverlay from "./DropOverlay.svelte";
 	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { recordedScreenId } from "@buildytech/builder-core";
 	import PreviewFrame from "./PreviewFrame.svelte";
@@ -392,6 +393,7 @@
 					selectedId={canvasSelectedId}
 					selectedLabel={canvasSelectedLabel}
 				/>
+				<DropOverlay doc={frameDoc} scale={frameScale} />
 			{/if}
 		</Box>
 	</Box>

@@ -18,3 +18,17 @@ export function stepIndex(index: number, delta: -1 | 1, length: number): number 
 	const to = index + delta;
 	return to < 0 || to >= length ? null : to;
 }
+
+/**
+ * Top-level slot for a pointer at `y` over section boxes (0 = before the first, boxes.length = after the last) and
+ * where the insertion line goes: the gap between the two sections, or the edge for the first / last slot.
+ */
+export function insertionSlot(boxes: ReadonlyArray<{ top: number; height: number }>, y: number): { slot: number; lineY: number } {
+	if (!boxes.length) return { slot: 0, lineY: 0 };
+	let slot = boxes.findIndex((box) => y < box.top + box.height / 2);
+	if (slot < 0) slot = boxes.length;
+	const above = boxes[slot - 1];
+	const below = boxes[slot];
+	const lineY = !above ? below!.top : !below ? above.top + above.height : (above.top + above.height + below.top) / 2;
+	return { slot, lineY };
+}

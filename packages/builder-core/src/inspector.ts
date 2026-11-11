@@ -242,7 +242,10 @@ export function inspectorSetField(page: Page, blockId: string, pointer: string, 
 
 // ---- Block operations (step 4) ---------------------------------------------------------------------------------
 
-/** `add`: a Stock block variant from the Blocks feed, after `blockId` (a section, or one of its rows) or at the end (""). */
+/**
+ * `add`: a Stock block variant from the Blocks feed, after `blockId` (a section, or one of its rows) or at the end
+ * (""); with `at` (a drop between sections, 0..sections) at that top-level slot instead, checked by addSlotCheck.
+ */
 export type InspectorOp =
 	| { op: "set_variant"; blockId: string; variant: string }
 	| { op: "reset"; blockId: string }
@@ -251,7 +254,7 @@ export type InspectorOp =
 	| { op: "remove"; blockId: string }
 	| { op: "duplicate_row"; blockId: string; row: number }
 	| { op: "remove_row"; blockId: string; row: number }
-	| { op: "add"; blockId: string; catalogBlock: string; variant?: string | null };
+	| { op: "add"; blockId: string; catalogBlock: string; variant?: string | null; at?: number };
 
 export type InspectorOpContext = {
 	page: Page;
@@ -352,6 +355,30 @@ export function canAddCatalogBlock(ctx: Pick<InspectorOpContext, "page" | "prove
 	return { ok: true, kind, variant: want };
 }
 
+/** Page chrome that stays at the top (header, side navigation) or at the bottom (footer, bottom navigation). */
+const TOP_KINDS = new Set<PageBlockKind>(["sidenav", "nav"]);
+const BOTTOM_KINDS = new Set<PageBlockKind>(["footer", "bottomnav"]);
+
+export type AddSlotCheck = { ok: true } | { ok: false; code: "index_out_of_range" | "above_header" | "below_footer" | "header_top" | "footer_end"; message: string };
+
+/**
+ * Whether a new section of `kind` may go to top-level slot `at` (0 = before the first section, length = after the
+ * last): content stays between the leading header run and the trailing footer run; a header goes in the leading run,
+ * a footer in the trailing one. Pure, for drop feedback while dragging and for the add op itself.
+ */
+export function addSlotCheck(blocks: readonly Pick<PageBlock, "kind">[], kind: PageBlockKind, at: number): AddSlotCheck {
+	if (!Number.isInteger(at) || at < 0 || at > blocks.length) return { ok: false, code: "index_out_of_range", message: `A section goes to slot 0..${blocks.length}.` };
+	let leading = 0;
+	while (leading < blocks.length && TOP_KINDS.has(blocks[leading]!.kind)) leading += 1;
+	let trailing = blocks.length;
+	while (trailing > leading && BOTTOM_KINDS.has(blocks[trailing - 1]!.kind)) trailing -= 1;
+	if (TOP_KINDS.has(kind)) return at <= leading ? { ok: true } : { ok: false, code: "header_top", message: "A header goes at the top of the page." };
+	if (BOTTOM_KINDS.has(kind)) return at >= trailing ? { ok: true } : { ok: false, code: "footer_end", message: "A footer goes at the end of the page." };
+	if (at < leading) return { ok: false, code: "above_header", message: "Sections go below the header." };
+	if (at > trailing) return { ok: false, code: "below_footer", message: "Sections go above the footer." };
+	return { ok: true };
+}
+
 /** Ids of `node` and its rows made unique against `taken` (`block-hero` -> `block-hero-2`), within the id length. */
 function withFreshIds(node: PageBlock, taken: Set<string>): PageBlock {
 	const fresh = (id: string) => {
@@ -401,9 +428,13 @@ export function inspectorOp(ctx: InspectorOpContext, op: InspectorOp): Inspector
 		if (op.blockId && anchor < 0) return fail("block_not_found", `No section ${op.blockId} on this page.`, "");
 		const made = addedBlock(ctx, op.catalogBlock, op.variant ?? null);
 		if ("ok" in made) return made;
+		if (op.at !== undefined) {
+			const slot = addSlotCheck(blocks, made.kind, op.at);
+			if (!slot.ok) return fail(slot.code, slot.message, "");
+		}
 		const node = withFreshIds(made, walkIds(blocks));
 		let next = [...blocks];
-		next.splice(anchor < 0 ? blocks.length : anchor + 1, 0, node);
+		next.splice(op.at ?? (anchor < 0 ? blocks.length : anchor + 1), 0, node);
 		if (node.kind === "sidenav" || node.kind === "bottomnav") next = arrangeShell(next, ctx.page.locale).blocks;
 		return gated(ctx, next, [node.id], node.id);
 	}

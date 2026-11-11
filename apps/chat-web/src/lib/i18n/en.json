@@ -493,6 +493,16 @@
 		"feed.started": "Page started from {title}. No model call.",
 		"feed.startFailed": "Page not started: {message}",
 		"feed.startRequest": "Start page from screen {title} ({screen})",
-		"feed.why.screen_not_renderable": "This screen does not render in BuildY yet."
+		"feed.why.screen_not_renderable": "This screen does not render in BuildY yet.",
+		"dnd.region": "Drop a block into the page",
+		"dnd.insertAt": "Insert at position {position}",
+		"dnd.dropped": "Added {title} ({variant}) at position {position}.",
+		"dnd.refused": "Not dropped: {reason}",
+		"dnd.why.index_out_of_range": "Not a place on this page.",
+		"dnd.why.above_header": "Sections go below the header.",
+		"dnd.why.below_footer": "Sections go above the footer.",
+		"dnd.why.header_top": "A header goes at the top of the page.",
+		"dnd.why.footer_end": "A footer goes at the end of the page.",
+		"feed.dragHint": "Drag into the preview or onto Sections, or press +"
 	}
 }
