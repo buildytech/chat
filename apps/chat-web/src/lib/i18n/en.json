@@ -1,9 +1,14 @@
 {
 	"locale": "en",
 	"messages": {
+		"plan.repairUnavailable": "Could not load validation. Reload to repair the plan.",
+		"plan.unchanged": "No changes",
+		"plan.applySelected": "Apply selected changes — {n}",
+		"plan.fixField": "Fix {field}",
+		"plan.chooseAllowed": "Choose an allowed value",
 		"scope.add": "Add to chat",
 		"scope.remove": "Remove from chat context",
-		"scope.only": "Edits restricted to these blocks",
+		"scope.only": "Edits restricted to these blocks. Clear the scope to edit the whole page.",
 		"scope.clear": "Clear block scope",
 		"plan.needsRepair": "Needs repair",
 		"plan.fixVariant": "Choose an allowed variant",

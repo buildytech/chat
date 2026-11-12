@@ -35,6 +35,7 @@ import type { AgentMode } from "./agent/agent-tools.ts";
 
 export type ProposalContext = {
  scopeBlockIds?: string[];
+ conversation?: Array<{role: "user" | "assistant"; text: string}>;
 	brief: string;
 	/** Chat mode (composer toggle). Ask turns never assemble; Build is the default. */
 	mode?: AgentMode;
@@ -130,6 +131,7 @@ export type ProposalIntent = {
 };
 
 export type LayoutProposalError = {
+ issues?: import("./catalog/provenance.ts").PropsIssue[];
 	ok: false;
 	code: string;
 	message: string;

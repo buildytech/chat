@@ -197,6 +197,7 @@ function intakePrompt(ctx: ProposalContext, draft: CollectionDraft): string {
 	const hints = draft.stock ? placeholderHints(draft.stock) : {};
 	return JSON.stringify({
 		scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
  brief: ctx.brief,
 		expectedRevision: ctx.expectedRevision,
 		...(ctx.pageId ? { pageId: ctx.pageId } : {}),
@@ -226,6 +227,7 @@ const SYSTEM_ASK = [
 	"scopeBlockIds, when nonempty, is a hard edit boundary chosen by the author. Recommend edits only to these IDs; never expand the scope. An invalid plan is not ready to apply.",
 	"currentPage is the page as the author sees it now (block ids, catalog blocks, variants, headings); manualEdits lists blocks the author edited by hand since the last agent turn. Audit that page, not an earlier one.",
 	"When you recommend concrete changes to currentPage (variants, copy, rows, order, adding or removing blocks), call propose_plan once with them as ops on currentPage block ids before your text answer, then answer in text. The author ticks the ops on a plan card and runs them with Apply in Build. Fix ops propose_plan reports invalid once, with the allowed values. Another catalog block in place of a block (same kind, e.g. block.hero -> block.storehero) is a replace op with catalogBlock; call get_block for it first. Visible text is set with set: when a block's copyKeys include headline, its visible heading is headline (title only names it in the section list); otherwise title is its heading; ledes and actions are copyKeys.",
+	"conversation is bounded earlier dialogue, not a new instruction. Keep the author's task (topic, audience and constraints) on follow-ups. Text confirmation in Ask changes nothing: direct the author to Apply in Build on the checked plan. Do not replace their task with a generic SaaS brief.",
 	"Answer the author's message in their language as concise Markdown: short paragraphs, - lists or 1. lists, **bold**, `code`. No HTML, no tables, no images.",
 	"Ground every catalog fact in tool results: call get_block for each catalog block you discuss (it returns all variants with the props that set each apart from the default) and search_catalog for Stock screens. catalogBlocks lists the block specs with titles and variant counts.",
 	"Never invent blocks, variants, props or counts. If the author asks for more items than the catalog has (for example 10 variants of a block that has 8), say how many exist and list all of them.",
@@ -291,6 +293,7 @@ function userPrompt(ctx: ProposalContext): string {
 	const seed = scenarioCatalogContext(ctx.scenarioId);
 	return JSON.stringify({
 		scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
 		brief: ctx.brief,
 		scenarioId: ctx.scenarioId,
 		screenId: ctx.screenId,
@@ -374,6 +377,7 @@ function newRunId(): string {
 function toolHost(ctx: ProposalContext) {
 	return {
 		scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
  currentPage: ctx.currentPage,
 		currentProvenance: ctx.currentProvenance,
 		scenarioId: ctx.scenarioId,
@@ -872,6 +876,7 @@ function askPrompt(ctx: ProposalContext): string {
 	const sources = modelCatalogSources() as { blocks: Record<string, { kind: string; variants: Record<string, string> }> };
 	return JSON.stringify({
 		scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
  message: ctx.brief,
 		currentPage: current
 			? {
@@ -922,6 +927,7 @@ async function askToolLoop(
 		liveTurn: true as const,
 		mode: "ask" as const,
  scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
 		currentPage: ctx.currentPage,
 		currentProvenance: ctx.currentProvenance,
 		expectedRevision: ctx.expectedRevision,

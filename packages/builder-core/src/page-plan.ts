@@ -228,7 +228,7 @@ function allowedFor(op: PagePlanOp, page: Page, code: string): string[] | undefi
  * Check a plan from the wire (propose_plan arguments or an Ask reply) against the page: every op alone through the
  * page-patch gates. Never trusts validity from the wire; returns null when there is no page or no op.
  */
-export function checkPagePlan(input: Base & { raw: unknown }): PagePlan | null {
+export function checkPagePlan(input: Base & { raw: unknown; onReject?: (op: PagePlanOp, result: LayoutProposalError, page: Page) => void }): PagePlan | null {
 	const rec = input.raw && typeof input.raw === "object" && !Array.isArray(input.raw) ? (input.raw as Record<string, unknown>) : null;
 	const list = Array.isArray(rec?.ops) ? rec!.ops.slice(0, PLAN_LIMITS.maxOps) : [];
 	if (!list.length) return null;
@@ -244,11 +244,52 @@ export function checkPagePlan(input: Base & { raw: unknown }): PagePlan | null {
 		if (result.ok && unchanged(working, result.page)) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
 		if (result.ok) { working = result.page; return { ...op, valid: true, ...swapDropped(op, target) }; }
 		if (result.code === PLAN_NOOP) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
-		const allowed = allowedFor(op, working, result.code);
-		return { ...op, issue: { code: result.code, message: result.message.slice(0, 600), ...(allowed ? { allowed } : {}) } };
+		input.onReject?.(op, result, working);
+ const allowed = allowedFor(op, working, result.code);
+		return { ...op, issue: { code: result.code, message: (result.issues?.[0] ? `${result.path ?? result.issues[0].pointer}: ${JSON.stringify(result.issues[0].value)} — ${result.issues[0].message}` : result.message).slice(0, 600), ...(allowed ? { allowed } : {}) } };
 	});
 	const summary = str(rec?.summary, PLAN_LIMITS.maxSummary);
 	return { status: "proposed", pageId: input.page.id, baseRevision: input.revision, ...(summary ? { summary } : {}), ops };
+}
+
+/** Repair controls are derived from live validation, never persisted as a second schema. */
+export type PlanRepair = { opId: string; field: string; label: string; value: string; allowed: string[] };
+export function pagePlanRepairs(input: Base & { plan: PagePlan }): PlanRepair[] {
+ const repairs: PlanRepair[] = [];
+ checkPagePlan({ ...input, raw: input.plan, onReject(op, result, page) {
+  const target = page.layout.blocks.find(block => block.id === op.blockId);
+  const offer = (field: string, label: string, value: unknown, allowed: unknown[]) => {
+   const values = allowed.filter((x): x is string => typeof x === 'string');
+   if (values.length) repairs.push({opId: op.id, field, label, value: String(value ?? ''), allowed: values});
+  };
+  if (result.code === 'unknown_variant') offer('variant', 'variant', op.variant, allowedFor(op,page,result.code) ?? []);
+  if (op.op === 'set' && target && (result.code === 'page_patch_invalid' || result.code === 'slot_not_rendered')) {
+   const fields = ['title', 'summary', ...PAGE_SLOTS[target.kind].copy];
+   if (!fields.includes(op.field ?? '')) offer('field','field',op.field,fields);
+  }
+  const issue = result.issues?.[0];
+  if (op.op === 'set' && issue?.allowed) offer('value',op.field ?? 'value',issue.value,issue.allowed);
+  const row = /children\[(\d+)\]\.copy\.([a-zA-Z]+)$/.exec(result.path ?? '');
+  if (issue?.allowed && row && op.items) {
+   const index = Number(row[1]), key = row[2]!;
+   const item = op.items[index];
+   if (item && Object.hasOwn(item,key)) offer('items.'+index+'.'+key,item.label+' → '+key,issue.value,issue.allowed);
+  }
+ }});
+ return repairs;
+}
+/** Only a currently offered enum value can be written; revalidate the complete plan afterwards. */
+export function repairPagePlan(input: Base & { plan: PagePlan; opId: string; field: string; value: string }): PagePlan | null {
+ const offered = pagePlanRepairs(input).find(row=>row.opId===input.opId && row.field===input.field);
+ if (!offered?.allowed.includes(input.value) || input.plan.status !== 'proposed') return null;
+ const ops = input.plan.ops.map(op => {
+  if (op.id !== input.opId) return op;
+  const next = { ...op, reason: undefined };
+  if (input.field==='field' || input.field==='variant' || input.field==='value') return { ...next, [input.field]: input.value };
+  const [,index,key] = input.field.split('.');
+  return { ...next, items: next.items?.map((item,i)=>i===Number(index)?{...item,[key!]:input.value}:item) };
+ });
+ return checkPagePlan({...input,raw:{ops}});
 }
 
 /** replace with a catalog block: the fields the new block does not render, against the block as it is now. */

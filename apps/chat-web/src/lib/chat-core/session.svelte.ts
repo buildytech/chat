@@ -1,3 +1,4 @@
+import { conversationForTurn } from "./conversation";
 import { blockScope } from "./block-scope.svelte";
 import {
 	readSessionQuery,
@@ -25,6 +26,8 @@ import {
 	agentToolNames,
 	isAgentTextReply,
 	checkPagePlan,
+ pagePlanRepairs,
+ repairPagePlan,
 	describePageChanges,
 	executePagePlan,
 	manualEditsSince,
@@ -531,7 +534,8 @@ function constructorContext(
 	// The chat's Stock collection bounds Build turns (the runtime re-checks the items against its own snapshot).
 	const request = mode === "build" ? collectionRequest(getSelectedSession()?.collection) : null;
 	return {
-		scopeBlockIds: blockScope.ids(getSelectedSession()?.id),
+		conversation: conversationForTurn(getSelectedSession()?.messages ?? []),
+ scopeBlockIds: blockScope.ids(getSelectedSession()?.id),
  collectionRequest: request,
 		collection: collectionBounds(request),
 		brief,
@@ -1049,15 +1053,19 @@ export function applyVariantFromAsk(spec: string, variant: string): boolean {
  * the others make one pending proposal the author applies. The plan keeps each op's result.
  */
 /** Fix a catalog enum locally and recheck the entire sequence on the visible page. */
-export function repairPlanVariant(messageId: string, opId: string, variant: string): boolean {
- const session = getSelectedSession();
- const source = session?.messages.find(message => message.id === messageId);
- if (!session || source?.plan?.status !== 'proposed') return false;
- const op = source.plan.ops.find(op => op.id === opId);
- if (op?.issue?.code !== 'unknown_variant' || !op.issue.allowed?.includes(variant)) return false;
- const plan = checkedPlan({ ...source.plan, summary: undefined, ops: source.plan.ops.map(row => row.id === opId ? { ...row, variant, reason: undefined } : row) });
+export function getPlanRepairs(messageId: string) {
+ const base = getEditBase();
+ const source = getSelectedSession()?.messages.find(message=>message.id===messageId);
+ if (!base?.page || !source?.plan || source.plan.status !== 'proposed') return [];
+ return pagePlanRepairs({sessionDemoData:sessionDemoFromProposals(),page:base.page, provenance:base.provenance ?? undefined, revision:getPageRevision() ?? 0, scopeBlockIds:blockScope.ids(getSelectedSession()?.id), plan:source.plan});
+}
+export function repairPlanField(messageId: string, opId: string, field: string, value: string): boolean {
+ const session=getSelectedSession(), base=getEditBase();
+ const source=session?.messages.find(message=>message.id===messageId);
+ if (!session || !base?.page || !source?.plan) return false;
+ const plan=repairPagePlan({sessionDemoData:sessionDemoFromProposals(),page:base.page,provenance:base.provenance ?? undefined,revision:getPageRevision() ?? 0,scopeBlockIds:blockScope.ids(session.id),plan:source.plan,opId,field,value});
  if (!plan) return false;
- replaceSession({ ...session, messages: session.messages.map(message => message.id === messageId ? { ...message, plan } : message), updatedAt: nowIso() });
+ replaceSession({...session,messages:session.messages.map(message=>message.id===messageId?{...message,plan}:message),updatedAt:nowIso()});
  saveMock(memory);
  return true;
 }
@@ -1065,7 +1073,7 @@ export function repairPlanVariant(messageId: string, opId: string, variant: stri
 export function applyPlanInBuild(messageId: string, selected: readonly string[]): boolean {
 	const session = getSelectedSession();
 	const source = session?.messages.find((message) => message.id === messageId);
-	if (!session || !source?.plan || !selected.length || source.plan.status !== "proposed" || source.plan.ops.some(op => !op.valid && op.issue?.code !== "no_change")) return false;
+	if (!session || !source?.plan || !selected.length || source.plan.status !== "proposed") return false;
 	setChatMode("build");
 	const request: ChatMessage = {
 		id: uid("msg"),

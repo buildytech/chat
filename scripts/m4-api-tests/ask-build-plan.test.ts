@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { readFileSync } from "node:fs";
 import {
 	checkPagePlan,
+ pagePlanRepairs, repairPagePlan,
 	compactPlanPayload,
 	describePageChanges,
 	editPage,
@@ -596,4 +597,35 @@ test("edit_page replace with catalogBlock (page-patch/v1, additive) keeps the bl
  assert.equal(isAgentTextReply(reply.proposal),true); if(isAgentTextReply(reply.proposal))assert.equal(reply.proposal.plan?.ops[0]?.issue?.code,'outside_scope');
  assert.match(String((requests[0]!.messages as Array<{content:string}>)[1]!.content),/scopeBlockIds/);
  });
+ });
+
+ test('owner icon failure offers a schema enum repair without losing the other rows', () => {
+ const page=ownerPage(); const block=page.layout.blocks.find(b=>b.catalogBlock==='block.logos')!;
+ const raw={ops:[{op:'set_items',blockId:block.id,items:[{label:'Tasks',detail:'Create tasks',icon:'check'},{label:'Analytics',detail:'Reports',icon:'bar-chart-3'}]}]};
+ const plan=checkPagePlan({page,provenance,revision:2,raw})!;
+ assert.equal(plan.ops[0]!.issue?.code,'props_invalid',JSON.stringify(plan));
+ assert(!plan.ops[0]!.issue!.message.includes('a-arrow-down'), 'large icon enum stays out of saved error prose');
+ const repairs=pagePlanRepairs({page,provenance,revision:2,plan});
+ assert.equal(repairs[0]!.field,'items.1.icon');assert.equal(repairs[0]!.value,'bar-chart-3');assert(repairs[0]!.allowed.includes('activity'));
+ const repaired=repairPagePlan({page,provenance,revision:2,plan,opId:'op-1',field:'items.1.icon',value:'activity'})!;
+ assert(repaired.ops[0]!.valid,JSON.stringify(repaired));assert.deepEqual(repaired.ops[0]!.items,[raw.ops[0]!.items[0],{...raw.ops[0]!.items[1],icon:'activity'}]);
+ assert.equal(repairPagePlan({page,provenance,revision:2,plan,opId:'op-1',field:'items.0.icon',value:'activity'}),null);
+ });
+ test('invalid heading has contract field choices; valid subset still applies', () => {
+ const page=ownerPage();const raw={ops:[{op:'set',blockId:'block-hero',field:'heading',value:'Mobile application'},{op:'set',blockId:'block-hero',field:'lede',value:'Manage tasks on your phone'}]};
+ const plan=checkPagePlan({page,provenance,revision:2,raw})!;
+ const repairs=pagePlanRepairs({page,provenance,revision:2,plan});assert(repairs[0]!.allowed.includes('headline'));assert(!repairs[0]!.allowed.includes('heading'));
+ const repaired=repairPagePlan({page,provenance,revision:2,plan,opId:'op-1',field:'field',value:'headline'})!;assert(repaired.ops.every(op=>op.valid));
+ const partial=executePagePlan({page,provenance,revision:2,plan,selected:['op-2']});assert(partial.proposal?.ok,JSON.stringify(partial));assert.equal(partial.plan.ops[0]!.result?.status,'skipped');assert.equal((partial.proposal as LayoutProposal).page.layout.blocks.find(b=>b.id==='block-hero')!.copy!.lede,'Manage tasks on your phone');
+ });
+ test('a selected operation depending on an omitted replacement is rechecked, not silently accepted',()=>{
+ const page=swapPage();const plan=checkPagePlan({page,provenance,revision:2,raw:{ops:[{op:'replace',blockId:'block-hero',catalogBlock:'block.storehero',variant:'overlay'},{op:'set_variant',blockId:'block-hero',variant:'overlayStart'}]}})!;
+ assert(plan.ops.every(op=>op.valid));const exec=executePagePlan({page,provenance,revision:2,plan,selected:['op-2']});assert.equal(exec.proposal,null);assert.equal(exec.plan.ops[1]!.result?.status,'rejected');
+ });
+ test('bounded continuation context carries the mobile app task on a short follow-up', async()=>{
+ const {conversationForTurn}=await import('../../apps/chat-web/src/lib/chat-core/conversation.ts');
+ const messages=[{role:'user',text:'Create a mobile task application page'},{role:'assistant',text:'A checked plan',plan:{ops:[{op:'set',field:'headline',value:'Tasks'}]}},{role:'user',text:'Try again for the whole page'}];
+ const conversation=conversationForTurn(messages);assert.equal(conversation.length,2);assert.match(conversation[0]!.text,/mobile task/);assert.match(conversation[1]!.text,/Checked plan/);assert(!conversation.some(row=>row.text===messages[2]!.text));
+ const mapped=mapChatRunRequest({modelId:MODEL,brief:messages[2]!.text,conversation},{allowUnlistedTrial:true});assert(mapped.ok);if(mapped.ok)assert.deepEqual(mapped.request.conversation,conversation);
+ await withProvider([{content:'Continue the mobile app task.'}],async requests=>{await runXaiCatalogTurn('test',MODEL,{brief:messages[2]!.text,mode:'ask',conversation},new AbortController().signal);assert.match(JSON.stringify(requests[0]),/mobile task/);});
  });

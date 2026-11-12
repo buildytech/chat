@@ -154,6 +154,7 @@ export async function handleRuntimeFetch(
 						mode: mapped.request.mode,
 						collection: mapped.request.collection,
 						scopeBlockIds: mapped.request.scopeBlockIds,
+ conversation: mapped.request.conversation,
  manualEdits: mapped.request.manualEdits
 					},
 					signal

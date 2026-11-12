@@ -123,6 +123,7 @@ export async function runXaiProposal(
 				expectedRevision: ctx.expectedRevision,
 				pageId: ctx.pageId ?? ctx.currentPage?.id,
 				scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
  currentPage: ctx.currentPage ?? null,
 				currentProvenance: ctx.currentProvenance ?? null,
 				sessionDemoData: Boolean(ctx.sessionDemoData),

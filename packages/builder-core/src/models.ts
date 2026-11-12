@@ -210,6 +210,7 @@ export type ChatRunRequest = {
 	/** Blocks the author edited by hand since the last agent turn (ADR 0020). */
 	manualEdits: Array<{ blockId: string; edits: number }>;
  scopeBlockIds?: string[];
+ conversation?: Array<{role: "user" | "assistant"; text: string}>;
 };
 
 function parseCurrentProvenance(raw: unknown): ChatRunRequest["currentProvenance"] {
@@ -246,6 +247,7 @@ export function mapChatRunRequest(
 		collection?: unknown;
 		manualEdits?: unknown;
  scopeBlockIds?: unknown;
+ conversation?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -285,6 +287,7 @@ export function mapChatRunRequest(
 			mode: isAgentMode(body.mode) ? body.mode : "build",
 			collection: collectionBounds(body.collection),
 			scopeBlockIds: Array.isArray(body.scopeBlockIds) ? [...new Set(body.scopeBlockIds.filter((id): id is string => typeof id === "string"))].slice(0, 100) : undefined,
+ conversation: Array.isArray(body.conversation) ? body.conversation.slice(-8).flatMap(row => row && typeof row === 'object' && (row.role === 'user' || row.role === 'assistant') && typeof row.text === 'string' ? [{role: row.role as 'user' | 'assistant', text: row.text.slice(0, 2000)}] : []) : [],
  manualEdits: parseManualEdits(body.manualEdits)
 		}
 	};

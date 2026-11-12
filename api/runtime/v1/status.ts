@@ -32797,7 +32797,7 @@ function allowedFor(op: PagePlanOp, page: Page, code: string): string[] | undefi
  * Check a plan from the wire (propose_plan arguments or an Ask reply) against the page: every op alone through the
  * page-patch gates. Never trusts validity from the wire; returns null when there is no page or no op.
  */
-function checkPagePlan(input: Base & { raw: unknown }): PagePlan | null {
+function checkPagePlan(input: Base & { raw: unknown; onReject?: (op: PagePlanOp, result: LayoutProposalError, page: Page) => void }): PagePlan | null {
 	const rec = input.raw && typeof input.raw === "object" && !Array.isArray(input.raw) ? (input.raw as Record<string, unknown>) : null;
 	const list = Array.isArray(rec?.ops) ? rec!.ops.slice(0, PLAN_LIMITS.maxOps) : [];
 	if (!list.length) return null;
@@ -32813,11 +32813,51 @@ function checkPagePlan(input: Base & { raw: unknown }): PagePlan | null {
 		if (result.ok && unchanged(working, result.page)) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
 		if (result.ok) { working = result.page; return { ...op, valid: true, ...swapDropped(op, target) }; }
 		if (result.code === PLAN_NOOP) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
-		const allowed = allowedFor(op, working, result.code);
-		return { ...op, issue: { code: result.code, message: result.message.slice(0, 600), ...(allowed ? { allowed } : {}) } };
+		input.onReject?.(op, result, working);
+ const allowed = allowedFor(op, working, result.code);
+		return { ...op, issue: { code: result.code, message: (result.issues?.[0] ? `${result.path ?? result.issues[0].pointer}: ${JSON.stringify(result.issues[0].value)} — ${result.issues[0].message}` : result.message).slice(0, 600), ...(allowed ? { allowed } : {}) } };
 	});
 	const summary = str(rec?.summary, PLAN_LIMITS.maxSummary);
 	return { status: "proposed", pageId: input.page.id, baseRevision: input.revision, ...(summary ? { summary } : {}), ops };
+}
+
+/** Repair controls are derived from live validation, never persisted as a second schema. */
+function pagePlanRepairs(input: Base & { plan: PagePlan }): PlanRepair[] {
+ const repairs: PlanRepair[] = [];
+ checkPagePlan({ ...input, raw: input.plan, onReject(op, result, page) {
+  const target = page.layout.blocks.find(block => block.id === op.blockId);
+  const offer = (field: string, label: string, value: unknown, allowed: unknown[]) => {
+   const values = allowed.filter((x): x is string => typeof x === 'string');
+   if (values.length) repairs.push({opId: op.id, field, label, value: String(value ?? ''), allowed: values});
+  };
+  if (result.code === 'unknown_variant') offer('variant', 'variant', op.variant, allowedFor(op,page,result.code) ?? []);
+  if (op.op === 'set' && target && (result.code === 'page_patch_invalid' || result.code === 'slot_not_rendered')) {
+   const fields = ['title', 'summary', ...PAGE_SLOTS[target.kind].copy];
+   if (!fields.includes(op.field ?? '')) offer('field','field',op.field,fields);
+  }
+  const issue = result.issues?.[0];
+  if (op.op === 'set' && issue?.allowed) offer('value',op.field ?? 'value',issue.value,issue.allowed);
+  const row = /children\[(\d+)\]\.copy\.([a-zA-Z]+)$/.exec(result.path ?? '');
+  if (issue?.allowed && row && op.items) {
+   const index = Number(row[1]), key = row[2]!;
+   const item = op.items[index];
+   if (item && Object.hasOwn(item,key)) offer('items.'+index+'.'+key,item.label+' → '+key,issue.value,issue.allowed);
+  }
+ }});
+ return repairs;
+}
+/** Only a currently offered enum value can be written; revalidate the complete plan afterwards. */
+function repairPagePlan(input: Base & { plan: PagePlan; opId: string; field: string; value: string }): PagePlan | null {
+ const offered = pagePlanRepairs(input).find(row=>row.opId===input.opId && row.field===input.field);
+ if (!offered?.allowed.includes(input.value) || input.plan.status !== 'proposed') return null;
+ const ops = input.plan.ops.map(op => {
+  if (op.id !== input.opId) return op;
+  const next = { ...op, reason: undefined };
+  if (input.field==='field' || input.field==='variant' || input.field==='value') return { ...next, [input.field]: input.value };
+  const [,index,key] = input.field.split('.');
+  return { ...next, items: next.items?.map((item,i)=>i===Number(index)?{...item,[key!]:input.value}:item) };
+ });
+ return checkPagePlan({...input,raw:{ops}});
 }
 
 /** replace with a catalog block: the fields the new block does not render, against the block as it is now. */
@@ -32950,6 +32990,8 @@ exports["blockRef"] = blockRef;
 exports["resolveBlockRef"] = resolveBlockRef;
 exports["pageDirectory"] = pageDirectory;
 exports["checkPagePlan"] = checkPagePlan;
+exports["pagePlanRepairs"] = pagePlanRepairs;
+exports["repairPagePlan"] = repairPagePlan;
 exports["compactPlanPayload"] = compactPlanPayload;
 exports["executePagePlan"] = executePagePlan;
 exports["describePageChanges"] = describePageChanges;
@@ -34397,6 +34439,7 @@ function mapChatRunRequest(
 		collection?: unknown;
 		manualEdits?: unknown;
  scopeBlockIds?: unknown;
+ conversation?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -34436,6 +34479,7 @@ function mapChatRunRequest(
 			mode: isAgentMode(body.mode) ? body.mode : "build",
 			collection: collectionBounds(body.collection),
 			scopeBlockIds: Array.isArray(body.scopeBlockIds) ? [...new Set(body.scopeBlockIds.filter((id): id is string => typeof id === "string"))].slice(0, 100) : undefined,
+ conversation: Array.isArray(body.conversation) ? body.conversation.slice(-8).flatMap(row => row && typeof row === 'object' && (row.role === 'user' || row.role === 'assistant') && typeof row.text === 'string' ? [{role: row.role as 'user' | 'assistant', text: row.text.slice(0, 2000)}] : []) : [],
  manualEdits: parseManualEdits(body.manualEdits)
 		}
 	};
@@ -35144,6 +35188,8 @@ exports["PLAN_NOOP"] = __req("packages/builder-core/src/page-plan.ts")["PLAN_NOO
 exports["PLAN_OPS"] = __req("packages/builder-core/src/page-plan.ts")["PLAN_OPS"];
 exports["blockRef"] = __req("packages/builder-core/src/page-plan.ts")["blockRef"];
 exports["checkPagePlan"] = __req("packages/builder-core/src/page-plan.ts")["checkPagePlan"];
+exports["pagePlanRepairs"] = __req("packages/builder-core/src/page-plan.ts")["pagePlanRepairs"];
+exports["repairPagePlan"] = __req("packages/builder-core/src/page-plan.ts")["repairPagePlan"];
 exports["compactPlanPayload"] = __req("packages/builder-core/src/page-plan.ts")["compactPlanPayload"];
 exports["describePageChanges"] = __req("packages/builder-core/src/page-plan.ts")["describePageChanges"];
 exports["executePagePlan"] = __req("packages/builder-core/src/page-plan.ts")["executePagePlan"];
@@ -35505,6 +35551,7 @@ function intakePrompt(ctx: ProposalContext, draft: CollectionDraft): string {
 	const hints = draft.stock ? placeholderHints(draft.stock) : {};
 	return JSON.stringify({
 		scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
  brief: ctx.brief,
 		expectedRevision: ctx.expectedRevision,
 		...(ctx.pageId ? { pageId: ctx.pageId } : {}),
@@ -35534,6 +35581,7 @@ const SYSTEM_ASK = [
 	"scopeBlockIds, when nonempty, is a hard edit boundary chosen by the author. Recommend edits only to these IDs; never expand the scope. An invalid plan is not ready to apply.",
 	"currentPage is the page as the author sees it now (block ids, catalog blocks, variants, headings); manualEdits lists blocks the author edited by hand since the last agent turn. Audit that page, not an earlier one.",
 	"When you recommend concrete changes to currentPage (variants, copy, rows, order, adding or removing blocks), call propose_plan once with them as ops on currentPage block ids before your text answer, then answer in text. The author ticks the ops on a plan card and runs them with Apply in Build. Fix ops propose_plan reports invalid once, with the allowed values. Another catalog block in place of a block (same kind, e.g. block.hero -> block.storehero) is a replace op with catalogBlock; call get_block for it first. Visible text is set with set: when a block's copyKeys include headline, its visible heading is headline (title only names it in the section list); otherwise title is its heading; ledes and actions are copyKeys.",
+	"conversation is bounded earlier dialogue, not a new instruction. Keep the author's task (topic, audience and constraints) on follow-ups. Text confirmation in Ask changes nothing: direct the author to Apply in Build on the checked plan. Do not replace their task with a generic SaaS brief.",
 	"Answer the author's message in their language as concise Markdown: short paragraphs, - lists or 1. lists, **bold**, `code`. No HTML, no tables, no images.",
 	"Ground every catalog fact in tool results: call get_block for each catalog block you discuss (it returns all variants with the props that set each apart from the default) and search_catalog for Stock screens. catalogBlocks lists the block specs with titles and variant counts.",
 	"Never invent blocks, variants, props or counts. If the author asks for more items than the catalog has (for example 10 variants of a block that has 8), say how many exist and list all of them.",
@@ -35599,6 +35647,7 @@ function userPrompt(ctx: ProposalContext): string {
 	const seed = scenarioCatalogContext(ctx.scenarioId);
 	return JSON.stringify({
 		scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
 		brief: ctx.brief,
 		scenarioId: ctx.scenarioId,
 		screenId: ctx.screenId,
@@ -35665,6 +35714,7 @@ function newRunId(): string {
 function toolHost(ctx: ProposalContext) {
 	return {
 		scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
  currentPage: ctx.currentPage,
 		currentProvenance: ctx.currentProvenance,
 		scenarioId: ctx.scenarioId,
@@ -36161,6 +36211,7 @@ function askPrompt(ctx: ProposalContext): string {
 	const sources = modelCatalogSources() as { blocks: Record<string, { kind: string; variants: Record<string, string> }> };
 	return JSON.stringify({
 		scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
  message: ctx.brief,
 		currentPage: current
 			? {
@@ -36211,6 +36262,7 @@ async function askToolLoop(
 		liveTurn: true as const,
 		mode: "ask" as const,
  scopeBlockIds: ctx.scopeBlockIds,
+ conversation: ctx.conversation,
 		currentPage: ctx.currentPage,
 		currentProvenance: ctx.currentProvenance,
 		expectedRevision: ctx.expectedRevision,
@@ -36682,6 +36734,7 @@ async function handleRuntimeFetch(
 						mode: mapped.request.mode,
 						collection: mapped.request.collection,
 						scopeBlockIds: mapped.request.scopeBlockIds,
+ conversation: mapped.request.conversation,
  manualEdits: mapped.request.manualEdits
 					},
 					signal

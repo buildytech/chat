@@ -183,6 +183,8 @@ export {
 	PLAN_OPS,
 	blockRef,
 	checkPagePlan,
+ pagePlanRepairs,
+ repairPagePlan,
 	compactPlanPayload,
 	describePageChanges,
 	executePagePlan,
@@ -193,7 +195,7 @@ export {
 	planHasInvalid,
 	resolveBlockRef
 } from "./page-plan.ts";
-export type { BlockRef, ManualEdit, PageChange, PageChangeReport, PagePlan, PagePlanOp, PagePlanStatus, PlanExecution, PlanOpName } from "./page-plan.ts";
+export type { BlockRef, ManualEdit, PageChange, PageChangeReport, PagePlan, PagePlanOp, PlanRepair, PagePlanStatus, PlanExecution, PlanOpName } from "./page-plan.ts";
 export {
 	DATA_KINDS,
 	cleanText,
