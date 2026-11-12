@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import Box from "$registry/kit/ui/box/Box.svelte";
+	import Block from "$registry/compose/Block.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import { cn } from "$registry/utils/cn";
 	import StockThumb from "./StockThumb.svelte";
@@ -30,7 +30,7 @@
 	} = $props();
 </script>
 
-<Box
+<Block
 	{...rest}
 	class={cn(
 		"min-w-0 overflow-hidden rounded border bg-card",
@@ -43,4 +43,4 @@
 	<Stack align="stretch" class="min-w-0 flex-1 gap-1 p-2">
 		{@render children()}
 	</Stack>
-</Box>
+</Block>

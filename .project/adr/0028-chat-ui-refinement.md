@@ -1,7 +1,8 @@
 # ADR 0028: Chat UI refinement through UI8Kit composition and one shell theme
 
 Status: accepted (2026-11-12). Owner approved the screenshot/code review, the UI8Kit-aligned refactoring sequence,
-and recording this ADR, its SLO and implementation plan. Implementation and visual acceptance are pending.
+and recording this ADR, its SLO and implementation plan. Initial implementation and browser checks are recorded in
+[the acceptance report](../../docs/acceptance/chat-ui-refinement.md); owner design review remains separate.
 
 Extends [ADR 0026](0026-chat-ui-skin.md): replaces its **theme-layer-only implementation scope** for this work.
 Its preview isolation, token ownership and accessibility requirements remain. Keeps the compact density of
@@ -101,4 +102,4 @@ add unavailable upstream tooling. Verified work goes to `main` under the reposit
 - This is an app composition refactor as well as a theme refinement; a token-only patch is insufficient.
 - The accepted design direction is shared across the shell, while framework and exported page ownership stay clear.
 - Automated checks establish contracts and compilation; visual acceptance requires recorded browser evidence.
-- This ADR records approval and scope, not completion or measured quality results.
+- This ADR records approval and scope; measured results and limitations belong to the linked acceptance report.

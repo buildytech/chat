@@ -120,25 +120,25 @@
 				<Group gap="2" class="flex-wrap">
 					<Badge size="sm" variant="secondary">{model.kind}</Badge>
 					{#if model.ok}
-						<Badge size="sm" variant="outline">{model.item}</Badge>
-						<Badge size="sm" variant="outline">{model.variant}</Badge>
+						<Badge size="sm" variant="ghost">{model.item}</Badge>
+						<Badge size="sm" variant="ghost">{model.variant}</Badge>
 					{/if}
 				</Group>
 			</Stack>
 			<Group gap="2" class="flex-wrap" role="group" aria-label={t("inspector.actions")} data-slot="inspector-actions">
-				<Button size="sm" layout="icon" variant="outline" aria-label={t("inspector.moveUp")} title={t("inspector.moveUp")} disabled={index <= 0} data-action="move-up" onclick={() => inspector.run({ op: "move", blockId: model.blockId, to: index - 1 })}>
+				<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.moveUp")} title={t("inspector.moveUp")} disabled={index <= 0} data-action="move-up" onclick={() => inspector.run({ op: "move", blockId: model.blockId, to: index - 1 })}>
 					<ArrowUp />
 				</Button>
-				<Button size="sm" layout="icon" variant="outline" aria-label={t("inspector.moveDown")} title={t("inspector.moveDown")} disabled={index < 0 || index >= blocks.length - 1} data-action="move-down" onclick={() => inspector.run({ op: "move", blockId: model.blockId, to: index + 1 })}>
+				<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.moveDown")} title={t("inspector.moveDown")} disabled={index < 0 || index >= blocks.length - 1} data-action="move-down" onclick={() => inspector.run({ op: "move", blockId: model.blockId, to: index + 1 })}>
 					<ArrowDown />
 				</Button>
-				<Button size="sm" layout="icon" variant="outline" aria-label={t("inspector.duplicate")} title={t("inspector.duplicate")} data-action="duplicate" onclick={() => inspector.run({ op: "duplicate", blockId: model.blockId })}>
+				<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.duplicate")} title={t("inspector.duplicate")} data-action="duplicate" onclick={() => inspector.run({ op: "duplicate", blockId: model.blockId })}>
 					<Copy />
 				</Button>
-				<Button size="sm" layout="icon" variant="outline" aria-label={t("inspector.reset")} title={t("inspector.reset")} disabled={!model.ok} data-action="reset" onclick={() => inspector.run({ op: "reset", blockId: model.blockId })}>
+				<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.reset")} title={t("inspector.reset")} disabled={!model.ok} data-action="reset" onclick={() => inspector.run({ op: "reset", blockId: model.blockId })}>
 					<RotateCcw />
 				</Button>
-				<Button size="sm" layout="icon" variant="outline" aria-label={t("inspector.remove")} title={t("inspector.remove")} data-action="remove" onclick={() => inspector.run({ op: "remove", blockId: model.blockId })}>
+				<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.remove")} title={t("inspector.remove")} data-action="remove" onclick={() => inspector.run({ op: "remove", blockId: model.blockId })}>
 					<Trash2 />
 				</Button>
 			</Group>

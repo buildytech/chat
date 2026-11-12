@@ -1,6 +1,7 @@
 # SLO: Chat UI refinement acceptance
 
-Status: accepted targets (2026-11-12); implementation and measurements pending.
+Status: accepted targets (2026-11-12); initial implementation measured in
+[the acceptance report](../../docs/acceptance/chat-ui-refinement.md). Targets below remain unchanged.
 
 Decision: [ADR 0028](../adr/0028-chat-ui-refinement.md). Sequence and evidence checklist:
 [refactoring plan](../../docs/plans/chat-ui-refinement.md). This is a local release-quality objective for the shell,
@@ -92,5 +93,6 @@ mount, alignment, accessibility or visual acceptance.
 
 ## Evidence status
 
-No refactoring results or acceptance screenshots have been recorded by this document. The implementation plan
-contains the pending checklist; add reproducible evidence and command results there as work is completed.
+See [the acceptance report](../../docs/acceptance/chat-ui-refinement.md) for browser measurements, screenshots,
+verification results and remaining limits. Automated checks and a local browser pass do not replace owner design
+review or real-device accessibility testing.

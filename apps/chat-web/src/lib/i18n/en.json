@@ -78,7 +78,7 @@
 		"composer.attachmentDesign": "Design.md",
 		"composer.removeAttachment": "Remove attachment",
 		"empty.title": "New chat",
-		"empty.subtitle": "Describe a site or page. The builder creates an ordinary page with a unique slug — no checkout, no fabricated promo.",
+		"empty.subtitle": "Describe what you want to build, or choose a starting point.",
 		"message.you": "You",
 		"message.assistant": "Assistant",
 		"message.copy": "Copy",
@@ -217,7 +217,7 @@
 		"runtime.mockMode": "Browser ChatCore. Live Grok uses the protected /runtime when this host is ready.",
 		"runtime.browserCore": "Browser ChatCore. Chats and pages stay in this browser. Live Grok uses /runtime when ready.",
 		"runtime.checking": "Checking runtime state",
-		"persist.browserLocal": "Chats and pages are saved in this browser. That is not live Grok inference.",
+		"persist.browserLocal": "Chats and pages are saved in this browser. Export a session to keep a portable copy.",
 		"runtime.unreachable": "Protected Grok runtime is not reachable from this app. This is not a missing API key, and this is not a live Grok reply.",
 		"runtime.notReady": "Protected Grok runtime is not ready ({code}). This is not a live Grok reply.",
 		"runtime.testHarness": "Test harness: {mode} · liveModel off",
@@ -565,6 +565,9 @@
 		"dnd.why.header_top": "A header goes at the top of the page.",
 		"dnd.why.footer_end": "A footer goes at the end of the page.",
 		"feed.dragHint": "Drag into the preview or onto Sections, or press +",
-		"inspector.on": "Inspector: {title}"
+		"inspector.on": "Inspector: {title}",
+		"composer.details": "Connection and usage",
+		"home.scenarioDetails": "Scenario details",
+		"feed.moreFilters": "More filters"
 	}
 }

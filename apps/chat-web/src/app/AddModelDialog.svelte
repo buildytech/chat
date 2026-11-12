@@ -21,14 +21,24 @@
 	let notice = $state("");
 
 	onMount(() => {
+		const trigger = document.getElementById("composer-model-trigger");
+		const dialog = document.querySelector<HTMLElement>('[data-slot="add-model-dialog"]');
+		dialog?.querySelector<HTMLInputElement>("input")?.focus();
 		function onKey(event: KeyboardEvent) {
 			if (event.key === "Escape") {
 				event.preventDefault();
 				onClose();
 			}
+			if (event.key === "Tab" && dialog) {
+				const controls = [...dialog.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')];
+				const first = controls[0];
+				const last = controls.at(-1);
+				if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+				else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+			}
 		}
 		window.addEventListener("keydown", onKey);
-		return () => window.removeEventListener("keydown", onKey);
+		return () => { window.removeEventListener("keydown", onKey); trigger?.focus(); };
 	});
 
 	function save(event: Event) {
@@ -53,8 +63,9 @@
 		<Text tag="span" class="sr-only">{t("model.cancel")}</Text>
 	</Button>
 	<Form
-		class="relative z-10 max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-default border border-border bg-card p-5 sm:rounded"
+		class="relative z-10 max-h-full w-full max-w-lg overflow-y-auto rounded-t-xl border border-border bg-card p-4 sm:rounded"
 		role="dialog"
+		data-slot="add-model-dialog"
 		aria-modal="true"
 		aria-label={t("model.addTitle")}
 		onsubmit={save}

@@ -10,7 +10,8 @@
 	import Block from "$registry/compose/Block.svelte";
 	import Button from "$registry/compose/Button.svelte";
 	import Group from "$registry/compose/Group.svelte";
-	import Text from "$registry/kit/ui/text/Text.svelte";
+	import Stack from "$registry/compose/Stack.svelte";
+	import Title from "$registry/compose/Title.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { topLevelBlockId } from "$lib/inspector/geometry";
 	import { inspectorPanel } from "$lib/inspector/panel.svelte";
@@ -28,19 +29,19 @@
 <Block
 	tag="aside"
 	id="creator-inspector"
-	class="absolute inset-y-0 right-0 z-30 flex w-80 max-w-full flex-col border-l border-border bg-card shadow-lg"
+	class="absolute inset-y-0 right-0 z-30 flex w-80 max-w-full flex-col border-l border-border bg-popover shadow-lg"
 	aria-labelledby="inspector-slideover-title"
 	data-slot="inspector-slideover"
 >
 	<Group class="h-10 shrink-0 items-center justify-between gap-2 border-b border-border px-2">
-		<Text tag="h2" id="inspector-slideover-title" class="min-w-0 truncate text-xs font-semibold text-foreground">
+		<Title as={2} id="inspector-slideover-title" class="min-w-0 truncate text-xs font-semibold text-foreground">
 			{block ? t("inspector.on").replace("{title}", block.title) : t("inspector.title")}
-		</Text>
+		</Title>
 		<Button size="sm" layout="icon" variant="ghost" class="size-6 px-0" aria-label={t("inspector.close")} title={`${t("inspector.close")} (Esc)`} data-action="inspector-close" onclick={() => inspectorPanel.close()}>
 			<X />
 		</Button>
 	</Group>
-	<Block id="inspector-properties" tabindex={-1} class="min-h-0 flex-1 overflow-y-auto" data-slot="inspector-properties">
+	<Stack align="stretch" id="inspector-properties" tabindex={-1} class="min-h-0 flex-1 overflow-y-auto" data-slot="inspector-properties">
 		<InspectorPanel />
-	</Block>
+	</Stack>
 </Block>

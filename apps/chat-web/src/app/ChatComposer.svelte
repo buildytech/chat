@@ -10,12 +10,21 @@
 	import Label from "$registry/kit/ui/label/Label.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import Textarea from "$registry/kit/ui/textarea/Textarea.svelte";
+	import Disclosure from "$registry/kit/ui/disclosure/Disclosure.svelte";
+	import Summary from "$registry/compose/Summary.svelte";
+	import ChevronDown from "@lucide/svelte/icons/chevron-down";
 	import CollectionChips from "./CollectionChips.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
 	import { getChatMode, setChatMode, type CreatorRuntimeStatus } from "$lib/chat-core";
 	import { AGENT_MODES } from "@buildytech/builder-core";
-	import { formatTokens, modelRunsToolLoop, modelUnavailableCode, type GrokChatModel, type SessionUsage } from "@buildytech/builder-core";
+	import {
+		formatTokens,
+		modelRunsToolLoop,
+		modelUnavailableCode,
+		type GrokChatModel,
+		type SessionUsage,
+	} from "@buildytech/builder-core";
 
 	let {
 		disabled = false,
@@ -34,7 +43,7 @@
 		chatModels = [],
 		selectedModelId = "",
 		sessionUsage = null,
-		runtimeStatus = null
+		runtimeStatus = null,
 	}: {
 		disabled?: boolean;
 		sendDisabled?: boolean;
@@ -59,13 +68,9 @@
 	let modelOpen = $state(false);
 
 	const selected = $derived(chatModels.find((m) => m.id === selectedModelId) ?? chatModels[0] ?? null);
-	const modelButtonLabel = $derived(
-		selected ? `${selected.label}` : t("composer.modelGrok")
-	);
+	const modelButtonLabel = $derived(selected ? `${selected.label}` : t("composer.modelGrok"));
 
-	const persistLabel = $derived(
-		runtimeStatus?.mode === "mock" ? t("persist.browserLocal") : ""
-	);
+	const persistLabel = $derived(runtimeStatus ? t("persist.browserLocal") : "");
 	const runtimeLabel = $derived.by(() => {
 		if (!runtimeStatus) return "";
 		const caps = runtimeStatus.capabilities;
@@ -77,7 +82,9 @@
 
 	// Ask / Build is the author's explicit choice (kept per chat); the host never guesses it from words.
 	const mode = $derived(getChatMode());
-	const fieldPlaceholder = $derived(mode === "ask" ? t("composer.placeholderAsk") : placeholder || t("composer.placeholder"));
+	const fieldPlaceholder = $derived(
+		mode === "ask" ? t("composer.placeholderAsk") : placeholder || t("composer.placeholder"),
+	);
 	const cannotSend = $derived(disabled || sendDisabled || !(draft.trim() || variant === "thread"));
 
 	function submit(event: Event) {
@@ -105,7 +112,7 @@
 			onEscape(event);
 			return;
 		}
-		if (ime || event.isComposing) return;
+		if (ime || event.isComposing || !(event.target instanceof HTMLTextAreaElement)) return;
 		if (event.key === "Enter" && !event.shiftKey) {
 			if (modelOpen) return;
 			event.preventDefault();
@@ -119,168 +126,177 @@
 	}
 </script>
 
-<svelte:window onkeydown={onEscape} />
+<svelte:window
+	onkeydown={onEscape}
+	onclick={(event) => {
+		if (
+			modelOpen &&
+			event.target instanceof Element &&
+			!event.target.closest("#composer-model-list, #composer-model-trigger")
+		)
+			modelOpen = false;
+	}}
+/>
 
 <Block
 	tag="footer"
-	class={cn(
-		variant === "onboarding"
-			? "w-full rounded border border-border bg-card p-2"
-			: "sticky bottom-0 z-10 border-t border-border bg-background p-2 lg:static lg:z-0"
-	)}
+	class={cn("shrink-0 bg-background p-2", variant === "thread" && "sticky bottom-0 z-10 lg:static lg:z-0")}
+	data-slot="composer-region"
 >
-	<Form class="flex flex-col gap-2" onsubmit={submit} onkeydown={onKeydown}>
+	<Form class="relative flex flex-col gap-2" onsubmit={submit} onkeydown={onKeydown}>
 		<CollectionChips />
-		<Label for="composer" class="sr-only">{t("composer.label")}</Label>
-		<Textarea
-			id="composer"
-			name="message"
-			rows="2"
-			placeholder={fieldPlaceholder}
-			class="min-h-12 w-full resize-none overflow-y-auto rounded border border-input bg-card px-3 py-2 text-sm text-foreground shadow-none outline-none ring-ring focus-visible:ring-2"
-			value={draft}
-			oninput={(event: Event) => (draft = (event.currentTarget as HTMLTextAreaElement).value)}
-			onkeydown={onKeydown}
-			onfocus={onFocus}
-			onblur={onBlur}
-			oncompositionstart={() => {
-				ime = true;
-				onComposition?.(true);
-			}}
-			oncompositionend={() => {
-				ime = false;
-				onComposition?.(false);
-			}}
-			disabled={disabled}
-		/>
-		<Text tag="p" class="text-[11px] text-muted-foreground">{t("composer.enterHint")}</Text>
-		<Group class="items-center justify-between gap-2">
-			<Group class="flex-wrap items-center gap-2">
-				<Group class="items-center gap-0 rounded border border-border p-0" role="group" aria-label={t("composer.modeLabel")}>
-					{#each AGENT_MODES as option (option)}
+		<Stack align="stretch" class="gap-2 rounded border border-input bg-card p-2" data-slot="composer-surface">
+			<Label for="composer" class="sr-only">{t("composer.label")}</Label>
+			<Textarea
+				id="composer"
+				name="message"
+				rows="3"
+				placeholder={fieldPlaceholder}
+				class="min-h-16 w-full resize-none overflow-y-auto rounded border-0 bg-transparent px-2 py-2 text-sm leading-relaxed text-foreground shadow-none outline-none"
+				value={draft}
+				aria-describedby="composer-hint"
+				oninput={(event: Event) => (draft = (event.currentTarget as HTMLTextAreaElement).value)}
+				onfocus={onFocus}
+				onblur={onBlur}
+				oncompositionstart={() => {
+					ime = true;
+					onComposition?.(true);
+				}}
+				oncompositionend={() => {
+					ime = false;
+					onComposition?.(false);
+				}}
+				{disabled}
+			/>
+			<Group class="items-end justify-between gap-2" data-slot="composer-actions">
+				<Group class="min-w-0 flex-1 flex-wrap items-center gap-2">
+					<Group
+						class="w-fit items-center gap-0 rounded bg-muted p-1"
+						role="group"
+						aria-label={t("composer.modeLabel")}
+					>
+						{#each AGENT_MODES as option (option)}
+							<Button
+								type="button"
+								class={cn(
+									"h-6 rounded px-2 text-xs font-medium",
+									mode === option ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground",
+								)}
+								pressed={mode === option}
+								title={t(`composer.mode.${option}.hint`)}
+								data-mode={option}
+								onclick={() => setChatMode(option)}
+							>
+								<Text tag="span">{t(`composer.mode.${option}`)}</Text>
+							</Button>
+						{/each}
+					</Group>
+					<Button
+						id="composer-model-trigger"
+						type="button"
+						class="inline-flex h-8 min-w-24 flex-1 items-center justify-start gap-1 rounded px-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+						aria-label={t("composer.model")}
+						title={modelButtonLabel}
+						expanded={modelOpen}
+						aria-controls="composer-model-list"
+						onclick={() => {
+							if (modelOpen) {
+								closeModelMenu();
+								return;
+							}
+							modelOpen = true;
+							queueMicrotask(() =>
+								document.querySelector<HTMLButtonElement>("#composer-model-list button:not(:disabled)")?.focus(),
+							);
+						}}
+					>
+						<Text tag="span" class="truncate">{modelButtonLabel}</Text><Icon size="sm"><ChevronDown /></Icon>
+					</Button>
+				</Group>
+				<Group class="shrink-0 items-center gap-2">
+					{#if busy && onCancel}
 						<Button
 							type="button"
-							class={cn(
-								"rounded px-2 py-1 text-sm",
-								mode === option ? "bg-foreground text-background" : "text-foreground hover:bg-accent"
-							)}
-							pressed={mode === option}
-							title={t(`composer.mode.${option}.hint`)}
-							data-mode={option}
-							onclick={() => setChatMode(option)}
+							class="inline-flex size-8 items-center justify-center rounded-full bg-accent text-foreground"
+							aria-label={t("composer.cancel")}
+							onclick={onCancel}><Icon size="sm"><X /></Icon></Button
 						>
-							<Text tag="span">{t(`composer.mode.${option}`)}</Text>
-						</Button>
-					{/each}
+					{:else}
+						<Button
+							type="submit"
+							disabled={cannotSend}
+							class="inline-flex size-8 items-center justify-center rounded-full bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
+							aria-label={t("composer.send")}><Icon size="sm"><ArrowUp /></Icon></Button
+						>
+					{/if}
 				</Group>
-				<Button
-					id="composer-model-trigger"
-					type="button"
-					class="inline-flex min-w-0 items-center gap-1 rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-accent"
-					aria-label={t("composer.model")}
-					expanded={modelOpen}
-					aria-haspopup="listbox"
-					aria-controls="composer-model-list"
-					onclick={() => {
-						if (modelOpen) {
-							closeModelMenu();
-							return;
-						}
-						modelOpen = true;
-						queueMicrotask(() =>
-							(document.querySelector("#composer-model-list [role=option]") as HTMLElement | null)?.focus()
-						);
-					}}
-				>
-					<Text tag="span" class="truncate">{modelButtonLabel}</Text>
-				</Button>
-				<Button
-					type="button"
-					class="rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-accent"
-					onclick={() => {
-						modelOpen = false;
-						onAddModel?.();
-					}}
-				>
-					<Text tag="span">{t("composer.addModel")}</Text>
-				</Button>
 			</Group>
-			<Group class="items-center gap-2">
-				{#if busy && onCancel}
-					<Button
-						class="inline-flex size-8 items-center justify-center rounded border border-border text-foreground hover:bg-accent"
-						aria-label={t("composer.cancel")}
-						onclick={onCancel}
-					>
-						<Icon size="sm"><X /></Icon>
-					</Button>
-				{/if}
-				<Button
-					type="submit"
-					disabled={cannotSend}
-					class="inline-flex size-8 items-center justify-center rounded bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
-					aria-label={t("composer.send")}
-				>
-					<Icon size="sm"><ArrowUp /></Icon>
-				</Button>
-			</Group>
-		</Group>
-		{#if modelOpen && chatModels.length > 0}
-			<Stack align="stretch" id="composer-model-list" class="gap-0 rounded border border-border bg-card p-2" role="listbox" aria-label={t("composer.modelList")}>
+		</Stack>
+		<Text tag="p" id="composer-hint" class="px-2 text-xs text-muted-foreground">{t("composer.enterHint")}</Text>
+		{#if modelOpen}
+			<Stack
+				align="stretch"
+				id="composer-model-list"
+				class="absolute inset-x-0 bottom-full z-20 mb-2 max-h-64 gap-1 overflow-y-auto rounded bg-popover p-2"
+				role="group"
+				aria-label={t("composer.modelList")}
+			>
 				{#each chatModels as model (model.id)}
 					<Button
 						type="button"
 						class={cn(
-							"w-full items-start justify-start rounded px-2 py-1 text-left",
-							modelRunsToolLoop(model) ? "hover:bg-accent" : "cursor-not-allowed opacity-60",
-							model.id === selectedModelId ? "bg-accent" : ""
+							"w-full rounded px-2 py-2 text-left disabled:opacity-50",
+							model.id === selectedModelId ? "bg-accent" : "hover:bg-accent",
 						)}
-						role="option"
-						aria-selected={model.id === selectedModelId ? "true" : "false"}
-						aria-disabled={modelRunsToolLoop(model) ? undefined : "true"}
+						pressed={model.id === selectedModelId}
 						disabled={!modelRunsToolLoop(model)}
 						onclick={() => chooseModel(model.id)}
 					>
-						<Stack align="stretch" class="gap-0">
+						<Stack align="stretch" class="min-w-0 gap-1">
 							<Text tag="span" class="text-sm text-foreground">{model.label}</Text>
-							<Text tag="span" class="font-mono text-[11px] text-muted-foreground">{model.id}</Text>
-							{#if !modelRunsToolLoop(model)}
-								<Text tag="span" class="text-[11px] text-muted-foreground">{t(modelUnavailableCode(model) === "model_too_slow" ? "composer.modelTooSlow" : "composer.modelUnavailable")}</Text>
-							{/if}
+							<Text tag="span" class="break-all font-mono text-xs text-muted-foreground">{model.id}</Text>
+							{#if !modelRunsToolLoop(model)}<Text tag="span" class="text-xs text-muted-foreground"
+									>{t(
+										modelUnavailableCode(model) === "model_too_slow"
+											? "composer.modelTooSlow"
+											: "composer.modelUnavailable",
+									)}</Text
+								>{/if}
 						</Stack>
 					</Button>
 				{/each}
-				<Text tag="p" class="px-2 pt-2 text-xs text-muted-foreground">{t("composer.modelTrialHint")}</Text>
+				<Button
+					type="button"
+					class="rounded px-2 py-2 text-left text-sm text-foreground hover:bg-accent"
+					onclick={() => {
+						modelOpen = false;
+						onAddModel?.();
+					}}><Text tag="span">{t("composer.addModel")}</Text></Button
+				>
+				<Text tag="p" class="px-2 text-xs text-muted-foreground">{t("composer.modelTrialHint")}</Text>
 			</Stack>
 		{/if}
-		{#if selected}
-			<Text tag="p" class="font-mono text-[11px] text-muted-foreground">
-				{t("composer.selectedModel").replace("{label}", selected.label).replace("{id}", selected.id)}
-			</Text>
-		{/if}
-		{#if sessionUsage}
-			<Text tag="p" class="text-[11px] text-muted-foreground" role="status">
-				{t("usage.session")
-					.replace("{status}", sessionUsage.status === "incomplete" ? t("usage.incomplete") : t("usage.complete"))
-					.replace("{prompt}", formatTokens(sessionUsage.promptTokens))
-					.replace("{completion}", formatTokens(sessionUsage.completionTokens))
-					.replace("{total}", formatTokens(sessionUsage.totalTokens))
-					.replace("{runs}", String(sessionUsage.runs))}
-			</Text>
-			<Text tag="p" class="text-[11px] text-muted-foreground">{t("usage.noDollars")}</Text>
-		{/if}
-		{#if persistLabel}
-			<Text tag="p" class="text-[11px] text-muted-foreground">{persistLabel}</Text>
-		{/if}
-		{#if runtimeLabel || runtimeStatus?.error}
-			<Group class="items-center justify-between gap-2">
-				{#if runtimeLabel}
-					<Text tag="span" class="text-[11px] text-muted-foreground">{runtimeLabel}</Text>
+		<Disclosure class="group px-2" data-slot="composer-details">
+			<Summary class="w-fit gap-2 rounded py-1 text-xs text-muted-foreground">{t("composer.details")}</Summary>
+			<Stack align="stretch" class="gap-2 py-2">
+				{#if selected}<Text tag="p" class="break-all font-mono text-xs text-muted-foreground">{selected.id}</Text>{/if}
+				{#if sessionUsage}
+					<Text tag="p" class="text-xs text-muted-foreground" role="status"
+						>{t("usage.session")
+							.replace("{status}", sessionUsage.status === "incomplete" ? t("usage.incomplete") : t("usage.complete"))
+							.replace("{prompt}", formatTokens(sessionUsage.promptTokens))
+							.replace("{completion}", formatTokens(sessionUsage.completionTokens))
+							.replace("{total}", formatTokens(sessionUsage.totalTokens))
+							.replace("{runs}", String(sessionUsage.runs))}</Text
+					>
+					<Text tag="p" class="text-xs text-muted-foreground">{t("usage.noDollars")}</Text>
 				{/if}
-				{#if runtimeStatus?.error}
-					<Text tag="span" class="text-[11px] text-destructive" role="status">{runtimeStatus.error}</Text>
-				{/if}
-			</Group>
-		{/if}
+				{#if persistLabel}<Text tag="p" class="text-xs text-muted-foreground">{persistLabel}</Text>{/if}
+				{#if runtimeLabel}<Text tag="p" class="text-xs text-muted-foreground">{runtimeLabel}</Text>{/if}
+			</Stack>
+		</Disclosure>
+		{#if runtimeStatus?.error}<Text tag="p" class="px-2 text-xs text-destructive" role="status"
+				>{runtimeStatus.error}</Text
+			>{/if}
 	</Form>
 </Block>

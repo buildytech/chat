@@ -6,6 +6,8 @@
 	import ThumbsDown from "@lucide/svelte/icons/thumbs-down";
 	import ThumbsUp from "@lucide/svelte/icons/thumbs-up";
 	import Block from "$registry/compose/Block.svelte";
+	import Disclosure from "$registry/kit/ui/disclosure/Disclosure.svelte";
+	import Summary from "$registry/compose/Summary.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
@@ -29,7 +31,7 @@
 		showActivity = false,
 		onEdit,
 		onApply,
-		onDiscard
+		onDiscard,
 	}: {
 		message: ChatMessageModel;
 		activity?: string[];
@@ -52,11 +54,11 @@
 				? t("proposal.discarded")
 				: status === "superseded"
 					? t("proposal.superseded")
-					: t("proposal.notApplied")
+					: t("proposal.notApplied"),
 	);
 
 	const mine = $derived(message.role === "user");
-	const youMark = $derived(t("message.you").slice(0, 1));
+
 	let vote = $state<"good" | "bad" | null>(null);
 	let copied = $state(false);
 
@@ -100,14 +102,8 @@
 
 <Block tag="article" class="w-full" data-role={message.role}>
 	{#if mine}
-		<Group class="items-start gap-2">
-			<Box
-				class="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground"
-				aria-hidden="true"
-			>
-				<Text tag="span">{youMark}</Text>
-			</Box>
-			<Stack align="stretch" class="min-w-0 flex-1 gap-2">
+		<Group class="items-start justify-end gap-2">
+			<Stack align="stretch" class="min-w-0 max-w-sm gap-2">
 				<Group class="justify-between gap-2">
 					<Group class="min-w-0 gap-2">
 						<Text tag="span" class="text-sm font-semibold text-foreground">{t("message.you")}</Text>
@@ -115,14 +111,14 @@
 					</Group>
 					<Group class="gap-0">
 						<Button
-							class="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+							class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 							aria-label={copied ? t("message.copied") : t("message.copy")}
 							onclick={copyText}
 						>
 							<Icon size="sm"><Copy /></Icon>
 						</Button>
 						<Button
-							class="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+							class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 							aria-label={t("message.edit")}
 							onclick={() => onEdit?.(message.text)}
 						>
@@ -130,13 +126,13 @@
 						</Button>
 					</Group>
 				</Group>
-				<Box class="rounded bg-muted px-2 py-2 text-foreground">
-					<Text tag="p" class="text-sm whitespace-pre-wrap">{message.text}</Text>
+				<Box class="rounded bg-muted px-3 py-2 text-foreground">
+					<Text tag="p" class="break-words text-sm leading-relaxed whitespace-pre-wrap">{message.text}</Text>
 				</Box>
 			</Stack>
 		</Group>
 	{:else}
-		<Stack align="stretch" class="gap-6">
+		<Stack align="stretch" class="gap-4">
 			{#if message.answer}
 				<Stack align="stretch" class="gap-4" data-answer={message.mode ?? "build"}>
 					<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -144,12 +140,19 @@
 					</Text>
 					<MarkdownText source={message.text} />
 					{#if message.plan}
-						<AskPlanCard plan={message.plan} messageId={message.id} onApply={(selected) => applyPlanInBuild(message.id, selected)} />
+						<AskPlanCard
+							plan={message.plan}
+							messageId={message.id}
+							onApply={(selected) => applyPlanInBuild(message.id, selected)}
+						/>
 					{/if}
-					<AskBlockCards blocks={message.answer.blocks} onApplyVariant={(spec, variant) => applyVariantFromAsk(spec, variant)} />
+					<AskBlockCards
+						blocks={message.answer.blocks}
+						onApplyVariant={(spec, variant) => applyVariantFromAsk(spec, variant)}
+					/>
 				</Stack>
 			{:else}
-				<Text tag="p" class="text-sm font-medium whitespace-pre-wrap text-foreground">{body}</Text>
+				<Text tag="p" class="break-words text-sm leading-relaxed whitespace-pre-wrap text-foreground">{body}</Text>
 			{/if}
 			{#if proposal && message.modelText}
 				<MarkdownText source={message.modelText} />
@@ -179,40 +182,45 @@
 				{/if}
 			{/if}
 			{#if run}
-				<Stack align="stretch" class="gap-2">
-					<Text tag="p" class="font-mono text-[11px] text-muted-foreground">
-						{t("usage.runModel").replace("{label}", run.modelLabel).replace("{id}", run.modelId)}
-					</Text>
-					<Text tag="p" class="text-[11px] text-muted-foreground">
-						{t("usage.run")
-							.replace("{status}", run.usage.status === "incomplete" ? t("usage.incomplete") : t("usage.complete"))
-							.replace("{steps}", String(run.usage.steps))
-							.replace("{prompt}", formatTokens(run.usage.promptTokens))
-							.replace("{completion}", formatTokens(run.usage.completionTokens))
-							.replace("{total}", formatTokens(run.usage.totalTokens))}
-					</Text>
-					{#if run.usage.reportedBy === "xai-provider"}
-						<Text tag="p" class="text-[11px] text-muted-foreground">{t("usage.reportedBy")}. {t("usage.aggregation")}</Text>
-						{#if run.usage.lastStep}
-							<Text tag="p" class="text-[11px] text-muted-foreground">
-								{t("usage.lastStep")
-									.replace("{prompt}", formatTokens(run.usage.lastStep.promptTokens))
-									.replace("{completion}", formatTokens(run.usage.lastStep.completionTokens))}
-							</Text>
-						{/if}
-						{#if typeof run.usage.cachedTokens === "number"}
-							<Text tag="p" class="text-[11px] text-muted-foreground">
-								{t("usage.cached").replace("{cached}", formatTokens(run.usage.cachedTokens))}
-							</Text>
-						{/if}
-					{/if}
-					{#if run.tools && run.tools.length > 0}
-						<Text tag="p" class="text-[11px] text-muted-foreground">
-							{t("usage.tools").replace("{list}", run.tools.join(", "))}
+				<Disclosure class="group">
+					<Summary class="w-fit gap-2 rounded py-1 text-xs text-muted-foreground">{t("composer.details")}</Summary>
+					<Stack align="stretch" class="gap-2 py-2">
+						<Text tag="p" class="font-mono text-xs text-muted-foreground">
+							{t("usage.runModel").replace("{label}", run.modelLabel).replace("{id}", run.modelId)}
 						</Text>
-					{/if}
-					<Text tag="p" class="text-[11px] text-muted-foreground">{t("usage.noDollars")}</Text>
-				</Stack>
+						<Text tag="p" class="text-xs text-muted-foreground">
+							{t("usage.run")
+								.replace("{status}", run.usage.status === "incomplete" ? t("usage.incomplete") : t("usage.complete"))
+								.replace("{steps}", String(run.usage.steps))
+								.replace("{prompt}", formatTokens(run.usage.promptTokens))
+								.replace("{completion}", formatTokens(run.usage.completionTokens))
+								.replace("{total}", formatTokens(run.usage.totalTokens))}
+						</Text>
+						{#if run.usage.reportedBy === "xai-provider"}
+							<Text tag="p" class="text-xs text-muted-foreground"
+								>{t("usage.reportedBy")}. {t("usage.aggregation")}</Text
+							>
+							{#if run.usage.lastStep}
+								<Text tag="p" class="text-xs text-muted-foreground">
+									{t("usage.lastStep")
+										.replace("{prompt}", formatTokens(run.usage.lastStep.promptTokens))
+										.replace("{completion}", formatTokens(run.usage.lastStep.completionTokens))}
+								</Text>
+							{/if}
+							{#if typeof run.usage.cachedTokens === "number"}
+								<Text tag="p" class="text-xs text-muted-foreground">
+									{t("usage.cached").replace("{cached}", formatTokens(run.usage.cachedTokens))}
+								</Text>
+							{/if}
+						{/if}
+						{#if run.tools && run.tools.length > 0}
+							<Text tag="p" class="text-xs text-muted-foreground">
+								{t("usage.tools").replace("{list}", run.tools.join(", "))}
+							</Text>
+						{/if}
+						<Text tag="p" class="text-xs text-muted-foreground">{t("usage.noDollars")}</Text>
+					</Stack>
+				</Disclosure>
 			{/if}
 			{#if showActivity && activity.length > 0}
 				<Stack align="stretch" class="gap-2" role="list" aria-label={t("chat.activity")}>
@@ -226,7 +234,7 @@
 			{/if}
 			<Group class="items-center gap-0" aria-label={t("chat.reactions")}>
 				<Button
-					class="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+					class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 					aria-label={t("message.copy")}
 					onclick={copyText}
 				>
@@ -234,8 +242,8 @@
 				</Button>
 				<Button
 					class={cn(
-						"inline-flex size-7 items-center justify-center rounded hover:bg-accent",
-						vote === "good" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
+						"inline-flex size-8 items-center justify-center rounded hover:bg-accent",
+						vote === "good" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground",
 					)}
 					aria-label={t("message.good")}
 					pressed={vote === "good"}
@@ -245,8 +253,8 @@
 				</Button>
 				<Button
 					class={cn(
-						"inline-flex size-7 items-center justify-center rounded hover:bg-accent",
-						vote === "bad" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
+						"inline-flex size-8 items-center justify-center rounded hover:bg-accent",
+						vote === "bad" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground",
 					)}
 					aria-label={t("message.bad")}
 					pressed={vote === "bad"}
@@ -255,7 +263,7 @@
 					<Icon size="sm"><ThumbsDown /></Icon>
 				</Button>
 				<Button
-					class="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+					class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 					aria-label={t("message.share")}
 					onclick={shareText}
 				>

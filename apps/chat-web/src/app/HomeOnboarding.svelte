@@ -30,12 +30,13 @@
 		screenOutsideFilter,
 		selectScenario,
 		selectedCompatibility,
+		selectedScreen,
 		sendBrief,
 		setComposing,
 		setFocused,
 		setKeepOutsideScreen,
 		setPage,
-		setStockQuery
+		setStockQuery,
 	} from "$lib/browser/onboarding.svelte";
 	import type { CreatorRuntimeStatus } from "$lib/chat-core";
 	import type { GrokChatModel, ScenarioId, SessionUsage } from "@buildytech/builder-core";
@@ -53,7 +54,7 @@
 		onSelectModel,
 		chatModels = [],
 		selectedModelId = "",
-		sessionUsage = null
+		sessionUsage = null,
 	}: {
 		busy?: boolean;
 		runtimeStatus?: CreatorRuntimeStatus | null;
@@ -69,6 +70,7 @@
 	let draft = $state("");
 	const scenario = $derived(getScenarioId());
 	const screen = $derived(getScreenId());
+	const screenName = $derived(selectedScreen()?.title || screen || "");
 	const modal = $derived(getModal());
 	const result = $derived.by(() => {
 		void getScenarioId();
@@ -91,12 +93,11 @@
 	const ideas: Array<{ id: ScenarioId; label: string }> = [
 		{ id: "dashboard", label: t("home.ideaDashboard") },
 		{ id: "landing", label: t("home.ideaLanding") },
-		{ id: "website", label: t("home.ideaWebsite") }
+		{ id: "website", label: t("home.ideaWebsite") },
 	];
 
 	onMount(() => {
-		const reduced =
-			typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		const reduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 		if (reduced) return;
 		const timer = window.setInterval(() => {
 			rotatePlaceholder(document.hidden, reduced);
@@ -113,21 +114,21 @@
 </script>
 
 <Block tag="section" class="flex min-h-0 flex-1 flex-col overflow-y-auto bg-background" aria-label={t("empty.title")}>
-	<Stack align="stretch" class="mx-auto w-full max-w-5xl gap-8 px-4 py-10">
-		<Stack class="items-center gap-4 text-center">
+	<Stack align="stretch" class="mx-auto w-full max-w-2xl gap-6 px-4 py-8">
+		<Stack align="stretch" class="gap-4">
 			<Title as={1} class="text-2xl font-semibold text-foreground">{t("empty.title")}</Title>
 			<Text tag="p" class="max-w-xl text-sm text-muted-foreground">{t("empty.subtitle")}</Text>
-			<Group class="flex-wrap justify-center gap-2" aria-label={t("home.ideas")}>
+			<Group class="flex-wrap items-center gap-2" aria-label={t("home.ideas")}>
 				{#each ideas as idea (idea.id)}
 					<Button
 						class={cn(
-							"rounded border px-3 py-1.5 text-sm",
+							"h-8 rounded px-3 text-xs",
 							scenario === idea.id
-								? "border-primary bg-accent text-foreground"
-								: "border-border text-foreground hover:bg-accent"
+								? "bg-accent text-foreground"
+								: "bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
 						)}
 						pressed={scenario === idea.id}
-						onclick={() => selectScenario(idea.id)}
+						onclick={() => (scenario === idea.id ? clearScenario() : selectScenario(idea.id))}
 					>
 						<Text tag="span">{idea.label}</Text>
 					</Button>
@@ -136,27 +137,20 @@
 			{#if prompt || screen}
 				<Group class="flex-wrap justify-center gap-2">
 					{#if prompt}
-						<Group class="items-center gap-1 rounded border border-border bg-card px-2 py-1">
-							<Button
-								class="text-xs font-medium text-foreground"
-								onclick={() => openModal("scenario")}
-								aria-label={t("badge.openScenario")}
-							>
-								<Text tag="span">{prompt.label}</Text>
-							</Button>
-							<Button class="text-xs text-muted-foreground" onclick={clearScenario} aria-label={t("badge.removeScenario")}>
-								<Text tag="span">×</Text>
-							</Button>
-						</Group>
+						<Button
+							class="rounded px-2 py-1 text-xs text-muted-foreground hover:bg-accent"
+							onclick={() => openModal("scenario")}
+							aria-label={t("badge.openScenario")}><Text tag="span">{t("home.scenarioDetails")}</Text></Button
+						>
 					{/if}
 					{#if screen}
-						<Group class="items-center gap-1 rounded border border-border bg-card px-2 py-1">
+						<Group class="min-w-0 max-w-full items-center gap-1 rounded bg-card px-2 py-1">
 							<Button
-								class="text-xs font-medium text-foreground"
+								class="min-w-0 text-xs font-medium text-foreground"
 								onclick={() => openModal("screen")}
 								aria-label={t("badge.openScreen")}
 							>
-								<Text tag="span">{screen}</Text>
+								<Text tag="span" class="min-w-0 truncate" title={screen ?? undefined}>{screenName}</Text>
 							</Button>
 							<Button class="text-xs text-muted-foreground" onclick={removeScreen} aria-label={t("badge.removeScreen")}>
 								<Text tag="span">×</Text>
@@ -182,7 +176,7 @@
 			variant="onboarding"
 			disabled={busy}
 			sendDisabled={!canSend || busy}
-			placeholder={placeholder}
+			{placeholder}
 			{busy}
 			{runtimeStatus}
 			{chatModels}
@@ -211,7 +205,7 @@
 						value={stockQuery}
 						placeholder={t("home.stockSearch")}
 						aria-label={t("home.stockSearch")}
-						class="min-w-0 max-w-xs flex-1 rounded border border-input bg-card px-3 py-1.5 text-sm"
+						class="h-8 min-w-0 max-w-xs flex-1 rounded border border-input bg-card px-3 text-xs"
 						oninput={(event: Event) => {
 							setStockQuery((event.currentTarget as HTMLInputElement).value);
 						}}
@@ -227,7 +221,9 @@
 				<Text tag="p" class="text-sm text-muted-foreground">{t("home.stockEmpty")}</Text>
 				{#if result.outsideScope > 0}
 					<Group class="flex-wrap items-center gap-2" data-slot="stock-outside">
-						<Text tag="p" class="text-sm text-muted-foreground">{t("home.stockOutside").replace("{n}", String(result.outsideScope))}</Text>
+						<Text tag="p" class="text-sm text-muted-foreground"
+							>{t("home.stockOutside").replace("{n}", String(result.outsideScope))}</Text
+						>
 						<Button class="text-sm text-muted-foreground hover:text-foreground" onclick={clearScenario}>
 							<Text tag="span">{t("home.clearScenario")}</Text>
 						</Button>
@@ -247,7 +243,7 @@
 				{#if result.total > result.pageSize}
 					<Group class="items-center justify-center gap-3">
 						<Button
-							class="rounded border border-border px-3 py-1.5 text-sm disabled:opacity-50"
+							class="rounded border border-border h-8 px-3 text-xs disabled:opacity-50"
 							disabled={result.page <= 1}
 							onclick={() => setPage(result.page - 1)}
 							aria-label={t("home.prevPage")}
@@ -258,7 +254,7 @@
 							{t("home.pageOf").replace("{page}", String(result.page)).replace("{pages}", String(result.pageCount))}
 						</Text>
 						<Button
-							class="rounded border border-border px-3 py-1.5 text-sm disabled:opacity-50"
+							class="rounded border border-border h-8 px-3 text-xs disabled:opacity-50"
 							disabled={result.page >= result.pageCount}
 							onclick={() => setPage(result.page + 1)}
 							aria-label={t("home.nextPage")}
@@ -273,7 +269,12 @@
 </Block>
 
 {#if modal === "scenario" && prompt}
-	<ContextModal title={t("modal.scenarioTitle")} description={`${prompt.id} · v${prompt.version}`} body={prompt.text} onClose={closeModal} />
+	<ContextModal
+		title={t("modal.scenarioTitle")}
+		description={`${prompt.id} · v${prompt.version}`}
+		body={prompt.text}
+		onClose={closeModal}
+	/>
 {/if}
 {#if modal === "screen" && json}
 	<ContextModal

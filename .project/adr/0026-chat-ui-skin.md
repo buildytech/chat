@@ -154,7 +154,16 @@ explicit choice. The Night Mode switch stays and sets an explicit Dark / Light.
 - The same ladder could later be offered as a magazine-theme v2 preview preset (palette and radius fields), but it is a
   tool UI palette (neutral, low contrast steps), not a site theme; not built.
 
-## Open
+## Current composer policy (ADR 0028, 2026-11-12)
+
+The refactored composer is one input surface: 16px outer radius, 8px padding and 8px inner controls. Its surrounding
+`border-input` retains the same 3:1 minimum against adjacent surfaces; it is not globally darkened. The textarea has
+no second boundary. A 2px focus outline on the surrounding surface identifies textarea focus, while buttons retain
+their own keyboard focus indicators. The model chooser uses native buttons with pressed state in a named group,
+since Add model is an action as well as a list of choices. Native disclosure contains connection and usage details;
+runtime errors remain visible outside it. This supersedes the old standalone composer-field radius/shadow treatment.
+
+## Remaining theme notes
 
 - Native `<select>` popups and the browser's date / colour pickers follow `color-scheme`, not these tones.
 - The Night Mode switch keeps its own look (kit `Switch`); its thumb reads as a dark dot in light mode.

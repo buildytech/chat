@@ -66,7 +66,7 @@
 			<Button
 				size="sm"
 				variant="ghost"
-				class={cn("text-xs", view === option ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
+				class={cn("text-xs", view === option ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground")}
 				role="tab"
 				aria-selected={view === option}
 				aria-controls="pane-workspace"

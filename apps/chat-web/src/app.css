@@ -28,17 +28,18 @@
 	--radius-2xl: 16px;
 }
 
-html,
-body {
-	min-height: 100%;
-	font-family: var(--font-sans);
-}
-
-button,
-input,
-textarea,
-select {
-	font: inherit;
+@layer base {
+	html,
+	body {
+		min-height: 100%;
+		font-family: var(--font-sans);
+	}
+	button,
+	input,
+	textarea,
+	select {
+		font: inherit;
+	}
 }
 
 body.creator-resizing {

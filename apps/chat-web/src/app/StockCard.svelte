@@ -33,14 +33,14 @@
 </script>
 
 <StockMediaCard tag="article" thumb={screenThumbUrl(screen.screenId)} thumbTitle={name} {selected} class="h-full" data-slot="stock-card" data-id={screen.screenId}>
-	<Group class="min-w-0 items-start justify-between gap-1">
+	<Group class="min-w-0 items-center justify-between gap-1">
 		<Text tag="h3" class="min-w-0 truncate text-xs font-medium text-foreground" title={screen.title}>{screen.title}</Text>
 		<Group class="shrink-0 items-center gap-1">
 			<Link
 				href={stockAssetUrl(screen.screenId)}
 				target="_blank"
 				rel="noopener noreferrer"
-				class="inline-flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+				class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 				aria-label={t("catalogRefs.open").replace("{title}", name)}
 				title={t("catalogRefs.open").replace("{title}", name)}
 				data-action="stock-open"
@@ -51,7 +51,7 @@
 				size="sm"
 				layout="icon"
 				variant={selected ? "default" : "outline"}
-				class="size-6 px-0"
+				class="size-8 px-0"
 				pressed={selected}
 				aria-label={`${t("home.attachScreen")}: ${name}`}
 				title={t("home.attachScreen")}

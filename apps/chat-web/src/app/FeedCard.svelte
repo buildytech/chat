@@ -70,14 +70,14 @@
 	data-id={item.id}
 	data-type={item.type}
 >
-	<Group class="min-w-0 items-start justify-between gap-1">
+	<Group class="min-w-0 items-center justify-between gap-1">
 		<Text tag="span" class="min-w-0 truncate text-xs font-medium text-foreground" title={item.title}>{item.title}</Text>
 		<Group class="shrink-0 items-center gap-1">
 			<Link
 				href={item.url}
 				target="_blank"
 				rel="noopener noreferrer"
-				class="inline-flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+				class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 				aria-label={fill("feed.open")}
 				title={fill("feed.open")}
 				data-action="feed-open"
@@ -88,8 +88,8 @@
 				<Button
 					size="sm"
 					layout="icon"
-					variant="outline"
-					class="size-6 px-0"
+					variant="ghost"
+					class="size-8 px-0"
 					disabled={!check?.ok}
 					aria-label={fill("feed.add")}
 					title={why ?? fill("feed.add")}
@@ -102,8 +102,8 @@
 				<Button
 					size="sm"
 					layout="icon"
-					variant="outline"
-					class="size-6 px-0"
+					variant="ghost"
+					class="size-8 px-0"
 					disabled={!item.supported || starting}
 					aria-label={fill("feed.start")}
 					title={item.supported ? fill("feed.start") : t("feed.why.screen_not_renderable")}
@@ -115,8 +115,8 @@
 			{/if}
 		</Group>
 	</Group>
-	<Text tag="span" class="truncate font-mono text-[11px] text-muted-foreground" title={item.id}>
-		{item.spec}/{item.variant}
+	<Text tag="span" class="truncate text-xs text-muted-foreground" title={item.id}>
+		{item.variant}
 	</Text>
 	{#if item.type === "screen"}
 		<Text tag="span" class="text-[11px] text-muted-foreground">{t("feed.screen")} · {item.subtitle}</Text>

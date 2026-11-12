@@ -80,8 +80,8 @@
 			{sessionUsage}
 		/>
 	{:else}
-		<Stack align="stretch" class="min-h-0 flex-1 gap-6 overflow-y-auto p-2">
-			<Stack align="stretch" class="w-full gap-6">
+		<Stack align="stretch" class="min-h-0 flex-1 gap-6 overflow-y-auto p-4">
+			<Stack align="stretch" class="mx-auto w-full max-w-2xl gap-6">
 				{#each messages as message (message.id)}
 					{@const activity = activityFor(message)}
 					<ChatMessage

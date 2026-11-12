@@ -251,7 +251,7 @@
 				<Button
 					class={cn(
 						"inline-flex size-8 items-center justify-center rounded",
-						device === option.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+						device === option.id ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
 					)}
 					aria-label={option.label}
 					pressed={device === option.id}
@@ -265,7 +265,7 @@
 		</Group>
 
 		<Group
-			class="min-w-0 flex-1 items-center justify-between gap-2 rounded border border-border bg-background px-2 py-0 max-md:hidden"
+			class="min-w-0 flex-1 items-center justify-between gap-2 rounded bg-muted px-2 py-0 max-md:hidden"
 			role="group"
 			aria-label={t("preview.address")}
 		>
@@ -332,7 +332,7 @@
 				</Select>
 			{/if}
 			<Button
-				class="inline-flex size-8 items-center justify-center rounded border border-border text-foreground hover:bg-accent"
+				class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
 				aria-label={t("preview.openNew")}
 				onclick={openNew}
 			>

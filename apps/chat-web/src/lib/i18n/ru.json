@@ -52,7 +52,7 @@
 		"composer.attachmentDesign": "Design.md",
 		"composer.removeAttachment": "Убрать вложение",
 		"empty.title": "Новый чат",
-		"empty.subtitle": "Опишите сайт или страницу. Конструктор создаст обычную страницу с уникальным слагом — без оплаты и без выдуманных акций.",
+		"empty.subtitle": "Опишите будущую страницу или выберите отправную точку.",
 		"message.you": "Вы",
 		"message.assistant": "Ассистент",
 		"message.copy": "Копировать",
@@ -456,6 +456,10 @@
 		"dnd.why.header_top": "Шапка стоит в начале страницы.",
 		"dnd.why.footer_end": "Подвал стоит в конце страницы.",
 		"feed.dragHint": "Перетащите в превью или на Sections, или нажмите +",
-		"inspector.on": "Инспектор: {title}"
+		"inspector.on": "Инспектор: {title}",
+		"persist.browserLocal": "Чаты и страницы сохраняются в этом браузере. Экспортируйте сессию, чтобы сохранить переносимую копию.",
+		"composer.details": "Подключение и использование",
+		"home.scenarioDetails": "Описание сценария",
+		"feed.moreFilters": "Другие фильтры"
 	}
 }

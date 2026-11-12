@@ -16,9 +16,10 @@ Operator notes for this repository. See `intent.md` when present.
 | [adr/0003-creator-surfaces-preview-code.md](adr/0003-creator-surfaces-preview-code.md) | ChatCore / ChatColumn / CreatorShell; Preview Svelte + Code Latte |
 | [adr/0004-agent-runtime-adapters.md](adr/0004-agent-runtime-adapters.md) | Agent Gateway, AdapterRegistry, opt-in `cursor-sdk` |
 | [slo/chat-web.md](slo/chat-web.md) | Early-stage SLO: build CI + Creator/ChatCore/Gateway indicators |
-| [adr/0028-chat-ui-refinement.md](adr/0028-chat-ui-refinement.md) | Accepted UI8Kit chat UI refinement; implementation pending |
+| [adr/0028-chat-ui-refinement.md](adr/0028-chat-ui-refinement.md) | UI8Kit chat UI refinement; initial implementation and evidence recorded |
 | [slo/chat-ui-refinement.md](slo/chat-ui-refinement.md) | Visual, accessibility and regression acceptance targets for ADR 0028 |
-| [../docs/plans/chat-ui-refinement.md](../docs/plans/chat-ui-refinement.md) | Sequenced shell refactor and pending acceptance evidence |
+| [../docs/plans/chat-ui-refinement.md](../docs/plans/chat-ui-refinement.md) | Shell refactor sequence and verification results |
+| [../docs/acceptance/chat-ui-refinement.md](../docs/acceptance/chat-ui-refinement.md) | Browser measurements, screenshots and remaining review limits |
 | [slsa/controls.md](slsa/controls.md) | P0 supply-chain checklist + build recipe |
 | [slsa/verify.md](slsa/verify.md) | How to verify GitHub artefact provenance |
 
