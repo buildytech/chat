@@ -46,7 +46,7 @@ test("theme choice: system by default, explicit dark / light win over the system
 });
 
 test("both ladders: same token names, tones step up from sidebar to active", () => {
-	const names = ["sidebar", "canvas", "surface", "raised", "hover", "active", "popover", "text", "text-muted", "icon", "on-primary", "hairline", "edge", "focus", "danger", "danger-hover", "on-danger", "success", "warning"];
+	const names = ["sidebar", "canvas", "surface", "raised", "hover", "active", "popover", "text", "text-muted", "icon", "on-primary", "hairline", "edge", "field-edge", "focus", "danger", "danger-hover", "on-danger", "success", "warning"];
 	for (const n of names) {
 		assert.ok(LIGHT[n], `light --ui-${n}`);
 		assert.ok(DARK[n], `dark --ui-${n}`);
@@ -57,7 +57,7 @@ test("both ladders: same token names, tones step up from sidebar to active", () 
 	assert.deepEqual([...lightSteps].sort((a, b) => b - a), lightSteps, "light: surface > hover > active");
 });
 
-test("WCAG: AA text on every surface, 3:1 for edges, focus and icons", () => {
+test("contrast: text and focus floors; quiet default field outlines are separate from emphasis", () => {
 	for (const [name, p] of [["light", LIGHT], ["dark", DARK]] as const) {
 		const surfaces = ["sidebar", "canvas", "surface", "raised", "hover", "active", "popover"];
 		for (const s of surfaces) {
@@ -68,7 +68,9 @@ test("WCAG: AA text on every surface, 3:1 for edges, focus and icons", () => {
 			assert.ok(contrast(p.danger, p[s]) >= 4.5, `${name} danger text on ${s}: ${contrast(p.danger, p[s]).toFixed(2)}`);
 			assert.ok(contrast(p.success, p[s]) >= 4.5, `${name} success text on ${s}`);
 			assert.ok(contrast(p.warning, p[s]) >= 4.5, `${name} warning text on ${s}`);
-			assert.ok(contrast(p.edge, p[s]) >= 3, `${name} field edge on ${s}: ${contrast(p.edge, p[s]).toFixed(2)}`);
+			assert.ok(contrast(p.edge, p[s]) >= 3, `${name} emphasis edge on ${s}: ${contrast(p.edge, p[s]).toFixed(2)}`);
+			assert.ok(contrast(p["field-edge"], p[s]) >= 1.2, `${name} resting outline remains visible on ${s}`);
+			assert.ok(contrast(p["field-edge"], p[s]) < contrast(p.edge, p[s]), `${name} resting outline is quieter than focus emphasis`);
 			assert.ok(contrast(p.focus, p[s]) >= 3, `${name} focus ring on ${s}`);
 		}
 		for (const s of ["sidebar", "canvas", "surface", "hover"]) assert.ok(contrast(p.icon, p[s]) >= 3, `${name} icon on ${s}`);

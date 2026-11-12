@@ -97,6 +97,31 @@ Implementation follows [the plan](../../docs/plans/chat-ui-refinement.md); accep
 invalidate source-shape assertions, while preserving functional and accessibility coverage. Do not grow baselines or
 add unavailable upstream tooling. Verified work goes to `main` under the repository's owner delivery rules, no PR.
 
+## Owner follow-up: concrete interaction fixes (2026-11-12)
+
+The owner supplied selected DOM elements after trying the first refactor. This explicitly changes resting field
+edges: `--input` maps to a quieter `--ui-field-edge` in both themes; `--ui-edge` remains the stronger emphasis color
+and keyboard focus remains at least 3:1. Resting outlines no longer carry a blanket 3:1 claim. Text, icons, focus
+and validation feedback retain their requirements. The policy applies only to the shell, including native select
+inset rings, never to the registry or rendered page.
+
+- New feed preferences default to two columns; existing explicit one-column choices remain. Both views use a stacked
+  card with full-width media, so one column enlarges the preview instead of becoming a compact media row.
+- Replace the new-chat lightning icon with chat-plus and the Night Mode switch with a Sun/Moon action whose label
+  names the target mode. Keep the existing System/Dark/Light preference behavior.
+- Remove Home (no distinct destination) and the duplicate sidebar toggle. The main toolbar toggle reports the actual
+  desktop state. Settings and Search opened from the rail expand the sidebar, focus their controls, and provide
+  explicit close buttons, Escape and focus return. Settings gains spacing and a sticky heading with a close action.
+  The mobile drawer keeps its own close action and focus return because it overlays the main toolbar.
+- Separate Preview/Code controls with a 4px gap; Download ZIP uses the ghost variant. Selected Sections rows use
+  tonal fill and a quiet boundary instead of the primary outline; keyboard focus remains visible.
+- Assistant Copy is explicitly Copy Markdown: copy source Markdown, including displayed proposal commentary, never
+  reconstructed rendered HTML. Success changes icon/name; clipboard failure is visible. Share uses the same source.
+
+No storage migration, schema change or inference path is introduced. The SLO and
+[follow-up report](../../docs/acceptance/chat-ui-followup.md) record this work rather than silently preserving the
+former universal resting-edge claim.
+
 ## Consequences
 
 - This is an app composition refactor as well as a theme refinement; a token-only patch is insufficient.

@@ -143,7 +143,8 @@ and `pointer: fine` only). Nothing is removed or moved.
 Settings > Theme: System / Dark / Light (a pill group, `aria-pressed`), stored in `buildy:v1:themePref`, default
 System (follows `prefers-color-scheme` live). `buildy:v1:theme` keeps the resolved mode (session file
 `settings.theme`, the standalone preview), so the session schema is unchanged; importing a session file sets an
-explicit choice. The Night Mode switch stays and sets an explicit Dark / Light.
+explicit choice. The original Night Mode switch set an explicit Dark / Light; the ADR 0028 follow-up replaces its
+appearance with a Sun/Moon action while retaining this preference behavior.
 
 ## Consequences
 
@@ -156,9 +157,10 @@ explicit choice. The Night Mode switch stays and sets an explicit Dark / Light.
 
 ## Current composer policy (ADR 0028, 2026-11-12)
 
-The refactored composer is one input surface: 16px outer radius, 8px padding and 8px inner controls. Its surrounding
-`border-input` retains the same 3:1 minimum against adjacent surfaces; it is not globally darkened. The textarea has
-no second boundary. A 2px focus outline on the surrounding surface identifies textarea focus, while buttons retain
+The refactored composer is one input surface: 16px outer radius, 8px padding and 8px inner controls. Per the owner's
+subsequent DOM-based feedback (ADR 0028), its surrounding `border-input` uses the quieter resting-field edge, shared
+with other shell fields. The former universal 3:1 resting-edge claim is superseded; emphasis and focus retain 3:1.
+The textarea has no second boundary. A 2px focus outline on the surrounding surface identifies textarea focus, while buttons retain
 their own keyboard focus indicators. The model chooser uses native buttons with pressed state in a named group,
 since Add model is an action as well as a list of choices. Native disclosure contains connection and usage details;
 runtime errors remain visible outside it. This supersedes the old standalone composer-field radius/shadow treatment.
@@ -166,5 +168,5 @@ runtime errors remain visible outside it. This supersedes the old standalone com
 ## Remaining theme notes
 
 - Native `<select>` popups and the browser's date / colour pickers follow `color-scheme`, not these tones.
-- The Night Mode switch keeps its own look (kit `Switch`); its thumb reads as a dark dot in light mode.
+- The original Night Mode switch was replaced by a labelled Sun/Moon action in the ADR 0028 owner follow-up.
 - Code view syntax colours (editor.css) were not retuned to the new canvases.

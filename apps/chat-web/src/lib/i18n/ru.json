@@ -460,6 +460,10 @@
 		"persist.browserLocal": "Чаты и страницы сохраняются в этом браузере. Экспортируйте сессию, чтобы сохранить переносимую копию.",
 		"composer.details": "Подключение и использование",
 		"home.scenarioDetails": "Описание сценария",
-		"feed.moreFilters": "Другие фильтры"
+		"feed.moreFilters": "Другие фильтры",
+		"sidebar.closeSettings": "Закрыть настройки",
+		"sidebar.closeSearch": "Закрыть поиск",
+		"message.copyMarkdown": "Скопировать Markdown",
+		"message.copyFailed": "Не удалось скопировать. Выделите сообщение и скопируйте его вручную."
 	}
 }

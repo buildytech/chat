@@ -42,9 +42,14 @@ remain distinguishable from hover. Decorative separators are not input affordanc
 
 ### UI-03: Contrast and keyboard accessibility
 
-Target: preserve ADR 0026 floors: primary text 7:1, muted text 4.5:1, status text 4.5:1 on its intended surface;
-icons, required control boundaries and focus indicators 3:1 against their actual adjacent surfaces. No removed
+Target: primary text 7:1, muted text 4.5:1, status text 4.5:1 on its intended surface;
+icons, emphasized boundaries and focus indicators 3:1 against their actual adjacent surfaces. No removed
 keyboard action, inaccessible disclosure or focus trap in non-modal shell UI.
+
+Owner follow-up (ADR 0028, 2026-11-12): normal field outlines deliberately use the quieter `--ui-field-edge`, visible
+at rest but below emphasis. Only `--ui-edge` emphasis and focus retain the old 3:1 edge assertion. This explicitly
+replaces the blanket resting-field-edge target; text/focus thresholds are unchanged. Token tests alone do not
+establish universal WCAG non-text boundary compliance.
 
 Measure token contrast with the existing `ui-skin.test.ts` tests and inspect computed colors/adjacency in the browser,
 including selected, disabled and error presentations as applicable. Check Tab/Shift+Tab, menu operation, Escape and

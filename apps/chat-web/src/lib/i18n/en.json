@@ -568,6 +568,10 @@
 		"inspector.on": "Inspector: {title}",
 		"composer.details": "Connection and usage",
 		"home.scenarioDetails": "Scenario details",
-		"feed.moreFilters": "More filters"
+		"feed.moreFilters": "More filters",
+		"sidebar.closeSettings": "Close settings",
+		"sidebar.closeSearch": "Close search",
+		"message.copyMarkdown": "Copy Markdown",
+		"message.copyFailed": "Could not copy. Select the message and copy it manually."
 	}
 }

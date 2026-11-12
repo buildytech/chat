@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Copy from "@lucide/svelte/icons/copy";
+	import Check from "@lucide/svelte/icons/check";
 	import FileText from "@lucide/svelte/icons/file-text";
 	import Pencil from "@lucide/svelte/icons/pencil";
 	import Share2 from "@lucide/svelte/icons/share-2";
@@ -61,6 +62,10 @@
 
 	let vote = $state<"good" | "bad" | null>(null);
 	let copied = $state(false);
+	let copyError = $state(false);
+	const markdown = $derived(
+		mine ? message.text : [...new Set([message.text, proposal ? message.modelText : undefined].filter(Boolean))].join("\n\n"),
+	);
 
 	function relativeTime(iso: string): string {
 		const then = Date.parse(iso);
@@ -75,11 +80,13 @@
 
 	async function copyText() {
 		try {
-			await navigator.clipboard.writeText(message.text);
+			await navigator.clipboard.writeText(markdown);
 			copied = true;
+			copyError = false;
 			setTimeout(() => (copied = false), 1200);
 		} catch {
 			copied = false;
+			copyError = true;
 		}
 	}
 
@@ -90,7 +97,7 @@
 	async function shareText() {
 		try {
 			if (navigator.share) {
-				await navigator.share({ text: message.text });
+				await navigator.share({ text: markdown });
 				return;
 			}
 			await copyText();
@@ -235,10 +242,13 @@
 			<Group class="items-center gap-0" aria-label={t("chat.reactions")}>
 				<Button
 					class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-					aria-label={t("message.copy")}
+					aria-label={copied ? t("message.copied") : t("message.copyMarkdown")}
+					title={copied ? t("message.copied") : t("message.copyMarkdown")}
 					onclick={copyText}
 				>
-					<Icon size="sm"><Copy /></Icon>
+					<Icon size="sm"
+						>{#if copied}<Check />{:else}<Copy />{/if}</Icon
+					>
 				</Button>
 				<Button
 					class={cn(
@@ -271,5 +281,10 @@
 				</Button>
 			</Group>
 		</Stack>
+	{/if}
+	{#if copyError}
+		<Text tag="p" class="text-xs text-destructive" role="status">{t("message.copyFailed")}</Text>
+	{:else if copied}
+		<Text tag="span" class="sr-only" role="status">{t("message.copied")}</Text>
 	{/if}
 </Block>

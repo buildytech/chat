@@ -2,8 +2,8 @@
    and the standalone /preview route never do, so these tokens cannot reach the page preview, its skins or the Custom Skin.
    Theme layer only: tones, edges, radii, shadows, icon stroke and colour, scrollbars. No widget, layout or structure change.
 
-   1. Tonal ladder: surfaces separate by tone, not by outlines. --border is a hairline one step off its surface; --input
-      (text fields) and --ring (focus) keep 3:1 against every surface they sit on.
+   1. Tonal ladder: surfaces separate by tone, not by outlines. Normal fields use a quiet --input edge;
+      the emphasis edge and keyboard focus keep 3:1 (owner follow-up, ADR 0028).
    2. Concentric radii on the 8+4 grid: controls 8, a container is its children's radius plus its padding (12 around
       4px-padded rows, 12 with 4 inside around 8px padding), floating dialogs 16, pills full. Set as --radius scopes so the
       kit's `rounded` utility follows; utilities are never overridden.
@@ -24,6 +24,7 @@
   --ui-on-primary: #fafafa;
   --ui-hairline: #ebebed;
   --ui-edge: #8a8b93;
+  --ui-field-edge: #c7c8ce;
   --ui-focus: #71727a;
   --ui-danger: #c4262c;
   --ui-danger-hover: #a91f24;
@@ -54,7 +55,7 @@
   --destructive-foreground: var(--ui-on-danger);
   --destructive-hover: var(--ui-danger-hover);
   --border: var(--ui-hairline);
-  --input: var(--ui-edge);
+  --input: var(--ui-field-edge);
   --ring: var(--ui-focus);
   --sidebar: var(--ui-sidebar);
   --sidebar-foreground: var(--ui-text);
@@ -81,6 +82,7 @@
   --ui-on-primary: #18191c;
   --ui-hairline: #26282c;
   --ui-edge: #72757c;
+  --ui-field-edge: #3e4147;
   --ui-focus: #8e9199;
   --ui-danger: #f05a5f;
   --ui-danger-hover: #f47a7e;
@@ -121,6 +123,7 @@ dialog * { --radius: 8px; }
 
 /* --- focus: a visible 2px ring at 3:1 on every surface (the kit's 15% halo is too faint on the dark ladder); text
    fields keep their own ring (ring-ring / inset ring) and the caret, so they get no second outline ------------------ */
+:is(input, textarea, select):focus-visible { --input: var(--ui-edge); }
 :where(a, button, summary, [role="tab"], [role="menuitem"], [role="option"], [role="radio"], [role="switch"], [tabindex]:not(input, textarea, select)):focus-visible {
   outline: 2px solid var(--ui-focus);
   outline-offset: 1px;

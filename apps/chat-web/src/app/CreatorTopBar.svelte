@@ -29,7 +29,9 @@
 	<Group class="min-w-0 items-center gap-2">
 		<Button
 			class="inline-flex size-8 items-center justify-center rounded text-foreground hover:bg-accent"
-			aria-label={sidebarOpen ? t("sidebar.close") : t("shell.sidebarToggle")}
+			aria-label={sidebarOpen ? t("sidebar.collapse") : t("sidebar.expand")}
+			title={sidebarOpen ? t("sidebar.collapse") : t("sidebar.expand")}
+			data-action="nav-toggle"
 			expanded={sidebarOpen}
 			aria-controls="chat-sidebar-drawer"
 			onclick={onToggleSidebar}

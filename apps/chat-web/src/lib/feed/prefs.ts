@@ -13,7 +13,7 @@ export type FeedPrefs = { tab: LeftTab; columns: FeedColumns; inspector: boolean
 /** Cards per feed page, the same in both views. */
 export const FEED_PAGE_SIZE = 8;
 
-export const defaultFeedPrefs = (): FeedPrefs => ({ tab: "blocks", columns: 1, inspector: false });
+export const defaultFeedPrefs = (): FeedPrefs => ({ tab: "blocks", columns: 2, inspector: false });
 
 /**
  * The tab a chat opens on (ADR 0024, empty start): an empty chat (no page, no messages) always lands on Blocks; a
@@ -31,7 +31,7 @@ export function parseFeedPrefs(input: unknown): FeedPrefs {
 	const base = defaultFeedPrefs();
 	return {
 		tab: LEFT_TABS.includes(rec.tab as LeftTab) ? (rec.tab as LeftTab) : base.tab,
-		columns: rec.columns === 2 ? 2 : 1,
+		columns: rec.columns === 1 || rec.columns === 2 ? rec.columns : base.columns,
 		inspector: rec.inspector === true
 	};
 }

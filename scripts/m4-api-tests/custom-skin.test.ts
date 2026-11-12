@@ -146,7 +146,7 @@ test("chat UI untouched: the skin goes on the preview document only; settings sc
 	assert.doesNotMatch(web("lib/theme/custom-skin.svelte.ts"), /documentElement/);
 	const sidebar = web("app/ChatSidebar.svelte");
 	assert.match(sidebar, /id="creator-settings"\s+class="min-h-0 shrink gap-2 overflow-y-auto overscroll-contain rounded border border-border p-2 text-xs"/, "controls inherit xs: app.css sets font: inherit on them");
-	assert.match(sidebar, /max-h-\[75%\] min-h-0 shrink-0/);
+	assert.match(sidebar, /max-h-3\/4 min-h-0 shrink-0/);
 	assert.match(sidebar, /onfocusin=\{revealFocused\}/, "focus inside Settings scrolls the whole control into view");
 	assert.match(sidebar, /<SettingsThemeImport \/>/);
 	const view = web("app/SettingsThemeImport.svelte");

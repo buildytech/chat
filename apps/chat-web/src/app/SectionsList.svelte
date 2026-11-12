@@ -259,7 +259,7 @@
 						tag="li"
 						class={cn(
 							"relative rounded border bg-card p-1",
-							isSelected ? "border-primary" : "border-border",
+							isSelected ? "border-input bg-accent" : "border-border",
 							drag?.id === block.id && "opacity-60",
 							drag && drag.id !== block.id && drag.to === index && (drag.to < drag.from ? "border-t-2" : "border-b-2"),
 							drag && drag.id !== block.id && drag.to === index && (drag.refusal ? (drag.to < drag.from ? "border-t-destructive" : "border-b-destructive") : drag.to < drag.from ? "border-t-primary" : "border-b-primary"),

@@ -2,29 +2,35 @@
 	import ChevronDown from "@lucide/svelte/icons/chevron-down";
 	import ChevronUp from "@lucide/svelte/icons/chevron-up";
 	import Circle from "@lucide/svelte/icons/circle";
-	import House from "@lucide/svelte/icons/house";
-	import PanelLeft from "@lucide/svelte/icons/panel-left";
+	import Sun from "@lucide/svelte/icons/sun";
+	import Moon from "@lucide/svelte/icons/moon";
+	import X from "@lucide/svelte/icons/x";
 	import Search from "@lucide/svelte/icons/search";
 	import Settings from "@lucide/svelte/icons/settings";
 	import Trash2 from "@lucide/svelte/icons/trash-2";
-	import Zap from "@lucide/svelte/icons/zap";
-	import type { Component } from "svelte";
+	import MessageSquarePlus from "@lucide/svelte/icons/message-square-plus";
+	import { tick, type Component } from "svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";
-	import Switch from "$registry/kit/ui/switch/Switch.svelte";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Input from "$registry/kit/ui/input/Input.svelte";
 	import Separator from "$registry/kit/ui/separator/Separator.svelte";
+	import Title from "$registry/compose/Title.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { theme } from "$lib/theme/theme.svelte";
 	import { THEME_PREFS } from "$lib/theme/theme-pref";
 	import { cn } from "$registry/utils/cn";
 	import { deleteAllSessions, type SessionSummary } from "$lib/chat-core";
-	import { getSelectedModelId, isChatModelAvailable, listChatModels, setSelectedModelId } from "$lib/browser/models.svelte";
+	import {
+		getSelectedModelId,
+		isChatModelAvailable,
+		listChatModels,
+		setSelectedModelId,
+	} from "$lib/browser/models.svelte";
 	import { modelUnavailableCode } from "@buildytech/builder-core";
 	import ConfirmDialog from "./ConfirmDialog.svelte";
 	import SettingsSessionFile from "./SettingsSessionFile.svelte";
@@ -48,21 +54,21 @@
 		onNew,
 		onSelect,
 		onDelete,
-		onToggle,
+		onClose,
 		collapsed = false,
-		canDelete = false
+		canDelete = false,
 	}: {
 		sessions: SessionSummary[];
 		selectedId: string | null;
 		onNew: () => void | Promise<void>;
 		onSelect: (id: string) => void | Promise<void>;
 		onDelete: (id: string) => void;
-		onToggle?: () => void;
+		onClose?: () => void;
 		collapsed?: boolean;
 		canDelete?: boolean;
 	} = $props();
 
-	let active = $state("home");
+	let active = $state("");
 	let recentsOpen = $state(true);
 	let searchOpen = $state(false);
 	let searchDraft = $state("");
@@ -73,32 +79,50 @@
 	const selectedModelId = $derived(getSelectedModelId());
 
 	const mainItems: NavItem[] = [
-		{ id: "home", label: t("sidebar.home"), icon: House },
-		{ id: "search", label: t("sidebar.search"), icon: Search, kbd: t("sidebar.searchKbd") }
+		{ id: "search", label: t("sidebar.search"), icon: Search, kbd: t("sidebar.searchKbd") },
 	];
 
 	const visibleSessions = $derived.by(() => {
 		const needle = searchDraft.trim().toLowerCase();
 		if (!needle) return sessions;
 		return sessions.filter(
-			(session) => session.title.toLowerCase().includes(needle) || session.id.toLowerCase().includes(needle)
+			(session) => session.title.toLowerCase().includes(needle) || session.id.toLowerCase().includes(needle),
 		);
 	});
 
-	function pick(id: string) {
+	async function pick(id: string) {
 		active = id;
 		if (id === "search") {
+			if (collapsed) creatorLayout.setCollapsed("nav", false);
 			searchOpen = true;
-			queueMicrotask(() => document.getElementById("sidebar-chat-search")?.focus());
+			await tick();
+			document.getElementById("sidebar-chat-search")?.focus();
+		}
+	}
+
+	function closeSearch() {
+		searchOpen = false;
+		searchDraft = "";
+		active = "";
+		document.getElementById("sidebar-search-trigger")?.focus();
+	}
+
+	function closeSettings() {
+		settingsOpen = false;
+		active = "";
+		document.getElementById("creator-settings-trigger")?.focus();
+	}
+
+	async function toggleSettings() {
+		if (settingsOpen && !collapsed) {
+			closeSettings();
 			return;
 		}
-		searchOpen = false;
-		if (id === "settings") {
-			settingsOpen = !settingsOpen;
-			if (settingsOpen) {
-				queueMicrotask(() => document.getElementById("creator-settings-model")?.focus());
-			}
-		}
+		if (collapsed) creatorLayout.setCollapsed("nav", false);
+		settingsOpen = true;
+		active = "settings";
+		await tick();
+		document.getElementById("creator-settings-close")?.focus();
 	}
 
 	function pickRecent(id: string) {
@@ -107,20 +131,17 @@
 	}
 
 	function onSearchKey(event: KeyboardEvent) {
-		if (pendingDelete) return;
+		if (pendingDelete || event.defaultPrevented || document.querySelector('[role="dialog"], dialog[open]')) return;
 		if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
 			event.preventDefault();
 			pick("search");
 		}
 		if (event.key === "Escape") {
 			if (searchOpen) {
-				searchOpen = false;
-				searchDraft = "";
-				active = "home";
+				closeSearch();
 				event.preventDefault();
 			} else if (settingsOpen) {
-				settingsOpen = false;
-				active = "home";
+				closeSettings();
 				event.preventDefault();
 			}
 		}
@@ -175,37 +196,39 @@
 					title={t("sidebar.newChat")}
 					onclick={onNew}
 				>
-					<Icon size="sm"><Zap /></Icon>
+					<Icon size="sm"><MessageSquarePlus /></Icon>
 				</Button>
-				<Button
-					class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-					aria-label={collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
-					expanded={!collapsed}
-					title={collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
-					onclick={onToggle}
-				>
-					<Icon size="sm"><PanelLeft /></Icon>
-				</Button>
+				{#if onClose}
+					<Button class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent lg:hidden" aria-label={t("sidebar.close")} title={t("sidebar.close")} data-action="nav-close" onclick={onClose}>
+						<Icon size="sm"><X /></Icon>
+					</Button>
+				{/if}
 			</Group>
 		</Group>
 
-		<Stack align="stretch" class="gap-0 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.mainNav")}>
+		<Stack
+			align="stretch"
+			class="gap-0 in-data-[nav=collapsed]:items-center"
+			tag="nav"
+			aria-label={t("sidebar.mainNav")}
+		>
 			{#each mainItems as item (item.id)}
 				<Button
+					id="sidebar-search-trigger"
 					class={cn(
 						"flex w-full items-center justify-start gap-2 rounded px-2 py-1 text-sm",
 						"in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0",
-						active === item.id
-							? "bg-accent text-accent-foreground"
-							: "text-foreground hover:bg-accent/70"
+						searchOpen && !collapsed ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/70",
 					)}
-					pressed={active === item.id}
+					pressed={searchOpen && !collapsed}
 					expanded={item.id === "search" ? searchOpen : undefined}
 					aria-controls={item.id === "search" ? "sidebar-chat-search" : undefined}
 					title={item.label}
 					onclick={() => pick(item.id)}
 				>
-					<Group class="min-w-0 w-full justify-between gap-2 in-data-[nav=collapsed]:w-auto in-data-[nav=collapsed]:justify-center">
+					<Group
+						class="min-w-0 w-full justify-between gap-2 in-data-[nav=collapsed]:w-auto in-data-[nav=collapsed]:justify-center"
+					>
 						<Group class="min-w-0 gap-2 in-data-[nav=collapsed]:gap-0">
 							<Icon size="sm"><item.icon /></Icon>
 							<Text tag="span" class="truncate in-data-[nav=collapsed]:hidden">{item.label}</Text>
@@ -224,102 +247,110 @@
 		</Stack>
 
 		{#if !collapsed}
-		{#if searchOpen}
-			<Stack align="stretch" class="gap-2">
-				<Input
-					id="sidebar-chat-search"
-					type="search"
-					value={searchDraft}
-					placeholder={t("sidebar.searchPlaceholder")}
-					aria-label={t("sidebar.search")}
-					class="w-full rounded border border-input bg-card px-2 py-1 text-sm"
-					oninput={(event: Event) => {
-						searchDraft = (event.currentTarget as HTMLInputElement).value;
-					}}
-				/>
-			</Stack>
-		{/if}
+			{#if searchOpen}
+				<Group class="items-center gap-2">
+					<Input
+						id="sidebar-chat-search"
+						type="search"
+						value={searchDraft}
+						placeholder={t("sidebar.searchPlaceholder")}
+						aria-label={t("sidebar.search")}
+						class="h-8 min-w-0 flex-1 rounded border border-input bg-card px-2 text-xs"
+						oninput={(event: Event) => {
+							searchDraft = (event.currentTarget as HTMLInputElement).value;
+						}}
+					/>
+					<Button
+						class="inline-flex size-8 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent"
+						aria-label={t("sidebar.closeSearch")}
+						title={t("sidebar.closeSearch")}
+						onclick={closeSearch}><Icon size="sm"><X /></Icon></Button
+					>
+				</Group>
+			{/if}
 
-		<Stack align="stretch" class="gap-0">
-			<Button
-				class="flex w-full items-center justify-between rounded px-2 py-1 text-sm text-muted-foreground hover:bg-accent/70 hover:text-foreground"
-				expanded={recentsOpen}
-				aria-controls="creator-recents"
-				onclick={() => (recentsOpen = !recentsOpen)}
-			>
-				<Text tag="span">{t("sidebar.recents")}</Text>
-				<Icon size="sm">
-					{#if recentsOpen}
-						<ChevronUp />
+			<Stack align="stretch" class="gap-0">
+				<Button
+					class="flex w-full items-center justify-between rounded px-2 py-1 text-sm text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+					expanded={recentsOpen}
+					aria-controls="creator-recents"
+					onclick={() => (recentsOpen = !recentsOpen)}
+				>
+					<Text tag="span">{t("sidebar.recents")}</Text>
+					<Icon size="sm">
+						{#if recentsOpen}
+							<ChevronUp />
+						{:else}
+							<ChevronDown />
+						{/if}
+					</Icon>
+				</Button>
+				<Stack align="stretch" id="creator-recents" class="min-h-0 gap-0" hidden={!recentsOpen}>
+					{#if visibleSessions.length === 0}
+						<Text tag="p" class="px-2 py-2 text-sm text-muted-foreground">
+							{searchDraft.trim() ? t("sidebar.noMatches") : t("sidebar.empty")}
+						</Text>
 					{:else}
-						<ChevronDown />
+						{#each visibleSessions as session (session.id)}
+							<Group class="min-w-0 gap-0" data-slot="recent-row">
+								<Button
+									class={cn(
+										"flex min-w-0 flex-1 items-center justify-start gap-2 rounded px-2 py-1 text-left text-sm",
+										selectedId === session.id || active === session.id
+											? "bg-accent text-accent-foreground"
+											: "text-foreground hover:bg-accent/70",
+									)}
+									onclick={() => pickRecent(session.id)}
+								>
+									<Icon size="sm"><Circle /></Icon>
+									<Text tag="span" class="min-w-0 truncate">{session.title}</Text>
+								</Button>
+								<Button
+									class="shrink-0 rounded p-2 text-muted-foreground hover:bg-accent hover:text-destructive disabled:opacity-40"
+									aria-label={t("sidebar.delete")}
+									aria-haspopup="dialog"
+									data-action="recent-delete"
+									disabled={!canDelete}
+									title={canDelete ? t("sidebar.delete") : t("sidebar.deleteUnavailable")}
+									onclick={() => canDelete && requestDelete(session)}
+								>
+									<Icon size="sm"><Trash2 /></Icon>
+								</Button>
+							</Group>
+						{/each}
 					{/if}
-				</Icon>
-			</Button>
-			<Stack align="stretch" id="creator-recents" class="min-h-0 gap-0" hidden={!recentsOpen}>
-				{#if visibleSessions.length === 0}
-					<Text tag="p" class="px-2 py-2 text-sm text-muted-foreground">
-						{searchDraft.trim() ? t("sidebar.noMatches") : t("sidebar.empty")}
-					</Text>
-				{:else}
-					{#each visibleSessions as session (session.id)}
-						<Group class="min-w-0 gap-0" data-slot="recent-row">
-							<Button
-								class={cn(
-									"flex min-w-0 flex-1 items-center justify-start gap-2 rounded px-2 py-1 text-left text-sm",
-									selectedId === session.id || active === session.id
-										? "bg-accent text-accent-foreground"
-										: "text-foreground hover:bg-accent/70"
-								)}
-								onclick={() => pickRecent(session.id)}
-							>
-								<Icon size="sm"><Circle /></Icon>
-								<Text tag="span" class="min-w-0 truncate">{session.title}</Text>
-							</Button>
-							<Button
-								class="shrink-0 rounded p-2 text-muted-foreground hover:bg-accent hover:text-destructive disabled:opacity-40"
-								aria-label={t("sidebar.delete")}
-								aria-haspopup="dialog"
-								data-action="recent-delete"
-								disabled={!canDelete}
-								title={canDelete ? t("sidebar.delete") : t("sidebar.deleteUnavailable")}
-								onclick={() => canDelete && requestDelete(session)}
-							>
-								<Icon size="sm"><Trash2 /></Icon>
-							</Button>
-						</Group>
-					{/each}
-				{/if}
+				</Stack>
 			</Stack>
-		</Stack>
 		{/if}
 	</Stack>
 
 	<!-- Preferences: at most 3/4 of the sidebar; an open Settings region scrolls on its own (ADR 0025, compact IDE density). -->
-	<Stack align="stretch" class="max-h-[75%] min-h-0 shrink-0 gap-0 p-2 in-data-[nav=collapsed]:items-center" tag="nav" aria-label={t("sidebar.preferences")} data-slot="sidebar-preferences">
+	<Stack
+		align="stretch"
+		class="max-h-3/4 min-h-0 shrink-0 gap-2 p-2 in-data-[nav=collapsed]:items-center"
+		tag="nav"
+		aria-label={t("sidebar.preferences")}
+		data-slot="sidebar-preferences"
+	>
 		<Separator class="in-data-[nav=collapsed]:hidden" />
 		<Button
+			id="creator-settings-trigger"
 			class={cn(
 				"flex w-full items-center justify-start gap-2 rounded px-2 py-1 text-sm",
 				"in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0",
-				active === "settings" ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/70"
+				settingsOpen && !collapsed ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-accent/70",
 			)}
 			title={t("sidebar.settings")}
-			expanded={settingsOpen}
+			expanded={settingsOpen && !collapsed}
 			aria-controls="creator-settings"
-			onclick={() => {
-				settingsOpen = !settingsOpen;
-				active = settingsOpen ? "settings" : "home";
-				if (settingsOpen) {
-					queueMicrotask(() => document.getElementById("creator-settings-model")?.focus());
-				}
-			}}
+			onclick={toggleSettings}
 		>
 			<Icon size="sm"><Settings /></Icon>
 			<Text tag="span" class="in-data-[nav=collapsed]:hidden">{t("sidebar.settings")}</Text>
 		</Button>
 		{#if settingsOpen && !collapsed}
-			<Stack align="stretch"
+			<Stack
+				align="stretch"
 				id="creator-settings"
 				class="min-h-0 shrink gap-2 overflow-y-auto overscroll-contain rounded border border-border p-2 text-xs"
 				role="region"
@@ -328,6 +359,16 @@
 				data-slot="settings-region"
 				onfocusin={revealFocused}
 			>
+				<Group class="sticky top-0 z-10 items-center justify-between gap-2 bg-card">
+					<Title as={2} class="text-xs font-semibold">{t("sidebar.settings")}</Title>
+					<Button
+						id="creator-settings-close"
+						class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+						aria-label={t("sidebar.closeSettings")}
+						title={t("sidebar.closeSettings")}
+						onclick={closeSettings}><Icon size="sm"><X /></Icon></Button
+					>
+				</Group>
 				<Text tag="p" class="text-xs text-muted-foreground">{t("sidebar.settingsHint")}</Text>
 				<Text tag="p" class="text-xs font-medium text-foreground">{t("sidebar.settingsModel")}</Text>
 				{#each chatModels as model, index (model.id)}
@@ -336,27 +377,48 @@
 						class={cn(
 							"flex w-full items-center justify-start rounded px-2 py-1 text-left text-xs",
 							isChatModelAvailable(model.id) ? "hover:bg-accent/70" : "cursor-not-allowed opacity-60",
-							model.id === selectedModelId ? "bg-accent text-accent-foreground" : "text-foreground"
+							model.id === selectedModelId ? "bg-accent text-accent-foreground" : "text-foreground",
 						)}
 						pressed={model.id === selectedModelId}
 						disabled={!isChatModelAvailable(model.id)}
-						title={isChatModelAvailable(model.id) ? undefined : t(modelUnavailableCode(model) === "model_too_slow" ? "composer.modelTooSlow" : "composer.modelUnavailable")}
+						title={isChatModelAvailable(model.id)
+							? undefined
+							: t(
+									modelUnavailableCode(model) === "model_too_slow"
+										? "composer.modelTooSlow"
+										: "composer.modelUnavailable",
+								)}
 						onclick={() => setSelectedModelId(model.id)}
 					>
 						{model.label}
 					</Button>
 					{#if !isChatModelAvailable(model.id)}
-						<Text tag="p" class="px-2 text-xs text-muted-foreground">{t(modelUnavailableCode(model) === "model_too_slow" ? "composer.modelTooSlow" : "composer.modelUnavailable")}</Text>
+						<Text tag="p" class="px-2 text-xs text-muted-foreground"
+							>{t(
+								modelUnavailableCode(model) === "model_too_slow"
+									? "composer.modelTooSlow"
+									: "composer.modelUnavailable",
+							)}</Text
+						>
 					{/if}
 				{/each}
 				<!-- The chat UI theme (ADR 0026): system / dark / light; the preview keeps its own skin. -->
-				<Text tag="p" class="text-xs font-medium text-foreground" id="creator-settings-theme-label">{t("settings.theme")}</Text>
-				<Group class="items-center gap-1 rounded-full bg-muted p-1" role="group" aria-labelledby="creator-settings-theme-label" data-slot="settings-theme">
+				<Text tag="p" class="text-xs font-medium text-foreground" id="creator-settings-theme-label"
+					>{t("settings.theme")}</Text
+				>
+				<Group
+					class="items-center gap-1 rounded-full bg-muted p-1"
+					role="group"
+					aria-labelledby="creator-settings-theme-label"
+					data-slot="settings-theme"
+				>
 					{#each THEME_PREFS as option (option)}
 						<Button
 							class={cn(
 								"flex-1 rounded-full px-2 py-1 text-xs",
-								theme.pref === option ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+								theme.pref === option
+									? "bg-background text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground",
 							)}
 							pressed={theme.pref === option}
 							data-action={`theme-${option}`}
@@ -370,9 +432,12 @@
 					<Checkbox
 						id="creator-settings-preview-clean"
 						checked={previewSettings.hideServiceLabels}
-						onchange={(event: Event) => previewSettings.setHideServiceLabels((event.currentTarget as HTMLInputElement).checked)}
+						onchange={(event: Event) =>
+							previewSettings.setHideServiceLabels((event.currentTarget as HTMLInputElement).checked)}
 					/>
-					<Label for="creator-settings-preview-clean" class="text-xs text-foreground">{t("settings.hidePreviewLabels")}</Label>
+					<Label for="creator-settings-preview-clean" class="text-xs text-foreground"
+						>{t("settings.hidePreviewLabels")}</Label
+					>
 				</Group>
 				<SettingsThemeImport />
 				<SettingsSessionFile />
@@ -388,25 +453,19 @@
 				{/if}
 			</Stack>
 		{/if}
-		<Group class="justify-between gap-2 rounded p-2 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0">
-			<Group class="gap-2 in-data-[nav=collapsed]:gap-0">
-				<Switch
-					class="relative inline-flex h-6 w-12 items-center rounded-full border-4 border-muted bg-muted p-0 ring-1 ring-border in-data-[nav=collapsed]:w-8"
-					checked={theme.isDark}
-					aria-label={t("sidebar.nightMode")}
-					title={t("sidebar.nightMode")}
-					onclick={() => theme.toggle()}
-				>
-					<Box
-						class={cn(
-							"size-4 rounded-full bg-foreground transition-transform",
-							theme.isDark ? "translate-x-6 in-data-[nav=collapsed]:translate-x-2" : "translate-x-0"
-						)}
-					></Box>
-				</Switch>
-				<Text tag="span" class="text-sm in-data-[nav=collapsed]:hidden">{t("sidebar.nightMode")}</Text>
-			</Group>
-		</Group>
+		<Button
+			class="flex w-full items-center justify-start gap-2 rounded px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0"
+			aria-label={t(theme.isDark ? "theme.toLight" : "theme.toDark")}
+			title={t(theme.isDark ? "theme.toLight" : "theme.toDark")}
+			data-action="theme-toggle"
+			onclick={() => theme.toggle()}
+		>
+			<Icon size="sm"
+				>{#if theme.isDark}<Sun />{:else}<Moon />{/if}</Icon
+			>
+			<Text tag="span" class="in-data-[nav=collapsed]:hidden">{t(theme.isDark ? "theme.toLight" : "theme.toDark")}</Text
+			>
+		</Button>
 	</Stack>
 </Block>
 

@@ -253,7 +253,7 @@
 				data-columns={feed.columns}
 			>
 				{#each result.items as item (item.id)}
-					<FeedCard {item} columns={feed.columns} onAdd={add} onStart={start} starting={starting !== null} />
+					<FeedCard {item} onAdd={add} onStart={start} starting={starting !== null} />
 				{/each}
 			</Box>
 		{/if}

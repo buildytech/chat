@@ -118,6 +118,11 @@ The documentation task ran against `51c3792` with no changes to app, package, ca
 
 ## Separate functional follow-ups
 
+The owner's later DOM-based feedback is implemented as the ADR 0028 follow-up: quiet resting field edges, stacked
+media in both feed views with a two-column default, clear sidebar actions/close controls and Markdown copy feedback.
+See [the follow-up report](../acceptance/chat-ui-followup.md) for measurements and verification; original screenshots
+above remain evidence of the preceding version.
+
 Preview zoom/100% navigation and the simulated address field's navigation semantics need their own functional
 design. They are not added to this visual refactor. No restoration of the pre-ADR-0024 inspector column, new runtime,
 schema rewrite, catalog enrichment or live-model execution is authorized by this plan.

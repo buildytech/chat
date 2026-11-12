@@ -130,14 +130,13 @@
 			{onDelete}
 			canDelete={runtime.canDelete}
 			onClose={onCloseSidebar}
-			onToggle={handleNavToggle}
 		/>
 		{#if columns && !sidebarCollapsed}
 			<PaneSplitter pane="nav" controls="chat-sidebar-drawer" class="max-lg:hidden" />
 		{/if}
 		<Block tag="main" id="main-content" class="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
 			<CreatorTopBar
-				{sidebarOpen}
+				sidebarOpen={columns ? !sidebarCollapsed : sidebarOpen}
 				onToggleSidebar={handleNavToggle}
 			/>
 			<Group class="min-h-0 min-w-0 flex-1 items-stretch max-lg:flex-col">

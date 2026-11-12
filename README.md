@@ -25,7 +25,7 @@ this is not an available demo or a launch announcement.
 Catalog availability depends on renderers and schemas. Browser storage belongs to the current browser profile;
 export a session file for a portable copy. Persistence and live inference are separate features.
 
-UI refinement is planned under [ADR 0028](.project/adr/0028-chat-ui-refinement.md) and its
+UI refinement follows [ADR 0028](.project/adr/0028-chat-ui-refinement.md) and its
 [plan](docs/plans/chat-ui-refinement.md). Desktop and WordPress hosts are later work under
 [ADR 0007](.project/adr/0007-one-buildy-three-hosts.md); this repository implements the Browser application.
 

@@ -116,7 +116,9 @@ test("Blocks feed add: after the selected section or at the end, every gate, no 
 
 test("feed prefs: tab and 1 / 2 columns persist; the page size does not depend on the view", () => {
 	assert.equal(FEED_PAGE_SIZE, 8);
-	assert.deepEqual(defaultFeedPrefs(), { tab: "blocks", columns: 1, inspector: false });
+	assert.deepEqual(defaultFeedPrefs(), { tab: "blocks", columns: 2, inspector: false });
+	assert.deepEqual(parseFeedPrefs({ columns: 1 }), { tab: "blocks", columns: 1, inspector: false }, "keep an explicit one-column preference");
+	assert.equal(loadFeedPrefs(null).columns, 2, "a new browser starts with two columns");
 	assert.deepEqual(parseFeedPrefs({ tab: "blocks", columns: 2 }), { tab: "blocks", columns: 2, inspector: false });
 	assert.deepEqual(parseFeedPrefs({ tab: "x", columns: 3 }), defaultFeedPrefs());
 	const mem = new Map<string, string>();

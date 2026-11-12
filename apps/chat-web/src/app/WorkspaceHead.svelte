@@ -61,7 +61,7 @@
 		<PanelLeft />
 	</Button>
 
-	<Group class="gap-0 rounded bg-muted" role="tablist" aria-label={t("workspace.viewSwitcher")}>
+	<Group class="gap-1 rounded bg-muted" role="tablist" aria-label={t("workspace.viewSwitcher")}>
 		{#each ["preview", "code"] as const as option (option)}
 			<Button
 				size="sm"
@@ -80,7 +80,7 @@
 
 	<Box class="min-w-0 flex-1"></Box>
 	<Group class="items-center gap-2">
-		<Button size="sm" variant="outline" class="gap-2 text-xs" aria-label={t("workspace.downloadZip")} title={t("workspace.downloadZip")} onclick={onDownloadZip}>
+		<Button size="sm" variant="ghost" class="gap-2 text-xs" aria-label={t("workspace.downloadZip")} title={t("workspace.downloadZip")} onclick={onDownloadZip}>
 			<Icon size="sm"><FolderArchive /></Icon>
 			<Text tag="span" class="max-sm:hidden">{t("workspace.downloadZip")}</Text>
 		</Button>

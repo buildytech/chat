@@ -1,8 +1,8 @@
 <!--
   One Blocks feed result (ADR 0024): the Stock WebP thumbnail, title, spec / variant, a link to the codegen-x asset
   page and, for a block, "+" that adds it to the page through the inspector gates (no model call); for a screen,
-  "Start page" that makes a fresh page from it (program assembly, no model call). One column: full-bleed thumb
-  on the left edge; two columns: full-bleed thumb on top (StockMediaCard). A block the page cannot take keeps "+" disabled with the reason.
+  "Start page" that makes a fresh page from it (program assembly, no model call). Both column counts keep a
+  full-width thumbnail on top; one column offers a larger preview. A block the page cannot take keeps "+" disabled with the reason.
   t150u: whether the card can be added, started or dragged is computed here, per card, from the item (stockSearch's
   supported flag) and the current page's hard rules; nothing is cached from the first result page.
 -->
@@ -24,13 +24,11 @@
 
 	let {
 		item,
-		columns,
 		onAdd,
 		onStart,
 		starting = false
 	}: {
 		item: StockSearchItem;
-		columns: 1 | 2;
 		onAdd: (item: StockSearchItem) => void;
 		onStart: (item: StockSearchItem) => void;
 		starting?: boolean;
@@ -60,7 +58,7 @@
 	tag="li"
 	thumb={item.thumb}
 	thumbTitle={`${item.title} (${item.variant})`}
-	layout={columns === 1 ? "row" : "stack"}
+	layout="stack"
 	class={cn(canDrag && "cursor-grab", feedDrag.item?.id === item.id && "opacity-60")}
 	draggable={canDrag ? "true" : undefined}
 	title={canDrag ? t(item.type === "block" ? "feed.dragHint" : "feed.dragScreenHint") : undefined}
