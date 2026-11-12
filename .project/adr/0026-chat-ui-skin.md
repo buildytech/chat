@@ -3,6 +3,10 @@
 Status: accepted (2026-11-11). Owner request t145u, clarified by t146u (the owner's mockups show approaches to theming,
 not widgets or layout).
 
+Scope update (2026-11-12): [ADR 0028](0028-chat-ui-refinement.md) extends this theme-only phase with an approved
+app-composition refactor. Token ownership, preview isolation and accessibility floors below remain requirements;
+the new ADR, [SLO](../slo/chat-ui-refinement.md) and [plan](../../docs/plans/chat-ui-refinement.md) govern the next phase.
+
 ## Context
 
 The chat shell (sidebar, top bar, Build panel tabs Blocks / Sections / Chat, feed cards, composer, inspector

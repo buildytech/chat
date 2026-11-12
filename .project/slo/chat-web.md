@@ -1,5 +1,10 @@
 # SLO: apps/chat-web
 
+For the approved shell refactor's visual and accessibility acceptance, see
+[Chat UI refinement](chat-ui-refinement.md) (ADR 0028). Its targets and pending measurements are separate from the
+historical early-product indicators below; this document's scaffold-era backend descriptions are not a current
+runtime inventory (see `AGENTS.md` and `docs/runbook.md`).
+
 Ранняя стадия (scaffold + CreatorShell skeleton). Нет production traffic и live backends — цифры про **сборку, CI и дымовые индикаторы**, не про 99.99% uptime.
 
 ## Build / CI (kept)
