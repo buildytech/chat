@@ -1,6 +1,7 @@
 {
 	"locale": "en",
 	"messages": {
+		"preview.invalidAddress": "Use up to 48 lowercase letters, digits and hyphens. This route may be reserved.",
 		"app.title": "SI Chat website builder",
 		"app.documentTitle": "SI Chat — BuildYtech",
 		"sidebar.chats": "Chats",

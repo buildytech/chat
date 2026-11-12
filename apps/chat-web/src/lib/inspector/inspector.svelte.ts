@@ -19,7 +19,7 @@ import {
 	type PageFamily
 } from "@buildytech/builder-core";
 import type { StoredPageProvenance } from "../browser/persist";
-import type { Page } from "@buildytech/page-contract";
+import { parseDraftPage, type Page } from "@buildytech/page-contract";
 import { getChatMode, startEmptyPageInChat } from "../chat-core";
 import { getBoundPageSessionId, getCurrentPage, getCurrentProvenance, getPageRevision, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
 import { commitChange } from "../page-store/revision";
@@ -108,6 +108,20 @@ function isEditable(target: EventTarget | null): Element | null {
 }
 
 export const inspector = {
+ setSlug(slug: string): boolean {
+  const page = getCurrentPage();
+  if (!page) return false;
+  if (page.slug === slug) return true;
+  let next: Page;
+  try { next = parseDraftPage({ ...page, slug, updatedAt: new Date().toISOString() }); } catch { return false; }
+  const steps = historyFor(page);
+  steps.seal();
+  const provenance = getCurrentProvenance();
+  if (!replaceVisiblePage(next)) return false;
+  steps.record({ page, provenance }, { page: next, provenance }, null);
+  version += 1;
+  return true;
+ },
 	/** Rejected edits of one block, by field pointer. */
 	issuesFor(blockId: string): Record<string, FieldIssue> {
 		return issues[blockId] ?? {};

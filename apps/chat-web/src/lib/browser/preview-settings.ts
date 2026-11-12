@@ -15,7 +15,8 @@ export function serializePreviewClean(on: boolean): string {
 }
 
 /** The standalone preview of a chat's page: the /preview route renders the same registry blocks, no chat UI, no labels. */
-export function previewWindowUrl(sessionId: string | null | undefined, base = ""): string {
+export function previewWindowUrl(sessionId: string | null | undefined, base = "", slug?: string): string {
+	if (slug) return `${base}/${encodeURIComponent(slug)}?preview${sessionId ? `&session=${encodeURIComponent(sessionId)}` : ""}`;
 	const query = sessionId ? `?session=${encodeURIComponent(sessionId)}` : "";
 	return `${base}/preview${query}`;
 }

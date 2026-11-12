@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from "$app/paths";
 	import ArrowLeft from "@lucide/svelte/icons/arrow-left";
 	import ArrowRight from "@lucide/svelte/icons/arrow-right";
 	import ExternalLink from "@lucide/svelte/icons/external-link";
@@ -19,7 +20,14 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import { applyProposal, discardProposal, getChatSkin, getSelectedSession, proposalStatus, setChatSkin } from "$lib/chat-core";
+	import {
+		applyProposal,
+		discardProposal,
+		getChatSkin,
+		getSelectedSession,
+		proposalStatus,
+		setChatSkin,
+	} from "$lib/chat-core";
 	import { applySkin, forcedPreviewMode, skins } from "$lib/theme/skins";
 	import { customSkin } from "$lib/theme/custom-skin.svelte";
 	import { CUSTOM_SKIN_ID } from "$lib/theme/custom-skin";
@@ -29,7 +37,7 @@
 		getCurrentProvenance,
 		getPageRevision,
 		getSelectedBlockId,
-		hasUnappliedProposal
+		hasUnappliedProposal,
 	} from "$lib/page-store";
 	import { topLevelBlockId } from "$lib/inspector/geometry";
 	import CanvasOverlay from "./CanvasOverlay.svelte";
@@ -38,6 +46,7 @@
 	import { recordedScreenId } from "@buildytech/builder-core";
 	import PreviewFrame from "./PreviewFrame.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
+	import { pageSlug } from "$lib/browser/page-address";
 	import { previewWindowUrl } from "$lib/browser/preview-settings";
 	import { getBoundPageSessionId } from "$lib/page-store";
 	import { forwardShortcut } from "$lib/layout/shortcuts";
@@ -46,13 +55,21 @@
 	const savedRevision = $derived(getPageRevision());
 	const unapplied = $derived(hasUnappliedProposal());
 	const appliedLabel = $derived.by(() => {
-		const last = getSelectedSession()?.messages.slice().reverse().find((message) => message.proposal);
+		const last = getSelectedSession()
+			?.messages.slice()
+			.reverse()
+			.find((message) => message.proposal);
 		return last?.proposal && proposalStatus(last.proposal) === "applied" && !unapplied ? t("proposal.applied") : "";
 	});
 	const blocks = $derived(page ? blocksOf(page) : []);
 	const slugUrl = $derived(page ? `/${page.slug}` : "/");
 	const lastProposal = $derived.by(() => {
-		return getSelectedSession()?.messages.slice().reverse().find((message) => message.proposal)?.proposal ?? null;
+		return (
+			getSelectedSession()
+				?.messages.slice()
+				.reverse()
+				.find((message) => message.proposal)?.proposal ?? null
+		);
 	});
 	const provenance = $derived(getCurrentProvenance());
 	const screenId = $derived(recordedScreenId(provenance?.screenId) ?? "");
@@ -65,7 +82,7 @@
 	const devices: Array<{ id: Device; label: string }> = [
 		{ id: "desktop", label: t("preview.desktop") },
 		{ id: "tablet", label: t("preview.tablet") },
-		{ id: "mobile", label: t("preview.mobile") }
+		{ id: "mobile", label: t("preview.mobile") },
 	];
 
 	let stageWidth = $state(0);
@@ -110,7 +127,10 @@
 		syncTheme(doc);
 		themeObserver?.disconnect();
 		themeObserver = new MutationObserver(() => syncTheme(doc));
-		themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme", "style"] });
+		themeObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ["class", "data-theme", "style"],
+		});
 		if (mounted) void unmount(mounted);
 		mounted = mount(PreviewFrame, { target: doc.body, props: { frame } });
 		// Undo / redo of inspector edits also while focus is inside the preview frame.
@@ -157,23 +177,37 @@
 			frameDoc = null;
 		};
 	});
-	let url = $state("");
 	let draft = $state("");
 	let history = $state<string[]>([]);
 	let future = $state<string[]>([]);
 	let reloadKey = $state(0);
 	let spinning = $state(false);
 
-	const currentUrl = $derived(url || slugUrl);
+	const currentUrl = $derived(slugUrl);
+	$effect(() => {
+		getBoundPageSessionId();
+		const slug = page?.slug;
+		draft = slug ? "/" + slug : "/";
+	});
+
+	$effect(() => {
+		getBoundPageSessionId();
+		history = [];
+		future = [];
+	});
 
 	function commit(next: string) {
-		const value = next.trim() || slugUrl;
-		if (value !== currentUrl) {
-			history = [...history, currentUrl];
+		const slug = pageSlug(next);
+		if (!slug) return false;
+		const before = currentUrl;
+		if (!inspector.setSlug(slug)) return false;
+		const value = "/" + slug;
+		if (value !== before) {
+			history = [...history, before];
 			future = [];
-			url = value;
 		}
 		draft = value;
+		return true;
 	}
 
 	function back() {
@@ -181,7 +215,7 @@
 		if (prev === undefined) return;
 		future = [currentUrl, ...future];
 		history = history.slice(0, -1);
-		url = prev;
+		inspector.setSlug(prev.slice(1));
 		draft = prev;
 	}
 
@@ -190,7 +224,7 @@
 		if (next === undefined) return;
 		history = [...history, currentUrl];
 		future = future.slice(1);
-		url = next;
+		inspector.setSlug(next.slice(1));
 		draft = next;
 	}
 
@@ -205,8 +239,14 @@
 	function onAddressKey(event: KeyboardEvent) {
 		if (event.key === "Enter") {
 			event.preventDefault();
-			commit(draft);
-			(event.currentTarget as HTMLInputElement).blur();
+			const input = event.currentTarget as HTMLInputElement;
+			if (!commit(draft)) {
+				input.setCustomValidity(t("preview.invalidAddress"));
+				input.reportValidity();
+				return;
+			}
+			input.setCustomValidity("");
+			input.blur();
 		} else if (event.key === "Escape") {
 			draft = currentUrl;
 			(event.currentTarget as HTMLInputElement).blur();
@@ -225,7 +265,11 @@
 	// The whole preview site as-is in a new window: the /preview route renders this chat's page (pending proposal, else
 	// the applied page) with the registry blocks and kit theme, no chat UI and no service labels.
 	function openNew() {
-		window.open(previewWindowUrl(getSelectedSession()?.id ?? getBoundPageSessionId()), "_blank", "noopener");
+		window.open(
+			previewWindowUrl(getSelectedSession()?.id ?? getBoundPageSessionId(), base, page?.slug),
+			"_blank",
+			"noopener",
+		);
 	}
 </script>
 
@@ -238,27 +282,21 @@
 	data-screen-id={screenId}
 	data-block="preview-pane"
 >
-	<Group
-		class="h-10 shrink-0 items-center justify-between gap-2 border-b border-border px-2"
-		data-slot="browser-head"
-	>
-		<Group
-			class="gap-0 rounded bg-muted"
-			role="tablist"
-			aria-label={t("preview.device")}
-		>
+	<Group class="h-10 shrink-0 items-center justify-between gap-2 border-b border-border px-2" data-slot="browser-head">
+		<Group class="gap-0 rounded bg-muted" role="tablist" aria-label={t("preview.device")}>
 			{#each devices as option (option.id)}
 				<Button
 					class={cn(
 						"inline-flex size-8 items-center justify-center rounded",
-						device === option.id ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
+						device === option.id ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground",
 					)}
 					aria-label={option.label}
 					pressed={device === option.id}
 					onclick={() => (device = option.id)}
 				>
 					<Icon size="sm">
-						{#if option.id === "desktop"}<Monitor />{:else if option.id === "tablet"}<Tablet />{:else}<Smartphone />{/if}
+						{#if option.id === "desktop"}<Monitor />{:else if option.id === "tablet"}<Tablet />{:else}<Smartphone
+							/>{/if}
 					</Icon>
 				</Button>
 			{/each}
@@ -294,6 +332,7 @@
 					autocomplete="off"
 					spellcheck="false"
 					oninput={(event: Event) => {
+						(event.currentTarget as HTMLInputElement).setCustomValidity("");
 						draft = (event.currentTarget as HTMLInputElement).value;
 					}}
 					onkeydown={onAddressKey}
@@ -324,7 +363,8 @@
 				>
 					<SelectOption value="">{t("preview.skinDefault")}</SelectOption>
 					{#if custom}
-						<SelectOption value={CUSTOM_SKIN_ID} data-slot="preview-skin-custom">{t("preview.skinCustom")}</SelectOption>
+						<SelectOption value={CUSTOM_SKIN_ID} data-slot="preview-skin-custom">{t("preview.skinCustom")}</SelectOption
+						>
 					{/if}
 					{#each skinOptions as option (option.id)}
 						<SelectOption value={option.id}>{option.title}</SelectOption>
@@ -342,44 +382,50 @@
 	</Group>
 
 	{#if unapplied || !clean}
-	<Stack align="stretch" class="shrink-0 gap-2 border-b border-border p-2" data-slot="preview-status" data-clean={clean ? "true" : undefined}>
-		{#if unapplied}
-			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-2 py-2">
-				<Text tag="span" class="text-xs text-muted-foreground">{t("proposal.notApplied")}</Text>
-				<Group class="gap-2">
-					<Button
-						class="rounded bg-foreground px-3 py-2 text-sm text-background hover:bg-foreground/90"
-						onclick={() => applyProposal()}
-					>
-						<Text tag="span">{t("proposal.apply")}</Text>
-					</Button>
-					<Button
-						class="rounded border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
-						onclick={() => discardProposal()}
-					>
-						<Text tag="span">{t("proposal.discard")}</Text>
-					</Button>
+		<Stack
+			align="stretch"
+			class="shrink-0 gap-2 border-b border-border p-2"
+			data-slot="preview-status"
+			data-clean={clean ? "true" : undefined}
+		>
+			{#if unapplied}
+				<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-2 py-2">
+					<Text tag="span" class="text-xs text-muted-foreground">{t("proposal.notApplied")}</Text>
+					<Group class="gap-2">
+						<Button
+							class="rounded bg-foreground px-3 py-2 text-sm text-background hover:bg-foreground/90"
+							onclick={() => applyProposal()}
+						>
+							<Text tag="span">{t("proposal.apply")}</Text>
+						</Button>
+						<Button
+							class="rounded border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
+							onclick={() => discardProposal()}
+						>
+							<Text tag="span">{t("proposal.discard")}</Text>
+						</Button>
+					</Group>
 				</Group>
-			</Group>
-		{:else if appliedLabel && !clean}
-			<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-2 py-2">
-				<Text tag="span" class="text-xs text-muted-foreground">{appliedLabel}</Text>
-			</Group>
-		{/if}
-		{#key reloadKey}
-			{#if !clean}
-			<Text tag="p" class="text-xs text-muted-foreground">{t("preview.runtime")}</Text>
-			<Text tag="p" class="text-xs text-muted-foreground">
-				{screenId || t("preview.noScreen")}
-			</Text>
-			{#if missingLabels}
-				<Text tag="p" class="text-xs text-muted-foreground" role="status">
-					{t("home.incompatible")} {t("home.missing").replace("{list}", missingLabels)}
-				</Text>
+			{:else if appliedLabel && !clean}
+				<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-2 py-2">
+					<Text tag="span" class="text-xs text-muted-foreground">{appliedLabel}</Text>
+				</Group>
 			{/if}
-			{/if}
-		{/key}
-	</Stack>
+			{#key reloadKey}
+				{#if !clean}
+					<Text tag="p" class="text-xs text-muted-foreground">{t("preview.runtime")}</Text>
+					<Text tag="p" class="text-xs text-muted-foreground">
+						{screenId || t("preview.noScreen")}
+					</Text>
+					{#if missingLabels}
+						<Text tag="p" class="text-xs text-muted-foreground" role="status">
+							{t("home.incompatible")}
+							{t("home.missing").replace("{list}", missingLabels)}
+						</Text>
+					{/if}
+				{/if}
+			{/key}
+		</Stack>
 	{/if}
 
 	<Box

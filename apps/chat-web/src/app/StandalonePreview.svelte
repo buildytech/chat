@@ -4,6 +4,7 @@
   follows the chat's light / dark choice; the page follows edits made in the chat tab (storage events).
 -->
 <script lang="ts">
+	import { base } from "$app/paths";
 	import { onMount } from "svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
@@ -20,7 +21,11 @@
 	// Read-only: this window never binds or writes the chat's page store.
 	function load() {
 		const session = new URLSearchParams(location.search).get("session");
-		page = readPreviewPage(session);
+		page = session ? readPreviewPage(session) : null;
+		if (page && location.search.includes("preview")) {
+			const canonical = base + "/" + encodeURIComponent(page.slug);
+			if (location.pathname !== canonical) window.history.replaceState(null, "", canonical + location.search);
+		}
 		// The Custom Skin (ADR 0025) fixes its own light / dark mode, after the chat's mode.
 		void applySkin(document, readSessionSkin(session), storedCustomSkin());
 	}

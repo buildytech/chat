@@ -22,7 +22,7 @@ test("open in new window targets the standalone /preview route of the chat", () 
 	assert.equal(previewWindowUrl("s 1/x"), "/preview?session=s%201%2Fx");
 	assert.equal(previewWindowUrl(null), "/preview");
 	const pane = web("app/PreviewPane.svelte");
-	assert.match(pane, /window\.open\(previewWindowUrl\(/);
+	assert.match(pane, /window\.open\(\s*previewWindowUrl\(/);
 	assert.doesNotMatch(pane, /window\.open\(location\.href/);
 });
 
@@ -65,3 +65,11 @@ test("Apply / Discard on a chat proposal card reach the session (were unwired)",
 	assert.match(message, /onclick=\{\(\) => \(onApply \? onApply\(\) : applyProposal\(\)\)\}/);
 	assert.match(message, /onclick=\{\(\) => \(onDiscard \? onDiscard\(\) : discardProposal\(\)\)\}/);
 });
+
+ test('friendly page addresses use the existing single-segment Page slug', async () => {
+ const { pageSlug } = await import('../../apps/chat-web/src/lib/browser/page-address.ts');
+ assert.equal(pageSlug('/marketing-landing'), 'marketing-landing');
+ for (const value of ['/', '/about/team', 'https://example.com', '/api', '/runtime', '/preview', '/build', '/UPPER', '/a?x=1', 'a'.repeat(49)]) assert.equal(pageSlug(value), null, value);
+ assert.equal(previewWindowUrl('s 1/x', '', 'marketing-landing'), '/marketing-landing?preview&session=s%201%2Fx');
+ assert.equal(previewWindowUrl('s1', '/builder', 'home'), '/builder/home?preview&session=s1');
+ });
