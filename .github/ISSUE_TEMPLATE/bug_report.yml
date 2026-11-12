@@ -1,0 +1,74 @@
+{
+  "name": "Bug report",
+  "description": "Report a reproducible problem.",
+  "title": "[Bug]: ",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "Search existing reports first. Remove secrets and private session data. Report vulnerabilities through Security > Report a vulnerability. Pull requests are not accepted."
+      }
+    },
+    {
+      "type": "input",
+      "id": "version",
+      "attributes": {
+        "label": "Commit or version",
+        "description": "Run git rev-parse --short HEAD, or describe the version used."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "environment",
+      "attributes": {
+        "label": "Environment",
+        "description": "Browser/version, OS, local/self-hosted, CSS viewport, zoom, theme, locale and pane state."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "steps",
+      "attributes": {
+        "label": "Steps to reproduce",
+        "description": "Include starting state and exact actions."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "expected",
+      "attributes": {
+        "label": "Expected behavior"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "actual",
+      "attributes": {
+        "label": "Actual behavior"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "evidence",
+      "attributes": {
+        "label": "Screenshots or sanitized logs",
+        "description": "Optional supporting evidence. Do not upload private session exports."
+      }
+    }
+  ]
+}

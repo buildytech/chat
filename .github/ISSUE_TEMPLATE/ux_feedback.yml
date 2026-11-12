@@ -1,0 +1,54 @@
+{
+  "name": "UX or UI feedback",
+  "description": "Describe a specific usability or visual consistency problem.",
+  "title": "[UX]: ",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "Search existing reports first. Remove secrets and private session data. Report vulnerabilities through Security > Report a vulnerability. Pull requests are not accepted."
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "task",
+      "attributes": {
+        "label": "Task and problem",
+        "description": "What were you trying to do? Which interaction caused difficulty?"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "environment",
+      "attributes": {
+        "label": "Viewing conditions",
+        "description": "Commit/version, browser, OS, CSS viewport, zoom, theme, locale and pane state."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "evidence",
+      "attributes": {
+        "label": "Screenshot or reproduction",
+        "description": "Provide steps or a screenshot with relevant context; remove private content."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "improvement",
+      "attributes": {
+        "label": "Suggested improvement",
+        "description": "Expected behavior or a reference and how it helps."
+      }
+    }
+  ]
+}

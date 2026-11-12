@@ -1,0 +1,43 @@
+{
+  "name": "Feature proposal",
+  "description": "Describe a concrete user need.",
+  "title": "[Feature]: ",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "Search existing reports first. Remove secrets and private session data. Report vulnerabilities through Security > Report a vulnerability. Pull requests are not accepted."
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "problem",
+      "attributes": {
+        "label": "User problem",
+        "description": "Who needs this, what are they trying to do, and what prevents it?"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "outcome",
+      "attributes": {
+        "label": "Desired outcome",
+        "description": "Describe the workflow and how success would be recognized."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "alternatives",
+      "attributes": {
+        "label": "Alternatives and context",
+        "description": "Workarounds or related discussions. Early ideas belong in Discussions."
+      }
+    }
+  ]
+}

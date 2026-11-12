@@ -1,0 +1,45 @@
+{
+  "name": "Documentation or translation",
+  "description": "Suggest a correction to instructions or interface wording.",
+  "title": "[Docs]: ",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "Search existing reports first. Remove secrets and private session data. Report vulnerabilities through Security > Report a vulnerability. Pull requests are not accepted."
+      }
+    },
+    {
+      "type": "input",
+      "id": "location",
+      "attributes": {
+        "label": "Page or interface location",
+        "description": "Link, path or screen; include locale for translations."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "problem",
+      "attributes": {
+        "label": "Current wording or missing information"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "proposal",
+      "attributes": {
+        "label": "Proposed correction",
+        "description": "Explain the correction; provide replacement wording if possible."
+      },
+      "validations": {
+        "required": true
+      }
+    }
+  ]
+}

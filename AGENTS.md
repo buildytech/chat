@@ -6,6 +6,11 @@ UI8Kit rules live with the contract. Copied here from [`github.com/ui8kit/contra
 
 ## Owner delivery rules
 
+Community participation follows [CONTRIBUTING.md](CONTRIBUTING.md): no pull requests or unsolicited patches;
+questions in Discussions, concrete reports through Issue forms. Sensitive reports follow [SECURITY.md](SECURITY.md)
+and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). The hosted chat is not launched; public project site: buildy.tw,
+available components: ui.buildy.tw, planned chat address: chat.buildy.tw.
+
 - Push verified work to **`main`** with a normal fast-forward-safe push.
 - **Do not open a pull request.** PRs permanently pollute this repo's history.
 - Commit author: `Codex <codex@openai.com>` via `git -c user.name=… -c user.email=…` (owner updated 2026-11-12). This is Git author metadata, not the identity used to authenticate a push.

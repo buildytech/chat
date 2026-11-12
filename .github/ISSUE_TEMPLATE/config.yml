@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and discussions
+    url: https://github.com/buildytech/chat/discussions
+    about: Ask usage questions and explore early ideas.
+  - name: Private security report
+    url: https://github.com/buildytech/chat/security/advisories/new
+    about: Report vulnerabilities privately, never in public issues.

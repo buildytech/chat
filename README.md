@@ -1,60 +1,86 @@
-# SI Chat Creator
+# BuildY Chat
 
-Browser-first chat builder for ordinary website pages (`page` + unique slug). CMS-agnostic Page Store. Same Creator shell: history | Chat | Workspace Preview/Code.
+Build websites through AI chat and visual editing, using UI8Kit components and exportable Svelte code.
 
-Copyright **BuildYtech**. Licensed under Apache-2.0 (see `LICENSE`).
+BuildY Chat is a browser-first creator built with Svelte 5 and TypeScript. Browse the Stock catalog, assemble a page,
+edit schema-backed fields in the inspector, and use Ask or Build chat for model assistance. Chats and pages are saved
+in the current browser; a protected server runtime provides optional live Grok access.
 
-This repository is **not** a WordPress runtime. WP Builder lives independently in other products. Do not add WP plugin, nonce, or `wp-json` dependencies here. Product-level three hosts (WordPress builder page, Browser, Desktop Wails3) share one pinned Stock catalog: [ADR-0007](.project/adr/0007-one-buildy-three-hosts.md), [plan](docs/plans/one-buildy-three-hosts.md). Browser first; Wails3 later, same core. Portable WP import is planned, not implemented.
+**In development.** The hosted chat is not ready for public use. Its planned address is `https://chat.buildy.tw`;
+this is not an available demo or a launch announcement.
 
-## Start (Browser npm / Svelte)
+- [BuildY](https://buildy.tw) — project website.
+- [UI8Kit](https://ui.buildy.tw) — available components.
+- [Discussions](https://github.com/buildytech/chat/discussions) — questions, ideas and feedback.
+- [Issues](https://github.com/buildytech/chat/issues/new/choose) — reproducible bugs and concrete proposals.
 
-From the repo root:
+## What works today
+
+- Browse blocks/screens, filter results, start a page and add/reorder sections without a model call.
+- Edit schema-backed fields, undo/redo, and switch between explicit Ask and Build modes.
+- Preview device widths, open a clean preview, inspect generated Svelte source and download a ZIP.
+- Choose a page skin, import a compatible custom theme, and export/import portable browser sessions.
+- Connect the optional protected xAI runtime with a server-side API key.
+
+Catalog availability depends on renderers and schemas. Browser storage belongs to the current browser profile;
+export a session file for a portable copy. Persistence and live inference are separate features.
+
+UI refinement is planned under [ADR 0028](.project/adr/0028-chat-ui-refinement.md) and its
+[plan](docs/plans/chat-ui-refinement.md). Desktop and WordPress hosts are later work under
+[ADR 0007](.project/adr/0007-one-buildy-three-hosts.md); this repository implements the Browser application.
+
+## Run locally
+
+Requires **Node.js 22.x**, npm and Git. From the repository root:
 
 ```sh
-npm install
+git clone https://github.com/buildytech/chat.git
+cd chat
+npm ci
 npm run dev
 ```
 
-Or:
+Open the URL printed by Vite (normally `http://127.0.0.1:5173`). No model key is required to browse the catalog and
+assemble/edit pages locally. Live inference requires the optional runtime.
 
 ```sh
-cd apps/chat-web
-npm install
-npm run dev
+npm run verify          # tests, svelte-check and static build
+npm run registry:check # offline registry snapshot verification
 ```
 
-Open the printed `http://127.0.0.1:5173` URL. Chats and pages persist in **this browser**. The homepage starts Blank. The chat model selector lists five verified Grok text ids; image models are not chat choices. Live Grok uses the protected `/runtime` when `XAI_API_KEY` is set (`apps/xai-runtime`). Protected Vercel staging: root `vercel.json` + Routing Middleware Basic Auth on every path (`docs/deploy-xai.md`). Missing auth env denies; missing `XAI_API_KEY` is a safe 503. No WordPress, no ModulY. See `docs/xai-grok.md`.
+The static SPA is written to `apps/chat-web/build/`. See the [runbook](docs/runbook.md).
+
+### Optional live Grok
+
+Set `XAI_API_KEY` in the server environment, then run:
 
 ```sh
-npm test
-npm run check
-npm run build
+npm run start --workspace=@buildytech/xai-runtime
 ```
 
-`npm run build` writes the static SPA (`apps/chat-web/build/`, `200.html` fallback).
+Vite proxies `/runtime` to `127.0.0.1:18100`. Keep credentials server-side. Non-loopback access requires Basic Auth.
+See [runtime setup](docs/xai-grok.md) and [protected deployment](docs/deploy-xai.md). Provider charges may apply.
 
-## What works now vs planned
+## Project structure
 
-| Now (this repo) | Planned (not this cleanup) |
-| --- | --- |
-| CreatorShell: AppNav / history \| Chat \| Workspace Preview + Code | Browser MVP badges, 12 screens, JSON badges, pagination |
-| Browser ChatCore + localStorage persistence; live Grok via `/runtime` | Direct BYOK (memory-only), local-first project persistence |
-| Page DTO + Catalog/Page/Publish/Preview ports | Host adapters that implement those ports |
-| UI8Kit Svelte primitives, ui8px policy, shadcn tokens | Strict actual-catalog codegen-x shared provider wiring |
-| Protected xAI `/runtime` (optional server key) | Paid/live model as a separate product, deploy, own inference backend |
-| Pinned CodeGen-X Stock snapshot in Browser constructor | Portable versioned export, WP Latte/PHP import adapter, Wails3 same-core desktop, round-trip tests |
+- `apps/chat-web` — browser application, shell and editor.
+- `apps/xai-runtime` — optional protected runtime.
+- `packages/builder-core` — catalog, assembly, edit gates and agent tools.
+- `packages/page-contract` — page and portable-session contracts.
+- `packages/ports` — framework-neutral ports.
+- `registry/svelte` — generated, pinned UI8Kit CLI snapshot; never hand-edited.
 
-Owner product spec (Browser future, **not implemented here**): [Creator canvas](https://cursor.com/canvas/store-c3c60695-fe65-4d0c-9e33-7c3f9fe54177/c9e0656b-1cd7-491e-a8e6-07b73acabed9).
+[Architecture](docs/architecture.md) · [Decisions](.project/adr/README.md) · [Agent instructions](AGENTS.md)
 
-Handoff for the next Browser slice: [docs/browser-handoff.md](docs/browser-handoff.md). Architecture: [docs/architecture.md](docs/architecture.md). Three-host plan: [docs/plans/one-buildy-three-hosts.md](docs/plans/one-buildy-three-hosts.md). Runbook: [docs/runbook.md](docs/runbook.md). Agent notes: [AGENTS.md](AGENTS.md).
+## Participate
 
-## Layout
+We welcome bug reports, testing, UX feedback, documentation suggestions and translation feedback.
+**Pull requests are not accepted at this stage.** Maintainers implement changes after discussion; please do not open
+PRs or send unsolicited patches. This keeps review manageable while the architecture evolves.
 
-| Path | Role |
-| --- | --- |
-| `apps/chat-web` | Runnable SvelteKit SPA |
-| `packages/page-contract` | Framework-neutral Page DTO (`published` is a domain status) |
-| `packages/ports` | CatalogPort / PagePort / PublishPort / PreviewPort |
-| `services/context-serve` | Retired CI placeholder (not a Session HTTP product) |
+Read [Contributing](CONTRIBUTING.md), [Support](SUPPORT.md), and the [Code of Conduct](CODE_OF_CONDUCT.md).
+Report vulnerabilities privately through [our security policy](SECURITY.md).
 
-Figma is layout reference only (`design/fig-ref/ARCH.md`).
+## License
+
+Copyright BuildYtech. Licensed under [Apache-2.0](LICENSE). See [NOTICE](NOTICE) for attribution.
