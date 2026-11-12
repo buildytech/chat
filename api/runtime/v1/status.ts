@@ -32318,6 +32318,7 @@ function addScreenSections(ctx: InspectorOpContext, screenId: string, at?: numbe
 	let slot = Math.max(0, Math.min(at ?? page.layout.blocks.length, page.layout.blocks.length));
 	let last: InspectorSuccess | null = null;
 	const added: string[] = [];
+ let firstFailure: InspectorFailure | null = null;
 	for (const section of sections) {
 		const blocks = page.layout.blocks;
 		const edge = chromeEdge(section.kind);
@@ -32332,6 +32333,7 @@ function addScreenSections(ctx: InspectorOpContext, screenId: string, at?: numbe
 		}
 		const result = inspectorOp({ ...ctx, page }, { op: "add", blockId: "", catalogBlock: section.catalogBlock, variant: section.variant, at: target });
 		if (!result.ok) {
+   firstFailure ??= result;
 			skipped.push(section.catalogBlock);
 			continue;
 		}
@@ -32342,7 +32344,8 @@ function addScreenSections(ctx: InspectorOpContext, screenId: string, at?: numbe
 		if (edge === "top") slot += 1;
 		else if (!edge) slot = target + 1;
 	}
-	if (!last) return { ok: false, code: "nothing_added", message: `No section of ${screenId} fits this page.`, skipped };
+	if (!last && firstFailure) return {ok:false,code:firstFailure.code,message:firstFailure.message,skipped};
+ if (!last) return { ok: false, code: "nothing_added", message: `No section of ${screenId} fits this page.`, skipped };
 	return { ...last, blockId: added[0]!, op: "add", added, skipped };
 }
 

@@ -165,3 +165,18 @@ test("t150u: no cached availability: each card computes its own, the drag carrie
 	assert.doesNotMatch(drag, /AddBlockCheck|let check/, "the drag store keeps the item only");
 	assert.match(web("lib/feed/drop.svelte.ts"), /const check = inspector\.canAdd\(item\.spec, item\.variant\)/, "drop checks at drop time");
 });
+
+ test('food screen: an unavailable props gate is not reported as incompatibility; loading it permits supported sections', async()=>{
+ const {spawnSync}=await import('node:child_process');
+ const core=new URL('../../packages/builder-core/src/index.ts',import.meta.url).href;
+ const gate=new URL('../../packages/builder-core/src/catalog/props-gate.ts',import.meta.url).href;
+ const code=`import assert from 'node:assert/strict';import {emptyPageStart,addScreenSections,screenSections} from ${JSON.stringify(core)};
+ const start=emptyPageStart({screenId:'screen.theme-food-grill/home',title:'New page'});assert(start);
+ const ctx={page:start.page,provenance:start.provenance,revision:0};
+ const unavailable=addScreenSections(ctx,'screen.theme-food-grill/home');assert.equal(unavailable.ok,false);assert.equal(unavailable.code,'props_gate_unavailable');
+ assert.equal(start.page.layout.blocks.length,0);
+ await import(${JSON.stringify(gate)});
+ const loaded=addScreenSections(ctx,'screen.theme-food-grill/home');assert(loaded.ok,JSON.stringify(loaded));assert.equal(loaded.added.length,screenSections('screen.theme-food-grill/home').sections.length);assert(loaded.added.length>0);assert.equal(start.page.layout.blocks.length,0);`;
+ const child=spawnSync(process.execPath,['--experimental-strip-types','--input-type=module','--eval',code],{encoding:'utf8'});
+ assert.equal(child.status,0,child.stderr+child.stdout);
+ });

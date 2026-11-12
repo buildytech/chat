@@ -52,8 +52,8 @@
 		return (event: Event) => feed.setFilter(key, ((event.currentTarget as HTMLSelectElement).value || null) as never);
 	}
 
-	function add(item: StockSearchItem) {
-		const done = inspector.add(item.spec, item.variant);
+	async function add(item: StockSearchItem) {
+		const done = await inspector.add(item.spec, item.variant);
 		const name = (key: string) => t(key).replace("{title}", item.title).replace("{variant}", item.variant);
 		if (done.ok) {
 			canvas.requestReveal(done.blockId);
@@ -67,7 +67,7 @@
 		// A fresh chat when this one already has a page or messages, as Start page does: nothing is overwritten.
 		const session = getSelectedSession();
 		if (!session || session.messages.length || getCurrentPage()) await createSession();
-		const added = inspector.addScreen(screenId);
+		const added = await inspector.addScreen(screenId);
 		if (!added.ok) return added;
 		canvas.requestReveal(added.blockId);
 		return { ok: true };

@@ -24,11 +24,11 @@ export function dropRefusal(at: number): string | null {
 }
 
 /** Drop the dragged card at slot `at`; the result goes to the feed status line. */
-export function dropAt(at: number): boolean {
+export async function dropAt(at: number): Promise<boolean> {
 	const item = feedDrag.item;
 	feedDrag.end();
 	if (!item) return false;
-	const done = item.type === "screen" ? inspector.addScreen(item.id, at) : inspector.add(item.spec, item.variant, at);
+	const done = await (item.type === "screen" ? inspector.addScreen(item.id, at) : inspector.add(item.spec, item.variant, at));
 	const name = (key: string) => t(key).replace("{title}", item.title).replace("{variant}", item.variant).replace("{position}", String(at + 1));
 	if (done.ok) {
 		canvas.requestReveal(done.blockId);

@@ -20,7 +20,7 @@ import {
 } from "@buildytech/builder-core";
 import type { StoredPageProvenance } from "../browser/persist";
 import { parseDraftPage, type Page } from "@buildytech/page-contract";
-import { getChatMode, startEmptyPageInChat } from "../chat-core";
+import { getChatMode, loadPropsGate, startEmptyPageInChat } from "../chat-core";
 import { getBoundPageSessionId, getCurrentPage, getCurrentProvenance, getPageRevision, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
 import { commitChange } from "../page-store/revision";
 import type { FieldIssue } from "./fields";
@@ -197,7 +197,10 @@ export const inspector = {
 	 * Blocks feed "+" (or a drop at slot `at`): the Stock block variant after the selected section, or at the end, as one inspector operation
 	 * (every gate, one undo step, no model call). The new section becomes the selection.
 	 */
-	add(catalogBlock: string, variant: string | null, at?: number): { ok: true; blockId: string } | { ok: false; code: string; message: string } {
+	async add(catalogBlock: string, variant: string | null, at?: number): Promise<{ ok: true; blockId: string } | { ok: false; code: string; message: string }> {
+  const bound = getBoundPageSessionId();
+  try { await loadPropsGate(); } catch { return {ok:false,code:'props_gate_unavailable',message:'Validation could not load. Retry adding the block or screen.'}; }
+  if (bound !== getBoundPageSessionId()) return {ok:false,code:'page_changed',message:'The selected chat changed while validation loaded. Retry in this chat.'};
 		// Empty start: no page yet (or an empty one with no screen). The chat gets an empty page on the start screen
 		// first, with no history step, so the section below is the one undo step (undo goes back to the empty page).
 		const check = inspector.canAdd(catalogBlock, variant);
@@ -221,7 +224,10 @@ export const inspector = {
 	 * A Stock screen dropped into the page or started from (t150u): its renderable sections at slot `at` (default:
 	 * the end), hard rules only, one undo step. With no page yet the chat first gets an empty page on that screen.
 	 */
-	addScreen(screenId: string, at?: number): { ok: true; blockId: string; added: number; skipped: string[] } | { ok: false; code: string; message: string } {
+	async addScreen(screenId: string, at?: number): Promise<{ ok: true; blockId: string; added: number; skipped: string[] } | { ok: false; code: string; message: string }> {
+  const bound = getBoundPageSessionId();
+  try { await loadPropsGate(); } catch { return {ok:false,code:'props_gate_unavailable',message:'Validation could not load. Retry adding the block or screen.'}; }
+  if (bound !== getBoundPageSessionId()) return {ok:false,code:'page_changed',message:'The selected chat changed while validation loaded. Retry in this chat.'};
 		let page = getCurrentPage();
 		if (!page || (page.layout.blocks.length === 0 && !getCurrentProvenance()?.screenId)) {
 			if (!startEmptyPageInChat(screenId)) return { ok: false, code: "not_started", message: "The empty page could not be started." };

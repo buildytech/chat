@@ -162,7 +162,7 @@
 		if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
 	}
 
-	function onFeedDrop(event: DragEvent) {
+	async function onFeedDrop(event: DragEvent) {
 		event.preventDefault();
 		const target = feedTarget;
 		const item = feedDrag.item;
@@ -173,7 +173,7 @@
 			announcement = feedDrag.status?.text ?? "";
 			return;
 		}
-		dropAt(target.slot);
+		await dropAt(target.slot);
 		announcement = feedDrag.status?.text ?? "";
 		issue = feedDrag.status?.ok === false ? feedDrag.status.text : null;
 	}
