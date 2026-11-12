@@ -1,5 +1,8 @@
 <script lang="ts">
-	import ArrowUp from "@lucide/svelte/icons/arrow-up";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte";
+ import { blockScope } from "$lib/chat-core/block-scope.svelte";
+ import { getSelectedSession } from "$lib/chat-core";
+ import ArrowUp from "@lucide/svelte/icons/arrow-up";
 	import X from "@lucide/svelte/icons/x";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -145,6 +148,17 @@
 >
 	<Form class="relative flex flex-col gap-2" onsubmit={submit} onkeydown={onKeydown}>
 		<CollectionChips />
+ {#if blockScope.ids(getSelectedSession()?.id).length}
+ <Stack class="gap-1" data-slot="chat-block-scope">
+ <Text tag="p" class="text-xs text-muted-foreground">{t("scope.only")}</Text>
+ <Group class="flex-wrap gap-1">
+ {#each blockScope.ids(getSelectedSession()?.id) as id}
+ <Button size="sm" variant="ghost" title={t("scope.remove")} onclick={() => { const session = getSelectedSession(); if(session) blockScope.toggle(session.id,id); }}>{id} ×</Button>
+ {/each}
+ <Button size="sm" variant="ghost" onclick={() => { const session = getSelectedSession(); if(session) blockScope.clear(session.id); }}>{t("scope.clear")}</Button>
+ </Group>
+ </Stack>
+ {/if}
 		<Stack align="stretch" class="gap-2 rounded border border-input bg-card p-2" data-slot="composer-surface">
 			<Label for="composer" class="sr-only">{t("composer.label")}</Label>
 			<Textarea
@@ -276,7 +290,8 @@
 				<Text tag="p" class="px-2 text-xs text-muted-foreground">{t("composer.modelTrialHint")}</Text>
 			</Stack>
 		{/if}
-		<Disclosure class="group px-2" data-slot="composer-details">
+		{#if !previewSettings.hideServiceLabels}
+ <Disclosure class="group px-2" data-slot="composer-details">
 			<Summary class="w-fit gap-2 rounded py-1 text-xs text-muted-foreground">{t("composer.details")}</Summary>
 			<Stack align="stretch" class="gap-2 py-2">
 				{#if selected}<Text tag="p" class="break-all font-mono text-xs text-muted-foreground">{selected.id}</Text>{/if}
@@ -295,6 +310,7 @@
 				{#if runtimeLabel}<Text tag="p" class="text-xs text-muted-foreground">{runtimeLabel}</Text>{/if}
 			</Stack>
 		</Disclosure>
+ {/if}
 		{#if runtimeStatus?.error}<Text tag="p" class="px-2 text-xs text-destructive" role="status"
 				>{runtimeStatus.error}</Text
 			>{/if}

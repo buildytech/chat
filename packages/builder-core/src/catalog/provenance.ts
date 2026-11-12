@@ -368,7 +368,7 @@ export function validateCatalogProvenance(input: {
 		const path = `layout.blocks[${index}]`;
 		// ADR 0027: the screen family is advisory; a kind outside it is sourced from the first family that has it.
 		const found = kindSourceFor(screen, node.kind);
-		const label = found?.label ?? null;
+		const label = node.catalogBlock?.replace(/^block\./, "") ?? found?.label ?? null;
 		if (!found || !label) {
 			return {
 				ok: false,
@@ -387,7 +387,8 @@ export function validateCatalogProvenance(input: {
 				path
 			};
 		}
-		const entry = getBlockIndex(label)!;
+		const entry = getBlockIndex(label);
+ if (!entry) return { ok: false, code: "catalog_block_unknown", message: `Unknown catalog block ${label}.`, path };
 		if (node.variant && !node.catalogBlock) {
 			return {
 				ok: false,

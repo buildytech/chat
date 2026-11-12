@@ -474,10 +474,10 @@ test("replace op: another catalog block of the same kind, checked on the page an
 	assert.equal(badVariant!.issue?.code, "unknown_variant");
 	assert.deepEqual(badVariant!.issue?.allowed, ["overlay", "overlayStart", "backdrop", "muted"]);
 	assert.equal(otherRole!.issue?.code, "catalog_block_kind_mismatch");
-	assert.ok(otherRole!.issue?.allowed?.includes("block.storehero"));
-	assert.ok(!otherRole!.issue?.allowed?.includes("block.hero"), "the block's own catalog block is not offered");
-	assert.equal(same!.issue?.code, "no_change");
-	assert.equal(isPlanNoop(same!), true);
+	assert.ok(otherRole!.issue?.allowed?.includes("block.hero"));
+	assert.ok(!otherRole!.issue?.allowed?.includes("block.storehero"), "the current block after the preceding swap is not offered");
+	assert.equal(same!.valid, true, "the preceding swap means replacing back with the original is a real change");
+	assert.equal(isPlanNoop(same!), false);
 	assert.equal(otherKind!.issue?.code, "catalog_block_kind_mismatch");
 	const payload = compactPlanPayload(plan) as { dropped?: Array<{ id: string; fields: string[] }> };
 	assert.deepEqual(payload.dropped, [{ id: swap!.id, fields: ["eyebrow"] }]);
@@ -559,3 +559,41 @@ test("edit_page replace with catalogBlock (page-patch/v1, additive) keeps the bl
 	assert.equal(bad.ok, false);
 	assert.equal((bad as { code: string }).code, "catalog_block_kind_mismatch");
 });
+
+ test('explicit block scope rejects page-wide changes and other IDs in both Ask and Build', () => {
+ const page = ownerPage(); const scopeBlockIds = ['block-hero'];
+ const host = { currentPage: page, currentProvenance: provenance, scopeBlockIds, mode: 'build' as const };
+ const good = executeTool({ name: 'edit_page', arguments: { ops: [{op:'set',blockId:'block-hero',field:'headline',value:'Scoped headline'}] } },host);
+ assert.equal(good.ok,true,JSON.stringify(good));
+ for (const op of [{op:'set',blockId:'block-logos',field:'title',value:'Changed'}, {op:'set_page',field:'title',value:'Changed'}, {op:'move',blockId:'block-hero',to:0}]) {
+ const bad=executeTool({name:'edit_page',arguments:{ops:[op]}},host);assert.equal(bad.ok,false);if(!bad.ok)assert.equal(bad.code,'outside_scope');
+ }
+ const fresh=executeTool({name:'propose_layout',arguments:{screenId:OWNER_SCREEN,newPage:true}},host);assert.equal(fresh.ok,false);
+ const plan=checkPagePlan({page,provenance,revision:1,scopeBlockIds,raw:{ops:[{op:'set',blockId:'block-logos',field:'title',value:'Wrong block'}]}})!;
+ assert.equal(plan.ops[0]!.issue?.code,'outside_scope');assert.equal(compactPlanPayload(plan).ok,false);
+ });
+ test('plan enum correction and sequential checks need no provider request', () => {
+ const page=swapPage();
+ const raw={ops:[{op:'replace',blockId:'block-hero',catalogBlock:'block.storehero',variant:'invented'},{op:'set_variant',blockId:'block-hero',variant:'overlayStart'}]};
+ const invalid=checkPagePlan({page,provenance,revision:1,raw})!;
+ assert.equal(invalid.ops[0]!.issue?.code,'unknown_variant');assert.equal(compactPlanPayload(invalid).state,'needs_repair');
+ const repaired=checkPagePlan({page,provenance,revision:1,raw:{ops:raw.ops.map((op,i)=>i===0?{...op,variant:'overlay'}:op)}})!;
+ assert.equal(repaired.ops.every(op=>op.valid),true,JSON.stringify(repaired));
+ const execution=executePagePlan({page,provenance,revision:1,plan:repaired,selected:repaired.ops.map(op=>op.id)});
+ assert.equal(execution.proposal?.ok,true,JSON.stringify(execution));
+ const block=(execution.proposal as LayoutProposal).page.layout.blocks.find(block=>block.id==='block-hero')!;
+ assert.equal(block.catalogBlock,'block.storehero');assert.equal(block.variant,'overlayStart');
+ const ref=(execution.proposal as LayoutProposal).catalogRefs.blocks.find(ref=>ref.blockId==='block-hero')!;
+ assert.equal(ref.catalogId,'block.storehero');assert.equal(ref.registryItem,'store-hero');
+ });
+
+ test('scope survives request parsing and reaches the Ask runtime gate', async () => {
+ const page=ownerPage(); const mapped=mapChatRunRequest({modelId:MODEL,brief:'Improve selected block',currentPage:page,scopeBlockIds:['block-hero','block-hero'],mode:'ask'}, {allowUnlistedTrial:true});
+ assert.equal(mapped.ok,true); if(!mapped.ok)return;
+ assert.deepEqual(mapped.request.scopeBlockIds,['block-hero']);
+ await withProvider([{calls:[{name:'propose_plan',arguments:{ops:[{op:'set',blockId:'block-logos',field:'title',value:'Outside scope'}]}}]},{content:'Plan needs repair.'}],async requests=>{
+ const reply=await runXaiCatalogTurn('test',MODEL,{brief:'Improve selected block',mode:'ask',currentPage:page,currentProvenance:provenance,expectedRevision:1,scopeBlockIds:['block-hero']},new AbortController().signal);
+ assert.equal(isAgentTextReply(reply.proposal),true); if(isAgentTextReply(reply.proposal))assert.equal(reply.proposal.plan?.ops[0]?.issue?.code,'outside_scope');
+ assert.match(String((requests[0]!.messages as Array<{content:string}>)[1]!.content),/scopeBlockIds/);
+ });
+ });

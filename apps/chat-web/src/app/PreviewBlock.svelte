@@ -6,7 +6,10 @@
   generated viewMap (ADR 0021) and focuses it in the inspector; the block DOM itself gets no attribute.
 -->
 <script lang="ts">
-	import type { Component } from "svelte";
+	import Button from "$registry/kit/ui/button/Button.svelte";
+ import { blockScope } from "$lib/chat-core/block-scope.svelte";
+ import { getSelectedSession } from "$lib/chat-core";
+ import type { Component } from "svelte";
 	import Alert from "$registry/compose/Alert.svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -73,6 +76,10 @@
 				{t("preview.notInRegistry")}
 			{/if}
 		</Text>
+ <Text tag="span" class="text-xs text-muted-foreground">{block.id}</Text>
+ <Button size="sm" variant="ghost" aria-pressed={blockScope.ids(getSelectedSession()?.id).includes(block.id)} onclick={(event: MouseEvent) => { event.stopPropagation(); const session = getSelectedSession(); if (session) blockScope.toggle(session.id, block.id); }}>
+ {t(blockScope.ids(getSelectedSession()?.id).includes(block.id) ? "scope.remove" : "scope.add")}
+ </Button>
 	</Group>
 	{/if}
 	{#if render && load}

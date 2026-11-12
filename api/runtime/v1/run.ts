@@ -28125,7 +28125,7 @@ function validateCatalogProvenance(input: {
 		const path = `layout.blocks[${index}]`;
 		// ADR 0027: the screen family is advisory; a kind outside it is sourced from the first family that has it.
 		const found = kindSourceFor(screen, node.kind);
-		const label = found?.label ?? null;
+		const label = node.catalogBlock?.replace(/^block\./, "") ?? found?.label ?? null;
 		if (!found || !label) {
 			return {
 				ok: false,
@@ -28144,7 +28144,8 @@ function validateCatalogProvenance(input: {
 				path
 			};
 		}
-		const entry = getBlockIndex(label)!;
+		const entry = getBlockIndex(label);
+ if (!entry) return { ok: false, code: "catalog_block_unknown", message: `Unknown catalog block ${label}.`, path };
 		if (node.variant && !node.catalogBlock) {
 			return {
 				ok: false,
@@ -31342,6 +31343,12 @@ function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposalError {
 		return fail("revision_conflict", "The page changed since this patch was made. Read currentPage again.", "$.baseRevision");
 	}
 	const base = ctx.page;
+ if (ctx.scopeBlockIds?.length) {
+  const allowed = new Set(ctx.scopeBlockIds);
+  const scopedOps = (patch as { ops: Array<Record<string, unknown>> }).ops;
+  const bad = scopedOps.findIndex(op => !['set','set_variant','set_items','replace','remove'].includes(String(op.op)) || typeof op.blockId !== 'string' || !allowed.has(op.blockId));
+  if (bad >= 0) return fail('outside_scope', 'Only the explicitly selected block IDs may change. Clear the block scope to edit the whole page.', '$.ops[' + bad + ']');
+ }
 	const screenId = ctx.provenance?.screenId ?? null;
 	const screen = screenId ? getScreenById(screenId) : null;
 	const scenarioId = ctx.provenance?.scenarioId ?? null;
@@ -32757,11 +32764,12 @@ function rawOp(raw: unknown, page: Page, index: number): PagePlanOp {
 	return op;
 }
 
-type Base = { page: Page; provenance?: Provenance; revision: number; sessionDemoData?: boolean; now?: string };
+type Base = { page: Page; provenance?: Provenance; revision: number; sessionDemoData?: boolean; scopeBlockIds?: string[]; now?: string };
 
 function runOps(base: Base, ops: Array<Record<string, unknown>>): LayoutProposal | LayoutProposalError {
 	return editPage({
 		page: base.page,
+		scopeBlockIds: base.scopeBlockIds,
 		provenance: base.provenance,
 		patch: normalizePatch({ baseRevision: base.revision, ops }),
 		expectedRevision: base.revision,
@@ -32793,18 +32801,19 @@ function checkPagePlan(input: Base & { raw: unknown }): PagePlan | null {
 	const rec = input.raw && typeof input.raw === "object" && !Array.isArray(input.raw) ? (input.raw as Record<string, unknown>) : null;
 	const list = Array.isArray(rec?.ops) ? rec!.ops.slice(0, PLAN_LIMITS.maxOps) : [];
 	if (!list.length) return null;
+	let working = input.page;
 	const ops = list.map((raw, index) => {
-		const op = rawOp(raw, input.page, index);
+		const op = rawOp(raw, working, index);
 		if (op.issue) return op;
-		const target = op.blockId ? input.page.layout.blocks.find((node) => node.id === op.blockId) : undefined;
+		const target = op.blockId ? working.layout.blocks.find((node) => node.id === op.blockId) : undefined;
 		if (op.op === "set_variant" && target && op.variant && target.variant === op.variant) {
 			return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
 		}
-		const result = runOps(input, [patchOp(op)]);
-		if (result.ok && unchanged(input.page, result.page)) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
-		if (result.ok) return { ...op, valid: true, ...swapDropped(op, target) };
+		const result = runOps({ ...input, page: working }, [patchOp(op)]);
+		if (result.ok && unchanged(working, result.page)) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
+		if (result.ok) { working = result.page; return { ...op, valid: true, ...swapDropped(op, target) }; }
 		if (result.code === PLAN_NOOP) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
-		const allowed = allowedFor(op, input.page, result.code);
+		const allowed = allowedFor(op, working, result.code);
 		return { ...op, issue: { code: result.code, message: result.message.slice(0, 600), ...(allowed ? { allowed } : {}) } };
 	});
 	const summary = str(rec?.summary, PLAN_LIMITS.maxSummary);
@@ -32822,7 +32831,8 @@ function swapDropped(op: PagePlanOp, target: PageBlock | undefined): { dropped?:
 function compactPlanPayload(plan: PagePlan | null): Record<string, unknown> {
 	if (!plan) return { ok: false, code: "plan_empty", message: "propose_plan needs ops on currentPage block ids." };
 	return {
-		ok: true,
+		ok: !planHasInvalid(plan),
+		state: planHasInvalid(plan) ? "needs_repair" : plan.ops.some(op => op.valid) ? "ready" : "unchanged",
 		valid: plan.ops.filter((op) => op.valid).map((op) => op.id),
 		...(plan.ops.some((op) => op.dropped?.length)
 			? { dropped: plan.ops.filter((op) => op.dropped?.length).map((op) => ({ id: op.id, fields: op.dropped })) }
@@ -33596,6 +33606,7 @@ function executeTool(
 		}
 		const plan = checkPagePlan({
 			page: host.currentPage,
+			scopeBlockIds: host.scopeBlockIds,
 			provenance: host.currentProvenance,
 			revision: host.expectedRevision ?? 0,
 			sessionDemoData: Boolean(host.sessionDemoData),
@@ -33626,6 +33637,7 @@ function executeTool(
 				})
 			: args.ops;
 		const result = editPage({
+ scopeBlockIds: host.scopeBlockIds,
 			page: host.currentPage,
 			provenance: host.currentProvenance,
 			patch: normalizePatch({ ops, baseRevision: args.baseRevision }),
@@ -33642,6 +33654,7 @@ function executeTool(
 		return { ok: true, name: call.name, result };
 	}
 	if (call.name === "propose_layout") {
+ if (host?.scopeBlockIds?.length) return { ok: false, code: "outside_scope", message: "Selected blocks only: use edit_page on scopeBlockIds, not propose_layout." };
 		if (args.layout != null) {
 			return {
 				ok: false,
@@ -33857,6 +33870,7 @@ function repairIcons(args: Record<string, unknown>, code: string): { args: Recor
 function runConstructorTools(ctx: ProposalContext): LayoutProposal | LayoutProposalError {
 	const scenarioId = ctx.scenarioId;
 	const host = {
+ scopeBlockIds: ctx.scopeBlockIds,
 		currentPage: ctx.currentPage,
 		currentProvenance: ctx.currentProvenance,
 		authorBrief: ctx.authorBrief ?? ctx.brief,
@@ -34382,6 +34396,7 @@ function mapChatRunRequest(
 		mode?: unknown;
 		collection?: unknown;
 		manualEdits?: unknown;
+ scopeBlockIds?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -34420,7 +34435,8 @@ function mapChatRunRequest(
 			sessionDemoData: body.sessionDemoData === true,
 			mode: isAgentMode(body.mode) ? body.mode : "build",
 			collection: collectionBounds(body.collection),
-			manualEdits: parseManualEdits(body.manualEdits)
+			scopeBlockIds: Array.isArray(body.scopeBlockIds) ? [...new Set(body.scopeBlockIds.filter((id): id is string => typeof id === "string"))].slice(0, 100) : undefined,
+ manualEdits: parseManualEdits(body.manualEdits)
 		}
 	};
 }
@@ -35359,6 +35375,7 @@ const SYSTEM = [
 	"propose_layout typed intent (you set these from the author's words, in any language): locale (required, BCP 47 of the author's language); demoData (true only when the author explicitly asked for demo, fake, sample, mock or test data; false when they asked to drop it or use real data; omit otherwise); requireBlocks (catalog block labels the author explicitly asked for, e.g. a sidebar, side navigation or app shell = sidenav, a footer = footer); remove (follow-ups: kinds the author asked to remove); newPage (true only when the author asked for a new page while currentPage exists).",
 	"propose_layout assembles from the pinned Stock catalog and adds required blocks only from Stock screens that contain them (it may switch to a sibling that has them and says so in warnings). It never accepts a caller layout.",
 	"If propose_layout returns screen_not_renderable or scenario_screen_mismatch, call it once more with a suggestedScreenId. Do not retry the same screenId.",
+	"scopeBlockIds, when nonempty, is a hard edit boundary: use edit_page only on these IDs. No new page or other blocks.",
 	"If currentPage is present, edit it with edit_page (no search): page-patch/v1 ops on currentPage block ids, writing only the slots listed on each block (slots.copy, slots.rows). set changes one slot (null removes a copy key); set_items replaces all rows of a list block (send the full new list, existing rows are in rows); add / replace name a Stock kind of the page's screen family with title and copy in the page language; remove; move; set_page. Everything you do not touch stays exactly as it is. Never remove anything the author did not ask to remove. Use propose_layout on a current page only when the author asks for a new page (newPage=true) or a different Stock screen.",
 	"Always pass propose_layout.blocks with one entry per block kind of the picked screen (pick.mappedKinds plus sidenav and bottomnav on dashboards): a visible title (page language) and a lede, nav brand plus 3-5 items naming the page sections, sidenav title, brand and 3-7 items, bottomnav 3-5 short items. Keep copy about the author's topic. Kinds the screen does not contain are not rendered; never invent blocks.",
 	"Only when demoData is true: fill overview, metrics, chart and activity items with plausible rows about the request (metrics: label + value + note; chart: 5-8 points label + numeric value; activity: 4-6 events label + detail + note) and set demoLabel in the page language. Otherwise leave data items empty and do not invent figures, reviews, prices or contacts.",
@@ -35487,7 +35504,8 @@ function intakePrompt(ctx: ProposalContext, draft: CollectionDraft): string {
 	const bounds = ctx.collection!;
 	const hints = draft.stock ? placeholderHints(draft.stock) : {};
 	return JSON.stringify({
-		brief: ctx.brief,
+		scopeBlockIds: ctx.scopeBlockIds,
+ brief: ctx.brief,
 		expectedRevision: ctx.expectedRevision,
 		...(ctx.pageId ? { pageId: ctx.pageId } : {}),
 		collection: { title: bounds.title, ...(bounds.notes.length ? { notes: bounds.notes } : {}) },
@@ -35513,6 +35531,7 @@ const SYSTEM_ASK = [
 	"You are the BuildY catalog assistant in Ask mode.",
 	`Policy ${POLICY_VERSION}.`,
 	"Ask mode is read-only: you cannot change the page and nothing you say creates a proposal. Never claim that the page changed.",
+	"scopeBlockIds, when nonempty, is a hard edit boundary chosen by the author. Recommend edits only to these IDs; never expand the scope. An invalid plan is not ready to apply.",
 	"currentPage is the page as the author sees it now (block ids, catalog blocks, variants, headings); manualEdits lists blocks the author edited by hand since the last agent turn. Audit that page, not an earlier one.",
 	"When you recommend concrete changes to currentPage (variants, copy, rows, order, adding or removing blocks), call propose_plan once with them as ops on currentPage block ids before your text answer, then answer in text. The author ticks the ops on a plan card and runs them with Apply in Build. Fix ops propose_plan reports invalid once, with the allowed values. Another catalog block in place of a block (same kind, e.g. block.hero -> block.storehero) is a replace op with catalogBlock; call get_block for it first. Visible text is set with set: when a block's copyKeys include headline, its visible heading is headline (title only names it in the section list); otherwise title is its heading; ledes and actions are copyKeys.",
 	"Answer the author's message in their language as concise Markdown: short paragraphs, - lists or 1. lists, **bold**, `code`. No HTML, no tables, no images.",
@@ -35579,6 +35598,7 @@ function userPrompt(ctx: ProposalContext): string {
 	const current = ctx.currentPage;
 	const seed = scenarioCatalogContext(ctx.scenarioId);
 	return JSON.stringify({
+		scopeBlockIds: ctx.scopeBlockIds,
 		brief: ctx.brief,
 		scenarioId: ctx.scenarioId,
 		screenId: ctx.screenId,
@@ -35644,7 +35664,8 @@ function newRunId(): string {
 
 function toolHost(ctx: ProposalContext) {
 	return {
-		currentPage: ctx.currentPage,
+		scopeBlockIds: ctx.scopeBlockIds,
+ currentPage: ctx.currentPage,
 		currentProvenance: ctx.currentProvenance,
 		scenarioId: ctx.scenarioId,
 		liveTurn: true as const,
@@ -36139,7 +36160,8 @@ function askPrompt(ctx: ProposalContext): string {
 	const current = ctx.currentPage;
 	const sources = modelCatalogSources() as { blocks: Record<string, { kind: string; variants: Record<string, string> }> };
 	return JSON.stringify({
-		message: ctx.brief,
+		scopeBlockIds: ctx.scopeBlockIds,
+ message: ctx.brief,
 		currentPage: current
 			? {
 					title: current.title,
@@ -36188,6 +36210,7 @@ async function askToolLoop(
 		scenarioId: ctx.scenarioId,
 		liveTurn: true as const,
 		mode: "ask" as const,
+ scopeBlockIds: ctx.scopeBlockIds,
 		currentPage: ctx.currentPage,
 		currentProvenance: ctx.currentProvenance,
 		expectedRevision: ctx.expectedRevision,
@@ -36658,7 +36681,8 @@ async function handleRuntimeFetch(
 						liveTurn: true,
 						mode: mapped.request.mode,
 						collection: mapped.request.collection,
-						manualEdits: mapped.request.manualEdits
+						scopeBlockIds: mapped.request.scopeBlockIds,
+ manualEdits: mapped.request.manualEdits
 					},
 					signal
 				);

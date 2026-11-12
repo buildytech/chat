@@ -1,3 +1,4 @@
+import { blockScope } from "./block-scope.svelte";
 import {
 	readSessionQuery,
 	resolveSessionSelection,
@@ -530,7 +531,8 @@ function constructorContext(
 	// The chat's Stock collection bounds Build turns (the runtime re-checks the items against its own snapshot).
 	const request = mode === "build" ? collectionRequest(getSelectedSession()?.collection) : null;
 	return {
-		collectionRequest: request,
+		scopeBlockIds: blockScope.ids(getSelectedSession()?.id),
+ collectionRequest: request,
 		collection: collectionBounds(request),
 		brief,
 		mode,
@@ -617,8 +619,15 @@ async function runConstructor(brief: string, mode: AgentMode, signal: AbortSigna
 		};
 	}
 	if (status.ready) {
-		const live = await runXaiProposal({ ...ctx, modelId: mapped.request.modelId }, signal);
-		const usage =
+		let live = await runXaiProposal({ ...ctx, modelId: mapped.request.modelId }, signal);
+		if (live.ok && 'page' in live && ctx.scopeBlockIds?.length && ctx.currentPage) {
+ const page = live.page as import('@buildytech/page-contract').Page;
+ const allowed = new Set(ctx.scopeBlockIds);
+ const outside = ctx.currentPage.layout.blocks.filter(block => !allowed.has(block.id));
+ const bad = outside.some(block => JSON.stringify(block) !== JSON.stringify(page.layout.blocks.find(next => next.id === block.id))) || page.layout.blocks.some(block => !ctx.currentPage!.layout.blocks.some(old => old.id === block.id)) || ['title','slug','locale','seo'].some(key => JSON.stringify((page as unknown as Record<string,unknown>)[key]) !== JSON.stringify((ctx.currentPage as unknown as Record<string,unknown>)[key]));
+ if (bad) live = { ...live, ok: false, code: 'outside_scope', message: 'Proposal changed content outside the selected block IDs. Nothing applied.' };
+ }
+ const usage =
 			live.usage ??
 			unknownUsage(live.ok === false && (live.code === "aborted" || signal.aborted) ? "cancelled" : "error", 0);
 		return {
@@ -714,6 +723,7 @@ function checkedPlan(raw: unknown) {
 		provenance: baseProvenance(base.provenance ?? getAppliedProvenance()),
 		revision: getPageRevision() ?? 0,
 		sessionDemoData: sessionDemoFromProposals(),
+ scopeBlockIds: blockScope.ids(getSelectedSession()?.id),
 		raw
 	});
 }
@@ -998,6 +1008,7 @@ export function applyVariantFromAsk(spec: string, variant: string): boolean {
 	lastSessionDemo = sessionDemoData;
 	const provenance = base?.provenance ?? null;
 	const result = variantProposal({
+ scopeBlockIds: blockScope.ids(session.id),
 		page: base?.page,
 		provenance: provenance
 			? { screenId: recordedScreenId(provenance.screenId), scenarioId: isScenarioId(provenance.scenarioId) ? provenance.scenarioId : null, missing: provenance.missing }
@@ -1037,10 +1048,24 @@ export function applyVariantFromAsk(spec: string, variant: string): boolean {
  * through the page-patch gates, in order, without a model call. Ops that no longer apply are said with their reason;
  * the others make one pending proposal the author applies. The plan keeps each op's result.
  */
+/** Fix a catalog enum locally and recheck the entire sequence on the visible page. */
+export function repairPlanVariant(messageId: string, opId: string, variant: string): boolean {
+ const session = getSelectedSession();
+ const source = session?.messages.find(message => message.id === messageId);
+ if (!session || source?.plan?.status !== 'proposed') return false;
+ const op = source.plan.ops.find(op => op.id === opId);
+ if (op?.issue?.code !== 'unknown_variant' || !op.issue.allowed?.includes(variant)) return false;
+ const plan = checkedPlan({ ...source.plan, summary: undefined, ops: source.plan.ops.map(row => row.id === opId ? { ...row, variant, reason: undefined } : row) });
+ if (!plan) return false;
+ replaceSession({ ...session, messages: session.messages.map(message => message.id === messageId ? { ...message, plan } : message), updatedAt: nowIso() });
+ saveMock(memory);
+ return true;
+}
+
 export function applyPlanInBuild(messageId: string, selected: readonly string[]): boolean {
 	const session = getSelectedSession();
 	const source = session?.messages.find((message) => message.id === messageId);
-	if (!session || !source?.plan || !selected.length) return false;
+	if (!session || !source?.plan || !selected.length || source.plan.status !== "proposed" || source.plan.ops.some(op => !op.valid && op.issue?.code !== "no_change")) return false;
 	setChatMode("build");
 	const request: ChatMessage = {
 		id: uid("msg"),
@@ -1061,7 +1086,8 @@ export function applyPlanInBuild(messageId: string, selected: readonly string[])
 	const exec = executePagePlan({
 		page: base.page,
 		provenance: baseProvenance(base.provenance ?? getAppliedProvenance()),
-		plan: source.plan,
+		scopeBlockIds: blockScope.ids(session.id),
+ plan: source.plan,
 		selected,
 		revision: getPageRevision() ?? 0,
 		sessionDemoData: sessionDemoFromProposals(),

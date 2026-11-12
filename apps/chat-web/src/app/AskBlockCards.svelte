@@ -1,5 +1,6 @@
 <script lang="ts">
-	import ExternalLink from "@lucide/svelte/icons/external-link";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte";
+ import ExternalLink from "@lucide/svelte/icons/external-link";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
@@ -40,13 +41,15 @@
 								<Icon size="sm"><ExternalLink /></Icon>
 							</Link>
 						</Group>
-						<Text tag="p" class="font-mono text-xs break-all text-muted-foreground">
+						{#if !previewSettings.hideServiceLabels}
+ <Text tag="p" class="font-mono text-xs break-all text-muted-foreground">
 							{t("ask.cardMeta")
 								.replace("{spec}", card.spec)
 								.replace("{item}", card.registryItem ?? t("ask.noRegistryItem"))
 								.replace("{n}", String(card.variants.length))}
 						</Text>
-						<Text tag="p" class="text-xs text-muted-foreground">{t("ask.applyHint")}</Text>
+						{/if}
+ <Text tag="p" class="text-xs text-muted-foreground">{t("ask.applyHint")}</Text>
 						<Group class="flex-wrap gap-2">
 							{#each card.variants as variant (variant)}
 								<Button

@@ -195,11 +195,12 @@ function rawOp(raw: unknown, page: Page, index: number): PagePlanOp {
 	return op;
 }
 
-type Base = { page: Page; provenance?: Provenance; revision: number; sessionDemoData?: boolean; now?: string };
+type Base = { page: Page; provenance?: Provenance; revision: number; sessionDemoData?: boolean; scopeBlockIds?: readonly string[]; now?: string };
 
 function runOps(base: Base, ops: Array<Record<string, unknown>>): LayoutProposal | LayoutProposalError {
 	return editPage({
 		page: base.page,
+		scopeBlockIds: base.scopeBlockIds,
 		provenance: base.provenance,
 		patch: normalizePatch({ baseRevision: base.revision, ops }),
 		expectedRevision: base.revision,
@@ -231,18 +232,19 @@ export function checkPagePlan(input: Base & { raw: unknown }): PagePlan | null {
 	const rec = input.raw && typeof input.raw === "object" && !Array.isArray(input.raw) ? (input.raw as Record<string, unknown>) : null;
 	const list = Array.isArray(rec?.ops) ? rec!.ops.slice(0, PLAN_LIMITS.maxOps) : [];
 	if (!list.length) return null;
+	let working = input.page;
 	const ops = list.map((raw, index) => {
-		const op = rawOp(raw, input.page, index);
+		const op = rawOp(raw, working, index);
 		if (op.issue) return op;
-		const target = op.blockId ? input.page.layout.blocks.find((node) => node.id === op.blockId) : undefined;
+		const target = op.blockId ? working.layout.blocks.find((node) => node.id === op.blockId) : undefined;
 		if (op.op === "set_variant" && target && op.variant && target.variant === op.variant) {
 			return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
 		}
-		const result = runOps(input, [patchOp(op)]);
-		if (result.ok && unchanged(input.page, result.page)) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
-		if (result.ok) return { ...op, valid: true, ...swapDropped(op, target) };
+		const result = runOps({ ...input, page: working }, [patchOp(op)]);
+		if (result.ok && unchanged(working, result.page)) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
+		if (result.ok) { working = result.page; return { ...op, valid: true, ...swapDropped(op, target) }; }
 		if (result.code === PLAN_NOOP) return { ...op, issue: { code: PLAN_NOOP, message: noopMessage(op) } };
-		const allowed = allowedFor(op, input.page, result.code);
+		const allowed = allowedFor(op, working, result.code);
 		return { ...op, issue: { code: result.code, message: result.message.slice(0, 600), ...(allowed ? { allowed } : {}) } };
 	});
 	const summary = str(rec?.summary, PLAN_LIMITS.maxSummary);
@@ -260,7 +262,8 @@ function swapDropped(op: PagePlanOp, target: PageBlock | undefined): { dropped?:
 export function compactPlanPayload(plan: PagePlan | null): Record<string, unknown> {
 	if (!plan) return { ok: false, code: "plan_empty", message: "propose_plan needs ops on currentPage block ids." };
 	return {
-		ok: true,
+		ok: !planHasInvalid(plan),
+		state: planHasInvalid(plan) ? "needs_repair" : plan.ops.some(op => op.valid) ? "ready" : "unchanged",
 		valid: plan.ops.filter((op) => op.valid).map((op) => op.id),
 		...(plan.ops.some((op) => op.dropped?.length)
 			? { dropped: plan.ops.filter((op) => op.dropped?.length).map((op) => ({ id: op.id, fields: op.dropped })) }

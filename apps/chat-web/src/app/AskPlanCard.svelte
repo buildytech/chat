@@ -10,14 +10,18 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { planOpText } from "$lib/chat-core/change-text";
-	import { isPlanNoop, type PagePlan } from "@buildytech/builder-core";
+	import Select from "$registry/compose/Select.svelte";
+ import SelectOption from "$registry/compose/SelectOption.svelte";
+ import { repairPlanVariant } from "$lib/chat-core/session.svelte";
+ import { isPlanNoop, planHasInvalid, type PagePlan } from "@buildytech/builder-core";
 
 	// An Ask page plan (ADR 0020): the ops were checked by the program; only valid ops can be ticked. Apply in Build runs
 	// the ticked ops without a model call and makes one proposal the author applies. An op that would change nothing
 	// (same variant, same value) is a "keep" row: unticked, muted, never an error.
 	let { plan, messageId, onApply }: { plan: PagePlan; messageId: string; onApply?: (selected: string[]) => void } = $props();
 
-	const ran = $derived(plan.status !== "proposed");
+	const needsRepair = $derived(planHasInvalid(plan));
+ const ran = $derived(plan.status !== "proposed");
 	const validIds = $derived(plan.ops.filter((op) => op.valid).map((op) => op.id));
 	let unticked = $state<string[]>([]);
 	const selected = $derived(validIds.filter((id) => !unticked.includes(id)));
@@ -40,7 +44,7 @@
 		<Group class="flex-wrap items-center justify-between gap-2">
 			<Title as={3} id={headingId} class="text-xs font-semibold text-foreground">{t("plan.title")}</Title>
 			<Text tag="span" class="text-xs text-muted-foreground" data-slot="ask-plan-status">
-				{t(`plan.status.${plan.status}`)} · {summary}
+				{t(needsRepair && !ran ? "plan.needsRepair" : `plan.status.${plan.status}`)} · {summary}
 			</Text>
 		</Group>
 		{#if plan.summary}
@@ -75,7 +79,13 @@
 										: ""}
 								</Text>
 							{/if}
-							{#if op.result && !keep}
+							{#if !ran && op.issue?.code === "unknown_variant" && op.issue.allowed?.length}
+ <Select aria-label={t("plan.fixVariant")} value="" class="h-8 w-full text-xs" onchange={(event: Event) => repairPlanVariant(messageId, op.id, (event.currentTarget as HTMLSelectElement).value)}>
+ <SelectOption value="" disabled>{t("plan.fixVariant")}</SelectOption>
+ {#each op.issue.allowed as variant}<SelectOption value={variant}>{variant}</SelectOption>{/each}
+ </Select>
+ {/if}
+ {#if op.result && !keep}
 								<Text tag="p" class="text-xs text-muted-foreground" data-slot="ask-plan-result" data-result={op.result.status}>
 									{t(`plan.result.${op.result.status}`)}{op.result.code ? ` (${op.result.code})` : ""}
 								</Text>
@@ -90,7 +100,7 @@
 			<Group class="items-center gap-2">
 				<Button
 					class="rounded bg-foreground px-2 py-1 text-xs text-background hover:bg-foreground/90 disabled:opacity-50"
-					disabled={selected.length === 0}
+					disabled={selected.length === 0 || needsRepair}
 					data-slot="ask-plan-apply"
 					onclick={() => onApply?.(selected)}
 				>

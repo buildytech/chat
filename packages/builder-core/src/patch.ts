@@ -44,6 +44,7 @@ import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } from "./p
 
 export type PatchOp = Record<string, unknown> & { op: string };
 export type PagePatchContext = {
+ scopeBlockIds?: readonly string[];
 	page: Page;
 	provenance?: ProposalContext["currentProvenance"];
 	patch: unknown;
@@ -194,6 +195,12 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 		return fail("revision_conflict", "The page changed since this patch was made. Read currentPage again.", "$.baseRevision");
 	}
 	const base = ctx.page;
+ if (ctx.scopeBlockIds?.length) {
+  const allowed = new Set(ctx.scopeBlockIds);
+  const scopedOps = (patch as { ops: Array<Record<string, unknown>> }).ops;
+  const bad = scopedOps.findIndex(op => !['set','set_variant','set_items','replace','remove'].includes(String(op.op)) || typeof op.blockId !== 'string' || !allowed.has(op.blockId));
+  if (bad >= 0) return fail('outside_scope', 'Only the explicitly selected block IDs may change. Clear the block scope to edit the whole page.', '$.ops[' + bad + ']');
+ }
 	const screenId = ctx.provenance?.screenId ?? null;
 	const screen = screenId ? getScreenById(screenId) : null;
 	const scenarioId = ctx.provenance?.scenarioId ?? null;

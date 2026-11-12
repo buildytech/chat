@@ -6,7 +6,8 @@
 	import Share2 from "@lucide/svelte/icons/share-2";
 	import ThumbsDown from "@lucide/svelte/icons/thumbs-down";
 	import ThumbsUp from "@lucide/svelte/icons/thumbs-up";
-	import Block from "$registry/compose/Block.svelte";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte";
+ import Block from "$registry/compose/Block.svelte";
 	import Disclosure from "$registry/kit/ui/disclosure/Disclosure.svelte";
 	import Summary from "$registry/compose/Summary.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
@@ -184,11 +185,11 @@
 						</Button>
 					{/if}
 				</Group>
-				{#if proposal.catalogRefs && (proposal.catalogRefs.blocks.length > 0 || proposal.catalogRefs.screen)}
+				{#if !previewSettings.hideServiceLabels && proposal.catalogRefs && (proposal.catalogRefs.blocks.length > 0 || proposal.catalogRefs.screen)}
 					<CatalogRefsList refs={proposal.catalogRefs} demo={Boolean(proposal.demoData)} />
 				{/if}
 			{/if}
-			{#if run}
+			{#if run && !previewSettings.hideServiceLabels}
 				<Disclosure class="group">
 					<Summary class="w-fit gap-2 rounded py-1 text-xs text-muted-foreground">{t("composer.details")}</Summary>
 					<Stack align="stretch" class="gap-2 py-2">
@@ -229,7 +230,7 @@
 					</Stack>
 				</Disclosure>
 			{/if}
-			{#if showActivity && activity.length > 0}
+			{#if !previewSettings.hideServiceLabels && showActivity && activity.length > 0}
 				<Stack align="stretch" class="gap-2" role="list" aria-label={t("chat.activity")}>
 					{#each activity as line (line)}
 						<Group class="items-center gap-2" role="listitem">

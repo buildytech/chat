@@ -9,7 +9,8 @@
 	import Rows3 from "@lucide/svelte/icons/rows-3";
 	import ChevronLeft from "@lucide/svelte/icons/chevron-left";
 	import ChevronRight from "@lucide/svelte/icons/chevron-right";
-	import Block from "$registry/compose/Block.svelte";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte";
+ import Block from "$registry/compose/Block.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -226,7 +227,7 @@
 				</Group>
 			</Group>
 		</Group>
-		{#if pageNote}
+		{#if pageNote && !previewSettings.hideServiceLabels}
 			<Text tag="p" class="text-xs text-muted-foreground" data-slot="feed-page-note">{pageNote}</Text>
 		{/if}
 		<Text

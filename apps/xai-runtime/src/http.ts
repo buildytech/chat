@@ -153,7 +153,8 @@ export async function handleRuntimeFetch(
 						liveTurn: true,
 						mode: mapped.request.mode,
 						collection: mapped.request.collection,
-						manualEdits: mapped.request.manualEdits
+						scopeBlockIds: mapped.request.scopeBlockIds,
+ manualEdits: mapped.request.manualEdits
 					},
 					signal
 				);

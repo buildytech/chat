@@ -47,6 +47,7 @@ export function variantTarget(page: Page | null | undefined, spec: string): Vari
 
 /** Apply variant from an Ask card: one page-patch/v1 set_variant op through the same editPage as model edits. */
 export function variantProposal(input: {
+ scopeBlockIds?: string[];
 	page: Page | null | undefined;
 	provenance?: { screenId: string | null; scenarioId: "dashboard" | "landing" | "website" | null; missing: string[] } | null;
 	revision: number;
@@ -59,7 +60,8 @@ export function variantProposal(input: {
 		return { ok: false, code: target.code, message: target.code };
 	}
 	return editPage({
-		page: input.page!,
+		scopeBlockIds: input.scopeBlockIds,
+ page: input.page!,
 		provenance: input.provenance ?? undefined,
 		patch: { baseRevision: input.revision, ops: [{ op: "set_variant", blockId: target.blockId, variant: input.variant }] },
 		expectedRevision: input.revision,

@@ -34,6 +34,7 @@ import { iconFixWarning } from "./icon-name.ts";
 import type { AgentMode } from "./agent/agent-tools.ts";
 
 export type ProposalContext = {
+ scopeBlockIds?: string[];
 	brief: string;
 	/** Chat mode (composer toggle). Ask turns never assemble; Build is the default. */
 	mode?: AgentMode;

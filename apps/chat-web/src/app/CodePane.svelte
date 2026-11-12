@@ -1,3 +1,4 @@
+<!-- Service notes follow the shell visibility setting; source remains intact. -->
 <script lang="ts">
 	import { packSkinOptions } from "$lib/theme/custom-skin.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
@@ -6,7 +7,8 @@
 	import FileCode from "@lucide/svelte/icons/file-code";
 	import Files from "@lucide/svelte/icons/files";
 	import X from "@lucide/svelte/icons/x";
-	import Block from "$registry/compose/Block.svelte";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte";
+ import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";
@@ -227,7 +229,7 @@
 			</Button>
 		</Group>
 		<Stack align="stretch" class="min-h-0 flex-1 gap-2 overflow-hidden bg-background p-4">
-			<Text tag="p" class="text-xs text-muted-foreground">{t("code.runtime")}</Text>
+			{#if !previewSettings.hideServiceLabels}<Text tag="p" class="text-xs text-muted-foreground">{t("code.runtime")}</Text>{/if}
 			{#if copyNote}
 				<Text tag="p" class="text-xs text-muted-foreground" role="status">{copyNote}</Text>
 			{/if}

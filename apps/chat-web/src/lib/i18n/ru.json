@@ -2,6 +2,12 @@
 	"locale": "ru",
 	"source_locale": "en",
 	"messages": {
+		"scope.add": "Добавить в чат",
+		"scope.remove": "Убрать из контекста чата",
+		"scope.only": "Изменения только в выбранных блоках",
+		"scope.clear": "Снять ограничение блоков",
+		"plan.needsRepair": "Требует исправления",
+		"plan.fixVariant": "Выберите допустимый вариант",
 		"preview.invalidAddress": "Используйте до 48 строчных латинских букв, цифр и дефисов. Маршрут может быть зарезервирован.",
 		"app.title": "SI чат-конструктор сайтов",
 		"app.documentTitle": "SI Чат — BuildYtech",

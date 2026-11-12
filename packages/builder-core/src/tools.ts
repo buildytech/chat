@@ -32,6 +32,7 @@ export type ToolName = AllowedTool;
 export type ToolCall = { name: string; arguments?: Record<string, unknown> };
 
 export type ToolHost = {
+ scopeBlockIds?: string[];
 	currentPage?: Page | null;
 	currentProvenance?: ProposalContext["currentProvenance"];
 	scenarioId?: ScenarioId | null;
@@ -365,6 +366,7 @@ export function executeTool(
 		}
 		const plan = checkPagePlan({
 			page: host.currentPage,
+			scopeBlockIds: host.scopeBlockIds,
 			provenance: host.currentProvenance,
 			revision: host.expectedRevision ?? 0,
 			sessionDemoData: Boolean(host.sessionDemoData),
@@ -395,6 +397,7 @@ export function executeTool(
 				})
 			: args.ops;
 		const result = editPage({
+ scopeBlockIds: host.scopeBlockIds,
 			page: host.currentPage,
 			provenance: host.currentProvenance,
 			patch: normalizePatch({ ops, baseRevision: args.baseRevision }),
@@ -411,6 +414,7 @@ export function executeTool(
 		return { ok: true, name: call.name, result };
 	}
 	if (call.name === "propose_layout") {
+ if (host?.scopeBlockIds?.length) return { ok: false, code: "outside_scope", message: "Selected blocks only: use edit_page on scopeBlockIds, not propose_layout." };
 		if (args.layout != null) {
 			return {
 				ok: false,
@@ -649,6 +653,7 @@ function repairIcons(args: Record<string, unknown>, code: string): { args: Recor
 export function runConstructorTools(ctx: ProposalContext): LayoutProposal | LayoutProposalError {
 	const scenarioId = ctx.scenarioId;
 	const host = {
+ scopeBlockIds: ctx.scopeBlockIds,
 		currentPage: ctx.currentPage,
 		currentProvenance: ctx.currentProvenance,
 		authorBrief: ctx.authorBrief ?? ctx.brief,
