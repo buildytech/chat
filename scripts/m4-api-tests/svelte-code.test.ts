@@ -184,7 +184,7 @@ test("mixed ZIP (registry blocks + stub, with a skin) unzips and builds with vit
 			writeFileSync(target, entry.content);
 		}
 		// Offline stand-in for `npm i`: the workspace node_modules has the versions the pack pins (asserted above).
-		symlinkSync(path.join(ROOT, "node_modules"), path.join(dir, "node_modules"), "dir");
+		symlinkSync(path.join(ROOT, "node_modules"), path.join(dir, "node_modules"), process.platform === "win32" ? "junction" : "dir");
 		const run = spawnSync(process.execPath, [path.join(ROOT, "node_modules/vite/bin/vite.js"), "build", "--logLevel", "warn"], { cwd: dir, encoding: "utf8", timeout: 180_000 });
 		assert.equal(run.status, 0, `vite build failed:\n${run.stdout}\n${run.stderr}`);
 		const assets = path.join(dir, "dist/assets");
@@ -229,7 +229,7 @@ test("headerless page (starts with Hero, no footer): ZIP and `npx ui8kit add` li
 			mkdirSync(path.dirname(target), { recursive: true });
 			writeFileSync(target, entry.content);
 		}
-		symlinkSync(path.join(ROOT, "node_modules"), path.join(dir, "node_modules"), "dir");
+		symlinkSync(path.join(ROOT, "node_modules"), path.join(dir, "node_modules"), process.platform === "win32" ? "junction" : "dir");
 		const run = spawnSync(process.execPath, [path.join(ROOT, "node_modules/vite/bin/vite.js"), "build", "--logLevel", "warn"], { cwd: dir, encoding: "utf8", timeout: 180_000 });
 		assert.equal(run.status, 0, `vite build failed:\n${run.stdout}\n${run.stderr}`);
 	} finally {

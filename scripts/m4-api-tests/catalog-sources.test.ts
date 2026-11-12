@@ -232,7 +232,7 @@ test("CSS: theme and tokens only from the registry tree; the chat declares no co
 	const SKIN = join(ROOT, "apps/chat-web/src/styles/chat-skin.css");
 	for (const file of walk(join(ROOT, "apps/chat-web/src")).filter((path) => path.endsWith(".css") && path !== SKIN)) {
 		const css = readFileSync(file, "utf8");
-		const checked = file.endsWith("/app.css") ? css.replace(/@theme(?: inline)? \{[^}]*\}/g, (block) => block.replace(/--radius[a-z0-9-]*:[^;]*;/g, "")) : css;
+		const checked = file.replace(/\\/g, "/").endsWith("/app.css") ? css.replace(/@theme(?: inline)? \{[^}]*\}/g, (block) => block.replace(/--radius[a-z0-9-]*:[^;]*;/g, "")) : css;
 		assert.doesNotMatch(checked, /--(background|foreground|primary|border|radius)\s*:/, `${file} redeclares a registry token`);
 	}
 	assert.doesNotMatch(frame, /chat-skin|app\.css/, "the preview frame never loads the chat UI skin");

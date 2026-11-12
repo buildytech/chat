@@ -12,6 +12,7 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
 const SKIP_DIRS = new Set([
 	".git",
+	".cache",
 	"node_modules",
 	"build",
 	"dist",
@@ -55,6 +56,7 @@ const FORBIDDEN = [
 ];
 
 function skipPath(rel: string): boolean {
+	rel = rel.split("\\").join("/");
 	if (SKIP_REL.has(rel)) return true;
 	for (const prefix of SKIP_REL) {
 		if (rel === prefix || rel.startsWith(`${prefix}/`)) return true;

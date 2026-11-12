@@ -549,7 +549,8 @@ export function deriveSearchIndex(graph, policy) {
 				for (const field of variant.fields ?? []) if (field.w >= 3) for (const word of field.words ?? []) addText(terms, word, 1);
 			}
 		}
-		screens[screenId] = Object.fromEntries([...terms.entries()].sort(([a], [b]) => a.localeCompare(b)));
+		// Packed order must match the pinned index regardless of the host's OS locale.
+		screens[screenId] = Object.fromEntries([...terms.entries()].sort(([a], [b]) => a.localeCompare(b, "en")));
 	}
 	const termList = [...new Set(Object.values(screens).flatMap((terms) => Object.keys(terms)))].sort();
 	const termIndex = new Map(termList.map((t, i) => [t, i]));

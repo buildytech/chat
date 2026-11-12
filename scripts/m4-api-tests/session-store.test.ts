@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
 	LEGACY_STORAGE_KEYS,
 	STORAGE_KEYS,
@@ -143,7 +144,7 @@ test("migration never loses data: a conflicting legacy value goes to quarantine,
 });
 
 test("app source reads and writes only buildy:v1 keys (legacy names live in storage-v1.ts only)", () => {
-	const root = new URL("../../apps/chat-web/src/", import.meta.url).pathname;
+	const root = fileURLToPath(new URL("../../apps/chat-web/src/", import.meta.url));
 	const files: string[] = [];
 	const walk = (dir: string) => {
 		for (const name of readdirSync(dir)) {
