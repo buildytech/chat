@@ -8,7 +8,7 @@
 <script lang="ts">
 	import Button from "$registry/kit/ui/button/Button.svelte";
  import { blockScope } from "$lib/chat-core/block-scope.svelte";
- import { getSelectedSession } from "$lib/chat-core";
+ import { getSelectedSession, loadPropsGate } from "$lib/chat-core";
  import type { Component } from "svelte";
 	import Alert from "$registry/compose/Alert.svelte";
 	import Block from "$registry/compose/Block.svelte";
@@ -47,6 +47,8 @@
 		}
 		canvas.selectField(block.id, pointer, "preview");
 		await tick();
+  try { await loadPropsGate(); } catch { return; }
+  await tick();
 		// A panel that just opened renders its fields after the props gate chunk: try for a few frames.
 		for (let i = 0; i < 20 && !focusInspectorControl(document, block.id, pointer); i += 1) {
 			await new Promise((resolve) => requestAnimationFrame(resolve));

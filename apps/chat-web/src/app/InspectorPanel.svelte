@@ -81,9 +81,11 @@
 	}
 
 	// The props gate (Ajv over the pinned schemas) is a lazy chunk; edits fail closed until it is loaded.
-	onMount(() => {
-		void loadPropsGate().catch(() => {});
-	});
+	let ready = $state(false);
+ let loadError = $state(false);
+ onMount(() => {
+  void loadPropsGate().then(()=>ready=true).catch(()=>loadError=true);
+ });
 </script>
 
 <svelte:window onkeydown={inspector.onKey} />
@@ -112,7 +114,11 @@
 				</Button>
 			</Group>
 		</Group>
-		{#if !model}
+		{#if loadError}
+ <Alert variant="destructive" role="alert">{t("inspector.loadFailed")}</Alert>
+ {:else if !ready}
+ <Text tag="p" role="status" class="text-sm text-muted-foreground">{t("inspector.loading")}</Text>
+ {:else if !model}
 			<Text tag="p" class="text-sm text-muted-foreground">{t("inspector.empty")}</Text>
 		{:else}
 			<Stack align="stretch" gap="2">

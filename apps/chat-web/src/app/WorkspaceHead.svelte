@@ -1,6 +1,6 @@
 <!--
   Workspace head (ADR 0017): one 40px tool bar. Left: chat column toggle (Ctrl+B) and the Preview / Code switch;
-  right: Download ZIP, the inspector toggle (Build, Ctrl+I) and preview-only focus (Ctrl+\).
+  right: Download ZIP, the inspector toggle (Ctrl+I) and preview-only focus (Ctrl+\).
 -->
 <script lang="ts">
 	import Box from "$registry/kit/ui/box/Box.svelte";
@@ -21,14 +21,12 @@
 
 	let {
 		view = $bindable("preview"),
-		build = false,
 		inspectorOpen = false,
 		ontogglechat,
 		ontoggleinspector,
 		onDownloadZip
 	}: {
 		view?: WorkspaceView;
-		build?: boolean;
 		inspectorOpen?: boolean;
 		ontogglechat?: () => void;
 		ontoggleinspector?: () => void;
@@ -84,7 +82,7 @@
 			<Icon size="sm"><FolderArchive /></Icon>
 			<Text tag="span" class="max-sm:hidden">{t("workspace.downloadZip")}</Text>
 		</Button>
-		{#if build && view === "preview"}
+		{#if view === "preview"}
 			<Button
 				size="sm"
 				layout="icon"

@@ -2,6 +2,8 @@
 	"locale": "ru",
 	"source_locale": "en",
 	"messages": {
+		"inspector.loading": "Загрузка проверки полей…",
+		"inspector.loadFailed": "Не удалось загрузить проверку. Закройте и снова откройте инспектор.",
 		"plan.repairUnavailable": "Не удалось загрузить проверку. Обновите страницу для исправления плана.",
 		"plan.unchanged": "Изменений нет",
 		"plan.applySelected": "Применить выбранные изменения — {n}",
@@ -236,7 +238,7 @@
 		"composer.modeLabel": "Режим чата",
 		"composer.mode.ask": "Ask",
 		"composer.mode.build": "Build",
-		"composer.mode.ask.hint": "Ask: разговор о блоках и странице. Только чтение, страница не меняется.",
+		"composer.mode.ask.hint": "Ask: обсуждение блоков и страницы. Модель не изменяет страницу.",
 		"composer.mode.build.hint": "Build: создать или изменить страницу. Изменения приходят предложениями, которые вы применяете.",
 		"composer.placeholderAsk": "Спросите о блоках, вариантах или странице…",
 		"ask.answerAsk": "Ask · ответ",

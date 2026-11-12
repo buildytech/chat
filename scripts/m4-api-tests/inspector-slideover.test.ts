@@ -46,7 +46,7 @@ test("move op applies the rules (Sections buttons, Alt+Arrow, drag and the inspe
 
 test("slide-over: over the preview, non-modal, no backdrop, opens on picks, Esc / close, remembered", () => {
 	const workspace = web("app/Workspace.svelte");
-	assert.match(workspace, /\{#if build && inspectorPanel\.open\}\s*<!--[^>]*-->\s*<InspectorSlideOver \/>/);
+	assert.match(workspace, /\{#if inspectorPanel\.open\}\s*<!--[^>]*-->\s*<InspectorSlideOver \/>/);
 	assert.match(workspace, /event\.key === "Escape" && !event\.defaultPrevented[\s\S]*inspectorPanel\.close\(\)/);
 	assert.doesNotMatch(workspace, /<Sheet|bg-foreground\/40|InspectorColumn/, "no modal sheet, no dimming backdrop, no column");
 	const slide = web("app/InspectorSlideOver.svelte");

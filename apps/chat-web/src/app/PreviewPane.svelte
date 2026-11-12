@@ -42,6 +42,7 @@
 	import { topLevelBlockId } from "$lib/inspector/geometry";
 	import CanvasOverlay from "./CanvasOverlay.svelte";
 	import DropOverlay from "./DropOverlay.svelte";
+	import { inspectorPanel } from "$lib/inspector/panel.svelte";
 	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { recordedScreenId } from "@buildytech/builder-core";
 	import PreviewFrame from "./PreviewFrame.svelte";
@@ -136,7 +137,12 @@
 		// Undo / redo of inspector edits also while focus is inside the preview frame.
 		doc.addEventListener("keydown", inspector.onKey);
 		// Layout shortcuts (Ctrl+B / Ctrl+I / Ctrl+\) also while focus is inside the frame (ADR 0017).
-		doc.addEventListener("keydown", (event) => forwardShortcut(event, window));
+		doc.addEventListener("keydown", (event) => {
+   if (event.key === "Escape" && !event.defaultPrevented && inspectorPanel.open) {
+    event.preventDefault();
+    inspectorPanel.close();
+   } else forwardShortcut(event, window);
+  });
 		frameDoc = doc;
 	}
 

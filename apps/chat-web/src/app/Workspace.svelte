@@ -21,8 +21,7 @@
 		ontogglechat?: () => void;
 	} = $props();
 
-	// Build is the editor: the preview, with the inspector as a slide-over on its right edge (ADR 0024 step D). Ask
-	// shows the preview alone.
+	// Ask / Build controls the model tools; the manual editor stays available in either mode.
 	const build = $derived(getChatMode() === "build");
 
 	// The slide-over is non-modal: Escape closes it unless something else (a menu, the composer) took the key.
@@ -55,7 +54,6 @@
 >
 	<WorkspaceHead
 		bind:view={creatorLayout.view}
-		{build}
 		inspectorOpen={inspectorPanel.open}
 		{ontogglechat}
 		ontoggleinspector={toggleInspector}
@@ -64,7 +62,7 @@
 	{#if creatorLayout.view === "preview"}
 		<Group align="stretch" class="relative min-h-0 flex-1 gap-0" data-slot="build-editor" data-mode={build ? "build" : "ask"}>
 			<PreviewPane />
-			{#if build && inspectorPanel.open}
+			{#if inspectorPanel.open}
 				<!-- Over the preview only (absolute in the editor): the left panel stays usable while it is open. -->
 				<InspectorSlideOver />
 			{/if}

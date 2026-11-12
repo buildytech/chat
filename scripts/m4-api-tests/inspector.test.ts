@@ -48,7 +48,7 @@ test("canvas: blocks carry data-block-id; chrome lives in the chat document, not
 	assert.match(overlay, /addEventListener\("scroll"/);
 	assert.doesNotMatch(overlay, /\sstyle=/, "geometry is set by an attachment, not a style attribute");
 	assert.doesNotMatch(web("app/StandalonePreview.svelte"), /CanvasOverlay|BlockTree/);
-	assert.match(web("app/Workspace.svelte"), /\{#if build && inspectorPanel\.open\}[\s\S]*<InspectorSlideOver/);
+	assert.match(web("app/Workspace.svelte"), /\{#if inspectorPanel\.open\}[\s\S]*<InspectorSlideOver/);
 	assert.match(web("app/SectionsList.svelte"), /canvas\.hover\(block\.id\)/);
 });
 
@@ -235,12 +235,12 @@ test("history: typing in one field is one step until sealed; undo / redo walk th
 	assert.equal(small.undo(), null, "the history keeps at most `limit` steps");
 });
 
-test("inspector store: no chat proposal per keystroke; undo keys in Build; frame keys too", () => {
+test("inspector store: no chat proposal per keystroke; undo keys in Ask and Build; frame keys too", () => {
 	const store = web("lib/inspector/inspector.svelte.ts");
 	assert.match(store, /inspectorSetField\(/);
 	assert.match(store, /replaceVisiblePage\(/);
 	assert.doesNotMatch(store, /setCandidatePage|sendMessage|applyProposal/);
-	assert.match(store, /getChatMode\(\) !== "build"/);
+	assert.doesNotMatch(store, /getChatMode\(\) !== "build"/);
 	assert.match(web("app/PreviewPane.svelte"), /doc\.addEventListener\("keydown", inspector\.onKey\)/);
 	assert.match(web("app/InspectorPanel.svelte"), /<svelte:window onkeydown=\{inspector\.onKey\} \/>/);
 	assert.match(web("app/InspectorFields.svelte"), /onblur=\{canEdit \? \(\) => handlers!\.onseal\(\)/);

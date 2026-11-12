@@ -3,7 +3,6 @@
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import { getChatMode } from "$lib/chat-core";
 	import { shortcutFor } from "$lib/layout/shortcuts";
 	import type { ChatSession, CreatorRuntimeStatus, SessionSummary } from "$lib/chat-core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
@@ -88,10 +87,17 @@
 		mobileSurface = mobileSurface === "chat" ? "workspace" : "chat";
 	}
 
-	function handleToggleInspector() {
-		if (getChatMode() !== "build") return;
+	$effect(() => {
+  if (inspectorPanel.request) {
+   mobileSurface = "workspace";
+   creatorLayout.view = "preview";
+  }
+ });
+
+ function handleToggleInspector() {
 		mobileSurface = "workspace";
-		inspectorPanel.toggle();
+  if (creatorLayout.view !== "preview") { creatorLayout.view = "preview"; inspectorPanel.show(); }
+  else inspectorPanel.toggle();
 	}
 
 	// Ctrl/Cmd+B chat column, Ctrl/Cmd+I inspector, Ctrl/Cmd+\ preview-only focus (not inside the code editor).

@@ -1,6 +1,8 @@
 {
 	"locale": "en",
 	"messages": {
+		"inspector.loading": "Loading field validation…",
+		"inspector.loadFailed": "Could not load validation. Close and reopen the inspector to retry.",
 		"plan.repairUnavailable": "Could not load validation. Reload to repair the plan.",
 		"plan.unchanged": "No changes",
 		"plan.applySelected": "Apply selected changes — {n}",
@@ -345,7 +347,7 @@
 		"composer.modeLabel": "Chat mode",
 		"composer.mode.ask": "Ask",
 		"composer.mode.build": "Build",
-		"composer.mode.ask.hint": "Ask: talk about blocks and the page. Read-only, the page never changes.",
+		"composer.mode.ask.hint": "Ask: discuss blocks and the page. The model cannot change the page.",
 		"composer.mode.build.hint": "Build: create or edit the page. Changes arrive as proposals you apply.",
 		"composer.placeholderAsk": "Ask about blocks, variants or the page…",
 		"ask.answerAsk": "Ask · answer",

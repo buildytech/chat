@@ -20,7 +20,7 @@ import {
 } from "@buildytech/builder-core";
 import type { StoredPageProvenance } from "../browser/persist";
 import { parseDraftPage, type Page } from "@buildytech/page-contract";
-import { getChatMode, loadPropsGate, startEmptyPageInChat } from "../chat-core";
+import { loadPropsGate, startEmptyPageInChat } from "../chat-core";
 import { getBoundPageSessionId, getCurrentPage, getCurrentProvenance, getPageRevision, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
 import { commitChange } from "../page-store/revision";
 import type { FieldIssue } from "./fields";
@@ -298,7 +298,6 @@ export const inspector = {
 		const redo = (key === "z" && event.shiftKey) || (key === "y" && event.ctrlKey && !event.shiftKey);
 		const undo = key === "z" && !event.shiftKey;
 		if (!undo && !redo) return;
-		if (getChatMode() !== "build") return;
 		const field = isEditable(event.target);
 		if (field && !field.closest('[data-slot="inspector"]')) return;
 		if (!(undo ? inspector.canUndo : inspector.canRedo)) return;
