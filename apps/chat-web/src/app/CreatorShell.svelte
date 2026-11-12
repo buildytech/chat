@@ -2,17 +2,12 @@
 	import { onMount } from "svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
-	import Stack from "$registry/compose/Stack.svelte";
-	import Button from "$registry/compose/Button.svelte";
-	import MessageSquare from "@lucide/svelte/icons/message-square";
-	import PanelLeftOpen from "@lucide/svelte/icons/panel-left-open";
 	import { t } from "$lib/i18n/dictionary";
 	import { getChatMode } from "$lib/chat-core";
 	import { shortcutFor } from "$lib/layout/shortcuts";
 	import type { ChatSession, CreatorRuntimeStatus, SessionSummary } from "$lib/chat-core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
-	import { feed } from "$lib/feed/feed.svelte";
 	import ChatColumn from "./ChatColumn.svelte";
 	import ChatDrawer from "./ChatDrawer.svelte";
 	import CreatorTabs from "./CreatorTabs.svelte";
@@ -156,22 +151,6 @@
 					visible={mobileSurface === "chat"}
 					{chatHidden}
 				/>
-				{#if columns && chatHidden}
-					<Stack
-						align="center"
-						class="shrink-0 gap-2 border-r border-border bg-background py-2"
-						style={`width: ${creatorLayout.widths.chat}px`}
-						aria-label={t("shell.chatColumn")}
-						data-slot="chat-rail"
-					>
-						<Button size="sm" layout="icon" variant="ghost" aria-label={t("workspace.showChat")} title={`${t("workspace.showChat")} (Ctrl+B)`} aria-expanded="false" aria-controls="creator-chat-column" data-action="chat-expand" onclick={() => creatorLayout.setCollapsed("chat", false)}>
-							<PanelLeftOpen />
-						</Button>
-						<Button size="sm" layout="icon" variant="ghost" aria-label={t("shell.chatColumn")} title={t("shell.chatColumn")} onclick={() => { creatorLayout.setCollapsed("chat", false); feed.tab = "chat"; queueMicrotask(() => document.querySelector<HTMLTextAreaElement>("#creator-chat-column textarea")?.focus()); }}>
-							<MessageSquare />
-						</Button>
-					</Stack>
-				{/if}
 				{#if !chatHidden}
 					<PaneSplitter pane="chat" controls="creator-chat-column" class="border-r border-border max-lg:hidden" />
 				{/if}

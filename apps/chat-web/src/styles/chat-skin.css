@@ -117,7 +117,7 @@ dialog * { --radius: 8px; }
 :is([data-slot="feed-card"], [data-slot="stock-card"]):hover { box-shadow: var(--ui-shadow-contact); background: var(--ui-raised); }
 :is([data-slot="inspector-slideover"], #composer-model-list, dialog[open]) { box-shadow: var(--ui-shadow-float); }
 [data-slot="composer-surface"] { box-shadow: var(--ui-shadow-contact); }
-[data-slot="composer-surface"]:focus-within { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
+[data-slot="composer-surface"]:has(:focus-visible) { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
 /* The surrounding input surface owns the boundary and focus; no nested field ring. */
 #composer:focus-visible { box-shadow: none; outline: none; }
 
@@ -152,3 +152,6 @@ dialog * { --radius: 8px; }
 @supports not selector(::-webkit-scrollbar) {
   * { scrollbar-width: thin; scrollbar-color: var(--ui-scrollbar) transparent; }
 }
+
+/* Grow the prompt with its content while keeping long messages scrollable. */
+#composer { field-sizing: content; max-height: max(4rem, calc(100dvh - 16rem)); }

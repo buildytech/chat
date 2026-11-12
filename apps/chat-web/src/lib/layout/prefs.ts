@@ -161,7 +161,7 @@ export type FitWidths = { nav: number; chat: number; inspector: number; preview:
  */
 export function fitWidths({ viewport, layout, inspector, columns }: FitInput): FitWidths {
 	const nav = !columns ? 0 : isCollapsed(layout, "nav") ? RAIL : layout.navWidth;
-	let chat = !columns ? 0 : isCollapsed(layout, "chat") ? RAIL : layout.chatWidth;
+	let chat = !columns ? 0 : isCollapsed(layout, "chat") ? 0 : layout.chatWidth;
 	let insp = !inspector ? 0 : isCollapsed(layout, "inspector") ? RAIL : layout.inspectorWidth;
 	let over = nav + chat + insp + PREVIEW_MIN - viewport;
 	const give = (width: number, min: number, rail: boolean) => {

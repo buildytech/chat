@@ -226,7 +226,7 @@
 				<Text tag="span">{t("code.copy")}</Text>
 			</Button>
 		</Group>
-		<Stack align="stretch" class="min-h-0 flex-1 gap-2 overflow-hidden p-4">
+		<Stack align="stretch" class="min-h-0 flex-1 gap-2 overflow-hidden bg-background p-4">
 			<Text tag="p" class="text-xs text-muted-foreground">{t("code.runtime")}</Text>
 			{#if copyNote}
 				<Text tag="p" class="text-xs text-muted-foreground" role="status">{copyNote}</Text>

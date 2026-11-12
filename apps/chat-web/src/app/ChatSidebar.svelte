@@ -292,10 +292,10 @@
 						</Text>
 					{:else}
 						{#each visibleSessions as session (session.id)}
-							<Group class="min-w-0 gap-0" data-slot="recent-row">
+							<Group class="relative min-w-0 gap-0" data-slot="recent-row">
 								<Button
 									class={cn(
-										"flex min-w-0 flex-1 items-center justify-start gap-2 rounded px-2 py-1 text-left text-sm",
+										"flex min-w-0 flex-1 items-center justify-start gap-2 rounded py-1 pl-2 pr-10 text-left text-sm",
 										selectedId === session.id || active === session.id
 											? "bg-accent text-accent-foreground"
 											: "text-foreground hover:bg-accent/70",
@@ -306,7 +306,7 @@
 									<Text tag="span" class="min-w-0 truncate">{session.title}</Text>
 								</Button>
 								<Button
-									class="shrink-0 rounded p-2 text-muted-foreground hover:bg-accent hover:text-destructive disabled:opacity-40"
+									class="absolute right-0 top-0 shrink-0 rounded p-2 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
 									aria-label={t("sidebar.delete")}
 									aria-haspopup="dialog"
 									data-action="recent-delete"

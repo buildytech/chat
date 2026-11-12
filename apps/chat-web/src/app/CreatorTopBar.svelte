@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Menu from "@lucide/svelte/icons/menu";
-	import X from "@lucide/svelte/icons/x";
+	import PanelLeftOpen from "@lucide/svelte/icons/panel-left-open";
+	import PanelLeftClose from "@lucide/svelte/icons/panel-left-close";
 	import Group from "$registry/compose/Group.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
@@ -38,9 +38,9 @@
 		>
 			<Icon size="sm">
 				{#if sidebarOpen}
-					<X />
+					<PanelLeftClose />
 				{:else}
-					<Menu />
+					<PanelLeftOpen />
 				{/if}
 			</Icon>
 		</Button>

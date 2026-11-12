@@ -121,21 +121,21 @@ test("fitWidths: stored widths at a wide window; chat then inspector give way so
 	assert.ok(tight.chat >= PANE_RANGE.chat.min && tight.inspector >= PANE_RANGE.inspector.min);
 	assert.equal(tight.chat, PANE_RANGE.chat.min, "chat gives first");
 	assert.equal(tight.nav + tight.chat + tight.inspector + tight.preview, 1024);
-	// 1024 with the chat collapsed (Wails window): rail + rail + inspector, the canvas well above the minimum.
+	// 1024 with the chat collapsed (Wails window): nav rail + inspector, the canvas well above the minimum.
 	const desk = fitWidths({ viewport: 1024, layout: { ...defaultLayout(), chatCollapsed: true }, inspector: true, columns: true });
-	assert.deepEqual([desk.nav, desk.chat], [RAIL, RAIL]);
+	assert.deepEqual([desk.nav, desk.chat], [RAIL, 0]);
 	assert.ok(desk.preview >= 600, `preview ${desk.preview}`);
 	// Below lg nav and chat take no width; Ask has no inspector.
 	assert.equal(fitWidths({ viewport: 800, layout, inspector: false, columns: false }).preview, 800);
 });
 
-test("focus mode shows every shell panel as a rail without forgetting the stored states", () => {
+test("focus mode collapses shell panels without forgetting the stored states", () => {
 	const layout = { ...defaultLayout(), navCollapsed: false, focus: true };
 	for (const panel of ["nav", "chat", "inspector"] as const) assert.equal(isCollapsed(layout, panel), true, panel);
 	assert.equal(isCollapsed(layout, "layers"), false, "inside the inspector nothing changes");
 	assert.equal(isCollapsed({ ...layout, focus: false }, "nav"), false, "stored state comes back");
 	const fit = fitWidths({ viewport: 1440, layout, inspector: true, columns: true });
-	assert.equal(fit.preview, 1440 - 3 * RAIL);
+	assert.equal(fit.preview, 1440 - 2 * RAIL);
 });
 
 test("shortcuts: Ctrl/Cmd+B, Ctrl/Cmd+I, Ctrl/Cmd+\\ by physical key; not with Alt/Shift or inside the code editor", () => {
