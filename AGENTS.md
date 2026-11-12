@@ -8,7 +8,7 @@ UI8Kit rules live with the contract. Copied here from [`github.com/ui8kit/contra
 
 - Push verified work to **`main`** with a normal fast-forward-safe push.
 - **Do not open a pull request.** PRs permanently pollute this repo's history.
-- Commit author: `Grok Bot <grokbot@users.noreply.github.com>` via `git -c user.name=… -c user.email=…`.
+- Commit author: `Codex <codex@openai.com>` via `git -c user.name=… -c user.email=…` (owner updated 2026-11-12). This is Git author metadata, not the identity used to authenticate a push.
 - No force / reset / amend of published history.
 - Do not edit other repositories (wp-fasty, wpmodules, local-wp, …).
 

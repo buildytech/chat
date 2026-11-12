@@ -90,7 +90,7 @@ Exit: one coherent shell across the main surfaces, with no regression in add/dro
 - [ ] Check preview, clean mode, `/preview`, Custom Skin and ZIP isolation; verify registry files are untouched.
 - [ ] Run `npm run verify` and `npm run registry:check`. Adapt obsolete source-shape assertions only when the
   approved presentation changes, preserving meaningful behavioral and contrast coverage. No baseline growth.
-- [ ] Review diff and docs, then commit verified slices as `Grok Bot <grokbot@users.noreply.github.com>` and use a
+- [ ] Review diff and docs, then commit verified slices as `Codex <codex@openai.com>` and use a
   normal fast-forward-safe push to `main`, without a PR or history rewriting.
 
 ## Acceptance evidence (pending)
