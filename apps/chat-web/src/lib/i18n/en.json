@@ -530,6 +530,7 @@
 		"proposal.outsideScope": "The proposal changes blocks outside the selection.",
 		"proposal.rejected": "The page was not changed: {code} {message}",
 		"preview.renderFailed": "This block failed to render",
-		"preview.renderEmpty": "This block renders nothing yet. Write its texts, rows and images in the inspector or ask Build to"
+		"preview.renderEmpty": "This block renders nothing yet. Write its texts, rows and images in the inspector or ask Build to",
+		"message.noChange": "No changes were made to the page."
 	}
 }

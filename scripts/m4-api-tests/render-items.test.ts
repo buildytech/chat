@@ -99,3 +99,21 @@ test("the owner's session blocks (currency codes fixed): every block renders in 
 	const before = await Promise.all(page.blocks.map((block) => previewOutcome(block as never)));
 	assert.deepEqual(before.map((outcome) => (typeof outcome === "string" ? outcome : "throws")), ["renders", "renders", "throws", "renders", "throws", "renders", "renders", "renders", "renders"]);
 });
+
+test("the owner's session fail-aa57f99: ISO currency makes all 9 blocks render, and prices are minor units (450 shows as 4.50)", async () => {
+	const page = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/fail-page-aa57f99.json"), "utf8")) as PageV2;
+	assert.equal(page.blocks.length, 9);
+	const fixed = JSON.parse(JSON.stringify(page).replaceAll('"currency":"\u20bd"', '"currency":"RUB"')) as PageV2;
+	assert.ok(writePage(emptyPage({ title: "t", now: NOW }), { page: fixed }, { now: NOW }).ok);
+	const outcomes = await Promise.all(fixed.blocks.map((block) => previewOutcome(block as never)));
+	assert.deepEqual(outcomes, fixed.blocks.map(() => "renders"));
+	const before = await Promise.all(page.blocks.map((block) => previewOutcome(block as never)));
+	assert.equal(before.filter((outcome) => typeof outcome !== "string").length, 2, "as the owner had it: exactly the two currency blocks throw");
+	const dish = fixed.blocks[2]!;
+	const rendered = renderBlock(dish as never)!;
+	const mod = (await server.ssrLoadModule(`/src/${rendered.organism}`)) as { default: unknown };
+	const html = renderSsr(mod.default, { props: rendered.props }).body;
+	const first = (dish.props as { dishes: Array<{ price: number }> }).dishes[0]!.price;
+	assert.ok(first >= 100, "price is stored in minor units");
+	assert.ok(html.includes((first / 100).toFixed(2).replace(".", ",")) || html.includes((first / 100).toFixed(2)), `renders ${first} as ${(first / 100).toFixed(2)}`);
+});

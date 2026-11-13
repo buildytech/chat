@@ -20,3 +20,13 @@ Scanning every item + variant with the sample props the host adds found a second
 ## Consequences
 
 A page that passes `write_page` renders something in the preview and the export (both run the same registry components with the same props). The model gets the path of the prop to fix in the same turn instead of a blank page. Open upstream: the registry props schema should say `currency` is an ISO 4217 code (codegen-x), and prices are minor units (`price: 450` is 4.50); the probe catches the throw, not the meaning.
+
+## Addendum, 2026-11-13: a turn with something to fix may not end silently (owner session fail-aa57f99)
+
+The page of session 1e1031a still had two blocks that threw. Two later turns (Build "blocks do not render, fix or replace", then Ask) read blocks (`get_block` only), made no `write_page`, and answered "fixed: currency=RUB". The page did not change. The probe and `renderProblems` were already live; the gap was the host letting a reply stand that no accepted write backed.
+
+- The first prompt and `get_page` list `renderProblems` of every block of the current page (not only blocks a write touches), in Build and Ask, with a one-line note that these blocks throw or show nothing now. The session file does not record prompts or tool results; `render-recovery.test.ts` rebuilds the prompt for this page.
+- Nudge: a turn that has something to fix (open `renderProblems`, or Build with selected blocks) and ends with no accepted write gets one host message inside the same turn, within the step budget: nothing changed, call `write_page` or say plainly that you are not changing the page and why, do not report a change `write_page` did not accept. The signal is program state (open problems, a selection, no accepted write), never words of the reply; Build still does not read Ask prose.
+- Status line: a reply without a proposal shows "No changes were made to the page." (`message.noChange`, en and ru) under the text, whatever the text says. An accepted `write_page` whose diff is empty counts as no write.
+- The usage record of a normal run was always `incomplete` (reason `error`); it is `complete` unless a request did not report usage.
+- Tests: `render-recovery.test.ts` replays this page with a model that repeats the no-write claim (nudged once, no proposal, no nudge when there is nothing to fix) and with a model that writes `RUB` (one accepted write, no problems left); `render-items.test.ts` renders all nine blocks of the page after the fix (prices are minor units: `450` renders as 4.50) and shows exactly two throw before it.

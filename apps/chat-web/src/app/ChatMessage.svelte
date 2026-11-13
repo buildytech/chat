@@ -132,6 +132,10 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 						blocks={message.answer.blocks}
 						onApplyVariant={(spec, variant) => applyVariantFromAsk(spec, variant)}
 					/>
+					<!-- An answer without a proposal is a turn with no accepted write_page: the host says so, whatever the text claims (ADR 0035). -->
+					{#if !proposal}
+						<Text tag="p" class="text-xs font-medium text-muted-foreground" data-slot="no-change">{t("message.noChange")}</Text>
+					{/if}
 				</Stack>
 			{:else}
 				<Text tag="p" class="break-words text-sm leading-relaxed whitespace-pre-wrap text-foreground">{body}</Text>

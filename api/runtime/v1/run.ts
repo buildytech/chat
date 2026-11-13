@@ -31988,13 +31988,22 @@ function userPrompt(ctx: TurnContext): string {
 		request: ctx.brief,
 		...(ctx.conversation?.length ? { conversation: ctx.conversation } : {}),
 		page: pageView(ctx.page),
-		...(renderProblems(ctx.page).length ? { renderProblems: renderProblems(ctx.page) } : {}),
+		...(renderProblems(ctx.page).length ? { renderProblems: renderProblems(ctx.page), renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
 		...(ctx.scopeBlockIds?.length ? { scope: { blockIds: ctx.scopeBlockIds } } : {}),
 		...(ctx.screenId ? { screenHint: ctx.screenId } : {}),
 		...(ctx.collection ? { collection: collectionPromptContext(ctx.collection) } : {}),
 		propsOfBlocksOnPage: outlines,
 		itemIndex: itemIndex()
 	});
+}
+
+/** Sent once when a turn that has something to fix ends without an accepted write (ADR 0035). Program text, no phrase recognition. */
+function nudgeText(problems: number): string {
+	return [
+		"Host notice: nothing on the page has changed in this turn (no write_page was accepted).",
+		problems > 0 ? "The page has blocks that do not render; they are listed in renderProblems (get_page shows them)." : "Blocks are selected for this edit.",
+		"Call write_page now with the change, or say plainly that you are not changing the page and why. Do not report a change that write_page did not accept."
+	].join(" ");
 }
 
 const BUDGET = { maxSteps: RUN_BUDGET.maxToolCalls, maxTokens: 8192 } as const;
@@ -32022,10 +32031,17 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 	let lastIssues = null as IssueSet | null;
 	let stuck = null as IssueSet | null;
 	const finish = (): TurnResultOut["meta"] => {
-		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, { incomplete: "error" }) : unknownUsage("error", trace.steps);
+		// Complete when every request reported its usage; incomplete only for a request that did not (it was always marked incomplete before).
+		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, stepUsage.length < trace.steps ? { incomplete: "error" } : undefined) : unknownUsage("error", trace.steps);
 		return turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId);
 	};
 	let endedOnCalls = false;
+	// A turn with blocks that do not render (every block of the current page is probed here, not only the ones a write touches),
+	// or an edit scoped to selected blocks, is expected to end with an accepted write; if it does not, the model is asked once.
+	const open = renderProblems(ctx.page).length;
+	const expectsChange = open > 0 || (ctx.mode === "build" && Boolean(ctx.scopeBlockIds?.length));
+	let nudged = false;
+	const changed = () => Boolean(proposal && proposal.diff.length > 0);
 	while (trace.steps < BUDGET.maxSteps && !stuck) {
 		trace.steps += 1;
 		endedOnCalls = false;
@@ -32035,7 +32051,14 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 		const said = modelText(message);
 		if (said) text = said;
 		const calls = message.tool_calls ?? [];
-		if (calls.length === 0) break;
+		if (calls.length === 0) {
+			if (expectsChange && !nudged && !changed() && trace.steps < BUDGET.maxSteps) {
+				nudged = true;
+				messages.push({ role: "assistant", content: said || "" }, { role: "user", content: nudgeText(open) });
+				continue;
+			}
+			break;
+		}
 		endedOnCalls = true;
 		trace.toolCallingWorked = true;
 		messages.push({ role: "assistant", content: message.content ?? null, tool_calls: calls });
@@ -32070,7 +32093,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 			messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
 		}
 	}
-	if (endedOnCalls && !stuck && !proposal) {
+	if (endedOnCalls && !stuck && !changed()) {
 		// The step budget ended on tool calls: one more request, no tools, so the model answers with what it read.
 		const last = await providerStep({ apiKey, modelId, messages, tools, toolChoice: "none", maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
 		if (last.ok) text = modelText(last.message) || text;
@@ -32087,7 +32110,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 			meta
 		};
 	}
-	if (proposal) return { result: agentReply(ctx.mode, text, blocks, proposal), meta };
+	if (proposal && changed()) return { result: agentReply(ctx.mode, text, blocks, proposal), meta };
 	if (lastIssues) {
 		return { result: { ok: false, code: "write_invalid", message: lastIssues.message, issues: lastIssues.issues }, meta };
 	}

@@ -37,3 +37,24 @@ export async function withProvider<T>(script: Scripted[], run: (seen: Seen) => P
 export const toolNames = (request: Record<string, unknown>) => (request.tools as Array<{ function: { name: string } }>).map((tool) => tool.function.name);
 export const signal = () => new AbortController().signal;
 
+
+/** Install the render probe from the compiled registry blocks (api/runtime/_render/blocks.mjs, `npm run bundle:runtime`); builds it when missing. */
+export async function installBundleProbe(): Promise<() => void> {
+	const { existsSync } = await import("node:fs");
+	const { spawnSync } = await import("node:child_process");
+	const { join } = await import("node:path");
+	const { fileURLToPath, pathToFileURL } = await import("node:url");
+	const { installRenderProbe } = await import("../../packages/builder-core/src/index.ts");
+	const root = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
+	const bundle = join(root, "api", "runtime", "_render", "blocks.mjs");
+	if (!existsSync(bundle)) spawnSync(process.execPath, [join(root, "scripts/build-render-bundle.mjs")], { cwd: root, stdio: "pipe" });
+	const mod = (await import(pathToFileURL(bundle).href)) as { blocks: Record<string, unknown>; render: (c: unknown, o: { props: Record<string, unknown> }) => { body: string } };
+	installRenderProbe((organism, props) => {
+		try {
+			return { ok: true, html: mod.render(mod.blocks[organism], { props }).body };
+		} catch (err) {
+			return { ok: false, error: (err as Error).message };
+		}
+	}, { required: true });
+	return () => installRenderProbe(null);
+}
