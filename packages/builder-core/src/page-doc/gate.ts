@@ -4,6 +4,7 @@
  * and footer-like items last). A failure is a list of compiler-style `{ path, code, expected, got }` that name where
  * (a JSON Pointer into the document), what the registry wanted and what was written, so an agent fixes its own document.
  */
+import { closestIconNames } from "../icon-name.ts";
 import { pageV2Issues, pageV2ProgramIssues, type PageV2, type SchemaIssue } from "@buildytech/page-contract";
 import { validateItemProps } from "../catalog/provenance.ts";
 import { itemInfo, allItems } from "./items.ts";
@@ -53,8 +54,12 @@ function schemaIssue(issue: SchemaIssue, doc: unknown): DocIssue {
 }
 
 /** Allowed values of a props enum, cut for a long list (Lucide icons). */
-function allowedText(allowed: unknown[] | undefined): string {
+function allowedText(allowed: unknown[] | undefined, value?: unknown): string {
 	if (!allowed?.length) return "";
+	if (allowed.length > 40 && typeof value === "string" && value) {
+		const near = closestIconNames(value);
+		return `one of ${allowed.length} Lucide icon names; "${value}" is not one${near.length ? `, nearest: ${near.join(", ")}` : ""}; any other real name works (e.g. house, star, utensils, truck)`;
+	}
 	const shown = allowed.slice(0, 12).map(String).join(" | ");
 	return allowed.length > 12 ? `one of ${allowed.length} values, e.g. ${shown}` : `one of ${shown}`;
 }
@@ -84,7 +89,7 @@ export function registryIssues(page: PageV2): DocIssue[] {
 			out.push({
 				path: `${at}/props${issue.pointer}`,
 				code: "props_invalid",
-				expected: issue.allowed?.length ? allowedText(issue.allowed) : `${issue.message} (props schema of ${block.item})`,
+				expected: issue.allowed?.length ? allowedText(issue.allowed, issue.value) : `${issue.message} (props schema of ${block.item})`,
 				got: issue.keyword === "required" ? undefined : issue.value
 			});
 		}

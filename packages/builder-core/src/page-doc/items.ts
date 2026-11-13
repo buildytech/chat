@@ -8,6 +8,7 @@ import { catalogSources } from "../catalog/sources.ts";
 import { catalogEntryBySpec } from "../catalog/sources.ts";
 import { rendererKindForLabel } from "../catalog/compatibility.ts";
 import { hasPropsSchema } from "../catalog/props-schema.ts";
+import type { PageBlockKind } from "@buildytech/page-contract";
 
 /** Page chrome that stays at the top (header, side navigation) or at the bottom (footer, bottom navigation): registry roles. */
 function chromeEdge(kind: string): "top" | "bottom" | null {
@@ -22,6 +23,8 @@ export type ItemInfo = {
 	organism: string;
 	defaultVariant: string;
 	variants: string[];
+	/** Renderer kind of its Stock block (registry metadata): a ranking hint for the Blocks feed, never a rule. */
+	kind: PageBlockKind | null;
 	/** "top": header-like (first on the page); "bottom": footer-like (last); null: a section. */
 	edge: "top" | "bottom" | null;
 };
@@ -43,6 +46,7 @@ export function itemInfo(item: string): ItemInfo | null {
 			organism: block.organism,
 			defaultVariant: block.defaultVariant,
 			variants: Object.keys(block.variants),
+			kind,
 			edge: kind ? chromeEdge(kind) : null
 		};
 	}

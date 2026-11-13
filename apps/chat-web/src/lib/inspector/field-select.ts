@@ -4,7 +4,7 @@
  * element in the frame and its control in the inspector. The block DOM is the registry output — no marker is added to it;
  * everything is resolved through `data-slot` and the registry `viewMap` (builder-core `view-map.ts`).
  */
-import { fieldAtElement, locateField, organismFor, viewMapOf, type ViewElement } from "@buildytech/builder-core";
+import { fieldAtElement, locateField, renderBlock, viewMapOf, type ViewElement } from "@buildytech/builder-core";
 import type { PageBlock } from "$lib/page-store";
 import { fieldDomId } from "./fields";
 import { blockSelector } from "./geometry";
@@ -19,7 +19,7 @@ function blockRoot(wrapper: Element): Element | null {
 
 /** The prop pointer the click landed on inside a block, or null (on the chrome, or on no mapped field). */
 export function fieldAtClick(block: PageBlock, wrapper: Element, target: Element): string | null {
-	const render = organismFor(block);
+	const render = renderBlock(block);
 	const map = render ? viewMapOf(render.item) : null;
 	const root = blockRoot(wrapper);
 	if (!render || !map || !root || !root.contains(target)) return null;
@@ -29,7 +29,7 @@ export function fieldAtClick(block: PageBlock, wrapper: Element, target: Element
 /** The element of the preview document that shows `pointer` of a block, or null. */
 export function fieldElement(doc: Document, block: PageBlock, pointer: string): Element | null {
 	const wrapper = doc.querySelector(blockSelector(block.id));
-	const render = organismFor(block);
+	const render = renderBlock(block);
 	const map = render ? viewMapOf(render.item) : null;
 	const root = wrapper ? blockRoot(wrapper) : null;
 	if (!render || !map || !root) return null;

@@ -11,7 +11,7 @@ import {
 	sessionProgramIssues,
 	type SessionRevisionEntry
 } from "@buildytech/page-contract/session";
-import type { StoredPageRecord } from "./persist.ts";
+import { migrateStoredPageRecord, type StoredPageRecord } from "./persist.ts";
 
 export type SessionPins = {
 	stock: { repo: string; contentCommit: string };
@@ -123,7 +123,7 @@ export function parseSessionFile(input: unknown): ParsedSessionFile {
 	}
 	const issues = sessionFileIssues(value);
 	if (issues.length) return { ok: false, code: "schema_invalid", issues: issues.slice(0, 20) };
-	const file = value as SessionFile;
+	const file = migrateSessionFile(value as SessionFile);
 	const program = sessionProgramIssues(file);
 	if (program.length) return { ok: false, code: "program_invalid", issues: program.slice(0, 20) };
 	return { ok: true, file };
@@ -138,4 +138,12 @@ export function splitSessionFile(file: SessionFile): { chats: StoredChat[]; page
 		if (page) pages[chat.id] = page;
 	}
 	return { chats, pages };
+}
+
+/**
+ * A session file with every page record at page-spec/v2 (ADR 0034): 1.x pages are migrated block by block (same registry
+ * item, variant and props the preview rendered), v2 pages stay as they are. Chats, history and settings are untouched.
+ */
+export function migrateSessionFile(file: SessionFile): SessionFile {
+	return plain({ ...file, sessions: file.sessions.map((chat) => ({ ...chat, page: chat.page ? migrateStoredPageRecord(chat.page) : null })) });
 }

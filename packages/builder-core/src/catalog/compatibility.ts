@@ -1,5 +1,6 @@
 import { PAGE_BLOCK_KINDS, type PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
+import { itemInfo, itemOfSpec } from "../page-doc/items.ts";
 import type { CatalogBlockIndexEntry, CatalogScreen, CatalogScreenSlot, ScreenCompatibility } from "./types.ts";
 
 const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
@@ -38,8 +39,10 @@ export function compatibilityFor(screen: CatalogScreen): ScreenCompatibility {
 		const entry = getBlockIndex(label);
 		const kind = rendererKindForLabel(label);
 		const catalogIds = entry?.catalogIds ?? [];
-		if (kind && entry?.available !== false) {
-			mapped.push({ catalogLabel: label, rendererKind: kind, catalogIds });
+		// A Stock block renders when the registry has a renderable item for it (ADR 0034); the renderer kind is only a role hint.
+		const item = entry?.spec ? itemOfSpec(entry.spec) : null;
+		if (item && itemInfo(item) && entry?.available !== false) {
+			mapped.push({ catalogLabel: label, rendererKind: kind ?? "section", catalogIds });
 		} else {
 			missing.push({
 				catalogLabel: label,

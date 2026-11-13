@@ -1,4 +1,5 @@
-import type { AgentMode, CatalogRefs, PagePlan, RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
+import type { AgentMode, CatalogRefs, DiffEntry, RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
+import type { PageV2 } from "@buildytech/page-contract";
 import type { SessionRevisionEntry } from "@buildytech/page-contract/session";
 
 export type ServerCapabilities = {
@@ -47,8 +48,17 @@ export type ChatProposalState = {
 	demoData?: boolean;
 	/** Program-generated from the pinned Stock catalog after validation. Persisted with the chat. */
 	catalogRefs?: CatalogRefs;
-	/** ask-card: Apply variant on an Ask block card; ask-plan: Apply in Build on an Ask plan (no model call). */
-	origin?: "ask-card" | "ask-plan";
+	/**
+	 * ask-card: Apply variant on an Ask block card; ask-proposal: the proposal of an Ask answer (kept in `page` while the
+	 * message is Ask's) and its Apply in Build; ask-plan: a 1.4.0 plan (old chats only). None of them calls the model.
+	 */
+	origin?: "ask-card" | "ask-plan" | "ask-proposal";
+	/** The page revision the proposal was made for (Apply in Build checks that the page did not move on). */
+	baseRevision?: number;
+	/** The proposal as a diff against the page the author saw: per block added, removed, moved, changed. */
+	diff?: DiffEntry[];
+	/** An Ask proposal's page document (Ask never touches the page store). */
+	page?: PageV2;
 	/** Follow-up turns: block kinds added, kept, and removed versus the base page. */
 	changes?: { added: string[]; kept: string[]; removed: string[] };
 };
@@ -86,8 +96,8 @@ export type ChatMessage = {
 	answer?: { blocks: string[] };
 	/** Build proposals: the model's own words next to the proposal summary (Markdown). */
 	modelText?: string;
-	/** Ask answers: the checked page plan (session 1.4.0 `plan`, ADR 0020); its ops run with Apply in Build. */
-	plan?: PagePlan;
+	/** A 1.4.0 page plan of an old Ask answer: kept in the chat file, shown as text only, never run (ADR 0034). */
+	plan?: unknown;
 };
 
 export type ChatSession = {

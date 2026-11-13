@@ -1,6 +1,5 @@
-import { parsePageSpec, type Page, type PageBlock } from "@buildytech/page-contract";
+import { parsePageV2, type PageV2 as Page, type BlockV2 as PageBlock } from "@buildytech/page-contract";
 import type { SessionRevisionCause, SessionRevisionOp } from "@buildytech/page-contract/session";
-import { mockLandingPage } from "./fixture";
 import { findBlock, firstBlockId, hasBlock } from "./tree";
 import { nextRevision, type VisibleChange } from "./revision";
 import {
@@ -9,8 +8,6 @@ import {
 	type StoredPageProvenance,
 	type StoredPageRecord
 } from "../browser/persist";
-
-export { mockLandingPage };
 
 /**
  * Client page state. Unbound sessions keep `null` (blank Workspace — not the North Harbor fixture).
@@ -52,18 +49,18 @@ function announce(cause: SessionRevisionCause, blockId?: string | null, meta?: R
 		sessionId: boundSessionId,
 		revision: pageRevision,
 		cause,
-		pageId: currentPage.id,
+		pageId: currentPage.id ?? `page-${boundSessionId.replace(/^session-/, "")}`.slice(0, 64),
 		...(blockId ? { blockId } : {}),
 		...(meta?.op ? { op: meta.op } : {}),
 		...(meta?.path ? { path: meta.path } : {})
 	});
 }
 
-/** Saved pages are page-spec/v1 documents: the published schema, then the parsePage program checks. */
+/** Saved pages are page-spec/v2 documents (the page store migrates 1.x records when it reads them): the published schema, then the program checks. */
 function parseStored(raw: unknown): Page | null {
 	if (raw == null) return null;
 	try {
-		return parsePageSpec(raw);
+		return parsePageV2(raw);
 	} catch {
 		return null;
 	}
@@ -89,8 +86,8 @@ function syncSelection(page: Page | null): void {
 		selectedBlockId = null;
 		return;
 	}
-	if (!hasBlock(page.layout.blocks, selectedBlockId)) {
-		selectedBlockId = firstBlockId(page.layout.blocks);
+	if (!hasBlock(page.blocks, selectedBlockId)) {
+		selectedBlockId = firstBlockId(page.blocks);
 	}
 }
 
@@ -105,7 +102,7 @@ function restoreRecord(record: StoredPageRecord | null): void {
 	lastProposedProvenance = lastProposedPage ? (record?.lastProposedProvenance ?? null) : null;
 	pageRevision = typeof record?.revision === "number" ? record.revision : applied ? 1 : null;
 	const visible = candidate ?? applied;
-	if (visible && record?.selectedBlockId && hasBlock(visible.layout.blocks, record.selectedBlockId)) {
+	if (visible && record?.selectedBlockId && hasBlock(visible.blocks, record.selectedBlockId)) {
 		selectedBlockId = record.selectedBlockId;
 	} else {
 		syncSelection(visible);
@@ -190,12 +187,12 @@ export function getSelectedBlockId(): string | null {
 export function getSelectedBlock(): PageBlock | null {
 	const page = candidatePage ?? currentPage;
 	if (!page) return null;
-	return findBlock(page.layout.blocks, selectedBlockId);
+	return findBlock(page.blocks, selectedBlockId);
 }
 
 export function selectBlock(id: string): void {
 	const page = candidatePage ?? currentPage;
-	if (!page || !hasBlock(page.layout.blocks, id)) return;
+	if (!page || !hasBlock(page.blocks, id)) return;
 	selectedBlockId = id;
 	persistBound();
 }
@@ -205,7 +202,7 @@ export function selectBlock(id: string): void {
  * Malformed input must not call this — callers parse first and keep the previous page on failure.
  */
 export function setCurrentPage(page: Page, revision: number | null = null): void {
-	const next = parsePageSpec(page);
+	const next = parsePageV2(page);
 	currentPage = next;
 	candidatePage = null;
 	appliedProvenance = null;
@@ -218,7 +215,7 @@ export function setCurrentPage(page: Page, revision: number | null = null): void
 }
 
 export function setCandidatePage(page: Page, provenance?: StoredPageProvenance | null): void {
-	candidatePage = parsePageSpec(page);
+	candidatePage = parsePageV2(page);
 	candidateProvenance = provenance ?? null;
 	lastProposedPage = candidatePage;
 	lastProposedProvenance = candidateProvenance;
@@ -274,7 +271,7 @@ export function replaceVisiblePage(
 		pageRevision = step.revision;
 		if (provenance !== undefined) appliedProvenance = provenance;
 	}
-	if (selectId && hasBlock(page.layout.blocks, selectId)) selectedBlockId = selectId;
+	if (selectId && hasBlock(page.blocks, selectId)) selectedBlockId = selectId;
 	else syncSelection(page);
 	persistBound();
 	if (step.cause) announce(step.cause, selectId, step.cause === "edit" ? meta : undefined);
@@ -287,8 +284,8 @@ export function replaceVisiblePage(
  * this empty page). A chat that already shows a page or a pending proposal is left alone (false).
  */
 export function startEmptyPage(page: Page, provenance: StoredPageProvenance): boolean {
-	if (!boundSessionId || candidatePage || (currentPage && currentPage.layout.blocks.length > 0)) return false;
-	currentPage = parsePageSpec(page, { draft: true });
+	if (!boundSessionId || candidatePage || (currentPage && currentPage.blocks.length > 0)) return false;
+	currentPage = parsePageV2(page);
 	appliedProvenance = provenance;
 	candidateProvenance = null;
 	pageRevision = pageRevision ?? 0;
@@ -308,9 +305,4 @@ export function clearCurrentPage(): void {
 	selectedBlockId = null;
 	pageRevision = null;
 	persistBound();
-}
-
-/** Mock-mode only: seed the North Harbor fixture. */
-export function loadMockFixturePage(): void {
-	setCurrentPage(mockLandingPage, 1);
 }

@@ -229,17 +229,14 @@ export {
 	PAGE_FAMILIES,
 	NAMED_FAMILIES,
 	type PageFamily,
-	type FamilyState,
 	isPageFamily,
 	familyScreenId,
 	familyOfScreen,
 	familiesOfKind,
 	familyKinds,
-	deriveFamily,
-	nextFamilyState,
-	withFamily
+	deriveFamily
 } from "./catalog/page-family.ts";
 export * from "./page-doc/index.ts";
-export { itemIndex, propsOutline, readBlock, resolveItem, type BlockRead } from "./agent/blocks.ts";
+export { askBlockCards, itemIndex, propsOutline, readBlock, resolveItem, type BlockRead } from "./agent/blocks.ts";
 export { executeCatalogTool, compactSearchResult, searchRelaxed, isAllowedTool, type CompactSearchItem, type CompactSearchPayload, type ToolCall, type ToolHost, type ToolOutcome } from "./agent/catalog-tools.ts";
 export { agentReply, isAgentReply, runWriteTool, scopeIssues, type AgentFailure, type AgentReply, type PageProposal, type TurnContext, type WriteToolResult } from "./agent/turn.ts";

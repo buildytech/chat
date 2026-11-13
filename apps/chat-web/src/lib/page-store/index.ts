@@ -1,15 +1,4 @@
-export {
-	blocksOf,
-	parseDraftPage,
-	parsePage,
-	type CreatorPage,
-	type Page,
-	type PageBlock,
-	type PageBlockCopy,
-	type PageBlockKind,
-	type PageStatus
-} from "./page";
-export { mockLandingPage } from "./fixture";
+export { blocksOf, parseDraftPage, parsePage, type CreatorPage, type Page, type PageBlock, type PageStatus } from "./page";
 export {
 	applyCandidate,
 	bindPageSession,
@@ -26,7 +15,6 @@ export {
 	getSelectedBlock,
 	getSelectedBlockId,
 	hasUnappliedProposal,
-	loadMockFixturePage,
 	onPageRevision,
 	readPreviewPage,
 	replaceVisiblePage,
@@ -40,4 +28,4 @@ export {
 export { svelteForBlock, svelteFromPage, sveltePackFiles } from "./svelte-code";
 export { buildStoreZip, packFilesFromPage, packZipFiles, type PackFile, type PackOptions, type RegistryReader } from "./pack";
 export { downloadPageZip } from "./download";
-export { findBlock, firstBlockId, hasBlock, walkBlocks } from "./tree";
+export { findBlock, firstBlockId, hasBlock } from "./tree";

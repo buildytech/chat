@@ -10,6 +10,7 @@ import { checkCollection, type CollectionBounds } from "../collection.ts";
 import { diffPages, type DiffEntry } from "../page-doc/diff.ts";
 import type { DocIssue } from "../page-doc/gate.ts";
 import { writePage, type WriteInput } from "../page-doc/write.ts";
+import { blankRequired } from "../page-doc/render.ts";
 
 export type TurnContext = {
 	brief: string;
@@ -98,6 +99,11 @@ export function runWriteTool(ctx: TurnContext, working: PageV2, args: Record<str
 		return { ok: false, code: "write_invalid", message: `The page was not written: ${issues.length} problem${issues.length > 1 ? "s" : ""}, first at ${issues[0]!.path} (${issues[0]!.code}). Nothing changed; fix the listed paths and call write_page again.`, issues };
 	}
 	const proposal: PageProposal = { page: written.page, diff, baseRevision: ctx.expectedRevision, warnings: written.warnings };
+	const touched = new Set(diff.filter((entry) => entry.scope === "block" && entry.change !== "removed" && entry.change !== "moved" && entry.id).map((entry) => entry.id!));
+	const empty = written.page.blocks.filter((block) => touched.has(block.id)).flatMap((block) => {
+		const paths = blankRequired(block, 4);
+		return paths.length ? [{ id: block.id, paths }] : [];
+	});
 	return {
 		ok: true,
 		page: written.page,
@@ -108,6 +114,7 @@ export function runWriteTool(ctx: TurnContext, working: PageV2, args: Record<str
 			blocks: written.page.blocks.map((block) => ({ id: block.id, item: block.item, variant: block.variant ?? null })),
 			diff: diff.map((entry) => ({ change: entry.change, ...(entry.id ? { id: entry.id } : { page: true }), ...(entry.paths ? { paths: entry.paths.slice(0, 8) } : {}) })),
 			...(written.warnings.length ? { notes: written.warnings } : {}),
+			...(empty.length ? { empty_required_text: empty.slice(0, 8), fill: "These required texts are empty and the block would show nothing or its own placeholder. Write the author's content into them (one write_page with the whole page, or a patch) unless the request gives none." } : {}),
 			note:
 				ctx.mode === "ask"
 					? "This is a proposal. Nothing is applied: the author applies it in Build with one click. Say in your answer what it changes."

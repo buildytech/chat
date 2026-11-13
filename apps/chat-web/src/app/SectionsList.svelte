@@ -1,8 +1,8 @@
 <!--
   Sections tab (ADR 0024 step B): the current page's top-level sections in page order, each with its Stock thumbnail,
   title and spec. Reorder by dragging the handle (pointer), with the up / down buttons, or with Alt+Arrow
-  Up / Down on a focused section (announced in a live region); remove a section. Variant and screen family are not
-  picked here: the variant lives in the inspector, and the family stays an advisory note on the chat column.
+  Up / Down on a focused section (announced in a live region); remove a section. The variant is not
+  picked here: it lives in the inspector.
   Every action is an inspector operation (page-spec, props and catalog gates, one undo step, no model call).
   Selection is the page store's: a click here selects and reveals the section in the preview, a pick in the
   preview highlights it here. A Blocks feed card dragged here (the Sections tab opens when the drag rests on it)
@@ -26,7 +26,7 @@ import { ArrowDown, ArrowUp, GripVertical, Redo2, Trash2, Undo2 } from "$lib/she
 	import { feedDrag } from "$lib/feed/drag.svelte";
 	import { dropAt, dropRefusal, refuseDrop } from "$lib/feed/drop.svelte";
 	import { blocksOf, getCurrentPage, getSelectedBlockId, selectBlock, type PageBlock } from "$lib/page-store";
-	import { blockThumbUrl, moveSlotCheck } from "@buildytech/builder-core";
+	import { blockThumbUrl, itemInfo, moveSlotCheck } from "@buildytech/builder-core";
 	import { inspectorPanel } from "$lib/inspector/panel.svelte";
 	import StockThumb from "./StockThumb.svelte";
 
@@ -40,8 +40,9 @@ import { ArrowDown, ArrowUp, GripVertical, Redo2, Trash2, Undo2 } from "$lib/she
 	const SLOT_CODES = new Set(["index_out_of_range", "above_header", "below_footer", "header_top", "footer_end"]);
 	const listEl = () => document.querySelector<HTMLElement>('[data-slot="sections-list"]');
 
+	const titleOf = (block: PageBlock) => itemInfo(block.item)?.title ?? block.item;
 	const fill = (key: string, block: PageBlock, extra: Record<string, string | number> = {}) => {
-		let text = t(key).replace("{title}", block.title);
+		let text = t(key).replace("{title}", titleOf(block));
 		for (const [name, value] of Object.entries(extra)) text = text.replace(`{${name}}`, String(value));
 		return text;
 	};
@@ -271,10 +272,10 @@ import { ArrowDown, ArrowUp, GripVertical, Redo2, Trash2, Undo2 } from "$lib/she
 								onpointerenter={() => canvas.hover(block.id)}
 								onpointerleave={() => canvas.hover(null)}
 							>
-								<StockThumb src={blockThumbUrl(block.catalogBlock ?? "", block.variant)} title={block.title} class="w-14" />
+								<StockThumb src={blockThumbUrl(itemInfo(block.item)?.spec ?? "", block.variant)} title={titleOf(block)} class="w-14" />
 								<Stack align="stretch" class="min-w-0 flex-1 gap-0">
-									<Text tag="span" class="truncate text-xs font-medium text-foreground">{block.title}</Text>
-									<Text tag="span" class="truncate font-mono text-xs text-muted-foreground">{block.catalogBlock ?? block.kind}{block.variant ? `/${block.variant}` : ""}</Text>
+									<Text tag="span" class="truncate text-xs font-medium text-foreground">{titleOf(block)}</Text>
+									<Text tag="span" class="truncate font-mono text-xs text-muted-foreground">{itemInfo(block.item)?.spec ?? block.item}{block.variant ? `/${block.variant}` : ""}</Text>
 								</Stack>
 							</Button>
 							<Group class="shrink-0 items-center gap-0">

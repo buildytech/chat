@@ -7,7 +7,8 @@ import type { BlockV2, PageV2, PropValueV2 } from "@buildytech/page-contract";
 import { newPropsListRow } from "../catalog/props-schema.ts";
 import { addSlotCheck, moveSlotCheck, naturalIndex } from "./slots.ts";
 import { screenItems } from "./start.ts";
-import { itemInfo } from "./items.ts";
+import { catalogEntryBySpec } from "../catalog/sources.ts";
+import { itemInfo, itemOfSpec } from "./items.ts";
 import { cloneJson, effectiveProps, sampleProps } from "./render.ts";
 import { freshBlockId, writePage, type WriteResult } from "./write.ts";
 import type { DocIssue } from "./gate.ts";
@@ -24,6 +25,22 @@ export type PageOp =
 	| { op: "replace"; blockId: string; item: string; variant?: string | null }
 	| { op: "list_row"; blockId: string; pointer: string; action: "add" | "remove" | "up" | "down" | "duplicate"; row?: number }
 	| { op: "page"; field: "title" | "slug" | "locale" | "seo.title" | "seo.description"; value: string };
+
+/** Whether a Stock catalog block variant can be added to a page (the Blocks feed "+" and drag): a registry item that renders. */
+export type AddCheck =
+	| { ok: true; item: string; variant: string }
+	| { ok: false; code: "unknown_block" | "no_renderer" | "unknown_variant"; message: string };
+
+export function checkAdd(spec: string, variant?: string | null): AddCheck {
+	const entry = catalogEntryBySpec(spec);
+	if (!entry?.available) return { ok: false, code: "unknown_block", message: `${spec} is not a Stock catalog block.` };
+	const item = itemOfSpec(spec);
+	const info = item ? itemInfo(item) : null;
+	if (!item || !info) return { ok: false, code: "no_renderer", message: `${spec} has no registry item that renders in this BuildY version yet.` };
+	const want = variant || info.defaultVariant;
+	if (!info.variants.includes(want)) return { ok: false, code: "unknown_variant", message: `${spec} has no variant ${want}.` };
+	return { ok: true, item, variant: want };
+}
 
 /** What a session history entry says an edit did (session 1.6.0 `op`). */
 export type OpName = "set_field" | "set_variant" | "add" | "move" | "remove" | "insert" | "replace";

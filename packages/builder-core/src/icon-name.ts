@@ -66,6 +66,26 @@ export function resolveIconName(raw: string): string | null {
 	return near.length === 1 ? near[0]! : null;
 }
 
+/** Published icon names closest to a name that matched nothing: substring matches first, then edit distance (for the error the agent reads). */
+export function closestIconNames(raw: string, limit = 6): string[] {
+	const { names } = index();
+	const name = kebab(raw);
+	const k = key(name);
+	if (!k) return [];
+	const rank = (candidate: string): number => {
+		const ck = key(candidate);
+		if (ck.startsWith(k) || k.startsWith(ck)) return 0;
+		if (ck.includes(k) || k.includes(ck)) return 1;
+		return 2 + distance(name, candidate, 6);
+	};
+	return [...names]
+		.map((candidate) => ({ candidate, score: rank(candidate) }))
+		.filter((row) => row.score <= 5)
+		.sort((a, b) => a.score - b.score || a.candidate.localeCompare(b.candidate))
+		.slice(0, limit)
+		.map((row) => row.candidate);
+}
+
 /** Warning text for the icon fixes of one proposal (mapped and dropped). */
 export function iconFixWarning(fixes: readonly IconFix[]): string | null {
 	if (!fixes.length) return null;

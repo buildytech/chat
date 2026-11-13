@@ -1,10 +1,11 @@
 /**
- * Screen family of a page (ADR 0027, page-spec 1.4.0 provenance.family / familyPinned). Advisory only: derived from the
- * page's composition after every operation, it ranks the Blocks feed, picks where new sections take their Stock sample
+ * Screen family of a page (ADR 0027, kept by ADR 0034 as a ranking hint only). Advisory: derived from the page's
+ * composition when it is read (nothing is stored on the page or the record), it ranks the Blocks feed, picks where new sections take their Stock sample
  * and tells Ask what kind of page this is. It never rejects a block; the hard rules stay header first / footer last
  * (addSlotCheck), a renderer exists and the props schema passes.
  */
-import type { PageBlock, PageBlockKind } from "@buildytech/page-contract";
+import type { BlockV2, PageBlockKind } from "@buildytech/page-contract";
+import { itemInfo } from "../page-doc/items.ts";
 import { familyLabelForKind, FAMILY_HOME_SCREENS } from "./provenance.ts";
 import { getScreenById } from "./search.ts";
 import { catalogSnapshot } from "./snapshot.ts";
@@ -63,8 +64,8 @@ function telling(kind: PageBlockKind): NamedFamily[] | null {
  * The family of a composition: the named family the most top-level sections belong to, when more than half of the
  * telling sections belong to it (ties go by NAMED_FAMILIES order); otherwise generic. No telling section: generic.
  */
-export function deriveFamily(blocks: readonly Pick<PageBlock, "kind">[]): PageFamily {
-	const votes = blocks.map((node) => telling(node.kind)).filter((families): families is NamedFamily[] => families !== null);
+export function deriveFamily(blocks: readonly Pick<BlockV2, "item">[]): PageFamily {
+	const votes = blocks.map((node) => { const kind = itemInfo(node.item)?.kind; return kind ? telling(kind) : null; }).filter((families): families is NamedFamily[] => families !== null);
 	if (votes.length === 0) return "generic";
 	let best: NamedFamily | null = null;
 	let bestScore = 0;
@@ -87,23 +88,4 @@ export function familyKinds(family: PageFamily): PageBlockKind[] {
 		if (kind) kinds.add(kind);
 	}
 	return [...kinds].filter((kind) => telling(kind)?.includes(family));
-}
-
-export type FamilyState = { family?: PageFamily | null; familyPinned?: boolean; screenId: string | null; scenarioId?: unknown };
-
-/**
- * The provenance after a composition change: unchanged when pinned or when the derived family is the same, else the
- * new family. The page's recorded Stock screen stays (its sections keep their provenance); new sections sample from
- * it or, for a kind it lacks, from the first family that has the kind (kindSourceFor).
- */
-export function nextFamilyState<T extends FamilyState>(current: T, blocks: readonly Pick<PageBlock, "kind">[]): T {
-	if (current.familyPinned) return current;
-	const family = deriveFamily(blocks);
-	if (family === (current.family ?? null)) return current;
-	return withFamily(current, family, false);
-}
-
-/** Set (or pin) a family; only the advisory fields change. */
-export function withFamily<T extends FamilyState>(current: T, family: PageFamily, pinned: boolean): T {
-	return { ...current, family, familyPinned: pinned };
 }

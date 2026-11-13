@@ -13,13 +13,12 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
 	import type { ChatMessage as ChatMessageModel } from "$lib/chat-core";
-	import { isPendingProposal, proposalStatus } from "$lib/chat-core/proposals";
 	import { formatTokens } from "@buildytech/builder-core";
 	import CatalogRefsList from "./CatalogRefsList.svelte";
 	import MarkdownText from "./MarkdownText.svelte";
 	import AskBlockCards from "./AskBlockCards.svelte";
-	import AskPlanCard from "./AskPlanCard.svelte";
-	import { applyPlanInBuild, applyProposal, applyVariantFromAsk, discardProposal } from "$lib/chat-core";
+	import ProposalDiff from "./ProposalDiff.svelte";
+	import { applyVariantFromAsk } from "$lib/chat-core";
 
 	let {
 		message,
@@ -39,19 +38,7 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 
 	const run = $derived(message.run);
 	const proposal = $derived(message.proposal);
-	const status = $derived(proposal ? proposalStatus(proposal) : null);
-	const pending = $derived(proposal ? isPendingProposal(proposal) : false);
-	// Proposal replies are written from what the proposal changes (ADR 0020); the status line shows its state.
 	const body = $derived(message.text);
-	const statusLabel = $derived(
-		status === "applied"
-			? t("proposal.applied")
-			: status === "discarded"
-				? t("proposal.discarded")
-				: status === "superseded"
-					? t("proposal.superseded")
-					: t("proposal.notApplied"),
-	);
 
 	const mine = $derived(message.role === "user");
 
@@ -59,7 +46,7 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 	let copied = $state(false);
 	let copyError = $state(false);
 	const markdown = $derived(
-		mine ? message.text : [...new Set([message.text, proposal ? message.modelText : undefined].filter(Boolean))].join("\n\n"),
+		mine ? message.text : message.text,
 	);
 
 	function relativeTime(iso: string): string {
@@ -141,13 +128,6 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 						{message.mode === "ask" ? t("ask.answerAsk") : t("ask.answerBuild")}
 					</Text>
 					<MarkdownText source={message.text} />
-					{#if message.plan}
-						<AskPlanCard
-							plan={message.plan}
-							messageId={message.id}
-							onApply={(selected) => applyPlanInBuild(message.id, selected)}
-						/>
-					{/if}
 					<AskBlockCards
 						blocks={message.answer.blocks}
 						onApplyVariant={(spec, variant) => applyVariantFromAsk(spec, variant)}
@@ -160,25 +140,7 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 				<MarkdownText source={message.modelText} />
 			{/if}
 			{#if proposal}
-				<Group class="flex-wrap items-center gap-2">
-					<Text tag="span" class="text-xs text-muted-foreground">
-						{statusLabel}
-					</Text>
-					{#if pending}
-						<Button
-							class="rounded bg-foreground px-3 py-1 text-sm text-background hover:bg-foreground/90"
-							onclick={() => (onApply ? onApply() : applyProposal())}
-						>
-							<Text tag="span">{t("proposal.apply")}</Text>
-						</Button>
-						<Button
-							class="rounded border border-border px-3 py-1 text-sm text-foreground hover:bg-accent"
-							onclick={() => (onDiscard ? onDiscard() : discardProposal())}
-						>
-							<Text tag="span">{t("proposal.discard")}</Text>
-						</Button>
-					{/if}
-				</Group>
+				<ProposalDiff {message} {onApply} {onDiscard} />
 				{#if !previewSettings.hideServiceLabels && proposal.catalogRefs && (proposal.catalogRefs.blocks.length > 0 || proposal.catalogRefs.screen)}
 					<CatalogRefsList refs={proposal.catalogRefs} demo={Boolean(proposal.demoData)} />
 				{/if}

@@ -35,18 +35,19 @@ export function withProposalStatus(proposal: ChatProposalState, status: Proposal
 export function markPendingProposals(
 	messages: ChatMessage[],
 	status: Exclude<ProposalStatus, "pending">,
-	mode: "latest" | "all" = "all"
+	mode: "latest" | "all" = "all",
+	only: (message: ChatMessage) => boolean = () => true
 ): ChatMessage[] {
 	if (mode === "latest") {
 		let done = false;
 		return [...messages].reverse().map((message) => {
-			if (done || !message.proposal || !isPendingProposal(message.proposal)) return message;
+			if (done || !message.proposal || !isPendingProposal(message.proposal) || !only(message)) return message;
 			done = true;
 			return { ...message, proposal: withProposalStatus(message.proposal, status) };
 		}).reverse();
 	}
 	return messages.map((message) =>
-		message.proposal && isPendingProposal(message.proposal)
+		message.proposal && isPendingProposal(message.proposal) && only(message)
 			? { ...message, proposal: withProposalStatus(message.proposal, status) }
 			: message
 	);

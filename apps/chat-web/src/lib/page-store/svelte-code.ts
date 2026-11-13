@@ -1,19 +1,15 @@
 /**
  * Page -> Svelte source of a Vite project laid out like `npx ui8kit init` + `npx ui8kit add <items>` (install root
  * `src`): the page is src/App.svelte composing one src/sections/<block-id>.svelte per page block, and every section is a
- * UI8Kit registry block (src/blocks/<item>.svelte) with its props, or the explicit "not in registry" stub (the
- * registry Alert). The registry files themselves come from the pinned snapshot (registry/svelte), never from here.
+ * UI8Kit registry block (src/blocks/<item>.svelte) with its props (ADR 0034: the block's `props`, exactly). The registry files themselves come from the pinned snapshot (registry/svelte), never from here.
  */
-import { blocksOf, type CreatorPage, type PageBlock } from "@buildytech/page-contract";
-import { organismFor, registryClosure, registryItemClosure, registryItemFiles, registrySkin, skinItem, type OrganismRender } from "@buildytech/builder-core";
+import { itemInfo, registryClosure, registryItemClosure, registryItemFiles, registrySkin, renderBlock, skinItem, type BlockRender } from "@buildytech/builder-core";
+import type { BlockV2, PageV2 } from "@buildytech/page-contract";
 
 /** CLI install root of the exported project (ui8kit.config.json `dir`, the CLI default). */
 export const INSTALL_ROOT = "src";
 export const APP_FILE = `${INSTALL_ROOT}/App.svelte`;
 export const SECTIONS_DIR = `${INSTALL_ROOT}/sections`;
-/** Registry item of the stub section. */
-export const STUB_ITEM = "alert";
-
 export type SourceFile = { path: string; content: string };
 
 function identFromBlockId(id: string): string {
@@ -37,7 +33,7 @@ function jsonProps(value: unknown): string {
  * Events and slots of the block come from its published props schema (`events`, `slots` next to `schema`): they are
  * not data, so the section wires each event to a handler stub the project fills in and names the slots it may pass.
  */
-function sectionForRegistry(render: OrganismRender): string {
+function sectionForRegistry(render: BlockRender): string {
 	const ident = organismIdent(render.organism);
 	const handlers = render.events.map((event) => `on${event}`);
 	const wiring = handlers.length
@@ -46,7 +42,7 @@ function sectionForRegistry(render: OrganismRender): string {
 				.join("\n")}`
 		: "";
 	const slots = render.slots.length ? `\n<!-- Slots of ${render.item}: ${render.slots.join(", ")} (Svelte snippets, optional). -->` : "";
-	return `<!-- ${render.catalogBlock} / ${render.variant}: UI8Kit registry block ${render.item} (npx ui8kit add ${render.item}). -->
+	return `<!-- ${render.item} / ${render.variant}: UI8Kit registry block (npx ui8kit add ${render.item}). -->
 <script lang="ts">
 	import ${ident} from "../${render.organism}";
 
@@ -57,38 +53,15 @@ ${slots}
 `;
 }
 
-/**
- * Import path of the stub's Alert from a section: the file `npx ui8kit add alert` installs (pinned snapshot), relative
- * to src/sections. Never a hand-written path.
- */
-export function stubAlertImport(): string {
-	const file = registryItemFiles(STUB_ITEM).find((path) => path.endsWith(".svelte"));
-	if (!file || !file.startsWith(`${INSTALL_ROOT}/`)) throw new Error(`registry item ${STUB_ITEM} has no Svelte file under ${INSTALL_ROOT}/`);
-	return `../${file.slice(INSTALL_ROOT.length + 1)}`;
+/** Section source of one page block (the gate guarantees its item renders; an unknown item is a programming error). */
+export function svelteForBlock(block: BlockV2): string {
+	const render = renderBlock(block);
+	if (!render) throw new Error(`page block ${block.id}: ${block.item} is not a registry item`);
+	return sectionForRegistry(render);
 }
 
-/** The not-in-registry stub. Exported code carries no preview attributes (data-block-id etc.): the block id lives in the file name and page.json. */
-function sectionForStub(block: PageBlock): string {
-	const what = `${block.catalogBlock ?? block.kind}${block.variant ? ` / ${block.variant}` : ""}`;
-	return `<!-- ${block.kind}: no UI8Kit registry block for ${what}. -->
-<script lang="ts">
-	import Alert from "${stubAlertImport()}";
-
-	const message = ${JSON.stringify(`Not in the registry: ${what}`)};
-</script>
-
-<Alert variant="destructive" data-slot="registry-stub">{message}</Alert>
-`;
-}
-
-/** Section source of one page block. */
-export function svelteForBlock(block: PageBlock): string {
-	const render = organismFor(block);
-	return render ? sectionForRegistry(render) : sectionForStub(block);
-}
-
-export function svelteFromPage(page: CreatorPage): string {
-	const roots = blocksOf(page);
+export function svelteFromPage(page: PageV2): string {
+	const roots = page.blocks;
 	const imports = roots.map((block) => `import ${identFromBlockId(block.id)} from "./sections/${block.id}.svelte";`);
 	const tags = roots.map((block) => `<${identFromBlockId(block.id)} />`).join("\n");
 	return `<!-- ${page.title.replace(/--/g, "-")} (${page.slug}): one registry block per section. -->
@@ -101,32 +74,32 @@ ${tags}
 }
 
 /** App.svelte and one section per top-level block (children are the props of their block). */
-export function sveltePackFiles(page: CreatorPage): SourceFile[] {
+export function sveltePackFiles(page: PageV2): SourceFile[] {
 	return [
 		{ path: APP_FILE, content: svelteFromPage(page) },
-		...blocksOf(page).map((block) => ({ path: `${SECTIONS_DIR}/${block.id}.svelte`, content: svelteForBlock(block) }))
+		...page.blocks.map((block) => ({ path: `${SECTIONS_DIR}/${block.id}.svelte`, content: svelteForBlock(block) }))
 	];
 }
 
 /**
- * Registry items of the page: `npx ui8kit add <these>` (the stub's Alert when a block has none), plus `theme-<skin>`
+ * Registry items of the page: `npx ui8kit add <these>` plus `theme-<skin>`
  * when the chat wears a skin of the pinned registry (an unknown skin id is the default theme: no item).
  */
-export function registryItemsOf(page: CreatorPage, skin: string | null = null): string[] {
+export function registryItemsOf(page: PageV2, skin: string | null = null): string[] {
 	const items = new Set<string>();
-	for (const block of blocksOf(page)) items.add(organismFor(block)?.item ?? STUB_ITEM);
+	for (const block of page.blocks) if (itemInfo(block.item)) items.add(block.item);
 	const theme = registrySkin(skin);
 	if (theme) items.add(skinItem(theme.id));
 	return [...items].sort();
 }
 
 /** Registry file paths (project-relative, under src/) of `init` + `add <registryItemsOf(page, skin)>`. */
-export function registryPathsOf(page: CreatorPage, skin: string | null = null): string[] {
+export function registryPathsOf(page: PageV2, skin: string | null = null): string[] {
 	return registryClosure(registryItemsOf(page, skin));
 }
 
 /** Registry item names the CLI lock records for this page (`init` + `add`, with registryDependencies). */
-export function registryLockItemsOf(page: CreatorPage, skin: string | null = null): string[] {
+export function registryLockItemsOf(page: PageV2, skin: string | null = null): string[] {
 	return registryItemClosure(registryItemsOf(page, skin));
 }
 

@@ -8,6 +8,7 @@ import { LUCIDE_ICON_HINT, propsEventsFor, propsFieldTree, type PropsFieldNode }
 import { allItems, itemInfo, itemOfSpec } from "../page-doc/items.ts";
 import { sampleProps } from "../page-doc/render.ts";
 import { blockAssetUrl, blockThumbUrl } from "../catalog/provenance.ts";
+import { askBlockCard, type AskBlockCard } from "../catalog/details.ts";
 
 const HIDDEN = new Set(["id", "class", "className", "landmarkLabel"]);
 
@@ -55,6 +56,21 @@ export function resolveItem(id: unknown): string | null {
 	if (itemInfo(raw)) return raw;
 	const spec = raw.split("/")[0]!;
 	return itemOfSpec(spec.startsWith("block.") ? spec : `block.${spec}`);
+}
+
+const MAX_CARDS = 10;
+
+/** Cards of the blocks a reply referenced (registry items or Stock specs), recomputed from the bundled catalog; unknown ones are dropped. */
+export function askBlockCards(ids: readonly unknown[] | undefined): AskBlockCard[] {
+	const out: AskBlockCard[] = [];
+	for (const id of ids ?? []) {
+		const item = typeof id === "string" ? resolveItem(id) : null;
+		const spec = item ? itemInfo(item)?.spec : null;
+		const card = spec ? askBlockCard(spec) : typeof id === "string" ? askBlockCard(id) : null;
+		if (card && !out.some((row) => row.spec === card.spec)) out.push(card);
+		if (out.length >= MAX_CARDS) break;
+	}
+	return out;
 }
 
 export type BlockRead =

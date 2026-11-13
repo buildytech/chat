@@ -8,7 +8,6 @@ import { Blocks, ListTree, MessageSquare } from "$lib/shell-icons";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { feed } from "$lib/feed/feed.svelte";
 	import { feedDrag } from "$lib/feed/drag.svelte";
-	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { LEFT_TABS, landingTab } from "$lib/feed/prefs";
 	import { readPreviewPage } from "$lib/page-store";
 	import { untrack } from "svelte";
@@ -69,7 +68,7 @@ import { Blocks, ListTree, MessageSquare } from "$lib/shell-icons";
 		landedFor = id;
 		if (createdInPlace) return;
 		untrack(() => {
-			const hasPage = Boolean(readPreviewPage(id)?.layout.blocks.length);
+			const hasPage = Boolean(readPreviewPage(id)?.blocks.length);
 			feed.land(landingTab(feed.savedTab, { hasPage, hasMessages: Boolean(session?.messages.length) }));
 		});
 	});
@@ -131,13 +130,6 @@ import { Blocks, ListTree, MessageSquare } from "$lib/shell-icons";
 				<Text tag="span">{t(`leftPanel.${name}`)}</Text>
 			</Button>
 		{/each}
-		<!-- ADR 0027: advisory family change, a small non-modal label. Undo reverts it. There is no family picker. -->
-		<Text tag="span" class="min-w-0 flex-1 truncate text-right text-xs text-muted-foreground" role="status" aria-live="polite" data-slot="family-note">
-			{#if inspector.familyNote}
-				{@const note = inspector.familyNote}
-				{t("family.note").replace("{from}", t(`family.${note.from ?? "none"}`)).replace("{to}", t(`family.${note.to ?? "none"}`))}
-			{/if}
-		</Text>
 	</Group>
 	<Box id="left-panel-blocks" role="tabpanel" aria-labelledby="left-tab-blocks" hidden={tab !== "blocks"} class={panelClass}>
 		<BlocksFeed />

@@ -13,7 +13,7 @@ export {
 	startPageFromScreen,
 	startEmptyPageInChat,
 	createdInThisTab,
-	applyPlanInBuild,
+	applyAskProposal,
 	getChatMode,
 	setChatMode,
 	getChatSkin,
@@ -33,11 +33,12 @@ export {
 	retryLastFailed,
 	selectSession,
 	sendMessage,
+	type AskApplyResult,
 	type CollectionIntake,
 	type ImportResult
 } from "./session.svelte";
 export { collectionItemDetail, collectionItemName, collectionNote, type ChatCollection } from "./collection";
-export { chatModeOf, turnOutcome, variantProposal, variantTarget, DEFAULT_CHAT_MODE } from "./modes";
+export { chatModeOf, turnOutcome, DEFAULT_CHAT_MODE } from "./modes";
 export { parseMarkdown, parseInline, type MdBlock, type MdInline } from "./markdown";
 export { isPendingProposal, proposalStatus, markPendingProposals, migrateProposal, migrateSessionProposals } from "./proposals";
 export type {
@@ -51,4 +52,4 @@ export type {
 	ProposalStatus,
 	SessionSummary
 } from "./types";
-export { changeReportText, planResultText, planOpText } from "./change-text";
+export { diffRows, diffText, type DiffRow } from "./change-text";

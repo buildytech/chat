@@ -3,18 +3,17 @@
  * chat document. The outline and label of a block are drawn by the chat (parent document) over the preview iframe,
  * never inside the page, so the page DOM stays the registry output. Pure functions, no Svelte, no DOM globals.
  */
-import type { PageBlock } from "@buildytech/page-contract";
+import type { BlockV2 } from "@buildytech/page-contract";
 
-/** The wrapper attribute of a page block in the preview (its value is PageBlock.id). */
+/** The wrapper attribute of a page block in the preview (its value is the block id). */
 export const BLOCK_ID_ATTR = "data-block-id";
 
 export type CanvasRect = { x: number; y: number; width: number; height: number };
 
 /** The top-level block that holds `id` (itself when it is top level); null when the page has no such block. */
-export function topLevelBlockId(blocks: readonly PageBlock[], id: string | null | undefined): string | null {
+export function topLevelBlockId(blocks: readonly Pick<BlockV2, "id">[], id: string | null | undefined): string | null {
 	if (!id) return null;
-	const contains = (node: PageBlock): boolean => node.id === id || (node.children ?? []).some(contains);
-	return blocks.find(contains)?.id ?? null;
+	return blocks.find((block) => block.id === id)?.id ?? null;
 }
 
 /** CSS selector of a block wrapper; the id is quoted as a CSS string, so any id is safe. */

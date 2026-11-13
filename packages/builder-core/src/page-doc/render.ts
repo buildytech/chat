@@ -4,7 +4,7 @@
  * export call this one function (`renderBlock`); there is no copy slot, row or children mapping any more.
  */
 import type { BlockV2, PropValueV2 } from "@buildytech/page-contract";
-import { fillProps, propShapeFor, propsEventsFor } from "../catalog/props-schema.ts";
+import { fillProps, propShapeFor, propsEventsFor, propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { variantPreset } from "../catalog/organism.ts";
 import { itemInfo } from "./items.ts";
 
@@ -65,4 +65,38 @@ export function sampleProps(item: string, variant: string | null | undefined, id
 	const heading = shape?.text.find((name) => SAMPLE_TITLE_PROPS.includes(name));
 	if (heading && info) seed[heading] = info.title;
 	return effectiveProps(item, variant, seed, { blank: true }) as Record<string, PropValueV2>;
+}
+
+/** UI label dictionaries (`labels`, aria strings) are component chrome: reported as one path while none of their words is written. */
+const CHROME_OBJECTS = new Set(["labels", "aria", "a11y"]);
+
+/**
+ * Required text props a block leaves empty (JSON Pointers into its props): the places its component would show nothing or
+ * its own placeholder. A write reports them so the content goes in with the structure (ADR 0034: props are the single source).
+ */
+export function blankRequired(block: Pick<BlockV2, "item" | "props">, limit = 12): string[] {
+	const tree = propsFieldTree(block.item);
+	const out: string[] = [];
+	const walk = (value: unknown, nodes: PropsFieldNode[] | undefined, base: string) => {
+		if (!nodes || out.length >= limit) return;
+		const record = value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+		for (const node of nodes) {
+			if (node.name === "id") continue;
+			const here = `${base}/${node.name}`;
+			const inner = record[node.name];
+			if (CHROME_OBJECTS.has(node.name)) {
+				// The UI words of the block (button and aria labels): reported once when none of them is written.
+				const words = inner && typeof inner === "object" ? Object.values(inner as Record<string, unknown>) : [];
+				if (node.required && !words.some((word) => typeof word === "string" && word !== "")) out.push(here);
+				continue;
+			}
+			if (node.kind === "text") {
+				if (node.required && (inner === undefined || inner === "")) out.push(here);
+			} else if (node.kind === "object") walk(inner, node.fields, here);
+			else if (node.kind === "list" && Array.isArray(inner)) inner.forEach((row, index) => walk(row, node.fields, `${here}/${index}`));
+			if (out.length >= limit) return;
+		}
+	};
+	walk(block.props ?? {}, tree ?? undefined, "");
+	return out;
 }

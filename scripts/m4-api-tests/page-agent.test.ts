@@ -26,45 +26,15 @@ import {
 import { validateItemProps } from "../../packages/builder-core/src/catalog/provenance.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
+import { MODEL, signal, toolNames, withProvider, type Scripted } from "./agent-replay.ts";
 
 const here = (name: string) => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
 const session = JSON.parse(readFileSync(here("fitness-session-3933dbf.json"), "utf8"));
 const fill = JSON.parse(readFileSync(here("fitness-fill.json"), "utf8")) as { title: string; locale: string; seo: { title: string; description: string }; props: Record<string, Record<string, unknown>> };
 const ASK_PROMPT: string = session.sessions[0].messages[0].text;
 const BUILD_PROMPT: string = session.sessions[0].messages[8].text;
-const MODEL = "grok-4.20-0309-non-reasoning";
 const NOW = "2026-11-13T12:00:00.000Z";
 const SCREEN = "screen.theme-marketing-landing/teams";
-
-type Scripted = { content?: string | null; calls?: Array<{ name: string; arguments: Record<string, unknown> }> };
-type Seen = { requests: Array<Record<string, unknown>>; toolMessages: Array<{ name: string; content: Record<string, unknown> }> };
-
-async function withProvider<T>(script: Scripted[], run: (seen: Seen) => Promise<T>): Promise<T> {
-	const original = globalThis.fetch;
-	const seen: Seen = { requests: [], toolMessages: [] };
-	let index = 0;
-	globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
-		const body = JSON.parse(String(init?.body ?? "{}")) as { messages: Array<{ role: string; name?: string; content?: string }> };
-		seen.requests.push(body as Record<string, unknown>);
-		seen.toolMessages = body.messages.filter((m) => m.role === "tool").map((m) => ({ name: String(m.name), content: JSON.parse(String(m.content)) as Record<string, unknown> }));
-		const step = script[Math.min(index, script.length - 1)]!;
-		index += 1;
-		const message = {
-			role: "assistant",
-			content: step.content ?? null,
-			...(step.calls?.length ? { tool_calls: step.calls.map((call, i) => ({ id: `call-${index}-${i}`, type: "function", function: { name: call.name, arguments: JSON.stringify(call.arguments) } })) } : {})
-		};
-		return new Response(JSON.stringify({ model: MODEL, choices: [{ message }], usage: { prompt_tokens: 1000, completion_tokens: 100, total_tokens: 1100 } }), { status: 200, headers: { "content-type": "application/json" } });
-	}) as typeof fetch;
-	try {
-		return await run(seen);
-	} finally {
-		globalThis.fetch = original;
-	}
-}
-
-const toolNames = (request: Record<string, unknown>) => (request.tools as Array<{ function: { name: string } }>).map((tool) => tool.function.name);
-const signal = () => new AbortController().signal;
 
 /** The owner's teams page as the page document (the six blocks of the 13.11 session; the FAQ split is not part of it). */
 function teamsPage(): PageV2 {

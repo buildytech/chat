@@ -11,6 +11,7 @@ import {
 	applyJsonPatch,
 	checkPageDoc,
 	diffPages,
+	healV1Props,
 	migratePageV1,
 	organismFor,
 	renderBlock,
@@ -40,7 +41,7 @@ test("the fitness session migrates 1.x -> 2.0 losslessly: same item, variant and
 			assert.ok(was && now);
 			assert.equal(now.item, was.item);
 			assert.equal(now.variant, was.variant);
-			assert.deepEqual(now.props, was.props);
+			assert.deepEqual(now.props, healV1Props(was.item, was.props), "same props; the fill-ins of v1 (\"Value\", \"By line\") and its service texts are cleared");
 		});
 		assert.equal(v2.title, v1.title);
 		assert.equal(parsePageV2(JSON.parse(JSON.stringify(v2))).blocks.length, v2.blocks.length);

@@ -1,11 +1,5 @@
-import type {
-	AgentMode,
-	AgentTextReply,
-	LayoutProposal,
-	LayoutProposalError,
-	ProposalContext,
-	RunUsage
-} from "@buildytech/builder-core";
+import type { AgentFailure, AgentMode, AgentReply, RunUsage } from "@buildytech/builder-core";
+import type { PageV2 } from "@buildytech/page-contract";
 import { contractFingerprint } from "@buildytech/builder-core";
 
 export type XaiClientStatus = {
@@ -25,7 +19,7 @@ export type XaiClientStatus = {
 	error?: { code: string; message: string };
 };
 
-export type XaiRunResponse = (LayoutProposal | LayoutProposalError | AgentTextReply) & {
+export type XaiRunResponse = (AgentReply | AgentFailure) & {
 	modelId?: string;
 	requestedModelId?: string;
 	usage?: RunUsage;
@@ -35,7 +29,20 @@ export type XaiRunResponse = (LayoutProposal | LayoutProposalError | AgentTextRe
 	path?: string;
 	runId?: string;
 	toolsUsed?: string[];
-	assembler?: string;
+};
+
+/** One agent turn (ADR 0034): the page document the agent edits, what the author sees, the selection, the dialogue. */
+export type TurnRequest = {
+	modelId: string;
+	brief: string;
+	mode: AgentMode;
+	screenId?: string | null;
+	expectedRevision: number;
+	currentPage: PageV2;
+	shownPage?: PageV2 | null;
+	scopeBlockIds?: string[];
+	conversation?: Array<{ role: "user" | "assistant"; text: string }>;
+	collectionRequest?: unknown;
 };
 
 function runtimeBase(): string {
@@ -104,10 +111,7 @@ export function platformCode(status: number, code?: string): string {
 	return "runtime_platform_error";
 }
 
-export async function runXaiProposal(
-	ctx: ProposalContext & { modelId: string; sessionDemoData?: boolean; mode?: AgentMode; collectionRequest?: unknown },
-	signal?: AbortSignal
-): Promise<XaiRunResponse> {
+export async function runXaiTurn(ctx: TurnRequest, signal?: AbortSignal): Promise<XaiRunResponse> {
 	try {
 		const res = await fetch(`${runtimeBase()}/v1/run`, {
 			method: "POST",
@@ -118,18 +122,14 @@ export async function runXaiProposal(
 				modelId: ctx.modelId,
 				contract: contractFingerprint(),
 				brief: ctx.brief,
-				scenarioId: ctx.scenarioId,
-				screenId: ctx.screenId,
+				screenId: ctx.screenId ?? null,
 				expectedRevision: ctx.expectedRevision,
-				pageId: ctx.pageId ?? ctx.currentPage?.id,
-				scopeBlockIds: ctx.scopeBlockIds,
- conversation: ctx.conversation,
- currentPage: ctx.currentPage ?? null,
-				currentProvenance: ctx.currentProvenance ?? null,
-				sessionDemoData: Boolean(ctx.sessionDemoData),
-				mode: ctx.mode ?? "build",
-				...(ctx.collectionRequest ? { collection: ctx.collectionRequest } : {}),
-				...(ctx.manualEdits?.length ? { manualEdits: ctx.manualEdits } : {})
+				currentPage: ctx.currentPage,
+				shownPage: ctx.shownPage ?? null,
+				scopeBlockIds: ctx.scopeBlockIds?.length ? ctx.scopeBlockIds : undefined,
+				conversation: ctx.conversation ?? [],
+				mode: ctx.mode,
+				...(ctx.collectionRequest ? { collection: ctx.collectionRequest } : {})
 			}),
 			signal
 		});

@@ -23,7 +23,7 @@ import { Columns2, Rows3, ChevronLeft, ChevronRight } from "$lib/shell-icons";
 	import { feed, type FeedFilters } from "$lib/feed/feed.svelte";
 	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { canvas } from "$lib/inspector/canvas.svelte";
-	import { getCurrentPage, getCurrentProvenance } from "$lib/page-store";
+	import { getCurrentPage } from "$lib/page-store";
 	import { createSession, getSelectedSession, startPageFromScreen } from "$lib/chat-core";
 	import type { StockSearchItem } from "@buildytech/builder-core";
 	import FeedCard from "./FeedCard.svelte";
@@ -33,12 +33,7 @@ import { Columns2, Rows3, ChevronLeft, ChevronRight } from "$lib/shell-icons";
 	const filters = $derived(feed.filters);
 	let starting = $state<string | null>(null);
 
-	// t150u: no per-page check map; each card computes its own availability (FeedCard). The page note only needs the page.
-	const pageNote = $derived.by(() => {
-		const page = getCurrentPage();
-		return page && page.layout.blocks.length > 0 && !getCurrentProvenance()?.screenId ? t("feed.why.no_screen") : null;
-	});
-
+	// Each card computes its own availability (FeedCard): a registry item that renders and a variant it has.
 	const facet = (name: "type" | "role" | "spec" | "site" | "variant") => result.facets[name];
 	const label = (value: string, count: number) => `${value} (${count})`;
 	const hasFilter = $derived(
@@ -224,9 +219,6 @@ import { Columns2, Rows3, ChevronLeft, ChevronRight } from "$lib/shell-icons";
 				</Group>
 			</Group>
 		</Group>
-		{#if pageNote && !previewSettings.hideServiceLabels}
-			<Text tag="p" class="text-xs text-muted-foreground" data-slot="feed-page-note">{pageNote}</Text>
-		{/if}
 		<Text
 			tag="p"
 			class={cn(

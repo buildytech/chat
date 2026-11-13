@@ -12,6 +12,7 @@ import { X } from "$lib/shell-icons";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import Title from "$registry/compose/Title.svelte";
+	import { itemInfo } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { topLevelBlockId } from "$lib/inspector/geometry";
 	import { inspectorPanel } from "$lib/inspector/panel.svelte";
@@ -35,7 +36,7 @@ import { X } from "$lib/shell-icons";
 >
 	<Group class="h-10 shrink-0 items-center justify-between gap-2 border-b border-border px-2">
 		<Title as={2} id="inspector-slideover-title" class="min-w-0 truncate text-xs font-semibold text-foreground">
-			{block ? t("inspector.on").replace("{title}", block.title) : t("inspector.title")}
+			{block ? t("inspector.on").replace("{title}", itemInfo(block.item)?.title ?? block.item) : t("inspector.title")}
 		</Title>
 		<Button size="sm" layout="icon" variant="ghost" class="size-6 px-0" aria-label={t("inspector.close")} title={`${t("inspector.close")} (Esc)`} data-action="inspector-close" onclick={() => inspectorPanel.close()}>
 			<X />

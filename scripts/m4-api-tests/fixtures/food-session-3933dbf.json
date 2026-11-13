@@ -1,0 +1,2756 @@
+{
+ "$schema": "https://schema.buildy.tw/session.schema.json",
+ "format": "buildy:v1",
+ "exportedAt": "2026-11-13T16:46:20.729Z",
+ "app": {
+  "name": "buildy-chat",
+  "version": "0.5.0",
+  "host": "browser",
+  "commit": "2d18f2664795c532d13702a9da79fd097da45a1b"
+ },
+ "pins": {
+  "stock": {
+   "repo": "codegen-x/ui8kit",
+   "contentCommit": "afc826c13dcf32dd356a694fea12905c446df2cd"
+  },
+  "registry": {
+   "url": "https://registry.buildy.tw",
+   "sourceCommit": "9e57f9ccaf710eb3b50d5599e6e49355fcc32136"
+  },
+  "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c"
+ },
+ "selectedSessionId": "session-d3c5225d-c78d-419a-8aa4-92cca839fc5f",
+ "sessions": [
+  {
+   "id": "session-d3c5225d-c78d-419a-8aa4-92cca839fc5f",
+   "title": "\u0414\u043b\u044f \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0430 \u00ab\u0428\u0430\u0448\u043b\u044b\u043a \u041c\u0430\u0448\u043b\u044b\u043a\u00bb \u043d\u0443\u0436\u0435\u043d landing page",
+   "updatedAt": "2026-11-13T16:36:50.590Z",
+   "messages": [
+    {
+     "id": "msg-24d9ee12-a200-49eb-a95f-ed7782c52ca8",
+     "role": "user",
+     "text": "\u0414\u043b\u044f \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0430 \u00ab\u0428\u0430\u0448\u043b\u044b\u043a \u041c\u0430\u0448\u043b\u044b\u043a\u00bb \u043d\u0443\u0436\u0435\u043d landing page \u0434\u043b\u044f \u0440\u0435\u043a\u043b\u0430\u043c\u043d\u043e\u0439 \u0430\u043a\u0446\u0438\u0438 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438 \u0431\u043b\u044e\u0434 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c",
+     "createdAt": "2026-11-13T16:33:01.015Z",
+     "selectedModelId": "grok-4.20-0309-non-reasoning",
+     "mode": "build"
+    },
+    {
+     "id": "msg-c979838d-16d9-4d23-83e1-4e313d08efa5",
+     "role": "assistant",
+     "text": "New page Marketing landing: 10 blocks from Stock screen screen.theme-marketing-landing/home.\nBlocks: \u041d\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u044f (block.navbar), \u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0431\u043b\u044e\u0434 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c (block.hero), Logo cloud (block.logos), \u041f\u043e\u0447\u0435\u043c\u0443 \u0432\u044b\u0431\u0438\u0440\u0430\u044e\u0442 \u043d\u0430\u0441 (block.features), How it works (block.steps), Stats (block.stats), Testimonials (block.testimonials), FAQ (block.faq), \u0417\u0430\u043a\u0430\u0436\u0438\u0442\u0435 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443 \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441 (block.cta), \u0424\u0443\u0442\u0435\u0440 (block.sitemap).",
+     "createdAt": "2026-11-13T16:33:14.143Z",
+     "proposal": {
+      "applied": false,
+      "status": "superseded",
+      "source": "xai-runtime",
+      "liveModel": true,
+      "assembler": "local-catalog-assembler",
+      "warnings": [
+       "Row icons not in the published Lucide names were dropped (those rows render without an icon): home, lamb, chicken.",
+       "Stock screen screen.theme-marketing-landing/home. Browser renders nav (navbar), hero, features (logos), features, features (steps), features (stats), features (testimonials), features (faq), cta, footer (sitemap).",
+       "Model copy kept on: nav, hero, features, cta, footer.",
+       "Removed invented years from footer.legal. Add a year in the request to keep one."
+      ],
+      "missing": [],
+      "title": "Marketing landing",
+      "screenId": "screen.theme-marketing-landing/home",
+      "locale": "ru",
+      "demoData": false,
+      "catalogRefs": {
+       "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+       "pinnedCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
+       "screen": {
+        "catalogId": "screen.theme-marketing-landing/home",
+        "title": "Marketing landing / Home",
+        "url": "https://app.codegen-x.com/#/asset/screen.theme-marketing-landing/home",
+        "searchUrl": "https://app.codegen-x.com/#/search?type=screen&section=marketing&spec=screen.theme-marketing-landing",
+        "filters": {
+         "type": [
+          "screen"
+         ],
+         "section": [
+          "marketing"
+         ],
+         "job": [
+          "hero",
+          "features",
+          "testimonials",
+          "cta",
+          "faq",
+          "how",
+          "logos",
+          "numbers"
+         ],
+         "blocks": [
+          "cta",
+          "faq",
+          "features",
+          "hero",
+          "steps",
+          "logos",
+          "navbar",
+          "sitemap",
+          "stats",
+          "testimonials"
+         ],
+         "industry": [],
+         "spec": "screen.theme-marketing-landing",
+         "variant": "home"
+        }
+       },
+       "blocks": [
+        {
+         "blockId": "block-nav",
+         "kind": "nav",
+         "catalogLabel": "navbar",
+         "catalogId": "block.navbar",
+         "title": "Navigation bar",
+         "variants": [
+          "inline",
+          "split",
+          "search",
+          "media",
+          "plain",
+          "inverse"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.navbar/inline",
+         "filters": {
+          "type": "block",
+          "spec": "block.navbar",
+          "kind": "nav",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 5,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "inline",
+         "registryItem": "nav-bar"
+        },
+        {
+         "blockId": "block-hero",
+         "kind": "hero",
+         "catalogLabel": "hero",
+         "catalogId": "block.hero",
+         "title": "Hero",
+         "variants": [
+          "centered",
+          "screenshot",
+          "backdrop",
+          "code",
+          "cluster",
+          "display",
+          "form",
+          "prompt",
+          "twoActions",
+          "split",
+          "splitStart",
+          "muted",
+          "saas",
+          "shop",
+          "blog"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.hero/screenshot",
+         "filters": {
+          "type": "block",
+          "spec": "block.hero",
+          "kind": "hero",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "screenshot",
+         "registryItem": "hero-classic"
+        },
+        {
+         "blockId": "block-logos",
+         "kind": "features",
+         "catalogLabel": "logos",
+         "catalogId": "block.logos",
+         "title": "Logo cloud",
+         "variants": [
+          "grid4",
+          "grid3",
+          "row",
+          "icons",
+          "grid2",
+          "tiles4"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.logos/row",
+         "filters": {
+          "type": "block",
+          "spec": "block.logos",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "row",
+         "registryItem": "logo-cloud"
+        },
+        {
+         "blockId": "block-features",
+         "kind": "features",
+         "catalogLabel": "features",
+         "catalogId": "block.features",
+         "title": "Features",
+         "variants": [
+          "grid",
+          "grid2",
+          "tiles4",
+          "cells4",
+          "rows",
+          "rowsStart",
+          "rowsAlternate",
+          "tilesMuted"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.features/rowsAlternate",
+         "filters": {
+          "type": "block",
+          "spec": "block.features",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "rowsAlternate",
+         "registryItem": "feature-grid"
+        },
+        {
+         "blockId": "block-steps",
+         "kind": "features",
+         "catalogLabel": "steps",
+         "catalogId": "block.steps",
+         "title": "How it works",
+         "variants": [
+          "row",
+          "rowIcons",
+          "column",
+          "centered",
+          "columnIcons",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.steps/rowIcons",
+         "filters": {
+          "type": "block",
+          "spec": "block.steps",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "rowIcons",
+         "registryItem": "steps-list"
+        },
+        {
+         "blockId": "block-stats",
+         "kind": "features",
+         "catalogLabel": "stats",
+         "catalogId": "block.stats",
+         "title": "Stats",
+         "variants": [
+          "plain4",
+          "panel",
+          "stack",
+          "image",
+          "cards",
+          "icons",
+          "muted2",
+          "cardsCompact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.stats/icons",
+         "filters": {
+          "type": "block",
+          "spec": "block.stats",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "icons",
+         "registryItem": "stats-band"
+        },
+        {
+         "blockId": "block-testimonials",
+         "kind": "features",
+         "catalogLabel": "testimonials",
+         "catalogId": "block.testimonials",
+         "title": "Testimonials",
+         "variants": [
+          "grid3",
+          "masonry",
+          "strip",
+          "social",
+          "featured",
+          "grid2",
+          "single",
+          "stack",
+          "plain",
+          "noRating"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.testimonials/single",
+         "filters": {
+          "type": "block",
+          "spec": "block.testimonials",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "single",
+         "registryItem": "testimonial-grid"
+        },
+        {
+         "blockId": "block-faq",
+         "kind": "features",
+         "catalogLabel": "faq",
+         "catalogId": "block.faq",
+         "title": "FAQ",
+         "variants": [
+          "list",
+          "chat",
+          "search",
+          "tabs",
+          "twoColumns",
+          "muted",
+          "roomy"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.faq/list",
+         "filters": {
+          "type": "block",
+          "spec": "block.faq",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "list",
+         "registryItem": "faq-list"
+        },
+        {
+         "blockId": "block-cta",
+         "kind": "cta",
+         "catalogLabel": "cta",
+         "catalogId": "block.cta",
+         "title": "Call to action",
+         "variants": [
+          "card",
+          "banner",
+          "row",
+          "form",
+          "quote",
+          "band",
+          "split",
+          "compact",
+          "saas",
+          "shop",
+          "agency"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.cta/band",
+         "filters": {
+          "type": "block",
+          "spec": "block.cta",
+          "kind": "cta",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "band",
+         "registryItem": "cta-band"
+        },
+        {
+         "blockId": "block-footer",
+         "kind": "footer",
+         "catalogLabel": "sitemap",
+         "catalogId": "block.sitemap",
+         "title": "Sitemap footer",
+         "variants": [
+          "columns",
+          "card",
+          "row",
+          "newsletter",
+          "status",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.sitemap/columns",
+         "filters": {
+          "type": "block",
+          "spec": "block.sitemap",
+          "kind": "footer",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "columns",
+         "registryItem": "sitemap-footer"
+        }
+       ]
+      }
+     },
+     "run": {
+      "requestedModelId": "grok-4.20-0309-non-reasoning",
+      "modelId": "grok-4.20-0309-non-reasoning",
+      "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+      "live": true,
+      "policyVersion": "browser-constructor/3",
+      "modelCatalogVersion": "grok-text-5/2026-11-08",
+      "trialPolicyVersion": "browser-constructor/3+grok-text-5/2026-11-08",
+      "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+      "path": "chat-completions",
+      "tools": [
+       "search_catalog",
+       "search_catalog",
+       "propose_layout"
+      ],
+      "runId": "xai-mwf741xl-vztgoq",
+      "usage": {
+       "status": "complete",
+       "steps": 3,
+       "promptTokens": 28965,
+       "completionTokens": 713,
+       "totalTokens": 29678,
+       "reportedBy": "xai-provider",
+       "aggregation": "sum-of-tool-loop-requests",
+       "lastStep": {
+        "promptTokens": 10291,
+        "completionTokens": 619,
+        "totalTokens": 10910,
+        "reasoningTokens": 0,
+        "cachedTokens": 9600
+       },
+       "cost": {
+        "available": false,
+        "reason": "no_official_current_rates_in_repo",
+        "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+       },
+       "reasoningTokens": 0,
+       "cachedTokens": 18688
+      }
+     }
+    },
+    {
+     "id": "msg-84ee7874-bd6b-4df3-b2d3-caa86edae821",
+     "role": "user",
+     "text": "\u041f\u0440\u043e\u0432\u0435\u0440\u044c \u043e\u0448\u0438\u0431\u043a\u0438 \u0443 \u043c\u0435\u043d\u044f \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u0430\u043d\u043e",
+     "createdAt": "2026-11-13T16:35:06.737Z",
+     "selectedModelId": "grok-4.20-0309-non-reasoning",
+     "mode": "ask"
+    },
+    {
+     "id": "msg-a402c3f5-c2eb-4c39-b26e-df209fd6679d",
+     "role": "assistant",
+     "text": "**\u041e\u0448\u0438\u0431\u043a\u0438 \u0432 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435 (\u043f\u043e\u0447\u0435\u043c\u0443 \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u0430\u043d\u043e):**\n\n- \u0411\u043e\u043b\u044c\u0448\u0438\u043d\u0441\u0442\u0432\u043e \u0431\u043b\u043e\u043a\u043e\u0432 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u044e\u0442 placeholder \u00ab\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445\u00bb, \u043f\u043e\u0442\u043e\u043c\u0443 \u0447\u0442\u043e \u0432 \u043d\u0438\u0445 **\u043d\u0435 \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u044b \u043c\u0430\u0441\u0441\u0438\u0432\u044b \u0434\u0430\u043d\u043d\u044b\u0445** (rows/items): `features[]`, `steps[]`, `stats[]`, `quotes[]`, `items[]`, `logos[]` \u0438 \u0442.\u0434.\n- \u0411\u043b\u043e\u043a **block-logos** (variant `row`) \u2014 \u044d\u0442\u043e Logo cloud, \u043d\u043e \u0434\u043b\u044f \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0430 \u00ab\u0428\u0430\u0448\u043b\u044b\u043a \u041c\u0430\u0448\u043b\u044b\u043a\u00bb \u043b\u043e\u0433\u043e\u0442\u0438\u043f\u044b \u043f\u0430\u0440\u0442\u043d\u0451\u0440\u043e\u0432/\u0434\u043e\u0441\u0442\u0430\u0432\u043e\u043a \u043d\u0435 \u043d\u0443\u0436\u043d\u044b. \u041b\u0443\u0447\u0448\u0435 \u0437\u0430\u043c\u0435\u043d\u0438\u0442\u044c \u043d\u0430 \u0440\u0435\u043b\u0435\u0432\u0430\u043d\u0442\u043d\u044b\u0439 \u0431\u043b\u043e\u043a.\n- \u0411\u043b\u043e\u043a **block-hero** (variant `screenshot`) \u043e\u0436\u0438\u0434\u0430\u0435\u0442 \u043a\u0430\u0440\u0442\u0438\u043d\u043a\u0443 (media.kind=image), \u043d\u043e \u043e\u043d\u0430, \u0441\u043a\u043e\u0440\u0435\u0435 \u0432\u0441\u0435\u0433\u043e, \u043d\u0435 \u0437\u0430\u0434\u0430\u043d\u0430.\n- \u0411\u043b\u043e\u043a **block-features** (variant `rowsAlternate`) \u0438 **block-cta** (variant `band`) \u0438\u043c\u0435\u044e\u0442 \u0442\u0435\u043a\u0441\u0442, \u043d\u043e \u043e\u0441\u0442\u0430\u043b\u044c\u043d\u044b\u0435 \u0431\u043b\u043e\u043a\u0438 \u2014 \u043f\u0443\u0441\u0442\u044b\u0435.\n- \u041e\u0431\u0449\u0438\u0439 \u0432\u0438\u0434: \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 \u0441\u043e\u0431\u0440\u0430\u043d\u0430 \u0438\u0437 Stock, \u043d\u043e \u0431\u0435\u0437 \u043a\u043e\u043d\u0442\u0435\u043d\u0442\u0430 (\u0438\u043a\u043e\u043d\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438, \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u044f, \u0444\u043e\u0442\u043e \u0431\u043b\u044e\u0434) \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u0440\u0438\u0441\u0443\u0435\u0442\u0441\u044f.\n\n**\u0427\u0442\u043e \u0441\u0434\u0435\u043b\u0430\u0442\u044c (\u043f\u043b\u0430\u043d \u0438\u0441\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u044f):**\n\n1. \u0417\u0430\u043f\u043e\u043b\u043d\u0438\u0442\u044c \u0434\u0430\u043d\u043d\u044b\u0435 \u0432\u043e \u0432\u0441\u0435\u0445 \u0431\u043b\u043e\u043a\u0430\u0445 (\u043c\u0438\u043d\u0438\u043c\u0443\u043c 3\u20136 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432 \u0432 \u043a\u0430\u0436\u0434\u043e\u043c \u043c\u0430\u0441\u0441\u0438\u0432\u0435).\n2. \u0417\u0430\u043c\u0435\u043d\u0438\u0442\u044c block-logos \u043d\u0430 **block.dish** \u0438\u043b\u0438 **block.dishstrip** (\u0434\u043b\u044f \u0431\u043b\u044e\u0434 \u043c\u0430\u043d\u0433\u0430\u043b\u0430).\n3. \u0412 hero \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0440\u0435\u0430\u043b\u044c\u043d\u0443\u044e \u043a\u0430\u0440\u0442\u0438\u043d\u043a\u0443 \u0448\u0430\u0448\u043b\u044b\u043a\u0430/\u043c\u0430\u043d\u0433\u0430\u043b\u0430.\n4. \u0414\u043b\u044f \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0430 \u0435\u0434\u044b \u043b\u0443\u0447\u0448\u0435 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c \u0431\u043b\u043e\u043a\u0438: `dish`, `menuboard`, `quickorder`, `usp` \u0432\u043c\u0435\u0441\u0442\u043e \u043e\u0431\u0449\u0438\u0445 features/stats.\n\n\u0425\u043e\u0442\u0438\u0442\u0435, \u044f \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0443 **\u043a\u043e\u043d\u043a\u0440\u0435\u0442\u043d\u044b\u0439 \u043f\u043b\u0430\u043d** \u0441 \u0437\u0430\u043c\u0435\u043d\u043e\u0439 \u0431\u043b\u043e\u043a\u043e\u0432 + \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u0435\u043c \u043a\u043e\u043f\u0438\u0439 (\u043d\u0430 \u0440\u0443\u0441\u0441\u043a\u043e\u043c, \u043f\u043e\u0434 \u0442\u0435\u043c\u0443 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438 \u0448\u0430\u0448\u043b\u044b\u043a\u0430)? \u0418\u043b\u0438 \u0441\u043d\u0430\u0447\u0430\u043b\u0430 \u0438\u0441\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0442\u043e\u043b\u044c\u043a\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u0435 \u0431\u043b\u043e\u043a\u0438 \u0431\u0435\u0437 \u0437\u0430\u043c\u0435\u043d?",
+     "createdAt": "2026-11-13T16:35:29.942Z",
+     "mode": "ask",
+     "answer": {
+      "blocks": [
+       "block.navbar",
+       "block.hero",
+       "block.logos",
+       "block.features",
+       "block.steps",
+       "block.stats",
+       "block.testimonials",
+       "block.faq",
+       "block.cta",
+       "block.sitemap"
+      ]
+     },
+     "plan": {
+      "status": "executed",
+      "pageId": "page-draft",
+      "baseRevision": 0,
+      "summary": "\u0418\u0441\u043f\u0440\u0430\u0432\u0438\u043b\u0438 \u043e\u0448\u0438\u0431\u043a\u0438: \u0437\u0430\u043c\u0435\u043d\u0438\u043b\u0438 logos \u043d\u0430 features, \u0438\u0437\u043c\u0435\u043d\u0438\u043b\u0438 items \u0432 stats, \u0443\u0431\u0440\u0430\u043b\u0438 \u043d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 set headline \u0432 features. \u0422\u0435\u043f\u0435\u0440\u044c \u0432\u0441\u0435 ops \u0434\u043e\u043b\u0436\u043d\u044b \u043f\u0440\u043e\u0439\u0442\u0438.",
+      "ops": [
+       {
+        "id": "op-1",
+        "op": "set",
+        "valid": true,
+        "reason": "\u041e\u0431\u043d\u043e\u0432\u0438\u043b\u0438 headline \u043f\u043e\u0434 \u0430\u043a\u0446\u0438\u044e \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438.",
+        "blockId": "block-hero",
+        "field": "headline",
+        "value": "\u0413\u043e\u0440\u044f\u0447\u0438\u0439 \u0448\u0430\u0448\u043b\u044b\u043a \u0438 \u0431\u043b\u044e\u0434\u0430 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c",
+        "label": "\u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0431\u043b\u044e\u0434 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c (block.hero)",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-2",
+        "op": "set",
+        "valid": true,
+        "reason": "\u0414\u043e\u0431\u0430\u0432\u0438\u043b\u0438 lede \u0441 \u0434\u0435\u0442\u0430\u043b\u044f\u043c\u0438 \u0430\u043a\u0446\u0438\u0438.",
+        "blockId": "block-hero",
+        "field": "lede",
+        "value": "\u0421\u043f\u0435\u0446\u0438\u0430\u043b\u044c\u043d\u0430\u044f \u0430\u043a\u0446\u0438\u044f: \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043e\u0442 1500 \u20bd. \u0417\u0430 30\u201345 \u043c\u0438\u043d\u0443\u0442 \u043f\u043e \u0433\u043e\u0440\u043e\u0434\u0443. \u0422\u043e\u043b\u044c\u043a\u043e \u0441\u0432\u0435\u0436\u0438\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b \u0438 \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043d\u044b\u0435 \u0440\u0435\u0446\u0435\u043f\u0442\u044b.",
+        "label": "\u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0431\u043b\u044e\u0434 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c (block.hero)",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-3",
+        "op": "set",
+        "valid": true,
+        "reason": "\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u043b\u0438 CTA-\u043a\u043d\u043e\u043f\u043a\u0443.",
+        "blockId": "block-hero",
+        "field": "action",
+        "value": "\u0417\u0430\u043a\u0430\u0437\u0430\u0442\u044c \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443",
+        "label": "\u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0431\u043b\u044e\u0434 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c (block.hero)",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-4",
+        "op": "set_items",
+        "valid": true,
+        "reason": "\u0417\u0430\u043f\u043e\u043b\u043d\u0438\u043b\u0438 4 \u0444\u0438\u0447\u0438 \u0441 \u0438\u043a\u043e\u043d\u043a\u0430\u043c\u0438 \u043f\u043e\u0434 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d.",
+        "blockId": "block-features",
+        "items": [
+         {
+          "label": "\u0421\u0432\u0435\u0436\u0438\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b",
+          "detail": "\u041c\u044f\u0441\u043e \u043e\u0442 \u043c\u0435\u0441\u0442\u043d\u044b\u0445 \u0444\u0435\u0440\u043c\u0435\u0440\u043e\u0432, \u043e\u0432\u043e\u0449\u0438 \u0441 \u0440\u044b\u043d\u043a\u0430",
+          "icon": "leaf"
+         },
+         {
+          "label": "\u0411\u044b\u0441\u0442\u0440\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430",
+          "detail": "30\u201345 \u043c\u0438\u043d\u0443\u0442 \u043f\u043e \u0433\u043e\u0440\u043e\u0434\u0443",
+          "icon": "bike"
+         },
+         {
+          "label": "\u0413\u0430\u0440\u0430\u043d\u0442\u0438\u044f \u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430",
+          "detail": "\u0415\u0441\u043b\u0438 \u043d\u0435 \u043f\u043e\u043d\u0440\u0430\u0432\u0438\u0442\u0441\u044f \u2014 \u0432\u0435\u0440\u043d\u0451\u043c \u0434\u0435\u043d\u044c\u0433\u0438",
+          "icon": "shield"
+         },
+         {
+          "label": "\u0410\u043a\u0446\u0438\u044f",
+          "detail": "\u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043e\u0442 1500 \u20bd",
+          "icon": "gift"
+         }
+        ],
+        "label": "\u041f\u043e\u0447\u0435\u043c\u0443 \u0432\u044b\u0431\u0438\u0440\u0430\u044e\u0442 \u043d\u0430\u0441 (block.features)",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-5",
+        "op": "replace",
+        "valid": true,
+        "reason": "\u0417\u0430\u043c\u0435\u043d\u0438\u043b\u0438 logo cloud \u043d\u0430 features (rowsAlternate) \u0434\u043b\u044f \u0431\u043b\u044e\u0434/\u043f\u0440\u0435\u0438\u043c\u0443\u0449\u0435\u0441\u0442\u0432.",
+        "blockId": "block-logos",
+        "variant": "rowsAlternate",
+        "kind": "features",
+        "catalogBlock": "block.features",
+        "label": "Logo cloud (block.logos)",
+        "from": "block.logos/row",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-6",
+        "op": "set_items",
+        "valid": true,
+        "reason": "\u0414\u043e\u0431\u0430\u0432\u0438\u043b\u0438 \u0431\u043b\u044e\u0434\u0430 \u043a\u0430\u043a \u0444\u0438\u0447\u0438.",
+        "blockId": "block-logos",
+        "items": [
+         {
+          "label": "\u041a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0448\u0430\u0448\u043b\u044b\u043a",
+          "detail": "350 \u0433 \u2022 890 \u20bd",
+          "icon": "flame"
+         },
+         {
+          "label": "\u041a\u0443\u0440\u0438\u043d\u044b\u0439 \u043a\u0435\u0431\u0430\u0431",
+          "detail": "400 \u0433 \u2022 690 \u20bd",
+          "icon": "drumstick"
+         },
+         {
+          "label": "\u041b\u044e\u043b\u044f-\u043a\u0435\u0431\u0430\u0431",
+          "detail": "300 \u0433 \u2022 750 \u20bd",
+          "icon": "utensils"
+         },
+         {
+          "label": "\u041e\u0432\u043e\u0449\u0438 \u043d\u0430 \u043c\u0430\u043d\u0433\u0430\u043b\u0435",
+          "detail": "250 \u0433 \u2022 490 \u20bd",
+          "icon": "carrot"
+         }
+        ],
+        "label": "Logo cloud (block.features)",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-7",
+        "op": "set_items",
+        "valid": true,
+        "reason": "\u0417\u0430\u043f\u043e\u043b\u043d\u0438\u043b\u0438 \u0448\u0430\u0433\u0438 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438.",
+        "blockId": "block-steps",
+        "items": [
+         {
+          "label": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0431\u043b\u044e\u0434\u0430",
+          "detail": "\u0418\u0437 \u043c\u0435\u043d\u044e \u043d\u0430 \u0441\u0430\u0439\u0442\u0435",
+          "icon": "menu"
+         },
+         {
+          "label": "\u041e\u0444\u043e\u0440\u043c\u0438\u0442\u0435 \u0437\u0430\u043a\u0430\u0437",
+          "detail": "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0430\u0434\u0440\u0435\u0441 \u0438 \u0432\u0440\u0435\u043c\u044f",
+          "icon": "clipboard"
+         },
+         {
+          "label": "\u041c\u044b \u043f\u0440\u0438\u0433\u043e\u0442\u043e\u0432\u0438\u043c",
+          "detail": "\u041d\u0430 \u043c\u0430\u043d\u0433\u0430\u043b\u0435 \u0437\u0430 20 \u043c\u0438\u043d\u0443\u0442",
+          "icon": "flame"
+         },
+         {
+          "label": "\u0414\u043e\u0441\u0442\u0430\u0432\u0438\u043c \u0433\u043e\u0440\u044f\u0447\u0438\u043c",
+          "detail": "\u041f\u0440\u044f\u043c\u043e \u043a \u0434\u0432\u0435\u0440\u0438",
+          "icon": "bike"
+         }
+        ],
+        "label": "How it works (block.steps)",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-8",
+        "op": "set_items",
+        "valid": true,
+        "reason": "\u0418\u0441\u043f\u0440\u0430\u0432\u0438\u043b\u0438 stats \u043d\u0430 label+detail (\u0431\u0435\u0437 value).",
+        "blockId": "block-stats",
+        "items": [
+         {
+          "label": "\u0411\u043b\u044e\u0434",
+          "detail": "120+",
+          "icon": "utensils"
+         },
+         {
+          "label": "\u0414\u043e\u0441\u0442\u0430\u0432\u043e\u043a \u0432 \u0434\u0435\u043d\u044c",
+          "detail": "450",
+          "icon": "truck"
+         },
+         {
+          "label": "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u043e\u0446\u0435\u043d\u043a\u0430",
+          "detail": "4.9",
+          "icon": "star"
+         },
+         {
+          "label": "\u0413\u043e\u0440\u043e\u0434\u043e\u0432",
+          "detail": "12",
+          "icon": "map"
+         }
+        ],
+        "label": "Stats (block.stats)",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-9",
+        "op": "set_items",
+        "valid": true,
+        "reason": "\u0414\u043e\u0431\u0430\u0432\u0438\u043b\u0438 2 \u043e\u0442\u0437\u044b\u0432\u0430.",
+        "blockId": "block-testimonials",
+        "items": [
+         {
+          "label": "\u0410\u043d\u043d\u0430 \u0421.",
+          "detail": "\u00ab\u0428\u0430\u0448\u043b\u044b\u043a \u0432\u0441\u0435\u0433\u0434\u0430 \u0433\u043e\u0440\u044f\u0447\u0438\u0439, \u043c\u044f\u0441\u043e \u0441\u043e\u0447\u043d\u043e\u0435. \u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0432\u043e\u0432\u0440\u0435\u043c\u044f!\u00bb",
+          "icon": "star"
+         },
+         {
+          "label": "\u041c\u0430\u043a\u0441\u0438\u043c \u041a.",
+          "detail": "\u00ab\u0417\u0430\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043a\u0430\u0436\u0434\u0443\u044e \u043f\u044f\u0442\u043d\u0438\u0446\u0443. \u041b\u0443\u0447\u0448\u0438\u0439 \u043b\u044e\u043b\u044f \u0432 \u0433\u043e\u0440\u043e\u0434\u0435.\u00bb",
+          "icon": "star"
+         }
+        ],
+        "label": "Testimonials (block.testimonials)",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-10",
+        "op": "set_items",
+        "valid": true,
+        "reason": "\u0417\u0430\u043f\u043e\u043b\u043d\u0438\u043b\u0438 FAQ \u043f\u043e \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0435.",
+        "blockId": "block-faq",
+        "items": [
+         {
+          "label": "\u0421\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u0442\u043e\u0438\u0442 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430?",
+          "detail": "\u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e \u043e\u0442 1500 \u20bd, \u0438\u043d\u0430\u0447\u0435 250 \u20bd."
+         },
+         {
+          "label": "\u041a\u0430\u043a \u0431\u044b\u0441\u0442\u0440\u043e \u043f\u0440\u0438\u0432\u0435\u0437\u0443\u0442?",
+          "detail": "30\u201345 \u043c\u0438\u043d\u0443\u0442 \u0432 \u043f\u0440\u0435\u0434\u0435\u043b\u0430\u0445 \u0433\u043e\u0440\u043e\u0434\u0430."
+         },
+         {
+          "label": "\u041c\u043e\u0436\u043d\u043e \u043b\u0438 \u043e\u043f\u043b\u0430\u0442\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0439?",
+          "detail": "\u0414\u0430, \u043e\u043d\u043b\u0430\u0439\u043d \u0438\u043b\u0438 \u043a\u0443\u0440\u044c\u0435\u0440\u0443."
+         },
+         {
+          "label": "\u0415\u0441\u0442\u044c \u043b\u0438 \u0432\u0435\u0433\u0435\u0442\u0430\u0440\u0438\u0430\u043d\u0441\u043a\u0438\u0435 \u0431\u043b\u044e\u0434\u0430?",
+          "detail": "\u0414\u0430 \u2014 \u043e\u0432\u043e\u0449\u0438 \u043d\u0430 \u043c\u0430\u043d\u0433\u0430\u043b\u0435 \u0438 \u0441\u0430\u043b\u0430\u0442\u044b."
+         }
+        ],
+        "label": "FAQ (block.faq)",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-11",
+        "op": "set",
+        "valid": true,
+        "reason": "\u0423\u043b\u0443\u0447\u0448\u0438\u043b\u0438 \u0442\u0435\u043a\u0441\u0442 CTA.",
+        "blockId": "block-cta",
+        "field": "lede",
+        "value": "\u0410\u043a\u0446\u0438\u044f \u0434\u043e \u043a\u043e\u043d\u0446\u0430 \u043d\u0435\u0434\u0435\u043b\u0438. \u0417\u0430\u043a\u0430\u0436\u0438\u0442\u0435 \u0441\u0435\u0439\u0447\u0430\u0441 \u0438 \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u0435 \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u044b\u0439 \u0441\u043e\u0443\u0441 \u0432 \u043f\u043e\u0434\u0430\u0440\u043e\u043a!",
+        "label": "\u0417\u0430\u043a\u0430\u0436\u0438\u0442\u0435 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443 \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441 (block.cta)",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-12",
+        "op": "set",
+        "valid": true,
+        "reason": "\u0421\u0438\u043b\u044c\u043d\u044b\u0439 CTA.",
+        "blockId": "block-cta",
+        "field": "action",
+        "value": "\u041e\u0444\u043e\u0440\u043c\u0438\u0442\u044c \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443",
+        "label": "\u0417\u0430\u043a\u0430\u0436\u0438\u0442\u0435 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443 \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441 (block.cta)",
+        "result": {
+         "status": "applied"
+        }
+       }
+      ],
+      "executedAt": "2026-11-13T16:35:47.111Z"
+     },
+     "run": {
+      "requestedModelId": "grok-4.20-0309-non-reasoning",
+      "modelId": "grok-4.20-0309-non-reasoning",
+      "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+      "live": true,
+      "policyVersion": "browser-constructor/3",
+      "modelCatalogVersion": "grok-text-5/2026-11-08",
+      "trialPolicyVersion": "browser-constructor/3+grok-text-5/2026-11-08",
+      "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+      "path": "chat-completions",
+      "tools": [
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "propose_plan",
+       "propose_plan"
+      ],
+      "runId": "xai-mwf76q36-7z1jz7",
+      "usage": {
+       "status": "complete",
+       "steps": 4,
+       "promptTokens": 27057,
+       "completionTokens": 2505,
+       "totalTokens": 29562,
+       "reportedBy": "xai-provider",
+       "aggregation": "sum-of-tool-loop-requests",
+       "lastStep": {
+        "promptTokens": 8592,
+        "completionTokens": 976,
+        "totalTokens": 9568,
+        "reasoningTokens": 0,
+        "cachedTokens": 6656
+       },
+       "cost": {
+        "available": false,
+        "reason": "no_official_current_rates_in_repo",
+        "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+       },
+       "reasoningTokens": 0,
+       "cachedTokens": 11392
+      }
+     }
+    },
+    {
+     "id": "msg-ca2eff7c-1982-444b-81d0-707e75a17e6e",
+     "role": "user",
+     "text": "Apply in Build: 12 changes from the Ask plan",
+     "createdAt": "2026-11-13T16:35:47.110Z",
+     "mode": "build"
+    },
+    {
+     "id": "msg-9680759c-1096-4a11-bd5c-e984b069429c",
+     "role": "assistant",
+     "text": "Proposal for Marketing landing:\n- \u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0431\u043b\u044e\u0434 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c (block.hero): copy\n- Logo cloud (block.features): catalog block block.logos \u2192 block.features, variant row \u2192 rowsAlternate, rows\n- \u041f\u043e\u0447\u0435\u043c\u0443 \u0432\u044b\u0431\u0438\u0440\u0430\u044e\u0442 \u043d\u0430\u0441 (block.features): rows\n- How it works (block.steps): rows\n- Stats (block.stats): rows\n- Testimonials (block.testimonials): rows\n- FAQ (block.faq): rows\n- \u0417\u0430\u043a\u0430\u0436\u0438\u0442\u0435 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443 \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441 (block.cta): copy\nUnchanged: 2 blocks.\nAsk plan: 12 of 12 selected changes applied.",
+     "createdAt": "2026-11-13T16:35:47.186Z",
+     "proposal": {
+      "applied": true,
+      "status": "applied",
+      "source": "local-catalog-assembler",
+      "liveModel": false,
+      "assembler": "page-patch/v1",
+      "warnings": [
+       "page-patch/v1 applied: set block-hero; set block-hero; set block-hero; set_items block-features; replace block-logos; set_items block-logos; set_items block-steps; set_items block-stats; set_items block-testimonials; set_items block-faq; set block-cta; set block-cta."
+      ],
+      "missing": [],
+      "title": "Marketing landing",
+      "screenId": "screen.theme-marketing-landing/home",
+      "locale": "ru",
+      "demoData": false,
+      "catalogRefs": {
+       "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+       "pinnedCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
+       "screen": {
+        "catalogId": "screen.theme-marketing-landing/home",
+        "title": "Marketing landing / Home",
+        "url": "https://app.codegen-x.com/#/asset/screen.theme-marketing-landing/home",
+        "searchUrl": "https://app.codegen-x.com/#/search?type=screen&section=marketing&spec=screen.theme-marketing-landing",
+        "filters": {
+         "type": [
+          "screen"
+         ],
+         "section": [
+          "marketing"
+         ],
+         "job": [
+          "hero",
+          "features",
+          "testimonials",
+          "cta",
+          "faq",
+          "how",
+          "logos",
+          "numbers"
+         ],
+         "blocks": [
+          "cta",
+          "faq",
+          "features",
+          "hero",
+          "steps",
+          "logos",
+          "navbar",
+          "sitemap",
+          "stats",
+          "testimonials"
+         ],
+         "industry": [],
+         "spec": "screen.theme-marketing-landing",
+         "variant": "home"
+        }
+       },
+       "blocks": [
+        {
+         "blockId": "block-nav",
+         "kind": "nav",
+         "catalogLabel": "navbar",
+         "catalogId": "block.navbar",
+         "title": "Navigation bar",
+         "variants": [
+          "inline",
+          "split",
+          "search",
+          "media",
+          "plain",
+          "inverse"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.navbar/inline",
+         "filters": {
+          "type": "block",
+          "spec": "block.navbar",
+          "kind": "nav",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 5,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "inline",
+         "registryItem": "nav-bar"
+        },
+        {
+         "blockId": "block-hero",
+         "kind": "hero",
+         "catalogLabel": "hero",
+         "catalogId": "block.hero",
+         "title": "Hero",
+         "variants": [
+          "centered",
+          "screenshot",
+          "backdrop",
+          "code",
+          "cluster",
+          "display",
+          "form",
+          "prompt",
+          "twoActions",
+          "split",
+          "splitStart",
+          "muted",
+          "saas",
+          "shop",
+          "blog"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.hero/screenshot",
+         "filters": {
+          "type": "block",
+          "spec": "block.hero",
+          "kind": "hero",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "screenshot",
+         "registryItem": "hero-classic"
+        },
+        {
+         "blockId": "block-logos",
+         "kind": "features",
+         "catalogLabel": "features",
+         "catalogId": "block.features",
+         "title": "Features",
+         "variants": [
+          "grid",
+          "grid2",
+          "tiles4",
+          "cells4",
+          "rows",
+          "rowsStart",
+          "rowsAlternate",
+          "tilesMuted"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.features/rowsAlternate",
+         "filters": {
+          "type": "block",
+          "spec": "block.features",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "rowsAlternate",
+         "registryItem": "feature-grid"
+        },
+        {
+         "blockId": "block-features",
+         "kind": "features",
+         "catalogLabel": "features",
+         "catalogId": "block.features",
+         "title": "Features",
+         "variants": [
+          "grid",
+          "grid2",
+          "tiles4",
+          "cells4",
+          "rows",
+          "rowsStart",
+          "rowsAlternate",
+          "tilesMuted"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.features/rowsAlternate",
+         "filters": {
+          "type": "block",
+          "spec": "block.features",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "rowsAlternate",
+         "registryItem": "feature-grid"
+        },
+        {
+         "blockId": "block-steps",
+         "kind": "features",
+         "catalogLabel": "steps",
+         "catalogId": "block.steps",
+         "title": "How it works",
+         "variants": [
+          "row",
+          "rowIcons",
+          "column",
+          "centered",
+          "columnIcons",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.steps/rowIcons",
+         "filters": {
+          "type": "block",
+          "spec": "block.steps",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "rowIcons",
+         "registryItem": "steps-list"
+        },
+        {
+         "blockId": "block-stats",
+         "kind": "features",
+         "catalogLabel": "stats",
+         "catalogId": "block.stats",
+         "title": "Stats",
+         "variants": [
+          "plain4",
+          "panel",
+          "stack",
+          "image",
+          "cards",
+          "icons",
+          "muted2",
+          "cardsCompact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.stats/icons",
+         "filters": {
+          "type": "block",
+          "spec": "block.stats",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "icons",
+         "registryItem": "stats-band"
+        },
+        {
+         "blockId": "block-testimonials",
+         "kind": "features",
+         "catalogLabel": "testimonials",
+         "catalogId": "block.testimonials",
+         "title": "Testimonials",
+         "variants": [
+          "grid3",
+          "masonry",
+          "strip",
+          "social",
+          "featured",
+          "grid2",
+          "single",
+          "stack",
+          "plain",
+          "noRating"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.testimonials/single",
+         "filters": {
+          "type": "block",
+          "spec": "block.testimonials",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 2,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "single",
+         "registryItem": "testimonial-grid"
+        },
+        {
+         "blockId": "block-faq",
+         "kind": "features",
+         "catalogLabel": "faq",
+         "catalogId": "block.faq",
+         "title": "FAQ",
+         "variants": [
+          "list",
+          "chat",
+          "search",
+          "tabs",
+          "twoColumns",
+          "muted",
+          "roomy"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.faq/list",
+         "filters": {
+          "type": "block",
+          "spec": "block.faq",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "list",
+         "registryItem": "faq-list"
+        },
+        {
+         "blockId": "block-cta",
+         "kind": "cta",
+         "catalogLabel": "cta",
+         "catalogId": "block.cta",
+         "title": "Call to action",
+         "variants": [
+          "card",
+          "banner",
+          "row",
+          "form",
+          "quote",
+          "band",
+          "split",
+          "compact",
+          "saas",
+          "shop",
+          "agency"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.cta/band",
+         "filters": {
+          "type": "block",
+          "spec": "block.cta",
+          "kind": "cta",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "band",
+         "registryItem": "cta-band"
+        },
+        {
+         "blockId": "block-footer",
+         "kind": "footer",
+         "catalogLabel": "sitemap",
+         "catalogId": "block.sitemap",
+         "title": "Sitemap footer",
+         "variants": [
+          "columns",
+          "card",
+          "row",
+          "newsletter",
+          "status",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.sitemap/columns",
+         "filters": {
+          "type": "block",
+          "spec": "block.sitemap",
+          "kind": "footer",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "columns",
+         "registryItem": "sitemap-footer"
+        }
+       ]
+      },
+      "changes": {
+       "added": [],
+       "kept": [
+        "block-nav",
+        "block-footer"
+       ],
+       "removed": []
+      },
+      "origin": "ask-plan"
+     },
+     "mode": "build"
+    },
+    {
+     "id": "msg-56c23bed-e0ba-4197-82d9-69c567a4c8a4",
+     "role": "user",
+     "text": "\u0414\u0430",
+     "createdAt": "2026-11-13T16:36:17.815Z",
+     "selectedModelId": "grok-4.20-0309-non-reasoning",
+     "mode": "build"
+    },
+    {
+     "id": "msg-302c086d-f349-44d0-b7d7-063fccaf17d9",
+     "role": "assistant",
+     "text": "Proposal for Marketing landing:\n- \u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442 (block.steps): title\n- \u041d\u0430\u0448\u0438 \u0434\u043e\u0441\u0442\u0438\u0436\u0435\u043d\u0438\u044f (block.stats): title\n- \u041e\u0442\u0437\u044b\u0432\u044b \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432 (block.testimonials): title\n- \u0427\u0430\u0441\u0442\u043e \u0437\u0430\u0434\u0430\u0432\u0430\u0435\u043c\u044b\u0435 \u0432\u043e\u043f\u0440\u043e\u0441\u044b (block.faq): title\nUnchanged: 6 blocks.",
+     "createdAt": "2026-11-13T16:36:38.491Z",
+     "proposal": {
+      "applied": true,
+      "status": "applied",
+      "source": "xai-runtime",
+      "liveModel": true,
+      "assembler": "page-patch/v1",
+      "warnings": [
+       "page-patch/v1 applied: set block-steps; set_items block-steps; set block-stats; set_items block-stats; set block-testimonials; set_items block-testimonials; set block-faq; set_items block-faq.",
+       "Skipped op 1 (replace block-logos features block.features): page_patch_invalid."
+      ],
+      "missing": [],
+      "title": "Marketing landing",
+      "screenId": "screen.theme-marketing-landing/home",
+      "locale": "ru",
+      "demoData": false,
+      "catalogRefs": {
+       "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+       "pinnedCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
+       "screen": {
+        "catalogId": "screen.theme-marketing-landing/home",
+        "title": "Marketing landing / Home",
+        "url": "https://app.codegen-x.com/#/asset/screen.theme-marketing-landing/home",
+        "searchUrl": "https://app.codegen-x.com/#/search?type=screen&section=marketing&spec=screen.theme-marketing-landing",
+        "filters": {
+         "type": [
+          "screen"
+         ],
+         "section": [
+          "marketing"
+         ],
+         "job": [
+          "hero",
+          "features",
+          "testimonials",
+          "cta",
+          "faq",
+          "how",
+          "logos",
+          "numbers"
+         ],
+         "blocks": [
+          "cta",
+          "faq",
+          "features",
+          "hero",
+          "steps",
+          "logos",
+          "navbar",
+          "sitemap",
+          "stats",
+          "testimonials"
+         ],
+         "industry": [],
+         "spec": "screen.theme-marketing-landing",
+         "variant": "home"
+        }
+       },
+       "blocks": [
+        {
+         "blockId": "block-nav",
+         "kind": "nav",
+         "catalogLabel": "navbar",
+         "catalogId": "block.navbar",
+         "title": "Navigation bar",
+         "variants": [
+          "inline",
+          "split",
+          "search",
+          "media",
+          "plain",
+          "inverse"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.navbar/inline",
+         "filters": {
+          "type": "block",
+          "spec": "block.navbar",
+          "kind": "nav",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 5,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "inline",
+         "registryItem": "nav-bar"
+        },
+        {
+         "blockId": "block-hero",
+         "kind": "hero",
+         "catalogLabel": "hero",
+         "catalogId": "block.hero",
+         "title": "Hero",
+         "variants": [
+          "centered",
+          "screenshot",
+          "backdrop",
+          "code",
+          "cluster",
+          "display",
+          "form",
+          "prompt",
+          "twoActions",
+          "split",
+          "splitStart",
+          "muted",
+          "saas",
+          "shop",
+          "blog"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.hero/screenshot",
+         "filters": {
+          "type": "block",
+          "spec": "block.hero",
+          "kind": "hero",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "screenshot",
+         "registryItem": "hero-classic"
+        },
+        {
+         "blockId": "block-logos",
+         "kind": "features",
+         "catalogLabel": "features",
+         "catalogId": "block.features",
+         "title": "Features",
+         "variants": [
+          "grid",
+          "grid2",
+          "tiles4",
+          "cells4",
+          "rows",
+          "rowsStart",
+          "rowsAlternate",
+          "tilesMuted"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.features/rowsAlternate",
+         "filters": {
+          "type": "block",
+          "spec": "block.features",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "rowsAlternate",
+         "registryItem": "feature-grid"
+        },
+        {
+         "blockId": "block-features",
+         "kind": "features",
+         "catalogLabel": "features",
+         "catalogId": "block.features",
+         "title": "Features",
+         "variants": [
+          "grid",
+          "grid2",
+          "tiles4",
+          "cells4",
+          "rows",
+          "rowsStart",
+          "rowsAlternate",
+          "tilesMuted"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.features/rowsAlternate",
+         "filters": {
+          "type": "block",
+          "spec": "block.features",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "rowsAlternate",
+         "registryItem": "feature-grid"
+        },
+        {
+         "blockId": "block-steps",
+         "kind": "features",
+         "catalogLabel": "steps",
+         "catalogId": "block.steps",
+         "title": "How it works",
+         "variants": [
+          "row",
+          "rowIcons",
+          "column",
+          "centered",
+          "columnIcons",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.steps/rowIcons",
+         "filters": {
+          "type": "block",
+          "spec": "block.steps",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "rowIcons",
+         "registryItem": "steps-list"
+        },
+        {
+         "blockId": "block-stats",
+         "kind": "features",
+         "catalogLabel": "stats",
+         "catalogId": "block.stats",
+         "title": "Stats",
+         "variants": [
+          "plain4",
+          "panel",
+          "stack",
+          "image",
+          "cards",
+          "icons",
+          "muted2",
+          "cardsCompact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.stats/icons",
+         "filters": {
+          "type": "block",
+          "spec": "block.stats",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "icons",
+         "registryItem": "stats-band"
+        },
+        {
+         "blockId": "block-testimonials",
+         "kind": "features",
+         "catalogLabel": "testimonials",
+         "catalogId": "block.testimonials",
+         "title": "Testimonials",
+         "variants": [
+          "grid3",
+          "masonry",
+          "strip",
+          "social",
+          "featured",
+          "grid2",
+          "single",
+          "stack",
+          "plain",
+          "noRating"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.testimonials/single",
+         "filters": {
+          "type": "block",
+          "spec": "block.testimonials",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 2,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "single",
+         "registryItem": "testimonial-grid"
+        },
+        {
+         "blockId": "block-faq",
+         "kind": "features",
+         "catalogLabel": "faq",
+         "catalogId": "block.faq",
+         "title": "FAQ",
+         "variants": [
+          "list",
+          "chat",
+          "search",
+          "tabs",
+          "twoColumns",
+          "muted",
+          "roomy"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.faq/list",
+         "filters": {
+          "type": "block",
+          "spec": "block.faq",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "list",
+         "registryItem": "faq-list"
+        },
+        {
+         "blockId": "block-cta",
+         "kind": "cta",
+         "catalogLabel": "cta",
+         "catalogId": "block.cta",
+         "title": "Call to action",
+         "variants": [
+          "card",
+          "banner",
+          "row",
+          "form",
+          "quote",
+          "band",
+          "split",
+          "compact",
+          "saas",
+          "shop",
+          "agency"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.cta/band",
+         "filters": {
+          "type": "block",
+          "spec": "block.cta",
+          "kind": "cta",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "band",
+         "registryItem": "cta-band"
+        },
+        {
+         "blockId": "block-footer",
+         "kind": "footer",
+         "catalogLabel": "sitemap",
+         "catalogId": "block.sitemap",
+         "title": "Sitemap footer",
+         "variants": [
+          "columns",
+          "card",
+          "row",
+          "newsletter",
+          "status",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.sitemap/columns",
+         "filters": {
+          "type": "block",
+          "spec": "block.sitemap",
+          "kind": "footer",
+          "screen": "screen.theme-marketing-landing/home",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "features",
+           "testimonials",
+           "cta",
+           "faq",
+           "how",
+           "logos",
+           "numbers"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/home",
+         "variant": "columns",
+         "registryItem": "sitemap-footer"
+        }
+       ]
+      },
+      "changes": {
+       "added": [],
+       "kept": [
+        "block-nav",
+        "block-hero",
+        "block-logos",
+        "block-features",
+        "block-cta",
+        "block-footer"
+       ],
+       "removed": []
+      }
+     },
+     "run": {
+      "requestedModelId": "grok-4.20-0309-non-reasoning",
+      "modelId": "grok-4.20-0309-non-reasoning",
+      "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+      "live": true,
+      "policyVersion": "browser-constructor/3",
+      "modelCatalogVersion": "grok-text-5/2026-11-08",
+      "trialPolicyVersion": "browser-constructor/3+grok-text-5/2026-11-08",
+      "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+      "path": "chat-completions",
+      "tools": [
+       "propose_layout",
+       "edit_page",
+       "edit_page",
+       "edit_page"
+      ],
+      "runId": "xai-mwf78976-xe97pp",
+      "usage": {
+       "status": "complete",
+       "steps": 4,
+       "promptTokens": 43940,
+       "completionTokens": 2326,
+       "totalTokens": 46266,
+       "reportedBy": "xai-provider",
+       "aggregation": "sum-of-tool-loop-requests",
+       "lastStep": {
+        "promptTokens": 11836,
+        "completionTokens": 606,
+        "totalTokens": 12442,
+        "reasoningTokens": 0,
+        "cachedTokens": 11136
+       },
+       "cost": {
+        "available": false,
+        "reason": "no_official_current_rates_in_repo",
+        "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+       },
+       "reasoningTokens": 0,
+       "cachedTokens": 13056
+      }
+     }
+    }
+   ],
+   "mode": "build",
+   "scenarioId": "landing",
+   "screenId": "screen.theme-marketing-landing/home",
+   "selectedModelId": "grok-4.20-0309-non-reasoning",
+   "usage": {
+    "status": "complete",
+    "runs": 3,
+    "incompleteRuns": 0,
+    "promptTokens": 99962,
+    "completionTokens": 5544,
+    "totalTokens": 105506,
+    "cost": {
+     "available": false,
+     "reason": "no_official_current_rates_in_repo",
+     "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+    },
+    "reasoningTokens": 0,
+    "cachedTokens": 43136
+   },
+   "pageRevision": 2,
+   "pageId": "page-draft",
+   "history": [
+    {
+     "revision": 1,
+     "at": "2026-11-13T16:36:04.137Z",
+     "cause": "apply",
+     "pageId": "page-draft"
+    },
+    {
+     "revision": 2,
+     "at": "2026-11-13T16:36:50.585Z",
+     "cause": "apply",
+     "pageId": "page-draft"
+    }
+   ],
+   "skin": "sky",
+   "page": {
+    "applied": {
+     "id": "page-draft",
+     "slug": "marketing-landing",
+     "status": "draft",
+     "title": "Marketing landing",
+     "layout": {
+      "version": 1,
+      "blocks": [
+       {
+        "id": "block-nav",
+        "kind": "nav",
+        "title": "\u041d\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u044f",
+        "summary": "Brand and section links assembled from compatible catalog labels.",
+        "catalogBlock": "block.navbar",
+        "variant": "inline",
+        "copy": {
+         "brand": "\u0428\u0430\u0448\u043b\u044b\u043a \u041c\u0430\u0448\u043b\u044b\u043a"
+        },
+        "children": [
+         {
+          "id": "block-nav-item-1",
+          "kind": "nav-link",
+          "title": "\u0413\u043b\u0430\u0432\u043d\u0430\u044f",
+          "summary": "\u0413\u043b\u0430\u0432\u043d\u0430\u044f"
+         },
+         {
+          "id": "block-nav-item-2",
+          "kind": "nav-link",
+          "title": "\u041c\u0435\u043d\u044e",
+          "summary": "\u041c\u0435\u043d\u044e"
+         },
+         {
+          "id": "block-nav-item-3",
+          "kind": "nav-link",
+          "title": "\u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430",
+          "summary": "\u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430"
+         },
+         {
+          "id": "block-nav-item-4",
+          "kind": "nav-link",
+          "title": "\u0410\u043a\u0446\u0438\u0438",
+          "summary": "\u0410\u043a\u0446\u0438\u0438"
+         },
+         {
+          "id": "block-nav-item-5",
+          "kind": "nav-link",
+          "title": "\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u044b",
+          "summary": "\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u044b"
+         }
+        ]
+       },
+       {
+        "id": "block-hero",
+        "kind": "hero",
+        "title": "\u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0431\u043b\u044e\u0434 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c",
+        "summary": "\u0413\u043e\u0440\u044f\u0447\u0438\u0439 \u0448\u0430\u0448\u043b\u044b\u043a, \u0441\u043e\u0447\u043d\u044b\u0435 \u043a\u0435\u0431\u0430\u0431\u044b \u0438 \u0430\u0440\u043e\u043c\u0430\u0442\u043d\u044b\u0435 \u0431\u043b\u044e\u0434\u0430 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043f\u0440\u044f\u043c\u043e \u043a \u0432\u0430\u0448\u0435\u0439 \u0434\u0432\u0435\u0440\u0438! \u0421\u043f\u0435\u0446\u0438\u0430\u043b\u044c\u043d\u0430\u044f \u0430\u043a\u0446\u0438\u044f: \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043e\u0442 1500 \u20bd.",
+        "catalogBlock": "block.hero",
+        "variant": "screenshot",
+        "copy": {
+         "headline": "\u0413\u043e\u0440\u044f\u0447\u0438\u0439 \u0448\u0430\u0448\u043b\u044b\u043a \u0438 \u0431\u043b\u044e\u0434\u0430 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c",
+         "lede": "\u0421\u043f\u0435\u0446\u0438\u0430\u043b\u044c\u043d\u0430\u044f \u0430\u043a\u0446\u0438\u044f: \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043e\u0442 1500 \u20bd. \u0417\u0430 30\u201345 \u043c\u0438\u043d\u0443\u0442 \u043f\u043e \u0433\u043e\u0440\u043e\u0434\u0443. \u0422\u043e\u043b\u044c\u043a\u043e \u0441\u0432\u0435\u0436\u0438\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b \u0438 \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043d\u044b\u0435 \u0440\u0435\u0446\u0435\u043f\u0442\u044b.",
+         "action": "\u0417\u0430\u043a\u0430\u0437\u0430\u0442\u044c \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443",
+         "href": "#order"
+        }
+       },
+       {
+        "id": "block-logos",
+        "kind": "features",
+        "title": "Logo cloud",
+        "summary": "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435.",
+        "catalogBlock": "block.features",
+        "variant": "rowsAlternate",
+        "children": [
+         {
+          "id": "block-logos-item-1",
+          "kind": "feature",
+          "title": "\u041a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0448\u0430\u0448\u043b\u044b\u043a",
+          "summary": "350 \u0433 \u2022 890 \u20bd",
+          "copy": {
+           "icon": "flame"
+          }
+         },
+         {
+          "id": "block-logos-item-2",
+          "kind": "feature",
+          "title": "\u041a\u0443\u0440\u0438\u043d\u044b\u0439 \u043a\u0435\u0431\u0430\u0431",
+          "summary": "400 \u0433 \u2022 690 \u20bd",
+          "copy": {
+           "icon": "drumstick"
+          }
+         },
+         {
+          "id": "block-logos-item-3",
+          "kind": "feature",
+          "title": "\u041b\u044e\u043b\u044f-\u043a\u0435\u0431\u0430\u0431",
+          "summary": "300 \u0433 \u2022 750 \u20bd",
+          "copy": {
+           "icon": "utensils"
+          }
+         },
+         {
+          "id": "block-logos-item-4",
+          "kind": "feature",
+          "title": "\u041e\u0432\u043e\u0449\u0438 \u043d\u0430 \u043c\u0430\u043d\u0433\u0430\u043b\u0435",
+          "summary": "250 \u0433 \u2022 490 \u20bd",
+          "copy": {
+           "icon": "carrot"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-features",
+        "kind": "features",
+        "title": "\u041f\u043e\u0447\u0435\u043c\u0443 \u0432\u044b\u0431\u0438\u0440\u0430\u044e\u0442 \u043d\u0430\u0441",
+        "summary": "\u0421\u0432\u0435\u0436\u0438\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b, \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043d\u044b\u0435 \u0440\u0435\u0446\u0435\u043f\u0442\u044b \u0438 \u0431\u044b\u0441\u0442\u0440\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430.",
+        "catalogBlock": "block.features",
+        "variant": "rowsAlternate",
+        "copy": {
+         "lede": "\u0421\u0432\u0435\u0436\u0438\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b, \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043d\u044b\u0435 \u0440\u0435\u0446\u0435\u043f\u0442\u044b \u0438 \u0431\u044b\u0441\u0442\u0440\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430."
+        },
+        "children": [
+         {
+          "id": "block-features-item-1",
+          "kind": "feature",
+          "title": "\u0421\u0432\u0435\u0436\u0438\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b",
+          "summary": "\u041c\u044f\u0441\u043e \u043e\u0442 \u043c\u0435\u0441\u0442\u043d\u044b\u0445 \u0444\u0435\u0440\u043c\u0435\u0440\u043e\u0432, \u043e\u0432\u043e\u0449\u0438 \u0441 \u0440\u044b\u043d\u043a\u0430",
+          "copy": {
+           "icon": "leaf"
+          }
+         },
+         {
+          "id": "block-features-item-2",
+          "kind": "feature",
+          "title": "\u0411\u044b\u0441\u0442\u0440\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430",
+          "summary": "30\u201345 \u043c\u0438\u043d\u0443\u0442 \u043f\u043e \u0433\u043e\u0440\u043e\u0434\u0443",
+          "copy": {
+           "icon": "bike"
+          }
+         },
+         {
+          "id": "block-features-item-3",
+          "kind": "feature",
+          "title": "\u0413\u0430\u0440\u0430\u043d\u0442\u0438\u044f \u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430",
+          "summary": "\u0415\u0441\u043b\u0438 \u043d\u0435 \u043f\u043e\u043d\u0440\u0430\u0432\u0438\u0442\u0441\u044f \u2014 \u0432\u0435\u0440\u043d\u0451\u043c \u0434\u0435\u043d\u044c\u0433\u0438",
+          "copy": {
+           "icon": "shield"
+          }
+         },
+         {
+          "id": "block-features-item-4",
+          "kind": "feature",
+          "title": "\u0410\u043a\u0446\u0438\u044f",
+          "summary": "\u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043e\u0442 1500 \u20bd",
+          "copy": {
+           "icon": "gift"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-steps",
+        "kind": "features",
+        "title": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442",
+        "summary": "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435.",
+        "catalogBlock": "block.steps",
+        "variant": "rowIcons",
+        "children": [
+         {
+          "id": "block-steps-item-1",
+          "kind": "feature",
+          "title": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0431\u043b\u044e\u0434\u0430",
+          "summary": "\u0418\u0437 \u043c\u0435\u043d\u044e \u043d\u0430 \u0441\u0430\u0439\u0442\u0435",
+          "copy": {
+           "icon": "menu"
+          }
+         },
+         {
+          "id": "block-steps-item-2",
+          "kind": "feature",
+          "title": "\u041e\u0444\u043e\u0440\u043c\u0438\u0442\u0435 \u0437\u0430\u043a\u0430\u0437",
+          "summary": "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0430\u0434\u0440\u0435\u0441 \u0438 \u0432\u0440\u0435\u043c\u044f",
+          "copy": {
+           "icon": "clipboard"
+          }
+         },
+         {
+          "id": "block-steps-item-3",
+          "kind": "feature",
+          "title": "\u041c\u044b \u043f\u0440\u0438\u0433\u043e\u0442\u043e\u0432\u0438\u043c",
+          "summary": "\u041d\u0430 \u043c\u0430\u043d\u0433\u0430\u043b\u0435 \u0437\u0430 20 \u043c\u0438\u043d\u0443\u0442",
+          "copy": {
+           "icon": "flame"
+          }
+         },
+         {
+          "id": "block-steps-item-4",
+          "kind": "feature",
+          "title": "\u0414\u043e\u0441\u0442\u0430\u0432\u0438\u043c \u0433\u043e\u0440\u044f\u0447\u0438\u043c",
+          "summary": "\u041f\u0440\u044f\u043c\u043e \u043a \u0434\u0432\u0435\u0440\u0438",
+          "copy": {
+           "icon": "bike"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-stats",
+        "kind": "features",
+        "title": "\u041d\u0430\u0448\u0438 \u0434\u043e\u0441\u0442\u0438\u0436\u0435\u043d\u0438\u044f",
+        "summary": "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435.",
+        "catalogBlock": "block.stats",
+        "variant": "icons",
+        "children": [
+         {
+          "id": "block-stats-item-1",
+          "kind": "feature",
+          "title": "\u0411\u043b\u044e\u0434",
+          "summary": "120+",
+          "copy": {
+           "icon": "utensils"
+          }
+         },
+         {
+          "id": "block-stats-item-2",
+          "kind": "feature",
+          "title": "\u0414\u043e\u0441\u0442\u0430\u0432\u043e\u043a \u0432 \u0434\u0435\u043d\u044c",
+          "summary": "450",
+          "copy": {
+           "icon": "truck"
+          }
+         },
+         {
+          "id": "block-stats-item-3",
+          "kind": "feature",
+          "title": "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u043e\u0446\u0435\u043d\u043a\u0430",
+          "summary": "4.9",
+          "copy": {
+           "icon": "star"
+          }
+         },
+         {
+          "id": "block-stats-item-4",
+          "kind": "feature",
+          "title": "\u0413\u043e\u0440\u043e\u0434\u043e\u0432",
+          "summary": "12",
+          "copy": {
+           "icon": "map"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-testimonials",
+        "kind": "features",
+        "title": "\u041e\u0442\u0437\u044b\u0432\u044b \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432",
+        "summary": "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435.",
+        "catalogBlock": "block.testimonials",
+        "variant": "single",
+        "children": [
+         {
+          "id": "block-testimonials-item-1",
+          "kind": "feature",
+          "title": "\u0410\u043d\u043d\u0430 \u0421.",
+          "summary": "\u00ab\u0428\u0430\u0448\u043b\u044b\u043a \u0432\u0441\u0435\u0433\u0434\u0430 \u0433\u043e\u0440\u044f\u0447\u0438\u0439, \u043c\u044f\u0441\u043e \u0441\u043e\u0447\u043d\u043e\u0435. \u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0432\u043e\u0432\u0440\u0435\u043c\u044f!\u00bb",
+          "copy": {
+           "icon": "star"
+          }
+         },
+         {
+          "id": "block-testimonials-item-2",
+          "kind": "feature",
+          "title": "\u041c\u0430\u043a\u0441\u0438\u043c \u041a.",
+          "summary": "\u00ab\u0417\u0430\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043a\u0430\u0436\u0434\u0443\u044e \u043f\u044f\u0442\u043d\u0438\u0446\u0443. \u041b\u0443\u0447\u0448\u0438\u0439 \u043b\u044e\u043b\u044f \u0432 \u0433\u043e\u0440\u043e\u0434\u0435.\u00bb",
+          "copy": {
+           "icon": "star"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-faq",
+        "kind": "features",
+        "title": "\u0427\u0430\u0441\u0442\u043e \u0437\u0430\u0434\u0430\u0432\u0430\u0435\u043c\u044b\u0435 \u0432\u043e\u043f\u0440\u043e\u0441\u044b",
+        "summary": "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435.",
+        "catalogBlock": "block.faq",
+        "variant": "list",
+        "children": [
+         {
+          "id": "block-faq-item-1",
+          "kind": "feature",
+          "title": "\u0421\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u0442\u043e\u0438\u0442 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430?",
+          "summary": "\u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e \u043e\u0442 1500 \u20bd, \u0438\u043d\u0430\u0447\u0435 250 \u20bd."
+         },
+         {
+          "id": "block-faq-item-2",
+          "kind": "feature",
+          "title": "\u041a\u0430\u043a \u0431\u044b\u0441\u0442\u0440\u043e \u043f\u0440\u0438\u0432\u0435\u0437\u0443\u0442?",
+          "summary": "30\u201345 \u043c\u0438\u043d\u0443\u0442 \u0432 \u043f\u0440\u0435\u0434\u0435\u043b\u0430\u0445 \u0433\u043e\u0440\u043e\u0434\u0430."
+         },
+         {
+          "id": "block-faq-item-3",
+          "kind": "feature",
+          "title": "\u041c\u043e\u0436\u043d\u043e \u043b\u0438 \u043e\u043f\u043b\u0430\u0442\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0439?",
+          "summary": "\u0414\u0430, \u043e\u043d\u043b\u0430\u0439\u043d \u0438\u043b\u0438 \u043a\u0443\u0440\u044c\u0435\u0440\u0443."
+         },
+         {
+          "id": "block-faq-item-4",
+          "kind": "feature",
+          "title": "\u0415\u0441\u0442\u044c \u043b\u0438 \u0432\u0435\u0433\u0435\u0442\u0430\u0440\u0438\u0430\u043d\u0441\u043a\u0438\u0435 \u0431\u043b\u044e\u0434\u0430?",
+          "summary": "\u0414\u0430 \u2014 \u043e\u0432\u043e\u0449\u0438 \u043d\u0430 \u043c\u0430\u043d\u0433\u0430\u043b\u0435 \u0438 \u0441\u0430\u043b\u0430\u0442\u044b."
+         }
+        ]
+       },
+       {
+        "id": "block-cta",
+        "kind": "cta",
+        "title": "\u0417\u0430\u043a\u0430\u0436\u0438\u0442\u0435 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443 \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441",
+        "summary": "\u0410\u043a\u0446\u0438\u044f \u0434\u0435\u0439\u0441\u0442\u0432\u0443\u0435\u0442 \u0434\u043e \u043a\u043e\u043d\u0446\u0430 \u043d\u0435\u0434\u0435\u043b\u0438. \u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043f\u043e \u0433\u043e\u0440\u043e\u0434\u0443 \u0437\u0430 30-45 \u043c\u0438\u043d\u0443\u0442.",
+        "catalogBlock": "block.cta",
+        "variant": "band",
+        "copy": {
+         "lede": "\u0410\u043a\u0446\u0438\u044f \u0434\u043e \u043a\u043e\u043d\u0446\u0430 \u043d\u0435\u0434\u0435\u043b\u0438. \u0417\u0430\u043a\u0430\u0436\u0438\u0442\u0435 \u0441\u0435\u0439\u0447\u0430\u0441 \u0438 \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u0435 \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u044b\u0439 \u0441\u043e\u0443\u0441 \u0432 \u043f\u043e\u0434\u0430\u0440\u043e\u043a!",
+         "action": "\u041e\u0444\u043e\u0440\u043c\u0438\u0442\u044c \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443",
+         "href": "#order"
+        }
+       },
+       {
+        "id": "block-footer",
+        "kind": "footer",
+        "title": "\u0424\u0443\u0442\u0435\u0440",
+        "summary": "Closing band. Contact facts are not invented.",
+        "catalogBlock": "block.sitemap",
+        "variant": "columns",
+        "copy": {
+         "brand": "\u0428\u0430\u0448\u043b\u044b\u043a \u041c\u0430\u0448\u043b\u044b\u043a",
+         "legal": "\u0428\u0430\u0448\u043b\u044b\u043a \u041c\u0430\u0448\u043b\u044b\u043a. \u0412\u0441\u0435 \u043f\u0440\u0430\u0432\u0430 \u0437\u0430\u0449\u0438\u0449\u0435\u043d\u044b."
+        }
+       }
+      ]
+     },
+     "seo": {
+      "title": "Marketing landing",
+      "description": "Marketing landing draft. Not published. Catalog blocks only."
+     },
+     "locale": "ru",
+     "createdAt": "2026-11-13T16:33:12.316Z",
+     "updatedAt": "2026-11-13T16:36:38.434Z"
+    },
+    "candidate": null,
+    "appliedProvenance": {
+     "screenId": "screen.theme-marketing-landing/home",
+     "scenarioId": "landing",
+     "missing": [],
+     "assembler": "page-patch/v1"
+    },
+    "candidateProvenance": null,
+    "selectedBlockId": "block-nav",
+    "revision": 2,
+    "lastProposed": {
+     "id": "page-draft",
+     "slug": "marketing-landing",
+     "status": "draft",
+     "title": "Marketing landing",
+     "layout": {
+      "version": 1,
+      "blocks": [
+       {
+        "id": "block-nav",
+        "kind": "nav",
+        "title": "\u041d\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u044f",
+        "summary": "Brand and section links assembled from compatible catalog labels.",
+        "catalogBlock": "block.navbar",
+        "variant": "inline",
+        "copy": {
+         "brand": "\u0428\u0430\u0448\u043b\u044b\u043a \u041c\u0430\u0448\u043b\u044b\u043a"
+        },
+        "children": [
+         {
+          "id": "block-nav-item-1",
+          "kind": "nav-link",
+          "title": "\u0413\u043b\u0430\u0432\u043d\u0430\u044f",
+          "summary": "\u0413\u043b\u0430\u0432\u043d\u0430\u044f"
+         },
+         {
+          "id": "block-nav-item-2",
+          "kind": "nav-link",
+          "title": "\u041c\u0435\u043d\u044e",
+          "summary": "\u041c\u0435\u043d\u044e"
+         },
+         {
+          "id": "block-nav-item-3",
+          "kind": "nav-link",
+          "title": "\u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430",
+          "summary": "\u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430"
+         },
+         {
+          "id": "block-nav-item-4",
+          "kind": "nav-link",
+          "title": "\u0410\u043a\u0446\u0438\u0438",
+          "summary": "\u0410\u043a\u0446\u0438\u0438"
+         },
+         {
+          "id": "block-nav-item-5",
+          "kind": "nav-link",
+          "title": "\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u044b",
+          "summary": "\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u044b"
+         }
+        ]
+       },
+       {
+        "id": "block-hero",
+        "kind": "hero",
+        "title": "\u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0431\u043b\u044e\u0434 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c",
+        "summary": "\u0413\u043e\u0440\u044f\u0447\u0438\u0439 \u0448\u0430\u0448\u043b\u044b\u043a, \u0441\u043e\u0447\u043d\u044b\u0435 \u043a\u0435\u0431\u0430\u0431\u044b \u0438 \u0430\u0440\u043e\u043c\u0430\u0442\u043d\u044b\u0435 \u0431\u043b\u044e\u0434\u0430 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043f\u0440\u044f\u043c\u043e \u043a \u0432\u0430\u0448\u0435\u0439 \u0434\u0432\u0435\u0440\u0438! \u0421\u043f\u0435\u0446\u0438\u0430\u043b\u044c\u043d\u0430\u044f \u0430\u043a\u0446\u0438\u044f: \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043e\u0442 1500 \u20bd.",
+        "catalogBlock": "block.hero",
+        "variant": "screenshot",
+        "copy": {
+         "headline": "\u0413\u043e\u0440\u044f\u0447\u0438\u0439 \u0448\u0430\u0448\u043b\u044b\u043a \u0438 \u0431\u043b\u044e\u0434\u0430 \u0441 \u043c\u0430\u043d\u0433\u0430\u043b\u0430 \u043d\u0430 \u0434\u043e\u043c",
+         "lede": "\u0421\u043f\u0435\u0446\u0438\u0430\u043b\u044c\u043d\u0430\u044f \u0430\u043a\u0446\u0438\u044f: \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043e\u0442 1500 \u20bd. \u0417\u0430 30\u201345 \u043c\u0438\u043d\u0443\u0442 \u043f\u043e \u0433\u043e\u0440\u043e\u0434\u0443. \u0422\u043e\u043b\u044c\u043a\u043e \u0441\u0432\u0435\u0436\u0438\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b \u0438 \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043d\u044b\u0435 \u0440\u0435\u0446\u0435\u043f\u0442\u044b.",
+         "action": "\u0417\u0430\u043a\u0430\u0437\u0430\u0442\u044c \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443",
+         "href": "#order"
+        }
+       },
+       {
+        "id": "block-logos",
+        "kind": "features",
+        "title": "Logo cloud",
+        "summary": "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435.",
+        "catalogBlock": "block.features",
+        "variant": "rowsAlternate",
+        "children": [
+         {
+          "id": "block-logos-item-1",
+          "kind": "feature",
+          "title": "\u041a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0448\u0430\u0448\u043b\u044b\u043a",
+          "summary": "350 \u0433 \u2022 890 \u20bd",
+          "copy": {
+           "icon": "flame"
+          }
+         },
+         {
+          "id": "block-logos-item-2",
+          "kind": "feature",
+          "title": "\u041a\u0443\u0440\u0438\u043d\u044b\u0439 \u043a\u0435\u0431\u0430\u0431",
+          "summary": "400 \u0433 \u2022 690 \u20bd",
+          "copy": {
+           "icon": "drumstick"
+          }
+         },
+         {
+          "id": "block-logos-item-3",
+          "kind": "feature",
+          "title": "\u041b\u044e\u043b\u044f-\u043a\u0435\u0431\u0430\u0431",
+          "summary": "300 \u0433 \u2022 750 \u20bd",
+          "copy": {
+           "icon": "utensils"
+          }
+         },
+         {
+          "id": "block-logos-item-4",
+          "kind": "feature",
+          "title": "\u041e\u0432\u043e\u0449\u0438 \u043d\u0430 \u043c\u0430\u043d\u0433\u0430\u043b\u0435",
+          "summary": "250 \u0433 \u2022 490 \u20bd",
+          "copy": {
+           "icon": "carrot"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-features",
+        "kind": "features",
+        "title": "\u041f\u043e\u0447\u0435\u043c\u0443 \u0432\u044b\u0431\u0438\u0440\u0430\u044e\u0442 \u043d\u0430\u0441",
+        "summary": "\u0421\u0432\u0435\u0436\u0438\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b, \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043d\u044b\u0435 \u0440\u0435\u0446\u0435\u043f\u0442\u044b \u0438 \u0431\u044b\u0441\u0442\u0440\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430.",
+        "catalogBlock": "block.features",
+        "variant": "rowsAlternate",
+        "copy": {
+         "lede": "\u0421\u0432\u0435\u0436\u0438\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b, \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043d\u044b\u0435 \u0440\u0435\u0446\u0435\u043f\u0442\u044b \u0438 \u0431\u044b\u0441\u0442\u0440\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430."
+        },
+        "children": [
+         {
+          "id": "block-features-item-1",
+          "kind": "feature",
+          "title": "\u0421\u0432\u0435\u0436\u0438\u0435 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u044b",
+          "summary": "\u041c\u044f\u0441\u043e \u043e\u0442 \u043c\u0435\u0441\u0442\u043d\u044b\u0445 \u0444\u0435\u0440\u043c\u0435\u0440\u043e\u0432, \u043e\u0432\u043e\u0449\u0438 \u0441 \u0440\u044b\u043d\u043a\u0430",
+          "copy": {
+           "icon": "leaf"
+          }
+         },
+         {
+          "id": "block-features-item-2",
+          "kind": "feature",
+          "title": "\u0411\u044b\u0441\u0442\u0440\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430",
+          "summary": "30\u201345 \u043c\u0438\u043d\u0443\u0442 \u043f\u043e \u0433\u043e\u0440\u043e\u0434\u0443",
+          "copy": {
+           "icon": "bike"
+          }
+         },
+         {
+          "id": "block-features-item-3",
+          "kind": "feature",
+          "title": "\u0413\u0430\u0440\u0430\u043d\u0442\u0438\u044f \u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430",
+          "summary": "\u0415\u0441\u043b\u0438 \u043d\u0435 \u043f\u043e\u043d\u0440\u0430\u0432\u0438\u0442\u0441\u044f \u2014 \u0432\u0435\u0440\u043d\u0451\u043c \u0434\u0435\u043d\u044c\u0433\u0438",
+          "copy": {
+           "icon": "shield"
+          }
+         },
+         {
+          "id": "block-features-item-4",
+          "kind": "feature",
+          "title": "\u0410\u043a\u0446\u0438\u044f",
+          "summary": "\u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u0430\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043e\u0442 1500 \u20bd",
+          "copy": {
+           "icon": "gift"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-steps",
+        "kind": "features",
+        "title": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442",
+        "summary": "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435.",
+        "catalogBlock": "block.steps",
+        "variant": "rowIcons",
+        "children": [
+         {
+          "id": "block-steps-item-1",
+          "kind": "feature",
+          "title": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0431\u043b\u044e\u0434\u0430",
+          "summary": "\u0418\u0437 \u043c\u0435\u043d\u044e \u043d\u0430 \u0441\u0430\u0439\u0442\u0435",
+          "copy": {
+           "icon": "menu"
+          }
+         },
+         {
+          "id": "block-steps-item-2",
+          "kind": "feature",
+          "title": "\u041e\u0444\u043e\u0440\u043c\u0438\u0442\u0435 \u0437\u0430\u043a\u0430\u0437",
+          "summary": "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0430\u0434\u0440\u0435\u0441 \u0438 \u0432\u0440\u0435\u043c\u044f",
+          "copy": {
+           "icon": "clipboard"
+          }
+         },
+         {
+          "id": "block-steps-item-3",
+          "kind": "feature",
+          "title": "\u041c\u044b \u043f\u0440\u0438\u0433\u043e\u0442\u043e\u0432\u0438\u043c",
+          "summary": "\u041d\u0430 \u043c\u0430\u043d\u0433\u0430\u043b\u0435 \u0437\u0430 20 \u043c\u0438\u043d\u0443\u0442",
+          "copy": {
+           "icon": "flame"
+          }
+         },
+         {
+          "id": "block-steps-item-4",
+          "kind": "feature",
+          "title": "\u0414\u043e\u0441\u0442\u0430\u0432\u0438\u043c \u0433\u043e\u0440\u044f\u0447\u0438\u043c",
+          "summary": "\u041f\u0440\u044f\u043c\u043e \u043a \u0434\u0432\u0435\u0440\u0438",
+          "copy": {
+           "icon": "bike"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-stats",
+        "kind": "features",
+        "title": "\u041d\u0430\u0448\u0438 \u0434\u043e\u0441\u0442\u0438\u0436\u0435\u043d\u0438\u044f",
+        "summary": "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435.",
+        "catalogBlock": "block.stats",
+        "variant": "icons",
+        "children": [
+         {
+          "id": "block-stats-item-1",
+          "kind": "feature",
+          "title": "\u0411\u043b\u044e\u0434",
+          "summary": "120+",
+          "copy": {
+           "icon": "utensils"
+          }
+         },
+         {
+          "id": "block-stats-item-2",
+          "kind": "feature",
+          "title": "\u0414\u043e\u0441\u0442\u0430\u0432\u043e\u043a \u0432 \u0434\u0435\u043d\u044c",
+          "summary": "450",
+          "copy": {
+           "icon": "truck"
+          }
+         },
+         {
+          "id": "block-stats-item-3",
+          "kind": "feature",
+          "title": "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u043e\u0446\u0435\u043d\u043a\u0430",
+          "summary": "4.9",
+          "copy": {
+           "icon": "star"
+          }
+         },
+         {
+          "id": "block-stats-item-4",
+          "kind": "feature",
+          "title": "\u0413\u043e\u0440\u043e\u0434\u043e\u0432",
+          "summary": "12",
+          "copy": {
+           "icon": "map"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-testimonials",
+        "kind": "features",
+        "title": "\u041e\u0442\u0437\u044b\u0432\u044b \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432",
+        "summary": "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435.",
+        "catalogBlock": "block.testimonials",
+        "variant": "single",
+        "children": [
+         {
+          "id": "block-testimonials-item-1",
+          "kind": "feature",
+          "title": "\u0410\u043d\u043d\u0430 \u0421.",
+          "summary": "\u00ab\u0428\u0430\u0448\u043b\u044b\u043a \u0432\u0441\u0435\u0433\u0434\u0430 \u0433\u043e\u0440\u044f\u0447\u0438\u0439, \u043c\u044f\u0441\u043e \u0441\u043e\u0447\u043d\u043e\u0435. \u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0432\u043e\u0432\u0440\u0435\u043c\u044f!\u00bb",
+          "copy": {
+           "icon": "star"
+          }
+         },
+         {
+          "id": "block-testimonials-item-2",
+          "kind": "feature",
+          "title": "\u041c\u0430\u043a\u0441\u0438\u043c \u041a.",
+          "summary": "\u00ab\u0417\u0430\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043a\u0430\u0436\u0434\u0443\u044e \u043f\u044f\u0442\u043d\u0438\u0446\u0443. \u041b\u0443\u0447\u0448\u0438\u0439 \u043b\u044e\u043b\u044f \u0432 \u0433\u043e\u0440\u043e\u0434\u0435.\u00bb",
+          "copy": {
+           "icon": "star"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-faq",
+        "kind": "features",
+        "title": "\u0427\u0430\u0441\u0442\u043e \u0437\u0430\u0434\u0430\u0432\u0430\u0435\u043c\u044b\u0435 \u0432\u043e\u043f\u0440\u043e\u0441\u044b",
+        "summary": "\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445. \u0411\u043b\u043e\u043a \u043e\u0441\u0442\u0430\u043d\u0435\u0442\u0441\u044f \u043f\u0443\u0441\u0442\u044b\u043c, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u044b\u0435.",
+        "catalogBlock": "block.faq",
+        "variant": "list",
+        "children": [
+         {
+          "id": "block-faq-item-1",
+          "kind": "feature",
+          "title": "\u0421\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u0442\u043e\u0438\u0442 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430?",
+          "summary": "\u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e \u043e\u0442 1500 \u20bd, \u0438\u043d\u0430\u0447\u0435 250 \u20bd."
+         },
+         {
+          "id": "block-faq-item-2",
+          "kind": "feature",
+          "title": "\u041a\u0430\u043a \u0431\u044b\u0441\u0442\u0440\u043e \u043f\u0440\u0438\u0432\u0435\u0437\u0443\u0442?",
+          "summary": "30\u201345 \u043c\u0438\u043d\u0443\u0442 \u0432 \u043f\u0440\u0435\u0434\u0435\u043b\u0430\u0445 \u0433\u043e\u0440\u043e\u0434\u0430."
+         },
+         {
+          "id": "block-faq-item-3",
+          "kind": "feature",
+          "title": "\u041c\u043e\u0436\u043d\u043e \u043b\u0438 \u043e\u043f\u043b\u0430\u0442\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u043e\u0439?",
+          "summary": "\u0414\u0430, \u043e\u043d\u043b\u0430\u0439\u043d \u0438\u043b\u0438 \u043a\u0443\u0440\u044c\u0435\u0440\u0443."
+         },
+         {
+          "id": "block-faq-item-4",
+          "kind": "feature",
+          "title": "\u0415\u0441\u0442\u044c \u043b\u0438 \u0432\u0435\u0433\u0435\u0442\u0430\u0440\u0438\u0430\u043d\u0441\u043a\u0438\u0435 \u0431\u043b\u044e\u0434\u0430?",
+          "summary": "\u0414\u0430 \u2014 \u043e\u0432\u043e\u0449\u0438 \u043d\u0430 \u043c\u0430\u043d\u0433\u0430\u043b\u0435 \u0438 \u0441\u0430\u043b\u0430\u0442\u044b."
+         }
+        ]
+       },
+       {
+        "id": "block-cta",
+        "kind": "cta",
+        "title": "\u0417\u0430\u043a\u0430\u0436\u0438\u0442\u0435 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443 \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441",
+        "summary": "\u0410\u043a\u0446\u0438\u044f \u0434\u0435\u0439\u0441\u0442\u0432\u0443\u0435\u0442 \u0434\u043e \u043a\u043e\u043d\u0446\u0430 \u043d\u0435\u0434\u0435\u043b\u0438. \u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043f\u043e \u0433\u043e\u0440\u043e\u0434\u0443 \u0437\u0430 30-45 \u043c\u0438\u043d\u0443\u0442.",
+        "catalogBlock": "block.cta",
+        "variant": "band",
+        "copy": {
+         "lede": "\u0410\u043a\u0446\u0438\u044f \u0434\u043e \u043a\u043e\u043d\u0446\u0430 \u043d\u0435\u0434\u0435\u043b\u0438. \u0417\u0430\u043a\u0430\u0436\u0438\u0442\u0435 \u0441\u0435\u0439\u0447\u0430\u0441 \u0438 \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u0435 \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u044b\u0439 \u0441\u043e\u0443\u0441 \u0432 \u043f\u043e\u0434\u0430\u0440\u043e\u043a!",
+         "action": "\u041e\u0444\u043e\u0440\u043c\u0438\u0442\u044c \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0443",
+         "href": "#order"
+        }
+       },
+       {
+        "id": "block-footer",
+        "kind": "footer",
+        "title": "\u0424\u0443\u0442\u0435\u0440",
+        "summary": "Closing band. Contact facts are not invented.",
+        "catalogBlock": "block.sitemap",
+        "variant": "columns",
+        "copy": {
+         "brand": "\u0428\u0430\u0448\u043b\u044b\u043a \u041c\u0430\u0448\u043b\u044b\u043a",
+         "legal": "\u0428\u0430\u0448\u043b\u044b\u043a \u041c\u0430\u0448\u043b\u044b\u043a. \u0412\u0441\u0435 \u043f\u0440\u0430\u0432\u0430 \u0437\u0430\u0449\u0438\u0449\u0435\u043d\u044b."
+        }
+       }
+      ]
+     },
+     "seo": {
+      "title": "Marketing landing",
+      "description": "Marketing landing draft. Not published. Catalog blocks only."
+     },
+     "locale": "ru",
+     "createdAt": "2026-11-13T16:33:12.316Z",
+     "updatedAt": "2026-11-13T16:36:38.434Z"
+    },
+    "lastProposedProvenance": {
+     "screenId": "screen.theme-marketing-landing/home",
+     "scenarioId": "landing",
+     "missing": [],
+     "assembler": "page-patch/v1"
+    }
+   }
+  }
+ ],
+ "settings": {
+  "theme": "dark",
+  "selectedModelId": "grok-4.20-0309-non-reasoning",
+  "previewHideServiceLabels": true
+ },
+ "prefs": {
+  "layout": {
+   "navWidth": 240,
+   "chatWidth": 320,
+   "inspectorWidth": 304,
+   "layersHeight": 200,
+   "treeWidth": 208,
+   "navCollapsed": false,
+   "chatCollapsed": false,
+   "inspectorCollapsed": false,
+   "layersCollapsed": false,
+   "treeCollapsed": false,
+   "focus": false
+  }
+ }
+}

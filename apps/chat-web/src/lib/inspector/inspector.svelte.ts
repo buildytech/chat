@@ -1,34 +1,22 @@
 /**
- * Build inspector store (ADR 0014): field edits and block operations on the page Preview shows, each through the
- * builder-core inspector gate (page-spec + props gate, fail closed), and a local undo history. No chat proposal and
- * no model call: a passing edit replaces the visible page at once (persisted like any page edit), a rejected one
- * leaves the page as it was and is shown in its field.
+ * Build inspector store (ADR 0014, rebuilt on page-spec/v2 by ADR 0034): field edits and block operations on the page
+ * Preview shows. Every edit is one plain JSON write into the page document (`applyOp` -> `writePage`: the same gate,
+ * normalization and props schema the agent's write_page goes through) and a local undo history. No chat proposal and no
+ * model call: a passing edit replaces the visible page at once (persisted like any page edit), a rejected one leaves the
+ * page as it was and is shown in its field.
  */
-import {
-	addScreenSections,
-	canAddCatalogBlock,
-	deriveFamily,
-	inspectorOp,
-	inspectorSetField,
-	nextFamilyState,
-	withFamily,
-	type AddBlockCheck,
-	type InspectorField,
-	type InspectorOp,
-	type InspectorResult,
-	type PageFamily
-} from "@buildytech/builder-core";
-import type { StoredPageProvenance } from "../browser/persist";
-import { parseDraftPage, type Page } from "@buildytech/page-contract";
+import { addScreen, applyOp, checkAdd, deriveFamily, type AddCheck, type InspectorField, type OpResult, type PageFamily, type PageOp } from "@buildytech/builder-core";
+import type { PageV2 } from "@buildytech/page-contract";
 import { loadPropsGate, startEmptyPageInChat } from "../chat-core";
-import { getBoundPageSessionId, getCurrentPage, getCurrentProvenance, getPageRevision, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
+import { getBoundPageSessionId, getCurrentPage, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
 import { commitChange } from "../page-store/revision";
 import type { FieldIssue } from "./fields";
 import { EditHistory } from "./history";
 
-/** One undo step: the page and its provenance (the screen family rides with it, ADR 0027). */
-type Snapshot = { page: Page; provenance: StoredPageProvenance | null };
-const history = new EditHistory<Snapshot>();
+type Page = PageV2;
+type Ok = Extract<OpResult, { ok: true }>;
+
+const history = new EditHistory<Page>();
 let historySession: string | null = null;
 /** Bumped on every history change, so canUndo / canRedo readers update. */
 let version = $state(0);
@@ -36,22 +24,12 @@ let version = $state(0);
 let issues = $state<Record<string, Record<string, FieldIssue>>>({});
 /** The last rejected block operation, shown above the fields of its block. */
 let opIssue = $state<{ blockId: string; code: string; message: string } | null>(null);
-/** The last screen family change (derived, pinned, undone): a small non-modal label, gone after a few seconds. */
-let familyNote = $state<{ from: PageFamily | null; to: PageFamily | null; id: number } | null>(null);
-let familyNoteTimer: ReturnType<typeof setTimeout> | null = null;
-
-function noteFamily(from: PageFamily | null | undefined, to: PageFamily | null | undefined): void {
-	if ((from ?? null) === (to ?? null)) return;
-	familyNote = { from: from ?? null, to: to ?? null, id: (familyNote?.id ?? 0) + 1 };
-	if (familyNoteTimer) clearTimeout(familyNoteTimer);
-	familyNoteTimer = setTimeout(() => (familyNote = null), 6000);
-}
 
 /** The history of the bound chat for the page Preview shows; reset when the chat or the page changed elsewhere. */
-function historyFor(page: Page): EditHistory<Snapshot> {
+function historyFor(page: Page): EditHistory<Page> {
 	const bound = getBoundPageSessionId();
 	const head = history.head();
-	if (bound !== historySession || (head !== null && head.page !== page)) {
+	if (bound !== historySession || (head !== null && head !== page)) {
 		history.clear();
 		historySession = bound;
 		issues = {};
@@ -68,34 +46,20 @@ function setIssue(blockId: string, pointer: string, issue: FieldIssue | null): v
 }
 
 /** A passing result replaces the visible page and becomes one history step (`key`: coalesced typing). */
-function commit(before: Page, result: InspectorResult, key: string | null): boolean {
-	if (!result.ok) return false;
+function commit(before: Page, result: Ok, key: string | null): boolean {
 	if (result.page === before) return true;
 	const steps = historyFor(before);
-	const prov = getCurrentProvenance();
-	// The screen family follows the composition (ADR 0027): a first derivation rides with this step; a change of an
-	// already derived family is its own step right after it (one undo reverts the family, the next the edit).
-	const derived = prov && !prov.familyPinned ? nextFamilyState({ ...prov, family: prov.family ?? null }, result.page.layout.blocks) : prov;
-	const changed = !!prov && !!derived && derived !== prov && derived.family !== (prov.family ?? null);
-	const pageProv = changed && prov!.family != null ? prov : derived;
 	// Coalesced typing extends the open undo step and keeps its revision: one undo step = one page revision.
-	const meta = result.op ? { op: result.op, ...(result.path ? { path: result.path } : {}) } : undefined;
-	if (!replaceVisiblePage(result.page, result.blockId, commitChange(steps.continues(key)), meta, pageProv)) return false;
-	steps.record({ page: before, provenance: prov }, { page: result.page, provenance: pageProv }, key);
-	if (changed && prov!.family != null) {
-		replaceVisiblePage(result.page, result.blockId, "edit", { op: "set_family" }, derived);
-		steps.record({ page: result.page, provenance: pageProv }, { page: result.page, provenance: derived }, null);
-		noteFamily(prov!.family, derived!.family);
-	}
+	const meta = { op: result.op, ...(result.path ? { path: result.path } : {}) };
+	if (!replaceVisiblePage(result.page, result.blockId || null, commitChange(steps.continues(key)), meta)) return false;
+	steps.record(before, result.page, key);
 	version += 1;
 	return true;
 }
 
-function restore(snap: Snapshot | null, change: "undo" | "redo"): boolean {
-	if (!snap) return false;
-	const from = getCurrentProvenance()?.family;
-	replaceVisiblePage(snap.page, null, change, undefined, snap.provenance);
-	noteFamily(from, snap.provenance?.family);
+function restore(page: Page | null, change: "undo" | "redo"): boolean {
+	if (!page) return false;
+	replaceVisiblePage(page, null, change);
 	issues = {};
 	opIssue = null;
 	version += 1;
@@ -107,21 +71,39 @@ function isEditable(target: EventTarget | null): Element | null {
 	return el?.closest?.("input, textarea, select, [contenteditable=''], [contenteditable='true']") ?? null;
 }
 
+/** The value a field widget typed as the JSON value of its prop (undefined: the prop is removed). */
+function valueFor(field: InspectorField, text: string): string | number | boolean | undefined {
+	switch (field.widget) {
+		case "boolean":
+			return text === "true";
+		case "number": {
+			if (text.trim() === "") return field.required ? 0 : undefined;
+			const n = Number(text);
+			return Number.isFinite(n) ? n : (text as unknown as number);
+		}
+		default:
+			return text === "" && !field.required ? undefined : text;
+	}
+}
+
+type Added = { ok: true; blockId: string } | { ok: false; code: string; message: string };
+
 export const inspector = {
- setSlug(slug: string): boolean {
-  const page = getCurrentPage();
-  if (!page) return false;
-  if (page.slug === slug) return true;
-  let next: Page;
-  try { next = parseDraftPage({ ...page, slug, updatedAt: new Date().toISOString() }); } catch { return false; }
-  const steps = historyFor(page);
-  steps.seal();
-  const provenance = getCurrentProvenance();
-  if (!replaceVisiblePage(next)) return false;
-  steps.record({ page, provenance }, { page: next, provenance }, null);
-  version += 1;
-  return true;
- },
+	/** Set the page slug (the address bar of Preview): one undo step. */
+	setSlug(slug: string): boolean {
+		return inspector.setPageField("slug", slug);
+	},
+
+	/** A page field (title, slug, locale, seo title / description) through the same write: one undo step. */
+	setPageField(field: Extract<PageOp, { op: "page" }>["field"], value: string): boolean {
+		const page = getCurrentPage();
+		if (!page) return false;
+		historyFor(page).seal();
+		const result = applyOp(page, { op: "page", field, value });
+		if (!result.ok) return false;
+		return commit(page, result, null);
+	},
+
 	/** Rejected edits of one block, by field pointer. */
 	issuesFor(blockId: string): Record<string, FieldIssue> {
 		return issues[blockId] ?? {};
@@ -130,32 +112,33 @@ export const inspector = {
 	get canUndo(): boolean {
 		void version;
 		const head = history.head();
-		return history.canUndo && historySession === getBoundPageSessionId() && head?.page === getCurrentPage();
+		return history.canUndo && historySession === getBoundPageSessionId() && head === getCurrentPage();
 	},
 
 	get canRedo(): boolean {
 		void version;
 		const head = history.head();
-		return history.canRedo && historySession === getBoundPageSessionId() && head?.page === getCurrentPage();
+		return history.canRedo && historySession === getBoundPageSessionId() && head === getCurrentPage();
 	},
 
 	/**
-	 * Write a field of a block. `typing` edits of one field coalesce into one undo step until seal(). Returns false
-	 * when the gate rejected the value (the page is unchanged and the field shows why).
+	 * Write a field of a block into its props. `typing` edits of one field coalesce into one undo step until seal().
+	 * Returns false when the gate rejected the value (the page is unchanged and the field shows why).
 	 */
 	edit(blockId: string, field: InspectorField, value: string, typing: boolean): boolean {
 		const page = getCurrentPage();
 		if (!page) return false;
 		historyFor(page);
-		// A committed value equal to what the block already renders (e.g. a variant default) adds no override.
+		// A committed value equal to what the block already renders adds nothing.
 		if (!typing && value === String(field.value ?? "")) {
 			setIssue(blockId, field.pointer, null);
 			history.seal();
 			return true;
 		}
-		const result = inspectorSetField(page, blockId, field.pointer, value);
+		const result = applyOp(page, { op: "set", blockId, pointer: field.pointer, value: valueFor(field, value) });
 		if (!result.ok) {
-			setIssue(blockId, field.pointer, { pointer: result.pointer, code: result.code, message: result.message, allowed: result.allowed, value });
+			const first = result.issues[0];
+			setIssue(blockId, field.pointer, { pointer: result.pointer ?? field.pointer, code: result.code, message: first?.expected ? `${first.expected}${first.got ? ` (${first.got})` : ""}` : result.message, ...(field.options ? { allowed: field.options } : {}), value });
 			return false;
 		}
 		setIssue(blockId, field.pointer, null);
@@ -169,51 +152,49 @@ export const inspector = {
 		return opIssue?.blockId === blockId ? opIssue : null;
 	},
 
-	/** A block operation (variant, reset, move, duplicate, remove, row duplicate / remove): one undo step. */
-	run(op: InspectorOp): boolean {
+	/** A block operation (variant, reset, move, duplicate, remove, list rows): one undo step. */
+	run(op: Exclude<PageOp, { op: "add" } | { op: "page" }>): boolean {
 		const page = getCurrentPage();
 		if (!page) return false;
 		historyFor(page).seal();
-		const provenance = getCurrentProvenance();
-		const result = inspectorOp({ page, provenance, revision: getPageRevision() ?? 0 }, op);
+		const result = applyOp(page, op);
 		if (!result.ok) {
-			opIssue = { blockId: op.blockId, code: result.code, message: result.message };
+			opIssue = { blockId: "blockId" in op ? op.blockId : "", code: result.code, message: result.message };
 			return false;
 		}
 		opIssue = null;
-		if (result.page === page) return true;
 		return commit(page, result, null);
 	},
 
-	/** Whether the Blocks feed can add this Stock block variant to the page Preview shows (and why not). */
-	canAdd(catalogBlock: string, variant: string | null): AddBlockCheck {
-		void version;
-		const page = getCurrentPage();
-		const provenance = getCurrentProvenance();
-		return page ? canAddCatalogBlock({ page, provenance }, catalogBlock, variant) : canAddCatalogBlock({ page: null, provenance: null }, catalogBlock, variant);
+	/** Whether the Blocks feed can add this Stock block variant (a registry item that renders), and why not. */
+	canAdd(spec: string, variant: string | null): AddCheck {
+		return checkAdd(spec, variant);
 	},
 
 	/**
-	 * Blocks feed "+" (or a drop at slot `at`): the Stock block variant after the selected section, or at the end, as one inspector operation
-	 * (every gate, one undo step, no model call). The new section becomes the selection.
+	 * Blocks feed "+" (or a drop at slot `at`): the Stock block variant after the selected section, or where its role puts
+	 * it, with the registry sample props, as one operation (every gate, one undo step, no model call). The new section
+	 * becomes the selection.
 	 */
-	async add(catalogBlock: string, variant: string | null, at?: number): Promise<{ ok: true; blockId: string } | { ok: false; code: string; message: string }> {
-  const bound = getBoundPageSessionId();
-  try { await loadPropsGate(); } catch { return {ok:false,code:'props_gate_unavailable',message:'Validation could not load. Retry adding the block or screen.'}; }
-  if (bound !== getBoundPageSessionId()) return {ok:false,code:'page_changed',message:'The selected chat changed while validation loaded. Retry in this chat.'};
-		// Empty start: no page yet (or an empty one with no screen). The chat gets an empty page on the start screen
-		// first, with no history step, so the section below is the one undo step (undo goes back to the empty page).
-		const check = inspector.canAdd(catalogBlock, variant);
-		if (!check.ok) return { ok: false, code: check.code, message: check.message };
-		if (check.startScreenId && !startEmptyPageInChat(check.startScreenId)) {
-			return { ok: false, code: "not_started", message: "The empty page could not be started." };
+	async add(spec: string, variant: string | null, at?: number): Promise<Added> {
+		const bound = getBoundPageSessionId();
+		try {
+			await loadPropsGate();
+		} catch {
+			return { ok: false, code: "props_gate_unavailable", message: "Validation could not load. Retry adding the block or screen." };
 		}
+		if (bound !== getBoundPageSessionId()) return { ok: false, code: "page_changed", message: "The selected chat changed while validation loaded. Retry in this chat." };
+		const check = checkAdd(spec, variant);
+		if (!check.ok) return { ok: false, code: check.code, message: check.message };
+		// Empty start: no page yet. The chat gets an empty page first, with no history step, so the section is the one undo step.
+		if (!getCurrentPage() && !startEmptyPageInChat()) return { ok: false, code: "not_started", message: "The empty page could not be started." };
 		const page = getCurrentPage();
 		if (!page) return { ok: false, code: "not_started", message: "The empty page could not be started." };
 		historyFor(page).seal();
-		// A drop names its slot (`at`); "+" adds after the selected section or at the end.
-		const op = at === undefined ? { op: "add" as const, blockId: getSelectedBlockId() ?? "", catalogBlock, variant } : { op: "add" as const, blockId: "", catalogBlock, variant, at };
-		const result = inspectorOp({ page, provenance: getCurrentProvenance(), revision: getPageRevision() ?? 0 }, op);
+		const selected = getSelectedBlockId();
+		const after = selected ? page.blocks.findIndex((block) => block.id === selected) : -1;
+		const slot = at ?? (after >= 0 ? after + 1 : undefined);
+		const result = applyOp(page, { op: "add", item: check.item, variant: check.variant, ...(slot !== undefined ? { at: slot } : {}) });
 		if (!result.ok) return { ok: false, code: result.code, message: result.message };
 		if (!commit(page, result, null)) return { ok: false, code: "not_committed", message: "The page did not accept the change." };
 		selectBlock(result.blockId);
@@ -221,56 +202,34 @@ export const inspector = {
 	},
 
 	/**
-	 * A Stock screen dropped into the page or started from (t150u): its renderable sections at slot `at` (default:
-	 * the end), hard rules only, one undo step. With no page yet the chat first gets an empty page on that screen.
+	 * A Stock screen dropped into the page or started from: its renderable sections at slot `at` (default: the end),
+	 * hard rules only, one undo step. With no page yet the chat first gets an empty page.
 	 */
 	async addScreen(screenId: string, at?: number): Promise<{ ok: true; blockId: string; added: number; skipped: string[] } | { ok: false; code: string; message: string }> {
-  const bound = getBoundPageSessionId();
-  try { await loadPropsGate(); } catch { return {ok:false,code:'props_gate_unavailable',message:'Validation could not load. Retry adding the block or screen.'}; }
-  if (bound !== getBoundPageSessionId()) return {ok:false,code:'page_changed',message:'The selected chat changed while validation loaded. Retry in this chat.'};
-		let page = getCurrentPage();
-		if (!page || (page.layout.blocks.length === 0 && !getCurrentProvenance()?.screenId)) {
-			if (!startEmptyPageInChat(screenId)) return { ok: false, code: "not_started", message: "The empty page could not be started." };
-			page = getCurrentPage();
+		const bound = getBoundPageSessionId();
+		try {
+			await loadPropsGate();
+		} catch {
+			return { ok: false, code: "props_gate_unavailable", message: "Validation could not load. Retry adding the block or screen." };
 		}
+		if (bound !== getBoundPageSessionId()) return { ok: false, code: "page_changed", message: "The selected chat changed while validation loaded. Retry in this chat." };
+		let page = getCurrentPage();
+		if (!page && !startEmptyPageInChat(screenId)) return { ok: false, code: "not_started", message: "The empty page could not be started." };
+		page = getCurrentPage();
 		if (!page) return { ok: false, code: "not_started", message: "The empty page could not be started." };
 		historyFor(page).seal();
-		const result = addScreenSections({ page, provenance: getCurrentProvenance(), revision: getPageRevision() ?? 0 }, screenId, at);
+		const result = addScreen(page, screenId, at);
 		if (!result.ok) return { ok: false, code: result.code, message: result.message };
 		if (!commit(page, result, null)) return { ok: false, code: "not_committed", message: "The page did not accept the change." };
 		selectBlock(result.blockId);
 		return { ok: true, blockId: result.blockId, added: result.added.length, skipped: result.skipped };
 	},
 
-	/** The page's screen family (ADR 0027): stored (or derived when not recorded yet), whether pinned, and the derived one. */
-	get family(): { family: PageFamily; pinned: boolean; derived: PageFamily } | null {
+	/** The advisory family of the page the feed ranks by (derived from its items; never stored, never a rule). */
+	get family(): PageFamily | null {
 		void version;
 		const page = getCurrentPage();
-		if (!page) return null;
-		const prov = getCurrentProvenance();
-		const derived = deriveFamily(page.layout.blocks);
-		return { family: prov?.family ?? derived, pinned: prov?.familyPinned === true, derived };
-	},
-
-	/** The last family change, for the non-modal label. */
-	get familyNote(): { from: PageFamily | null; to: PageFamily | null; id: number } | null {
-		return familyNote;
-	},
-
-	/** Pin a family (Sections), or null: back to Auto (derived from the composition). One undo step (set_family). */
-	pinFamily(family: PageFamily | null): boolean {
-		const page = getCurrentPage();
-		const prov = getCurrentProvenance();
-		if (!page || !prov) return false;
-		const steps = historyFor(page);
-		steps.seal();
-		const next = family ? withFamily(prov, family, true) : withFamily(prov, deriveFamily(page.layout.blocks), false);
-		if (next.family === (prov.family ?? null) && next.familyPinned === (prov.familyPinned === true)) return true;
-		if (!replaceVisiblePage(page, null, "edit", { op: "set_family" }, next)) return false;
-		steps.record({ page, provenance: prov }, { page, provenance: next }, null);
-		noteFamily(prov.family, next.family);
-		version += 1;
-		return true;
+		return page ? deriveFamily(page.blocks) : null;
 	},
 
 	/** End the open typing step (blur). */

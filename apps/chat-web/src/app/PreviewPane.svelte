@@ -38,7 +38,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	import DropOverlay from "./DropOverlay.svelte";
 	import { inspectorPanel } from "$lib/inspector/panel.svelte";
 	import { inspector } from "$lib/inspector/inspector.svelte";
-	import { recordedScreenId } from "@buildytech/builder-core";
+	import { itemInfo } from "@buildytech/builder-core";
 	import PreviewFrame from "./PreviewFrame.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
 	import { pageSlug } from "$lib/browser/page-address";
@@ -67,7 +67,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 		);
 	});
 	const provenance = $derived(getCurrentProvenance());
-	const screenId = $derived(recordedScreenId(provenance?.screenId) ?? "");
+	const screenId = $derived(provenance?.screenId ?? "");
 	const missingLabels = $derived((provenance?.missing ?? []).join(", "));
 
 	type Device = "desktop" | "tablet" | "mobile";
@@ -259,7 +259,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	const canvasSelectedId = $derived(topLevelBlockId(blocks, getSelectedBlockId()));
 	const canvasSelectedLabel = $derived.by(() => {
 		const block = blocks.find((node) => node.id === canvasSelectedId);
-		return block ? `${block.kind} · ${block.title}` : "";
+		return block ? (itemInfo(block.item)?.title ?? block.item) : "";
 	});
 
 	// The whole preview site as-is in a new window: the /preview route renders this chat's page (pending proposal, else

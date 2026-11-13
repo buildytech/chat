@@ -1,12 +1,13 @@
 /**
  * Browser-local persistence for chats and per-session pages under the buildy:v1 key space (ADR 0015): chats in
- * `buildy:v1:sessions`, page records in `buildy:v1:pages` (page-spec/v1 store blob). Both are validated at load against
- * the session profile buildy:v1 (`session.schema.json#/$defs/session`) and page-spec/v1 (`#/$defs/record`); a value
+ * `buildy:v1:sessions`, page records in `buildy:v1:pages` (page-spec/v2 store blob; a 1.x record is migrated to 2.0 when
+ * it is read). Both are validated at load against the session profile buildy:v1 (`session.schema.json#/$defs/session`)
+ * and page-spec/v2 (`page-spec-v2.schema.json#/$defs/record`); a value
  * that fails goes to quarantine (`buildy:v1:quarantine`) with its reason and the rest loads. Nothing is dropped silently.
  */
 
-import { isPageFamily, isScenarioId, type PageFamily, type ScenarioId } from "@buildytech/builder-core";
-import { pageSpecDefIssues } from "@buildytech/page-contract";
+import { isScenarioId, migratePageV1, type ScenarioId } from "@buildytech/builder-core";
+import { pageV2DefIssues, type Page } from "@buildytech/page-contract";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
 import { STORAGE_KEYS, browserStorage, quarantine, type StorageLike } from "./storage-v1.ts";
 
@@ -26,9 +27,6 @@ export type StoredPageProvenance = {
 	scenarioId: ScenarioId | null;
 	missing: string[];
 	assembler?: string;
-	/** page-spec 1.4.0 (ADR 0027): the advisory screen family, derived after every operation unless pinned. */
-	family?: PageFamily | null;
-	familyPinned?: boolean;
 };
 
 export type StoredPageRecord = {
@@ -80,13 +78,26 @@ function normalizeProvenance(raw: unknown, page: unknown): StoredPageProvenance 
 		screenId: recordedId(rec?.screenId) ?? inferScreenIdFromUnknown(page),
 		scenarioId: isScenarioId(rec?.scenarioId) ? rec.scenarioId : null,
 		missing: Array.isArray(rec?.missing) ? rec.missing.filter((row): row is string => typeof row === "string") : [],
-		assembler: typeof rec?.assembler === "string" ? rec.assembler : undefined,
-		...(isPageFamily(rec?.family) ? { family: rec.family } : {}),
-		...(rec?.familyPinned === true ? { familyPinned: true } : {})
+		assembler: typeof rec?.assembler === "string" ? rec.assembler : undefined
 	};
 }
 
-/** Old blobs stored pages without sibling provenance. Infer Stock id from CTA note; else recorded absence. */
+const isV1Page = (page: unknown): page is Page => Boolean(page && typeof page === "object" && "layout" in page && !("blocks" in page));
+
+/** A page-spec/v1 page as a page-spec/v2 document (ADR 0034); a v2 page, null and anything else as they are. */
+export function pageToV2(page: unknown): unknown {
+	if (!isV1Page(page)) return page ?? null;
+	try {
+		return migratePageV1(page).page;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Old blobs stored page-spec/v1 pages (and, older still, pages without sibling provenance): every page of the record is
+ * migrated to page-spec/v2 and the Stock id of an old CTA note is kept as the screen hint.
+ */
 export function migrateStoredPageRecord(record: StoredPageRecord): StoredPageRecord {
 	const appliedProvenance = normalizeProvenance(record.appliedProvenance, record.applied);
 	const candidateProvenance = record.candidate
@@ -95,7 +106,15 @@ export function migrateStoredPageRecord(record: StoredPageRecord): StoredPageRec
 	const lastProposedProvenance = record.lastProposed
 		? normalizeProvenance(record.lastProposedProvenance, record.lastProposed)
 		: null;
-	return { ...record, appliedProvenance, candidateProvenance, lastProposed: record.lastProposed ?? null, lastProposedProvenance };
+	return {
+		...record,
+		applied: pageToV2(record.applied),
+		candidate: pageToV2(record.candidate),
+		appliedProvenance,
+		candidateProvenance,
+		lastProposed: pageToV2(record.lastProposed),
+		lastProposedProvenance
+	};
 }
 
 type PagesBlobV1 = {
@@ -271,8 +290,8 @@ function emptyBlob(): PagesBlobV1 {
 }
 
 /**
- * The page store blob. Each chat's record is validated against page-spec.schema.json#/$defs/record (after the legacy
- * provenance migration); a record that fails goes to quarantine and the blob is rewritten without it.
+ * The page store blob. Each chat's record is migrated to page-spec/v2 and validated against
+ * page-spec-v2.schema.json#/$defs/record; a record that fails goes to quarantine and the blob is rewritten without it.
  */
 export function loadPagesBlob(): PagesBlobV1 {
 	const store = storage();
@@ -293,9 +312,10 @@ export function loadPagesBlob(): PagesBlobV1 {
 	const pages: Record<string, StoredPageRecord> = {};
 	let dropped = false;
 	for (const [id, record] of Object.entries(parsed.pages)) {
-		const issues = record && typeof record === "object" ? pageSpecDefIssues(JSON.parse(JSON.stringify(migrateStoredPageRecord(record))), "record") : [{ path: "$", keyword: "type" }];
+		const migrated = record && typeof record === "object" ? migrateStoredPageRecord(record) : null;
+		const issues = migrated ? pageV2DefIssues(JSON.parse(JSON.stringify(migrated)), "record") : [{ path: "$", keyword: "type" }];
 		if (!issues.length) {
-			pages[id] = record;
+			pages[id] = migrated!;
 			continue;
 		}
 		const first = issues[0]!;

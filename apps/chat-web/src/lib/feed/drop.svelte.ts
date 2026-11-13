@@ -17,9 +17,8 @@ export function dropRefusal(at: number): string | null {
 	if (item.type === "screen") return item.supported ? null : t("feed.why.screen_not_renderable");
 	const check = inspector.canAdd(item.spec, item.variant);
 	if (!check.ok) return t(`feed.why.${check.code}`).replace("{role}", item.role ?? "");
-	// No page yet: the drop starts an empty page, so the only slot is the first.
 	const page = getCurrentPage();
-	const slot = addSlotCheck(page ? blocksOf(page) : [], check.kind, at);
+	const slot = addSlotCheck(page ? blocksOf(page) : [], check.item, at);
 	return slot.ok ? null : t(`dnd.why.${slot.code}`);
 }
 

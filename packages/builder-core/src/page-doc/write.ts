@@ -6,7 +6,7 @@
  *   - a block whose `item` changed without props of its own gets the sample props of the new item; text props the two
  *     items share (title, lead, ...) are carried over;
  *   - a block whose `variant` changed without touching the layout axes gets the axes of the new variant's preset;
- *   - icon names are mapped to the published Lucide name (a name that matches nothing is dropped);
+ *   - icon names are mapped to the published Lucide name by spelling (a name that matches nothing is rejected by the gate, with the nearest real names);
  *   - host-managed fields (id, status, createdAt, updatedAt) always come from the base page.
  * Blocks nothing touched stay byte for byte as they are. Then the one gate (gate.ts) judges the result; on failure the
  * answer is a list of { path, code, expected, got }. No local repair of a rejected write, no operation taxonomy.
@@ -51,7 +51,7 @@ export function freshBlockId(item: string, taken: Set<string>): string {
 	return id;
 }
 
-/** Icon props (fields of kind icon, in lists and objects) mapped to the published Lucide names; unknown names dropped. */
+/** Icon props (fields of kind icon, in lists and objects) mapped to the published Lucide names (spelling only); an unknown name stays and fails the gate. */
 function repairIcons(item: string, props: Record<string, unknown>, notes: string[], at: string): Record<string, unknown> {
 	const tree = propsFieldTree(item);
 	if (!tree) return props;
@@ -63,7 +63,8 @@ function repairIcons(item: string, props: Record<string, unknown>, notes: string
 			const here = `${path}/${key}`;
 			if (node?.kind === "icon" && typeof inner === "string") {
 				const fixed = resolveIconName(inner);
-				if (fixed === null) notes.push(`${here}: icon "${inner}" is not a Lucide icon; dropped.`);
+				// An unknown name is kept as written: the props gate rejects it at this path and names the nearest real icons.
+				if (fixed === null) out[key] = inner;
 				else {
 					if (fixed !== inner) notes.push(`${here}: icon "${inner}" written as "${fixed}".`);
 					out[key] = fixed;
@@ -118,6 +119,11 @@ export function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): vo
 			// A new block: the sample props of its variant under what the write gave it.
 			props = effectiveProps(out.item, out.variant, { ...sampleProps(out.item, out.variant, out.id), ...(out.props ?? {}) }, BLANK);
 		} else if (prior.item !== out.item) {
+			// The variant of the old item does not exist on the new one: its default variant (said in the notes).
+			if (out.variant !== undefined && out.variant === prior.variant && !info.variants.includes(out.variant)) {
+				notes.push(`${out.id}: variant ${out.variant} is not a variant of ${out.item}; its default variant ${info.defaultVariant} is used.`);
+				out.variant = info.defaultVariant;
+			}
 			const wrote = out.props !== undefined && !same(out.props, prior.props);
 			props = wrote
 				? effectiveProps(out.item, out.variant, out.props, BLANK)

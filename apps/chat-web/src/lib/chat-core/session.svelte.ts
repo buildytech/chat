@@ -11,35 +11,28 @@ import {
 	MODEL_CATALOG_VERSION,
 	POLICY_VERSION,
 	TRIAL_POLICY_VERSION,
+	addScreen,
 	aggregateSessionUsage,
+	applyOp,
 	catalogProvenance,
-	formatChatModelChoice,
-	isScenarioId,
-	recordedScreenId,
-	screenIdFromPage,
-	getChatModel,
-	mapChatRunRequest,
-	runConstructorTools,
-	unknownUsage,
-	clientProposalGate,
 	collectionBounds,
-	agentToolNames,
-	isAgentTextReply,
-	checkPagePlan,
- pagePlanRepairs,
- repairPagePlan,
-	describePageChanges,
-	executePagePlan,
-	manualEditsSince,
-	stockScreenDraft,
-	emptyPageStart,
+	collectionDraft,
+	diffPages,
+	emptyPage,
+	formatChatModelChoice,
+	getChatModel,
 	getScreenById,
+	itemOfSpec,
+	mapChatRunRequest,
+	agentToolNames,
+	scopeIssues,
+	unknownUsage,
+	writePage,
 	type AgentMode,
-	type AgentTextReply,
-	type ProposalContext,
+	type DiffEntry,
 	type RunUsage
 } from "@buildytech/builder-core";
-import { fetchXaiStatus, runXaiProposal, type XaiRunResponse } from "../browser/xai-client";
+import { fetchXaiStatus, runXaiTurn, type TurnRequest, type XaiRunResponse } from "../browser/xai-client";
 
 /**
  * The props gate (Ajv 2020 over the pinned registry props schemas) is its own chunk: loaded once, before the first
@@ -100,15 +93,16 @@ import {
 	setCandidatePage,
 	startEmptyPage
 } from "../page-store";
-import { markPendingProposals, migrateSessionProposals } from "./proposals";
+import { isPendingProposal, markPendingProposals, migrateSessionProposals, withProposalStatus } from "./proposals";
 import { STORAGE_KEYS, readKey, writeKey } from "../browser/storage-v1.ts";
-import { chatModeOf, variantProposal } from "./modes";
-import { changeReportText, planResultText } from "./change-text";
-import type { Page } from "@buildytech/page-contract";
+import { chatModeOf } from "./modes";
+import type { PageV2 } from "@buildytech/page-contract";
+import type { StoredPageProvenance } from "../browser/persist";
 import { chatCollectionFrom, collectionErrorText, collectionRequest, collectionScreenId, withoutItem, type ChatCollection } from "./collection";
 import { decodeCollectionParam, parseCollection, type CollectionParse } from "@buildytech/page-contract/collection";
 import type {
 	ChatMessage,
+	ChatProposalState,
 	ChatSession,
 	CreatorRuntimeStatus,
 	ServerCapabilities,
@@ -453,78 +447,54 @@ export function abortInflightRun(): void {
 	lastError = t("runtime.cancelled");
 }
 
-type EditBaseSource = "candidate" | "applied" | "last-proposal" | null;
-
-let lastEditBase: EditBaseSource = null;
-let lastSessionDemo = false;
-/** The page the last turn started from (null: a fresh page); the reply text is the diff against it. */
-let lastBasePage: Page | null = null;
-
-/** When the last model turn of the chat ended (its assistant message), or null. */
-function lastAgentTurnAt(session: ChatSession | null | undefined): string | null {
-	const messages = session?.messages ?? [];
-	for (let i = messages.length - 1; i >= 0; i -= 1) {
-		const message = messages[i]!;
-		if (message.role === "assistant" && message.run) return message.createdAt;
-	}
-	return null;
+/** Page id of a chat that has no page yet: stable per chat (`page-<uuid>`). */
+function draftPageId(session: ChatSession | null): string {
+	return session ? `page-${session.id.replace(/^session-/, "")}`.slice(0, 64) : "page-draft";
 }
+
+function blankPage(session: ChatSession | null): PageV2 {
+	return emptyPage({ title: t("page.untitled"), locale: "en", id: draftPageId(session) });
+}
+
+/** The page the author sees (pending proposal, else applied page, else the last proposal kept after Discard), or null. */
+function shownPageOf(): PageV2 | null {
+	return getEditBase()?.page ?? null;
+}
+
+type TurnPlan = { request: Omit<TurnRequest, "modelId">; base: PageV2; shown: PageV2 };
 
 /**
- * Sticky demo-data state for this chat: the latest proposal's demoData (set from the model's typed
- * propose_layout.demoData flag). No author text is parsed here.
+ * What a turn starts from (ADR 0034). The agent edits the page the author sees. A chat with no page starts from an empty
+ * page, or, in a collection chat, from the draft of the collection (its first screen and required blocks) with the
+ * empty page as what the author sees, so the diff reads as additions.
  */
-function sessionDemoFromProposals(): boolean {
+function planTurn(brief: string, mode: AgentMode): TurnPlan {
 	const session = getSelectedSession();
-	const proposals = (session?.messages ?? []).filter((message) => message.proposal);
-	const last = proposals[proposals.length - 1];
-	return Boolean(last?.proposal?.demoData);
-}
-
-function constructorContext(
-	brief: string,
-	mode: AgentMode
-): ProposalContext & { sessionDemoData: boolean; collectionRequest: ReturnType<typeof collectionRequest> } {
-	// Follow-ups start from what the author sees: pending proposal, else applied page,
-	// else the last proposal (kept after Discard). Never from scratch unless asked.
-	const base = getEditBase();
-	const page = base?.page ?? null;
-	const provenance = base?.provenance ?? getAppliedProvenance();
-	lastEditBase = base?.source ?? null;
-	const screenId =
-		recordedScreenId(provenance?.screenId) ?? recordedScreenId(getScreenId()) ?? screenIdFromPage(page);
-	const storedScenario = provenance?.scenarioId;
-	const scenarioId = isScenarioId(storedScenario) ? storedScenario : getScenarioId();
-	const sessionDemoData = sessionDemoFromProposals();
-	lastSessionDemo = sessionDemoData;
-	lastBasePage = page;
-	const session = getSelectedSession();
-	// Blocks the author edited by hand since the last agent turn (ADR 0020): Build keeps them, Ask audits them.
-	const manualEdits = page ? manualEditsSince(session?.history, lastAgentTurnAt(session)) : [];
-	// The chat's Stock collection bounds Build turns (the runtime re-checks the items against its own snapshot).
-	const request = mode === "build" ? collectionRequest(getSelectedSession()?.collection) : null;
+	const shownBase = shownPageOf();
+	const collection = mode === "build" ? collectionRequest(session?.collection) : null;
+	const empty = blankPage(session);
+	let base = shownBase ?? empty;
+	let shown: PageV2 = shownBase ?? empty;
+	if (!shownBase && collection) {
+		const bounds = collectionBounds(collection);
+		const draft = bounds ? collectionDraft(bounds, { title: session?.collection?.title ?? t("page.untitled"), locale: null }) : null;
+		if (draft?.ok) base = { ...draft.page, id: empty.id };
+	}
+	const scope = shownBase ? blockScope.ids(session?.id) : [];
 	return {
-		conversation: conversationForTurn(getSelectedSession()?.messages ?? []),
- scopeBlockIds: blockScope.ids(getSelectedSession()?.id),
- collectionRequest: request,
-		collection: collectionBounds(request),
-		brief,
-		mode,
-		authorBrief: brief,
-		scenarioId,
-		screenId,
-		expectedRevision: getPageRevision() ?? 0,
-		pageId: page?.id,
-		currentPage: page ?? undefined,
-		sessionDemoData,
-		...(manualEdits.length ? { manualEdits } : {}),
-		currentProvenance: provenance
-			? {
-					screenId: recordedScreenId(provenance.screenId),
-					scenarioId: scenarioId,
-					missing: provenance.missing
-				}
-			: undefined
+		base,
+		shown,
+		request: {
+			brief,
+			mode,
+			screenId: getScreenId() ?? session?.screenId ?? null,
+			expectedRevision: getPageRevision() ?? 0,
+			currentPage: base,
+			shownPage: base === shown ? null : shown,
+			scopeBlockIds: scope,
+			conversation: conversationForTurn(session?.messages ?? []),
+			collectionRequest: collection
+		}
 	};
 }
 
@@ -572,72 +542,50 @@ function runRecord(opts: {
 	};
 }
 
-async function runConstructor(brief: string, mode: AgentMode, signal: AbortSignal) {
-	const ctx = constructorContext(brief, mode);
+type TurnOutcome = {
+	result: XaiRunResponse | { ok: false; code: string; message: string };
+	plan: TurnPlan;
+	status: Awaited<ReturnType<typeof fetchXaiStatus>>;
+	modelId: string;
+	live: boolean;
+	usage: RunUsage;
+	path?: string;
+	tools?: string[];
+	runId?: string;
+};
+
+async function runTurn(brief: string, mode: AgentMode, signal: AbortSignal): Promise<TurnOutcome> {
+	const plan = planTurn(brief, mode);
 	const status = await fetchXaiStatus(signal);
 	const mapped = mapChatRunRequest(
-		{ ...ctx, modelId: getSelectedModelId() },
-		{
-			discoveredChatIds: status.models?.listed ? status.models.chatIds ?? [] : undefined,
-			allowUnlistedTrial: !status.ready
-		}
+		{ modelId: getSelectedModelId() },
+		{ discoveredChatIds: status.models?.listed ? status.models.chatIds ?? [] : undefined, allowUnlistedTrial: !status.ready }
 	);
 	if (!mapped.ok) {
-		return {
-			result: { ok: false as const, code: mapped.code, message: mapped.message },
-			via: "blocked" as const,
-			status,
-			modelId: mapped.requestedId,
-			live: false,
-			usage: unknownUsage("error", 0)
-		};
+		return { result: { ok: false, code: mapped.code, message: mapped.message }, plan, status, modelId: mapped.requestedId, live: false, usage: unknownUsage("error", 0) };
 	}
-	if (status.ready) {
-		let live = await runXaiProposal({ ...ctx, modelId: mapped.request.modelId }, signal);
-		if (live.ok && 'page' in live && ctx.scopeBlockIds?.length && ctx.currentPage) {
- const page = live.page as import('@buildytech/page-contract').Page;
- const allowed = new Set(ctx.scopeBlockIds);
- const outside = ctx.currentPage.layout.blocks.filter(block => !allowed.has(block.id));
- const bad = outside.some(block => JSON.stringify(block) !== JSON.stringify(page.layout.blocks.find(next => next.id === block.id))) || page.layout.blocks.some(block => !ctx.currentPage!.layout.blocks.some(old => old.id === block.id)) || ['title','slug','locale','seo'].some(key => JSON.stringify((page as unknown as Record<string,unknown>)[key]) !== JSON.stringify((ctx.currentPage as unknown as Record<string,unknown>)[key]));
- if (bad) live = { ...live, ok: false, code: 'outside_scope', message: 'Proposal changed content outside the selected block IDs. Nothing applied.' };
- }
- const usage =
-			live.usage ??
-			unknownUsage(live.ok === false && (live.code === "aborted" || signal.aborted) ? "cancelled" : "error", 0);
+	if (!status.ready) {
 		return {
-			result: live,
-			via: "xai" as const,
-			status,
-			modelId: mapped.request.modelId,
-			live: Boolean(live.ok && ((live as XaiRunResponse).toolCallingProven || (live as XaiRunResponse).liveXai)),
-			usage,
-			path: (live as XaiRunResponse).path,
-			tools: (live as XaiRunResponse).toolsUsed,
-			runId: (live as XaiRunResponse).runId
-		};
-	}
-	// The local assembler builds pages; it cannot answer an Ask question, so Ask needs the live runtime.
-	if (import.meta.env.PROD || mode === "ask") {
-		return {
-			result: {
-				ok: false as const,
-				code: status.code || "xai_runtime_not_ready",
-				message: runtimeNoteFor(status)
-			},
-			via: "blocked" as const,
+			result: { ok: false, code: status.code || "xai_runtime_not_ready", message: runtimeNoteFor(status) },
+			plan,
 			status,
 			modelId: mapped.request.modelId,
 			live: false,
 			usage: unknownUsage("error", 0)
 		};
 	}
+	const live = await runXaiTurn({ ...plan.request, modelId: mapped.request.modelId }, signal);
+	const usage = live.usage ?? unknownUsage(live.ok === false && (live.code === "aborted" || signal.aborted) ? "cancelled" : "error", 0);
 	return {
-		result: runConstructorTools(ctx),
-		via: "local" as const,
+		result: live,
+		plan,
 		status,
 		modelId: mapped.request.modelId,
-		live: false,
-		usage: localRunUsage()
+		live: Boolean(live.ok && (live.toolCallingProven || live.liveXai)),
+		usage,
+		path: live.path,
+		tools: live.toolsUsed,
+		runId: live.runId
 	};
 }
 
@@ -667,114 +615,81 @@ function localizedRunError(code: string | undefined, message: string, modelId: s
 	return message;
 }
 
-/** A text answer: shown as the model wrote it (safe Markdown) with its block cards; no page, no proposal. */
-function textMessage(result: AgentTextReply, run?: import("./types").ChatRunRecord): ChatMessage {
-	// An Ask plan from the wire is checked again here against the page the author has now (never trusted as sent).
-	const plan = result.mode === "ask" && result.plan ? checkedPlan(result.plan) : null;
+function provenanceFor(screenId: string | null): StoredPageProvenance {
+	return { screenId, scenarioId: null, missing: [] };
+}
+
+const diffKey = (diff: readonly unknown[]): string => JSON.stringify(diff);
+
+/**
+ * The proposal of a reply, checked again here against the page the author sees (never trusted as sent): the same write
+ * gate (`writePage`, props gate loaded), the same selection scope, and the diff recomputed from the two documents.
+ */
+function checkedProposal(plan: TurnPlan, raw: { page: unknown }): { ok: true; page: PageV2; diff: DiffEntry[]; warnings: string[] } | { ok: false; code: string; message: string } {
+	const written = writePage(plan.base, { page: raw.page });
+	if (!written.ok) {
+		const first = written.issues[0];
+		return { ok: false, code: first?.code ?? "write_invalid", message: `${first?.path ?? "/"}: ${first?.expected ?? written.message}` };
+	}
+	const scope = plan.request.scopeBlockIds;
+	const outside = scopeIssues(diffPages(plan.base, written.page), scope);
+	if (outside.length) return { ok: false, code: "outside_scope", message: t("proposal.outsideScope") };
+	return { ok: true, page: written.page, diff: diffPages(plan.shown, written.page), warnings: written.warnings };
+}
+
+function newProposalState(input: {
+	page: PageV2;
+	diff: DiffEntry[];
+	warnings: string[];
+	baseRevision: number;
+	live: boolean;
+	screenId: string | null;
+	origin?: ChatProposalState["origin"];
+	keepPage?: boolean;
+}): ChatProposalState {
 	return {
-		id: uid("msg"),
-		role: "assistant",
-		text: result.text,
-		createdAt: nowIso(),
-		mode: result.mode,
-		answer: { blocks: [...result.blocks] },
-		...(plan ? { plan } : {}),
-		...(run ? { run } : {})
+		applied: false,
+		status: "pending",
+		source: "write_page",
+		liveModel: input.live,
+		warnings: input.warnings,
+		missing: [],
+		title: input.page.title,
+		screenId: input.screenId,
+		locale: input.page.locale,
+		baseRevision: input.baseRevision,
+		diff: input.diff,
+		...(input.origin ? { origin: input.origin } : {}),
+		...(input.keepPage ? { page: input.page } : {})
 	};
 }
 
-function baseProvenance(provenance: ReturnType<typeof getAppliedProvenance> | null | undefined) {
-	return provenance
-		? { screenId: recordedScreenId(provenance.screenId), scenarioId: isScenarioId(provenance.scenarioId) ? provenance.scenarioId : null, missing: provenance.missing }
-		: undefined;
-}
-
-function checkedPlan(raw: unknown) {
-	const base = getEditBase();
-	if (!base?.page) return null;
-	return checkPagePlan({
-		page: base.page,
-		provenance: baseProvenance(base.provenance ?? getAppliedProvenance()),
-		revision: getPageRevision() ?? 0,
-		sessionDemoData: sessionDemoFromProposals(),
- scopeBlockIds: blockScope.ids(getSelectedSession()?.id),
-		raw
-	});
-}
-
-function proposalMessage(
-	result: Awaited<ReturnType<typeof runConstructor>>["result"],
-	modelId: string,
-	live: boolean,
-	usage: RunUsage,
-	extra?: { path?: string; tools?: string[]; runId?: string; basePage?: Page | null }
-): ChatMessage {
-	const run = runRecord({ modelId, live, usage, path: extra?.path, tools: extra?.tools, runId: extra?.runId });
-	if (isAgentTextReply(result)) return textMessage(result, run);
+/**
+ * The assistant message of a finished turn. A reply with a proposal is the same in both modes: the text, the diff card.
+ * Build also shows the proposal in Preview as the pending candidate (Apply / Discard); Ask keeps the page in its message
+ * and never touches the page: the card "Apply in Build" is its only way in.
+ */
+function replyMessage(out: TurnOutcome): ChatMessage {
+	const { result, plan, modelId, live, usage } = out;
+	const run = runRecord({ modelId, live, usage, path: out.path, tools: out.tools, runId: out.runId });
 	if (!result.ok) {
-		return {
-			id: uid("msg"),
-			role: "assistant",
-			text: localizedRunError(result.code, result.message, modelId),
-			createdAt: nowIso(),
-			run
-		};
+		return { id: uid("msg"), role: "assistant", text: localizedRunError(result.code, result.message, modelId), createdAt: nowIso(), run };
 	}
-	// Program-level catalog gate (never the model): recompute refs from the bundled Stock catalog.
-	const catalog = clientProposalGate(result);
-	if (!catalog.ok) {
-		return {
-			id: uid("msg"),
-			role: "assistant",
-			text: t("assistant.catalogRejected").replace("{code}", catalog.code).replace("{message}", catalog.message),
-			createdAt: nowIso(),
-			run
-		};
+	const mode: AgentMode = result.mode;
+	const base = { id: uid("msg"), role: "assistant" as const, text: result.text, createdAt: nowIso(), mode, answer: { blocks: [...result.blocks] }, run };
+	if (!result.proposal) return base;
+	const checked = checkedProposal(plan, result.proposal);
+	if (!checked.ok) {
+		return { ...base, text: `${result.text}\n\n${t("proposal.rejected").replace("{code}", checked.code).replace("{message}", checked.message)}`.trim() };
 	}
-	setCandidatePage(result.page, {
-		screenId: recordedScreenId(result.provenance.screenId),
-		scenarioId: result.provenance.scenarioId,
-		missing: result.missing,
-		assembler: result.provenance.assembler
-	});
-	// The reply says what this proposal changes against the page it started from, block by block (ADR 0020).
-	const basePage = extra && "basePage" in extra ? (extra.basePage ?? null) : lastBasePage;
-	const report = describePageChanges(basePage, result.page);
-	const text = changeReportText(report, t, {
-		title: result.page.title,
-		fresh: !basePage,
-		screen: recordedScreenId(result.provenance.screenId),
-		missing: result.missing
-	});
-	return {
-		id: uid("msg"),
-		role: "assistant",
-		text,
-		createdAt: nowIso(),
-		...(result.modelText ? { modelText: result.modelText } : {}),
-		proposal: {
-			applied: false,
-			status: "pending",
-			source: result.source,
-			liveModel: live,
-			assembler: result.provenance.assembler,
-			warnings: result.warnings,
-			missing: result.missing,
-			title: result.page.title,
-			screenId: recordedScreenId(result.provenance.screenId),
-			locale: result.page.locale,
-			demoData: Boolean(result.demoData),
-			catalogRefs: catalog.refs,
-			changes: basePage
-				? {
-						added: report.added.map((row) => row.id),
-						kept: report.kept.map((row) => row.id),
-						removed: report.removed.map((row) => row.id)
-					}
-				: undefined
-		},
-		run
-	};
+	if (!checked.diff.length) return base;
+	const screenId = plan.request.screenId ?? null;
+	const baseRevision = plan.request.expectedRevision;
+	if (mode === "ask") {
+		return { ...base, proposal: newProposalState({ ...checked, baseRevision, live, screenId, origin: "ask-proposal", keepPage: true }) };
+	}
+	setCandidatePage(checked.page, provenanceFor(screenId));
+	return { ...base, proposal: newProposalState({ ...checked, baseRevision, live, screenId }) };
 }
 
 async function sendMessageMock(text: string): Promise<ChatSession> {
@@ -816,22 +731,21 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 	const token = epoch;
 	try {
 		await loadPropsGate();
-		const { result, status, modelId, live, usage, path, tools, runId } = await runConstructor(trimmed, mode, ac.signal);
+		const out = await runTurn(trimmed, mode, ac.signal);
 		if (token !== epoch) return getSelectedSession() ?? pending;
+		const { result, status, modelId, live, usage } = out;
 		capabilities = {
 			runtime: status.runtime || "xai-grok",
-			mode: live ? "xai-runtime" : status.ready ? status.code || "xai_runtime_ready" : "local-assembler",
+			mode: live ? "xai-runtime" : status.ready ? status.code || "xai_runtime_ready" : "unavailable",
 			liveModel: Boolean(status.ready),
 			live: { requested: true, provider: "xai", model: modelId },
-			tools: agentToolNames(getChatMode()),
+			tools: agentToolNames(mode),
 			note: runtimeNoteFor(status)
 		};
-		if (!result.ok) lastError = result.message;
-		else lastError = null;
-		if (mode === "ask" && !result.ok) lastError = localizedRunError(result.code, result.message, modelId);
-		const reply = proposalMessage(result, modelId, live, usage, { path, tools, runId });
-		// Only a new proposal supersedes pending ones; a text answer leaves the page and its proposals as they are.
-		const prior = result.ok && !isAgentTextReply(result) ? markPendingProposals(pending.messages, "superseded", "all") : pending.messages;
+		lastError = result.ok ? null : localizedRunError(result.code, result.message, modelId);
+		const reply = replyMessage(out);
+		// A new proposal supersedes the pending ones of its own kind: an Ask proposal the Ask ones, a Build proposal the Build ones.
+		const prior = reply.proposal ? markPendingProposals(pending.messages, "superseded", "all", (m) => (m.mode === "ask") === (reply.mode === "ask")) : pending.messages;
 		const done: ChatSession = {
 			...pending,
 			updatedAt: nowIso(),
@@ -879,116 +793,101 @@ export function applyProposal(): boolean {
 	if (!session) return false;
 	const applied = getLastAppliedPage();
 	const provenance = getAppliedProvenance();
-	const storedScenario = provenance?.scenarioId;
-	const scenarioId = isScenarioId(storedScenario)
-		? storedScenario
-		: (session.scenarioId ?? getScenarioId());
 	const next: ChatSession = {
 		...session,
 		updatedAt: nowIso(),
 		pageId: applied?.id,
 		pageRevision: getPageRevision(),
-		scenarioId,
-		screenId: recordedScreenId(provenance?.screenId) ?? session.screenId ?? getScreenId(),
-		messages: markPendingProposals(session.messages, "applied", "latest")
+		screenId: provenance?.screenId ?? session.screenId ?? getScreenId(),
+		messages: markPendingProposals(session.messages, "applied", "latest", (m) => m.mode !== "ask")
 	};
 	replaceSession(next);
 	saveMock(memory);
 	return true;
 }
 
+type Started = { ok: true } | { ok: false; code: string; message: string };
+
+/** One Build proposal the host made itself (no model call): the candidate, its messages, then Apply. */
+function recordHostProposal(session: ChatSession, requestText: string, replyText: string, page: PageV2, diff: DiffEntry[], opts: { origin?: ChatProposalState["origin"]; screenId?: string | null; baseRevision: number; title?: string }): void {
+	setCandidatePage(page, provenanceFor(opts.screenId ?? null));
+	const request: ChatMessage = { id: uid("msg"), role: "user", text: requestText, createdAt: nowIso(), mode: "build" };
+	const reply: ChatMessage = {
+		id: uid("msg"),
+		role: "assistant",
+		text: replyText,
+		createdAt: nowIso(),
+		mode: "build",
+		proposal: newProposalState({ page, diff, warnings: [], baseRevision: opts.baseRevision, live: false, screenId: opts.screenId ?? null, origin: opts.origin })
+	};
+	const current = getSelectedSession() ?? session;
+	const prior = markPendingProposals(current.messages, "superseded", "all", (m) => m.mode !== "ask");
+	replaceSession({ ...current, mode: "build", ...(opts.title ? { title: opts.title } : {}), updatedAt: nowIso(), ...(opts.screenId ? { screenId: opts.screenId } : {}), messages: [...prior, request, reply] });
+	saveMock(memory);
+}
+
 /**
- * "Start page from this screen" (Blocks feed, ADR 0024 step B): a fresh page from one Stock screen with no model
- * call. The program assembles it (stockScreenDraft: the propose_layout path of the collection intake, no copy, so the
- * blocks keep their Stock sample), the browser catalog gate checks it, and it is applied at once as the chat's next
- * revision. A chat that already has a page or messages gets a new chat, so nothing is overwritten.
+ * "Start page from this screen" (Blocks feed): a fresh page from one Stock screen with no model call. The screen's
+ * renderable sections become the blocks of an empty page with the registry sample props (addScreen), the write gate
+ * checks them and the page is applied at once as the chat's next revision. A chat that already has a page or messages
+ * gets a new chat, so nothing is overwritten.
  */
-export async function startPageFromScreen(screenId: string): Promise<{ ok: true } | { ok: false; code: string; message: string }> {
+export async function startPageFromScreen(screenId: string): Promise<Started> {
 	const screen = getScreenById(screenId);
 	if (!screen) return { ok: false, code: "unknown_screen", message: `${screenId} is not a Stock screen.` };
 	await loadPropsGate();
-	const draft = stockScreenDraft({ screenId: screen.screenId });
-	if (!draft.ok) return { ok: false, code: draft.code, message: draft.message };
 	let session = getSelectedSession();
 	if (!session || session.messages.length || getEditBase()?.page) session = await createSession();
+	const started = addScreen(emptyPage({ title: screen.title, locale: "en", id: draftPageId(session) }), screen.screenId);
+	if (!started.ok) return { ok: false, code: started.code, message: started.message };
 	setChatMode("build");
 	hydrateSessionContext({ scenarioId: null, screenId: screen.screenId });
-	const request: ChatMessage = {
-		id: uid("msg"),
-		role: "user",
-		text: t("feed.startRequest").replace("{title}", screen.title).replace("{screen}", screen.screenId),
-		createdAt: nowIso(),
-		mode: "build"
-	};
-	const reply: ChatMessage = { ...proposalMessage(draft.proposal, getSelectedModelId(), false, localRunUsage(), { basePage: null }), mode: "build" };
-	delete reply.run;
-	if (!reply.proposal) {
-		discardCandidate();
-		return { ok: false, code: "catalog_rejected", message: reply.text };
-	}
-	// No `origin`: the session schema allows only the Ask origins; this proposal is an ordinary program proposal
-	// (local catalog assembler, no run record), applied at once.
-	const current = getSelectedSession() ?? session;
-	replaceSession({
-		...current,
-		mode: "build",
-		title: screen.title,
-		updatedAt: nowIso(),
-		screenId: screen.screenId,
-		messages: [...current.messages, request, reply]
-	});
-	saveMock(memory);
+	const empty = emptyPage({ title: screen.title, locale: "en", id: draftPageId(session) });
+	recordHostProposal(
+		session,
+		t("feed.startRequest").replace("{title}", screen.title).replace("{screen}", screen.screenId),
+		t("feed.startReply").replace("{title}", screen.title),
+		started.page,
+		diffPages(empty, started.page),
+		{ screenId: screen.screenId, baseRevision: getPageRevision() ?? 0, title: screen.title }
+	);
 	if (!applyProposal()) return { ok: false, code: "not_applied", message: "The page did not apply." };
 	return { ok: true };
 }
 
 /**
- * Empty start (ADR 0024): the first "+" or drop on a chat with no page. The selected chat (a new one when none is
- * selected) switches to Build and gets an empty page on the start Stock screen (emptyPageStart), with no model call
- * and no chat message; the caller adds the section right after, so the page and the section are one undo step.
+ * Empty start: the first "+" or drop on a chat with no page. The selected chat (a new one when none is selected)
+ * switches to Build and gets an empty page (no sections), with no model call and no chat message; the caller adds the
+ * section right after, so the page and the section are one undo step.
  */
-export function startEmptyPageInChat(screenId: string): boolean {
-	const start = emptyPageStart({ screenId, title: t("page.untitled"), locale: "en" });
-	if (!start) return false;
+export function startEmptyPageInChat(screenId: string | null = null): boolean {
 	let session = getSelectedSession();
 	if (!session) {
 		void createSession();
 		session = getSelectedSession();
 	}
 	if (!session) return false;
-	if (!startEmptyPage(start.page, start.provenance)) return false;
+	const page = blankPage(session);
+	if (!startEmptyPage(page, provenanceFor(screenId))) return false;
 	setChatMode("build");
-	hydrateSessionContext({ scenarioId: start.provenance.scenarioId, screenId: start.provenance.screenId });
+	hydrateSessionContext({ scenarioId: null, screenId });
 	const current = getSelectedSession() ?? session;
-	replaceSession({ ...current, mode: "build", updatedAt: nowIso(), pageId: start.page.id, pageRevision: 0, scenarioId: start.provenance.scenarioId, screenId: start.provenance.screenId });
+	replaceSession({ ...current, mode: "build", updatedAt: nowIso(), pageId: page.id, pageRevision: 0, screenId });
 	saveMock(memory);
 	return true;
 }
 
 /**
- * Apply variant from an Ask block card: the chat switches to Build and gets an ordinary set_variant proposal through
- * the same editPage and browser gate as model edits. Pending until the author presses Apply; no model call.
+ * Apply variant from an Ask block card: the chat switches to Build and gets an ordinary set_variant proposal through the
+ * same write gate (applyOp -> writePage) as every other edit. Pending until the author presses Apply; no model call.
  */
 export function applyVariantFromAsk(spec: string, variant: string): boolean {
 	const session = getSelectedSession();
 	if (!session) return false;
 	setChatMode("build");
 	const base = getEditBase();
-	lastEditBase = base?.source ?? null;
-	const sessionDemoData = sessionDemoFromProposals();
-	lastSessionDemo = sessionDemoData;
-	const provenance = base?.provenance ?? null;
-	const result = variantProposal({
- scopeBlockIds: blockScope.ids(session.id),
-		page: base?.page,
-		provenance: provenance
-			? { screenId: recordedScreenId(provenance.screenId), scenarioId: isScenarioId(provenance.scenarioId) ? provenance.scenarioId : null, missing: provenance.missing }
-			: null,
-		revision: getPageRevision() ?? 0,
-		spec,
-		variant,
-		sessionDemoData
-	});
+	const item = itemOfSpec(spec);
+	const target = base && item ? base.page.blocks.find((block) => block.item === item) : null;
 	const request: ChatMessage = {
 		id: uid("msg"),
 		role: "user",
@@ -996,92 +895,67 @@ export function applyVariantFromAsk(spec: string, variant: string): boolean {
 		createdAt: nowIso(),
 		mode: "build"
 	};
-	let reply: ChatMessage;
-	if (!result.ok && (result.code === "no_page" || result.code === "block_not_on_page" || result.code === "unknown_block")) {
-		reply = { id: uid("msg"), role: "assistant", text: t(`ask.apply.${result.code}`).replace("{block}", spec), createdAt: nowIso(), mode: "build" };
-	} else {
-		reply = { ...proposalMessage(result, getSelectedModelId(), false, localRunUsage(), { basePage: base?.page ?? null }), mode: "build" };
-		delete reply.run;
-		if (reply.proposal) {
-			reply.proposal = { ...reply.proposal, origin: "ask-card" };
-			reply.text = `${t("ask.applyVia")}\n${reply.text}`;
-		}
-	}
-	const current = getSelectedSession() ?? session;
-	const prior = reply.proposal ? markPendingProposals(current.messages, "superseded", "all") : current.messages;
-	replaceSession({ ...current, mode: "build", updatedAt: nowIso(), messages: [...prior, request, reply] });
-	saveMock(memory);
-	return Boolean(reply.proposal);
-}
-
-/**
- * Apply in Build on an Ask plan card (ADR 0020): the chat switches to Build and the ticked ops run on the current page
- * through the page-patch gates, in order, without a model call. Ops that no longer apply are said with their reason;
- * the others make one pending proposal the author applies. The plan keeps each op's result.
- */
-/** Fix a catalog enum locally and recheck the entire sequence on the visible page. */
-export function getPlanRepairs(messageId: string) {
- const base = getEditBase();
- const source = getSelectedSession()?.messages.find(message=>message.id===messageId);
- if (!base?.page || !source?.plan || source.plan.status !== 'proposed') return [];
- return pagePlanRepairs({sessionDemoData:sessionDemoFromProposals(),page:base.page, provenance:base.provenance ?? undefined, revision:getPageRevision() ?? 0, scopeBlockIds:blockScope.ids(getSelectedSession()?.id), plan:source.plan});
-}
-export function repairPlanField(messageId: string, opId: string, field: string, value: string): boolean {
- const session=getSelectedSession(), base=getEditBase();
- const source=session?.messages.find(message=>message.id===messageId);
- if (!session || !base?.page || !source?.plan) return false;
- const plan=repairPagePlan({sessionDemoData:sessionDemoFromProposals(),page:base.page,provenance:base.provenance ?? undefined,revision:getPageRevision() ?? 0,scopeBlockIds:blockScope.ids(session.id),plan:source.plan,opId,field,value});
- if (!plan) return false;
- replaceSession({...session,messages:session.messages.map(message=>message.id===messageId?{...message,plan}:message),updatedAt:nowIso()});
- saveMock(memory);
- return true;
-}
-
-export function applyPlanInBuild(messageId: string, selected: readonly string[]): boolean {
-	const session = getSelectedSession();
-	const source = session?.messages.find((message) => message.id === messageId);
-	if (!session || !source?.plan || !selected.length || source.plan.status !== "proposed") return false;
-	setChatMode("build");
-	const request: ChatMessage = {
-		id: uid("msg"),
-		role: "user",
-		text: t("plan.request").replace("{n}", String(selected.length)),
-		createdAt: nowIso(),
-		mode: "build"
-	};
-	const base = getEditBase();
-	const current = getSelectedSession() ?? session;
-	if (!base?.page) {
-		const reply: ChatMessage = { id: uid("msg"), role: "assistant", text: t("plan.noPage"), createdAt: nowIso(), mode: "build" };
+	const fail = (key: string): false => {
+		const current = getSelectedSession() ?? session;
+		const reply: ChatMessage = { id: uid("msg"), role: "assistant", text: t(key).replace("{block}", spec), createdAt: nowIso(), mode: "build" };
 		replaceSession({ ...current, mode: "build", updatedAt: nowIso(), messages: [...current.messages, request, reply] });
 		saveMock(memory);
 		return false;
+	};
+	if (!base) return fail("ask.apply.no_page");
+	if (!item) return fail("ask.apply.unknown_block");
+	if (!target) return fail("ask.apply.block_not_on_page");
+	const op = applyOp(base.page, { op: "set_variant", blockId: target.id, variant });
+	if (!op.ok) return fail("ask.apply.rejected");
+	recordHostProposal(session, request.text, t("ask.applyVia"), op.page, diffPages(base.page, op.page), { origin: "ask-card", screenId: base.provenance?.screenId ?? null, baseRevision: getPageRevision() ?? 0 });
+	return true;
+}
+
+export type AskApplyResult = { ok: true } | { ok: false; code: "outdated" | "not_found" | "rejected"; message: string };
+
+/**
+ * "Apply in Build" on the proposal of an Ask answer: the one way an Ask reaches the page. The stored page document goes
+ * through the same write gate against the page the author sees now, and applies only when the diff it makes is still the
+ * diff the author was shown (the page did not move on). Then the chat is in Build and the page is the next revision:
+ * one step, the registry sample props the proposal carries.
+ */
+export async function applyAskProposal(messageId: string): Promise<AskApplyResult> {
+	const session = getSelectedSession();
+	const source = session?.messages.find((message) => message.id === messageId);
+	const proposal = source?.proposal;
+	if (!session || !proposal?.page || proposal.origin !== "ask-proposal" || !isPendingProposal(proposal)) {
+		return { ok: false, code: "not_found", message: t("proposal.askNotFound") };
 	}
-	lastEditBase = base.source;
-	const exec = executePagePlan({
-		page: base.page,
-		provenance: baseProvenance(base.provenance ?? getAppliedProvenance()),
-		scopeBlockIds: blockScope.ids(session.id),
- plan: source.plan,
-		selected,
-		revision: getPageRevision() ?? 0,
-		sessionDemoData: sessionDemoFromProposals(),
-		at: nowIso()
-	});
-	let reply: ChatMessage;
-	if (exec.proposal) {
-		reply = { ...proposalMessage(exec.proposal, getSelectedModelId(), false, localRunUsage(), { basePage: base.page }), mode: "build" };
-		delete reply.run;
-		if (reply.proposal) reply.proposal = { ...reply.proposal, origin: "ask-plan" };
-		reply.text = `${reply.text}\n${planResultText(exec.plan, t)}`;
-	} else {
-		reply = { id: uid("msg"), role: "assistant", text: planResultText(exec.plan, t), createdAt: nowIso(), mode: "build" };
+	try {
+		await loadPropsGate();
+	} catch {
+		return { ok: false, code: "rejected", message: t("inspector.loadFailed") };
 	}
-	const withPlan = current.messages.map((message) => (message.id === messageId ? { ...message, plan: exec.plan } : message));
-	const prior = reply.proposal ? markPendingProposals(withPlan, "superseded", "all") : withPlan;
+	const shown = shownPageOf();
+	const base = shown ?? blankPage(session);
+	const written = writePage(base, { page: proposal.page });
+	const stale = (proposal.baseRevision ?? 0) !== (getPageRevision() ?? 0);
+	if (!written.ok) return { ok: false, code: "rejected", message: t("proposal.rejected").replace("{code}", written.issues[0]?.code ?? written.code).replace("{message}", `${written.issues[0]?.path ?? "/"}`) };
+	const diff = diffPages(base, written.page);
+	if (stale || diffKey(diff) !== diffKey(proposal.diff ?? [])) return { ok: false, code: "outdated", message: t("proposal.askOutdated") };
+	setChatMode("build");
+	const replyText = t("ask.appliedInBuild");
+	const request: ChatMessage = { id: uid("msg"), role: "user", text: t("ask.applyProposalRequest"), createdAt: nowIso(), mode: "build" };
+	setCandidatePage(written.page, provenanceFor(proposal.screenId ?? null));
+	const reply: ChatMessage = {
+		id: uid("msg"),
+		role: "assistant",
+		text: replyText,
+		createdAt: nowIso(),
+		mode: "build",
+		proposal: newProposalState({ page: written.page, diff, warnings: written.warnings, baseRevision: getPageRevision() ?? 0, live: false, screenId: proposal.screenId ?? null, origin: "ask-proposal" })
+	};
+	const current = getSelectedSession() ?? session;
+	const messages = current.messages.map((message) => (message.id === messageId ? { ...message, proposal: withProposalStatus(message.proposal!, "applied") } : message));
+	const prior = markPendingProposals(messages, "superseded", "all", (m) => m.mode !== "ask");
 	replaceSession({ ...current, mode: "build", updatedAt: nowIso(), messages: [...prior, request, reply] });
 	saveMock(memory);
-	return Boolean(reply.proposal);
+	return applyProposal() ? { ok: true } : { ok: false, code: "rejected", message: t("proposal.rejected").replace("{code}", "not_applied").replace("{message}", "") };
 }
 
 export function discardProposal(): void {
@@ -1091,7 +965,7 @@ export function discardProposal(): void {
 	replaceSession({
 		...session,
 		updatedAt: nowIso(),
-		messages: markPendingProposals(session.messages, "discarded", "latest")
+		messages: markPendingProposals(session.messages, "discarded", "latest", (m) => m.mode !== "ask")
 	});
 	saveMock(memory);
 }

@@ -275,7 +275,7 @@ export function newPropsListRow(item: string, pointer: string, taken: readonly u
 }
 
 /** "addToCart" -> "Add to cart": a readable placeholder for a required label the content does not fill. */
-function humanize(name: string): string {
+export function humanizeName(name: string): string {
 	const words = name.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[-_]/g, " ").toLowerCase();
 	return words.charAt(0).toUpperCase() + words.slice(1);
 }
@@ -294,7 +294,7 @@ function defaultFor(node: JsonSchema, name: string, depth: number, blank: boolea
 		return icons.includes(PLACEHOLDER_ICON) ? PLACEHOLDER_ICON : icons[0];
 	}
 	if (Array.isArray(value.enum)) return clone(value.enum[0]);
-	if (value.type === "string") return STRING_DEFAULTS[name] ?? (blank ? "" : humanize(name));
+	if (value.type === "string") return STRING_DEFAULTS[name] ?? (blank ? "" : humanizeName(name));
 	if (value.type === "number" || value.type === "integer") return 0;
 	if (value.type === "boolean") return false;
 	if (value.type === "array") return [];

@@ -122,7 +122,7 @@ import { ExternalLink, FilePlus, Plus } from "$lib/shell-icons";
 	{:else if item.isDefault}
 		<Text tag="span" class="text-xs text-muted-foreground">{t("feed.default")}</Text>
 	{/if}
-	{#if why && check && !check.ok && check.code !== "no_screen"}
+	{#if why && check && !check.ok}
 		<Text tag="span" class="text-xs text-muted-foreground" data-slot="feed-why">{why}</Text>
 	{/if}
 </StockMediaCard>
