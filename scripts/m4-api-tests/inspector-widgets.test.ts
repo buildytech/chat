@@ -59,3 +59,59 @@ test("coerceEnumValue touches nothing but non-string enum members", () => {
 	assert.equal(coerceEnumValue("hero-classic", "/title", "2"), "2", "a text prop keeps its text");
 	assert.equal(coerceEnumValue("hero-classic", "/nope", "2"), "2");
 });
+
+const propsOf = (page: PageV2) => (page.blocks[0]!.props ?? {}) as Record<string, unknown>;
+
+test("absent optional object: an edit under it creates the object with just that path; the write fills what it requires", () => {
+	const { page, id } = withBlock("cta-band");
+	assert.equal(propsOf(page).quote, undefined, "quote is optional and absent");
+	const r = applyOp(page, { op: "set", blockId: id, pointer: "/quote/text", value: "Best decision we made" });
+	assert.ok(r.ok, JSON.stringify(r));
+	const quote = propsOf(r.page).quote as Record<string, unknown>;
+	assert.equal(quote.text, "Best decision we made");
+	assert.equal(quote.by, undefined, "an optional sibling is not invented");
+	// clearing the only value takes the object away again, never `{}` or an invalid object
+	const cleared = applyOp(r.page, { op: "set", blockId: id, pointer: "/quote/text", value: undefined });
+	assert.ok(cleared.ok, JSON.stringify(cleared));
+	assert.equal(propsOf(cleared.page).quote, undefined);
+	// a path the schema does not have is still refused
+	const nope = applyOp(page, { op: "set", blockId: id, pointer: "/nowhere/text", value: "x" });
+	assert.ok(!nope.ok);
+	assert.equal(nope.code, "path_not_found");
+});
+
+test("absent optional list: `add` creates it (and the optional objects above it); removing the last row leaves it absent", () => {
+	const { page, id } = withBlock("hero-classic");
+	assert.equal(propsOf(page).topics, undefined);
+	const a = applyOp(page, { op: "list_row", blockId: id, pointer: "/topics", action: "add" });
+	assert.ok(a.ok, JSON.stringify(a));
+	assert.equal((propsOf(a.page).topics as unknown[]).length, 1);
+	const gone = applyOp(a.page, { op: "list_row", blockId: id, pointer: "/topics", action: "remove", row: 0 });
+	assert.ok(gone.ok, JSON.stringify(gone));
+	assert.equal(propsOf(gone.page).topics, undefined, "an optional list with no rows is absent");
+	// the other actions have no row to act on
+	const up = applyOp(page, { op: "list_row", blockId: id, pointer: "/topics", action: "up", row: 0 });
+	assert.ok(!up.ok);
+	assert.equal(up.code, "not_a_list");
+});
+
+test("a list inside an absent optional object: `add` creates both", () => {
+	const { page, id } = withBlock("faq-list");
+	const r = applyOp(page, { op: "list_row", blockId: id, pointer: "/filter/tabs", action: "add" });
+	assert.ok(r.ok, JSON.stringify(r));
+	const filter = propsOf(r.page).filter as Record<string, unknown>;
+	assert.equal((filter.tabs as unknown[]).length, 1);
+	assert.ok(filter.mode, "required siblings of the created object are filled");
+});
+
+test("trusted markup (`{ __html }`) is not authorable: the Inspector shows it read-only, never as an object that the contract refuses", () => {
+	const { page, id } = withBlock("rich-text");
+	assert.equal(fieldOf(page, "content").widget, "other");
+	const aside = fieldOf(page, "aside");
+	assert.equal(aside.widget, "object");
+	assert.equal(aside.fields?.find((f) => f.name === "content")?.widget, "other");
+	assert.equal(aside.fields?.find((f) => f.name === "title")?.widget, "text");
+	// the plain fields beside it still edit
+	const r = applyOp(page, { op: "set", blockId: id, pointer: "/aside/title", value: "Note" });
+	assert.ok(r.ok, JSON.stringify(r));
+});

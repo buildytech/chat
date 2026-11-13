@@ -124,7 +124,8 @@ function valueOf(node: JsonSchema): JsonSchema {
 	return target;
 }
 
-export type FieldKind = "text" | "icon" | "enum" | "number" | "boolean" | "list" | "object" | "other";
+/** `markup`: trusted markup (`{ __html }`); a page never carries markup (the contract refuses it), so no widget writes it. */
+export type FieldKind = "text" | "icon" | "enum" | "number" | "boolean" | "list" | "object" | "markup" | "other";
 
 function kindOf(node: JsonSchema): FieldKind {
 	if (refName(node) === ICON_DEF) return "icon";
@@ -135,7 +136,10 @@ function kindOf(node: JsonSchema): FieldKind {
 	if (value.type === "number" || value.type === "integer") return "number";
 	if (value.type === "boolean") return "boolean";
 	if (value.type === "array") return "list";
-	if (value.type === "object" && isObject(value.properties)) return "object";
+	if (value.type === "object" && isObject(value.properties)) {
+		const names = Object.keys(value.properties);
+		return names.length === 1 && names[0] === "__html" ? "markup" : "object";
+	}
 	return "other";
 }
 
@@ -251,6 +255,52 @@ function schemaAt(item: string, pointer: string): JsonSchema | null {
 		node = properties[part]!;
 	}
 	return node;
+}
+
+export type PointerInfo = {
+	/** What the prop is: an object with fields, a list, a free-form map (`additionalProperties`), or a plain value. */
+	kind: "object" | "array" | "map" | "scalar";
+	/** The prop is required by its parent object (a list row is). */
+	required: boolean;
+	minItems?: number;
+	maxItems?: number;
+};
+
+/** What the schema says about a prop pointer (`/filter/tabs`, `/features/2/icon`), or null when the path is not in the schema. */
+export function pointerInfo(item: string, pointer: string): PointerInfo | null {
+	const schema = props.items[item]?.schema;
+	if (!schema) return null;
+	let node: JsonSchema = schema;
+	let required = true;
+	for (const raw of pointer.split("/").slice(1)) {
+		const part = raw.replace(/~1/g, "/").replace(/~0/g, "~");
+		const value = valueOf(node);
+		if (value.type === "array" && /^\d+$/.test(part) && isObject(value.items)) {
+			node = value.items as JsonSchema;
+			required = true;
+			continue;
+		}
+		const properties = isObject(value.properties) ? (value.properties as Record<string, JsonSchema>) : null;
+		if (properties?.[part]) {
+			required = Array.isArray(value.required) && (value.required as string[]).includes(part);
+			node = properties[part]!;
+			continue;
+		}
+		if (value.type === "object" && !properties && value.additionalProperties) {
+			required = false;
+			node = value.additionalProperties === true ? {} : (value.additionalProperties as JsonSchema);
+			continue;
+		}
+		return null;
+	}
+	const value = valueOf(node);
+	const kind = value.type === "array" ? "array" : value.type === "object" ? (isObject(value.properties) ? "object" : "map") : "scalar";
+	return {
+		kind,
+		required,
+		...(typeof value.minItems === "number" ? { minItems: value.minItems } : {}),
+		...(typeof value.maxItems === "number" ? { maxItems: value.maxItems } : {})
+	};
 }
 
 /**

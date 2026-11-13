@@ -24,7 +24,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 	import type { InspectorField } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { canvas } from "$lib/inspector/canvas.svelte";
-	import { closestAllowed, fieldDomId, issueText, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
+	import { closestAllowed, fieldDomId, hasContent, issueText, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
 	import Self from "./InspectorFields.svelte";
 
 	let {
@@ -154,7 +154,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 			</Field>
 		{:else if field.widget === "object"}
 			<Fieldset variant="card" data-pointer={field.pointer}>
-				<Legend class="text-xs">{label(field)}</Legend>
+				<Legend class="text-xs">{label(field)}{#if !field.required && !hasContent(field)} · {t("inspector.unset")}{/if}</Legend>
 				<Self fields={field.fields ?? []} {blockId} {issues} {handlers} />
 			</Fieldset>
 		{:else if field.widget === "list"}

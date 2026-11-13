@@ -26527,6 +26527,7 @@ function valueOf(node: JsonSchema): JsonSchema {
 	return target;
 }
 
+/** `markup`: trusted markup (`{ __html }`); a page never carries markup (the contract refuses it), so no widget writes it. */
 function kindOf(node: JsonSchema): FieldKind {
 	if (refName(node) === ICON_DEF) return "icon";
 	const value = valueOf(node);
@@ -26536,7 +26537,10 @@ function kindOf(node: JsonSchema): FieldKind {
 	if (value.type === "number" || value.type === "integer") return "number";
 	if (value.type === "boolean") return "boolean";
 	if (value.type === "array") return "list";
-	if (value.type === "object" && isObject(value.properties)) return "object";
+	if (value.type === "object" && isObject(value.properties)) {
+		const names = Object.keys(value.properties);
+		return names.length === 1 && names[0] === "__html" ? "markup" : "object";
+	}
 	return "other";
 }
 
@@ -26622,6 +26626,42 @@ function schemaAt(item: string, pointer: string): JsonSchema | null {
 		node = properties[part]!;
 	}
 	return node;
+}
+
+function pointerInfo(item: string, pointer: string): PointerInfo | null {
+	const schema = props.items[item]?.schema;
+	if (!schema) return null;
+	let node: JsonSchema = schema;
+	let required = true;
+	for (const raw of pointer.split("/").slice(1)) {
+		const part = raw.replace(/~1/g, "/").replace(/~0/g, "~");
+		const value = valueOf(node);
+		if (value.type === "array" && /^\d+$/.test(part) && isObject(value.items)) {
+			node = value.items as JsonSchema;
+			required = true;
+			continue;
+		}
+		const properties = isObject(value.properties) ? (value.properties as Record<string, JsonSchema>) : null;
+		if (properties?.[part]) {
+			required = Array.isArray(value.required) && (value.required as string[]).includes(part);
+			node = properties[part]!;
+			continue;
+		}
+		if (value.type === "object" && !properties && value.additionalProperties) {
+			required = false;
+			node = value.additionalProperties === true ? {} : (value.additionalProperties as JsonSchema);
+			continue;
+		}
+		return null;
+	}
+	const value = valueOf(node);
+	const kind = value.type === "array" ? "array" : value.type === "object" ? (isObject(value.properties) ? "object" : "map") : "scalar";
+	return {
+		kind,
+		required,
+		...(typeof value.minItems === "number" ? { minItems: value.minItems } : {}),
+		...(typeof value.maxItems === "number" ? { maxItems: value.maxItems } : {})
+	};
 }
 
 /**
@@ -26756,6 +26796,7 @@ exports["LUCIDE_ICON_HINT"] = LUCIDE_ICON_HINT;
 exports["refShapeDefs"] = refShapeDefs;
 exports["propShapeFor"] = propShapeFor;
 exports["propsFieldTree"] = propsFieldTree;
+exports["pointerInfo"] = pointerInfo;
 exports["coerceEnumValue"] = coerceEnumValue;
 exports["newPropsListRow"] = newPropsListRow;
 exports["humanizeName"] = humanizeName;
@@ -30887,7 +30928,7 @@ exports["migratePageV1"] = migratePageV1;
 });
 
 __def("packages/builder-core/src/page-doc/ops.ts", function (exports) {
-const { coerceEnumValue, newPropsListRow } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { coerceEnumValue, newPropsListRow, pointerInfo } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { addSlotCheck, moveSlotCheck, naturalIndex } = __req("packages/builder-core/src/page-doc/slots.ts");
 const { screenItems } = __req("packages/builder-core/src/page-doc/start.ts");
 const { catalogEntryBySpec } = __req("packages/builder-core/src/catalog/sources.ts");
@@ -30950,6 +30991,40 @@ function valueAt(data: unknown, pointer: string): unknown {
 	return current;
 }
 
+/**
+ * A copy of `props` where every optional object above `pointer` exists (`{}`; the write fills what the schema requires of it),
+ * so an edit under an absent optional object creates just the path it needs. Null when a missing parent is not an object
+ * of the schema (a missing list has no row to step into).
+ */
+function ensureParents(item: string, props: Record<string, unknown>, pointer: string): Record<string, unknown> | null {
+	const parts = pointerParts(pointer);
+	let next = props;
+	for (let depth = 1; depth < parts.length; depth += 1) {
+		const prefix = `/${parts.slice(0, depth).map((part) => part.replace(/~/g, "~0").replace(/\//g, "~1")).join("/")}`;
+		const here = valueAt(next, prefix);
+		if (here !== undefined && here !== null) continue;
+		if (pointerInfo(item, prefix)?.kind !== "object") return null;
+		const made = setAtPointer(next, prefix, {});
+		if (!made) return null;
+		next = made;
+	}
+	return next;
+}
+
+/** `props` without the optional objects `pointer` leaves empty once its own value is gone (a cleared edit never leaves `{}` behind). */
+function pruneEmpty(item: string, props: Record<string, unknown>, pointer: string): Record<string, unknown> {
+	let next = props;
+	const parts = pointerParts(pointer);
+	for (let depth = parts.length - 1; depth >= 1; depth -= 1) {
+		const prefix = `/${parts.slice(0, depth).join("/")}`;
+		const here = valueAt(next, prefix);
+		const info = pointerInfo(item, prefix);
+		if (!info || info.required || info.kind !== "object" || !here || typeof here !== "object" || Array.isArray(here) || Object.keys(here).length) break;
+		next = setAtPointer(next, prefix, undefined) ?? next;
+	}
+	return next;
+}
+
 /** The effective props of a block (what the component renders) as the base of an edit. */
 function liveProps(block: BlockV2): Record<string, unknown> {
 	return effectiveProps(block.item, block.variant, block.props);
@@ -30991,7 +31066,10 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 	switch (input.op) {
 		case "set": {
 			if (!input.pointer.startsWith("/")) return fail("bad_pointer", "A prop pointer starts with /.", input.pointer);
-			const next = setAtPointer(liveProps(block), input.pointer, coerceEnumValue(block.item, input.pointer, input.value));
+			const live = liveProps(block);
+			const base = input.value === undefined ? live : ensureParents(block.item, live, input.pointer);
+			const written = base ? setAtPointer(base, input.pointer, coerceEnumValue(block.item, input.pointer, input.value)) : null;
+			const next = written && input.value === undefined ? pruneEmpty(block.item, written, input.pointer) : written;
 			if (!next) return fail("path_not_found", `${input.pointer} does not exist in the props of ${block.item}.`, input.pointer);
 			return replaceProps(page, index, next, "set_field", input.pointer);
 		}
@@ -31030,8 +31108,16 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 			return done(writePage(page, { patch }), block.id, "replace");
 		}
 		case "list_row": {
-			const props = liveProps(block);
-			const rows = valueAt(props, input.pointer);
+			let props = liveProps(block);
+			let rows = valueAt(props, input.pointer);
+			// an optional list that is absent: `add` creates it (and the optional objects above it), the other actions have no row
+			if (rows === undefined && input.action === "add" && pointerInfo(block.item, input.pointer)?.kind === "array") {
+				const parents = ensureParents(block.item, props, input.pointer);
+				if (parents) {
+					props = parents;
+					rows = [];
+				}
+			}
 			if (!Array.isArray(rows)) return fail("not_a_list", `${input.pointer} is not a list.`, input.pointer);
 			const row = input.row ?? rows.length - 1;
 			const list = [...rows];
@@ -31056,7 +31142,10 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 				[list[row], list[to]] = [list[to], list[row]];
 				name = "move";
 			}
-			const next = setAtPointer(props, input.pointer, list);
+			// the last row of an optional list taken away leaves the list absent, not an empty (maybe invalid) one
+			const emptied = !list.length && pointerInfo(block.item, input.pointer)?.required === false;
+			const written = setAtPointer(props, input.pointer, emptied ? undefined : list);
+			const next = written && emptied ? pruneEmpty(block.item, written, input.pointer) : written;
 			if (!next) return fail("path_not_found", `${input.pointer} does not exist.`, input.pointer);
 			return replaceProps(page, index, next, name, `${input.pointer}/${input.action === "add" ? list.length - 1 : row}`);
 		}

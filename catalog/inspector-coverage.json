@@ -6,19 +6,18 @@
 		"propsDigest": "sha256:bb4ae0ac537ba08d921557046bf75ee59ea592da181dc5ba3a020ccce9b31896",
 		"registrySourceCommit": "9e57f9ccaf710eb3b50d5599e6e49355fcc32136",
 		"stockContentCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
-		"inspectorDigest": "0316ab2cf252878e"
+		"inspectorDigest": "6952318b62f4c4eb"
 	},
 	"summary": {
 		"combos": 532,
 		"items": 113,
-		"covered": 357,
-		"notCovered": 175,
-		"coveredAfterFixes": 432,
+		"covered": 426,
+		"notCovered": 106,
+		"coveredAfterFixes": 426,
 		"reasons": {
 			"free_form_map": 31,
 			"list_of_primitives": 84,
-			"optional_list_absent": 33,
-			"optional_object_absent": 83
+			"trusted_markup": 12
 		}
 	},
 	"combos": {
@@ -593,106 +592,64 @@
 			"leaves": 18,
 			"editable": 17,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/tools",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"category-nav/barCompact": {
 			"leaves": 18,
 			"editable": 17,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/tools",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"category-nav/chips": {
 			"leaves": 18,
 			"editable": 17,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/tools",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"category-nav/chipsPlain": {
 			"leaves": 18,
 			"editable": 17,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/tools",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"category-nav/sidebar": {
 			"leaves": 18,
 			"editable": 17,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/tools",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"category-nav/tiles": {
 			"leaves": 18,
 			"editable": 17,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/tools",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"category-nav/toolbar": {
 			"leaves": 18,
 			"editable": 17,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/tools",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"chart-panel/bars": {
 			"leaves": 14,
@@ -1061,166 +1018,100 @@
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/band": {
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/banner": {
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/card": {
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/compact": {
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/form": {
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/quote": {
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/row": {
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/saas": {
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/shop": {
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/split": {
 			"leaves": 16,
 			"editable": 15,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/quote",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-proof/centerFeatures": {
 			"leaves": 41,
@@ -1799,106 +1690,64 @@
 			"leaves": 24,
 			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/filter/tabs",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"faq-list/list": {
 			"leaves": 24,
 			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/filter/tabs",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"faq-list/muted": {
 			"leaves": 24,
 			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/filter/tabs",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"faq-list/roomy": {
 			"leaves": 24,
 			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/filter/tabs",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"faq-list/search": {
 			"leaves": 24,
 			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/filter/tabs",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"faq-list/tabs": {
 			"leaves": 24,
 			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/filter/tabs",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"faq-list/twoColumns": {
 			"leaves": 24,
 			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/filter/tabs",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"faq-split/cards3": {
 			"leaves": 34,
@@ -2012,106 +1861,64 @@
 			"leaves": 18,
 			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-grid/grid2": {
 			"leaves": 18,
 			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-grid/rows": {
 			"leaves": 18,
 			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-grid/rowsAlternate": {
 			"leaves": 18,
 			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-grid/rowsStart": {
 			"leaves": 18,
 			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-grid/tiles4": {
 			"leaves": 18,
 			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-grid/tilesMuted": {
 			"leaves": 18,
 			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-showcase/panelCards3": {
 			"leaves": 15,
@@ -2363,236 +2170,136 @@
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/blog": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/centered": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/cluster": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/code": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/display": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/form": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/muted": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/saas": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/screenshot": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/shop": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/split": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/splitStart": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-classic/twoActions": {
 			"leaves": 29,
 			"editable": 26,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-prompt/prompt": {
 			"leaves": 30,
 			"editable": 28,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/composer",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/nav",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/nav/links",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"hero-split/avatars": {
 			"leaves": 53,
@@ -3489,276 +3196,136 @@
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-grid/filters": {
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-grid/grid": {
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-grid/list": {
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-grid/listLinks": {
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-grid/listPaged": {
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-grid/magazine": {
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-grid/news4": {
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-grid/row4": {
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-grid/textOnly": {
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-grid/twoUp": {
 			"leaves": 43,
 			"editable": 40,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/action",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/filter/topics",
-					"reason": "optional_list_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-header/center": {
 			"leaves": 21,
 			"editable": 19,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/post",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-header/minimal": {
 			"leaves": 21,
 			"editable": 19,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/post",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-header/noCover": {
 			"leaves": 21,
 			"editable": 19,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/post",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-header/start": {
 			"leaves": 21,
 			"editable": 19,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/post",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-showcase/featuredEnd": {
 			"leaves": 27,
@@ -4054,11 +3621,6 @@
 					"path": "/badges",
 					"reason": "free_form_map",
 					"fixable": false
-				},
-				{
-					"path": "/product",
-					"reason": "optional_object_absent",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -4074,11 +3636,6 @@
 					"path": "/badges",
 					"reason": "free_form_map",
 					"fixable": false
-				},
-				{
-					"path": "/product",
-					"reason": "optional_object_absent",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -4094,11 +3651,6 @@
 					"path": "/badges",
 					"reason": "free_form_map",
 					"fixable": false
-				},
-				{
-					"path": "/product",
-					"reason": "optional_object_absent",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -4114,11 +3666,6 @@
 					"path": "/badges",
 					"reason": "free_form_map",
 					"fixable": false
-				},
-				{
-					"path": "/product",
-					"reason": "optional_object_absent",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -4134,11 +3681,6 @@
 					"path": "/badges",
 					"reason": "free_form_map",
 					"fixable": false
-				},
-				{
-					"path": "/product",
-					"reason": "optional_object_absent",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -4705,33 +4247,18 @@
 		},
 		"rich-text/card": {
 			"leaves": 15,
-			"editable": 14,
+			"editable": 12,
 			"locked": 1,
 			"unsupported": [
 				{
-					"path": "/aside",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
 					"path": "/aside/content",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				},
 				{
 					"path": "/content",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/media",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/meta",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				}
 			],
 			"rendersSample": "content",
@@ -4740,33 +4267,18 @@
 		},
 		"rich-text/heroTitle": {
 			"leaves": 15,
-			"editable": 14,
+			"editable": 12,
 			"locked": 1,
 			"unsupported": [
 				{
-					"path": "/aside",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
 					"path": "/aside/content",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				},
 				{
 					"path": "/content",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/media",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/meta",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				}
 			],
 			"rendersSample": "content",
@@ -4775,33 +4287,18 @@
 		},
 		"rich-text/media": {
 			"leaves": 15,
-			"editable": 14,
+			"editable": 12,
 			"locked": 1,
 			"unsupported": [
 				{
-					"path": "/aside",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
 					"path": "/aside/content",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				},
 				{
 					"path": "/content",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/media",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/meta",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				}
 			],
 			"rendersSample": "content",
@@ -4810,33 +4307,18 @@
 		},
 		"rich-text/narrow": {
 			"leaves": 15,
-			"editable": 14,
+			"editable": 12,
 			"locked": 1,
 			"unsupported": [
 				{
-					"path": "/aside",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
 					"path": "/aside/content",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				},
 				{
 					"path": "/content",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/media",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/meta",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				}
 			],
 			"rendersSample": "content",
@@ -4845,33 +4327,18 @@
 		},
 		"rich-text/sidebar": {
 			"leaves": 15,
-			"editable": 14,
+			"editable": 12,
 			"locked": 1,
 			"unsupported": [
 				{
-					"path": "/aside",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
 					"path": "/aside/content",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				},
 				{
 					"path": "/content",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/media",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/meta",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				}
 			],
 			"rendersSample": "content",
@@ -4880,33 +4347,18 @@
 		},
 		"rich-text/wide": {
 			"leaves": 15,
-			"editable": 14,
+			"editable": 12,
 			"locked": 1,
 			"unsupported": [
 				{
-					"path": "/aside",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
 					"path": "/aside/content",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				},
 				{
 					"path": "/content",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/media",
-					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/meta",
-					"reason": "optional_object_absent",
-					"fixable": true
+					"reason": "trusted_markup",
+					"fixable": false
 				}
 			],
 			"rendersSample": "content",
@@ -5016,106 +4468,64 @@
 			"leaves": 9,
 			"editable": 9,
 			"locked": 0,
-			"unsupported": [
-				{
-					"path": "/routes",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"site-footer/compact": {
 			"leaves": 9,
 			"editable": 9,
 			"locked": 0,
-			"unsupported": [
-				{
-					"path": "/routes",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"site-footer/minimal": {
 			"leaves": 9,
 			"editable": 9,
 			"locked": 0,
-			"unsupported": [
-				{
-					"path": "/routes",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"site-header/inline": {
 			"leaves": 15,
 			"editable": 15,
 			"locked": 0,
-			"unsupported": [
-				{
-					"path": "/routes",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"site-header/stacked": {
 			"leaves": 15,
 			"editable": 15,
 			"locked": 0,
-			"unsupported": [
-				{
-					"path": "/routes",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"site-header/sticky": {
 			"leaves": 15,
 			"editable": 15,
 			"locked": 0,
-			"unsupported": [
-				{
-					"path": "/routes",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"site-header/withCta": {
 			"leaves": 15,
 			"editable": 15,
 			"locked": 0,
-			"unsupported": [
-				{
-					"path": "/routes",
-					"reason": "optional_object_absent",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"sitemap-footer/card": {
 			"leaves": 24,

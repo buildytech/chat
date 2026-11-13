@@ -4,7 +4,7 @@
  * diff), so a hand edit and an agent edit follow exactly the same rules. Pure: returns the next page or why not.
  */
 import type { BlockV2, PageV2, PropValueV2 } from "@buildytech/page-contract";
-import { coerceEnumValue, newPropsListRow } from "../catalog/props-schema.ts";
+import { coerceEnumValue, newPropsListRow, pointerInfo } from "../catalog/props-schema.ts";
 import { addSlotCheck, moveSlotCheck, naturalIndex } from "./slots.ts";
 import { screenItems } from "./start.ts";
 import { catalogEntryBySpec } from "../catalog/sources.ts";
@@ -93,6 +93,40 @@ function valueAt(data: unknown, pointer: string): unknown {
 	return current;
 }
 
+/**
+ * A copy of `props` where every optional object above `pointer` exists (`{}`; the write fills what the schema requires of it),
+ * so an edit under an absent optional object creates just the path it needs. Null when a missing parent is not an object
+ * of the schema (a missing list has no row to step into).
+ */
+function ensureParents(item: string, props: Record<string, unknown>, pointer: string): Record<string, unknown> | null {
+	const parts = pointerParts(pointer);
+	let next = props;
+	for (let depth = 1; depth < parts.length; depth += 1) {
+		const prefix = `/${parts.slice(0, depth).map((part) => part.replace(/~/g, "~0").replace(/\//g, "~1")).join("/")}`;
+		const here = valueAt(next, prefix);
+		if (here !== undefined && here !== null) continue;
+		if (pointerInfo(item, prefix)?.kind !== "object") return null;
+		const made = setAtPointer(next, prefix, {});
+		if (!made) return null;
+		next = made;
+	}
+	return next;
+}
+
+/** `props` without the optional objects `pointer` leaves empty once its own value is gone (a cleared edit never leaves `{}` behind). */
+function pruneEmpty(item: string, props: Record<string, unknown>, pointer: string): Record<string, unknown> {
+	let next = props;
+	const parts = pointerParts(pointer);
+	for (let depth = parts.length - 1; depth >= 1; depth -= 1) {
+		const prefix = `/${parts.slice(0, depth).join("/")}`;
+		const here = valueAt(next, prefix);
+		const info = pointerInfo(item, prefix);
+		if (!info || info.required || info.kind !== "object" || !here || typeof here !== "object" || Array.isArray(here) || Object.keys(here).length) break;
+		next = setAtPointer(next, prefix, undefined) ?? next;
+	}
+	return next;
+}
+
 /** The effective props of a block (what the component renders) as the base of an edit. */
 function liveProps(block: BlockV2): Record<string, unknown> {
 	return effectiveProps(block.item, block.variant, block.props);
@@ -134,7 +168,10 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 	switch (input.op) {
 		case "set": {
 			if (!input.pointer.startsWith("/")) return fail("bad_pointer", "A prop pointer starts with /.", input.pointer);
-			const next = setAtPointer(liveProps(block), input.pointer, coerceEnumValue(block.item, input.pointer, input.value));
+			const live = liveProps(block);
+			const base = input.value === undefined ? live : ensureParents(block.item, live, input.pointer);
+			const written = base ? setAtPointer(base, input.pointer, coerceEnumValue(block.item, input.pointer, input.value)) : null;
+			const next = written && input.value === undefined ? pruneEmpty(block.item, written, input.pointer) : written;
 			if (!next) return fail("path_not_found", `${input.pointer} does not exist in the props of ${block.item}.`, input.pointer);
 			return replaceProps(page, index, next, "set_field", input.pointer);
 		}
@@ -173,8 +210,16 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 			return done(writePage(page, { patch }), block.id, "replace");
 		}
 		case "list_row": {
-			const props = liveProps(block);
-			const rows = valueAt(props, input.pointer);
+			let props = liveProps(block);
+			let rows = valueAt(props, input.pointer);
+			// an optional list that is absent: `add` creates it (and the optional objects above it), the other actions have no row
+			if (rows === undefined && input.action === "add" && pointerInfo(block.item, input.pointer)?.kind === "array") {
+				const parents = ensureParents(block.item, props, input.pointer);
+				if (parents) {
+					props = parents;
+					rows = [];
+				}
+			}
 			if (!Array.isArray(rows)) return fail("not_a_list", `${input.pointer} is not a list.`, input.pointer);
 			const row = input.row ?? rows.length - 1;
 			const list = [...rows];
@@ -199,7 +244,10 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 				[list[row], list[to]] = [list[to], list[row]];
 				name = "move";
 			}
-			const next = setAtPointer(props, input.pointer, list);
+			// the last row of an optional list taken away leaves the list absent, not an empty (maybe invalid) one
+			const emptied = !list.length && pointerInfo(block.item, input.pointer)?.required === false;
+			const written = setAtPointer(props, input.pointer, emptied ? undefined : list);
+			const next = written && emptied ? pruneEmpty(block.item, written, input.pointer) : written;
 			if (!next) return fail("path_not_found", `${input.pointer} does not exist.`, input.pointer);
 			return replaceProps(page, index, next, name, `${input.pointer}/${input.action === "add" ? list.length - 1 : row}`);
 		}

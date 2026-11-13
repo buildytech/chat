@@ -121,7 +121,8 @@ function staticGaps(item) {
 					counts.editable += 1;
 					walk(node.fields, valueOf(raw).items ?? {}, `${path}[]`, depth + 1);
 				} else gaps.push(gap(path, why(raw)));
-			} else if (node.kind === "other") gaps.push(gap(path, why(raw)));
+			} else if (node.kind === "markup") gaps.push(gap(path, "trusted_markup"));
+			else if (node.kind === "other") gaps.push(gap(path, why(raw)));
 			else counts.editable += 1;
 		}
 	};
