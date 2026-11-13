@@ -19,11 +19,13 @@ Static SPA with `200.html` fallback. CI: `.github/workflows/ci.yml`. Operator no
 
 ## Optional xAI runtime (not default)
 
+The SPA does not call `/runtime` while it boots. `npm run dev` and `vite preview` work with no runtime process and no network. Live Grok is checked only when you send a message (`GET /v1/status`, then `POST /v1/run` when that status is ready). Start the runtime separately:
+
 ```sh
 npm run start --workspace=@buildytech/xai-runtime
 ```
 
-Vite proxies `/runtime` to that process. `services/context-serve` is a retired CI placeholder, not Session HTTP.
+Vite (dev and preview) proxies `/runtime` to that process on `127.0.0.1:18100`. If nothing is listening, the proxy returns JSON 503 `xai_runtime_unreachable` instead of a 500. `services/context-serve` is a retired CI placeholder, not Session HTTP.
 
 ## Compose (optional)
 

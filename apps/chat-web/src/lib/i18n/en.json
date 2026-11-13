@@ -231,6 +231,7 @@
 		"runtime.mockMode": "Browser ChatCore. Live Grok uses the protected /runtime when this host is ready.",
 		"runtime.browserCore": "Browser ChatCore. Chats and pages stay in this browser. Live Grok uses /runtime when ready.",
 		"runtime.checking": "Checking runtime state",
+		"runtime.liveOnSend": "Browser ChatCore. Chats and pages stay in this browser. Live Grok is checked only when you send a message.",
 		"persist.browserLocal": "Chats and pages are saved in this browser. Export a session to keep a portable copy.",
 		"runtime.unreachable": "Protected Grok runtime is not reachable from this app. This is not a missing API key, and this is not a live Grok reply.",
 		"runtime.notReady": "Protected Grok runtime is not ready ({code}). This is not a live Grok reply.",

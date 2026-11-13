@@ -228,35 +228,20 @@ function replaceSession(session: ChatSession): void {
 	memory = [session, ...rest].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
-async function overlayXaiCapability(token: number): Promise<void> {
-	try {
-		const status = await fetchXaiStatus();
-		if (token !== epoch) return;
-		capabilities = {
-			runtime: status.runtime || "xai-grok",
-			mode: "localStorage",
-			liveModel: Boolean(status.ready),
-			tools: agentToolNames(getChatMode()),
-			note: runtimeNoteFor(status)
-		};
-	} catch {
-		/* keep the mock capability row */
-	}
-}
-
 /** Load sessions from localStorage mock. Safe for onMount — not for $derived. */
 export async function hydrateSessions(): Promise<void> {
 	if (hydrated || hydrating) return;
 	hydrating = true;
-	const token = bumpEpoch();
+	bumpEpoch();
 	try {
 		connectionMode = "mock";
+		// Live Grok is probed on Send (runConstructor), not while the SPA boots.
 		capabilities = {
 			runtime: "xai-grok",
 			mode: "localStorage",
 			liveModel: false,
 			tools: [],
-			note: t("runtime.checking")
+			note: t("runtime.liveOnSend")
 		};
 		const initial = loadMock();
 		memory = initial;
@@ -272,7 +257,6 @@ export async function hydrateSessions(): Promise<void> {
 			lastError = t("runtime.sessionNotFound").replace("{id}", pick.requested);
 			syncSessionQuery(pick.requested, { mode: "replace" });
 			hydrated = true;
-			await overlayXaiCapability(token);
 			return;
 		}
 		const id = pick.kind === "ok" ? pick.id : null;
@@ -280,7 +264,6 @@ export async function hydrateSessions(): Promise<void> {
 		syncSessionQuery(id, { mode: "replace" });
 		restoreSessionWorkspace(id ? memory.find((s) => s.id === id) ?? null : null);
 		hydrated = true;
-		await overlayXaiCapability(token);
 	} finally {
 		hydrating = false;
 	}

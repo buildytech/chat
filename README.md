@@ -58,7 +58,7 @@ Set `XAI_API_KEY` in the server environment, then run:
 npm run start --workspace=@buildytech/xai-runtime
 ```
 
-Vite proxies `/runtime` to `127.0.0.1:18100`. Keep credentials server-side. Non-loopback access requires Basic Auth.
+The SPA does not contact `/runtime` until you send a message. Vite (dev and preview) then proxies `/runtime` to `127.0.0.1:18100`. If that process is not running, the proxy returns JSON 503 instead of failing the page load. Keep credentials server-side. Non-loopback access requires Basic Auth.
 See [runtime setup](docs/xai-grok.md) and [protected deployment](docs/deploy-xai.md). Provider charges may apply.
 
 ## Project structure

@@ -197,6 +197,7 @@
 		"workspace.focusOff": "Выйти из режима превью",
 		"sidebar.deleteUnavailable": "This chat cannot be deleted from this browser right now",
 		"runtime.mockMode": "Офлайн-мок — localStorage, не живой агент",
+		"runtime.liveOnSend": "Браузерный ChatCore. Чаты и страницы остаются в этом браузере. Живой Grok проверяется только при отправке сообщения.",
 		"runtime.testHarness": "Тестовый harness: {mode} · liveModel выкл.",
 		"runtime.liveModel": "Подключена живая модель",
 		"runtime.badPage": "Сохранённая страница не прошла валидацию — Workspace без изменений",
