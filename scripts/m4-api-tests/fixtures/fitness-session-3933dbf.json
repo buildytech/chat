@@ -1,0 +1,2459 @@
+{
+ "$schema": "https://schema.buildy.tw/session.schema.json",
+ "format": "buildy:v1",
+ "exportedAt": "2026-11-13T16:03:30.755Z",
+ "app": {
+  "name": "buildy-chat",
+  "version": "0.5.0",
+  "host": "browser",
+  "commit": "3933dbf923c8d2d5ec2158020de9e961acffc771"
+ },
+ "pins": {
+  "stock": {
+   "repo": "codegen-x/ui8kit",
+   "contentCommit": "afc826c13dcf32dd356a694fea12905c446df2cd"
+  },
+  "registry": {
+   "url": "https://registry.buildy.tw",
+   "sourceCommit": "9e57f9ccaf710eb3b50d5599e6e49355fcc32136"
+  },
+  "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c"
+ },
+ "selectedSessionId": "session-c2838d6b-487e-49a6-90dc-0bfdb121a447",
+ "sessions": [
+  {
+   "id": "session-c2838d6b-487e-49a6-90dc-0bfdb121a447",
+   "title": "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u044f \u044d\u0442\u043e\u0442 \u044d\u043a\u0440\u0430\u043d \u043a\u0430\u043a \u043f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0443 \u0441\u0430\u043c \u043f\u0440\u0438\u043d\u0438\u043c\u0430\u0439 ",
+   "updatedAt": "2026-11-13T16:02:53.986Z",
+   "messages": [
+    {
+     "id": "msg-2374434b-6991-4b18-afc9-5b9ad83a19f5",
+     "role": "user",
+     "text": "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u044f \u044d\u0442\u043e\u0442 \u044d\u043a\u0440\u0430\u043d \u043a\u0430\u043a \u043f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0443 \u0441\u0430\u043c \u043f\u0440\u0438\u043d\u0438\u043c\u0430\u0439 \u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u043a\u0430\u043a\u0438\u0435 \u0431\u043b\u043e\u043a\u0438 \u0432\u044b\u0431\u0440\u0430\u0442\u044c \u0438\u043b\u0438 \u0437\u0430\u043c\u0435\u043d\u0438\u0442\u044c \u0442\u0435\u043a\u0443\u0449\u0438\u0435. \u041d\u0443\u0436\u043d\u043e \u043f\u0440\u0435\u0437\u0435\u043d\u0442\u043e\u0432\u0430\u0442\u044c \u0432\u044b\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u043e\u0435 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0444\u0438\u0442\u043d\u0435\u0441\u0441",
+     "createdAt": "2026-11-13T11:07:12.140Z",
+     "selectedModelId": "grok-4.20-0309-non-reasoning",
+     "mode": "ask"
+    },
+    {
+     "id": "msg-57a1e809-c6d6-4b1a-8faf-b5fb807e5552",
+     "role": "assistant",
+     "text": "**\u041f\u043b\u0430\u043d \u0434\u043b\u044f \u043f\u0440\u0435\u0437\u0435\u043d\u0442\u0430\u0446\u0438\u0438 \u0432\u044b\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u043e\u0433\u043e \u0444\u0438\u0442\u043d\u0435\u0441-\u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u044f (\u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440, \"FitForge\" \u2014 \u0442\u0440\u0435\u043a\u0435\u0440 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a, \u043f\u043b\u0430\u043d\u044b, \u0441\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e).**\n\n\u042f \u043f\u0440\u043e\u0430\u043d\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043b \u0442\u0435\u043a\u0443\u0449\u0443\u044e \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0443 (landing \u0434\u043b\u044f SaaS) \u0438 Stock-\u043a\u0430\u0442\u0430\u043b\u043e\u0433. \u0417\u0430\u043c\u0435\u043d\u0438\u043b/\u0434\u043e\u0431\u0430\u0432\u0438\u043b \u0431\u043b\u043e\u043a\u0438 \u043d\u0430 \u0431\u043e\u043b\u0435\u0435 \u043f\u043e\u0434\u0445\u043e\u0434\u044f\u0449\u0438\u0435 \u0434\u043b\u044f \u0444\u0438\u0442\u043d\u0435\u0441-\u0442\u0435\u043c\u044b: hero \u0441 \u043c\u043e\u0442\u0438\u0432\u0430\u0446\u0438\u0435\u0439, features \u0441 \u0438\u043a\u043e\u043d\u043a\u0430\u043c\u0438 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a, stats \u0441 \u043c\u0435\u0442\u0440\u0438\u043a\u0430\u043c\u0438, steps \u043a\u0430\u043a \"\u043a\u0430\u043a \u043d\u0430\u0447\u0430\u0442\u044c\", pricing \u0434\u043b\u044f \u043f\u043e\u0434\u043f\u0438\u0441\u043a\u0438, testimonials, cta \u0438 footer. \u042d\u0442\u043e \u0441\u043e\u0437\u0434\u0430\u0451\u0442 coherent landing: hero \u2192 benefits \u2192 proof \u2192 how \u2192 plans \u2192 social proof \u2192 action.\n\n**\u041f\u0440\u0435\u0434\u043b\u0430\u0433\u0430\u0435\u043c\u044b\u0435 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f (\u0432\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0438 \u043f\u0440\u0438\u043c\u0435\u043d\u0438\u0442\u0435 \u0432 Build):**\n\n- **block-nav**: \u041e\u0441\u0442\u0430\u0432\u0438\u0442\u044c `block.navbar` variant `inline` (\u043f\u0440\u043e\u0441\u0442\u043e\u0439 header \u0441 \u0431\u0440\u0435\u043d\u0434\u043e\u043c \u0438 \u0441\u0441\u044b\u043b\u043a\u0430\u043c\u0438: Home, Features, Pricing, Community).\n- **block-hero**: \u0417\u0430\u043c\u0435\u043d\u0438\u0442\u044c \u043d\u0430 `block.herosplit` variant `quoteStats` (\u043c\u043e\u0442\u0438\u0432\u0438\u0440\u0443\u044e\u0449\u0430\u044f \u0446\u0438\u0442\u0430\u0442\u0430 + stats \u043e \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f\u0445/\u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043a\u0430\u0445; suits fitness hero \u0441 \u0444\u043e\u0442\u043e \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u0430).\n- **block-features** (logos): \u0417\u0430\u043c\u0435\u043d\u0438\u0442\u044c \u043d\u0430 `block.features` variant `grid` (\u0438\u043a\u043e\u043d\u043a\u0438 + \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u044f: \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u043f\u043b\u0430\u043d\u044b, \u0442\u0440\u0435\u043a\u0438\u043d\u0433, \u0441\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e; 4\u20136 \u0444\u0438\u0447).\n- **block-features-2** (quotesplit): \u0417\u0430\u043c\u0435\u043d\u0438\u0442\u044c \u043d\u0430 `block.stats` variant `plain4` (\u043c\u0435\u0442\u0440\u0438\u043a\u0438: \"10k+ workouts\", \"4.9 rating\" \u2014 proof \u0431\u0435\u0437 \u0432\u044b\u0434\u0443\u043c\u043e\u043a).\n- **\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u043e\u0441\u043b\u0435 stats**: `block.steps` variant `row` (\u043a\u0430\u043a \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442 app: 1. Sign up, 2. Choose plan, 3. Track workouts).\n- **\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u043e\u0441\u043b\u0435 steps**: `block.pricing` variant `grid` (3 \u043f\u043b\u0430\u043d\u0430: Free, Pro, Elite \u2014 \u0441 features \u043a\u0430\u043a unlimited plans).\n- **block-cta**: \u041e\u0441\u0442\u0430\u0432\u0438\u0442\u044c `block.ctaproof` variant `splitStats` (cta \"Start free trial\" + social proof).\n- **block-footer**: \u041e\u0441\u0442\u0430\u0432\u0438\u0442\u044c `block.sitemap` variant `columns` (\u0441\u0441\u044b\u043b\u043a\u0438, \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u044b).\n\n\u042d\u0442\u043e ~8 \u0431\u043b\u043e\u043a\u043e\u0432, \u0444\u043e\u043a\u0443\u0441 \u043d\u0430 \u043c\u0430\u0440\u043a\u0435\u0442\u0438\u043d\u0433\u0435 fitness SaaS. \u041f\u043e\u0441\u043b\u0435 Apply \u043e\u0431\u043d\u043e\u0432\u0438\u0442\u0435 copy (headline: \"Transform Your Fitness Journey\", lede \u0441 benefits) \u0432 \u0440\u0435\u0434\u0430\u043a\u0442\u043e\u0440\u0435. \u0415\u0441\u043b\u0438 \u043d\u0443\u0436\u043d\u043e \u0434\u043e\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c \u2014 \u0441\u043a\u0430\u0436\u0438\u0442\u0435 \u0434\u0435\u0442\u0430\u043b\u0438 (\u0446\u0432\u0435\u0442\u0430, \u043a\u043e\u043d\u043a\u0440\u0435\u0442\u043d\u044b\u0435 \u0444\u0438\u0447\u0438).",
+     "createdAt": "2026-11-13T11:07:22.415Z",
+     "mode": "ask",
+     "answer": {
+      "blocks": [
+       "block.navbar",
+       "block.herosplit",
+       "block.logos",
+       "block.quotesplit",
+       "block.ctaproof",
+       "block.sitemap",
+       "block.features",
+       "block.stats",
+       "block.steps",
+       "block.pricing"
+      ]
+     },
+     "run": {
+      "requestedModelId": "grok-4.20-0309-non-reasoning",
+      "modelId": "grok-4.20-0309-non-reasoning",
+      "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+      "live": true,
+      "policyVersion": "browser-constructor/3",
+      "modelCatalogVersion": "grok-text-5/2026-11-08",
+      "trialPolicyVersion": "browser-constructor/3+grok-text-5/2026-11-08",
+      "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+      "path": "chat-completions",
+      "tools": [
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "search_catalog",
+       "search_catalog",
+       "search_catalog",
+       "search_catalog",
+       "search_catalog",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block"
+      ],
+      "runId": "xai-mwevh22e-cbfgu7",
+      "usage": {
+       "status": "complete",
+       "steps": 4,
+       "promptTokens": 25760,
+       "completionTokens": 744,
+       "totalTokens": 26504,
+       "reportedBy": "xai-provider",
+       "aggregation": "sum-of-tool-loop-requests",
+       "lastStep": {
+        "promptTokens": 8663,
+        "completionTokens": 506,
+        "totalTokens": 9169,
+        "reasoningTokens": 0,
+        "cachedTokens": 7680
+       },
+       "cost": {
+        "available": false,
+        "reason": "no_official_current_rates_in_repo",
+        "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+       },
+       "reasoningTokens": 0,
+       "cachedTokens": 17024
+      }
+     }
+    },
+    {
+     "id": "msg-650d4c8c-8162-40ba-940b-64b99ff92c0b",
+     "role": "user",
+     "text": "\u041e\u0442\u043b\u0438\u0447\u043d\u043e. \u0411\u0435\u0440\u0438 \u0432 \u0440\u0430\u0431\u043e\u0442\u0443",
+     "createdAt": "2026-11-13T11:08:27.274Z",
+     "selectedModelId": "grok-4.20-0309-non-reasoning",
+     "mode": "build"
+    },
+    {
+     "id": "msg-9821bd3f-05df-43f6-875d-b7a3c7baab35",
+     "role": "assistant",
+     "text": "propose_layout / edit_page was called 8 time(s) and rejected (codes use_edit_page, page_patch_invalid; paths $.newPage, $.ops[7].field). No local layout was substituted. Step budget 8 used up.",
+     "createdAt": "2026-11-13T11:09:20.433Z",
+     "run": {
+      "requestedModelId": "grok-4.20-0309-non-reasoning",
+      "modelId": "grok-4.20-0309-non-reasoning",
+      "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+      "live": false,
+      "policyVersion": "browser-constructor/3",
+      "modelCatalogVersion": "grok-text-5/2026-11-08",
+      "trialPolicyVersion": "browser-constructor/3+grok-text-5/2026-11-08",
+      "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+      "path": "chat-completions",
+      "tools": [
+       "propose_layout",
+       "edit_page",
+       "edit_page",
+       "edit_page",
+       "edit_page",
+       "edit_page",
+       "propose_layout",
+       "edit_page"
+      ],
+      "runId": "xai-mwevimri-8xsxoh",
+      "usage": {
+       "status": "complete",
+       "steps": 8,
+       "promptTokens": 100893,
+       "completionTokens": 6422,
+       "totalTokens": 107315,
+       "reportedBy": "xai-provider",
+       "aggregation": "sum-of-tool-loop-requests",
+       "lastStep": {
+        "promptTokens": 15995,
+        "completionTokens": 895,
+        "totalTokens": 16890,
+        "reasoningTokens": 0,
+        "cachedTokens": 14976
+       },
+       "cost": {
+        "available": false,
+        "reason": "no_official_current_rates_in_repo",
+        "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+       },
+       "reasoningTokens": 0,
+       "cachedTokens": 74624
+      }
+     }
+    },
+    {
+     "id": "msg-dc5e55ef-d598-45fe-8778-907fd942a6bb",
+     "role": "user",
+     "text": "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u044f \u044d\u0442\u043e\u0442 \u044d\u043a\u0440\u0430\u043d \u043a\u0430\u043a \u043f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0443 \u0441\u0430\u043c \u043f\u0440\u0438\u043d\u0438\u043c\u0430\u0439 \u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u043a\u0430\u043a\u0438\u0435 \u0431\u043b\u043e\u043a\u0438 \u0432\u044b\u0431\u0440\u0430\u0442\u044c \u0438\u043b\u0438 \u0437\u0430\u043c\u0435\u043d\u0438\u0442\u044c \u0442\u0435\u043a\u0443\u0449\u0438\u0435. \u041d\u0443\u0436\u043d\u043e \u043f\u0440\u0435\u0437\u0435\u043d\u0442\u043e\u0432\u0430\u0442\u044c \u0432\u044b\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u043e\u0435 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0444\u0438\u0442\u043d\u0435\u0441\u0441",
+     "createdAt": "2026-11-13T15:57:15.083Z",
+     "selectedModelId": "grok-4.20-0309-non-reasoning",
+     "mode": "ask"
+    },
+    {
+     "id": "msg-6a8a5abe-3c7b-4be6-b18b-205275fdf502",
+     "role": "assistant",
+     "text": "**\u041f\u043b\u0430\u043d \u043f\u0440\u0438\u043c\u0435\u043d\u0451\u043d \u0447\u0430\u0441\u0442\u0438\u0447\u043d\u043e (4/8 ops).**  \n\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 \u0442\u0435\u043f\u0435\u0440\u044c \u0432\u043a\u043b\u044e\u0447\u0430\u0435\u0442: navbar (inline), herosplit (quoteStats), features (grid), stats (plain4).  \n\n**\u041e\u0441\u0442\u0430\u0432\u0448\u0438\u0435\u0441\u044f \u0448\u0430\u0433\u0438 (\u0432\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0438 Apply \u0432 Build):**  \n- \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c `block.steps` variant `row` (\u043a\u0430\u043a \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442: signup \u2192 choose workout \u2192 track).  \n- \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c `block.pricing` variant `grid` (3 \u043f\u043b\u0430\u043d\u0430: Free, Pro, Elite).  \n- CTA \u0438 footer \u0443\u0436\u0435 \u043f\u043e\u0434\u0445\u043e\u0434\u044f\u0442 (splitStats + columns).  \n\n\u041f\u043e\u0441\u043b\u0435 Apply \u043e\u0431\u043d\u043e\u0432\u0438\u0442\u0435 \u0442\u0435\u043a\u0441\u0442:  \n- Headline: \"Forge Your Strongest Self with FitForge\"  \n- Lede: \"\u0422\u0440\u0435\u043a\u0438\u043d\u0433 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a, \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u043f\u043b\u0430\u043d\u044b, \u0441\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e. \u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e.\"  \n- Features: \u0438\u043a\u043e\u043d\u043a\u0438 (dumbbell, chart, users).  \n- Stats: \"15k+ workouts\", \"4.9/5 rating\", \"50k users\".  \n\n\u0421\u043a\u0430\u0436\u0438\u0442\u0435, \u0435\u0441\u043b\u0438 \u043d\u0443\u0436\u043d\u043e \u0434\u043e\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c copy, \u0446\u0432\u0435\u0442\u0430 \u0438\u043b\u0438 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c testimonials.",
+     "createdAt": "2026-11-13T15:57:25.604Z",
+     "mode": "ask",
+     "answer": {
+      "blocks": [
+       "block.navbar",
+       "block.herosplit",
+       "block.features",
+       "block.stats",
+       "block.steps",
+       "block.pricing",
+       "block.ctaproof",
+       "block.sitemap"
+      ]
+     },
+     "plan": {
+      "status": "executed",
+      "pageId": "page-draft",
+      "baseRevision": 1,
+      "summary": "\u041e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u0435 landing page \u0434\u043b\u044f \u0432\u044b\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u043e\u0433\u043e \u0444\u0438\u0442\u043d\u0435\u0441-\u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u044f FitForge: hero, features, stats, steps, pricing, cta, footer.",
+      "ops": [
+       {
+        "id": "op-1",
+        "op": "set_variant",
+        "valid": false,
+        "reason": "\u041f\u0440\u043e\u0441\u0442\u043e\u0439 \u043d\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u043e\u043d\u043d\u044b\u0439 \u0431\u0430\u0440 \u0441 \u0431\u0440\u0435\u043d\u0434\u043e\u043c \u0438 \u0441\u0441\u044b\u043b\u043a\u0430\u043c\u0438 \u0434\u043b\u044f fitness app.",
+        "blockId": "block-nav",
+        "variant": "inline",
+        "label": "Header (block.navbar)",
+        "from": "inline",
+        "issue": {
+         "code": "no_change",
+         "message": "block-nav already uses inline."
+        },
+        "result": {
+         "status": "skipped",
+         "code": "no_change",
+         "message": "block-nav already uses inline."
+        }
+       },
+       {
+        "id": "op-2",
+        "op": "set_variant",
+        "valid": false,
+        "reason": "\u041c\u043e\u0442\u0438\u0432\u0438\u0440\u0443\u044e\u0449\u0438\u0439 hero \u0441 \u0446\u0438\u0442\u0430\u0442\u043e\u0439 \u0438 stats, \u0438\u0434\u0435\u0430\u043b\u044c\u043d\u043e \u0434\u043b\u044f \u0444\u0438\u0442\u043d\u0435\u0441-\u0442\u0435\u043c\u044b.",
+        "blockId": "block-hero",
+        "variant": "quoteStats",
+        "label": "Hero (block.herosplit)",
+        "from": "quoteStats",
+        "issue": {
+         "code": "no_change",
+         "message": "block-hero already uses quoteStats."
+        },
+        "result": {
+         "status": "skipped",
+         "code": "no_change",
+         "message": "block-hero already uses quoteStats."
+        }
+       },
+       {
+        "id": "op-3",
+        "op": "replace",
+        "valid": true,
+        "reason": "\u0417\u0430\u043c\u0435\u043d\u0430 logo cloud \u043d\u0430 features grid \u0441 \u0438\u043a\u043e\u043d\u043a\u0430\u043c\u0438 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a \u0438 \u043f\u043b\u0430\u043d\u043e\u0432.",
+        "blockId": "block-features",
+        "variant": "grid",
+        "kind": "features",
+        "catalogBlock": "block.features",
+        "label": "Why this page (block.logos)",
+        "from": "block.logos/row",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-4",
+        "op": "replace",
+        "valid": true,
+        "reason": "\u0417\u0430\u043c\u0435\u043d\u0430 quotesplit \u043d\u0430 stats \u0434\u043b\u044f \u043c\u0435\u0442\u0440\u0438\u043a \u0443\u0441\u043f\u0435\u0445\u0430 (workouts, users).",
+        "blockId": "block-features-2",
+        "variant": "plain4",
+        "kind": "features",
+        "catalogBlock": "block.stats",
+        "label": "Why this page (block.quotesplit)",
+        "from": "block.quotesplit/ratingPanel",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-5",
+        "op": "add",
+        "valid": true,
+        "reason": "\u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0435 '\u041a\u0430\u043a \u043d\u0430\u0447\u0430\u0442\u044c' \u043f\u043e\u0441\u043b\u0435 stats \u0434\u043b\u044f onboarding flow.",
+        "variant": "row",
+        "kind": "features",
+        "catalogBlock": "block.steps",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-6",
+        "op": "add",
+        "valid": true,
+        "reason": "\u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0435 pricing \u043f\u043b\u0430\u043d\u043e\u0432 \u043f\u043e\u0434\u043f\u0438\u0441\u043a\u0438 (Free, Pro).",
+        "variant": "grid",
+        "kind": "features",
+        "catalogBlock": "block.pricing",
+        "result": {
+         "status": "applied"
+        }
+       },
+       {
+        "id": "op-7",
+        "op": "set_variant",
+        "valid": false,
+        "reason": "CTA \u0441 proof \u0434\u043b\u044f \u043f\u0440\u0438\u0437\u044b\u0432\u0430 \u043a \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044e.",
+        "blockId": "block-cta",
+        "variant": "splitStats",
+        "label": "Next step (block.ctaproof)",
+        "from": "splitStats",
+        "issue": {
+         "code": "no_change",
+         "message": "block-cta already uses splitStats."
+        },
+        "result": {
+         "status": "skipped",
+         "code": "no_change",
+         "message": "block-cta already uses splitStats."
+        }
+       },
+       {
+        "id": "op-8",
+        "op": "set_variant",
+        "valid": false,
+        "reason": "Footer \u0441 \u0441\u0441\u044b\u043b\u043a\u0430\u043c\u0438 \u0438 \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u0430\u043c\u0438.",
+        "blockId": "block-footer",
+        "variant": "columns",
+        "label": "Footer (block.sitemap)",
+        "from": "columns",
+        "issue": {
+         "code": "no_change",
+         "message": "block-footer already uses columns."
+        },
+        "result": {
+         "status": "skipped",
+         "code": "no_change",
+         "message": "block-footer already uses columns."
+        }
+       }
+      ],
+      "executedAt": "2026-11-13T15:58:43.357Z"
+     },
+     "run": {
+      "requestedModelId": "grok-4.20-0309-non-reasoning",
+      "modelId": "grok-4.20-0309-non-reasoning",
+      "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+      "live": true,
+      "policyVersion": "browser-constructor/3",
+      "modelCatalogVersion": "grok-text-5/2026-11-08",
+      "trialPolicyVersion": "browser-constructor/3+grok-text-5/2026-11-08",
+      "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+      "path": "chat-completions",
+      "tools": [
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "get_block",
+       "propose_plan"
+      ],
+      "runId": "xai-mwf5u29f-2w2z95",
+      "usage": {
+       "status": "complete",
+       "steps": 3,
+       "promptTokens": 18028,
+       "completionTokens": 632,
+       "totalTokens": 18660,
+       "reportedBy": "xai-provider",
+       "aggregation": "sum-of-tool-loop-requests",
+       "lastStep": {
+        "promptTokens": 6858,
+        "completionTokens": 220,
+        "totalTokens": 7078,
+        "reasoningTokens": 0,
+        "cachedTokens": 6400
+       },
+       "cost": {
+        "available": false,
+        "reason": "no_official_current_rates_in_repo",
+        "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+       },
+       "reasoningTokens": 0,
+       "cachedTokens": 11136
+      }
+     }
+    },
+    {
+     "id": "msg-283fe882-a88e-4f38-a1a5-8a22d03d049a",
+     "role": "user",
+     "text": "Apply in Build: 4 changes from the Ask plan",
+     "createdAt": "2026-11-13T15:58:43.356Z",
+     "mode": "build"
+    },
+    {
+     "id": "msg-59137402-3bea-4690-8031-6c9872727856",
+     "role": "assistant",
+     "text": "Proposal for \u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430:\n- Why this page (block.features): catalog block block.logos \u2192 block.features, variant row \u2192 grid\n- Why this page (block.stats): catalog block block.quotesplit \u2192 block.stats, variant ratingPanel \u2192 plain4\n- Added: Why this page (block.steps), Why this page (block.pricing)\nUnchanged: 4 blocks.\nAsk plan: 4 of 4 selected changes applied.\n- Already on the page, kept: Header (block.navbar): variant inline \u2192 inline; Hero (block.herosplit): variant quoteStats \u2192 quoteStats; Next step (block.ctaproof): variant splitStats \u2192 splitStats; Footer (block.sitemap): variant columns \u2192 columns",
+     "createdAt": "2026-11-13T15:58:43.402Z",
+     "proposal": {
+      "applied": true,
+      "status": "applied",
+      "source": "local-catalog-assembler",
+      "liveModel": false,
+      "assembler": "page-patch/v1",
+      "warnings": [
+       "page-patch/v1 applied: replace block-features; replace block-features-2; add features; add features."
+      ],
+      "missing": [],
+      "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+      "screenId": "screen.theme-marketing-landing/teams",
+      "locale": "en",
+      "demoData": false,
+      "catalogRefs": {
+       "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+       "pinnedCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
+       "screen": {
+        "catalogId": "screen.theme-marketing-landing/teams",
+        "title": "Marketing landing / Teams",
+        "url": "https://app.codegen-x.com/#/asset/screen.theme-marketing-landing/teams",
+        "searchUrl": "https://app.codegen-x.com/#/search?type=screen&section=marketing&spec=screen.theme-marketing-landing",
+        "filters": {
+         "type": [
+          "screen"
+         ],
+         "section": [
+          "marketing"
+         ],
+         "job": [
+          "hero",
+          "testimonials",
+          "cta",
+          "faq",
+          "proof",
+          "logos"
+         ],
+         "blocks": [
+          "ctaproof",
+          "faqsplit",
+          "herosplit",
+          "logos",
+          "navbar",
+          "sitemap",
+          "quotesplit"
+         ],
+         "industry": [],
+         "spec": "screen.theme-marketing-landing",
+         "variant": "teams"
+        }
+       },
+       "blocks": [
+        {
+         "blockId": "block-nav",
+         "kind": "nav",
+         "catalogLabel": "navbar",
+         "catalogId": "block.navbar",
+         "title": "Navigation bar",
+         "variants": [
+          "inline",
+          "split",
+          "search",
+          "media",
+          "plain",
+          "inverse"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.navbar/inline",
+         "filters": {
+          "type": "block",
+          "spec": "block.navbar",
+          "kind": "nav",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "inline",
+         "registryItem": "nav-bar"
+        },
+        {
+         "blockId": "block-hero",
+         "kind": "hero",
+         "catalogLabel": "herosplit",
+         "catalogId": "block.herosplit",
+         "title": "Hero, split",
+         "variants": [
+          "statsCards",
+          "avatars",
+          "miniCards",
+          "quoteStats",
+          "planCards",
+          "pictureGrid",
+          "pictureGridStart"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.herosplit/quoteStats",
+         "filters": {
+          "type": "block",
+          "spec": "block.herosplit",
+          "kind": "hero",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "quoteStats",
+         "registryItem": "hero-split"
+        },
+        {
+         "blockId": "block-features",
+         "kind": "features",
+         "catalogLabel": "features",
+         "catalogId": "block.features",
+         "title": "Features",
+         "variants": [
+          "grid",
+          "grid2",
+          "tiles4",
+          "cells4",
+          "rows",
+          "rowsStart",
+          "rowsAlternate",
+          "tilesMuted"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.features/grid",
+         "filters": {
+          "type": "block",
+          "spec": "block.features",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "grid",
+         "registryItem": "feature-grid"
+        },
+        {
+         "blockId": "block-features-2",
+         "kind": "features",
+         "catalogLabel": "stats",
+         "catalogId": "block.stats",
+         "title": "Stats",
+         "variants": [
+          "plain4",
+          "panel",
+          "stack",
+          "image",
+          "cards",
+          "icons",
+          "muted2",
+          "cardsCompact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.stats/plain4",
+         "filters": {
+          "type": "block",
+          "spec": "block.stats",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "plain4",
+         "registryItem": "stats-band"
+        },
+        {
+         "blockId": "block-features-3",
+         "kind": "features",
+         "catalogLabel": "steps",
+         "catalogId": "block.steps",
+         "title": "How it works",
+         "variants": [
+          "row",
+          "rowIcons",
+          "column",
+          "centered",
+          "columnIcons",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.steps/row",
+         "filters": {
+          "type": "block",
+          "spec": "block.steps",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "row",
+         "registryItem": "steps-list"
+        },
+        {
+         "blockId": "block-features-4",
+         "kind": "features",
+         "catalogLabel": "pricing",
+         "catalogId": "block.pricing",
+         "title": "Pricing",
+         "variants": [
+          "grid",
+          "monthly",
+          "annual",
+          "duo",
+          "grid2",
+          "grid4",
+          "stack",
+          "flat",
+          "compactMuted",
+          "roomy"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.pricing/grid",
+         "filters": {
+          "type": "block",
+          "spec": "block.pricing",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "grid",
+         "registryItem": "pricing-tiers"
+        },
+        {
+         "blockId": "block-cta",
+         "kind": "cta",
+         "catalogLabel": "ctaproof",
+         "catalogId": "block.ctaproof",
+         "title": "Call to action, with proof",
+         "variants": [
+          "centerLogos",
+          "centerFeatures",
+          "centerStats",
+          "splitStats",
+          "splitStatsStart",
+          "splitRows",
+          "splitZones"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.ctaproof/splitStats",
+         "filters": {
+          "type": "block",
+          "spec": "block.ctaproof",
+          "kind": "cta",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "splitStats",
+         "registryItem": "cta-proof"
+        },
+        {
+         "blockId": "block-footer",
+         "kind": "footer",
+         "catalogLabel": "sitemap",
+         "catalogId": "block.sitemap",
+         "title": "Sitemap footer",
+         "variants": [
+          "columns",
+          "card",
+          "row",
+          "newsletter",
+          "status",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.sitemap/columns",
+         "filters": {
+          "type": "block",
+          "spec": "block.sitemap",
+          "kind": "footer",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "columns",
+         "registryItem": "sitemap-footer"
+        }
+       ]
+      },
+      "changes": {
+       "added": [
+        "block-features-3",
+        "block-features-4"
+       ],
+       "kept": [
+        "block-nav",
+        "block-hero",
+        "block-cta",
+        "block-footer"
+       ],
+       "removed": []
+      },
+      "origin": "ask-plan"
+     },
+     "mode": "build"
+    },
+    {
+     "id": "msg-bab0966f-7034-47db-9ff2-7a48b59577b2",
+     "role": "user",
+     "text": "\u0422\u0435\u043f\u0435\u0440\u044c \u0437\u0430\u043f\u043e\u043b\u043d\u0438 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0443 \u0432\u044b\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u044b\u043c \u043a\u043e\u043d\u0442\u0435\u043d\u0442\u043e\u043c",
+     "createdAt": "2026-11-13T16:00:19.026Z",
+     "selectedModelId": "grok-4.20-0309-non-reasoning",
+     "mode": "build"
+    },
+    {
+     "id": "msg-a77c86a8-afa9-4f5d-bfd0-d17871d1aa3e",
+     "role": "assistant",
+     "text": "Proposal for \u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430:\n- Header (block.navbar): copy, rows\n- Hero (block.herosplit): copy\n- Why this page (block.features): copy, rows\nUnchanged: 5 blocks.",
+     "createdAt": "2026-11-13T16:00:51.258Z",
+     "proposal": {
+      "applied": true,
+      "status": "applied",
+      "source": "xai-runtime",
+      "liveModel": true,
+      "assembler": "page-patch/v1",
+      "warnings": [
+       "page-patch/v1 applied: set block-nav; set_items block-nav; set block-hero; set block-hero; set block-hero; set block-features; set_items block-features."
+      ],
+      "missing": [],
+      "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+      "screenId": "screen.theme-marketing-landing/teams",
+      "locale": "en",
+      "demoData": false,
+      "catalogRefs": {
+       "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+       "pinnedCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
+       "screen": {
+        "catalogId": "screen.theme-marketing-landing/teams",
+        "title": "Marketing landing / Teams",
+        "url": "https://app.codegen-x.com/#/asset/screen.theme-marketing-landing/teams",
+        "searchUrl": "https://app.codegen-x.com/#/search?type=screen&section=marketing&spec=screen.theme-marketing-landing",
+        "filters": {
+         "type": [
+          "screen"
+         ],
+         "section": [
+          "marketing"
+         ],
+         "job": [
+          "hero",
+          "testimonials",
+          "cta",
+          "faq",
+          "proof",
+          "logos"
+         ],
+         "blocks": [
+          "ctaproof",
+          "faqsplit",
+          "herosplit",
+          "logos",
+          "navbar",
+          "sitemap",
+          "quotesplit"
+         ],
+         "industry": [],
+         "spec": "screen.theme-marketing-landing",
+         "variant": "teams"
+        }
+       },
+       "blocks": [
+        {
+         "blockId": "block-nav",
+         "kind": "nav",
+         "catalogLabel": "navbar",
+         "catalogId": "block.navbar",
+         "title": "Navigation bar",
+         "variants": [
+          "inline",
+          "split",
+          "search",
+          "media",
+          "plain",
+          "inverse"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.navbar/inline",
+         "filters": {
+          "type": "block",
+          "spec": "block.navbar",
+          "kind": "nav",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "inline",
+         "registryItem": "nav-bar"
+        },
+        {
+         "blockId": "block-hero",
+         "kind": "hero",
+         "catalogLabel": "herosplit",
+         "catalogId": "block.herosplit",
+         "title": "Hero, split",
+         "variants": [
+          "statsCards",
+          "avatars",
+          "miniCards",
+          "quoteStats",
+          "planCards",
+          "pictureGrid",
+          "pictureGridStart"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.herosplit/quoteStats",
+         "filters": {
+          "type": "block",
+          "spec": "block.herosplit",
+          "kind": "hero",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "quoteStats",
+         "registryItem": "hero-split"
+        },
+        {
+         "blockId": "block-features",
+         "kind": "features",
+         "catalogLabel": "features",
+         "catalogId": "block.features",
+         "title": "Features",
+         "variants": [
+          "grid",
+          "grid2",
+          "tiles4",
+          "cells4",
+          "rows",
+          "rowsStart",
+          "rowsAlternate",
+          "tilesMuted"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.features/grid",
+         "filters": {
+          "type": "block",
+          "spec": "block.features",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "grid",
+         "registryItem": "feature-grid"
+        },
+        {
+         "blockId": "block-features-2",
+         "kind": "features",
+         "catalogLabel": "stats",
+         "catalogId": "block.stats",
+         "title": "Stats",
+         "variants": [
+          "plain4",
+          "panel",
+          "stack",
+          "image",
+          "cards",
+          "icons",
+          "muted2",
+          "cardsCompact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.stats/plain4",
+         "filters": {
+          "type": "block",
+          "spec": "block.stats",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "plain4",
+         "registryItem": "stats-band"
+        },
+        {
+         "blockId": "block-features-3",
+         "kind": "features",
+         "catalogLabel": "steps",
+         "catalogId": "block.steps",
+         "title": "How it works",
+         "variants": [
+          "row",
+          "rowIcons",
+          "column",
+          "centered",
+          "columnIcons",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.steps/row",
+         "filters": {
+          "type": "block",
+          "spec": "block.steps",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "row",
+         "registryItem": "steps-list"
+        },
+        {
+         "blockId": "block-features-4",
+         "kind": "features",
+         "catalogLabel": "pricing",
+         "catalogId": "block.pricing",
+         "title": "Pricing",
+         "variants": [
+          "grid",
+          "monthly",
+          "annual",
+          "duo",
+          "grid2",
+          "grid4",
+          "stack",
+          "flat",
+          "compactMuted",
+          "roomy"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.pricing/grid",
+         "filters": {
+          "type": "block",
+          "spec": "block.pricing",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "grid",
+         "registryItem": "pricing-tiers"
+        },
+        {
+         "blockId": "block-cta",
+         "kind": "cta",
+         "catalogLabel": "ctaproof",
+         "catalogId": "block.ctaproof",
+         "title": "Call to action, with proof",
+         "variants": [
+          "centerLogos",
+          "centerFeatures",
+          "centerStats",
+          "splitStats",
+          "splitStatsStart",
+          "splitRows",
+          "splitZones"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.ctaproof/splitStats",
+         "filters": {
+          "type": "block",
+          "spec": "block.ctaproof",
+          "kind": "cta",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "splitStats",
+         "registryItem": "cta-proof"
+        },
+        {
+         "blockId": "block-footer",
+         "kind": "footer",
+         "catalogLabel": "sitemap",
+         "catalogId": "block.sitemap",
+         "title": "Sitemap footer",
+         "variants": [
+          "columns",
+          "card",
+          "row",
+          "newsletter",
+          "status",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.sitemap/columns",
+         "filters": {
+          "type": "block",
+          "spec": "block.sitemap",
+          "kind": "footer",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "columns",
+         "registryItem": "sitemap-footer"
+        }
+       ]
+      },
+      "changes": {
+       "added": [],
+       "kept": [
+        "block-features-2",
+        "block-features-3",
+        "block-features-4",
+        "block-cta",
+        "block-footer"
+       ],
+       "removed": []
+      }
+     },
+     "run": {
+      "requestedModelId": "grok-4.20-0309-non-reasoning",
+      "modelId": "grok-4.20-0309-non-reasoning",
+      "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+      "live": true,
+      "policyVersion": "browser-constructor/3",
+      "modelCatalogVersion": "grok-text-5/2026-11-08",
+      "trialPolicyVersion": "browser-constructor/3+grok-text-5/2026-11-08",
+      "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+      "path": "chat-completions",
+      "tools": [
+       "propose_layout",
+       "edit_page",
+       "edit_page",
+       "edit_page",
+       "edit_page",
+       "edit_page"
+      ],
+      "runId": "xai-mwf5xyx8-rjkeo0",
+      "usage": {
+       "status": "complete",
+       "steps": 6,
+       "promptTokens": 66713,
+       "completionTokens": 3086,
+       "totalTokens": 69799,
+       "reportedBy": "xai-provider",
+       "aggregation": "sum-of-tool-loop-requests",
+       "lastStep": {
+        "promptTokens": 12318,
+        "completionTokens": 276,
+        "totalTokens": 12594,
+        "reasoningTokens": 0,
+        "cachedTokens": 11776
+       },
+       "cost": {
+        "available": false,
+        "reason": "no_official_current_rates_in_repo",
+        "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+       },
+       "reasoningTokens": 0,
+       "cachedTokens": 24704
+      }
+     }
+    },
+    {
+     "id": "msg-49374034-bed7-45cb-b8f4-ada3661141d8",
+     "role": "user",
+     "text": "\u042d\u0442\u0438 \u0442\u043e\u0436\u0435",
+     "createdAt": "2026-11-13T16:02:31.694Z",
+     "selectedModelId": "grok-4.20-0309-non-reasoning",
+     "mode": "build"
+    },
+    {
+     "id": "msg-c8459bbc-293b-43b6-a894-02f880a785db",
+     "role": "assistant",
+     "text": "Proposal for \u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430:\n- \u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b \u043d\u0430\u0448\u0438\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439 (block.stats): title, rows\n- \u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442 (block.steps): title, rows\n- \u0412\u044b\u0431\u0435\u0440\u0438 \u0441\u0432\u043e\u0439 \u0442\u0430\u0440\u0438\u0444 (block.pricing): title, rows\n- Next step (block.ctaproof): copy\n- Footer (block.sitemap): copy\nUnchanged: 3 blocks.",
+     "createdAt": "2026-11-13T16:02:53.986Z",
+     "proposal": {
+      "applied": false,
+      "status": "pending",
+      "source": "xai-runtime",
+      "liveModel": true,
+      "assembler": "page-patch/v1",
+      "warnings": [
+       "page-patch/v1 applied: set block-features-2; set_items block-features-2; set block-features-3; set_items block-features-3; set block-features-4; set_items block-features-4; set block-cta; set block-cta; set block-footer."
+      ],
+      "missing": [],
+      "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+      "screenId": "screen.theme-marketing-landing/teams",
+      "locale": "en",
+      "demoData": false,
+      "catalogRefs": {
+       "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+       "pinnedCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
+       "screen": {
+        "catalogId": "screen.theme-marketing-landing/teams",
+        "title": "Marketing landing / Teams",
+        "url": "https://app.codegen-x.com/#/asset/screen.theme-marketing-landing/teams",
+        "searchUrl": "https://app.codegen-x.com/#/search?type=screen&section=marketing&spec=screen.theme-marketing-landing",
+        "filters": {
+         "type": [
+          "screen"
+         ],
+         "section": [
+          "marketing"
+         ],
+         "job": [
+          "hero",
+          "testimonials",
+          "cta",
+          "faq",
+          "proof",
+          "logos"
+         ],
+         "blocks": [
+          "ctaproof",
+          "faqsplit",
+          "herosplit",
+          "logos",
+          "navbar",
+          "sitemap",
+          "quotesplit"
+         ],
+         "industry": [],
+         "spec": "screen.theme-marketing-landing",
+         "variant": "teams"
+        }
+       },
+       "blocks": [
+        {
+         "blockId": "block-nav",
+         "kind": "nav",
+         "catalogLabel": "navbar",
+         "catalogId": "block.navbar",
+         "title": "Navigation bar",
+         "variants": [
+          "inline",
+          "split",
+          "search",
+          "media",
+          "plain",
+          "inverse"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.navbar/inline",
+         "filters": {
+          "type": "block",
+          "spec": "block.navbar",
+          "kind": "nav",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "inline",
+         "registryItem": "nav-bar"
+        },
+        {
+         "blockId": "block-hero",
+         "kind": "hero",
+         "catalogLabel": "herosplit",
+         "catalogId": "block.herosplit",
+         "title": "Hero, split",
+         "variants": [
+          "statsCards",
+          "avatars",
+          "miniCards",
+          "quoteStats",
+          "planCards",
+          "pictureGrid",
+          "pictureGridStart"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.herosplit/quoteStats",
+         "filters": {
+          "type": "block",
+          "spec": "block.herosplit",
+          "kind": "hero",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "quoteStats",
+         "registryItem": "hero-split"
+        },
+        {
+         "blockId": "block-features",
+         "kind": "features",
+         "catalogLabel": "features",
+         "catalogId": "block.features",
+         "title": "Features",
+         "variants": [
+          "grid",
+          "grid2",
+          "tiles4",
+          "cells4",
+          "rows",
+          "rowsStart",
+          "rowsAlternate",
+          "tilesMuted"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.features/grid",
+         "filters": {
+          "type": "block",
+          "spec": "block.features",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "grid",
+         "registryItem": "feature-grid"
+        },
+        {
+         "blockId": "block-features-2",
+         "kind": "features",
+         "catalogLabel": "stats",
+         "catalogId": "block.stats",
+         "title": "Stats",
+         "variants": [
+          "plain4",
+          "panel",
+          "stack",
+          "image",
+          "cards",
+          "icons",
+          "muted2",
+          "cardsCompact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.stats/plain4",
+         "filters": {
+          "type": "block",
+          "spec": "block.stats",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 4,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "plain4",
+         "registryItem": "stats-band"
+        },
+        {
+         "blockId": "block-features-3",
+         "kind": "features",
+         "catalogLabel": "steps",
+         "catalogId": "block.steps",
+         "title": "How it works",
+         "variants": [
+          "row",
+          "rowIcons",
+          "column",
+          "centered",
+          "columnIcons",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.steps/row",
+         "filters": {
+          "type": "block",
+          "spec": "block.steps",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "row",
+         "registryItem": "steps-list"
+        },
+        {
+         "blockId": "block-features-4",
+         "kind": "features",
+         "catalogLabel": "pricing",
+         "catalogId": "block.pricing",
+         "title": "Pricing",
+         "variants": [
+          "grid",
+          "monthly",
+          "annual",
+          "duo",
+          "grid2",
+          "grid4",
+          "stack",
+          "flat",
+          "compactMuted",
+          "roomy"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.pricing/grid",
+         "filters": {
+          "type": "block",
+          "spec": "block.pricing",
+          "kind": "features",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 3,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "grid",
+         "registryItem": "pricing-tiers"
+        },
+        {
+         "blockId": "block-cta",
+         "kind": "cta",
+         "catalogLabel": "ctaproof",
+         "catalogId": "block.ctaproof",
+         "title": "Call to action, with proof",
+         "variants": [
+          "centerLogos",
+          "centerFeatures",
+          "centerStats",
+          "splitStats",
+          "splitStatsStart",
+          "splitRows",
+          "splitZones"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.ctaproof/splitStats",
+         "filters": {
+          "type": "block",
+          "spec": "block.ctaproof",
+          "kind": "cta",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "splitStats",
+         "registryItem": "cta-proof"
+        },
+        {
+         "blockId": "block-footer",
+         "kind": "footer",
+         "catalogLabel": "sitemap",
+         "catalogId": "block.sitemap",
+         "title": "Sitemap footer",
+         "variants": [
+          "columns",
+          "card",
+          "row",
+          "newsletter",
+          "status",
+          "compact"
+         ],
+         "url": "https://app.codegen-x.com/#/asset/block.sitemap/columns",
+         "filters": {
+          "type": "block",
+          "spec": "block.sitemap",
+          "kind": "footer",
+          "screen": "screen.theme-marketing-landing/teams",
+          "section": [
+           "marketing"
+          ],
+          "job": [
+           "hero",
+           "testimonials",
+           "cta",
+           "faq",
+           "proof",
+           "logos"
+          ],
+          "industry": []
+         },
+         "rows": 0,
+         "sourceScreenId": "screen.theme-marketing-landing/teams",
+         "variant": "columns",
+         "registryItem": "sitemap-footer"
+        }
+       ]
+      },
+      "changes": {
+       "added": [],
+       "kept": [
+        "block-nav",
+        "block-hero",
+        "block-features"
+       ],
+       "removed": []
+      }
+     },
+     "run": {
+      "requestedModelId": "grok-4.20-0309-non-reasoning",
+      "modelId": "grok-4.20-0309-non-reasoning",
+      "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+      "live": true,
+      "policyVersion": "browser-constructor/3",
+      "modelCatalogVersion": "grok-text-5/2026-11-08",
+      "trialPolicyVersion": "browser-constructor/3+grok-text-5/2026-11-08",
+      "catalogDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+      "path": "chat-completions",
+      "tools": [
+       "edit_page",
+       "edit_page",
+       "edit_page",
+       "edit_page"
+      ],
+      "runId": "xai-mwf60tli-57wq7q",
+      "usage": {
+       "status": "complete",
+       "steps": 4,
+       "promptTokens": 45719,
+       "completionTokens": 2578,
+       "totalTokens": 48297,
+       "reportedBy": "xai-provider",
+       "aggregation": "sum-of-tool-loop-requests",
+       "lastStep": {
+        "promptTokens": 12472,
+        "completionTokens": 493,
+        "totalTokens": 12965,
+        "reasoningTokens": 0,
+        "cachedTokens": 11776
+       },
+       "cost": {
+        "available": false,
+        "reason": "no_official_current_rates_in_repo",
+        "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+       },
+       "reasoningTokens": 0,
+       "cachedTokens": 33152
+      }
+     }
+    }
+   ],
+   "mode": "build",
+   "pageId": "page-draft",
+   "pageRevision": 3,
+   "scenarioId": "landing",
+   "screenId": "screen.theme-marketing-landing/teams",
+   "history": [
+    {
+     "revision": 1,
+     "at": "2026-11-13T11:04:44.577Z",
+     "cause": "edit",
+     "pageId": "page-draft",
+     "blockId": "block-nav",
+     "op": "add"
+    },
+    {
+     "revision": 2,
+     "at": "2026-11-13T15:59:16.163Z",
+     "cause": "apply",
+     "pageId": "page-draft"
+    },
+    {
+     "revision": 3,
+     "at": "2026-11-13T16:01:02.314Z",
+     "cause": "apply",
+     "pageId": "page-draft"
+    }
+   ],
+   "selectedModelId": "grok-4.20-0309-non-reasoning",
+   "usage": {
+    "status": "complete",
+    "runs": 5,
+    "incompleteRuns": 0,
+    "promptTokens": 257113,
+    "completionTokens": 13462,
+    "totalTokens": 270575,
+    "cost": {
+     "available": false,
+     "reason": "no_official_current_rates_in_repo",
+     "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+    },
+    "reasoningTokens": 0,
+    "cachedTokens": 160640
+   },
+   "page": {
+    "applied": {
+     "id": "page-draft",
+     "slug": "home",
+     "status": "draft",
+     "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+     "layout": {
+      "version": 1,
+      "blocks": [
+       {
+        "id": "block-nav",
+        "kind": "nav",
+        "title": "Header",
+        "summary": "Brand and section links assembled from compatible catalog labels.",
+        "catalogBlock": "block.navbar",
+        "variant": "inline",
+        "copy": {
+         "brand": "FitForge"
+        },
+        "children": [
+         {
+          "id": "block-nav-item-1",
+          "kind": "nav-link",
+          "title": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
+          "summary": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438"
+         },
+         {
+          "id": "block-nav-item-2",
+          "kind": "nav-link",
+          "title": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442",
+          "summary": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442"
+         },
+         {
+          "id": "block-nav-item-3",
+          "kind": "nav-link",
+          "title": "\u0426\u0435\u043d\u044b",
+          "summary": "\u0426\u0435\u043d\u044b"
+         },
+         {
+          "id": "block-nav-item-4",
+          "kind": "nav-link",
+          "title": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e",
+          "summary": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e"
+         }
+        ]
+       },
+       {
+        "id": "block-hero",
+        "kind": "hero",
+        "title": "Hero",
+        "summary": "Opening section. Claims wait for the author's facts.",
+        "catalogBlock": "block.herosplit",
+        "variant": "quoteStats",
+        "copy": {
+         "headline": "\u0421\u0442\u0430\u043d\u044c \u0441\u0438\u043b\u044c\u043d\u0435\u0435 \u0441 FitForge",
+         "lede": "\u0422\u0440\u0435\u043a\u0438\u043d\u0433 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a, \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u043f\u043b\u0430\u043d\u044b \u0438 \u043c\u043e\u0442\u0438\u0432\u0430\u0446\u0438\u043e\u043d\u043d\u043e\u0435 \u0441\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e. \u041d\u0430\u0447\u043d\u0438 \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e \u0441\u0435\u0433\u043e\u0434\u043d\u044f.",
+         "action": "\u041d\u0430\u0447\u0430\u0442\u044c \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e"
+        }
+       },
+       {
+        "id": "block-features",
+        "kind": "features",
+        "title": "Why this page",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.features",
+        "variant": "grid",
+        "copy": {
+         "action": "\u0423\u0437\u043d\u0430\u0442\u044c \u0431\u043e\u043b\u044c\u0448\u0435"
+        },
+        "children": [
+         {
+          "id": "block-features-item-1",
+          "kind": "feature",
+          "title": "\u041f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u043f\u043b\u0430\u043d\u044b",
+          "summary": "\u0418\u0418-\u043f\u043e\u0434\u043e\u0431\u0440\u0430\u043d\u043d\u044b\u0435 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043a\u0438 \u043f\u043e\u0434 \u0442\u0432\u043e\u0438 \u0446\u0435\u043b\u0438",
+          "copy": {
+           "icon": "target"
+          }
+         },
+         {
+          "id": "block-features-item-2",
+          "kind": "feature",
+          "title": "\u0422\u0440\u0435\u043a\u0438\u043d\u0433 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441\u0430",
+          "summary": "\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439 \u0432\u0435\u0441, reps \u0438 \u0444\u043e\u0442\u043e",
+          "copy": {
+           "icon": "chart-bar"
+          }
+         },
+         {
+          "id": "block-features-item-3",
+          "kind": "feature",
+          "title": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e",
+          "summary": "\u041c\u043e\u0442\u0438\u0432\u0438\u0440\u0443\u0439 \u0438 \u0441\u043e\u0440\u0435\u0432\u043d\u0443\u0439\u0441\u044f \u0441 \u0434\u0440\u0443\u0437\u044c\u044f\u043c\u0438",
+          "copy": {
+           "icon": "users"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-features-2",
+        "kind": "features",
+        "title": "Why this page",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.stats",
+        "variant": "plain4",
+        "children": [
+         {
+          "id": "block-feature-offer-2",
+          "kind": "feature",
+          "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 offer",
+          "summary": "State the product in the author's words, not invented claims."
+         },
+         {
+          "id": "block-feature-proof-2",
+          "kind": "feature",
+          "title": "Evidence",
+          "summary": "Testimonials and logos wait for verified facts."
+         },
+         {
+          "id": "block-feature-action-2",
+          "kind": "feature",
+          "title": "One action",
+          "summary": "A single next step. No checkout in this draft."
+         }
+        ]
+       },
+       {
+        "id": "block-features-3",
+        "kind": "features",
+        "title": "Why this page",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.steps",
+        "variant": "row",
+        "children": [
+         {
+          "id": "block-feature-offer-3",
+          "kind": "feature",
+          "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 offer",
+          "summary": "State the product in the author's words, not invented claims."
+         },
+         {
+          "id": "block-feature-proof-3",
+          "kind": "feature",
+          "title": "Evidence",
+          "summary": "Testimonials and logos wait for verified facts."
+         },
+         {
+          "id": "block-feature-action-3",
+          "kind": "feature",
+          "title": "One action",
+          "summary": "A single next step. No checkout in this draft."
+         }
+        ]
+       },
+       {
+        "id": "block-features-4",
+        "kind": "features",
+        "title": "Why this page",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.pricing",
+        "variant": "grid",
+        "children": [
+         {
+          "id": "block-feature-offer-4",
+          "kind": "feature",
+          "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 offer",
+          "summary": "State the product in the author's words, not invented claims."
+         },
+         {
+          "id": "block-feature-proof-4",
+          "kind": "feature",
+          "title": "Evidence",
+          "summary": "Testimonials and logos wait for verified facts."
+         },
+         {
+          "id": "block-feature-action-4",
+          "kind": "feature",
+          "title": "One action",
+          "summary": "A single next step. No checkout in this draft."
+         }
+        ]
+       },
+       {
+        "id": "block-cta",
+        "kind": "cta",
+        "title": "Next step",
+        "summary": "Primary action. No payment or publish.",
+        "catalogBlock": "block.ctaproof",
+        "variant": "splitStats",
+        "copy": {
+         "lede": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 next step. Not published. Ask the author for the real call to action.",
+         "action": "Contact",
+         "note": "Stock screen screen.theme-marketing-landing/teams"
+        }
+       },
+       {
+        "id": "block-footer",
+        "kind": "footer",
+        "title": "Footer",
+        "summary": "Closing band. Contact facts are not invented.",
+        "catalogBlock": "block.sitemap",
+        "variant": "columns",
+        "copy": {
+         "contact": "Contact details are not invented.",
+         "legal": "Draft in this browser. Not a live site."
+        }
+       }
+      ]
+     },
+     "seo": {
+      "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+      "description": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 draft. Not published. Catalog blocks only."
+     },
+     "locale": "en",
+     "createdAt": "2026-11-13T11:04:44.429Z",
+     "updatedAt": "2026-11-13T16:00:50.752Z"
+    },
+    "candidate": {
+     "id": "page-draft",
+     "slug": "home",
+     "status": "draft",
+     "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+     "layout": {
+      "version": 1,
+      "blocks": [
+       {
+        "id": "block-nav",
+        "kind": "nav",
+        "title": "Header",
+        "summary": "Brand and section links assembled from compatible catalog labels.",
+        "catalogBlock": "block.navbar",
+        "variant": "inline",
+        "copy": {
+         "brand": "FitForge"
+        },
+        "children": [
+         {
+          "id": "block-nav-item-1",
+          "kind": "nav-link",
+          "title": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
+          "summary": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438"
+         },
+         {
+          "id": "block-nav-item-2",
+          "kind": "nav-link",
+          "title": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442",
+          "summary": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442"
+         },
+         {
+          "id": "block-nav-item-3",
+          "kind": "nav-link",
+          "title": "\u0426\u0435\u043d\u044b",
+          "summary": "\u0426\u0435\u043d\u044b"
+         },
+         {
+          "id": "block-nav-item-4",
+          "kind": "nav-link",
+          "title": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e",
+          "summary": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e"
+         }
+        ]
+       },
+       {
+        "id": "block-hero",
+        "kind": "hero",
+        "title": "Hero",
+        "summary": "Opening section. Claims wait for the author's facts.",
+        "catalogBlock": "block.herosplit",
+        "variant": "quoteStats",
+        "copy": {
+         "headline": "\u0421\u0442\u0430\u043d\u044c \u0441\u0438\u043b\u044c\u043d\u0435\u0435 \u0441 FitForge",
+         "lede": "\u0422\u0440\u0435\u043a\u0438\u043d\u0433 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a, \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u043f\u043b\u0430\u043d\u044b \u0438 \u043c\u043e\u0442\u0438\u0432\u0430\u0446\u0438\u043e\u043d\u043d\u043e\u0435 \u0441\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e. \u041d\u0430\u0447\u043d\u0438 \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e \u0441\u0435\u0433\u043e\u0434\u043d\u044f.",
+         "action": "\u041d\u0430\u0447\u0430\u0442\u044c \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e"
+        }
+       },
+       {
+        "id": "block-features",
+        "kind": "features",
+        "title": "Why this page",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.features",
+        "variant": "grid",
+        "copy": {
+         "action": "\u0423\u0437\u043d\u0430\u0442\u044c \u0431\u043e\u043b\u044c\u0448\u0435"
+        },
+        "children": [
+         {
+          "id": "block-features-item-1",
+          "kind": "feature",
+          "title": "\u041f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u043f\u043b\u0430\u043d\u044b",
+          "summary": "\u0418\u0418-\u043f\u043e\u0434\u043e\u0431\u0440\u0430\u043d\u043d\u044b\u0435 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043a\u0438 \u043f\u043e\u0434 \u0442\u0432\u043e\u0438 \u0446\u0435\u043b\u0438",
+          "copy": {
+           "icon": "target"
+          }
+         },
+         {
+          "id": "block-features-item-2",
+          "kind": "feature",
+          "title": "\u0422\u0440\u0435\u043a\u0438\u043d\u0433 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441\u0430",
+          "summary": "\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439 \u0432\u0435\u0441, reps \u0438 \u0444\u043e\u0442\u043e",
+          "copy": {
+           "icon": "chart-bar"
+          }
+         },
+         {
+          "id": "block-features-item-3",
+          "kind": "feature",
+          "title": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e",
+          "summary": "\u041c\u043e\u0442\u0438\u0432\u0438\u0440\u0443\u0439 \u0438 \u0441\u043e\u0440\u0435\u0432\u043d\u0443\u0439\u0441\u044f \u0441 \u0434\u0440\u0443\u0437\u044c\u044f\u043c\u0438",
+          "copy": {
+           "icon": "users"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-features-2",
+        "kind": "features",
+        "title": "\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b \u043d\u0430\u0448\u0438\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.stats",
+        "variant": "plain4",
+        "children": [
+         {
+          "id": "block-features-2-item-1",
+          "kind": "feature",
+          "title": "15 000+",
+          "summary": "\u0417\u0430\u0432\u0435\u0440\u0448\u0451\u043d\u043d\u044b\u0445 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a",
+          "copy": {
+           "icon": "dumbbell"
+          }
+         },
+         {
+          "id": "block-features-2-item-2",
+          "kind": "feature",
+          "title": "4.9",
+          "summary": "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u043e\u0446\u0435\u043d\u043a\u0430 \u0432 App Store",
+          "copy": {
+           "icon": "star"
+          }
+         },
+         {
+          "id": "block-features-2-item-3",
+          "kind": "feature",
+          "title": "52 000",
+          "summary": "\u0410\u043a\u0442\u0438\u0432\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439",
+          "copy": {
+           "icon": "users"
+          }
+         },
+         {
+          "id": "block-features-2-item-4",
+          "kind": "feature",
+          "title": "87%",
+          "summary": "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439 \u043e\u0441\u0442\u0430\u044e\u0442\u0441\u044f \u043f\u043e\u0441\u043b\u0435 30 \u0434\u043d\u0435\u0439",
+          "copy": {
+           "icon": "trending-up"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-features-3",
+        "kind": "features",
+        "title": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.steps",
+        "variant": "row",
+        "children": [
+         {
+          "id": "block-features-3-item-1",
+          "kind": "feature",
+          "title": "\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f",
+          "summary": "\u0421\u043e\u0437\u0434\u0430\u0439 \u0430\u043a\u043a\u0430\u0443\u043d\u0442 \u0437\u0430 30 \u0441\u0435\u043a\u0443\u043d\u0434 \u0438 \u043f\u0440\u043e\u0439\u0434\u0438 \u0431\u044b\u0441\u0442\u0440\u044b\u0439 \u0442\u0435\u0441\u0442 \u043d\u0430 \u0446\u0435\u043b\u0438",
+          "copy": {
+           "icon": "user-plus"
+          }
+         },
+         {
+          "id": "block-features-3-item-2",
+          "kind": "feature",
+          "title": "\u0412\u044b\u0431\u0435\u0440\u0438 \u043f\u043b\u0430\u043d",
+          "summary": "\u041f\u043e\u043b\u0443\u0447\u0438 \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u0443\u044e \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0443 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a \u0438 \u043f\u0438\u0442\u0430\u043d\u0438\u044f",
+          "copy": {
+           "icon": "clipboard-list"
+          }
+         },
+         {
+          "id": "block-features-3-item-3",
+          "kind": "feature",
+          "title": "\u0422\u0440\u0435\u043d\u0438\u0440\u0443\u0439\u0441\u044f \u0438 \u043e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439",
+          "summary": "\u041e\u0442\u043c\u0435\u0447\u0430\u0439 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441, \u0441\u043e\u0440\u0435\u0432\u043d\u0443\u0439\u0441\u044f \u0438 \u043f\u043e\u043b\u0443\u0447\u0430\u0439 \u043c\u043e\u0442\u0438\u0432\u0430\u0446\u0438\u044e",
+          "copy": {
+           "icon": "activity"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-features-4",
+        "kind": "features",
+        "title": "\u0412\u044b\u0431\u0435\u0440\u0438 \u0441\u0432\u043e\u0439 \u0442\u0430\u0440\u0438\u0444",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.pricing",
+        "variant": "grid",
+        "children": [
+         {
+          "id": "block-features-4-item-1",
+          "kind": "feature",
+          "title": "Free",
+          "summary": "\u0411\u0430\u0437\u043e\u0432\u044b\u0439 \u0442\u0440\u0435\u043a\u0438\u043d\u0433 \u0438 3 \u0433\u043e\u0442\u043e\u0432\u044b\u0445 \u043f\u043b\u0430\u043d\u0430",
+          "copy": {
+           "icon": "shield"
+          }
+         },
+         {
+          "id": "block-features-4-item-2",
+          "kind": "feature",
+          "title": "Pro",
+          "summary": "\u041f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u0418\u0418-\u043f\u043b\u0430\u043d\u044b, \u043d\u0435\u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u043d\u044b\u0439 \u0442\u0440\u0435\u043a\u0438\u043d\u0433, \u0441\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e",
+          "copy": {
+           "icon": "zap"
+          }
+         },
+         {
+          "id": "block-features-4-item-3",
+          "kind": "feature",
+          "title": "Elite",
+          "summary": "\u0412\u0441\u0451 \u0438\u0437 Pro + \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u0442\u0440\u0435\u043d\u0435\u0440 2 \u0440\u0430\u0437\u0430 \u0432 \u043c\u0435\u0441\u044f\u0446 \u0438 \u043f\u0440\u0438\u043e\u0440\u0438\u0442\u0435\u0442\u043d\u0430\u044f \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u043a\u0430",
+          "copy": {
+           "icon": "crown"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-cta",
+        "kind": "cta",
+        "title": "Next step",
+        "summary": "Primary action. No payment or publish.",
+        "catalogBlock": "block.ctaproof",
+        "variant": "splitStats",
+        "copy": {
+         "lede": "\u0413\u043e\u0442\u043e\u0432 \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0441\u0432\u043e\u044e \u0436\u0438\u0437\u043d\u044c? \u041f\u0440\u0438\u0441\u043e\u0435\u0434\u0438\u043d\u044f\u0439\u0441\u044f \u043a \u0442\u044b\u0441\u044f\u0447\u0430\u043c \u0442\u0435\u0445, \u043a\u0442\u043e \u0443\u0436\u0435 \u0441\u0442\u0430\u043b \u0441\u0438\u043b\u044c\u043d\u0435\u0435.",
+         "action": "\u041d\u0430\u0447\u0430\u0442\u044c \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e",
+         "note": "Stock screen screen.theme-marketing-landing/teams"
+        }
+       },
+       {
+        "id": "block-footer",
+        "kind": "footer",
+        "title": "Footer",
+        "summary": "Closing band. Contact facts are not invented.",
+        "catalogBlock": "block.sitemap",
+        "variant": "columns",
+        "copy": {
+         "contact": "Contact details are not invented.",
+         "legal": "\u00a9 2025 FitForge. \u0412\u0441\u0435 \u043f\u0440\u0430\u0432\u0430 \u0437\u0430\u0449\u0438\u0449\u0435\u043d\u044b. \u042d\u0442\u043e \u0432\u044b\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u043e\u0435 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u043b\u044f \u0434\u0435\u043c\u043e\u043d\u0441\u0442\u0440\u0430\u0446\u0438\u0438."
+        }
+       }
+      ]
+     },
+     "seo": {
+      "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+      "description": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 draft. Not published. Catalog blocks only."
+     },
+     "locale": "en",
+     "createdAt": "2026-11-13T11:04:44.429Z",
+     "updatedAt": "2026-11-13T16:02:53.235Z"
+    },
+    "appliedProvenance": {
+     "screenId": "screen.theme-marketing-landing/teams",
+     "scenarioId": "landing",
+     "missing": [],
+     "assembler": "page-patch/v1"
+    },
+    "candidateProvenance": {
+     "screenId": "screen.theme-marketing-landing/teams",
+     "scenarioId": "landing",
+     "missing": [],
+     "assembler": "page-patch/v1"
+    },
+    "selectedBlockId": "block-nav",
+    "revision": 3,
+    "lastProposed": {
+     "id": "page-draft",
+     "slug": "home",
+     "status": "draft",
+     "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+     "layout": {
+      "version": 1,
+      "blocks": [
+       {
+        "id": "block-nav",
+        "kind": "nav",
+        "title": "Header",
+        "summary": "Brand and section links assembled from compatible catalog labels.",
+        "catalogBlock": "block.navbar",
+        "variant": "inline",
+        "copy": {
+         "brand": "FitForge"
+        },
+        "children": [
+         {
+          "id": "block-nav-item-1",
+          "kind": "nav-link",
+          "title": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
+          "summary": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438"
+         },
+         {
+          "id": "block-nav-item-2",
+          "kind": "nav-link",
+          "title": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442",
+          "summary": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442"
+         },
+         {
+          "id": "block-nav-item-3",
+          "kind": "nav-link",
+          "title": "\u0426\u0435\u043d\u044b",
+          "summary": "\u0426\u0435\u043d\u044b"
+         },
+         {
+          "id": "block-nav-item-4",
+          "kind": "nav-link",
+          "title": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e",
+          "summary": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e"
+         }
+        ]
+       },
+       {
+        "id": "block-hero",
+        "kind": "hero",
+        "title": "Hero",
+        "summary": "Opening section. Claims wait for the author's facts.",
+        "catalogBlock": "block.herosplit",
+        "variant": "quoteStats",
+        "copy": {
+         "headline": "\u0421\u0442\u0430\u043d\u044c \u0441\u0438\u043b\u044c\u043d\u0435\u0435 \u0441 FitForge",
+         "lede": "\u0422\u0440\u0435\u043a\u0438\u043d\u0433 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a, \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u043f\u043b\u0430\u043d\u044b \u0438 \u043c\u043e\u0442\u0438\u0432\u0430\u0446\u0438\u043e\u043d\u043d\u043e\u0435 \u0441\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e. \u041d\u0430\u0447\u043d\u0438 \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e \u0441\u0435\u0433\u043e\u0434\u043d\u044f.",
+         "action": "\u041d\u0430\u0447\u0430\u0442\u044c \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e"
+        }
+       },
+       {
+        "id": "block-features",
+        "kind": "features",
+        "title": "Why this page",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.features",
+        "variant": "grid",
+        "copy": {
+         "action": "\u0423\u0437\u043d\u0430\u0442\u044c \u0431\u043e\u043b\u044c\u0448\u0435"
+        },
+        "children": [
+         {
+          "id": "block-features-item-1",
+          "kind": "feature",
+          "title": "\u041f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u043f\u043b\u0430\u043d\u044b",
+          "summary": "\u0418\u0418-\u043f\u043e\u0434\u043e\u0431\u0440\u0430\u043d\u043d\u044b\u0435 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043a\u0438 \u043f\u043e\u0434 \u0442\u0432\u043e\u0438 \u0446\u0435\u043b\u0438",
+          "copy": {
+           "icon": "target"
+          }
+         },
+         {
+          "id": "block-features-item-2",
+          "kind": "feature",
+          "title": "\u0422\u0440\u0435\u043a\u0438\u043d\u0433 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441\u0430",
+          "summary": "\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439 \u0432\u0435\u0441, reps \u0438 \u0444\u043e\u0442\u043e",
+          "copy": {
+           "icon": "chart-bar"
+          }
+         },
+         {
+          "id": "block-features-item-3",
+          "kind": "feature",
+          "title": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e",
+          "summary": "\u041c\u043e\u0442\u0438\u0432\u0438\u0440\u0443\u0439 \u0438 \u0441\u043e\u0440\u0435\u0432\u043d\u0443\u0439\u0441\u044f \u0441 \u0434\u0440\u0443\u0437\u044c\u044f\u043c\u0438",
+          "copy": {
+           "icon": "users"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-features-2",
+        "kind": "features",
+        "title": "\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b \u043d\u0430\u0448\u0438\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.stats",
+        "variant": "plain4",
+        "children": [
+         {
+          "id": "block-features-2-item-1",
+          "kind": "feature",
+          "title": "15 000+",
+          "summary": "\u0417\u0430\u0432\u0435\u0440\u0448\u0451\u043d\u043d\u044b\u0445 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a",
+          "copy": {
+           "icon": "dumbbell"
+          }
+         },
+         {
+          "id": "block-features-2-item-2",
+          "kind": "feature",
+          "title": "4.9",
+          "summary": "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u043e\u0446\u0435\u043d\u043a\u0430 \u0432 App Store",
+          "copy": {
+           "icon": "star"
+          }
+         },
+         {
+          "id": "block-features-2-item-3",
+          "kind": "feature",
+          "title": "52 000",
+          "summary": "\u0410\u043a\u0442\u0438\u0432\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439",
+          "copy": {
+           "icon": "users"
+          }
+         },
+         {
+          "id": "block-features-2-item-4",
+          "kind": "feature",
+          "title": "87%",
+          "summary": "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439 \u043e\u0441\u0442\u0430\u044e\u0442\u0441\u044f \u043f\u043e\u0441\u043b\u0435 30 \u0434\u043d\u0435\u0439",
+          "copy": {
+           "icon": "trending-up"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-features-3",
+        "kind": "features",
+        "title": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.steps",
+        "variant": "row",
+        "children": [
+         {
+          "id": "block-features-3-item-1",
+          "kind": "feature",
+          "title": "\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f",
+          "summary": "\u0421\u043e\u0437\u0434\u0430\u0439 \u0430\u043a\u043a\u0430\u0443\u043d\u0442 \u0437\u0430 30 \u0441\u0435\u043a\u0443\u043d\u0434 \u0438 \u043f\u0440\u043e\u0439\u0434\u0438 \u0431\u044b\u0441\u0442\u0440\u044b\u0439 \u0442\u0435\u0441\u0442 \u043d\u0430 \u0446\u0435\u043b\u0438",
+          "copy": {
+           "icon": "user-plus"
+          }
+         },
+         {
+          "id": "block-features-3-item-2",
+          "kind": "feature",
+          "title": "\u0412\u044b\u0431\u0435\u0440\u0438 \u043f\u043b\u0430\u043d",
+          "summary": "\u041f\u043e\u043b\u0443\u0447\u0438 \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u0443\u044e \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0443 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a \u0438 \u043f\u0438\u0442\u0430\u043d\u0438\u044f",
+          "copy": {
+           "icon": "clipboard-list"
+          }
+         },
+         {
+          "id": "block-features-3-item-3",
+          "kind": "feature",
+          "title": "\u0422\u0440\u0435\u043d\u0438\u0440\u0443\u0439\u0441\u044f \u0438 \u043e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439",
+          "summary": "\u041e\u0442\u043c\u0435\u0447\u0430\u0439 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441, \u0441\u043e\u0440\u0435\u0432\u043d\u0443\u0439\u0441\u044f \u0438 \u043f\u043e\u043b\u0443\u0447\u0430\u0439 \u043c\u043e\u0442\u0438\u0432\u0430\u0446\u0438\u044e",
+          "copy": {
+           "icon": "activity"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-features-4",
+        "kind": "features",
+        "title": "\u0412\u044b\u0431\u0435\u0440\u0438 \u0441\u0432\u043e\u0439 \u0442\u0430\u0440\u0438\u0444",
+        "summary": "Compatible feature or metric slots. No fabricated numbers.",
+        "catalogBlock": "block.pricing",
+        "variant": "grid",
+        "children": [
+         {
+          "id": "block-features-4-item-1",
+          "kind": "feature",
+          "title": "Free",
+          "summary": "\u0411\u0430\u0437\u043e\u0432\u044b\u0439 \u0442\u0440\u0435\u043a\u0438\u043d\u0433 \u0438 3 \u0433\u043e\u0442\u043e\u0432\u044b\u0445 \u043f\u043b\u0430\u043d\u0430",
+          "copy": {
+           "icon": "shield"
+          }
+         },
+         {
+          "id": "block-features-4-item-2",
+          "kind": "feature",
+          "title": "Pro",
+          "summary": "\u041f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u0418\u0418-\u043f\u043b\u0430\u043d\u044b, \u043d\u0435\u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u043d\u044b\u0439 \u0442\u0440\u0435\u043a\u0438\u043d\u0433, \u0441\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e",
+          "copy": {
+           "icon": "zap"
+          }
+         },
+         {
+          "id": "block-features-4-item-3",
+          "kind": "feature",
+          "title": "Elite",
+          "summary": "\u0412\u0441\u0451 \u0438\u0437 Pro + \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u0442\u0440\u0435\u043d\u0435\u0440 2 \u0440\u0430\u0437\u0430 \u0432 \u043c\u0435\u0441\u044f\u0446 \u0438 \u043f\u0440\u0438\u043e\u0440\u0438\u0442\u0435\u0442\u043d\u0430\u044f \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u043a\u0430",
+          "copy": {
+           "icon": "crown"
+          }
+         }
+        ]
+       },
+       {
+        "id": "block-cta",
+        "kind": "cta",
+        "title": "Next step",
+        "summary": "Primary action. No payment or publish.",
+        "catalogBlock": "block.ctaproof",
+        "variant": "splitStats",
+        "copy": {
+         "lede": "\u0413\u043e\u0442\u043e\u0432 \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0441\u0432\u043e\u044e \u0436\u0438\u0437\u043d\u044c? \u041f\u0440\u0438\u0441\u043e\u0435\u0434\u0438\u043d\u044f\u0439\u0441\u044f \u043a \u0442\u044b\u0441\u044f\u0447\u0430\u043c \u0442\u0435\u0445, \u043a\u0442\u043e \u0443\u0436\u0435 \u0441\u0442\u0430\u043b \u0441\u0438\u043b\u044c\u043d\u0435\u0435.",
+         "action": "\u041d\u0430\u0447\u0430\u0442\u044c \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e",
+         "note": "Stock screen screen.theme-marketing-landing/teams"
+        }
+       },
+       {
+        "id": "block-footer",
+        "kind": "footer",
+        "title": "Footer",
+        "summary": "Closing band. Contact facts are not invented.",
+        "catalogBlock": "block.sitemap",
+        "variant": "columns",
+        "copy": {
+         "contact": "Contact details are not invented.",
+         "legal": "\u00a9 2025 FitForge. \u0412\u0441\u0435 \u043f\u0440\u0430\u0432\u0430 \u0437\u0430\u0449\u0438\u0449\u0435\u043d\u044b. \u042d\u0442\u043e \u0432\u044b\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u043e\u0435 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u043b\u044f \u0434\u0435\u043c\u043e\u043d\u0441\u0442\u0440\u0430\u0446\u0438\u0438."
+        }
+       }
+      ]
+     },
+     "seo": {
+      "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+      "description": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 draft. Not published. Catalog blocks only."
+     },
+     "locale": "en",
+     "createdAt": "2026-11-13T11:04:44.429Z",
+     "updatedAt": "2026-11-13T16:02:53.235Z"
+    },
+    "lastProposedProvenance": {
+     "screenId": "screen.theme-marketing-landing/teams",
+     "scenarioId": "landing",
+     "missing": [],
+     "assembler": "page-patch/v1"
+    }
+   }
+  }
+ ],
+ "settings": {
+  "theme": "dark",
+  "selectedModelId": "grok-4.20-0309-non-reasoning",
+  "previewHideServiceLabels": false
+ },
+ "prefs": {
+  "layout": {
+   "navWidth": 240,
+   "chatWidth": 320,
+   "inspectorWidth": 304,
+   "layersHeight": 200,
+   "treeWidth": 208,
+   "navCollapsed": false,
+   "chatCollapsed": false,
+   "inspectorCollapsed": false,
+   "layersCollapsed": false,
+   "treeCollapsed": false,
+   "focus": false
+  }
+ }
+}

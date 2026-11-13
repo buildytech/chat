@@ -6,7 +6,8 @@
  * An unknown assertion keyword throws: the vendored schema must stay inside this subset.
  */
 
-export type SchemaIssue = { path: string; keyword: string };
+/** `expected` (optional) says in words what the schema wanted at `path`, for compiler-style reports to an agent. */
+export type SchemaIssue = { path: string; keyword: string; expected?: string };
 type Schema = Record<string, unknown> | boolean;
 
 const ANNOTATIONS = new Set(["$schema", "$id", "$defs", "title", "description", "default", "examples"]);
@@ -30,6 +31,42 @@ function typeMatches(value: unknown, type: string): boolean {
 
 function equal(a: unknown, b: unknown): boolean {
 	return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function expectedOf(keyword: string, schema: Record<string, unknown>): string | undefined {
+	const has = (key: string) => schema[key] !== undefined;
+	switch (keyword) {
+		case "enum":
+			return `one of ${JSON.stringify(schema.enum)}`;
+		case "const":
+			return `exactly ${JSON.stringify(schema.const)}`;
+		case "type":
+			return `type ${Array.isArray(schema.type) ? (schema.type as string[]).join(" | ") : String(schema.type)}`;
+		case "pattern":
+			return `a string matching /${String(schema.pattern)}/`;
+		case "maxLength":
+			return `at most ${String(schema.maxLength)} characters`;
+		case "minLength":
+			return `at least ${String(schema.minLength)} characters`;
+		case "maxItems":
+			return `at most ${String(schema.maxItems)} items`;
+		case "minItems":
+			return `at least ${String(schema.minItems)} items`;
+		case "maxProperties":
+			return `at most ${String(schema.maxProperties)} keys`;
+		case "required":
+			return `the key to be present (required: ${JSON.stringify(schema.required)})`;
+		case "additionalProperties":
+			return has("properties") ? `only the keys ${JSON.stringify(Object.keys(schema.properties as object))}` : "no other keys";
+		case "minimum":
+			return `a number >= ${String(schema.minimum)}`;
+		case "maximum":
+			return `a number <= ${String(schema.maximum)}`;
+		case "propertyNames":
+			return `key names matching ${JSON.stringify((schema.propertyNames as { pattern?: string }).pattern ?? "the schema")}`;
+		default:
+			return undefined;
+	}
 }
 
 export class SchemaRegistry {
@@ -80,7 +117,7 @@ export class SchemaRegistry {
 			out.push({ path, keyword: "false" });
 			return;
 		}
-		const fail = (keyword: string, at = path) => out.push({ path: at, keyword });
+		const fail = (keyword: string, at = path) => out.push({ path: at, keyword, expected: expectedOf(keyword, schema) });
 		const sub = (v: unknown, s: unknown, at: string): SchemaIssue[] => {
 			const issues: SchemaIssue[] = [];
 			this.walk(v, s as Schema, base, at, issues);

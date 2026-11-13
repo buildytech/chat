@@ -7,6 +7,7 @@
  */
 import sessionSchema from "../schema/session.schema.json" with { type: "json" };
 import pageSpecSchema from "../schema/page-spec.schema.json" with { type: "json" };
+import pageSpecV2Schema from "../schema/page-spec-v2.schema.json" with { type: "json" };
 import { SchemaRegistry, type SchemaIssue } from "./json-schema.ts";
 import { addCollectionSchema } from "./collection.ts";
 
@@ -23,6 +24,7 @@ export const SESSION_MAX_HISTORY = (sessionSchema as { "x-limits": { maxHistory:
 
 const registry = new SchemaRegistry();
 registry.add(pageSpecSchema as Record<string, unknown>);
+registry.add(pageSpecV2Schema as Record<string, unknown>);
 addCollectionSchema(registry);
 registry.add(sessionSchema as Record<string, unknown>);
 

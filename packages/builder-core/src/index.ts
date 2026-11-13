@@ -352,3 +352,4 @@ export {
 	withFamily
 } from "./catalog/page-family.ts";
 export { screenSections, type ScreenSection, type ScreenSections } from "./catalog/screen-sections.ts";
+export * from "./page-doc/index.ts";

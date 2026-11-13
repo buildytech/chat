@@ -107,6 +107,11 @@ export function propsValidatorInstalled(): boolean {
 	return PROPS_VALIDATOR !== null;
 }
 
+/** Issues of the props of one registry item; null while no validator is installed (the gate is fail-closed). */
+export function validateItemProps(item: string, props: Record<string, unknown>): PropsIssue[] | null {
+	return PROPS_VALIDATOR ? PROPS_VALIDATOR({ item, props } as OrganismRender) : null;
+}
+
 function quote(value: unknown): string {
 	return typeof value === "string" ? JSON.stringify(value) : JSON.stringify(value) ?? String(value);
 }
