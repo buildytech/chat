@@ -34,10 +34,10 @@ export function cloneJson<T>(value: T): T {
 }
 
 /** props = fill(merge(variant preset, block props)): what `<Item {...props} />` receives. */
-export function effectiveProps(item: string, variant: string | null | undefined, props: Record<string, PropValueV2> | undefined): Record<string, unknown> {
+export function effectiveProps(item: string, variant: string | null | undefined, props: Record<string, PropValueV2> | undefined, options: { blank?: boolean } = {}): Record<string, unknown> {
 	const info = itemInfo(item);
 	const name = variant && info?.variants.includes(variant) ? variant : (info?.defaultVariant ?? "");
-	return fillProps(item, merge(variantPreset(item, name), cloneJson(props ?? {})) as Record<string, unknown>);
+	return fillProps(item, merge(variantPreset(item, name), cloneJson(props ?? {})) as Record<string, unknown>, options);
 }
 
 /** The registry block a v2 block renders as, or null when the registry has no such item (the host rejects those on write). */
@@ -53,7 +53,7 @@ const SAMPLE_TITLE_PROPS = ["title", "heading", "name"];
 
 /**
  * The sample props of a new block (ADR 0034): the preset of the variant's layout axes plus the minimum the props schema
- * requires, with the catalog title of the block as its heading when the schema has a heading prop. The registry
+ * requires (required text blank, required icons the neutral glyph), with the catalog title of the block as its heading when the schema has a heading prop. The registry
  * publishes structure, not copy: a new block starts empty of invented text (no "Why this page"); the agent or the author
  * writes the content. The block id fills the item's `id` prop when it has one.
  */
@@ -64,5 +64,5 @@ export function sampleProps(item: string, variant: string | null | undefined, id
 	if (shape?.props.includes("id")) seed.id = id;
 	const heading = shape?.text.find((name) => SAMPLE_TITLE_PROPS.includes(name));
 	if (heading && info) seed[heading] = info.title;
-	return effectiveProps(item, variant, seed) as Record<string, PropValueV2>;
+	return effectiveProps(item, variant, seed, { blank: true }) as Record<string, PropValueV2>;
 }

@@ -263,7 +263,7 @@ export function newPropsListRow(item: string, pointer: string, taken: readonly u
 	if (!node) return null;
 	const value = valueOf(node);
 	if (value.type !== "array" || !isObject(value.items)) return null;
-	const row = fill(value.items as JsonSchema, {}, 1);
+	const row = fill(value.items as JsonSchema, {}, 1, true);
 	if (!isObject(row)) return null;
 	if (typeof row.id === "string") {
 		const ids = new Set(taken.map((entry) => (isObject(entry) ? entry.id : undefined)));
@@ -285,7 +285,7 @@ function clone<T>(value: T): T {
 }
 
 /** The smallest valid value of a required prop: the schema default, else the first enum value, else by type. */
-function defaultFor(node: JsonSchema, name: string, depth: number): unknown {
+function defaultFor(node: JsonSchema, name: string, depth: number, blank: boolean): unknown {
 	if (node.default !== undefined) return clone(node.default);
 	const value = valueOf(node);
 	if (value.default !== undefined) return clone(value.default);
@@ -294,18 +294,18 @@ function defaultFor(node: JsonSchema, name: string, depth: number): unknown {
 		return icons.includes(PLACEHOLDER_ICON) ? PLACEHOLDER_ICON : icons[0];
 	}
 	if (Array.isArray(value.enum)) return clone(value.enum[0]);
-	if (value.type === "string") return STRING_DEFAULTS[name] ?? humanize(name);
+	if (value.type === "string") return STRING_DEFAULTS[name] ?? (blank ? "" : humanize(name));
 	if (value.type === "number" || value.type === "integer") return 0;
 	if (value.type === "boolean") return false;
 	if (value.type === "array") return [];
-	if (value.type === "object" && depth < 8) return fill(value, {}, depth + 1);
+	if (value.type === "object" && depth < 8) return fill(value, {}, depth + 1, blank);
 	return undefined;
 }
 
-function fill(node: JsonSchema, current: unknown, depth: number): unknown {
+function fill(node: JsonSchema, current: unknown, depth: number, blank: boolean): unknown {
 	const value = valueOf(node);
 	if (value.type === "array" && Array.isArray(current) && isObject(value.items)) {
-		return current.map((entry) => fill(value.items as JsonSchema, entry, depth + 1));
+		return current.map((entry) => fill(value.items as JsonSchema, entry, depth + 1, blank));
 	}
 	if (value.type !== "object" || !isObject(current) || "$" in current || depth > 8) return current;
 	const properties = isObject(value.properties) ? (value.properties as Record<string, JsonSchema>) : {};
@@ -313,10 +313,10 @@ function fill(node: JsonSchema, current: unknown, depth: number): unknown {
 	const out: Record<string, unknown> = {};
 	for (const name of required) {
 		if (current[name] !== undefined || !properties[name]) continue;
-		const fallback = defaultFor(properties[name]!, name, depth);
+		const fallback = defaultFor(properties[name]!, name, depth, blank);
 		if (fallback !== undefined) out[name] = fallback;
 	}
-	for (const [name, inner] of Object.entries(current)) out[name] = properties[name] ? fill(properties[name]!, inner, depth + 1) : inner;
+	for (const [name, inner] of Object.entries(current)) out[name] = properties[name] ? fill(properties[name]!, inner, depth + 1, blank) : inner;
 	return out;
 }
 
@@ -325,10 +325,10 @@ function fill(node: JsonSchema, current: unknown, depth: number): unknown {
  * the first enum value, or the smallest value of the type. Values that are present are kept as they are, so the
  * validator still sees what the variant and the page content set.
  */
-export function fillProps(item: string, value: Record<string, unknown>): Record<string, unknown> {
+export function fillProps(item: string, value: Record<string, unknown>, options: { blank?: boolean } = {}): Record<string, unknown> {
 	const schema = props.items[item]?.schema;
 	if (!schema) return value;
-	return fill(schema, value, 0) as Record<string, unknown>;
+	return fill(schema, value, 0, options.blank === true) as Record<string, unknown>;
 }
 
 function kindLabel(kind: FieldKind): string {

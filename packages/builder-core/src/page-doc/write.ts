@@ -26,6 +26,9 @@ export type WriteOk = { ok: true; page: PageV2; diff: DiffEntry[]; warnings: str
 export type WriteFailure = { ok: false; code: "write_invalid"; message: string; issues: DocIssue[] };
 export type WriteResult = WriteOk | WriteFailure;
 
+/** Required text a write leaves out is blank (never a made-up label): the author or the agent writes it. */
+const BLANK = { blank: true } as const;
+
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -113,19 +116,19 @@ export function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): vo
 		let props: Record<string, unknown>;
 		if (!prior) {
 			// A new block: the sample props of its variant under what the write gave it.
-			props = effectiveProps(out.item, out.variant, { ...sampleProps(out.item, out.variant, out.id), ...(out.props ?? {}) });
+			props = effectiveProps(out.item, out.variant, { ...sampleProps(out.item, out.variant, out.id), ...(out.props ?? {}) }, BLANK);
 		} else if (prior.item !== out.item) {
 			const wrote = out.props !== undefined && !same(out.props, prior.props);
 			props = wrote
-				? effectiveProps(out.item, out.variant, out.props)
-				: effectiveProps(out.item, out.variant, { ...sampleProps(out.item, out.variant, out.id), ...carriedText(prior.props, out.item) });
+				? effectiveProps(out.item, out.variant, out.props, BLANK)
+				: effectiveProps(out.item, out.variant, { ...sampleProps(out.item, out.variant, out.id), ...carriedText(prior.props, out.item) }, BLANK);
 			if (!wrote) notes.push(`${out.id}: item ${prior.item} -> ${out.item}; sample props of the new item, text carried over: ${Object.keys(carriedText(prior.props, out.item)).join(", ") || "none"}.`);
 		} else {
 			const props0 = out.props ?? prior.props ?? {};
 			if ((prior.variant ?? "") !== (out.variant ?? "") && same(prior.props, out.props ?? prior.props)) {
-				props = effectiveProps(out.item, out.variant, applyVariantAxes(out.item, out.variant, props0) as Record<string, PropValueV2>);
+				props = effectiveProps(out.item, out.variant, applyVariantAxes(out.item, out.variant, props0) as Record<string, PropValueV2>, BLANK);
 				notes.push(`${out.id}: variant ${prior.variant ?? "default"} -> ${out.variant ?? "default"}; layout axes taken from the new variant.`);
-			} else props = effectiveProps(out.item, out.variant, props0);
+			} else props = effectiveProps(out.item, out.variant, props0, BLANK);
 		}
 		out.props = repairIcons(out.item, props, notes, at) as Record<string, PropValueV2>;
 		return out;
