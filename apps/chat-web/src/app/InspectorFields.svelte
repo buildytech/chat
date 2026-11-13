@@ -9,6 +9,7 @@
 import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 	import Box from "$registry/compose/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";
+	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Checkbox from "$registry/compose/Checkbox.svelte";
 	import Fieldset from "$registry/compose/Fieldset.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -257,7 +258,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 				{/each}
 				{#if handlers.onlist}
 					<Button size="sm" variant="outline" disabled={count >= max} data-action="add-row" onclick={() => handlers.onlist!(field.pointer, "add")}>
-						<Plus />
+						<Icon size="sm"><Plus /></Icon>
 						{t("inspector.addRow")}
 					</Button>
 				{/if}
@@ -295,7 +296,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 				{/each}
 				{#if handlers.onlist}
 					<Button size="sm" variant="outline" disabled={count >= max} data-action="add-item" onclick={() => handlers.onlist!(field.pointer, "add")}>
-						<Plus />
+						<Icon size="sm"><Plus /></Icon>
 						{t("inspector.addItem")}
 					</Button>
 				{/if}
@@ -345,7 +346,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 				{/each}
 				{#if handlers.onmap}
 					<Button size="sm" variant="outline" disabled={count >= max} data-action="add-entry" onclick={() => handlers.onmap!(field.pointer, "add")}>
-						<Plus />
+						<Icon size="sm"><Plus /></Icon>
 						{t("inspector.addEntry")}
 					</Button>
 				{/if}
