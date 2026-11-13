@@ -1,8 +1,7 @@
-import { parsePageSpec, type Page } from "@buildytech/page-contract";
+import { parsePageV2, type PageV2 } from "@buildytech/page-contract";
 import { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } from "./xai-env.ts";
 import { isAgentMode, type AgentMode } from "./agent/agent-tools.ts";
 import { collectionBounds, type CollectionBounds } from "./collection.ts";
-import { parseManualEdits } from "./page-plan.ts";
 
 /**
  * Readable labels for the five parent-verified TEXT models.
@@ -186,46 +185,35 @@ export function assertNoFallback(requestedId: string, executedId: string): Model
 	};
 }
 
+/** A POST /v1/run body mapped onto one exact chat model and a trusted turn context (ADR 0034). */
 export type ChatRunRequest = {
 	modelId: GrokChatModelId;
 	label: string;
 	live: boolean;
 	brief: string;
-	scenarioId: "dashboard" | "landing" | "website" | null;
+	/** Chat mode the author picked in the composer (Ask never applies). Missing or unknown means build. */
+	mode: AgentMode;
+	/** The page document the agent starts from (applied page, pending proposal, or empty / draft page). */
+	currentPage?: PageV2;
+	/** The page the author sees when `currentPage` is a host draft (collection intake). */
+	shownPage?: PageV2;
+	/** Stock screen the author named as a ranking hint. */
 	screenId: string | null;
 	expectedRevision: number;
-	pageId?: string;
-	currentPage?: Page;
-	currentProvenance?: {
-		screenId: string | null;
-		scenarioId: "dashboard" | "landing" | "website" | null;
-		missing: string[];
-	};
-	/** Client flag: the author asked for demo data earlier in this chat. */
-	sessionDemoData?: boolean;
-	/** Chat mode the author picked in the composer (Ask is read-only). Missing or unknown means build. */
-	mode: AgentMode;
+	/** Selected blocks: the agent edits only those. */
+	scopeBlockIds?: string[];
+	conversation: Array<{ role: "user" | "assistant"; text: string }>;
 	/** Stock collection bounds of the chat: the request's collection items the pinned snapshot has (null: none). */
 	collection: CollectionBounds | null;
-	/** Blocks the author edited by hand since the last agent turn (ADR 0020). */
-	manualEdits: Array<{ blockId: string; edits: number }>;
- scopeBlockIds?: string[];
- conversation?: Array<{role: "user" | "assistant"; text: string}>;
 };
 
-function parseCurrentProvenance(raw: unknown): ChatRunRequest["currentProvenance"] {
-	if (!raw || typeof raw !== "object") return undefined;
-	const rec = raw as Record<string, unknown>;
-	const scenarioId =
-		rec.scenarioId === "dashboard" || rec.scenarioId === "landing" || rec.scenarioId === "website"
-			? rec.scenarioId
-			: null;
-	const screenId = typeof rec.screenId === "string" ? rec.screenId : null;
-	return {
-		screenId: screenId && screenId !== "null" ? screenId : null,
-		scenarioId,
-		missing: Array.isArray(rec.missing) ? rec.missing.filter((row): row is string => typeof row === "string") : []
-	};
+function parsePageDoc(raw: unknown): PageV2 | undefined {
+	if (raw == null) return undefined;
+	try {
+		return parsePageV2(raw);
+	} catch {
+		return undefined;
+	}
 }
 
 /**
@@ -236,18 +224,14 @@ export function mapChatRunRequest(
 	body: {
 		modelId?: unknown;
 		brief?: unknown;
-		scenarioId?: unknown;
 		screenId?: unknown;
 		expectedRevision?: unknown;
-		pageId?: unknown;
 		currentPage?: unknown;
-		currentProvenance?: unknown;
-		sessionDemoData?: unknown;
+		shownPage?: unknown;
 		mode?: unknown;
 		collection?: unknown;
-		manualEdits?: unknown;
- scopeBlockIds?: unknown;
- conversation?: unknown;
+		scopeBlockIds?: unknown;
+		conversation?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -257,38 +241,23 @@ export function mapChatRunRequest(
 		allowUnlistedTrial: opts.allowUnlistedTrial
 	});
 	if (!resolved.ok) return resolved;
-	const brief = String(body.brief ?? "");
-	const scenarioId =
-		body.scenarioId === "dashboard" || body.scenarioId === "landing" || body.scenarioId === "website"
-			? body.scenarioId
-			: null;
-	let currentPage: Page | undefined;
-	if (body.currentPage != null) {
-		try {
-			currentPage = parsePageSpec(body.currentPage);
-		} catch {
-			currentPage = undefined;
-		}
-	}
 	return {
 		ok: true,
 		request: {
 			modelId: resolved.modelId,
 			label: resolved.label,
 			live: resolved.live,
-			brief,
-			scenarioId,
-			screenId: typeof body.screenId === "string" ? body.screenId : null,
-			expectedRevision: typeof body.expectedRevision === "number" ? body.expectedRevision : 0,
-			pageId: typeof body.pageId === "string" ? body.pageId : currentPage?.id,
-			currentPage,
-			currentProvenance: parseCurrentProvenance(body.currentProvenance),
-			sessionDemoData: body.sessionDemoData === true,
+			brief: String(body.brief ?? ""),
 			mode: isAgentMode(body.mode) ? body.mode : "build",
-			collection: collectionBounds(body.collection),
+			currentPage: parsePageDoc(body.currentPage),
+			shownPage: parsePageDoc(body.shownPage),
+			screenId: typeof body.screenId === "string" && body.screenId !== "null" ? body.screenId : null,
+			expectedRevision: typeof body.expectedRevision === "number" ? body.expectedRevision : 0,
 			scopeBlockIds: Array.isArray(body.scopeBlockIds) ? [...new Set(body.scopeBlockIds.filter((id): id is string => typeof id === "string"))].slice(0, 100) : undefined,
- conversation: Array.isArray(body.conversation) ? body.conversation.slice(-8).flatMap(row => row && typeof row === 'object' && (row.role === 'user' || row.role === 'assistant') && typeof row.text === 'string' ? [{role: row.role as 'user' | 'assistant', text: row.text.slice(0, 2000)}] : []) : [],
- manualEdits: parseManualEdits(body.manualEdits)
+			conversation: Array.isArray(body.conversation)
+				? body.conversation.slice(-8).flatMap((row) => (row && typeof row === "object" && (row.role === "user" || row.role === "assistant") && typeof row.text === "string" ? [{ role: row.role as "user" | "assistant", text: row.text.slice(0, 2000) }] : []))
+				: [],
+			collection: collectionBounds(body.collection)
 		}
 	};
 }

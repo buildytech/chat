@@ -1,0 +1,7 @@
+{
+	"compilerOptions": {
+		"target": "ES2022", "module": "ESNext", "moduleResolution": "bundler", "strict": true, "noEmit": true, "skipLibCheck": true,
+		"types": ["node"], "allowImportingTsExtensions": true, "resolveJsonModule": true, "verbatimModuleSyntax": false
+	},
+	"include": ["/workspace/tmp/uibuildybot/chat/apps/xai-runtime/src/**/*.ts", "/workspace/tmp/uibuildybot/chat/packages/builder-core/src/**/*.ts", "/workspace/tmp/uibuildybot/chat/packages/page-contract/src/**/*.ts"]
+}

@@ -43,9 +43,7 @@ export {
 	agentToolNames,
 	agentToolParameters,
 	catalogToolParameterSchema,
-	editPageParameterSchema,
 	isAgentMode,
-	proposeContentParameterSchema,
 	resolveAgentSchema,
 	toolOffersMode,
 	type AgentMode,
@@ -53,7 +51,6 @@ export {
 	type AgentToolsDocument,
 	type OpenAiFunctionTool
 } from "./agent/agent-tools.ts";
-export { agentTextReply, askBlockCards, isAgentTextReply, type AgentTextReply } from "./agent/reply.ts";
 export {
 	catalogEntryBySpec,
 	catalogSourceFor,
@@ -86,36 +83,6 @@ export {
 	type OrganismRender
 } from "./catalog/organism.ts";
 export {
-	gateInspectorPage,
-	inspectorModel,
-	inspectorOp,
-	emptyPageStart,
-	emptyPageScreenFor,
-	EMPTY_PAGE_SCREENS,
-	type EmptyPageStart,
-	canAddCatalogBlock,
-	type AddBlockCheck,
-	addSlotCheck,
-	addScreenSections,
-	chromeEdge,
-	type ScreenAddResult,
-	moveSlotCheck,
-	type AddSlotCheck,
-	inspectorSetField,
-	shareUnchanged,
-	writeOrigin,
-	type InspectorFailure,
-	type InspectorField,
-	type InspectorModel,
-	type InspectorOp,
-	type InspectorOpContext,
-	type InspectorResult,
-	type InspectorSuccess,
-	type InspectorWidget,
-	type InspectorLock,
-	type InspectorUnshown
-} from "./inspector.ts";
-export {
 	fillProps,
 	hasPropsSchema,
 	lucideIcons,
@@ -145,72 +112,7 @@ export {
 	type ViewMap
 } from "./catalog/view-map.ts";
 export { contractFingerprint } from "./catalog/fingerprint.ts";
-export { clientProposalGate } from "./client-gate.ts";
-export {
-	proposeLayout,
-	applyProposal,
-	rejectFabricatedLayout,
-	isClearPageCommand,
-	recordedScreenId,
-	screenIdFromPage,
-	inheritedScreenId
-} from "./assemble.ts";
-export type { ProposalContext, LayoutProposal, LayoutProposalError, ProposalIntent } from "./assemble.ts";
-export {
-	executeTool,
-	runConstructorTools,
-	isAllowedTool,
-	compactSearchResult,
-	scenarioCatalogContext,
-	toolLoopProposalFailure,
-	repairProposeArgs,
-	checkContentVariants,
-	collectionIntakeDraft,
-	stockScreenDraft,
-	placeCollectionDraft,
-	placeCollectionDraftWithNotes,
-	searchRelaxed,
-	toolLoopRejection,
-	sameRejection
-} from "./tools.ts";
-export type { ToolHost, CompactSearchItem, CompactSearchPayload, ToolLoopRejection, CollectionDraft, CollectionDraftBlock } from "./tools.ts";
 export { isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
-export { parseLayoutCopyEdits } from "./edits.ts";
-export { editPage, normalizePatch, patchIssueReports } from "./patch.ts";
-export type { PagePatchContext, PatchIssueReport, PatchOp } from "./patch.ts";
-export {
-	PLAN_LIMITS,
-	PLAN_NOOP,
-	PLAN_OPS,
-	blockRef,
-	checkPagePlan,
- pagePlanRepairs,
- repairPagePlan,
-	compactPlanPayload,
-	describePageChanges,
-	executePagePlan,
-	isPlanNoop,
-	manualEditsSince,
-	pageDirectory,
-	parseManualEdits,
-	planHasInvalid,
-	resolveBlockRef
-} from "./page-plan.ts";
-export type { BlockRef, ManualEdit, PageChange, PageChangeReport, PagePlan, PagePlanOp, PlanRepair, PagePlanStatus, PlanExecution, PlanOpName } from "./page-plan.ts";
-export {
-	DATA_KINDS,
-	cleanText,
-	defaultDemoLabel,
-	hasModelContent,
-	isPageLocale,
-	mergeModelContent,
-	parseModelContent,
-	contentKinds,
-	contentCopyFields,
-	resolvePageLocale
-} from "./content.ts";
-export type { ModelBlockContent, ModelContentItem, ModelPageContent, MergeResult } from "./content.ts";
-export { stripInventedFooterYears } from "./intents.ts";
 export {
 	blockLabelVocabulary,
 	nearestTerms,
@@ -221,11 +123,8 @@ export {
 } from "./catalog/text-search.ts";
 export {
 	STOCK_APP_URL,
-	attachCatalogSources,
 	familyLabelForKind,
-	kindSourceFor,
 	FAMILY_HOME_SCREENS,
-	sameCatalogRefs,
 	screenFamily,
 	stockAssetUrl,
 	stockSearchUrl,
@@ -234,7 +133,6 @@ export {
 	blockAssetUrl,
 	blockThumbUrl,
 	screenThumbUrl,
-	validateCatalogProvenance,
 	setPropsValidator,
 	propsValidatorInstalled,
 	type PropsIssue,
@@ -244,14 +142,10 @@ export type {
 	CatalogBlockRef,
 	CatalogFilters,
 	CatalogRefs,
-	CatalogScreenRef,
-	CatalogValidationError
+	CatalogScreenRef
 } from "./catalog/provenance.ts";
-export type { LayoutCopyEdit } from "./edits.ts";
 export {
-	ENABLED_SKILLS,
 	ALLOWED_TOOLS,
-	getSkill,
 	POLICY_VERSION,
 	MODEL_CATALOG_VERSION,
 	TRIAL_POLICY_VERSION,
@@ -315,28 +209,22 @@ export { readEnv } from "./env-map.ts";
 export type { CatalogScreen, CatalogFacetFilter, SearchResult, ScreenCompatibility, CatalogSnapshot } from "./catalog/types.ts";
 export {
 	COLLECTION_CODES,
-	checkCollectionPage,
+	checkCollection,
 	collectionBounds,
+	collectionDraft,
 	collectionItemAssetId,
 	collectionPromptContext,
-	collectionRejection,
 	isCollectionCode,
-	pruneToCollection,
-	repairCollectionArgs,
 	snapshotDigest,
 	snapshotHasItem,
 	splitCollection,
-	unplacedWarnings,
 	type CollectionBounds,
-	type CollectionCheck,
 	type CollectionCode,
 	type CollectionItemRef,
 	type CollectionRequired
 } from "./collection.ts";
 export { placeholderFields, placeholderHints, placeholderWarning, type PlaceholderField } from "./placeholder.ts";
 export { resolveIconName, iconFixWarning, type IconFix } from "./icon-name.ts";
-export { stripInventedYears } from "./intents.ts";
-export { swapCatalogBlock, catalogBlocksForKind, type BlockSwap } from "./block-swap.ts";
 export {
 	PAGE_FAMILIES,
 	NAMED_FAMILIES,
@@ -351,5 +239,7 @@ export {
 	nextFamilyState,
 	withFamily
 } from "./catalog/page-family.ts";
-export { screenSections, type ScreenSection, type ScreenSections } from "./catalog/screen-sections.ts";
 export * from "./page-doc/index.ts";
+export { itemIndex, propsOutline, readBlock, resolveItem, type BlockRead } from "./agent/blocks.ts";
+export { executeCatalogTool, compactSearchResult, searchRelaxed, isAllowedTool, type CompactSearchItem, type CompactSearchPayload, type ToolCall, type ToolHost, type ToolOutcome } from "./agent/catalog-tools.ts";
+export { agentReply, isAgentReply, runWriteTool, scopeIssues, type AgentFailure, type AgentReply, type PageProposal, type TurnContext, type WriteToolResult } from "./agent/turn.ts";

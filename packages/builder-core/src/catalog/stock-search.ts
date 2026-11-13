@@ -11,7 +11,7 @@
  */
 import { catalogSnapshot } from "./snapshot.ts";
 import { blockAssetUrl, blockThumbUrl, screenThumbUrl, stockAssetUrl } from "./provenance.ts";
-import { screenSections } from "./screen-sections.ts";
+import { screenItems } from "../page-doc/start.ts";
 import { getScreenById, searchCatalog } from "./search.ts";
 import { catalogSourceFor } from "./sources.ts";
 import type { CatalogBlockIndexEntry, CatalogFacetFilter, CatalogScreen } from "./types.ts";
@@ -168,7 +168,7 @@ function screenRow(screen: CatalogScreen, byLabel: Map<string, CatalogBlockIndex
 		sites: [...screen.labels.site],
 		isDefault: false,
 		// t150u: a pure property of the screen, the same on every result page: it has a section the page renders.
-		supported: screenSections(screen.screenId).sections.length > 0,
+		supported: screenItems(screen.screenId).items.length > 0,
 		thumb: screenThumbUrl(screen.screenId),
 		url: stockAssetUrl(screen.screenId),
 		text: lower(`${screen.screenId} ${screen.title} ${screen.subtitle} ${screen.labels.blocks.join(" ")} ${screen.labels.job.join(" ")}`),

@@ -7,7 +7,6 @@
 import raw from "./agent-tools.v1.json" with { type: "json" };
 import { facetVocabulary } from "../catalog/search.ts";
 import { blockLabelVocabulary, vocabularyValues } from "../catalog/text-search.ts";
-import { contentKinds } from "../content.ts";
 
 export const AGENT_MODES = ["ask", "build"] as const;
 export type AgentMode = (typeof AGENT_MODES)[number];
@@ -51,8 +50,6 @@ export function agentEnumSource(name: string): string[] {
 			return vocabularyValues("industry");
 		case "catalog.blocks":
 			return blockLabelVocabulary();
-		case "page.contentKinds":
-			return contentKinds();
 		default:
 			throw new Error(`agent-tools: unknown x-buildy-enum source ${name}`);
 	}
@@ -127,16 +124,4 @@ function properties(name: string): Record<string, unknown> {
 /** search_catalog parameter properties (facet enums from the pinned catalog). */
 export function catalogToolParameterSchema(): Record<string, Record<string, unknown>> {
 	return properties("search_catalog") as Record<string, Record<string, unknown>>;
-}
-
-/** edit_page parameter properties (page-patch/v1 ops). */
-export function editPageParameterSchema(): Record<string, unknown> {
-	return properties("edit_page");
-}
-
-const PROPOSE_FRAME = new Set(["brief", "scenarioId", "screenId", "expectedRevision", "edits"]);
-
-/** propose_layout content properties (title, locale, blocks, typed intent), without the call frame. */
-export function proposeContentParameterSchema(): Record<string, unknown> {
-	return Object.fromEntries(Object.entries(properties("propose_layout")).filter(([key]) => !PROPOSE_FRAME.has(key)));
 }

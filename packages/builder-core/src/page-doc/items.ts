@@ -8,7 +8,11 @@ import { catalogSources } from "../catalog/sources.ts";
 import { catalogEntryBySpec } from "../catalog/sources.ts";
 import { rendererKindForLabel } from "../catalog/compatibility.ts";
 import { hasPropsSchema } from "../catalog/props-schema.ts";
-import { chromeEdge } from "../page-slots.ts";
+
+/** Page chrome that stays at the top (header, side navigation) or at the bottom (footer, bottom navigation): registry roles. */
+function chromeEdge(kind: string): "top" | "bottom" | null {
+	return kind === "nav" || kind === "sidenav" ? "top" : kind === "footer" || kind === "bottomnav" ? "bottom" : null;
+}
 
 export type ItemInfo = {
 	item: string;

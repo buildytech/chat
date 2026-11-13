@@ -1,7 +1,8 @@
 import {
 	clampRunBudgetMs,
+	emptyPage,
 	contractFingerprint,
-	isAgentTextReply,
+	isAgentReply,
 	gateRequest,
 	isSharedPublicSurface,
 	mapChatRunRequest,
@@ -11,7 +12,7 @@ import {
 	stripRuntimePrefix,
 	type EnvMap
 } from "@buildytech/builder-core";
-import { runXaiCatalogTurn, revalidateProposal } from "./chat-tools.ts";
+import { runXaiCatalogTurn } from "./chat-tools.ts";
 import { runtimeStatus } from "./status.ts";
 
 export { VERCEL_HOBBY_SAFE_MAX_DURATION_SEC } from "@buildytech/builder-core";
@@ -142,36 +143,28 @@ export async function handleRuntimeFetch(
 					mapped.request.modelId,
 					{
 						brief: mapped.request.brief,
-						scenarioId: mapped.request.scenarioId,
-						screenId: mapped.request.screenId,
-						expectedRevision: mapped.request.expectedRevision,
-						pageId: mapped.request.pageId,
-						currentPage: mapped.request.currentPage,
-						currentProvenance: mapped.request.currentProvenance,
-						sessionDemoData: mapped.request.sessionDemoData,
-						authorBrief: mapped.request.brief,
-						liveTurn: true,
 						mode: mapped.request.mode,
-						collection: mapped.request.collection,
+						conversation: mapped.request.conversation,
+						page: mapped.request.currentPage ?? emptyPage({ title: "New page" }),
+						shownPage: mapped.request.shownPage ?? null,
+						expectedRevision: mapped.request.expectedRevision,
 						scopeBlockIds: mapped.request.scopeBlockIds,
- conversation: mapped.request.conversation,
- manualEdits: mapped.request.manualEdits
+						screenId: mapped.request.screenId,
+						collection: mapped.request.collection
 					},
 					signal
 				);
 				const { meta } = turn;
 				// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
-				const proposal =
-					!turn.proposal.ok && turn.proposal.code === "aborted" && !request.signal.aborted
+				const checked =
+					!turn.result.ok && turn.result.code === "aborted" && !request.signal.aborted
 						? {
 								ok: false as const,
 								code: "runtime_timeout",
 								message: `The model did not finish within ${Math.round(ms / 1000)} s. Try again or pick a faster model. No other model was substituted.`
 							}
-						: turn.proposal;
-				// A text answer (every Ask turn, a Build turn where the model only talked) has no page to revalidate.
-				const checked = isAgentTextReply(proposal) ? proposal : revalidateProposal(proposal);
-				const live = Boolean(checked.ok && (meta.toolCallingWorked || isAgentTextReply(checked)));
+						: turn.result;
+				const live = Boolean(checked.ok && (meta.toolCallingWorked || isAgentReply(checked)));
 				logSanitizedRun({
 					event: "xai_run",
 					surface: opts.surface,
@@ -179,7 +172,7 @@ export async function handleRuntimeFetch(
 					ok: checked.ok,
 					code: checked.ok ? "ok" : checked.code,
 					mode: mapped.request.mode,
-					reply: isAgentTextReply(checked) ? "text" : checked.ok ? "proposal" : "error",
+					reply: checked.ok ? (checked.proposal ? "proposal" : "text") : "error",
 					path: meta.path,
 					modelId: meta.modelId,
 					liveModel: live,
@@ -206,7 +199,6 @@ export async function handleRuntimeFetch(
 					liveModel: live,
 					liveXai: live,
 					toolCallingProven: meta.toolCallingWorked,
-					assembler: checked.ok && !isAgentTextReply(checked) ? checked.provenance.assembler : "local-catalog-assembler",
 					mode: mapped.request.mode,
 					runtime: "xai-grok",
 					modelId: meta.modelId,
@@ -214,8 +206,7 @@ export async function handleRuntimeFetch(
 					path: meta.path,
 					runId: meta.runId,
 					toolsUsed: meta.toolsCalled,
-					usage: meta.usage,
-					...(meta.modelFields ? { modelFields: meta.modelFields } : {})
+					usage: meta.usage
 				});
 			} catch (err) {
 				const safe = safeErrorMessage(err);

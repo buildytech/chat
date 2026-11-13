@@ -1,602 +1,144 @@
 {
-	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"format": "buildy-agent-tools",
-	"version": 1,
-	"description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
-	"modes": {
-		"ask": {
-			"description": "Read-only conversation about the catalog and the page. The page never changes and no proposal is created. Recommended page changes go to propose_plan (a checked plan the author may run with Apply in Build). Tool choice auto; the model's final text is the answer.",
-			"toolChoice": "auto"
-		},
-		"build": {
-			"description": "Create or edit the page. Tool choice auto: a text-only answer is shown and creates no proposal; a successful propose_layout or edit_page creates one pending proposal the author applies.",
-			"toolChoice": "auto"
-		}
-	},
-	"enumSources": {
-		"catalog.site": "Stock facet vocabulary: site type",
-		"catalog.section": "Stock facet vocabulary: section",
-		"catalog.job": "Stock facet vocabulary: job",
-		"catalog.industry": "Stock search vocabulary: industry",
-		"catalog.blocks": "Stock search vocabulary: block labels",
-		"page.contentKinds": "Page block kinds that take content from the model"
-	},
-	"tools": [
-		{
-			"name": "search_catalog",
-			"modes": [
-				"ask",
-				"build"
-			],
-			"description": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored items and pick.screenId; then call propose_layout. Never a dead end: when no renderable screen matches every facet the host drops the fewest facets and says which in relaxed; zero or weak hits (and browse=true) add facets, the counts of renderable screens per site, section, job, industry and block label for drill-down. Do not repeat a search that returned items: pick one and call propose_layout.",
-			"descriptionByMode": {
-				"ask": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored screens with their block labels. Read-only."
-			},
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"q": {
-						"type": "string",
-						"description": "Free text in catalog terms (English catalog words work best, e.g. sidebar, shell, kanban, pricing). Matched against Stock titles, subtitles, block names and facet labels."
-					},
-					"site": {
-						"type": "string",
-						"x-buildy-enum": "catalog.site",
-						"description": "Site type: landing (one conversion page), website (multi-page site home), app, docs, shop, blog."
-					},
-					"section": {
-						"type": "string",
-						"x-buildy-enum": "catalog.section"
-					},
-					"job": {
-						"type": "string",
-						"x-buildy-enum": "catalog.job"
-					},
-					"industry": {
-						"type": "string",
-						"x-buildy-enum": "catalog.industry"
-					},
-					"blocks": {
-						"type": "array",
-						"items": {
-							"type": "string",
-							"x-buildy-enum": "catalog.blocks"
-						},
-						"description": "Block labels every screen must contain, e.g. [\"sidenav\"] for a built-in sidebar."
-					},
-					"page": {
-						"type": "integer",
-						"minimum": 1
-					},
-					"browse": {
-						"type": "boolean",
-						"description": "true: also return facets (renderable screen counts per facet value for this filter) to drill down with another call."
-					}
-				}
-			}
-		},
-		{
-			"name": "get_block",
-			"modes": [
-				"ask"
-			],
-			"description": "Read one Stock catalog block: title, registry item, every variant with the props that set it apart from the default, row and text fields from the published props schema, and its Stock link. id is a block spec (block.features), a label (features) or an asset id (block.features/grid). Read-only.",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"id": {
-						"type": "string",
-						"description": "Block spec, label or catalog asset id from catalogBlocks or search results."
-					}
-				},
-				"required": [
-					"id"
-				]
-			}
-		},
-		{
-			"name": "propose_plan",
-			"modes": [
-				"ask"
-			],
-			"description": "Ask only. When you recommend changes to currentPage, call this once with the changes as page-patch/v1 ops on currentPage block ids, alongside your text answer: set_variant {blockId, variant from get_block}; set {blockId, field (title or a key of currentPage.blocks[].copyKeys; when copyKeys has headline, headline is the visible heading and title only names the block in the section list), value}; set_items {blockId, items}; add {kind, catalogBlock, at?, title, variant?, copy?}: a new section from the Stock catalog (catalogBlock = block.<name> of that kind, e.g. block.steps of kind features; call get_block for it first; several blocks of one kind are fine); replace {blockId, catalogBlock, variant?}: another Stock catalog block of the same kind in the block's place (e.g. block.hero -> block.storehero; get_block lists its variants; the host carries the text fields the new block renders and names the rest as dropped); remove {blockId}; move {blockId, to}. Each op gets a short reason. The host checks every op against the page and the pinned catalog and returns valid op ids and invalid ops with allowed values; fix invalid ops once with a second call. Nothing changes: the author sees a plan card and may run the ops they tick with Apply in Build.",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"summary": {
-						"type": "string",
-						"description": "One line: what the plan does, in the author's language."
-					},
-					"ops": {
-						"type": "array",
-						"maxItems": 24,
-						"items": {
-							"type": "object",
-							"properties": {
-								"op": {
-									"type": "string",
-									"enum": [
-										"set_variant",
-										"set",
-										"set_items",
-										"add",
-										"replace",
-										"remove",
-										"move"
-									]
-								},
-								"blockId": {
-									"type": "string",
-									"description": "Id of a block on currentPage (currentPage.blocks[].id)."
-								},
-								"field": {
-									"type": "string"
-								},
-								"value": {
-									"type": [
-										"string",
-										"null"
-									]
-								},
-								"kind": {
-									"type": "string"
-								},
-								"catalogBlock": {
-									"type": "string",
-									"description": "replace: the Stock catalog block (block.<label>) that takes the block's place, same kind as the block. add: the Stock catalog block to add (its kind goes in kind)."
-								},
-								"at": {
-									"type": "integer"
-								},
-								"to": {
-									"type": "integer"
-								},
-								"title": {
-									"type": "string"
-								},
-								"variant": {
-									"type": [
-										"string",
-										"null"
-									]
-								},
-								"copy": {
-									"type": "object",
-									"description": "Copy keys the kind renders (slots).",
-									"additionalProperties": {
-										"type": "string"
-									}
-								},
-								"items": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"label": {
-												"type": "string"
-											},
-											"detail": {
-												"type": "string"
-											},
-											"value": {
-												"type": "string"
-											},
-											"note": {
-												"type": "string"
-											},
-											"group": {
-												"type": "string"
-											},
-											"icon": {
-												"type": "string",
-												"description": "Feature rows: a Lucide icon name (get_block_details lists them)."
-											}
-										},
-										"required": [
-											"label"
-										]
-									}
-								},
-								"reason": {
-									"type": "string",
-									"description": "Why, in one short sentence in the author's language."
-								}
-							},
-							"required": [
-								"op"
-							]
-						}
-					}
-				},
-				"required": [
-					"ops"
-				]
-			}
-		},
-		{
-			"name": "get_block_details",
-			"modes": [
-				"build"
-			],
-			"description": "Optional. Load schema for one unknown block id. Do not call this for every shortlist block. Leave a step for propose_layout.",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"variant": {
-						"type": "string"
-					},
-					"target": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"id"
-				]
-			}
-		},
-		{
-			"name": "propose_layout",
-			"modes": [
-				"build"
-			],
-			"description": "Assemble a Page from screenId (the search pick) and your typed intent (locale, demoData, requireBlocks). Always include blocks: one entry per block kind with title and lede in the page language, nav/sidenav items naming the sections; with demoData=true also items (rows) for overview, metrics, chart and activity. Does not apply. Follow-up copy uses edits. A rejected block choice returns code, path blocks[i].variant or blocks[i].catalogBlock, and fix (the block's kind, the catalog block it renders as, the rejected value, allowedVariants, defaultVariant, catalogBlocksWithVariant); fix only that block. The same error twice on one block, or a run that ends rejected, keeps every other block and uses the catalog default for that block (said in warnings).",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"brief": {
-						"type": "string"
-					},
-					"scenarioId": {
-						"type": "string",
-						"enum": [
-							"dashboard",
-							"landing",
-							"website"
-						]
-					},
-					"screenId": {
-						"type": "string"
-					},
-					"expectedRevision": {
-						"type": "integer"
-					},
-					"title": {
-						"type": "string",
-						"description": "Page title in the page language."
-					},
-					"locale": {
-						"type": "string",
-						"description": "BCP 47 language of the author's request, e.g. ru or en. All copy uses it."
-					},
-					"demoLabel": {
-						"type": "string",
-						"description": "Only when the author asked for demo/fake/sample data: a short marker in the page language, e.g. Demo data."
-					},
-					"blocks": {
-						"type": "array",
-						"description": "Copy per Stock block kind in the page language. The host keeps the Stock block order and falls back to catalog copy for missing fields. Data items (overview, metrics, chart, activity) are kept only when the author explicitly asked for demo data.",
-						"items": {
-							"type": "object",
-							"properties": {
-								"kind": {
-									"type": "string",
-									"x-buildy-enum": "page.contentKinds"
-								},
-								"title": {
-									"type": "string",
-									"description": "Visible section heading in the page language. Required."
-								},
-								"eyebrow": {
-									"type": "string"
-								},
-								"headline": {
-									"type": "string"
-								},
-								"lede": {
-									"type": "string"
-								},
-								"action": {
-									"type": "string",
-									"description": "Label of the block's button or link. On features it is the section link next to the heading (e.g. View all) and needs href on the same block."
-								},
-								"note": {
-									"type": "string"
-								},
-								"brand": {
-									"type": "string"
-								},
-								"contact": {
-									"type": "string"
-								},
-								"legal": {
-									"type": "string"
-								},
-								"days": {
-									"type": "string"
-								},
-								"address": {
-									"type": "string"
-								},
-								"href": {
-									"type": "string",
-									"description": "Target of this block's action: #fragment, /path or https URL. A link the author names for a section goes on that section's block."
-								},
-								"items": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"label": {
-												"type": "string",
-												"description": "Row label, metric name, chart x label, nav link, or event text."
-											},
-											"value": {
-												"type": "string",
-												"description": "Display figure, e.g. 128 or 94%. Metrics, overview, chart, menu only."
-											},
-											"note": {
-												"type": "string",
-												"description": "Delta, status, or time, e.g. +12% or 2 h ago."
-											},
-											"detail": {
-												"type": "string",
-												"description": "Secondary line, e.g. who and which project."
-											},
-											"group": {
-												"type": "string",
-												"description": "Sidenav only: group heading for this link, e.g. Workspace."
-											},
-											"icon": {
-												"type": "string",
-												"description": "A Lucide name from catalogSources.icons, on rows whose slot renders an icon (features). The host validates it against the block's published props schema; other rows ignore it."
-											}
-										},
-										"required": [
-											"label"
-										]
-									}
-								},
-								"variant": {
-									"type": "string",
-									"description": "Catalog variant of this block: one of catalogSources.blocks[<its catalog block>].variants. Without catalogBlock the block renders as the screen's block of this kind, so use that block's variants or also set catalogBlock. The host rejects unknown variants with the allowed list; omit for the catalog default."
-								},
-								"catalogBlock": {
-									"type": "string",
-									"description": "Optional Stock catalog block (block.<label> or a catalog asset id). Default: the block of this kind on the chosen screen."
-								},
-								"edit": {
-									"type": "boolean",
-									"description": "Follow-up turns on currentPage only: true on blocks the author asked to change or add. Other existing blocks keep their copy and rows."
-								}
-							},
-							"required": [
-								"kind",
-								"title"
-							]
-						}
-					},
-					"demoData": {
-						"type": "boolean",
-						"description": "Records whether the author explicitly asked for demo, fake, sample, mock or test data (in any language): true if asked, false if they asked to remove it or use real data, omit otherwise. The host never generates data: when true YOU must write the rows in blocks[].items (overview, metrics, chart, activity)."
-					},
-					"requireBlocks": {
-						"type": "array",
-						"description": "Catalog block labels the author explicitly asked for (search_catalog labels.blocks, e.g. sidenav for a sidebar or app shell, bottomnav, sitemap for a footer). The host only adds them from Stock screens that contain them.",
-						"items": {
-							"type": "string"
-						}
-					},
-					"newPage": {
-						"type": "boolean",
-						"description": "true only when the author asked for a new page instead of editing currentPage."
-					},
-					"remove": {
-						"type": "array",
-						"description": "Follow-up turns only: block kinds the author explicitly asked to remove. Never remove anything else.",
-						"items": {
-							"type": "string",
-							"x-buildy-enum": "page.contentKinds"
-						}
-					},
-					"edits": {
-						"type": "array",
-						"items": {
-							"type": "object",
-							"properties": {
-								"kind": {
-									"type": "string",
-									"enum": [
-										"nav",
-										"hero",
-										"features",
-										"menu",
-										"hours",
-										"cta",
-										"footer"
-									]
-								},
-								"field": {
-									"type": "string",
-									"enum": [
-										"eyebrow",
-										"headline",
-										"lede",
-										"action",
-										"note",
-										"brand",
-										"contact",
-										"legal",
-										"days",
-										"address"
-									]
-								},
-								"value": {
-									"type": "string",
-									"description": "Replacement copy only, never the author's instruction sentence."
-								},
-								"path": {
-									"type": "string",
-									"description": "Optional kind.field path when kind/field are omitted."
-								},
-								"slot": {
-									"type": "string"
-								}
-							},
-							"required": [
-								"value"
-							]
-						}
-					}
-				},
-				"required": [
-					"brief",
-					"screenId",
-					"locale",
-					"blocks"
-				]
-			}
-		},
-		{
-			"name": "edit_page",
-			"modes": [
-				"build"
-			],
-			"description": "Edit currentPage with page-patch/v1 operations (https://schema.buildy.tw/page-patch.schema.json). The host validates every op against the block slots and the Stock catalog and returns an unapplied proposal. A rejection names the failed op (opIndex) and what fixes it (fix: the keys the op takes, allowed values, block ids): resend the ops with only that op fixed or left out. Never send a layout.",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"ops": {
-						"type": "array",
-						"description": "page-patch/v1 operations, applied in order, all or nothing. set {blockId, field: title|summary|copy key, value (null removes a copy key)}; set_items {blockId, items} replaces rows; add {kind, catalogBlock, at, title, variant?, copy?, items?} adds a Stock catalog block of that kind (block.<name> from catalogSources; several blocks of one kind are fine) at top-level slot at between the header and the footer; replace {blockId, kind, catalogBlock?, title?, variant?, copy?, items?} puts another catalog block of the same kind (catalogBlock) or the page's sample block (without it) in the block's place; remove {blockId}; move {blockId, to}; set_page {field: title|seo.title|seo.description, value}; set_variant {blockId, variant (a catalog variant of the block from get_block_details; null = catalog default)}. field belongs to set and set_page only. Use block ids from currentPage.blocks and only the slots listed there.",
-						"items": {
-							"type": "object",
-							"properties": {
-								"op": {
-									"type": "string",
-									"enum": [
-										"set",
-										"set_items",
-										"add",
-										"replace",
-										"remove",
-										"move",
-										"set_page",
-										"set_variant"
-									]
-								},
-								"blockId": {
-									"type": "string"
-								},
-								"field": {
-									"type": "string"
-								},
-								"value": {
-									"type": [
-										"string",
-										"null"
-									]
-								},
-								"kind": {
-									"type": "string"
-								},
-								"catalogBlock": {
-									"type": "string",
-									"description": "add / replace: the Stock catalog block (block.<name>) of this kind, e.g. block.steps, block.pricing, block.features."
-								},
-								"at": {
-									"type": "integer"
-								},
-								"to": {
-									"type": "integer"
-								},
-								"title": {
-									"type": "string"
-								},
-								"variant": {
-									"type": [
-										"string",
-										"null"
-									]
-								},
-								"copy": {
-									"type": "object",
-									"description": "Copy keys the kind renders (slots).",
-									"additionalProperties": {
-										"type": "string"
-									}
-								},
-								"items": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"label": {
-												"type": "string"
-											},
-											"detail": {
-												"type": "string"
-											},
-											"value": {
-												"type": "string"
-											},
-											"note": {
-												"type": "string"
-											},
-											"group": {
-												"type": "string"
-											},
-											"icon": {
-												"type": "string",
-												"description": "Feature rows: a Lucide icon name (get_block_details lists them)."
-											}
-										},
-										"required": [
-											"label"
-										]
-									}
-								}
-							},
-							"required": [
-								"op"
-							]
-						}
-					},
-					"baseRevision": {
-						"type": "integer"
-					},
-					"demoData": {
-						"type": "boolean",
-						"description": "Same typed intent as propose_layout: true only when the author asked for demo data."
-					},
-					"demoLabel": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"ops"
-				]
-			}
-		},
-		{
-			"name": "get_skill",
-			"modes": [
-				"build"
-			],
-			"description": "Read an enabled allowlisted skill by id.",
-			"parameters": {
-				"type": "object",
-				"properties": {
-					"id": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"id"
-				]
-			}
-		}
-	]
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "format": "buildy-agent-tools",
+ "version": 2,
+ "description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
+ "modes": {
+  "ask": {
+   "description": "Conversation about the catalog and the page. Ask never changes the page: a write_page proposal is kept as a card the author applies in Build. Tool choice auto; the model's final text is the answer.",
+   "toolChoice": "auto"
+  },
+  "build": {
+   "description": "Edit the page. Tool choice auto: a text-only answer is shown and creates no proposal; a successful write_page creates one pending proposal (a diff) the author applies with Apply.",
+   "toolChoice": "auto"
+  }
+ },
+ "enumSources": {
+  "catalog.site": "Stock facet vocabulary: site type",
+  "catalog.section": "Stock facet vocabulary: section",
+  "catalog.job": "Stock facet vocabulary: job",
+  "catalog.industry": "Stock search vocabulary: industry",
+  "catalog.blocks": "Stock search vocabulary: block labels"
+ },
+ "tools": [
+  {
+   "name": "search_catalog",
+   "modes": [
+    "ask",
+    "build"
+   ],
+   "description": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Screens are ranking hints: each result lists its sections as registry items [{item, variant}] you may start from or ignore. When no renderable screen matches every facet the host drops the fewest facets and says which in relaxed. Do not repeat a search that returned items.",
+   "descriptionByMode": {
+    "ask": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored screens with their sections as registry items. Read-only."
+   },
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "q": {
+      "type": "string",
+      "description": "Free text in catalog terms (English catalog words work best, e.g. sidebar, shell, kanban, pricing). Matched against Stock titles, subtitles, block names and facet labels."
+     },
+     "site": {
+      "type": "string",
+      "x-buildy-enum": "catalog.site",
+      "description": "Site type: landing (one conversion page), website (multi-page site home), app, docs, shop, blog."
+     },
+     "section": {
+      "type": "string",
+      "x-buildy-enum": "catalog.section"
+     },
+     "job": {
+      "type": "string",
+      "x-buildy-enum": "catalog.job"
+     },
+     "industry": {
+      "type": "string",
+      "x-buildy-enum": "catalog.industry"
+     },
+     "blocks": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "x-buildy-enum": "catalog.blocks"
+      },
+      "description": "Block labels every screen must contain, e.g. [\"sidenav\"] for a built-in sidebar."
+     },
+     "page": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "browse": {
+      "type": "boolean",
+      "description": "true: also return facets (renderable screen counts per facet value for this filter) to drill down with another call."
+     }
+    }
+   }
+  },
+  {
+   "name": "get_block",
+   "modes": [
+    "ask",
+    "build"
+   ],
+   "description": "Read one registry item: its variants (what each sets), the props you write (names, kinds, enums, rows; ? = optional), the sample props a new block starts with, and its Stock link. item is a registry name from the item index (feature-grid), a Stock spec (block.features) or label. Read-only.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "item": {
+      "type": "string",
+      "description": "Registry item name, Stock spec or label."
+     },
+     "variant": {
+      "type": "string",
+      "description": "Variant whose sample props to show; default variant when omitted."
+     }
+    },
+    "required": [
+     "item"
+    ]
+   }
+  },
+  {
+   "name": "get_page",
+   "modes": [
+    "ask",
+    "build"
+   ],
+   "description": "Read the page document as it is now in this turn: { version, slug, title, locale, seo, blocks:[{ id, item, variant, props }] }. props are exactly the component props. Read-only.",
+   "parameters": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "write_page",
+   "modes": [
+    "ask",
+    "build"
+   ],
+   "descriptionByMode": {
+    "ask": "Write a proposal for the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). Nothing is applied: the author applies the proposal in Build with one click. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again.",
+    "build": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it (page-spec/v2 schema, each block's props against the registry props schema, header-like items first, footer-like last) and returns the diff; the author applies it with Apply. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again."
+   },
+   "description": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it and returns the diff or [{ path, code, expected, got }].",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "page": {
+      "type": "object",
+      "description": "The whole page document: { title, slug, locale, seo: { title, description }, blocks: [{ id?, item, variant?, props }] }. A block without id gets one; a new block starts from the registry sample props, then your props. locale is the ISO code of the language the author writes in.",
+      "additionalProperties": true
+     },
+     "patch": {
+      "type": "array",
+      "description": "RFC 6902 operations on the page document (add, replace, remove, move, copy, test), paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- (append).",
+      "items": {
+       "type": "object",
+       "additionalProperties": true
+      }
+     }
+    }
+   }
+  }
+ ]
 }
