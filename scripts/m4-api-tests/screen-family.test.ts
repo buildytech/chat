@@ -106,7 +106,7 @@ test("t149u: family change is its own undo step (set_family) with a non-modal la
 	assert.match(store, /pinFamily\(family: PageFamily \| null\)/);
 	assert.match(store, /type Snapshot = \{ page: Page; provenance: StoredPageProvenance \| null \}/, "undo restores the family with the page");
 	assert.match(web("app/ChatColumn.svelte"), /data-slot="family-note"/);
-	assert.match(web("app/SectionsList.svelte"), /data-action="family-pin"/);
+	assert.doesNotMatch(web("app/SectionsList.svelte"), /data-action="family-pin"/);
 	for (const lang of ["en", "ru"]) {
 		const dict = JSON.parse(web(`lib/i18n/${lang}.json`)) as Record<string, Record<string, string>> | Record<string, string>;
 		const flat = JSON.stringify(dict);

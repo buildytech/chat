@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { packSkinOptions } from "$lib/theme/custom-skin.svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import { cn } from "$registry/utils/cn";
-	import { getChatMode, getChatSkin } from "$lib/chat-core";
+	import { getChatMode } from "$lib/chat-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
-	import { downloadPageZip, getCurrentPage } from "$lib/page-store";
 	import CodePane from "./CodePane.svelte";
 	import InspectorSlideOver from "./InspectorSlideOver.svelte";
 	import { inspectorPanel } from "$lib/inspector/panel.svelte";
@@ -32,12 +30,6 @@
 		}
 	}
 
-	function onDownloadZip() {
-		const page = getCurrentPage();
-		if (!page) return;
-		void downloadPageZip(page, packSkinOptions(getChatSkin()));
-	}
-
 	function toggleInspector() {
 		inspectorPanel.toggle();
 	}
@@ -57,7 +49,6 @@
 		inspectorOpen={inspectorPanel.open}
 		{ontogglechat}
 		ontoggleinspector={toggleInspector}
-		{onDownloadZip}
 	/>
 	{#if creatorLayout.view === "preview"}
 		<Group align="stretch" class="relative min-h-0 flex-1 gap-0" data-slot="build-editor" data-mode={build ? "build" : "ask"}>

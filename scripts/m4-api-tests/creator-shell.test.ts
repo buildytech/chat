@@ -61,11 +61,13 @@ test("Escape closes the model menu and Ctrl+K searches saved chats", () => {
 	assert.match(sidebar, /ctrlKey/);
 	assert.match(sidebar, /key === "Escape"/);
 	assert.match(sidebar, /deleteAllSessions/);
-	assert.match(sidebar, /setSelectedModelId/);
+	assert.doesNotMatch(sidebar, /setSelectedModelId/);
+	assert.doesNotMatch(sidebar, /data-action="theme-toggle"/);
 	assert.match(sidebar, /ConfirmDialog/);
 	assert.match(sidebar, /pendingDelete/);
 	assert.match(sidebar, /sidebar\.deleteAllConfirmBody/);
-	assert.match(sidebar, /sidebar\.brandMark/);
+	assert.match(sidebar, /Boxes/);
+	assert.doesNotMatch(sidebar, /sidebar\.brandMark/);
 	assert.doesNotMatch(sidebar, /function clearStorage/);
 	assert.doesNotMatch(sidebar, /sidebar\.comingSoon/);
 	assert.doesNotMatch(sidebar, /sidebar\.settingsSoon/);
@@ -80,11 +82,12 @@ test("Code pane copy reports success or failure", () => {
 	assert.match(s, /code\.copyEmpty/);
 });
 
-test("Stock search is a visible text filter, not only scenario chips", () => {
-	const s = source("HomeOnboarding");
-	assert.match(s, /setStockQuery/);
-	assert.match(s, /stock-search/);
-	assert.match(s, /home\.stockSearch/);
+test("Stock search lives on the Blocks feed; the chat home does not pick screens", () => {
+	const feed = source("BlocksFeed");
+	assert.match(feed, /feed-search/);
+	assert.match(feed, /feed\.search/);
+	const home = source("HomeOnboarding");
+	assert.doesNotMatch(home, /setStockQuery|stock-search|selectScenario|attachScreen/);
 });
 
 test("local session delete is enabled and removes pages", () => {
@@ -106,8 +109,9 @@ test("narrow viewport uses Creator tabs, not only the preview device frame", () 
 	assert.match(source("PreviewPane"), /missingLabels/);
 });
 
-test("first send from home keeps the picked scenario and screen on the new chat", () => {
+test("first send from home does not attach a picked scenario or screen", () => {
 	const s = sessionCore();
 	const send = s.slice(s.indexOf("async function sendMessageMock"), s.indexOf("const userMsg"));
-	assert.match(send, /const picked = \{ scenarioId: getScenarioId\(\), screenId: getScreenId\(\) \};\s*session = await createSession\(\);\s*hydrateSessionContext\(picked\);/);
+	assert.match(send, /session = await createSession\(\)/);
+	assert.doesNotMatch(send, /scenarioId: getScenarioId\(\), screenId: getScreenId\(\)/);
 });

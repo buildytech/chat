@@ -15,6 +15,7 @@
 	import Textarea from "$registry/kit/ui/textarea/Textarea.svelte";
 	import Disclosure from "$registry/kit/ui/disclosure/Disclosure.svelte";
 	import Summary from "$registry/compose/Summary.svelte";
+	import Check from "@lucide/svelte/icons/check";
 	import ChevronDown from "@lucide/svelte/icons/chevron-down";
 	import CollectionChips from "./CollectionChips.svelte";
 	import { t } from "$lib/i18n/dictionary";
@@ -69,6 +70,7 @@
 
 	let ime = $state(false);
 	let modelOpen = $state(false);
+	let modeOpen = $state(false);
 
 	const selected = $derived(chatModels.find((m) => m.id === selectedModelId) ?? chatModels[0] ?? null);
 	const modelButtonLabel = $derived(selected ? `${selected.label}` : t("composer.modelGrok"));
@@ -104,10 +106,17 @@
 		queueMicrotask(() => document.getElementById("composer-model-trigger")?.focus());
 	}
 
+	function closeModeMenu() {
+		if (!modeOpen) return;
+		modeOpen = false;
+		queueMicrotask(() => document.getElementById("composer-mode-trigger")?.focus());
+	}
+
 	function onEscape(event: KeyboardEvent) {
-		if (event.key !== "Escape" || !modelOpen) return;
+		if (event.key !== "Escape" || (!modelOpen && !modeOpen)) return;
 		event.preventDefault();
-		closeModelMenu();
+		if (modeOpen) closeModeMenu();
+		else closeModelMenu();
 	}
 
 	function onKeydown(event: KeyboardEvent) {
@@ -117,7 +126,7 @@
 		}
 		if (ime || event.isComposing || !(event.target instanceof HTMLTextAreaElement)) return;
 		if (event.key === "Enter" && !event.shiftKey) {
-			if (modelOpen) return;
+			if (modelOpen || modeOpen) return;
 			event.preventDefault();
 			submit(event);
 		}
@@ -132,18 +141,14 @@
 <svelte:window
 	onkeydown={onEscape}
 	onclick={(event) => {
-		if (
-			modelOpen &&
-			event.target instanceof Element &&
-			!event.target.closest("#composer-model-list, #composer-model-trigger")
-		)
-			modelOpen = false;
+		if (!(event.target instanceof Element)) return;
+		if (modelOpen && !event.target.closest("#composer-model-list, #composer-model-trigger")) modelOpen = false;
+		if (modeOpen && !event.target.closest("#composer-mode-list, #composer-mode-trigger")) modeOpen = false;
 	}}
 />
 
 <Block
-	tag="footer"
-	class={cn("shrink-0 bg-background p-2", variant === "thread" && "sticky bottom-0 z-10 lg:static lg:z-0")}
+	class="shrink-0 bg-background p-2"
 	data-slot="composer-region"
 >
 	<Form class="relative flex flex-col gap-2" onsubmit={submit} onkeydown={onKeydown}>
@@ -152,7 +157,7 @@
  <Stack class="gap-1" data-slot="chat-block-scope">
  <Text tag="p" class="text-xs text-muted-foreground">{t("scope.only")}</Text>
  <Group class="flex-wrap gap-1">
- {#each blockScope.ids(getSelectedSession()?.id) as id}
+ {#each blockScope.ids(getSelectedSession()?.id) as id (id)}
  <Button size="sm" variant="ghost" title={t("scope.remove")} onclick={() => { const session = getSelectedSession(); if(session) blockScope.toggle(session.id,id); }}>{id} ×</Button>
  {/each}
  <Button size="sm" variant="ghost" onclick={() => { const session = getSelectedSession(); if(session) blockScope.clear(session.id); }}>{t("scope.clear")}</Button>
@@ -166,7 +171,7 @@
 				name="message"
 				rows="3"
 				placeholder={fieldPlaceholder}
-				class="min-h-16 w-full resize-none overflow-y-auto rounded border-0 bg-transparent px-2 py-2 text-sm leading-relaxed text-foreground shadow-none outline-none"
+				class="min-h-16 w-full resize-none overflow-y-auto rounded border-0 bg-transparent px-2 py-2 text-sm leading-5 text-foreground shadow-none outline-none"
 				value={draft}
 				aria-describedby="composer-hint"
 				oninput={(event: Event) => (draft = (event.currentTarget as HTMLTextAreaElement).value)}
@@ -184,27 +189,27 @@
 			/>
 			<Group class="items-end justify-between gap-2" data-slot="composer-actions">
 				<Group class="min-w-0 flex-1 flex-wrap items-center gap-2">
-					<Group
-						class="w-fit items-center gap-0 rounded bg-muted p-1"
-						role="group"
+					<Button
+						id="composer-mode-trigger"
+						type="button"
+						class="inline-flex h-8 w-fit items-center gap-1 rounded px-2 text-xs text-foreground hover:bg-accent"
 						aria-label={t("composer.modeLabel")}
+						title={t(`composer.mode.${mode}.hint`)}
+						expanded={modeOpen}
+						aria-controls="composer-mode-list"
+						data-mode={mode}
+						onclick={() => {
+							if (modeOpen) {
+								closeModeMenu();
+								return;
+							}
+							modelOpen = false;
+							modeOpen = true;
+						}}
 					>
-						{#each AGENT_MODES as option (option)}
-							<Button
-								type="button"
-								class={cn(
-									"h-6 rounded px-2 text-xs font-medium",
-									mode === option ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground",
-								)}
-								pressed={mode === option}
-								title={t(`composer.mode.${option}.hint`)}
-								data-mode={option}
-								onclick={() => setChatMode(option)}
-							>
-								<Text tag="span">{t(`composer.mode.${option}`)}</Text>
-							</Button>
-						{/each}
-					</Group>
+						<Text tag="span">{t(`composer.mode.${mode}`)}</Text>
+						<Icon size="sm"><ChevronDown /></Icon>
+					</Button>
 					<Button
 						id="composer-model-trigger"
 						type="button"
@@ -218,6 +223,7 @@
 								closeModelMenu();
 								return;
 							}
+							modeOpen = false;
 							modelOpen = true;
 							queueMicrotask(() =>
 								document.querySelector<HTMLButtonElement>("#composer-model-list button:not(:disabled)")?.focus(),
@@ -239,7 +245,12 @@
 						<Button
 							type="submit"
 							disabled={cannotSend}
-							class="inline-flex size-8 items-center justify-center rounded-full bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
+							class={cn(
+								"inline-flex size-8 items-center justify-center rounded-full disabled:opacity-50",
+								mode === "ask"
+									? "bg-chart-2 text-background hover:bg-chart-2/90"
+									: "bg-foreground text-background hover:bg-foreground/90",
+							)}
 							aria-label={t("composer.send")}><Icon size="sm"><ArrowUp /></Icon></Button
 						>
 					{/if}
@@ -247,6 +258,35 @@
 			</Group>
 		</Stack>
 		<Text tag="p" id="composer-hint" class="px-2 text-xs text-muted-foreground">{t("composer.enterHint")}</Text>
+		{#if modeOpen}
+			<Stack
+				align="stretch"
+				id="composer-mode-list"
+				class="absolute bottom-full left-0 z-20 mb-2 w-56 gap-1 rounded bg-popover p-1"
+				role="group"
+				aria-label={t("composer.modeLabel")}
+			>
+				{#each AGENT_MODES as option (option)}
+					<Button
+						type="button"
+						class={cn(
+							"w-full items-center justify-between gap-2 rounded px-2 py-1 text-left text-xs",
+							mode === option ? "bg-accent text-foreground" : "text-foreground hover:bg-accent",
+						)}
+						pressed={mode === option}
+						title={t(`composer.mode.${option}.hint`)}
+						data-mode={option}
+						onclick={() => {
+							setChatMode(option);
+							closeModeMenu();
+						}}
+					>
+						<Text tag="span">{t(`composer.mode.${option}`)}</Text>
+						{#if mode === option}<Icon size="sm"><Check /></Icon>{/if}
+					</Button>
+				{/each}
+			</Stack>
+		{/if}
 		{#if modelOpen}
 			<Stack
 				align="stretch"

@@ -1,9 +1,8 @@
 <script lang="ts">
+	import Boxes from "@lucide/svelte/icons/boxes";
 	import ChevronDown from "@lucide/svelte/icons/chevron-down";
 	import ChevronUp from "@lucide/svelte/icons/chevron-up";
 	import Circle from "@lucide/svelte/icons/circle";
-	import Sun from "@lucide/svelte/icons/sun";
-	import Moon from "@lucide/svelte/icons/moon";
 	import X from "@lucide/svelte/icons/x";
 	import Search from "@lucide/svelte/icons/search";
 	import Settings from "@lucide/svelte/icons/settings";
@@ -11,7 +10,6 @@
 	import MessageSquarePlus from "@lucide/svelte/icons/message-square-plus";
 	import { tick, type Component } from "svelte";
 	import Block from "$registry/compose/Block.svelte";
-	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";
@@ -25,13 +23,6 @@
 	import { THEME_PREFS } from "$lib/theme/theme-pref";
 	import { cn } from "$registry/utils/cn";
 	import { deleteAllSessions, type SessionSummary } from "$lib/chat-core";
-	import {
-		getSelectedModelId,
-		isChatModelAvailable,
-		listChatModels,
-		setSelectedModelId,
-	} from "$lib/browser/models.svelte";
-	import { modelUnavailableCode } from "@buildytech/builder-core";
 	import ConfirmDialog from "./ConfirmDialog.svelte";
 	import SettingsSessionFile from "./SettingsSessionFile.svelte";
 	import SettingsThemeImport from "./SettingsThemeImport.svelte";
@@ -75,9 +66,6 @@
 	let settingsOpen = $state(false);
 	let storageNote = $state("");
 	let pendingDelete = $state<{ kind: "one"; id: string; title: string } | { kind: "all" } | null>(null);
-	const chatModels = listChatModels();
-	const selectedModelId = $derived(getSelectedModelId());
-
 	const mainItems: NavItem[] = [
 		{ id: "search", label: t("sidebar.search"), icon: Search, kbd: t("sidebar.searchKbd") },
 	];
@@ -173,39 +161,33 @@
 
 <Block
 	tag="aside"
-	class="flex h-full shrink-0 flex-col justify-between overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
+	class="flex h-full shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
 	style={`width: ${creatorLayout.columns ? creatorLayout.widths.nav : PANE_RANGE.nav.default}px`}
 	aria-label={t("sidebar.mainNav")}
 	data-nav={collapsed ? "collapsed" : "expanded"}
 >
-	<Stack align="stretch" class="min-h-0 shrink gap-2 overflow-y-auto p-2 in-data-[nav=collapsed]:items-center">
-		<Group class="justify-between gap-2 in-data-[nav=collapsed]:flex-col in-data-[nav=collapsed]:items-center">
-			<Group class="min-w-0 gap-2 in-data-[nav=collapsed]:hidden">
-				<Box
-					class="flex size-8 items-center justify-center rounded bg-primary text-xs font-semibold text-primary-foreground"
-					aria-hidden="true"
-				>
-					<Text tag="span">{t("sidebar.brandMark")}</Text>
-				</Box>
-				<Text tag="span" class="truncate text-sm font-semibold">{t("sidebar.brand")}</Text>
-			</Group>
-			<Group class="gap-0 in-data-[nav=collapsed]:flex-col">
-				<Button
-					class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-					aria-label={t("sidebar.newChat")}
-					title={t("sidebar.newChat")}
-					onclick={onNew}
-				>
-					<Icon size="sm"><MessageSquarePlus /></Icon>
-				</Button>
-				{#if onClose}
-					<Button class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent lg:hidden" aria-label={t("sidebar.close")} title={t("sidebar.close")} data-action="nav-close" onclick={onClose}>
-						<Icon size="sm"><X /></Icon>
-					</Button>
-				{/if}
-			</Group>
+	<Group class="h-10 shrink-0 items-center justify-between gap-2 border-b border-sidebar-border px-2 in-data-[nav=collapsed]:justify-center">
+		<Group class="min-w-0 items-center gap-2 in-data-[nav=collapsed]:hidden">
+			<Icon size="sm"><Boxes /></Icon>
+			<Text tag="span" class="truncate text-sm font-semibold">{t("sidebar.brand")}</Text>
 		</Group>
-
+		<Group class="items-center gap-0">
+			<Button
+				class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+				aria-label={t("sidebar.newChat")}
+				title={t("sidebar.newChat")}
+				onclick={onNew}
+			>
+				<Icon size="sm"><MessageSquarePlus /></Icon>
+			</Button>
+			{#if onClose}
+				<Button class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent lg:hidden" aria-label={t("sidebar.close")} title={t("sidebar.close")} data-action="nav-close" onclick={onClose}>
+					<Icon size="sm"><X /></Icon>
+				</Button>
+			{/if}
+		</Group>
+	</Group>
+	<Stack align="stretch" class="min-h-0 flex-1 gap-2 overflow-y-auto p-2 in-data-[nav=collapsed]:items-center">
 		<Stack
 			align="stretch"
 			class="gap-0 in-data-[nav=collapsed]:items-center"
@@ -285,7 +267,7 @@
 						{/if}
 					</Icon>
 				</Button>
-				<Stack align="stretch" id="creator-recents" class="min-h-0 gap-0" hidden={!recentsOpen}>
+				<Stack align="stretch" id="creator-recents" class="min-h-0 gap-1" hidden={!recentsOpen}>
 					{#if visibleSessions.length === 0}
 						<Text tag="p" class="px-2 py-2 text-sm text-muted-foreground">
 							{searchDraft.trim() ? t("sidebar.noMatches") : t("sidebar.empty")}
@@ -369,39 +351,6 @@
 						onclick={closeSettings}><Icon size="sm"><X /></Icon></Button
 					>
 				</Group>
-				<Text tag="p" class="text-xs text-muted-foreground">{t("sidebar.settingsHint")}</Text>
-				<Text tag="p" class="text-xs font-medium text-foreground">{t("sidebar.settingsModel")}</Text>
-				{#each chatModels as model, index (model.id)}
-					<Button
-						id={index === 0 ? "creator-settings-model" : undefined}
-						class={cn(
-							"flex w-full items-center justify-start rounded px-2 py-1 text-left text-xs",
-							isChatModelAvailable(model.id) ? "hover:bg-accent/70" : "cursor-not-allowed opacity-60",
-							model.id === selectedModelId ? "bg-accent text-accent-foreground" : "text-foreground",
-						)}
-						pressed={model.id === selectedModelId}
-						disabled={!isChatModelAvailable(model.id)}
-						title={isChatModelAvailable(model.id)
-							? undefined
-							: t(
-									modelUnavailableCode(model) === "model_too_slow"
-										? "composer.modelTooSlow"
-										: "composer.modelUnavailable",
-								)}
-						onclick={() => setSelectedModelId(model.id)}
-					>
-						{model.label}
-					</Button>
-					{#if !isChatModelAvailable(model.id)}
-						<Text tag="p" class="px-2 text-xs text-muted-foreground"
-							>{t(
-								modelUnavailableCode(model) === "model_too_slow"
-									? "composer.modelTooSlow"
-									: "composer.modelUnavailable",
-							)}</Text
-						>
-					{/if}
-				{/each}
 				<!-- The chat UI theme (ADR 0026): system / dark / light; the preview keeps its own skin. -->
 				<Text tag="p" class="text-xs font-medium text-foreground" id="creator-settings-theme-label"
 					>{t("settings.theme")}</Text
@@ -453,19 +402,6 @@
 				{/if}
 			</Stack>
 		{/if}
-		<Button
-			class="flex w-full items-center justify-start gap-2 rounded px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground in-data-[nav=collapsed]:size-8 in-data-[nav=collapsed]:justify-center in-data-[nav=collapsed]:px-0 in-data-[nav=collapsed]:py-0"
-			aria-label={t(theme.isDark ? "theme.toLight" : "theme.toDark")}
-			title={t(theme.isDark ? "theme.toLight" : "theme.toDark")}
-			data-action="theme-toggle"
-			onclick={() => theme.toggle()}
-		>
-			<Icon size="sm"
-				>{#if theme.isDark}<Sun />{:else}<Moon />{/if}</Icon
-			>
-			<Text tag="span" class="in-data-[nav=collapsed]:hidden">{t(theme.isDark ? "theme.toLight" : "theme.toDark")}</Text
-			>
-		</Button>
 	</Stack>
 </Block>
 

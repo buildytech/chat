@@ -1,9 +1,10 @@
 <!--
   Sections tab (ADR 0024 step B): the current page's top-level sections in page order, each with its Stock thumbnail,
-  title and spec / variant. Reorder by dragging the handle (pointer), with the up / down buttons, or with Alt+Arrow
-  Up / Down on a focused section (announced in a live region); remove a section; change the selected section's
-  variant. Every action is an inspector operation (page-spec, props and catalog gates, one undo step, no model
-  call). Selection is the page store's: a click here selects and reveals the section in the preview, a pick in the
+  title and spec. Reorder by dragging the handle (pointer), with the up / down buttons, or with Alt+Arrow
+  Up / Down on a focused section (announced in a live region); remove a section. Variant and screen family are not
+  picked here: the variant lives in the inspector, and the family stays an advisory note on the chat column.
+  Every action is an inspector operation (page-spec, props and catalog gates, one undo step, no model call).
+  Selection is the page store's: a click here selects and reveals the section in the preview, a pick in the
   preview highlights it here. A Blocks feed card dragged here (the Sections tab opens when the drag rests on it)
   drops between rows through the same add operation as "+" (ADR 0024 step C).
 -->
@@ -19,8 +20,6 @@
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";
 	import Group from "$registry/compose/Group.svelte";
-	import Select from "$registry/compose/Select.svelte";
-	import SelectOption from "$registry/compose/SelectOption.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
@@ -32,7 +31,7 @@
 	import { feedDrag } from "$lib/feed/drag.svelte";
 	import { dropAt, dropRefusal, refuseDrop } from "$lib/feed/drop.svelte";
 	import { blocksOf, getCurrentPage, getSelectedBlockId, selectBlock, type PageBlock } from "$lib/page-store";
-	import { blockThumbUrl, catalogVariantsFor, moveSlotCheck, PAGE_FAMILIES, type PageFamily } from "@buildytech/builder-core";
+	import { blockThumbUrl, moveSlotCheck } from "@buildytech/builder-core";
 	import { inspectorPanel } from "$lib/inspector/panel.svelte";
 	import StockThumb from "./StockThumb.svelte";
 
@@ -51,7 +50,6 @@
 		for (const [name, value] of Object.entries(extra)) text = text.replace(`{${name}}`, String(value));
 		return text;
 	};
-	const variantsOf = (block: PageBlock) => (block.catalogBlock ? catalogVariantsFor(block.catalogBlock) : []);
 	const itemId = (id: string) => `section-item-${id}`;
 
 	function focusItem(id: string) {
@@ -95,11 +93,6 @@
 		run(ok, fill("sections.removed", block), block);
 		const next = sections[Math.min(index, sections.length - 1)];
 		if (ok && next) focusItem(next.id);
-	}
-
-	function setVariant(block: PageBlock, variant: string) {
-		const ok = inspector.run({ op: "set_variant", blockId: block.id, variant });
-		run(ok, fill("sections.variantSet", block, { variant }), block);
 	}
 
 	// Alt+Arrow Up / Down moves the focused section; plain arrows move the focus; Home / End jump.
@@ -194,12 +187,6 @@
 		if (!selected) return;
 		listEl()?.querySelector<HTMLElement>(`[data-section-id="${CSS.escape(selected)}"]`)?.scrollIntoView({ block: "nearest" });
 	});
-	// ADR 0027: the screen family is advisory; Auto follows the composition, a pick pins it (one undo step).
-	const family = $derived(inspector.family);
-	function pickFamily(event: Event) {
-		const value = (event.currentTarget as HTMLSelectElement).value;
-		inspector.pinFamily(value ? (value as PageFamily) : null);
-	}
 </script>
 
 <Block tag="section" class="flex min-h-0 flex-1 flex-col" aria-label={t("leftPanel.sections")} data-slot="sections">
@@ -214,25 +201,6 @@
 			</Button>
 		</Group>
 	</Group>
-	{#if family}
-		<Group class="h-8 shrink-0 items-center gap-2 px-2" data-slot="sections-family">
-			<Text tag="span" class="shrink-0 text-xs text-muted-foreground" id="sections-family-label">{t("family.label")}</Text>
-			<Select
-				size="sm"
-				class="h-6 min-w-0 flex-1 text-xs"
-				value={family.pinned ? family.family : ""}
-				aria-labelledby="sections-family-label"
-				title={family.pinned ? t("family.pinned") : t("family.select")}
-				data-action="family-pin"
-				onchange={pickFamily}
-			>
-				<SelectOption value="">{t("family.auto").replace("{family}", t(`family.${family.derived}`))}</SelectOption>
-				{#each PAGE_FAMILIES as option (option)}
-					<SelectOption value={option}>{t(`family.${option}`)}</SelectOption>
-				{/each}
-			</Select>
-		</Group>
-	{/if}
 	<Text tag="p" class="sr-only" role="status" aria-live="assertive" data-slot="sections-live">{announcement}</Text>
 	{#if drag?.refusal}
 		<Text tag="p" class="shrink-0 px-2 pt-2 text-xs text-destructive" data-slot="sections-move-refusal">{drag.refusal}</Text>
@@ -254,7 +222,6 @@
 			<Box tag="ul" class="flex flex-col gap-1" aria-label={t("sections.list")} aria-describedby="sections-help" data-slot="sections-list">
 				{#each sections as block, index (block.id)}
 					{@const isSelected = selected === block.id}
-					{@const variants = variantsOf(block)}
 					<Box
 						tag="li"
 						class={cn(
@@ -327,20 +294,6 @@
 								</Button>
 							</Group>
 						</Group>
-						{#if isSelected && variants.length > 1}
-							<Select
-								size="sm"
-								class="mt-1 h-8 w-full text-xs"
-								value={block.variant ?? ""}
-								aria-label={fill("sections.variant", block)}
-								data-action="section-variant"
-								onchange={(event: Event) => setVariant(block, (event.currentTarget as HTMLSelectElement).value)}
-							>
-								{#each variants as option (option)}
-									<SelectOption value={option}>{option}</SelectOption>
-								{/each}
-							</Select>
-						{/if}
 					</Box>
 				{/each}
 			</Box>

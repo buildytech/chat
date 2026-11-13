@@ -133,7 +133,7 @@
 				<Text tag="span">{t(`leftPanel.${name}`)}</Text>
 			</Button>
 		{/each}
-		<!-- ADR 0027: the screen family change, a small non-modal label (undo reverts it, Sections pins it). -->
+		<!-- ADR 0027: advisory family change, a small non-modal label. Undo reverts it. There is no family picker. -->
 		<Text tag="span" class="min-w-0 flex-1 truncate text-right text-[11px] text-muted-foreground" role="status" aria-live="polite" data-slot="family-note">
 			{#if inspector.familyNote}
 				{@const note = inspector.familyNote}

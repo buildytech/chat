@@ -106,8 +106,8 @@ test("Sections tab UI: accessible sortable list, every action through inspector.
 	assert.match(ui, /data-action="section-up"/);
 	assert.match(ui, /data-action="section-down"/);
 	assert.match(ui, /data-action="section-remove"/);
-	assert.match(ui, /data-action="section-variant"/);
-	for (const op of ["move", "remove", "set_variant"]) assert.match(ui, new RegExp(`inspector\\.run\\(\\{ op: "${op}"`));
+	assert.doesNotMatch(ui, /data-action="section-variant"/);
+	for (const op of ["move", "remove"]) assert.match(ui, new RegExp(`inspector\\.run\\(\\{ op: "${op}"`));
 	assert.match(ui, /selectBlock\(block\.id\)/);
 	assert.match(ui, /topLevelBlockId\(sections, getSelectedBlockId\(\)\)/, "a pick in the preview selects its section");
 	assert.match(ui, /inspector\.undo\(\)/);

@@ -1,48 +1,24 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import Block from "$registry/compose/Block.svelte";
-	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
-	import Button from "$registry/kit/ui/button/Button.svelte";
-	import Input from "$registry/kit/ui/input/Input.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import Title from "$registry/compose/Title.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import { cn } from "$registry/utils/cn";
 	import {
 		ROTATION_MS,
-		attachScreen,
-		catalogPage,
-		clearScenario,
-		getStockQuery,
-		closeModal,
+		closeModelDialog,
 		currentPlaceholder,
-		getKeepOutsideScreen,
-		getModal,
-		getPage,
-		getScenarioId,
-		getScreenId,
-		openModal,
-		removeScreen,
+		getModelOpen,
+		openModelDialog,
 		rotatePlaceholder,
-		scenarioPrompt,
-		screenJson,
-		screenOutsideFilter,
-		selectScenario,
-		selectedCompatibility,
-		selectedScreen,
 		sendBrief,
 		setComposing,
-		setFocused,
-		setKeepOutsideScreen,
-		setPage,
-		setStockQuery,
+		setFocused
 	} from "$lib/browser/onboarding.svelte";
 	import type { CreatorRuntimeStatus } from "$lib/chat-core";
-	import type { GrokChatModel, ScenarioId, SessionUsage } from "@buildytech/builder-core";
-	import StockCard from "./StockCard.svelte";
+	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
 	import ChatComposer from "./ChatComposer.svelte";
-	import ContextModal from "./ContextModal.svelte";
 	import AddModelDialog from "./AddModelDialog.svelte";
 
 	let {
@@ -54,7 +30,7 @@
 		onSelectModel,
 		chatModels = [],
 		selectedModelId = "",
-		sessionUsage = null,
+		sessionUsage = null
 	}: {
 		busy?: boolean;
 		runtimeStatus?: CreatorRuntimeStatus | null;
@@ -68,33 +44,8 @@
 	} = $props();
 
 	let draft = $state("");
-	const scenario = $derived(getScenarioId());
-	const screen = $derived(getScreenId());
-	const screenName = $derived(selectedScreen()?.title || screen || "");
-	const modal = $derived(getModal());
-	const result = $derived.by(() => {
-		void getScenarioId();
-		void getPage();
-		void getStockQuery();
-		return catalogPage();
-	});
-	const stockQuery = $derived(getStockQuery());
-	const placeholder = $derived.by(() => {
-		void getScenarioId();
-		void currentPlaceholder();
-		return currentPlaceholder();
-	});
-	const prompt = $derived(scenarioPrompt());
-	const json = $derived(screenJson());
-	const outside = $derived(screenOutsideFilter());
-	const compat = $derived(selectedCompatibility());
-	const canSend = $derived(Boolean(draft.trim() || prompt));
-
-	const ideas: Array<{ id: ScenarioId; label: string }> = [
-		{ id: "dashboard", label: t("home.ideaDashboard") },
-		{ id: "landing", label: t("home.ideaLanding") },
-		{ id: "website", label: t("home.ideaWebsite") },
-	];
+	const modelOpen = $derived(getModelOpen());
+	const placeholder = $derived(currentPlaceholder());
 
 	onMount(() => {
 		const reduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -113,182 +64,37 @@
 	}
 </script>
 
-<Block tag="section" class="flex min-h-0 flex-1 flex-col overflow-y-auto bg-background" aria-label={t("empty.title")}>
-	<Stack align="stretch" class="mx-auto w-full max-w-2xl gap-6 px-4 py-8">
-		<Stack align="stretch" class="gap-4">
+<Block tag="section" class="flex min-h-0 flex-1 flex-col bg-background" aria-label={t("empty.title")}>
+	<Stack align="stretch" class="min-h-0 flex-1 overflow-y-auto">
+		<Stack align="stretch" class="mx-auto w-full max-w-2xl gap-4 px-4 py-8">
 			<Title as={1} class="text-2xl font-semibold text-foreground">{t("empty.title")}</Title>
 			<Text tag="p" class="max-w-xl text-sm text-muted-foreground">{t("empty.subtitle")}</Text>
-			<Group class="flex-wrap items-center gap-2" aria-label={t("home.ideas")}>
-				{#each ideas as idea (idea.id)}
-					<Button
-						class={cn(
-							"h-8 rounded px-3 text-xs",
-							scenario === idea.id
-								? "bg-accent text-foreground"
-								: "bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
-						)}
-						pressed={scenario === idea.id}
-						onclick={() => (scenario === idea.id ? clearScenario() : selectScenario(idea.id))}
-					>
-						<Text tag="span">{idea.label}</Text>
-					</Button>
-				{/each}
-			</Group>
-			{#if prompt || screen}
-				<Group class="flex-wrap justify-center gap-2">
-					{#if prompt}
-						<Button
-							class="rounded px-2 py-1 text-xs text-muted-foreground hover:bg-accent"
-							onclick={() => openModal("scenario")}
-							aria-label={t("badge.openScenario")}><Text tag="span">{t("home.scenarioDetails")}</Text></Button
-						>
-					{/if}
-					{#if screen}
-						<Group class="min-w-0 max-w-full items-center gap-1 rounded bg-card px-2 py-1">
-							<Button
-								class="min-w-0 text-xs font-medium text-foreground"
-								onclick={() => openModal("screen")}
-								aria-label={t("badge.openScreen")}
-							>
-								<Text tag="span" class="min-w-0 truncate" title={screen ?? undefined}>{screenName}</Text>
-							</Button>
-							<Button class="text-xs text-muted-foreground" onclick={removeScreen} aria-label={t("badge.removeScreen")}>
-								<Text tag="span">×</Text>
-							</Button>
-						</Group>
-					{/if}
-				</Group>
-			{/if}
-			{#if outside && screen && getKeepOutsideScreen()}
-				<Group class="flex-wrap justify-center gap-2">
-					<Text tag="span" class="text-xs text-muted-foreground">{t("home.outsideFilter")}</Text>
-					<Button class="text-xs text-foreground" onclick={() => setKeepOutsideScreen(true)}>
-						<Text tag="span">{t("home.keepScreen")}</Text>
-					</Button>
-					<Button class="text-xs text-foreground" onclick={removeScreen}>
-						<Text tag="span">{t("home.removeScreen")}</Text>
-					</Button>
-				</Group>
-			{/if}
-		</Stack>
-
-		<ChatComposer
-			variant="onboarding"
-			disabled={busy}
-			sendDisabled={!canSend || busy}
-			{placeholder}
-			{busy}
-			{runtimeStatus}
-			{chatModels}
-			{selectedModelId}
-			{sessionUsage}
-			bind:draft
-			onSend={submitDraft}
-			{onCancel}
-			onAddModel={() => {
-				onAddModel?.();
-				openModal("model");
-			}}
-			{onSelectModel}
-			onFocus={() => setFocused(true)}
-			onBlur={() => setFocused(false)}
-			onComposition={(next) => setComposing(next)}
-		/>
-
-		<Stack align="stretch" class="gap-4">
-			<Group class="flex-wrap items-center justify-between gap-2">
-				<Title as={2} class="text-sm font-semibold text-foreground">{t("home.stock")}</Title>
-				<Group class="min-w-0 flex-1 items-center justify-end gap-2">
-					<Input
-						id="stock-search"
-						type="search"
-						value={stockQuery}
-						placeholder={t("home.stockSearch")}
-						aria-label={t("home.stockSearch")}
-						class="h-8 min-w-0 max-w-xs flex-1 rounded border border-input bg-card px-3 text-xs"
-						oninput={(event: Event) => {
-							setStockQuery((event.currentTarget as HTMLInputElement).value);
-						}}
-					/>
-					{#if scenario}
-						<Button class="text-sm text-muted-foreground hover:text-foreground" onclick={clearScenario}>
-							<Text tag="span">{t("home.clearScenario")}</Text>
-						</Button>
-					{/if}
-				</Group>
-			</Group>
-			{#if result.total === 0}
-				<Text tag="p" class="text-sm text-muted-foreground">{t("home.stockEmpty")}</Text>
-				{#if result.outsideScope > 0}
-					<Group class="flex-wrap items-center gap-2" data-slot="stock-outside">
-						<Text tag="p" class="text-sm text-muted-foreground"
-							>{t("home.stockOutside").replace("{n}", String(result.outsideScope))}</Text
-						>
-						<Button class="text-sm text-muted-foreground hover:text-foreground" onclick={clearScenario}>
-							<Text tag="span">{t("home.clearScenario")}</Text>
-						</Button>
-					</Group>
-				{/if}
-			{:else}
-				<Stack align="stretch" class="grid grid-cols-1 gap-2 sm:grid-cols-2" data-slot="stock-grid">
-					{#each result.items as item (item.screenId)}
-						<StockCard
-							screen={item}
-							compatibility={item.compatibility}
-							selected={screen === item.screenId}
-							onAttach={(id) => attachScreen(id)}
-						/>
-					{/each}
-				</Stack>
-				{#if result.total > result.pageSize}
-					<Group class="items-center justify-center gap-3">
-						<Button
-							class="rounded border border-border h-8 px-3 text-xs disabled:opacity-50"
-							disabled={result.page <= 1}
-							onclick={() => setPage(result.page - 1)}
-							aria-label={t("home.prevPage")}
-						>
-							<Text tag="span">{t("home.prevPage")}</Text>
-						</Button>
-						<Text tag="span" class="text-sm text-muted-foreground">
-							{t("home.pageOf").replace("{page}", String(result.page)).replace("{pages}", String(result.pageCount))}
-						</Text>
-						<Button
-							class="rounded border border-border h-8 px-3 text-xs disabled:opacity-50"
-							disabled={result.page >= result.pageCount}
-							onclick={() => setPage(result.page + 1)}
-							aria-label={t("home.nextPage")}
-						>
-							<Text tag="span">{t("home.nextPage")}</Text>
-						</Button>
-					</Group>
-				{/if}
-			{/if}
 		</Stack>
 	</Stack>
+	<ChatComposer
+		variant="onboarding"
+		disabled={busy}
+		sendDisabled={!draft.trim() || busy}
+		{placeholder}
+		{busy}
+		{runtimeStatus}
+		{chatModels}
+		{selectedModelId}
+		{sessionUsage}
+		bind:draft
+		onSend={submitDraft}
+		{onCancel}
+		onAddModel={() => {
+			onAddModel?.();
+			openModelDialog();
+		}}
+		{onSelectModel}
+		onFocus={() => setFocused(true)}
+		onBlur={() => setFocused(false)}
+		onComposition={(next) => setComposing(next)}
+	/>
 </Block>
 
-{#if modal === "scenario" && prompt}
-	<ContextModal
-		title={t("modal.scenarioTitle")}
-		description={`${prompt.id} · v${prompt.version}`}
-		body={prompt.text}
-		onClose={closeModal}
-	/>
-{/if}
-{#if modal === "screen" && json}
-	<ContextModal
-		title={t("modal.screenTitle")}
-		description={t("modal.bytes").replace("{n}", String(json.bytes))}
-		body={JSON.stringify(json.json, null, 2)}
-		json
-		onClose={closeModal}
-	/>
-{/if}
-{#if modal === "model"}
-	<AddModelDialog onClose={closeModal} />
-{/if}
-
-{#if compat && !compat.compatible && !compat.partial}
-	<Text tag="p" class="sr-only">{t("home.incompatible")}</Text>
+{#if modelOpen}
+	<AddModelDialog onClose={closeModelDialog} />
 {/if}

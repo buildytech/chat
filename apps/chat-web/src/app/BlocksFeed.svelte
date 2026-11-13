@@ -1,6 +1,6 @@
 <!--
   Blocks feed (ADR 0024, Build left panel): search + facet filters over Stock blocks and screens through the shared
-  stockSearch (stock-search/v1, the same function as the home Stock screens field), 8 cards per page in one or two
+  stockSearch (stock-search/v1), 8 cards per page in one or two
   columns (persisted; the page size does not change with the view), pagination, and "+" on a block card: an inspector
   add operation after the selected section or at the end, gated, one undo step, no model call.
 -->

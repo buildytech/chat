@@ -9,3 +9,20 @@ html,
 body {
 	min-height: 0;
 }
+
+/* Same 8px track and 4px thumb as the chat shell, without the chat-only --ui-* tokens. */
+@supports selector(::-webkit-scrollbar) {
+	::-webkit-scrollbar { width: 8px; height: 8px; }
+	::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+	::-webkit-scrollbar-thumb {
+		border: 2px solid transparent;
+		border-radius: 9999px;
+		background: color-mix(in srgb, var(--foreground) 22%, transparent) padding-box;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: color-mix(in srgb, var(--foreground) 40%, transparent) padding-box;
+	}
+}
+@supports not selector(::-webkit-scrollbar) {
+	* { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--foreground) 22%, transparent) transparent; }
+}

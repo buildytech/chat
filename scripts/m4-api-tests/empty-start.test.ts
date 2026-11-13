@@ -187,8 +187,7 @@ test("cards: the Stock thumbnail is full-bleed (no padding around it) and home S
 	assert.match(stock, /class="truncate font-mono text-\[11px\] text-muted-foreground" title=\{screen\.screenId\}/, "the id is one truncated line");
 	assert.doesNotMatch(stock, /break-all/);
 	const home = web("app/HomeOnboarding.svelte");
-	assert.match(home, /class="grid grid-cols-1 gap-2 sm:grid-cols-2" data-slot="stock-grid"/);
-	assert.doesNotMatch(home, /lg:grid-cols-3/);
+	assert.doesNotMatch(home, /data-slot="stock-grid"|selectScenario|attachScreen/);
 	const ask = web("app/AskBlockCards.svelte");
 	assert.match(ask, /<StockThumb src=\{card\.thumb\} title=\{card\.title\} bleed class="w-full border-b" \/>/);
 });

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FolderArchive from "@lucide/svelte/icons/folder-archive";
 	import PanelLeftOpen from "@lucide/svelte/icons/panel-left-open";
 	import PanelLeftClose from "@lucide/svelte/icons/panel-left-close";
 	import Group from "$registry/compose/Group.svelte";
@@ -6,7 +7,9 @@
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import { getCurrentPage } from "$lib/page-store";
+	import { getChatSkin } from "$lib/chat-core";
+	import { downloadPageZip, getCurrentPage } from "$lib/page-store";
+	import { packSkinOptions } from "$lib/theme/custom-skin.svelte";
 
 	let {
 		sidebarOpen = false,
@@ -18,6 +21,11 @@
 
 	const page = $derived(getCurrentPage());
 	const pageTitle = $derived(page?.title?.trim() ? page.title : t("thread.untitled"));
+
+	function onDownloadZip() {
+		if (!page) return;
+		void downloadPageZip(page, packSkinOptions(getChatSkin()));
+	}
 </script>
 
 <Group
@@ -44,6 +52,15 @@
 				{/if}
 			</Icon>
 		</Button>
-		<Text tag="span" class="truncate font-semibold text-foreground">{pageTitle}</Text>
+		<Text tag="span" class="truncate text-sm font-semibold text-foreground">{pageTitle}</Text>
 	</Group>
+	<Button
+		class="inline-flex h-8 shrink-0 items-center justify-center gap-2 rounded px-2 text-xs text-foreground hover:bg-accent"
+		aria-label={t("workspace.downloadZip")}
+		title={t("workspace.downloadZip")}
+		onclick={onDownloadZip}
+	>
+		<Icon size="sm"><FolderArchive /></Icon>
+		<Text tag="span" class="max-sm:hidden">{t("workspace.downloadZip")}</Text>
+	</Button>
 </Group>

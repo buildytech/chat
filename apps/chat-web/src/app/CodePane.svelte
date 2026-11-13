@@ -188,7 +188,7 @@
 				<Group
 					class={cn(
 						"h-full shrink-0 items-center gap-0 border-r border-border px-2",
-						tab.active ? "bg-card text-foreground" : "text-muted-foreground"
+						tab.active ? "bg-background text-foreground" : "text-muted-foreground"
 					)}
 				>
 					<Button
@@ -216,7 +216,7 @@
 				{#if i > 0}
 					<Text tag="span" class="text-xs text-muted-foreground" aria-hidden="true">/</Text>
 				{/if}
-				<Text tag="span" class="text-xs text-foreground">{crumb}</Text>
+				<Text tag="span" class={i === crumbs.length - 1 ? "text-xs text-foreground" : "text-xs text-muted-foreground"}>{crumb}</Text>
 			{/each}
 			<Box class="min-w-0 flex-1"></Box>
 			<Button

@@ -97,8 +97,8 @@
 
 /* --- radii: concentric scopes ------------------------------------------------------------------------------------- */
 /* cards with 8px padding: 12 outside, 4 inside (thumbnail, row actions) */
-:is([data-slot="feed-card"], [data-slot="stock-card"], #composer-model-list) { --radius: 12px; }
-:is([data-slot="feed-card"], [data-slot="stock-card"], #composer-model-list) * { --radius: 4px; }
+:is([data-slot="feed-card"], [data-slot="stock-card"], #composer-model-list, #composer-mode-list) { --radius: 12px; }
+:is([data-slot="feed-card"], [data-slot="stock-card"], #composer-model-list, #composer-mode-list) * { --radius: 4px; }
 /* rows and regions with 4px padding: 12 outside, 8 inside */
 :is([data-slot="sections-list"] > li, [data-slot="settings-region"]) { --radius: 12px; }
 :is([data-slot="sections-list"] > li, [data-slot="settings-region"]) * { --radius: 8px; }
@@ -115,7 +115,7 @@ dialog * { --radius: 8px; }
 
 /* --- shadows: floating layers and a hovered card ------------------------------------------------------------------- */
 :is([data-slot="feed-card"], [data-slot="stock-card"]):hover { box-shadow: var(--ui-shadow-contact); background: var(--ui-raised); }
-:is([data-slot="inspector-slideover"], #composer-model-list, dialog[open]) { box-shadow: var(--ui-shadow-float); }
+:is([data-slot="inspector-slideover"], #composer-model-list, #composer-mode-list, dialog[open]) { box-shadow: var(--ui-shadow-float); }
 [data-slot="composer-surface"] { box-shadow: var(--ui-shadow-contact); }
 [data-slot="composer-surface"]:has(:focus-visible) { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
 /* The surrounding input surface owns the boundary and focus; no nested field ring. */
@@ -130,7 +130,9 @@ dialog * { --radius: 8px; }
 }
 
 /* --- icons: monochrome 1.5 stroke; muted until hovered, focused, pressed or selected (navigation rails only) ------- */
-[data-slot="icon"] svg { stroke-width: 1.5px; }
+[data-slot="icon"] svg { width: 100%; height: 100%; stroke-width: 1.5px; }
+/* The native menu glyph sits on the trailing edge; keep the value clear of it. */
+select.pr-2 { padding-inline-end: 1.5rem; }
 :is(aside[data-nav], [data-slot="left-tabs"], [data-slot="browser-head"]) :is(button, a):not(.bg-accent, :hover, :focus-visible, [aria-pressed="true"], [aria-selected="true"], [aria-current="page"]) > [data-slot="icon"] {
   color: var(--ui-icon);
 }
@@ -154,4 +156,4 @@ dialog * { --radius: 8px; }
 }
 
 /* Grow the prompt with its content while keeping long messages scrollable. */
-#composer { field-sizing: content; max-height: max(4rem, calc(100dvh - 16rem)); }
+#composer { font-size: 0.875rem; line-height: 1.25rem; field-sizing: content; max-height: max(4rem, calc(100dvh - 16rem)); }

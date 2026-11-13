@@ -122,7 +122,7 @@
 			{#each visibleEntries as entry (entry.id)}
 				<Button
 					class={cn(
-						"w-full justify-start gap-2 rounded px-2 py-1 text-left text-sm",
+						"inline-flex w-full items-center justify-start gap-2 rounded px-2 py-1 text-left text-xs",
 						entry.kind === "file" && entry.path.startsWith("blocks/") && "pl-6",
 						selectedPath === entry.path
 							? "bg-accent text-accent-foreground"

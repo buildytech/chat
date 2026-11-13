@@ -64,13 +64,12 @@ test("stockSearch: filters, facet counts that leave their own facet out, fixed p
 	assert.equal(stockSearch({ page: 10_000 }).page, stockSearch({}).pageCount, "page is clamped");
 });
 
-test("stockSearch type=screen is the home Stock field (scope = scenario filter)", () => {
+test("stockSearch type=screen scopes by section; the chat home no longer lists screens", () => {
 	const scoped = stockSearch({ type: "screen", scope: { section: "dashboard" }, pageSize: 48 });
 	assert.ok(scoped.total > 0 && scoped.items.every((item) => item.type === "screen"));
 	const ids = new Set(catalogSnapshot.screens.filter((s) => s.labels.section.includes("dashboard")).map((s) => s.screenId));
 	assert.ok(scoped.items.every((item) => ids.has(item.id)));
-	const onboarding = web("lib/browser/onboarding.svelte.ts");
-	assert.match(onboarding, /stockSearch\(\{ type: "screen", q: needle, scope: scopeOf\(catalogQuery\(\)\), page, pageSize: 12 \}\)/);
+	assert.doesNotMatch(web("lib/browser/onboarding.svelte.ts"), /stockSearch|selectScenario|attachScreen/);
 	assert.match(web("lib/feed/feed.svelte.ts"), /stockSearch\(\{ q, \.\.\.filters, page, pageSize: FEED_PAGE_SIZE, boostRoles: family \? familyKinds\(family\) : null \}\)/);
 });
 

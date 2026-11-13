@@ -59,8 +59,7 @@ import { getSelectedModelId } from "../browser/models.svelte";
 import {
 	getScenarioId,
 	getScreenId,
-	hydrateSessionContext,
-	setOnboardingPersist
+	hydrateSessionContext
 } from "../browser/onboarding.svelte";
 import {
 	allowPersistOverwrite,
@@ -144,17 +143,6 @@ function loadMock(): ChatSession[] {
 
 function saveMock(sessions: ChatSession[]): void {
 	saveSessionsJson(sessions);
-}
-
-function persistSessionContext(): void {
-	const session = getSelectedSession();
-	if (!session) return;
-	replaceSession({
-		...session,
-		scenarioId: getScenarioId(),
-		screenId: getScreenId()
-	});
-	saveMock(memory);
 }
 
 function restoreSessionWorkspace(session: ChatSession | null): void {
@@ -250,7 +238,6 @@ export async function hydrateSessions(): Promise<void> {
 			persistedId: readSelectedId(),
 			sessionIds: initial.map((s) => s.id)
 		});
-		setOnboardingPersist(() => persistSessionContext());
 		if (pick.kind === "missing") {
 			rememberSelection(null);
 			restoreSessionWorkspace(null);
@@ -799,11 +786,8 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 	}
 	let session = getSelectedSession();
 	if (!session) {
-		// The first send from the home screen creates the chat; keep the scenario / screen picked there.
-		const picked = { scenarioId: getScenarioId(), screenId: getScreenId() };
+		// A new chat starts blank. Screens and blocks are added from the Blocks tab, not picked here.
 		session = await createSession();
-		hydrateSessionContext(picked);
-		session = { ...session, ...picked };
 	}
 	const mode = chatModeOf(session, pendingMode);
 	const userMsg: ChatMessage = {
@@ -820,8 +804,8 @@ async function sendMessageMock(text: string): Promise<ChatSession> {
 		...session,
 		title: nextTitle,
 		updatedAt: nowIso(),
-		scenarioId: session.scenarioId ?? getScenarioId(),
-		screenId: session.screenId ?? getScreenId(),
+		scenarioId: session.scenarioId ?? null,
+		screenId: session.screenId ?? null,
 		messages: [...session.messages, userMsg]
 	};
 	replaceSession(pending);
