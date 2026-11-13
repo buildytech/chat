@@ -28,7 +28,7 @@ const HIDDEN = new Set(["id", "class", "className"]);
 
 if (!existsSync(BUNDLE)) spawnSync(process.execPath, [join(repo, "scripts", "build-render-bundle.mjs")], { cwd: repo, stdio: "inherit" });
 const core = await import(pathToFileURL(join(repo, "packages/builder-core/src/index.ts")).href);
-const { allItems, itemInfo, emptyPage, writePage, sampleProps, propsFieldTree, propsSchemaFor, propsEventsFor, propsDigest, inspectorModel, applyOp, renderBlock, showsContent } = core;
+const { allItems, itemInfo, emptyPage, writePage, sampleProps, propsFieldTree, propsSchemaFor, propsEventsFor, propsDigest, inspectorModel, inspectorValue, applyOp, renderBlock, showsContent } = core;
 const bundle = await import(pathToFileURL(BUNDLE).href);
 
 function renderHtml(organism, props) {
@@ -40,7 +40,7 @@ function renderHtml(organism, props) {
 }
 
 const sha = (text) => createHash("sha256").update(text).digest("hex").slice(0, 16);
-const inspectorFiles = ["packages/builder-core/src/page-doc/inspect.ts", "packages/builder-core/src/page-doc/ops.ts", "apps/chat-web/src/app/InspectorFields.svelte", "apps/chat-web/src/lib/inspector/inspector.svelte.ts"];
+const inspectorFiles = ["packages/builder-core/src/catalog/props-schema.ts", "packages/builder-core/src/page-doc/inspect.ts", "packages/builder-core/src/page-doc/ops.ts", "apps/chat-web/src/app/InspectorFields.svelte", "apps/chat-web/src/lib/inspector/inspector.svelte.ts"];
 const inspectorDigest = sha(inspectorFiles.map((f) => readFileSync(join(repo, f), "utf8")).join("\n--\n"));
 const config = JSON.parse(readFileSync(join(repo, "catalog", "snapshot.config.json"), "utf8"));
 
@@ -115,10 +115,8 @@ function staticGaps(item) {
 				continue;
 			}
 			counts.leaves += 1;
-			if (node.kind === "enum") {
-				if ((node.enumValues ?? []).some((v) => typeof v !== "string")) gaps.push(gap(path, "non_string_enum"));
-				else counts.editable += 1;
-			} else if (node.kind === "list") {
+			if (node.kind === "enum") counts.editable += 1;
+			else if (node.kind === "list") {
 				if (node.fields) {
 					counts.editable += 1;
 					walk(node.fields, valueOf(raw).items ?? {}, `${path}[]`, depth + 1);
@@ -234,7 +232,7 @@ for (const item of allItems()) {
 		const model = inspectorModel(view());
 		if (model.ok) {
 			for (const f of scalars(model.fields)) {
-				const result = applyOp(page, { op: "set", blockId, pointer: f.pointer, value: synth(f) });
+				const result = applyOp(page, { op: "set", blockId, pointer: f.pointer, value: inspectorValue(f, String(synth(f))) });
 				if (!result.ok) add(opGap(result.code, result.message, result.pointer ?? f.pointer));
 				else page = result.page;
 			}

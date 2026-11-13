@@ -4,7 +4,7 @@
  * diff), so a hand edit and an agent edit follow exactly the same rules. Pure: returns the next page or why not.
  */
 import type { BlockV2, PageV2, PropValueV2 } from "@buildytech/page-contract";
-import { newPropsListRow } from "../catalog/props-schema.ts";
+import { coerceEnumValue, newPropsListRow } from "../catalog/props-schema.ts";
 import { addSlotCheck, moveSlotCheck, naturalIndex } from "./slots.ts";
 import { screenItems } from "./start.ts";
 import { catalogEntryBySpec } from "../catalog/sources.ts";
@@ -134,7 +134,7 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 	switch (input.op) {
 		case "set": {
 			if (!input.pointer.startsWith("/")) return fail("bad_pointer", "A prop pointer starts with /.", input.pointer);
-			const next = setAtPointer(liveProps(block), input.pointer, input.value);
+			const next = setAtPointer(liveProps(block), input.pointer, coerceEnumValue(block.item, input.pointer, input.value));
 			if (!next) return fail("path_not_found", `${input.pointer} does not exist in the props of ${block.item}.`, input.pointer);
 			return replaceProps(page, index, next, "set_field", input.pointer);
 		}

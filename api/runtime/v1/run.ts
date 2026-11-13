@@ -26625,6 +26625,20 @@ function schemaAt(item: string, pointer: string): JsonSchema | null {
 }
 
 /**
+ * An enum prop written as text (a form select, an agent patch) in the type the schema declares: `level` is 1 | 2, so "2"
+ * becomes 2 (also true / false / null). A value that is not an enum member, or a prop that is not an enum, is returned as
+ * it came: the props gate still rejects it with the allowed values.
+ */
+function coerceEnumValue(item: string, pointer: string, value: unknown): unknown {
+	if (typeof value !== "string") return value;
+	const node = schemaAt(item, pointer);
+	const options = node ? valueOf(node).enum : undefined;
+	if (!Array.isArray(options) || options.includes(value)) return value;
+	const match = options.find((option) => typeof option !== "string" && String(option) === value);
+	return match === undefined ? value : match;
+}
+
+/**
  * A new row for the list prop at `pointer` (`/content/features`): every required field from the schema (defaults,
  * first enum value, readable placeholders "Title" / "Text", the placeholder icon), a fresh `id` when the row has one.
  * Null when the pointer is not a list of records.
@@ -26742,6 +26756,7 @@ exports["LUCIDE_ICON_HINT"] = LUCIDE_ICON_HINT;
 exports["refShapeDefs"] = refShapeDefs;
 exports["propShapeFor"] = propShapeFor;
 exports["propsFieldTree"] = propsFieldTree;
+exports["coerceEnumValue"] = coerceEnumValue;
 exports["newPropsListRow"] = newPropsListRow;
 exports["humanizeName"] = humanizeName;
 exports["fillProps"] = fillProps;
@@ -30872,7 +30887,7 @@ exports["migratePageV1"] = migratePageV1;
 });
 
 __def("packages/builder-core/src/page-doc/ops.ts", function (exports) {
-const { newPropsListRow } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { coerceEnumValue, newPropsListRow } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { addSlotCheck, moveSlotCheck, naturalIndex } = __req("packages/builder-core/src/page-doc/slots.ts");
 const { screenItems } = __req("packages/builder-core/src/page-doc/start.ts");
 const { catalogEntryBySpec } = __req("packages/builder-core/src/catalog/sources.ts");
@@ -30976,7 +30991,7 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 	switch (input.op) {
 		case "set": {
 			if (!input.pointer.startsWith("/")) return fail("bad_pointer", "A prop pointer starts with /.", input.pointer);
-			const next = setAtPointer(liveProps(block), input.pointer, input.value);
+			const next = setAtPointer(liveProps(block), input.pointer, coerceEnumValue(block.item, input.pointer, input.value));
 			if (!next) return fail("path_not_found", `${input.pointer} does not exist in the props of ${block.item}.`, input.pointer);
 			return replaceProps(page, index, next, "set_field", input.pointer);
 		}
@@ -31130,6 +31145,7 @@ function fieldsOf(props: Record<string, unknown>, nodes: PropsFieldNode[], base:
 		const pointer = `${base}/${node.name}`;
 		const field: InspectorField = { pointer, name: node.name, widget: widgetFor(node), required: node.required, value: valueAt(props, pointer) };
 		if (node.enum) field.options = node.enum;
+		if (node.enumValues?.some((value) => typeof value !== "string")) field.optionValues = node.enumValues;
 		if (node.maxLength !== undefined) field.maxLength = node.maxLength;
 		if (field.widget === "object" && node.fields) field.fields = fieldsOf(props, node.fields, pointer, new Set());
 		if (field.widget === "list" && node.fields) {
@@ -31155,7 +31171,32 @@ function inspectorModel(block: Pick<BlockV2, "id" | "item" | "variant" | "props"
 	return { ok: true, ...head, item: block.item, variant, variants: info.variants, fields: fieldsOf(props, tree, "", new Set([...events, ...slots])) };
 }
 
+/**
+ * The JSON value a field widget typed as text, as `block.props` holds it (undefined: the prop is removed). The one place
+ * the Inspector turns widget text into a typed value: a boolean from a checkbox, a number, an enum member in the type
+ * the schema declares (1 | 2 stays a number, not "2").
+ */
+function inspectorValue(field: Pick<InspectorField, "widget" | "required" | "optionValues">, text: string): string | number | boolean | null | undefined {
+	switch (field.widget) {
+		case "boolean":
+			return text === "true";
+		case "number": {
+			if (text.trim() === "") return field.required ? 0 : undefined;
+			const n = Number(text);
+			return Number.isFinite(n) ? n : (text as unknown as number);
+		}
+		case "enum": {
+			if (text === "") return undefined;
+			const typed = field.optionValues?.find((value) => String(value) === text);
+			return typed === undefined ? text : typed;
+		}
+		default:
+			return text === "" && !field.required ? undefined : text;
+	}
+}
+
 exports["inspectorModel"] = inspectorModel;
+exports["inspectorValue"] = inspectorValue;
 
 });
 
@@ -31195,6 +31236,7 @@ exports["applyOp"] = __req("packages/builder-core/src/page-doc/ops.ts")["applyOp
 exports["checkAdd"] = __req("packages/builder-core/src/page-doc/ops.ts")["checkAdd"];
 exports["setAtPointer"] = __req("packages/builder-core/src/page-doc/ops.ts")["setAtPointer"];
 exports["inspectorModel"] = __req("packages/builder-core/src/page-doc/inspect.ts")["inspectorModel"];
+exports["inspectorValue"] = __req("packages/builder-core/src/page-doc/inspect.ts")["inspectorValue"];
 exports["installRenderProbe"] = __req("packages/builder-core/src/page-doc/probe.ts")["installRenderProbe"];
 exports["renderProbeInstalled"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderProbeInstalled"];
 exports["renderIssues"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderIssues"];
@@ -31596,6 +31638,7 @@ exports["registryItemFor"] = __req("packages/builder-core/src/catalog/organism.t
 exports["registryNpmDependencies"] = __req("packages/builder-core/src/catalog/organism.ts")["registryNpmDependencies"];
 exports["variantPreset"] = __req("packages/builder-core/src/catalog/organism.ts")["variantPreset"];
 exports["variantPresets"] = __req("packages/builder-core/src/catalog/organism.ts")["variantPresets"];
+exports["coerceEnumValue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["coerceEnumValue"];
 exports["fillProps"] = __req("packages/builder-core/src/catalog/props-schema.ts")["fillProps"];
 exports["hasPropsSchema"] = __req("packages/builder-core/src/catalog/props-schema.ts")["hasPropsSchema"];
 exports["lucideIcons"] = __req("packages/builder-core/src/catalog/props-schema.ts")["lucideIcons"];

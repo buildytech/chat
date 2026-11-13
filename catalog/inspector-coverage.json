@@ -6,18 +6,17 @@
 		"propsDigest": "sha256:bb4ae0ac537ba08d921557046bf75ee59ea592da181dc5ba3a020ccce9b31896",
 		"registrySourceCommit": "9e57f9ccaf710eb3b50d5599e6e49355fcc32136",
 		"stockContentCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
-		"inspectorDigest": "a14856a55a8cc3cf"
+		"inspectorDigest": "0316ab2cf252878e"
 	},
 	"summary": {
 		"combos": 532,
 		"items": 113,
-		"covered": 287,
-		"notCovered": 245,
+		"covered": 357,
+		"notCovered": 175,
 		"coveredAfterFixes": 432,
 		"reasons": {
 			"free_form_map": 31,
 			"list_of_primitives": 84,
-			"non_string_enum": 107,
 			"optional_list_absent": 33,
 			"optional_object_absent": 83
 		}
@@ -52,63 +51,39 @@
 		},
 		"about-me/facts": {
 			"leaves": 23,
-			"editable": 19,
+			"editable": 20,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"about-me/factsEnd": {
 			"leaves": 23,
-			"editable": 19,
+			"editable": 20,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"about-me/skills": {
 			"leaves": 23,
-			"editable": 19,
+			"editable": 20,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"about-me/skillsMuted": {
 			"leaves": 23,
-			"editable": 19,
+			"editable": 20,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"activity-feed/compact": {
 			"leaves": 14,
@@ -292,258 +267,156 @@
 		},
 		"auth-card/magic": {
 			"leaves": 21,
-			"editable": 19,
+			"editable": 20,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-card/plain": {
 			"leaves": 21,
-			"editable": 19,
+			"editable": 20,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-card/reset": {
 			"leaves": 21,
-			"editable": 19,
+			"editable": 20,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-card/signin": {
 			"leaves": 21,
-			"editable": 19,
+			"editable": 20,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-card/signup": {
 			"leaves": 21,
-			"editable": 19,
+			"editable": 20,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-card/signupSocial": {
 			"leaves": 21,
-			"editable": 19,
+			"editable": 20,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-card/social": {
 			"leaves": 21,
-			"editable": 19,
+			"editable": 20,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-card/socialFirst": {
 			"leaves": 21,
-			"editable": 19,
+			"editable": 20,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-layout/centered": {
 			"leaves": 24,
-			"editable": 22,
+			"editable": 23,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-layout/magic": {
 			"leaves": 24,
-			"editable": 22,
+			"editable": 23,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-layout/minimal": {
 			"leaves": 24,
-			"editable": 22,
+			"editable": 23,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-layout/reset": {
 			"leaves": 24,
-			"editable": 22,
+			"editable": 23,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-layout/signup": {
 			"leaves": 24,
-			"editable": 22,
+			"editable": 23,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-layout/social": {
 			"leaves": 24,
-			"editable": 22,
+			"editable": 23,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-layout/socialFirst": {
 			"leaves": 24,
-			"editable": 22,
+			"editable": 23,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-layout/split": {
 			"leaves": 24,
-			"editable": 22,
+			"editable": 23,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"auth-layout/splitStart": {
 			"leaves": 24,
-			"editable": 22,
+			"editable": 23,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"before-after/cards": {
 			"leaves": 15,
@@ -1036,93 +909,57 @@
 		},
 		"contact-form/consent": {
 			"leaves": 22,
-			"editable": 19,
+			"editable": 20,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"contact-form/muted": {
 			"leaves": 22,
-			"editable": 19,
+			"editable": 20,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"contact-form/page": {
 			"leaves": 22,
-			"editable": 19,
+			"editable": 20,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"contact-form/short": {
 			"leaves": 22,
-			"editable": 19,
+			"editable": 20,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"contact-form/single": {
 			"leaves": 22,
-			"editable": 19,
+			"editable": 20,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"contact-form/split": {
 			"leaves": 22,
-			"editable": 19,
+			"editable": 20,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cookie-banner/bar": {
 			"leaves": 10,
@@ -1486,183 +1323,111 @@
 		},
 		"dashboard-shell/classic": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/collapsed": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/collapsedEnd": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/end": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/inset": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/rail": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/railEnd": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/railFooter": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/sideOnly": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/topOnly": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/twoLevel": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"dashboard-shell/twoLevelFull": {
 			"leaves": 37,
-			"editable": 32,
+			"editable": 33,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"delivery-info/facts": {
 			"leaves": 25,
@@ -1987,78 +1752,48 @@
 		},
 		"error-page/centered": {
 			"leaves": 14,
-			"editable": 12,
+			"editable": 13,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"error-page/muted": {
 			"leaves": 14,
-			"editable": 12,
+			"editable": 13,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"error-page/noCode": {
 			"leaves": 14,
-			"editable": 12,
+			"editable": 13,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"error-page/split": {
 			"leaves": 14,
-			"editable": 12,
+			"editable": 13,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"error-page/two": {
 			"leaves": 14,
-			"editable": 12,
+			"editable": 13,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"faq-list/chat": {
 			"leaves": 24,
@@ -2416,78 +2151,48 @@
 		},
 		"feature-split/featureCards": {
 			"leaves": 26,
-			"editable": 22,
+			"editable": 23,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-split/gridMuted": {
 			"leaves": 26,
-			"editable": 22,
+			"editable": 23,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-split/gridStart": {
 			"leaves": 26,
-			"editable": 22,
+			"editable": 23,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-split/metricCards": {
 			"leaves": 26,
-			"editable": 22,
+			"editable": 23,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-split/statsStart": {
 			"leaves": 26,
-			"editable": 22,
+			"editable": 23,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"feature-sticky/card": {
 			"leaves": 15,
@@ -2656,14 +2361,9 @@
 		},
 		"hero-classic/backdrop": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2676,14 +2376,9 @@
 		},
 		"hero-classic/blog": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2696,14 +2391,9 @@
 		},
 		"hero-classic/centered": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2716,14 +2406,9 @@
 		},
 		"hero-classic/cluster": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2736,14 +2421,9 @@
 		},
 		"hero-classic/code": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2756,14 +2436,9 @@
 		},
 		"hero-classic/display": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2776,14 +2451,9 @@
 		},
 		"hero-classic/form": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2796,14 +2466,9 @@
 		},
 		"hero-classic/muted": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2816,14 +2481,9 @@
 		},
 		"hero-classic/saas": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2836,14 +2496,9 @@
 		},
 		"hero-classic/screenshot": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2856,14 +2511,9 @@
 		},
 		"hero-classic/shop": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2876,14 +2526,9 @@
 		},
 		"hero-classic/split": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2896,14 +2541,9 @@
 		},
 		"hero-classic/splitStart": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2916,14 +2556,9 @@
 		},
 		"hero-classic/twoActions": {
 			"leaves": 29,
-			"editable": 25,
+			"editable": 26,
 			"locked": 3,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/topics",
 					"reason": "optional_list_absent",
@@ -2936,17 +2571,12 @@
 		},
 		"hero-prompt/prompt": {
 			"leaves": 30,
-			"editable": 27,
+			"editable": 28,
 			"locked": 2,
 			"unsupported": [
 				{
 					"path": "/composer",
 					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
 					"fixable": true
 				},
 				{
@@ -2966,18 +2596,13 @@
 		},
 		"hero-split/avatars": {
 			"leaves": 53,
-			"editable": 46,
+			"editable": 47,
 			"locked": 5,
 			"unsupported": [
 				{
 					"path": "/content/plans[]/features",
 					"reason": "list_of_primitives",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -2986,18 +2611,13 @@
 		},
 		"hero-split/miniCards": {
 			"leaves": 53,
-			"editable": 46,
+			"editable": 47,
 			"locked": 5,
 			"unsupported": [
 				{
 					"path": "/content/plans[]/features",
 					"reason": "list_of_primitives",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -3006,18 +2626,13 @@
 		},
 		"hero-split/pictureGrid": {
 			"leaves": 53,
-			"editable": 46,
+			"editable": 47,
 			"locked": 5,
 			"unsupported": [
 				{
 					"path": "/content/plans[]/features",
 					"reason": "list_of_primitives",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -3026,18 +2641,13 @@
 		},
 		"hero-split/pictureGridStart": {
 			"leaves": 53,
-			"editable": 46,
+			"editable": 47,
 			"locked": 5,
 			"unsupported": [
 				{
 					"path": "/content/plans[]/features",
 					"reason": "list_of_primitives",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -3046,18 +2656,13 @@
 		},
 		"hero-split/planCards": {
 			"leaves": 53,
-			"editable": 46,
+			"editable": 47,
 			"locked": 5,
 			"unsupported": [
 				{
 					"path": "/content/plans[]/features",
 					"reason": "list_of_primitives",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -3066,18 +2671,13 @@
 		},
 		"hero-split/quoteStats": {
 			"leaves": 53,
-			"editable": 46,
+			"editable": 47,
 			"locked": 5,
 			"unsupported": [
 				{
 					"path": "/content/plans[]/features",
 					"reason": "list_of_primitives",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -3086,18 +2686,13 @@
 		},
 		"hero-split/statsCards": {
 			"leaves": 53,
-			"editable": 46,
+			"editable": 47,
 			"locked": 5,
 			"unsupported": [
 				{
 					"path": "/content/plans[]/features",
 					"reason": "list_of_primitives",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				}
 			],
 			"rendersSample": "content",
@@ -3745,108 +3340,66 @@
 		},
 		"page-intro/center": {
 			"leaves": 10,
-			"editable": 8,
+			"editable": 9,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"page-intro/muted": {
 			"leaves": 10,
-			"editable": 8,
+			"editable": 9,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"page-intro/start": {
 			"leaves": 10,
-			"editable": 8,
+			"editable": 9,
 			"locked": 1,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"page-trail/crumbs": {
 			"leaves": 24,
-			"editable": 20,
+			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"page-trail/crumbsFigure": {
 			"leaves": 24,
-			"editable": 20,
+			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"page-trail/crumbsNote": {
 			"leaves": 24,
-			"editable": 20,
+			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"page-trail/keyFacts": {
 			"leaves": 24,
-			"editable": 20,
+			"editable": 21,
 			"locked": 3,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"photo-gallery/cards": {
 			"leaves": 17,
@@ -4149,14 +3702,9 @@
 		},
 		"post-header/center": {
 			"leaves": 21,
-			"editable": 18,
+			"editable": 19,
 			"locked": 2,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/post",
 					"reason": "optional_object_absent",
@@ -4169,14 +3717,9 @@
 		},
 		"post-header/minimal": {
 			"leaves": 21,
-			"editable": 18,
+			"editable": 19,
 			"locked": 2,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/post",
 					"reason": "optional_object_absent",
@@ -4189,14 +3732,9 @@
 		},
 		"post-header/noCover": {
 			"leaves": 21,
-			"editable": 18,
+			"editable": 19,
 			"locked": 2,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/post",
 					"reason": "optional_object_absent",
@@ -4209,14 +3747,9 @@
 		},
 		"post-header/start": {
 			"leaves": 21,
-			"editable": 18,
+			"editable": 19,
 			"locked": 2,
 			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				},
 				{
 					"path": "/post",
 					"reason": "optional_object_absent",
@@ -4265,93 +3798,57 @@
 		},
 		"post-split/centerShare": {
 			"leaves": 40,
-			"editable": 35,
+			"editable": 36,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-split/outlineStart": {
 			"leaves": 40,
-			"editable": 35,
+			"editable": 36,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-split/splitBioStart": {
 			"leaves": 40,
-			"editable": 35,
+			"editable": 36,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-split/splitSquare": {
 			"leaves": 40,
-			"editable": 35,
+			"editable": 36,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-split/splitStats": {
 			"leaves": 40,
-			"editable": 35,
+			"editable": 36,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"post-split/splitTags": {
 			"leaves": 40,
-			"editable": 35,
+			"editable": 36,
 			"locked": 4,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"pricing-card/compact": {
 			"leaves": 23,
@@ -4550,18 +4047,13 @@
 		},
 		"product-detail/compact": {
 			"leaves": 35,
-			"editable": 31,
+			"editable": 32,
 			"locked": 2,
 			"unsupported": [
 				{
 					"path": "/badges",
 					"reason": "free_form_map",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				},
 				{
 					"path": "/product",
@@ -4575,18 +4067,13 @@
 		},
 		"product-detail/muted": {
 			"leaves": 35,
-			"editable": 31,
+			"editable": 32,
 			"locked": 2,
 			"unsupported": [
 				{
 					"path": "/badges",
 					"reason": "free_form_map",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				},
 				{
 					"path": "/product",
@@ -4600,18 +4087,13 @@
 		},
 		"product-detail/split": {
 			"leaves": 35,
-			"editable": 31,
+			"editable": 32,
 			"locked": 2,
 			"unsupported": [
 				{
 					"path": "/badges",
 					"reason": "free_form_map",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				},
 				{
 					"path": "/product",
@@ -4625,18 +4107,13 @@
 		},
 		"product-detail/splitEnd": {
 			"leaves": 35,
-			"editable": 31,
+			"editable": 32,
 			"locked": 2,
 			"unsupported": [
 				{
 					"path": "/badges",
 					"reason": "free_form_map",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				},
 				{
 					"path": "/product",
@@ -4650,18 +4127,13 @@
 		},
 		"product-detail/stacked": {
 			"leaves": 35,
-			"editable": 31,
+			"editable": 32,
 			"locked": 2,
 			"unsupported": [
 				{
 					"path": "/badges",
 					"reason": "free_form_map",
 					"fixable": false
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
 				},
 				{
 					"path": "/product",
@@ -5233,7 +4705,7 @@
 		},
 		"rich-text/card": {
 			"leaves": 15,
-			"editable": 13,
+			"editable": 14,
 			"locked": 1,
 			"unsupported": [
 				{
@@ -5249,11 +4721,6 @@
 				{
 					"path": "/content",
 					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
 					"fixable": true
 				},
 				{
@@ -5273,7 +4740,7 @@
 		},
 		"rich-text/heroTitle": {
 			"leaves": 15,
-			"editable": 13,
+			"editable": 14,
 			"locked": 1,
 			"unsupported": [
 				{
@@ -5289,11 +4756,6 @@
 				{
 					"path": "/content",
 					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
 					"fixable": true
 				},
 				{
@@ -5313,7 +4775,7 @@
 		},
 		"rich-text/media": {
 			"leaves": 15,
-			"editable": 13,
+			"editable": 14,
 			"locked": 1,
 			"unsupported": [
 				{
@@ -5329,11 +4791,6 @@
 				{
 					"path": "/content",
 					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
 					"fixable": true
 				},
 				{
@@ -5353,7 +4810,7 @@
 		},
 		"rich-text/narrow": {
 			"leaves": 15,
-			"editable": 13,
+			"editable": 14,
 			"locked": 1,
 			"unsupported": [
 				{
@@ -5369,11 +4826,6 @@
 				{
 					"path": "/content",
 					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
 					"fixable": true
 				},
 				{
@@ -5393,7 +4845,7 @@
 		},
 		"rich-text/sidebar": {
 			"leaves": 15,
-			"editable": 13,
+			"editable": 14,
 			"locked": 1,
 			"unsupported": [
 				{
@@ -5409,11 +4861,6 @@
 				{
 					"path": "/content",
 					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
 					"fixable": true
 				},
 				{
@@ -5433,7 +4880,7 @@
 		},
 		"rich-text/wide": {
 			"leaves": 15,
-			"editable": 13,
+			"editable": 14,
 			"locked": 1,
 			"unsupported": [
 				{
@@ -5449,11 +4896,6 @@
 				{
 					"path": "/content",
 					"reason": "optional_object_absent",
-					"fixable": true
-				},
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
 					"fixable": true
 				},
 				{
@@ -5536,63 +4978,39 @@
 		},
 		"signup-wizard/bar": {
 			"leaves": 19,
-			"editable": 16,
+			"editable": 17,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"signup-wizard/list": {
 			"leaves": 19,
-			"editable": 16,
+			"editable": 17,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"signup-wizard/plain": {
 			"leaves": 19,
-			"editable": 16,
+			"editable": 17,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"signup-wizard/second": {
 			"leaves": 19,
-			"editable": 16,
+			"editable": 17,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "empty",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"site-footer/centered": {
 			"leaves": 9,
@@ -6013,63 +5431,39 @@
 		},
 		"store-hero/backdrop": {
 			"leaves": 23,
-			"editable": 20,
+			"editable": 21,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"store-hero/muted": {
 			"leaves": 23,
-			"editable": 20,
+			"editable": 21,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"store-hero/overlay": {
 			"leaves": 23,
-			"editable": 20,
+			"editable": 21,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"store-hero/overlayStart": {
 			"leaves": 23,
-			"editable": 20,
+			"editable": 21,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/level",
-					"reason": "non_string_enum",
-					"fixable": true
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"store-locations/cards": {
 			"leaves": 18,

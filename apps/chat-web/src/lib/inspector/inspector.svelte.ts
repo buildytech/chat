@@ -5,7 +5,7 @@
  * model call: a passing edit replaces the visible page at once (persisted like any page edit), a rejected one leaves the
  * page as it was and is shown in its field.
  */
-import { addScreen, applyOp, checkAdd, deriveFamily, type AddCheck, type InspectorField, type OpResult, type PageFamily, type PageOp } from "@buildytech/builder-core";
+import { addScreen, applyOp, checkAdd, deriveFamily, inspectorValue, type AddCheck, type InspectorField, type OpResult, type PageFamily, type PageOp } from "@buildytech/builder-core";
 import type { PageV2 } from "@buildytech/page-contract";
 import { loadPropsGate, startEmptyPageInChat } from "../chat-core";
 import { getBoundPageSessionId, getCurrentPage, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
@@ -71,21 +71,6 @@ function isEditable(target: EventTarget | null): Element | null {
 	return el?.closest?.("input, textarea, select, [contenteditable=''], [contenteditable='true']") ?? null;
 }
 
-/** The value a field widget typed as the JSON value of its prop (undefined: the prop is removed). */
-function valueFor(field: InspectorField, text: string): string | number | boolean | undefined {
-	switch (field.widget) {
-		case "boolean":
-			return text === "true";
-		case "number": {
-			if (text.trim() === "") return field.required ? 0 : undefined;
-			const n = Number(text);
-			return Number.isFinite(n) ? n : (text as unknown as number);
-		}
-		default:
-			return text === "" && !field.required ? undefined : text;
-	}
-}
-
 type Added = { ok: true; blockId: string } | { ok: false; code: string; message: string };
 
 export const inspector = {
@@ -135,7 +120,7 @@ export const inspector = {
 			history.seal();
 			return true;
 		}
-		const result = applyOp(page, { op: "set", blockId, pointer: field.pointer, value: valueFor(field, value) });
+		const result = applyOp(page, { op: "set", blockId, pointer: field.pointer, value: inspectorValue(field, value) });
 		if (!result.ok) {
 			const first = result.issues[0];
 			setIssue(blockId, field.pointer, { pointer: result.pointer ?? field.pointer, code: result.code, message: first?.expected ? `${first.expected}${first.got ? ` (${first.got})` : ""}` : result.message, ...(field.options ? { allowed: field.options } : {}), value });

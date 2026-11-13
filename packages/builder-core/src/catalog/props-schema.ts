@@ -254,6 +254,20 @@ function schemaAt(item: string, pointer: string): JsonSchema | null {
 }
 
 /**
+ * An enum prop written as text (a form select, an agent patch) in the type the schema declares: `level` is 1 | 2, so "2"
+ * becomes 2 (also true / false / null). A value that is not an enum member, or a prop that is not an enum, is returned as
+ * it came: the props gate still rejects it with the allowed values.
+ */
+export function coerceEnumValue(item: string, pointer: string, value: unknown): unknown {
+	if (typeof value !== "string") return value;
+	const node = schemaAt(item, pointer);
+	const options = node ? valueOf(node).enum : undefined;
+	if (!Array.isArray(options) || options.includes(value)) return value;
+	const match = options.find((option) => typeof option !== "string" && String(option) === value);
+	return match === undefined ? value : match;
+}
+
+/**
  * A new row for the list prop at `pointer` (`/content/features`): every required field from the schema (defaults,
  * first enum value, readable placeholders "Title" / "Text", the placeholder icon), a fresh `id` when the row has one.
  * Null when the pointer is not a list of records.

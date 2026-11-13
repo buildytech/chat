@@ -83,6 +83,7 @@ export {
 	type OrganismRender
 } from "./catalog/organism.ts";
 export {
+	coerceEnumValue,
 	fillProps,
 	hasPropsSchema,
 	lucideIcons,
