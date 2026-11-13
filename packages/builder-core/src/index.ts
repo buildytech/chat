@@ -77,7 +77,6 @@ export {
 	registryItemClosure,
 	registryItemFor,
 	registryNpmDependencies,
-	writableOrigin,
 	variantPreset,
 	variantPresets,
 	type OrganismRender
@@ -112,7 +111,7 @@ export {
 	type ViewMap
 } from "./catalog/view-map.ts";
 export { contractFingerprint } from "./catalog/fingerprint.ts";
-export { isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
+export { isScenarioId } from "./brief.ts";
 export {
 	blockLabelVocabulary,
 	nearestTerms,
@@ -223,7 +222,6 @@ export {
 	type CollectionItemRef,
 	type CollectionRequired
 } from "./collection.ts";
-export { placeholderFields, placeholderHints, placeholderWarning, type PlaceholderField } from "./placeholder.ts";
 export { resolveIconName, iconFixWarning, type IconFix } from "./icon-name.ts";
 export {
 	PAGE_FAMILIES,

@@ -39,5 +39,5 @@ See [docs/architecture.md](../../docs/architecture.md).
 The Page DTO is published as the page spec profile of `@ui8kit/contract`: [`page-spec.schema.json`](https://schema.buildy.tw/page-spec.schema.json) (root = this Page, so every saved page validates unchanged; `$defs/store` = the browser page store) and [`page-patch.schema.json`](https://schema.buildy.tw/page-patch.schema.json) (edit operations). Copies live in `schema/` (from ui8kit/contract `c351cdb`); `npm run schema:check` compares them with the live URLs.
 
 - `parsePageSpec(input)` = schema (`page_spec_invalid` + path) then `parsePage` program checks. Proposals, the client gate, saved pages and request bodies go through it.
-- `PAGE_SLOTS` (schema `x-page-slots`): copy keys each kind renders and the rows of list kinds. `edit_page` (builder-core `editPage`) writes only slots.
+- `PAGE_SLOTS` (schema `x-page-slots`): copy keys each kind renders and the rows of list kinds. Used by the 1.x -> 2.0 migration only (ADR 0034).
 - `src/json-schema.ts` is a dependency-free checker for the keyword subset the schemas use; an unknown keyword throws.

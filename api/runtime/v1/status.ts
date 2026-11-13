@@ -27437,598 +27437,11 @@ exports["facetTree"] = facetTree;
 
 });
 
-__def("packages/builder-core/src/catalog/props-overrides.ts", function (exports) {
-const { propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
-type Json = unknown;
-function isObject(value: Json): value is Record<string, Json> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/** `/content/features/0/title` -> ["content", "features", "0", "title"] (RFC 6901 unescaped). */
-function pointerParts(pointer: string): string[] {
-	return pointer.split("/").slice(1).map((part) => part.replace(/~1/g, "/").replace(/~0/g, "~"));
-}
-
-function clone<T>(value: T): T {
-	return value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T);
-}
-
-/** A copy of `target` with `value` at `parts` (missing objects / arrays are created; undefined removes the key). */
-function setAt(target: Json, parts: string[], value: Json): Json {
-	if (!parts.length) return clone(value);
-	const [head, ...rest] = parts as [string, ...string[]];
-	const index = /^\d+$/.test(head) ? Number(head) : null;
-	if (Array.isArray(target) || (index !== null && !isObject(target))) {
-		const list = Array.isArray(target) ? [...target] : [];
-		const at = index ?? list.length;
-		if (rest.length === 0 && value === undefined) list.splice(at, 1);
-		else list[at] = setAt(list[at], rest, value);
-		return list;
-	}
-	const obj: Record<string, Json> = isObject(target) ? { ...target } : {};
-	if (rest.length === 0 && value === undefined) delete obj[head];
-	else obj[head] = setAt(obj[head], rest, value);
-	return obj;
-}
-
-function valueAtPointer(data: Json, pointer: string): Json {
-	let current = data;
-	for (const part of pointerParts(pointer)) {
-		if (current === null || typeof current !== "object") return undefined;
-		current = (current as Record<string, Json>)[part];
-	}
-	return current;
-}
-
-/** Overrides merged over the rendered props, shortest pointer first (an override of a list, then fields inside it). */
-function applyPropsOverrides(base: Record<string, unknown>, overrides: PropsOverrides | undefined): Record<string, unknown> {
-	if (!overrides) return base;
-	let out: Json = base;
-	for (const pointer of Object.keys(overrides).sort((a, b) => a.length - b.length)) out = setAt(out, pointerParts(pointer), overrides[pointer]);
-	return out as Record<string, unknown>;
-}
-
-/**
- * The schema field a pointer names in a registry item's props (`/content/features/2/title` -> the `title` field of a
- * features row), or null when the schema has no such prop. List indices step into the row record.
- */
-function propsNodeAt(item: string, pointer: string): PropsFieldNode | null {
-	const tree = propsFieldTree(item);
-	if (!tree) return null;
-	let nodes: PropsFieldNode[] | undefined = tree;
-	let node: PropsFieldNode | null = null;
-	let inList = false;
-	for (const part of pointerParts(pointer)) {
-		if (inList) {
-			if (!/^\d+$/.test(part)) return null;
-			inList = false;
-			continue;
-		}
-		node = nodes?.find((entry) => entry.name === part) ?? null;
-		if (!node) return null;
-		if (node.kind === "list") {
-			nodes = node.fields;
-			inList = true;
-		} else nodes = node.fields;
-	}
-	return node;
-}
-
-/** Whether `ancestor` is `pointer` or one of its parents (`/a` of `/a/b`). */
-function covers(ancestor: string, pointer: string): boolean {
-	return pointer === ancestor || pointer.startsWith(`${ancestor}/`);
-}
-
-/**
- * The block with `pointer` set to `value` in its props overrides (undefined removes it). An override that covers the
- * pointer (a list written whole) is updated in place; overrides below the pointer are dropped (no overlap).
- */
-function withPropsOverride(block: PageBlock, pointer: string, value: PagePropValue | undefined): PageBlock {
-	const props: PropsOverrides = { ...block.props };
-	const ancestor = Object.keys(props).find((key) => key !== pointer && covers(key, pointer));
-	if (ancestor) {
-		props[ancestor] = setAt(props[ancestor], pointerParts(pointer).slice(pointerParts(ancestor).length), value) as PagePropValue;
-	} else {
-		for (const key of Object.keys(props)) if (covers(pointer, key)) delete props[key];
-		if (value !== undefined) props[pointer] = clone(value);
-	}
-	const next: PageBlock = { ...block, props };
-	if (!Object.keys(props).length) delete next.props;
-	return next;
-}
-
-/** Overrides of the rows of a page-row list (`/features/<i>/...`) after the rows moved: `map(old)` = new index or null. */
-function remapRowOverrides(block: PageBlock, list: string, map: (index: number) => number | null): PageBlock {
-	if (!block.props) return block;
-	const props: PropsOverrides = {};
-	const prefix = `/${list}/`;
-	for (const [key, value] of Object.entries(block.props)) {
-		if (!key.startsWith(prefix)) {
-			props[key] = value;
-			continue;
-		}
-		const [index, ...rest] = key.slice(prefix.length).split("/");
-		const to = /^\d+$/.test(index ?? "") ? map(Number(index)) : null;
-		if (to === null) continue;
-		props[[`${prefix}${to}`, ...rest].join("/")] = value;
-	}
-	const next: PageBlock = { ...block, props };
-	if (!Object.keys(props).length) delete next.props;
-	return next;
-}
-
-/** Override pointers the item's schema does not have (an import or a model edit naming a prop that is not there). */
-function unknownOverridePointers(item: string, overrides: PropsOverrides | undefined): string[] {
-	return Object.keys(overrides ?? {}).filter((pointer) => !propsNodeAt(item, pointer));
-}
-
-exports["pointerParts"] = pointerParts;
-exports["setAt"] = setAt;
-exports["valueAtPointer"] = valueAtPointer;
-exports["applyPropsOverrides"] = applyPropsOverrides;
-exports["propsNodeAt"] = propsNodeAt;
-exports["withPropsOverride"] = withPropsOverride;
-exports["remapRowOverrides"] = remapRowOverrides;
-exports["unknownOverridePointers"] = unknownOverridePointers;
-
-});
-
-__def("packages/builder-core/src/catalog/organism.ts", function (exports) {
-const raw = __req("packages/builder-core/src/catalog/sources.json").default;
-const { PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
-const { fillProps, propShapeFor, propsEventsFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
-const { applyPropsOverrides, propsNodeAt } = __req("packages/builder-core/src/catalog/props-overrides.ts");
-const sources = raw as unknown as CatalogSources;
-
-type Json = unknown;
-
-function isObject(value: Json): value is Record<string, Json> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/** A dictionary / data ref (`{"$": ...}`) or a data op (`{op, args}`): the Svelte block cannot resolve either. */
-function isRef(value: Json): boolean {
-	return isObject(value) && ("$" in value || ("op" in value && "args" in value));
-}
-
-/** Published variant props without dictionary / collection refs and data ops (the schema fills what they leave). */
-function withoutRefs(value: Json): Json {
-	if (Array.isArray(value)) return value.map(withoutRefs);
-	if (!isObject(value)) return value;
-	const out: Record<string, Json> = {};
-	for (const [key, inner] of Object.entries(value)) {
-		if (isRef(inner)) continue;
-		out[key] = withoutRefs(inner);
-	}
-	return out;
-}
-
-function merge(base: Json, over: Json): Json {
-	if (!isObject(base) || !isObject(over)) return over === undefined ? base : over;
-	const out: Record<string, Json> = { ...base };
-	for (const [key, value] of Object.entries(over)) out[key] = merge(base[key], value);
-	return out;
-}
-
-/** Page copy keys (page-spec) -> registry prop names that carry the same text. */
-const COPY_FIELDS: Record<string, keyof NonNullable<PageBlock["copy"]>> = {
-	eyebrow: "eyebrow",
-	kicker: "eyebrow",
-	overline: "eyebrow",
-	badge: "badge",
-	brand: "brand",
-	note: "note",
-	legal: "legal",
-	copyright: "legal",
-	contact: "contact",
-	address: "address",
-	days: "days",
-	value: "value"
-};
-const LABEL_FIELDS = new Set(["label", "name", "text", "title"]);
-const TITLE = new Set(["title", "heading", "name", "label", "question", "author", "brand"]);
-const TEXT = new Set(["text", "lead", "summary", "description", "subtitle", "intro", "excerpt", "body", "answer", "quote", "note", "hint", "tagline"]);
-const ACTION_LABEL = new Set(["label", "cta", "text"]);
-
-type Origins = Record<string, string>;
-
-function record(child: PageBlock, at: string, list: PropShape["lists"][string], origins: Origins, base: string): Record<string, Json> {
-	const row: Record<string, Json> = {};
-	const title = child.copy?.headline ?? child.title;
-	const text = child.copy?.lede ?? child.summary;
-	const set = (field: string, value: Json, from: string) => {
-		row[field] = value;
-		origins[`${base}/${field}`] = `${at}.${from}`;
-	};
-	for (const [field, kind] of Object.entries(list.record)) {
-		if (field === "icon" && kind === "icon") {
-			// Kept as written; the props gate checks it against the contract's Lucide enum.
-			if (child.copy?.icon !== undefined) set("icon", child.copy.icon, "copy.icon");
-			continue;
-		}
-		if (kind !== "text") continue;
-		if (field === "id") set("id", child.id, "id");
-		else if (TITLE.has(field) && title) set(field, title, child.copy?.headline ? "copy.headline" : "title");
-		else if (TEXT.has(field) && text) set(field, text, child.copy?.lede ? "copy.lede" : "summary");
-		else if (field === "href" && child.copy?.href) set("href", child.copy.href, "copy.href");
-		else if (COPY_FIELDS[field] && child.copy?.[COPY_FIELDS[field]!]) set(field, child.copy[COPY_FIELDS[field]!]!, `copy.${COPY_FIELDS[field]}`);
-	}
-	return row;
-}
-
-/** Page content in the block's own prop names (text goes only to text props of the schema, never to an enum axis). */
-function content(block: PageBlock, shape: PropShape, origins: Origins): Record<string, Json> {
-	const out: Record<string, Json> = {};
-	const set = (prop: string, value: Json, from: string) => {
-		out[prop] = value;
-		origins[`/${prop}`] = from;
-	};
-	const text = new Set(shape.text);
-	if (text.has("id")) set("id", block.id, "id");
-	// Edits land in copy (edit_page `set` headline / lede); copy wins over the block's title / summary.
-	const heading = block.copy?.headline ?? block.title;
-	const lede = block.copy?.lede ?? block.summary;
-	const title = shape.text.find((prop) => TITLE.has(prop) && prop !== "brand");
-	if (title && heading) set(title, heading, block.copy?.headline ? "copy.headline" : "title");
-	const lead = shape.text.find((prop) => TEXT.has(prop));
-	if (lead && lede) set(lead, lede, block.copy?.lede ? "copy.lede" : "summary");
-	for (const prop of shape.props) {
-		const key = COPY_FIELDS[prop];
-		const value = key ? block.copy?.[key] : undefined;
-		if (!value || prop in out) continue;
-		if (text.has(prop)) set(prop, value, `copy.${key}`);
-		else if (shape.objects[prop]) {
-			const field = Object.entries(shape.objects[prop]!).find(([name, kind]) => LABEL_FIELDS.has(name) && kind === "text")?.[0];
-			if (field) {
-				out[prop] = { [field]: value };
-				origins[`/${prop}/${field}`] = `copy.${key}`;
-			}
-		}
-	}
-	// Chrome labels (site-header / app bars): `labels.brand` carries the page brand.
-	if (block.copy?.brand && shape.objects.labels?.brand === "text") {
-		out.labels = { brand: block.copy.brand };
-		origins["/labels/brand"] = "copy.brand";
-	}
-	const children = block.children ?? [];
-	const lists = Object.entries(shape.lists).sort(([, a], [, b]) => Number(b.required) - Number(a.required));
-	// No rows: the block's empty state (`empty`, or `labels.empty`) says so in the page's words (its lede / summary).
-	if (!children.length && lists.length && lede) {
-		if (text.has("empty") && !("empty" in out)) set("empty", lede, block.copy?.lede ? "copy.lede" : "summary");
-		else if (shape.objects.labels?.empty === "text") {
-			out.labels = { ...(out.labels as Record<string, Json> | undefined), empty: lede };
-			origins["/labels/empty"] = block.copy?.lede ? "copy.lede" : "summary";
-		}
-	}
-	if (children.length && lists.length) {
-		const [name, list] = lists[0]!;
-		out[name] = children.map((child, index) => {
-			origins[`/${name}/${index}`] = `children[${index}]`;
-			return record(child, `children[${index}]`, list, origins, `/${name}/${index}`);
-		});
-	}
-	const action = block.copy?.action;
-	if (action) {
-		for (const name of ["action", "actions", "cta"]) {
-			const fields = shape.objects[name];
-			if (!fields) continue;
-			const label = Object.keys(fields).find((field) => ACTION_LABEL.has(field) && fields[field] === "text");
-			if (!label) continue;
-			out[name] = { [label]: action, ...(fields.href ? { href: block.copy?.href || "#" } : {}) };
-			origins[`/${name}/${label}`] = "copy.action";
-			if (fields.href) origins[`/${name}/href`] = "copy.href";
-			break;
-		}
-	}
-	return out;
-}
-
-/** The registry item and variant of a catalog block (`block.features` + `grid`), or null when the registry has none. */
-function registryItemFor(catalogBlock: string | undefined | null, variant?: string | null): { item: string; variant: string } | null {
-	if (!catalogBlock) return null;
-	if (variant) {
-		const hit = sources.assets[`${catalogBlock}/${variant}`];
-		if (hit) return hit;
-	}
-	return sources.specs[catalogBlock] ?? null;
-}
-
-/** The registry block and its props for a page block, or null when the block has no registry item (stub). */
-function organismFor(block: PageBlock): OrganismRender | null {
-	const hit = registryItemFor(block.catalogBlock, block.variant);
-	if (!hit || !block.catalogBlock) return null;
-	const source = sources.blocks[hit.item]!;
-	const shape = propShapeFor(hit.item);
-	if (!shape) return null;
-	const origins: Origins = {};
-	const merged = merge(withoutRefs(source.variants[hit.variant]), content(block, shape, origins)) as Record<string, unknown>;
-	const overrides = Object.keys(block.props ?? {});
-	for (const pointer of overrides) {
-		for (const key of Object.keys(origins)) if (key === pointer || key.startsWith(`${pointer}/`)) delete origins[key];
-	}
-	const props = fillProps(hit.item, applyPropsOverrides(merged, block.props));
-	const { events, slots } = propsEventsFor(hit.item);
-	return { catalogBlock: block.catalogBlock, item: hit.item, organism: source.organism, variant: hit.variant, props, origins, overrides, events, slots };
-}
-
-/** Page-spec fields a prop can be written back to: a block or row title / summary or a copy key. */
-const WRITABLE_ORIGIN = /^(?:children\[\d+\]\.)*(?:title|summary|copy\.[a-z]+)$/;
-
-function slotCopy(kind: PageBlockKind): string[] {
-	return (PAGE_SLOTS[kind]?.copy ?? []) as string[];
-}
-
-/** Where the lede of a block (or row) lives: `copy.lede` when its kind renders that copy key, else its summary. */
-function ledeOrigin(kind: PageBlockKind): string {
-	return slotCopy(kind).includes("lede") ? "copy.lede" : "summary";
-}
-
-/** The action object of a shape (`action`, `actions` or `cta`) and its label field, in the order content() reads them. */
-function actionFields(shape: PropShape): { name: string; label: string; href: boolean } | null {
-	for (const name of ["action", "actions", "cta"]) {
-		const fields = shape.objects[name];
-		if (!fields) continue;
-		const label = Object.keys(fields).find((field) => ACTION_LABEL.has(field) && fields[field] === "text");
-		if (label) return { name, label, href: fields.href === "text" };
-	}
-	return null;
-}
-
-/** The page-spec field an empty top-level text prop would be read from (the same rules as content()). */
-function emptyTopLevel(block: PageBlock, shape: PropShape, name: string): string | null {
-	if (!shape.text.includes(name)) return null;
-	const title = shape.text.find((prop) => TITLE.has(prop) && prop !== "brand");
-	if (name === title) return slotCopy(block.kind).includes("headline") ? "copy.headline" : "title";
-	const lead = shape.text.find((prop) => TEXT.has(prop));
-	if (name === lead) return ledeOrigin(block.kind);
-	// The empty state reads the lede while the block has no rows.
-	if (name === "empty" && !(block.children ?? []).length && Object.keys(shape.lists).length) return ledeOrigin(block.kind);
-	const key = COPY_FIELDS[name];
-	if (key && slotCopy(block.kind).includes(key)) return `copy.${key}`;
-	return null;
-}
-
-/** The page-spec field an empty text field of an object prop (`/action/label`, `/labels/brand`) would be read from. */
-function emptyInObject(block: PageBlock, shape: PropShape, object: string, field: string): string | null {
-	const fields = shape.objects[object];
-	if (fields?.[field] !== "text") return null;
-	const slot = slotCopy(block.kind);
-	const action = actionFields(shape);
-	if (action && action.name === object && slot.includes("action")) {
-		if (field === action.label) return "copy.action";
-		if (field === "href" && action.href) return "copy.href";
-	}
-	if (object === "labels" && field === "brand" && slot.includes("brand")) return "copy.brand";
-	if (object === "labels" && field === "empty" && !shape.text.includes("empty") && !(block.children ?? []).length && Object.keys(shape.lists).length) {
-		return ledeOrigin(block.kind);
-	}
-	const key = COPY_FIELDS[object];
-	if (key && !shape.text.includes(object) && slot.includes(key)) {
-		const label = Object.entries(fields).find(([name, kind]) => LABEL_FIELDS.has(name) && kind === "text")?.[0];
-		if (label === field) return `copy.${key}`;
-	}
-	return null;
-}
-
-/** The row field (`children[i]...`) an empty field of a page row would be read from (the same rules as record()). */
-function emptyInRow(child: PageBlock, kind: string | undefined, field: string): string | null {
-	const slot = slotCopy(child.kind);
-	if (field === "icon" && kind === "icon") return slot.includes("icon") ? "copy.icon" : null;
-	if (kind !== "text" || field === "id") return null;
-	if (TITLE.has(field)) return slot.includes("headline") ? "copy.headline" : "title";
-	if (TEXT.has(field)) return ledeOrigin(child.kind);
-	if (field === "href") return slot.includes("href") ? "copy.href" : null;
-	const key = COPY_FIELDS[field];
-	return key && slot.includes(key) ? `copy.${key}` : null;
-}
-
-/**
- * The page-spec field a prop of the block's render is written back to (the inverse of the mapping above), or null
- * when the prop is not page content (a variant axis, a schema default, an id). A prop that has content today keeps
- * its origin; an empty one is writable when the mapping above would read it once set: the title / lead / empty
- * state of the block, a copy key the block kind renders (`eyebrow`, `badge`, ...), the label and link of its action,
- * and the title / text / icon / link of a page row whose kind renders that field.
- */
-function writableOrigin(block: PageBlock, render: Pick<OrganismRender, "item" | "origins">, pointer: string): string | null {
-	const known = render.origins[pointer];
-	if (known) return WRITABLE_ORIGIN.test(known) ? known : null;
-	const shape = propShapeFor(render.item);
-	if (!shape) return null;
-	const parts = pointer.split("/").slice(1);
-	if (parts.length === 1) return emptyTopLevel(block, shape, parts[0]!);
-	if (parts.length === 2) return emptyInObject(block, shape, parts[0]!, parts[1]!);
-	if (parts.length === 3 && /^\d+$/.test(parts[1]!)) {
-		const row = render.origins[`/${parts[0]}/${parts[1]}`];
-		const index = row ? /^children\[(\d+)\]$/.exec(row)?.[1] : undefined;
-		const child = index !== undefined ? block.children?.[Number(index)] : undefined;
-		if (!child) return null;
-		const field = emptyInRow(child, shape.lists[parts[0]!]?.record[parts[2]!], parts[2]!);
-		return field ? `${row}.${field}` : null;
-	}
-	return null;
-}
-
-/** The published props of a variant without dictionary refs: what the variant itself sets (axes, sample literals). */
-function variantPreset(item: string, variant: string): Record<string, unknown> {
-	const value = sources.blocks[item]?.variants[variant];
-	return isObject(value) ? (withoutRefs(value) as Record<string, unknown>) : {};
-}
-
-/** Named variants of a registry item with their published props (the presets the Variant select offers). */
-function variantPresets(item: string): Record<string, Record<string, unknown>> {
-	const out: Record<string, Record<string, unknown>> = {};
-	for (const name of Object.keys(sources.blocks[item]?.variants ?? {})) out[name] = variantPreset(item, name);
-	return out;
-}
-
-/** The list prop the page rows (`children`) of a block fill: the first list of the schema, required ones first. */
-function pageListName(item: string): string | null {
-	const shape = propShapeFor(item);
-	if (!shape) return null;
-	const lists = Object.entries(shape.lists).sort(([, a], [, b]) => Number(b.required) - Number(a.required));
-	return lists[0]?.[0] ?? null;
-}
-
-/** Top-level props the named variants of an item set (its layout axes): a variant switch resets their overrides. */
-function variantAxisProps(item: string): Set<string> {
-	const out = new Set<string>();
-	for (const preset of Object.values(variantPresets(item))) for (const key of Object.keys(preset)) out.add(key);
-	return out;
-}
-
-/**
- * Props overrides of a block after its variant or catalog block changed (`next` renders another variant or item):
- * overrides of the variant axes are dropped (the chosen variant sets them), so are pointers the new item's schema
- * does not have. Returns the block with the kept overrides, the pointers dropped because the new item has no such prop
- * (`dropped`) and the axis overrides the new variant replaced (`axes`).
- */
-function stripAxisOverrides(next: PageBlock, before?: PageBlock | null): { node: PageBlock; dropped: string[]; axes: string[] } {
-	if (!next.props) return { node: next, dropped: [], axes: [] };
-	const hit = registryItemFor(next.catalogBlock, next.variant);
-	const prev = before ? registryItemFor(before.catalogBlock, before.variant) : null;
-	const axes = new Set<string>([...(hit ? variantAxisProps(hit.item) : []), ...(prev ? variantAxisProps(prev.item) : [])]);
-	const props: Record<string, NonNullable<PageBlock["props"]>[string]> = {};
-	const dropped: string[] = [];
-	const replaced: string[] = [];
-	for (const [pointer, value] of Object.entries(next.props)) {
-		const top = pointer.split("/")[1] ?? "";
-		if (axes.has(top) && pointer === `/${top}`) {
-			replaced.push(pointer);
-			continue;
-		}
-		if (!hit || !propsNodeAt(hit.item, pointer)) {
-			dropped.push(pointer);
-			continue;
-		}
-		props[pointer] = value;
-	}
-	const node: PageBlock = { ...next, props };
-	if (!Object.keys(props).length) delete node.props;
-	return { node, dropped, axes: replaced };
-}
-
-/**
- * Carry the props overrides of the blocks of `before` onto the same blocks (same id) of a freshly assembled `after`
- * (a Chat / Ask proposal that rebuilt the page): a block that already has overrides keeps them; pointers the new
- * item does not have are dropped and named in `notes`.
- */
-function carryPropsOverrides(before: PageBlock[], after: PageBlock[], notes: string[]): PageBlock[] {
-	const old = new Map(before.filter((node) => node.props).map((node) => [node.id, node]));
-	if (!old.size) return after;
-	return after.map((node) => {
-		const from = old.get(node.id);
-		if (!from || node.props) return node;
-		const kept = stripAxisOverrides({ ...node, props: from.props }, from);
-		// The same variant keeps its axis overrides too.
-		if (from.catalogBlock === node.catalogBlock && from.variant === node.variant) {
-			const axisKept = Object.fromEntries(Object.entries(from.props!).filter(([pointer]) => !kept.dropped.includes(pointer)));
-			const result: PageBlock = { ...node, props: axisKept };
-			if (!Object.keys(axisKept).length) delete result.props;
-			if (kept.dropped.length) notes.push(`${node.id}: props overrides not carried (no such prop): ${kept.dropped.join(", ")}.`);
-			return result;
-		}
-		if (kept.dropped.length) notes.push(`${node.id}: props overrides not carried (no such prop): ${kept.dropped.join(", ")}.`);
-		return kept.node;
-	});
-}
-
-/** npm packages the registry tree imports (clsx, tailwind-merge; svelte is the framework). */
-const registryNpmDependencies: string[] = sources.npmDependencies;
-
-/** Items `npx ui8kit init` installs before any `add`. */
-const registryInitItems: string[] = sources.initItems;
-
-/**
- * Registry file paths (relative to the CLI install root, e.g. `src/blocks/feature-grid.svelte`) of `init` plus
- * `add <items>`: the items and their registryDependencies, transitively. Unknown names throw.
- */
-function registryClosure(items: string[]): string[] {
-	const seen = new Set<string>();
-	const files = new Set<string>();
-	const queue = [...sources.initItems, ...items];
-	while (queue.length) {
-		const name = queue.shift()!;
-		if (seen.has(name)) continue;
-		const item = sources.items[name];
-		if (!item) throw new Error(`registry item ${name} is not in the pinned snapshot`);
-		seen.add(name);
-		for (const file of item.files) files.add(file);
-		queue.push(...item.registryDependencies);
-	}
-	return [...files].sort();
-}
-
-function registrySkins(): RegistrySkin[] {
-	return Object.entries(sources.themes?.skins ?? {})
-		.map(([id, skin]) => ({ id, ...skin }))
-		.sort((a, b) => a.title.localeCompare(b.title));
-}
-
-/** The skin with this id, or null when the pinned registry has none (unknown ids fall back to the default theme). */
-function registrySkin(id: string | null | undefined): RegistrySkin | null {
-	if (!id) return null;
-	const skin = sources.themes?.skins?.[id];
-	return skin ? { id, ...skin } : null;
-}
-
-/** CSS files of theme-base (what every skin depends on), as `npx ui8kit add theme-<id>` writes them. */
-function registrySkinBaseCss(): string[] {
-	return (sources.themes?.base?.files ?? []).filter((file) => file.endsWith(".css"));
-}
-
-/** Registry item that installs a skin. */
-const skinItem = (id: string): string => `theme-${id}`;
-
-/** Files `npx ui8kit add <name>` writes for one item (pinned snapshot, paths under the install root). */
-function registryItemFiles(name: string): string[] {
-	const item = sources.items[name];
-	if (!item) throw new Error(`registry item ${name} is not in the pinned snapshot`);
-	return [...item.files];
-}
-
-/** Item names of `init` plus `add <items>` with registryDependencies, transitively (lock entries of the CLI). */
-function registryItemClosure(items: string[]): string[] {
-	const seen = new Set<string>();
-	const queue = [...sources.initItems, ...items];
-	while (queue.length) {
-		const name = queue.shift()!;
-		if (seen.has(name)) continue;
-		const item = sources.items[name];
-		if (!item) throw new Error(`registry item ${name} is not in the pinned snapshot`);
-		seen.add(name);
-		queue.push(...item.registryDependencies);
-	}
-	return [...seen].sort();
-}
-
-exports["registryItemFor"] = registryItemFor;
-exports["organismFor"] = organismFor;
-exports["writableOrigin"] = writableOrigin;
-exports["variantPreset"] = variantPreset;
-exports["variantPresets"] = variantPresets;
-exports["pageListName"] = pageListName;
-exports["variantAxisProps"] = variantAxisProps;
-exports["stripAxisOverrides"] = stripAxisOverrides;
-exports["carryPropsOverrides"] = carryPropsOverrides;
-exports["registryNpmDependencies"] = registryNpmDependencies;
-exports["registryInitItems"] = registryInitItems;
-exports["registryClosure"] = registryClosure;
-exports["registrySkins"] = registrySkins;
-exports["registrySkin"] = registrySkin;
-exports["registrySkinBaseCss"] = registrySkinBaseCss;
-exports["skinItem"] = skinItem;
-exports["registryItemFiles"] = registryItemFiles;
-exports["registryItemClosure"] = registryItemClosure;
-
-});
-
 __def("packages/builder-core/src/catalog/provenance.ts", function (exports) {
-const { unknownOverridePointers } = __req("packages/builder-core/src/catalog/props-overrides.ts");
 const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
 const { getBlockIndex, rendererKindForLabel, screenSlots } = __req("packages/builder-core/src/catalog/compatibility.ts");
 const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
-const { catalogSourceFor, resolveCatalogChoice } = __req("packages/builder-core/src/catalog/sources.ts");
-const { organismFor } = __req("packages/builder-core/src/catalog/organism.ts");
+const { catalogSourceFor } = __req("packages/builder-core/src/catalog/sources.ts");
 const STOCK_APP_URL = "https://app.codegen-x.com/";
 
 let PROPS_VALIDATOR: PropsValidator | null = null;
@@ -28048,28 +27461,6 @@ function propsValidatorInstalled(): boolean {
 /** Issues of the props of one registry item; null while no validator is installed (the gate is fail-closed). */
 function validateItemProps(item: string, props: Record<string, unknown>): PropsIssue[] | null {
 	return PROPS_VALIDATOR ? PROPS_VALIDATOR({ item, props } as OrganismRender) : null;
-}
-
-function quote(value: unknown): string {
-	return typeof value === "string" ? JSON.stringify(value) : JSON.stringify(value) ?? String(value);
-}
-
-/** The page-block field a prop came from: the longest origin prefix of the pointer. */
-function originOf(render: OrganismRender, pointer: string): string | null {
-	let at = pointer;
-	while (at) {
-		if (render.origins[at]) return render.origins[at]!;
-		if (render.overrides.includes(at)) return `props["${at}"]`;
-		at = at.slice(0, Math.max(0, at.lastIndexOf("/")));
-	}
-	return null;
-}
-
-function issueText(issue: PropsIssue): string {
-	const where = issue.pointer || "(props)";
-	const value = issue.value !== undefined ? ` ${quote(issue.value)}` : "";
-	const allowed = issue.allowed?.length ? ` Allowed: ${issue.allowed.map(String).join(", ")}.` : "";
-	return `${where}${value}: ${issue.message}.${allowed}`;
 }
 
 /** Sibling Stock screens sharing the spec (theme family), selected screen first. */
@@ -28188,30 +27579,6 @@ function stockSearchUrl(params: Array<[string, string]>): string {
 		.map(([key, value]) => `${key}=${enc(value)}`)
 		.join("&");
 	return `${STOCK_APP_URL}#/search${query ? `?${query}` : ""}`;
-}
-
-function screenRef(screenId: string): CatalogScreenRef | null {
-	const screen = getScreenById(screenId);
-	if (!screen) return null;
-	const facets: Array<[string, string]> = [["type", "screen"]];
-	if (screen.labels.section.length) facets.push(["section", screen.labels.section.join(",")]);
-	if (screen.labels.industry.length) facets.push(["industry", screen.labels.industry.join(",")]);
-	facets.push(["spec", screen.spec]);
-	return {
-		catalogId: screen.screenId,
-		title: screen.subtitle ? `${screen.title} / ${screen.subtitle}` : screen.title,
-		url: stockAssetUrl(screen.screenId),
-		searchUrl: stockSearchUrl(facets),
-		filters: {
-			type: screen.labels.type,
-			section: screen.labels.section,
-			job: screen.labels.job,
-			blocks: screen.labels.blocks,
-			industry: screen.labels.industry,
-			spec: screen.spec,
-			variant: screen.variant
-		}
-	};
 }
 
 function labelForKind(labels: string[], kind: PageBlockKind): string | null {
@@ -28953,6 +28320,347 @@ exports["catalogToolParameterSchema"] = catalogToolParameterSchema;
 
 });
 
+__def("packages/builder-core/src/catalog/props-overrides.ts", function (exports) {
+
+type Json = unknown;
+function isObject(value: Json): value is Record<string, Json> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** `/content/features/0/title` -> ["content", "features", "0", "title"] (RFC 6901 unescaped). */
+function pointerParts(pointer: string): string[] {
+	return pointer.split("/").slice(1).map((part) => part.replace(/~1/g, "/").replace(/~0/g, "~"));
+}
+
+function clone<T>(value: T): T {
+	return value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T);
+}
+
+/** A copy of `target` with `value` at `parts` (missing objects / arrays are created; undefined removes the key). */
+function setAt(target: Json, parts: string[], value: Json): Json {
+	if (!parts.length) return clone(value);
+	const [head, ...rest] = parts as [string, ...string[]];
+	const index = /^\d+$/.test(head) ? Number(head) : null;
+	if (Array.isArray(target) || (index !== null && !isObject(target))) {
+		const list = Array.isArray(target) ? [...target] : [];
+		const at = index ?? list.length;
+		if (rest.length === 0 && value === undefined) list.splice(at, 1);
+		else list[at] = setAt(list[at], rest, value);
+		return list;
+	}
+	const obj: Record<string, Json> = isObject(target) ? { ...target } : {};
+	if (rest.length === 0 && value === undefined) delete obj[head];
+	else obj[head] = setAt(obj[head], rest, value);
+	return obj;
+}
+
+function valueAtPointer(data: Json, pointer: string): Json {
+	let current = data;
+	for (const part of pointerParts(pointer)) {
+		if (current === null || typeof current !== "object") return undefined;
+		current = (current as Record<string, Json>)[part];
+	}
+	return current;
+}
+
+/** Overrides merged over the rendered props, shortest pointer first (an override of a list, then fields inside it). */
+function applyPropsOverrides(base: Record<string, unknown>, overrides: PropsOverrides | undefined): Record<string, unknown> {
+	if (!overrides) return base;
+	let out: Json = base;
+	for (const pointer of Object.keys(overrides).sort((a, b) => a.length - b.length)) out = setAt(out, pointerParts(pointer), overrides[pointer]);
+	return out as Record<string, unknown>;
+}
+
+exports["pointerParts"] = pointerParts;
+exports["setAt"] = setAt;
+exports["valueAtPointer"] = valueAtPointer;
+exports["applyPropsOverrides"] = applyPropsOverrides;
+
+});
+
+__def("packages/builder-core/src/catalog/organism.ts", function (exports) {
+const raw = __req("packages/builder-core/src/catalog/sources.json").default;
+const { fillProps, propShapeFor, propsEventsFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { applyPropsOverrides } = __req("packages/builder-core/src/catalog/props-overrides.ts");
+const sources = raw as unknown as CatalogSources;
+
+type Json = unknown;
+
+function isObject(value: Json): value is Record<string, Json> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** A dictionary / data ref (`{"$": ...}`) or a data op (`{op, args}`): the Svelte block cannot resolve either. */
+function isRef(value: Json): boolean {
+	return isObject(value) && ("$" in value || ("op" in value && "args" in value));
+}
+
+/** Published variant props without dictionary / collection refs and data ops (the schema fills what they leave). */
+function withoutRefs(value: Json): Json {
+	if (Array.isArray(value)) return value.map(withoutRefs);
+	if (!isObject(value)) return value;
+	const out: Record<string, Json> = {};
+	for (const [key, inner] of Object.entries(value)) {
+		if (isRef(inner)) continue;
+		out[key] = withoutRefs(inner);
+	}
+	return out;
+}
+
+function merge(base: Json, over: Json): Json {
+	if (!isObject(base) || !isObject(over)) return over === undefined ? base : over;
+	const out: Record<string, Json> = { ...base };
+	for (const [key, value] of Object.entries(over)) out[key] = merge(base[key], value);
+	return out;
+}
+
+/** Page copy keys (page-spec) -> registry prop names that carry the same text. */
+const COPY_FIELDS: Record<string, keyof NonNullable<PageBlock["copy"]>> = {
+	eyebrow: "eyebrow",
+	kicker: "eyebrow",
+	overline: "eyebrow",
+	badge: "badge",
+	brand: "brand",
+	note: "note",
+	legal: "legal",
+	copyright: "legal",
+	contact: "contact",
+	address: "address",
+	days: "days",
+	value: "value"
+};
+const LABEL_FIELDS = new Set(["label", "name", "text", "title"]);
+const TITLE = new Set(["title", "heading", "name", "label", "question", "author", "brand"]);
+const TEXT = new Set(["text", "lead", "summary", "description", "subtitle", "intro", "excerpt", "body", "answer", "quote", "note", "hint", "tagline"]);
+const ACTION_LABEL = new Set(["label", "cta", "text"]);
+
+type Origins = Record<string, string>;
+
+function record(child: PageBlock, at: string, list: PropShape["lists"][string], origins: Origins, base: string): Record<string, Json> {
+	const row: Record<string, Json> = {};
+	const title = child.copy?.headline ?? child.title;
+	const text = child.copy?.lede ?? child.summary;
+	const set = (field: string, value: Json, from: string) => {
+		row[field] = value;
+		origins[`${base}/${field}`] = `${at}.${from}`;
+	};
+	for (const [field, kind] of Object.entries(list.record)) {
+		if (field === "icon" && kind === "icon") {
+			// Kept as written; the props gate checks it against the contract's Lucide enum.
+			if (child.copy?.icon !== undefined) set("icon", child.copy.icon, "copy.icon");
+			continue;
+		}
+		if (kind !== "text") continue;
+		if (field === "id") set("id", child.id, "id");
+		else if (TITLE.has(field) && title) set(field, title, child.copy?.headline ? "copy.headline" : "title");
+		else if (TEXT.has(field) && text) set(field, text, child.copy?.lede ? "copy.lede" : "summary");
+		else if (field === "href" && child.copy?.href) set("href", child.copy.href, "copy.href");
+		else if (COPY_FIELDS[field] && child.copy?.[COPY_FIELDS[field]!]) set(field, child.copy[COPY_FIELDS[field]!]!, `copy.${COPY_FIELDS[field]}`);
+	}
+	return row;
+}
+
+/** Page content in the block's own prop names (text goes only to text props of the schema, never to an enum axis). */
+function content(block: PageBlock, shape: PropShape, origins: Origins): Record<string, Json> {
+	const out: Record<string, Json> = {};
+	const set = (prop: string, value: Json, from: string) => {
+		out[prop] = value;
+		origins[`/${prop}`] = from;
+	};
+	const text = new Set(shape.text);
+	if (text.has("id")) set("id", block.id, "id");
+	// v1 pages: edits landed in copy (headline / lede); copy wins over the block title / summary.
+	const heading = block.copy?.headline ?? block.title;
+	const lede = block.copy?.lede ?? block.summary;
+	const title = shape.text.find((prop) => TITLE.has(prop) && prop !== "brand");
+	if (title && heading) set(title, heading, block.copy?.headline ? "copy.headline" : "title");
+	const lead = shape.text.find((prop) => TEXT.has(prop));
+	if (lead && lede) set(lead, lede, block.copy?.lede ? "copy.lede" : "summary");
+	for (const prop of shape.props) {
+		const key = COPY_FIELDS[prop];
+		const value = key ? block.copy?.[key] : undefined;
+		if (!value || prop in out) continue;
+		if (text.has(prop)) set(prop, value, `copy.${key}`);
+		else if (shape.objects[prop]) {
+			const field = Object.entries(shape.objects[prop]!).find(([name, kind]) => LABEL_FIELDS.has(name) && kind === "text")?.[0];
+			if (field) {
+				out[prop] = { [field]: value };
+				origins[`/${prop}/${field}`] = `copy.${key}`;
+			}
+		}
+	}
+	// Chrome labels (site-header / app bars): `labels.brand` carries the page brand.
+	if (block.copy?.brand && shape.objects.labels?.brand === "text") {
+		out.labels = { brand: block.copy.brand };
+		origins["/labels/brand"] = "copy.brand";
+	}
+	const children = block.children ?? [];
+	const lists = Object.entries(shape.lists).sort(([, a], [, b]) => Number(b.required) - Number(a.required));
+	// No rows: the block's empty state (`empty`, or `labels.empty`) says so in the page's words (its lede / summary).
+	if (!children.length && lists.length && lede) {
+		if (text.has("empty") && !("empty" in out)) set("empty", lede, block.copy?.lede ? "copy.lede" : "summary");
+		else if (shape.objects.labels?.empty === "text") {
+			out.labels = { ...(out.labels as Record<string, Json> | undefined), empty: lede };
+			origins["/labels/empty"] = block.copy?.lede ? "copy.lede" : "summary";
+		}
+	}
+	if (children.length && lists.length) {
+		const [name, list] = lists[0]!;
+		out[name] = children.map((child, index) => {
+			origins[`/${name}/${index}`] = `children[${index}]`;
+			return record(child, `children[${index}]`, list, origins, `/${name}/${index}`);
+		});
+	}
+	const action = block.copy?.action;
+	if (action) {
+		for (const name of ["action", "actions", "cta"]) {
+			const fields = shape.objects[name];
+			if (!fields) continue;
+			const label = Object.keys(fields).find((field) => ACTION_LABEL.has(field) && fields[field] === "text");
+			if (!label) continue;
+			out[name] = { [label]: action, ...(fields.href ? { href: block.copy?.href || "#" } : {}) };
+			origins[`/${name}/${label}`] = "copy.action";
+			if (fields.href) origins[`/${name}/href`] = "copy.href";
+			break;
+		}
+	}
+	return out;
+}
+
+/** The registry item and variant of a catalog block (`block.features` + `grid`), or null when the registry has none. */
+function registryItemFor(catalogBlock: string | undefined | null, variant?: string | null): { item: string; variant: string } | null {
+	if (!catalogBlock) return null;
+	if (variant) {
+		const hit = sources.assets[`${catalogBlock}/${variant}`];
+		if (hit) return hit;
+	}
+	return sources.specs[catalogBlock] ?? null;
+}
+
+/** The registry block and its props for a page block, or null when the block has no registry item (stub). */
+function organismFor(block: PageBlock): OrganismRender | null {
+	const hit = registryItemFor(block.catalogBlock, block.variant);
+	if (!hit || !block.catalogBlock) return null;
+	const source = sources.blocks[hit.item]!;
+	const shape = propShapeFor(hit.item);
+	if (!shape) return null;
+	const origins: Origins = {};
+	const merged = merge(withoutRefs(source.variants[hit.variant]), content(block, shape, origins)) as Record<string, unknown>;
+	const overrides = Object.keys(block.props ?? {});
+	for (const pointer of overrides) {
+		for (const key of Object.keys(origins)) if (key === pointer || key.startsWith(`${pointer}/`)) delete origins[key];
+	}
+	const props = fillProps(hit.item, applyPropsOverrides(merged, block.props));
+	const { events, slots } = propsEventsFor(hit.item);
+	return { catalogBlock: block.catalogBlock, item: hit.item, organism: source.organism, variant: hit.variant, props, origins, overrides, events, slots };
+}
+
+/** The published props of a variant without dictionary refs: what the variant itself sets (axes, sample literals). */
+function variantPreset(item: string, variant: string): Record<string, unknown> {
+	const value = sources.blocks[item]?.variants[variant];
+	return isObject(value) ? (withoutRefs(value) as Record<string, unknown>) : {};
+}
+
+/** Named variants of a registry item with their published props (the presets the Variant select offers). */
+function variantPresets(item: string): Record<string, Record<string, unknown>> {
+	const out: Record<string, Record<string, unknown>> = {};
+	for (const name of Object.keys(sources.blocks[item]?.variants ?? {})) out[name] = variantPreset(item, name);
+	return out;
+}
+
+/** Top-level props the named variants of an item set (its layout axes): a variant switch resets their overrides. */
+function variantAxisProps(item: string): Set<string> {
+	const out = new Set<string>();
+	for (const preset of Object.values(variantPresets(item))) for (const key of Object.keys(preset)) out.add(key);
+	return out;
+}
+
+/** npm packages the registry tree imports (clsx, tailwind-merge; svelte is the framework). */
+const registryNpmDependencies: string[] = sources.npmDependencies;
+
+/** Items `npx ui8kit init` installs before any `add`. */
+const registryInitItems: string[] = sources.initItems;
+
+/**
+ * Registry file paths (relative to the CLI install root, e.g. `src/blocks/feature-grid.svelte`) of `init` plus
+ * `add <items>`: the items and their registryDependencies, transitively. Unknown names throw.
+ */
+function registryClosure(items: string[]): string[] {
+	const seen = new Set<string>();
+	const files = new Set<string>();
+	const queue = [...sources.initItems, ...items];
+	while (queue.length) {
+		const name = queue.shift()!;
+		if (seen.has(name)) continue;
+		const item = sources.items[name];
+		if (!item) throw new Error(`registry item ${name} is not in the pinned snapshot`);
+		seen.add(name);
+		for (const file of item.files) files.add(file);
+		queue.push(...item.registryDependencies);
+	}
+	return [...files].sort();
+}
+
+function registrySkins(): RegistrySkin[] {
+	return Object.entries(sources.themes?.skins ?? {})
+		.map(([id, skin]) => ({ id, ...skin }))
+		.sort((a, b) => a.title.localeCompare(b.title));
+}
+
+/** The skin with this id, or null when the pinned registry has none (unknown ids fall back to the default theme). */
+function registrySkin(id: string | null | undefined): RegistrySkin | null {
+	if (!id) return null;
+	const skin = sources.themes?.skins?.[id];
+	return skin ? { id, ...skin } : null;
+}
+
+/** CSS files of theme-base (what every skin depends on), as `npx ui8kit add theme-<id>` writes them. */
+function registrySkinBaseCss(): string[] {
+	return (sources.themes?.base?.files ?? []).filter((file) => file.endsWith(".css"));
+}
+
+/** Registry item that installs a skin. */
+const skinItem = (id: string): string => `theme-${id}`;
+
+/** Files `npx ui8kit add <name>` writes for one item (pinned snapshot, paths under the install root). */
+function registryItemFiles(name: string): string[] {
+	const item = sources.items[name];
+	if (!item) throw new Error(`registry item ${name} is not in the pinned snapshot`);
+	return [...item.files];
+}
+
+/** Item names of `init` plus `add <items>` with registryDependencies, transitively (lock entries of the CLI). */
+function registryItemClosure(items: string[]): string[] {
+	const seen = new Set<string>();
+	const queue = [...sources.initItems, ...items];
+	while (queue.length) {
+		const name = queue.shift()!;
+		if (seen.has(name)) continue;
+		const item = sources.items[name];
+		if (!item) throw new Error(`registry item ${name} is not in the pinned snapshot`);
+		seen.add(name);
+		queue.push(...item.registryDependencies);
+	}
+	return [...seen].sort();
+}
+
+exports["registryItemFor"] = registryItemFor;
+exports["organismFor"] = organismFor;
+exports["variantPreset"] = variantPreset;
+exports["variantPresets"] = variantPresets;
+exports["variantAxisProps"] = variantAxisProps;
+exports["registryNpmDependencies"] = registryNpmDependencies;
+exports["registryInitItems"] = registryInitItems;
+exports["registryClosure"] = registryClosure;
+exports["registrySkins"] = registrySkins;
+exports["registrySkin"] = registrySkin;
+exports["registrySkinBaseCss"] = registrySkinBaseCss;
+exports["skinItem"] = skinItem;
+exports["registryItemFiles"] = registryItemFiles;
+exports["registryItemClosure"] = registryItemClosure;
+
+});
+
 __def("packages/builder-core/src/catalog/view-map.ts", function (exports) {
 const { viewMapFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
 function viewMapOf(item: string): ViewMap | null {
@@ -29220,69 +28928,7 @@ function isScenarioId(value: unknown): value is ScenarioId {
 	return typeof value === "string" && (SCENARIO_IDS as string[]).includes(value);
 }
 
-/**
- * Short page/hero title from a brief. Drops synthetic QA prefixes.
- * Does not invent a business name that is not in the text.
- */
-/** Occasion words already in the brief. Null when none — do not invent a holiday. */
-function occasionFromBrief(brief: string): string | null {
-	if (/\bnew year\b/i.test(brief)) return "New Year";
-	return null;
-}
-
-/** Keep the saved title unless the follow-up actually names or renames the page. */
-function titleFromSavedEdit(brief: string, current: string): string {
-	const named = brief.match(/\bnamed\s+["']?([^"'.,\n]+)/i);
-	if (named?.[1]?.trim()) return named[1].trim().slice(0, 80);
-	const forMatch = brief.match(/\bfor\s+([^.,\n]+?)(?:,|\s+a\s+|\s+an\s+)/i);
-	if (forMatch?.[1]) {
-		const name = forMatch[1].replace(/\b(?:a|an|the)\s+new year\s+/i, "").trim();
-		if (name && name.split(/\s+/).length <= 8) return name.slice(0, 80);
-	}
-	const rename = brief.match(/\b(?:rename(?:d)?|title|called)\s+(?:to|as|:)\s+["']?([^"'.,\n]+)/i);
-	if (rename?.[1]?.trim()) return rename[1].trim().slice(0, 80);
-	return current;
-}
-
-function displayTitleFromBrief(brief: string, fallback = "Draft page"): string {
-	const trimmed = brief.trim();
-	if (!trimmed) return fallback;
-	const named = trimmed.match(/\bnamed\s+["']?([^"'.,\n]+)/i);
-	if (named?.[1]) {
-		const name = named[1].trim();
-		if (name) return name.slice(0, 80);
-	}
-	const forMatch = trimmed.match(/\bfor\s+([^.,\n]+?)(?=,|\s+a\s+|\s+an\s+|\.|$)/i);
-	if (forMatch?.[1]) {
-		const name = forMatch[1].replace(/\b(?:a|an|the)\s+new year\s+/i, "").trim();
-		if (
-			name &&
-			name.split(/\s+/).length <= 8 &&
-			!/^(?:the|a|an|this|that|existing|real)\b/i.test(name)
-		) {
-			return name.slice(0, 80);
-		}
-	}
-	const withoutPrefix = trimmed
-		.replace(/^qa\s+\w+(?:\s+\w+)?\s+\d{2,4}:\s*/i, "")
-		.replace(/^(?:please\s+)?create\s+(?:a\s+)?(?:new year\s+)?/i, "")
-		.trim();
-	const first = (withoutPrefix.split(/[.!?]/)[0] ?? withoutPrefix).trim();
-	if (
-		!first ||
-		/\b(?:create|build|make|using existing|no invented|keep all other)\b/i.test(first) ||
-		/^(?:a\s+)?(?:landing(?:\s+pages?)?|dashboard|website|page)\b/i.test(first)
-	) {
-		return fallback;
-	}
-	if (first.split(/\s+/).length > 8) return fallback;
-	return first.slice(0, 80) || fallback;
-}
-
 exports["isScenarioId"] = isScenarioId;
-exports["occasionFromBrief"] = occasionFromBrief;
-exports["titleFromSavedEdit"] = titleFromSavedEdit;
-exports["displayTitleFromBrief"] = displayTitleFromBrief;
 
 });
 
@@ -29335,7 +28981,7 @@ const XAI_RUNTIME_NOTES = {
 	chat: "POST /v1/chat/completions, stream true. Conservative app tools use createOpenAI({ name: 'xai', baseURL, apiKey }).chat(actualModelId) + streamText.",
 	responses: "AI SDK 7 xai(modelId) defaults to Responses. This app does not use that default for catalog tools. If Responses is ever chosen, store:false. No zero-retention promise.",
 	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
-	tools: "Application-executed tools only: search_catalog, get_block_details, propose_layout, get_skill. Never mix hosted web_search / code_execution.",
+	tools: "Application-executed tools only: get_page, search_catalog, get_block, write_page. Never mix hosted web_search / code_execution.",
 	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",
 	toolCalling: "Parent 2026-11-08: bounded Chat Completions tool-protocol test on grok-4.20-0309-non-reasoning succeeded (2 steps, HTTP 200, tool calls, no retries, usage 393+434=827). That test used synthetic TEST blocks and artificial search_blocks(section)/propose_page tools, not this app's Stock catalog or search_catalog/get_block_details/propose_layout. Protocol support is proven. Page assembly is not proven. Do not treat the fixture miss (section=hero vs job=hero, empty blocks) as a production catalog bug."
 } as const;
@@ -30929,74 +30575,6 @@ exports["stripRuntimePrefix"] = stripRuntimePrefix;
 
 });
 
-__def("packages/builder-core/src/placeholder.ts", function (exports) {
-const { PAGE_SLOTS } = __req("packages/page-contract/src/index.ts");
-const { askBlockCard } = __req("packages/builder-core/src/catalog/details.ts");
-const SKIP_KEYS = new Set(["badge", "href", "note"]);
-
-function names(node: PageBlock): Set<string> {
-	const out = new Set([node.kind.toLowerCase()]);
-	if (node.catalogBlock) {
-		out.add(node.catalogBlock.replace(/^block\./, "").toLowerCase());
-		const card = askBlockCard(node.catalogBlock);
-		if (card) {
-			out.add(card.title.toLowerCase());
-			out.add(card.label.toLowerCase());
-		}
-	}
-	return out;
-}
-
-/** Text fields of a block the author sees: its copy keys (not badge / href / note), title, and rows. */
-function placeholderFields(page: Page, stock: Page | null | undefined): PlaceholderField[] {
-	const out: PlaceholderField[] = [];
-	const stockById = new Map((stock?.layout.blocks ?? []).map((node) => [node.id, node]));
-	for (const node of page.layout.blocks) {
-		// Footer contact / legal defaults are the honest "not invented" text, not placeholders to rewrite.
-		if (node.kind === "footer") continue;
-		const base = stockById.get(node.id) ?? stock?.layout.blocks.find((row) => row.kind === node.kind && row.catalogBlock === node.catalogBlock);
-		const push = (field: string) => out.push({ blockId: node.id, kind: node.kind, field });
-		if (names(node).has(node.title.trim().toLowerCase()) || (base && base.title === node.title)) push("title");
-		for (const key of PAGE_SLOTS[node.kind]?.copy ?? []) {
-			if (SKIP_KEYS.has(key)) continue;
-			const value = node.copy?.[key];
-			if (typeof value === "string" && value && base?.copy?.[key] === value) push(key);
-		}
-		const rows = node.children ?? [];
-		const stockRows = new Set((base?.children ?? []).map((child) => child.title));
-		if (rows.length && stockRows.size && rows.every((child) => stockRows.has(child.title))) push("rows");
-	}
-	return out;
-}
-
-/** The placeholder values of the draft page, per block kind, for the model to replace (copy keys and row labels). */
-function placeholderHints(stock: Page): Record<string, Record<string, unknown>> {
-	const out: Record<string, Record<string, unknown>> = {};
-	for (const node of stock.layout.blocks) {
-		if (node.kind === "footer") continue;
-		const hint: Record<string, unknown> = {};
-		for (const key of PAGE_SLOTS[node.kind]?.copy ?? []) {
-			if (SKIP_KEYS.has(key)) continue;
-			const value = node.copy?.[key];
-			if (typeof value === "string" && value) hint[key] = value.slice(0, 120);
-		}
-		if (node.children?.length) hint.rows = node.children.map((child) => child.title).slice(0, 6);
-		if (Object.keys(hint).length) out[node.kind] = hint;
-	}
-	return out;
-}
-
-function placeholderWarning(fields: PlaceholderField[]): string | null {
-	if (!fields.length) return null;
-	return `Catalog placeholder copy is still on ${fields.map((row) => `${row.kind}.${row.field}`).join(", ")}: write it in the inspector or ask Build to change it.`;
-}
-
-exports["placeholderFields"] = placeholderFields;
-exports["placeholderHints"] = placeholderHints;
-exports["placeholderWarning"] = placeholderWarning;
-
-});
-
 __def("packages/builder-core/src/catalog/page-family.ts", function (exports) {
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
 const { familyLabelForKind, FAMILY_HOME_SCREENS } = __req("packages/builder-core/src/catalog/provenance.ts");
@@ -31867,7 +31445,6 @@ exports["registryInitItems"] = __req("packages/builder-core/src/catalog/organism
 exports["registryItemClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemClosure"];
 exports["registryItemFor"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFor"];
 exports["registryNpmDependencies"] = __req("packages/builder-core/src/catalog/organism.ts")["registryNpmDependencies"];
-exports["writableOrigin"] = __req("packages/builder-core/src/catalog/organism.ts")["writableOrigin"];
 exports["variantPreset"] = __req("packages/builder-core/src/catalog/organism.ts")["variantPreset"];
 exports["variantPresets"] = __req("packages/builder-core/src/catalog/organism.ts")["variantPresets"];
 exports["fillProps"] = __req("packages/builder-core/src/catalog/props-schema.ts")["fillProps"];
@@ -31890,9 +31467,6 @@ exports["valueAt"] = __req("packages/builder-core/src/catalog/view-map.ts")["val
 exports["viewMapOf"] = __req("packages/builder-core/src/catalog/view-map.ts")["viewMapOf"];
 exports["contractFingerprint"] = __req("packages/builder-core/src/catalog/fingerprint.ts")["contractFingerprint"];
 exports["isScenarioId"] = __req("packages/builder-core/src/brief.ts")["isScenarioId"];
-exports["displayTitleFromBrief"] = __req("packages/builder-core/src/brief.ts")["displayTitleFromBrief"];
-exports["occasionFromBrief"] = __req("packages/builder-core/src/brief.ts")["occasionFromBrief"];
-exports["titleFromSavedEdit"] = __req("packages/builder-core/src/brief.ts")["titleFromSavedEdit"];
 exports["blockLabelVocabulary"] = __req("packages/builder-core/src/catalog/text-search.ts")["blockLabelVocabulary"];
 exports["nearestTerms"] = __req("packages/builder-core/src/catalog/text-search.ts")["nearestTerms"];
 exports["scoreScreens"] = __req("packages/builder-core/src/catalog/text-search.ts")["scoreScreens"];
@@ -31973,9 +31547,6 @@ exports["isCollectionCode"] = __req("packages/builder-core/src/collection.ts")["
 exports["snapshotDigest"] = __req("packages/builder-core/src/collection.ts")["snapshotDigest"];
 exports["snapshotHasItem"] = __req("packages/builder-core/src/collection.ts")["snapshotHasItem"];
 exports["splitCollection"] = __req("packages/builder-core/src/collection.ts")["splitCollection"];
-exports["placeholderFields"] = __req("packages/builder-core/src/placeholder.ts")["placeholderFields"];
-exports["placeholderHints"] = __req("packages/builder-core/src/placeholder.ts")["placeholderHints"];
-exports["placeholderWarning"] = __req("packages/builder-core/src/placeholder.ts")["placeholderWarning"];
 exports["resolveIconName"] = __req("packages/builder-core/src/icon-name.ts")["resolveIconName"];
 exports["iconFixWarning"] = __req("packages/builder-core/src/icon-name.ts")["iconFixWarning"];
 exports["PAGE_FAMILIES"] = __req("packages/builder-core/src/catalog/page-family.ts")["PAGE_FAMILIES"];

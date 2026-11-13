@@ -11,10 +11,10 @@
  * a variant (an action href), the variant sets the layout axes. The props gate (props-gate.ts) validates the result.
  */
 import raw from "./sources.json" with { type: "json" };
-import { PAGE_SLOTS, type PageBlock, type PageBlockKind } from "@buildytech/page-contract";
+import type { PageBlock } from "@buildytech/page-contract";
 import type { CatalogSources } from "./sources.ts";
 import { fillProps, propShapeFor, propsEventsFor, type PropShape } from "./props-schema.ts";
-import { applyPropsOverrides, propsNodeAt } from "./props-overrides.ts";
+import { applyPropsOverrides } from "./props-overrides.ts";
 
 const sources = raw as unknown as CatalogSources;
 
@@ -120,7 +120,7 @@ function content(block: PageBlock, shape: PropShape, origins: Origins): Record<s
 	};
 	const text = new Set(shape.text);
 	if (text.has("id")) set("id", block.id, "id");
-	// Edits land in copy (edit_page `set` headline / lede); copy wins over the block's title / summary.
+	// v1 pages: edits landed in copy (headline / lede); copy wins over the block title / summary.
 	const heading = block.copy?.headline ?? block.title;
 	const lede = block.copy?.lede ?? block.summary;
 	const title = shape.text.find((prop) => TITLE.has(prop) && prop !== "brand");
@@ -206,103 +206,6 @@ export function organismFor(block: PageBlock): OrganismRender | null {
 	return { catalogBlock: block.catalogBlock, item: hit.item, organism: source.organism, variant: hit.variant, props, origins, overrides, events, slots };
 }
 
-/** Page-spec fields a prop can be written back to: a block or row title / summary or a copy key. */
-const WRITABLE_ORIGIN = /^(?:children\[\d+\]\.)*(?:title|summary|copy\.[a-z]+)$/;
-
-function slotCopy(kind: PageBlockKind): readonly string[] {
-	return (PAGE_SLOTS[kind]?.copy ?? []) as readonly string[];
-}
-
-/** Where the lede of a block (or row) lives: `copy.lede` when its kind renders that copy key, else its summary. */
-function ledeOrigin(kind: PageBlockKind): string {
-	return slotCopy(kind).includes("lede") ? "copy.lede" : "summary";
-}
-
-/** The action object of a shape (`action`, `actions` or `cta`) and its label field, in the order content() reads them. */
-function actionFields(shape: PropShape): { name: string; label: string; href: boolean } | null {
-	for (const name of ["action", "actions", "cta"]) {
-		const fields = shape.objects[name];
-		if (!fields) continue;
-		const label = Object.keys(fields).find((field) => ACTION_LABEL.has(field) && fields[field] === "text");
-		if (label) return { name, label, href: fields.href === "text" };
-	}
-	return null;
-}
-
-/** The page-spec field an empty top-level text prop would be read from (the same rules as content()). */
-function emptyTopLevel(block: PageBlock, shape: PropShape, name: string): string | null {
-	if (!shape.text.includes(name)) return null;
-	const title = shape.text.find((prop) => TITLE.has(prop) && prop !== "brand");
-	if (name === title) return slotCopy(block.kind).includes("headline") ? "copy.headline" : "title";
-	const lead = shape.text.find((prop) => TEXT.has(prop));
-	if (name === lead) return ledeOrigin(block.kind);
-	// The empty state reads the lede while the block has no rows.
-	if (name === "empty" && !(block.children ?? []).length && Object.keys(shape.lists).length) return ledeOrigin(block.kind);
-	const key = COPY_FIELDS[name];
-	if (key && slotCopy(block.kind).includes(key)) return `copy.${key}`;
-	return null;
-}
-
-/** The page-spec field an empty text field of an object prop (`/action/label`, `/labels/brand`) would be read from. */
-function emptyInObject(block: PageBlock, shape: PropShape, object: string, field: string): string | null {
-	const fields = shape.objects[object];
-	if (fields?.[field] !== "text") return null;
-	const slot = slotCopy(block.kind);
-	const action = actionFields(shape);
-	if (action && action.name === object && slot.includes("action")) {
-		if (field === action.label) return "copy.action";
-		if (field === "href" && action.href) return "copy.href";
-	}
-	if (object === "labels" && field === "brand" && slot.includes("brand")) return "copy.brand";
-	if (object === "labels" && field === "empty" && !shape.text.includes("empty") && !(block.children ?? []).length && Object.keys(shape.lists).length) {
-		return ledeOrigin(block.kind);
-	}
-	const key = COPY_FIELDS[object];
-	if (key && !shape.text.includes(object) && slot.includes(key)) {
-		const label = Object.entries(fields).find(([name, kind]) => LABEL_FIELDS.has(name) && kind === "text")?.[0];
-		if (label === field) return `copy.${key}`;
-	}
-	return null;
-}
-
-/** The row field (`children[i]...`) an empty field of a page row would be read from (the same rules as record()). */
-function emptyInRow(child: PageBlock, kind: string | undefined, field: string): string | null {
-	const slot = slotCopy(child.kind);
-	if (field === "icon" && kind === "icon") return slot.includes("icon") ? "copy.icon" : null;
-	if (kind !== "text" || field === "id") return null;
-	if (TITLE.has(field)) return slot.includes("headline") ? "copy.headline" : "title";
-	if (TEXT.has(field)) return ledeOrigin(child.kind);
-	if (field === "href") return slot.includes("href") ? "copy.href" : null;
-	const key = COPY_FIELDS[field];
-	return key && slot.includes(key) ? `copy.${key}` : null;
-}
-
-/**
- * The page-spec field a prop of the block's render is written back to (the inverse of the mapping above), or null
- * when the prop is not page content (a variant axis, a schema default, an id). A prop that has content today keeps
- * its origin; an empty one is writable when the mapping above would read it once set: the title / lead / empty
- * state of the block, a copy key the block kind renders (`eyebrow`, `badge`, ...), the label and link of its action,
- * and the title / text / icon / link of a page row whose kind renders that field.
- */
-export function writableOrigin(block: PageBlock, render: Pick<OrganismRender, "item" | "origins">, pointer: string): string | null {
-	const known = render.origins[pointer];
-	if (known) return WRITABLE_ORIGIN.test(known) ? known : null;
-	const shape = propShapeFor(render.item);
-	if (!shape) return null;
-	const parts = pointer.split("/").slice(1);
-	if (parts.length === 1) return emptyTopLevel(block, shape, parts[0]!);
-	if (parts.length === 2) return emptyInObject(block, shape, parts[0]!, parts[1]!);
-	if (parts.length === 3 && /^\d+$/.test(parts[1]!)) {
-		const row = render.origins[`/${parts[0]}/${parts[1]}`];
-		const index = row ? /^children\[(\d+)\]$/.exec(row)?.[1] : undefined;
-		const child = index !== undefined ? block.children?.[Number(index)] : undefined;
-		if (!child) return null;
-		const field = emptyInRow(child, shape.lists[parts[0]!]?.record[parts[2]!], parts[2]!);
-		return field ? `${row}.${field}` : null;
-	}
-	return null;
-}
-
 /** The published props of a variant without dictionary refs: what the variant itself sets (axes, sample literals). */
 export function variantPreset(item: string, variant: string): Record<string, unknown> {
 	const value = sources.blocks[item]?.variants[variant];
@@ -316,75 +219,11 @@ export function variantPresets(item: string): Record<string, Record<string, unkn
 	return out;
 }
 
-/** The list prop the page rows (`children`) of a block fill: the first list of the schema, required ones first. */
-export function pageListName(item: string): string | null {
-	const shape = propShapeFor(item);
-	if (!shape) return null;
-	const lists = Object.entries(shape.lists).sort(([, a], [, b]) => Number(b.required) - Number(a.required));
-	return lists[0]?.[0] ?? null;
-}
-
 /** Top-level props the named variants of an item set (its layout axes): a variant switch resets their overrides. */
 export function variantAxisProps(item: string): Set<string> {
 	const out = new Set<string>();
 	for (const preset of Object.values(variantPresets(item))) for (const key of Object.keys(preset)) out.add(key);
 	return out;
-}
-
-/**
- * Props overrides of a block after its variant or catalog block changed (`next` renders another variant or item):
- * overrides of the variant axes are dropped (the chosen variant sets them), so are pointers the new item's schema
- * does not have. Returns the block with the kept overrides, the pointers dropped because the new item has no such prop
- * (`dropped`) and the axis overrides the new variant replaced (`axes`).
- */
-export function stripAxisOverrides(next: PageBlock, before?: PageBlock | null): { node: PageBlock; dropped: string[]; axes: string[] } {
-	if (!next.props) return { node: next, dropped: [], axes: [] };
-	const hit = registryItemFor(next.catalogBlock, next.variant);
-	const prev = before ? registryItemFor(before.catalogBlock, before.variant) : null;
-	const axes = new Set<string>([...(hit ? variantAxisProps(hit.item) : []), ...(prev ? variantAxisProps(prev.item) : [])]);
-	const props: Record<string, NonNullable<PageBlock["props"]>[string]> = {};
-	const dropped: string[] = [];
-	const replaced: string[] = [];
-	for (const [pointer, value] of Object.entries(next.props)) {
-		const top = pointer.split("/")[1] ?? "";
-		if (axes.has(top) && pointer === `/${top}`) {
-			replaced.push(pointer);
-			continue;
-		}
-		if (!hit || !propsNodeAt(hit.item, pointer)) {
-			dropped.push(pointer);
-			continue;
-		}
-		props[pointer] = value;
-	}
-	const node: PageBlock = { ...next, props };
-	if (!Object.keys(props).length) delete node.props;
-	return { node, dropped, axes: replaced };
-}
-
-/**
- * Carry the props overrides of the blocks of `before` onto the same blocks (same id) of a freshly assembled `after`
- * (a Chat / Ask proposal that rebuilt the page): a block that already has overrides keeps them; pointers the new
- * item does not have are dropped and named in `notes`.
- */
-export function carryPropsOverrides(before: readonly PageBlock[], after: PageBlock[], notes: string[]): PageBlock[] {
-	const old = new Map(before.filter((node) => node.props).map((node) => [node.id, node]));
-	if (!old.size) return after;
-	return after.map((node) => {
-		const from = old.get(node.id);
-		if (!from || node.props) return node;
-		const kept = stripAxisOverrides({ ...node, props: from.props }, from);
-		// The same variant keeps its axis overrides too.
-		if (from.catalogBlock === node.catalogBlock && from.variant === node.variant) {
-			const axisKept = Object.fromEntries(Object.entries(from.props!).filter(([pointer]) => !kept.dropped.includes(pointer)));
-			const result: PageBlock = { ...node, props: axisKept };
-			if (!Object.keys(axisKept).length) delete result.props;
-			if (kept.dropped.length) notes.push(`${node.id}: props overrides not carried (no such prop): ${kept.dropped.join(", ")}.`);
-			return result;
-		}
-		if (kept.dropped.length) notes.push(`${node.id}: props overrides not carried (no such prop): ${kept.dropped.join(", ")}.`);
-		return kept.node;
-	});
 }
 
 /** npm packages the registry tree imports (clsx, tailwind-merge; svelte is the framework). */

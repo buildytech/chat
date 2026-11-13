@@ -12,7 +12,6 @@ import {
 	type PageBlock,
 	type PageBlockCopy,
 	type PageBlockKind,
-	type PageCopyKey,
 	type PageLayout,
 	type PageSeo,
 	type PageStatus

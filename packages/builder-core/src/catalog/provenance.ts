@@ -1,11 +1,10 @@
-import { unknownOverridePointers } from "./props-overrides.ts";
-import type { Page, PageBlock, PageBlockKind } from "@buildytech/page-contract";
+import type { PageBlock, PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, rendererKindForLabel, screenSlots } from "./compatibility.ts";
 import { getScreenById } from "./search.ts";
 import type { CatalogScreen } from "./types.ts";
-import { catalogSourceFor, resolveCatalogChoice } from "./sources.ts";
-import { organismFor, type OrganismRender } from "./organism.ts";
+import { catalogSourceFor } from "./sources.ts";
+import type { OrganismRender } from "./organism.ts";
 
 /**
  * Program-level catalog provenance (deterministic code, never the model).
@@ -109,28 +108,6 @@ export function propsValidatorInstalled(): boolean {
 /** Issues of the props of one registry item; null while no validator is installed (the gate is fail-closed). */
 export function validateItemProps(item: string, props: Record<string, unknown>): PropsIssue[] | null {
 	return PROPS_VALIDATOR ? PROPS_VALIDATOR({ item, props } as OrganismRender) : null;
-}
-
-function quote(value: unknown): string {
-	return typeof value === "string" ? JSON.stringify(value) : JSON.stringify(value) ?? String(value);
-}
-
-/** The page-block field a prop came from: the longest origin prefix of the pointer. */
-function originOf(render: OrganismRender, pointer: string): string | null {
-	let at = pointer;
-	while (at) {
-		if (render.origins[at]) return render.origins[at]!;
-		if (render.overrides.includes(at)) return `props["${at}"]`;
-		at = at.slice(0, Math.max(0, at.lastIndexOf("/")));
-	}
-	return null;
-}
-
-function issueText(issue: PropsIssue): string {
-	const where = issue.pointer || "(props)";
-	const value = issue.value !== undefined ? ` ${quote(issue.value)}` : "";
-	const allowed = issue.allowed?.length ? ` Allowed: ${issue.allowed.map(String).join(", ")}.` : "";
-	return `${where}${value}: ${issue.message}.${allowed}`;
 }
 
 /** Sibling Stock screens sharing the spec (theme family), selected screen first. */
@@ -249,30 +226,6 @@ export function stockSearchUrl(params: Array<[string, string]>): string {
 		.map(([key, value]) => `${key}=${enc(value)}`)
 		.join("&");
 	return `${STOCK_APP_URL}#/search${query ? `?${query}` : ""}`;
-}
-
-function screenRef(screenId: string): CatalogScreenRef | null {
-	const screen = getScreenById(screenId);
-	if (!screen) return null;
-	const facets: Array<[string, string]> = [["type", "screen"]];
-	if (screen.labels.section.length) facets.push(["section", screen.labels.section.join(",")]);
-	if (screen.labels.industry.length) facets.push(["industry", screen.labels.industry.join(",")]);
-	facets.push(["spec", screen.spec]);
-	return {
-		catalogId: screen.screenId,
-		title: screen.subtitle ? `${screen.title} / ${screen.subtitle}` : screen.title,
-		url: stockAssetUrl(screen.screenId),
-		searchUrl: stockSearchUrl(facets),
-		filters: {
-			type: screen.labels.type,
-			section: screen.labels.section,
-			job: screen.labels.job,
-			blocks: screen.labels.blocks,
-			industry: screen.labels.industry,
-			spec: screen.spec,
-			variant: screen.variant
-		}
-	};
 }
 
 function labelForKind(labels: string[], kind: PageBlockKind): string | null {
