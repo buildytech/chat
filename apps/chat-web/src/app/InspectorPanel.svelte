@@ -58,6 +58,9 @@ import { ArrowDown, ArrowUp, Copy, Redo2, RotateCcw, Trash2, SlidersHorizontal, 
 		onseal: () => inspector.seal(),
 		onlist: (pointer, action, row) => {
 			if (model) inspector.run({ op: "list_row", blockId: model.blockId, pointer, action, ...(row !== undefined ? { row } : {}) });
+		},
+		onmap: (pointer, action, key, to) => {
+			if (model) inspector.run({ op: "map_entry", blockId: model.blockId, pointer, action, ...(key !== undefined ? { key } : {}), ...(to !== undefined ? { to } : {}) });
 		}
 	};
 

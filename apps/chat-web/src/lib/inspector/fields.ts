@@ -14,6 +14,7 @@ export function hasContent(field: InspectorField): boolean {
 	if (field.widget === "object") return (field.fields ?? []).some(hasContent);
 	if (field.widget === "list") return (field.rows?.length ?? 0) > 0;
 	if (field.widget === "values") return (field.items?.length ?? 0) > 0;
+	if (field.widget === "map") return (field.entries?.length ?? 0) > 0;
 	return field.value !== undefined && field.value !== null && field.value !== "";
 }
 
@@ -66,6 +67,8 @@ export type FieldHandlers = {
 	onseal: () => void;
 	/** A list prop: add a row, or remove / move / duplicate row `row` (the props list at `pointer`). */
 	onlist?: (pointer: string, action: "add" | "remove" | "up" | "down" | "duplicate", row?: number) => void;
+	/** A free-form map prop: add an entry, or remove / rename the entry under `key` (to: the new key). */
+	onmap?: (pointer: string, action: "add" | "remove" | "rename", key?: string, to?: string) => void;
 };
 
 /** The text of a rejected edit: a known code reads from the dictionary, anything else is the gate's own message. */

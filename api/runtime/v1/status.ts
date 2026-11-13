@@ -26527,6 +26527,7 @@ function valueOf(node: JsonSchema): JsonSchema {
 	return target;
 }
 
+/** `map`: an object with free keys whose values are plain (strings, numbers, booleans, enum members): `badges: { sku: "Sale" }`. */
 /** `markup`: trusted markup (`{ __html }`); a page never carries markup (the contract refuses it), so no widget writes it. */
 function kindOf(node: JsonSchema): FieldKind {
 	if (refName(node) === ICON_DEF) return "icon";
@@ -26541,6 +26542,7 @@ function kindOf(node: JsonSchema): FieldKind {
 		const names = Object.keys(value.properties);
 		return names.length === 1 && names[0] === "__html" ? "markup" : "object";
 	}
+	if (value.type === "object" && !isObject(value.properties) && isObject(value.additionalProperties) && ITEM_KINDS.has(kindOf(value.additionalProperties as JsonSchema))) return "map";
 	return "other";
 }
 
@@ -26584,6 +26586,20 @@ function propShapeFor(item: string): PropShape | null {
 /** One entry of a list of plain values. */
 const ITEM_KINDS = new Set<FieldKind>(["text", "number", "boolean", "enum"]);
 
+/** What one list entry or map value is, when it is a plain value (undefined for records and anything else). */
+function itemNodeOf(entry: JsonSchema): ListItemNode | undefined {
+	const entryKind = kindOf(entry);
+	if (!ITEM_KINDS.has(entryKind)) return undefined;
+	const value = valueOf(entry);
+	const item: ListItemNode = { kind: entryKind as ListItemNode["kind"] };
+	if (entryKind === "enum") {
+		item.enum = (value.enum as unknown[]).map(String);
+		item.enumValues = value.enum as ListItemNode["enumValues"];
+	}
+	if (entryKind === "text" && typeof value.maxLength === "number") item.maxLength = value.maxLength;
+	return item;
+}
+
 /** One prop of a block schema as a tree: its kind, whether it is required, enum values and nested fields. */
 function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
 	const value = valueOf(node);
@@ -26603,18 +26619,15 @@ function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
 		if (depth < 6 && kind === "object") out.fields = fieldTree(inner, depth + 1);
 		if (depth < 6 && kind === "list" && isObject(target.items)) {
 			const entry = target.items as JsonSchema;
-			const entryKind = kindOf(entry);
-			if (entryKind === "object") out.fields = fieldTree(entry, depth + 1);
-			else if (ITEM_KINDS.has(entryKind)) {
-				const value = valueOf(entry);
-				const item: ListItemNode = { kind: entryKind as ListItemNode["kind"] };
-				if (entryKind === "enum") {
-					item.enum = (value.enum as unknown[]).map(String);
-					item.enumValues = value.enum as ListItemNode["enumValues"];
-				}
-				if (entryKind === "text" && typeof value.maxLength === "number") item.maxLength = value.maxLength;
-				out.item = item;
-			}
+			if (kindOf(entry) === "object") out.fields = fieldTree(entry, depth + 1);
+			else out.item = itemNodeOf(entry);
+		}
+		if (kind === "map") {
+			out.item = itemNodeOf(target.additionalProperties as JsonSchema);
+			if (typeof target.minProperties === "number") out.minItems = target.minProperties;
+			if (typeof target.maxProperties === "number") out.maxItems = target.maxProperties;
+			const names = target.propertyNames as JsonSchema | undefined;
+			if (isObject(names) && typeof names.pattern === "string") out.keyPattern = names.pattern;
 		}
 		return out;
 	});
@@ -26675,8 +26688,9 @@ function pointerInfo(item: string, pointer: string): PointerInfo | null {
 	return {
 		kind,
 		required,
-		...(typeof value.minItems === "number" ? { minItems: value.minItems } : {}),
-		...(typeof value.maxItems === "number" ? { maxItems: value.maxItems } : {})
+		...(typeof (value.minItems ?? value.minProperties) === "number" ? { minItems: (value.minItems ?? value.minProperties) as number } : {}),
+		...(typeof (value.maxItems ?? value.maxProperties) === "number" ? { maxItems: (value.maxItems ?? value.maxProperties) as number } : {}),
+		...(isObject(value.propertyNames) && typeof (value.propertyNames as JsonSchema).pattern === "string" ? { keyPattern: (value.propertyNames as JsonSchema).pattern as string } : {})
 	};
 }
 
@@ -26715,6 +26729,21 @@ function newPropsListRow(item: string, pointer: string, taken: unknown[] = []): 
 	return row;
 }
 
+function plainEntry(entry: JsonSchema, n: number, taken: unknown[]): string | number | boolean | undefined {
+	if (Array.isArray(entry.enum)) {
+		const members = entry.enum as unknown[];
+		const free = members.find((member) => !taken.includes(member)) ?? members[0];
+		return typeof free === "string" || typeof free === "number" || typeof free === "boolean" ? free : undefined;
+	}
+	if (entry.type === "number" || entry.type === "integer") return typeof entry.minimum === "number" ? entry.minimum : 0;
+	if (entry.type === "boolean") return false;
+	if (entry.type === "string") {
+		const text = `Item ${n}`;
+		return typeof entry.maxLength === "number" ? text.slice(0, entry.maxLength) : text;
+	}
+	return undefined;
+}
+
 /**
  * A new entry for the list of plain values at `pointer` (`/plan/features`): the first enum member not used yet, 0, false,
  * or a readable "Item n" for text (cut to the schema's maxLength). Undefined when the pointer is not a list of plain values.
@@ -26724,19 +26753,35 @@ function newPropsListValue(item: string, pointer: string, taken: unknown[] = [])
 	if (!node) return undefined;
 	const list = valueOf(node);
 	if (list.type !== "array" || !isObject(list.items)) return undefined;
-	const entry = valueOf(list.items as JsonSchema);
-	if (Array.isArray(entry.enum)) {
-		const members = entry.enum as unknown[];
-		const free = members.find((member) => !taken.includes(member)) ?? members[0];
-		return typeof free === "string" || typeof free === "number" || typeof free === "boolean" ? free : undefined;
+	return plainEntry(valueOf(list.items as JsonSchema), taken.length + 1, taken);
+}
+
+/** A new value for the free-form map at `pointer` (`/badges`), as a new list entry is made; undefined when it is not such a map. */
+function newPropsMapValue(item: string, pointer: string, taken: unknown[] = []): string | number | boolean | undefined {
+	const node = schemaAt(item, pointer);
+	if (!node) return undefined;
+	const map = valueOf(node);
+	if (map.type !== "object" || isObject(map.properties) || !isObject(map.additionalProperties)) return undefined;
+	return plainEntry(valueOf(map.additionalProperties as JsonSchema), taken.length + 1, taken);
+}
+
+/** The keys a page may write inside props (`propertyNames` of the page-spec v2 schema: a letter first, then letters, digits, `_`; 48 at most). */
+const PAGE_KEY_PATTERN = "^[A-Za-z][A-Za-z0-9_]{0,47}$";
+
+/** Why a key cannot name an entry of a map (non-empty, unique, a key a page may write, matches the schema's pattern), or null when it can. */
+function mapKeyIssue(key: string, others: string[], pattern?: string): "empty_key" | "duplicate_key" | "bad_key" | null {
+	if (!key.trim()) return "empty_key";
+	if (others.includes(key)) return "duplicate_key";
+	if (key === "__proto__" || key === "constructor" || key === "prototype") return "bad_key";
+	if (!new RegExp(PAGE_KEY_PATTERN).test(key)) return "bad_key";
+	if (pattern) {
+		try {
+			if (!new RegExp(pattern, "u").test(key)) return "bad_key";
+		} catch {
+			return null;
+		}
 	}
-	if (entry.type === "number" || entry.type === "integer") return typeof entry.minimum === "number" ? entry.minimum : 0;
-	if (entry.type === "boolean") return false;
-	if (entry.type === "string") {
-		const text = `Item ${taken.length + 1}`;
-		return typeof entry.maxLength === "number" ? text.slice(0, entry.maxLength) : text;
-	}
-	return undefined;
+	return null;
 }
 
 /** "addToCart" -> "Add to cart": a readable placeholder for a required label the content does not fill. */
@@ -26840,6 +26885,9 @@ exports["pointerInfo"] = pointerInfo;
 exports["coerceEnumValue"] = coerceEnumValue;
 exports["newPropsListRow"] = newPropsListRow;
 exports["newPropsListValue"] = newPropsListValue;
+exports["newPropsMapValue"] = newPropsMapValue;
+exports["PAGE_KEY_PATTERN"] = PAGE_KEY_PATTERN;
+exports["mapKeyIssue"] = mapKeyIssue;
 exports["humanizeName"] = humanizeName;
 exports["fillProps"] = fillProps;
 exports["propsSummaryFor"] = propsSummaryFor;
@@ -30968,12 +31016,136 @@ exports["migratePageV1"] = migratePageV1;
 
 });
 
+__def("packages/builder-core/src/page-doc/inspect.ts", function (exports) {
+const { propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
+const { effectiveProps } = __req("packages/builder-core/src/page-doc/render.ts");
+const HIDDEN = new Set(["id", "class", "className"]);
+const LONG_TEXT = 200;
+const LONG_NAMES = /^(?:lede|summary|description|text|body|answer|quote)$/;
+const MAX_ROWS = 24;
+
+function valueAt(data: unknown, pointer: string): unknown {
+	let current = data;
+	for (const part of pointer.split("/").slice(1)) {
+		if (current === null || typeof current !== "object") return undefined;
+		current = (current as Record<string, unknown>)[part];
+	}
+	return current;
+}
+
+function widgetFor(node: PropsFieldNode): InspectorWidget {
+	switch (node.kind) {
+		case "text":
+			return LONG_NAMES.test(node.name) || (node.maxLength ?? 0) > LONG_TEXT ? "longtext" : "text";
+		case "icon":
+		case "enum":
+		case "boolean":
+		case "number":
+		case "object":
+			return node.kind;
+		case "list":
+			return node.fields ? "list" : node.item ? "values" : "other";
+		case "map":
+			return node.item ? "map" : "other";
+		default:
+			return "other";
+	}
+}
+
+function fieldsOf(props: Record<string, unknown>, nodes: PropsFieldNode[], base: string, hidden: ReadonlySet<string>): InspectorField[] {
+	const out: InspectorField[] = [];
+	for (const node of nodes) {
+		if (HIDDEN.has(node.name) || hidden.has(node.name)) continue;
+		const pointer = `${base}/${node.name}`;
+		const field: InspectorField = { pointer, name: node.name, widget: widgetFor(node), required: node.required, value: valueAt(props, pointer) };
+		if (node.enum) field.options = node.enum;
+		if (node.enumValues?.some((value) => typeof value !== "string")) field.optionValues = node.enumValues;
+		if (node.maxLength !== undefined) field.maxLength = node.maxLength;
+		if (field.widget === "object" && node.fields) field.fields = fieldsOf(props, node.fields, pointer, new Set());
+		if (field.widget === "list" && node.fields) {
+			const rows = Array.isArray(field.value) ? field.value : [];
+			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
+			field.rows = rows.map((_, index) => ({ pointer: `${pointer}/${index}`, fields: fieldsOf(props, node.fields!, `${pointer}/${index}`, new Set()) }));
+		}
+		if (field.widget === "values" && node.item) {
+			const entries = Array.isArray(field.value) ? field.value : [];
+			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
+			field.items = entries.map((entry, index) => entryField(node.item!, `${pointer}/${index}`, `${node.name} ${index + 1}`, entry));
+		}
+		if (field.widget === "map" && node.item) {
+			const map = field.value && typeof field.value === "object" && !Array.isArray(field.value) ? (field.value as Record<string, unknown>) : {};
+			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
+			if (node.keyPattern) field.keyPattern = node.keyPattern;
+			field.entries = Object.entries(map).map(([key, entry]) => ({ key, field: entryField(node.item!, `${pointer}/${pointerKey(key)}`, key, entry) }));
+		}
+		out.push(field);
+	}
+	return out;
+}
+
+/** A map key as one part of a JSON Pointer. */
+const pointerKey = (key: string): string => key.replace(/~/g, "~0").replace(/\//g, "~1");
+
+/** One entry of a list of plain values as a field of its own (so it edits like any scalar prop). */
+function entryField(item: ListItemNode, pointer: string, name: string, value: unknown): InspectorField {
+	const field: InspectorField = { pointer, name, widget: item.kind, required: true, value };
+	if (item.enum) field.options = item.enum;
+	if (item.enumValues?.some((entry) => typeof entry !== "string")) field.optionValues = item.enumValues;
+	if (item.maxLength !== undefined) field.maxLength = item.maxLength;
+	return field;
+}
+
+/** The inspector fields of a block, or an honest stub when its item is not in the registry or has no published schema. */
+function inspectorModel(block: Pick<BlockV2, "id" | "item" | "variant" | "props">): InspectorModel {
+	const info = itemInfo(block.item);
+	const head = { blockId: block.id, title: info?.title ?? block.item };
+	if (!info) return { ok: false, ...head, reason: "not_in_registry" };
+	const tree = propsFieldTree(block.item);
+	if (!tree) return { ok: false, ...head, reason: "no_schema" };
+	const { events, slots } = propsEventsFor(block.item);
+	const variant = block.variant && info.variants.includes(block.variant) ? block.variant : info.defaultVariant;
+	const props = effectiveProps(block.item, variant, block.props);
+	return { ok: true, ...head, item: block.item, variant, variants: info.variants, fields: fieldsOf(props, tree, "", new Set([...events, ...slots])) };
+}
+
+/**
+ * The JSON value a field widget typed as text, as `block.props` holds it (undefined: the prop is removed). The one place
+ * the Inspector turns widget text into a typed value: a boolean from a checkbox, a number, an enum member in the type
+ * the schema declares (1 | 2 stays a number, not "2").
+ */
+function inspectorValue(field: Pick<InspectorField, "widget" | "required" | "optionValues">, text: string): string | number | boolean | null | undefined {
+	switch (field.widget) {
+		case "boolean":
+			return text === "true";
+		case "number": {
+			if (text.trim() === "") return field.required ? 0 : undefined;
+			const n = Number(text);
+			return Number.isFinite(n) ? n : (text as unknown as number);
+		}
+		case "enum": {
+			if (text === "") return undefined;
+			const typed = field.optionValues?.find((value) => String(value) === text);
+			return typed === undefined ? text : typed;
+		}
+		default:
+			return text === "" && !field.required ? undefined : text;
+	}
+}
+
+exports["pointerKey"] = pointerKey;
+exports["inspectorModel"] = inspectorModel;
+exports["inspectorValue"] = inspectorValue;
+
+});
+
 __def("packages/builder-core/src/page-doc/ops.ts", function (exports) {
-const { coerceEnumValue, newPropsListRow, newPropsListValue, pointerInfo } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { coerceEnumValue, mapKeyIssue, newPropsListRow, newPropsListValue, newPropsMapValue, pointerInfo } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { addSlotCheck, moveSlotCheck, naturalIndex } = __req("packages/builder-core/src/page-doc/slots.ts");
 const { screenItems } = __req("packages/builder-core/src/page-doc/start.ts");
 const { catalogEntryBySpec } = __req("packages/builder-core/src/catalog/sources.ts");
 const { itemInfo, itemOfSpec } = __req("packages/builder-core/src/page-doc/items.ts");
+const { pointerKey } = __req("packages/builder-core/src/page-doc/inspect.ts");
 const { cloneJson, effectiveProps, sampleProps } = __req("packages/builder-core/src/page-doc/render.ts");
 const { freshBlockId, writePage } = __req("packages/builder-core/src/page-doc/write.ts");
 function checkAdd(spec: string, variant?: string | null): AddCheck {
@@ -31063,7 +31235,7 @@ function pruneEmpty(item: string, props: Record<string, unknown>, pointer: strin
 		const prefix = `/${parts.slice(0, depth).join("/")}`;
 		const here = valueAt(next, prefix);
 		const info = pointerInfo(item, prefix);
-		if (!info || info.required || info.kind !== "object" || !here || typeof here !== "object" || Array.isArray(here) || Object.keys(here).length) break;
+		if (!info || info.required || (info.kind !== "object" && info.kind !== "map") || !here || typeof here !== "object" || Array.isArray(here) || Object.keys(here).length) break;
 		next = setAtPointer(next, prefix, undefined) ?? next;
 	}
 	return next;
@@ -31150,6 +31322,63 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 				{ op: "replace", path: `/blocks/${index}/variant`, value: variant }
 			];
 			return done(writePage(page, { patch }), block.id, "replace");
+		}
+		case "map_entry": {
+			let props = liveProps(block);
+			const shape = pointerInfo(block.item, input.pointer);
+			if (shape?.kind !== "map") return fail("not_a_map", `${input.pointer} is not a map of values.`, input.pointer);
+			let map = valueAt(props, input.pointer);
+			// an optional map that is absent: `add` creates it (and the optional objects above it)
+			if (map === undefined || map === null) {
+				const parents = input.action === "add" ? ensureParents(block.item, props, input.pointer) : null;
+				if (!parents) return fail("not_a_map", `${input.pointer} has no entries.`, input.pointer);
+				props = parents;
+				map = {};
+			}
+			if (typeof map !== "object" || Array.isArray(map)) return fail("not_a_map", `${input.pointer} is not a map of values.`, input.pointer);
+			const entries = Object.entries(map as Record<string, unknown>);
+			const keys = entries.map(([key]) => key);
+			const max = Math.min(shape.maxItems ?? MAX_ROWS, MAX_ROWS);
+			const issue = (code: "empty_key" | "duplicate_key" | "bad_key", key: string) =>
+				fail(code, code === "empty_key" ? "A key is not empty." : code === "duplicate_key" ? `The key "${key}" is already used.` : `"${key}" is not a key a page may write here: a letter first, then letters, digits or _ (48 at most)${shape.keyPattern ? `, and ${shape.keyPattern}` : ""}.`, input.pointer);
+			let next: Array<[string, unknown]>;
+			let touched = input.key ?? "";
+			let name: OpName = "set_field";
+			if (input.action === "add") {
+				if (keys.length >= max) return fail("max_rows", `${input.pointer} holds at most ${max} entries.`, input.pointer);
+				let key = input.key;
+				if (key === undefined) {
+					let n = keys.length + 1;
+					while (keys.includes(`key${n}`)) n += 1;
+					key = `key${n}`;
+				}
+				const bad = mapKeyIssue(key, keys, shape.keyPattern);
+				if (bad) return issue(bad, key);
+				const value = newPropsMapValue(block.item, input.pointer, Object.values(map as Record<string, unknown>));
+				if (value === undefined) return fail("not_a_map", `${input.pointer} is not a map the Inspector adds to.`, input.pointer);
+				next = [...entries, [key, value]];
+				touched = key;
+				name = "add";
+			} else {
+				const key = input.key ?? "";
+				if (!keys.includes(key)) return fail("unknown_key", `${input.pointer} has no key "${key}".`, input.pointer);
+				if (input.action === "remove") {
+					if (keys.length - 1 < (shape.minItems ?? 0) && !(keys.length === 1 && shape.required === false)) return fail("min_rows", `${input.pointer} needs at least ${shape.minItems} entries.`, input.pointer);
+					next = entries.filter(([k]) => k !== key);
+					name = "remove";
+				} else {
+					const to = input.to ?? "";
+					const bad = to === key ? null : mapKeyIssue(to, keys.filter((k) => k !== key), shape.keyPattern);
+					if (bad) return issue(bad, to);
+					next = entries.map(([k, v]) => (k === key ? [to, v] : [k, v]));
+					touched = to;
+				}
+			}
+			const emptied = !next.length && shape.required === false;
+			const written = setAtPointer(props, input.pointer, emptied ? undefined : Object.fromEntries(next));
+			const result = written && emptied ? pruneEmpty(block.item, written, input.pointer) : written;
+			if (!result) return fail("path_not_found", `${input.pointer} does not exist.`, input.pointer);
+			return replaceProps(page, index, result, name, `${input.pointer}/${pointerKey(touched)}`);
 		}
 		case "list_row": {
 			let props = liveProps(block);
@@ -31242,117 +31471,6 @@ exports["addScreen"] = addScreen;
 
 });
 
-__def("packages/builder-core/src/page-doc/inspect.ts", function (exports) {
-const { propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
-const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
-const { effectiveProps } = __req("packages/builder-core/src/page-doc/render.ts");
-const HIDDEN = new Set(["id", "class", "className"]);
-const LONG_TEXT = 200;
-const LONG_NAMES = /^(?:lede|summary|description|text|body|answer|quote)$/;
-const MAX_ROWS = 24;
-
-function valueAt(data: unknown, pointer: string): unknown {
-	let current = data;
-	for (const part of pointer.split("/").slice(1)) {
-		if (current === null || typeof current !== "object") return undefined;
-		current = (current as Record<string, unknown>)[part];
-	}
-	return current;
-}
-
-function widgetFor(node: PropsFieldNode): InspectorWidget {
-	switch (node.kind) {
-		case "text":
-			return LONG_NAMES.test(node.name) || (node.maxLength ?? 0) > LONG_TEXT ? "longtext" : "text";
-		case "icon":
-		case "enum":
-		case "boolean":
-		case "number":
-		case "object":
-			return node.kind;
-		case "list":
-			return node.fields ? "list" : node.item ? "values" : "other";
-		default:
-			return "other";
-	}
-}
-
-function fieldsOf(props: Record<string, unknown>, nodes: PropsFieldNode[], base: string, hidden: ReadonlySet<string>): InspectorField[] {
-	const out: InspectorField[] = [];
-	for (const node of nodes) {
-		if (HIDDEN.has(node.name) || hidden.has(node.name)) continue;
-		const pointer = `${base}/${node.name}`;
-		const field: InspectorField = { pointer, name: node.name, widget: widgetFor(node), required: node.required, value: valueAt(props, pointer) };
-		if (node.enum) field.options = node.enum;
-		if (node.enumValues?.some((value) => typeof value !== "string")) field.optionValues = node.enumValues;
-		if (node.maxLength !== undefined) field.maxLength = node.maxLength;
-		if (field.widget === "object" && node.fields) field.fields = fieldsOf(props, node.fields, pointer, new Set());
-		if (field.widget === "list" && node.fields) {
-			const rows = Array.isArray(field.value) ? field.value : [];
-			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
-			field.rows = rows.map((_, index) => ({ pointer: `${pointer}/${index}`, fields: fieldsOf(props, node.fields!, `${pointer}/${index}`, new Set()) }));
-		}
-		if (field.widget === "values" && node.item) {
-			const entries = Array.isArray(field.value) ? field.value : [];
-			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
-			field.items = entries.map((entry, index) => entryField(node.item!, `${pointer}/${index}`, `${node.name} ${index + 1}`, entry));
-		}
-		out.push(field);
-	}
-	return out;
-}
-
-/** One entry of a list of plain values as a field of its own (so it edits like any scalar prop). */
-function entryField(item: ListItemNode, pointer: string, name: string, value: unknown): InspectorField {
-	const field: InspectorField = { pointer, name, widget: item.kind, required: true, value };
-	if (item.enum) field.options = item.enum;
-	if (item.enumValues?.some((entry) => typeof entry !== "string")) field.optionValues = item.enumValues;
-	if (item.maxLength !== undefined) field.maxLength = item.maxLength;
-	return field;
-}
-
-/** The inspector fields of a block, or an honest stub when its item is not in the registry or has no published schema. */
-function inspectorModel(block: Pick<BlockV2, "id" | "item" | "variant" | "props">): InspectorModel {
-	const info = itemInfo(block.item);
-	const head = { blockId: block.id, title: info?.title ?? block.item };
-	if (!info) return { ok: false, ...head, reason: "not_in_registry" };
-	const tree = propsFieldTree(block.item);
-	if (!tree) return { ok: false, ...head, reason: "no_schema" };
-	const { events, slots } = propsEventsFor(block.item);
-	const variant = block.variant && info.variants.includes(block.variant) ? block.variant : info.defaultVariant;
-	const props = effectiveProps(block.item, variant, block.props);
-	return { ok: true, ...head, item: block.item, variant, variants: info.variants, fields: fieldsOf(props, tree, "", new Set([...events, ...slots])) };
-}
-
-/**
- * The JSON value a field widget typed as text, as `block.props` holds it (undefined: the prop is removed). The one place
- * the Inspector turns widget text into a typed value: a boolean from a checkbox, a number, an enum member in the type
- * the schema declares (1 | 2 stays a number, not "2").
- */
-function inspectorValue(field: Pick<InspectorField, "widget" | "required" | "optionValues">, text: string): string | number | boolean | null | undefined {
-	switch (field.widget) {
-		case "boolean":
-			return text === "true";
-		case "number": {
-			if (text.trim() === "") return field.required ? 0 : undefined;
-			const n = Number(text);
-			return Number.isFinite(n) ? n : (text as unknown as number);
-		}
-		case "enum": {
-			if (text === "") return undefined;
-			const typed = field.optionValues?.find((value) => String(value) === text);
-			return typed === undefined ? text : typed;
-		}
-		default:
-			return text === "" && !field.required ? undefined : text;
-	}
-}
-
-exports["inspectorModel"] = inspectorModel;
-exports["inspectorValue"] = inspectorValue;
-
-});
-
 __def("packages/builder-core/src/page-doc/index.ts", function (exports) {
 exports["allItems"] = __req("packages/builder-core/src/page-doc/items.ts")["allItems"];
 exports["itemInfo"] = __req("packages/builder-core/src/page-doc/items.ts")["itemInfo"];
@@ -31390,6 +31508,7 @@ exports["checkAdd"] = __req("packages/builder-core/src/page-doc/ops.ts")["checkA
 exports["setAtPointer"] = __req("packages/builder-core/src/page-doc/ops.ts")["setAtPointer"];
 exports["inspectorModel"] = __req("packages/builder-core/src/page-doc/inspect.ts")["inspectorModel"];
 exports["inspectorValue"] = __req("packages/builder-core/src/page-doc/inspect.ts")["inspectorValue"];
+exports["pointerKey"] = __req("packages/builder-core/src/page-doc/inspect.ts")["pointerKey"];
 exports["installRenderProbe"] = __req("packages/builder-core/src/page-doc/probe.ts")["installRenderProbe"];
 exports["renderProbeInstalled"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderProbeInstalled"];
 exports["renderIssues"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderIssues"];
@@ -31795,7 +31914,10 @@ exports["coerceEnumValue"] = __req("packages/builder-core/src/catalog/props-sche
 exports["fillProps"] = __req("packages/builder-core/src/catalog/props-schema.ts")["fillProps"];
 exports["hasPropsSchema"] = __req("packages/builder-core/src/catalog/props-schema.ts")["hasPropsSchema"];
 exports["lucideIcons"] = __req("packages/builder-core/src/catalog/props-schema.ts")["lucideIcons"];
+exports["mapKeyIssue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["mapKeyIssue"];
+exports["PAGE_KEY_PATTERN"] = __req("packages/builder-core/src/catalog/props-schema.ts")["PAGE_KEY_PATTERN"];
 exports["newPropsListValue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["newPropsListValue"];
+exports["newPropsMapValue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["newPropsMapValue"];
 exports["LUCIDE_ICON_HINT"] = __req("packages/builder-core/src/catalog/props-schema.ts")["LUCIDE_ICON_HINT"];
 exports["propShapeFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propShapeFor"];
 exports["propsDigest"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsDigest"];

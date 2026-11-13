@@ -124,8 +124,9 @@ function valueOf(node: JsonSchema): JsonSchema {
 	return target;
 }
 
+/** `map`: an object with free keys whose values are plain (strings, numbers, booleans, enum members): `badges: { sku: "Sale" }`. */
 /** `markup`: trusted markup (`{ __html }`); a page never carries markup (the contract refuses it), so no widget writes it. */
-export type FieldKind = "text" | "icon" | "enum" | "number" | "boolean" | "list" | "object" | "markup" | "other";
+export type FieldKind = "text" | "icon" | "enum" | "number" | "boolean" | "list" | "object" | "map" | "markup" | "other";
 
 function kindOf(node: JsonSchema): FieldKind {
 	if (refName(node) === ICON_DEF) return "icon";
@@ -140,6 +141,7 @@ function kindOf(node: JsonSchema): FieldKind {
 		const names = Object.keys(value.properties);
 		return names.length === 1 && names[0] === "__html" ? "markup" : "object";
 	}
+	if (value.type === "object" && !isObject(value.properties) && isObject(value.additionalProperties) && ITEM_KINDS.has(kindOf(value.additionalProperties as JsonSchema))) return "map";
 	return "other";
 }
 
@@ -204,6 +206,20 @@ export type ListItemNode = {
 
 const ITEM_KINDS = new Set<FieldKind>(["text", "number", "boolean", "enum"]);
 
+/** What one list entry or map value is, when it is a plain value (undefined for records and anything else). */
+function itemNodeOf(entry: JsonSchema): ListItemNode | undefined {
+	const entryKind = kindOf(entry);
+	if (!ITEM_KINDS.has(entryKind)) return undefined;
+	const value = valueOf(entry);
+	const item: ListItemNode = { kind: entryKind as ListItemNode["kind"] };
+	if (entryKind === "enum") {
+		item.enum = (value.enum as unknown[]).map(String);
+		item.enumValues = value.enum as ListItemNode["enumValues"];
+	}
+	if (entryKind === "text" && typeof value.maxLength === "number") item.maxLength = value.maxLength;
+	return item;
+}
+
 /** One prop of a block schema as a tree: its kind, whether it is required, enum values and nested fields. */
 export type PropsFieldNode = {
 	name: string;
@@ -217,8 +233,10 @@ export type PropsFieldNode = {
 	maxItems?: number;
 	/** list: the schema's minItems, when it sets one. */
 	minItems?: number;
-	/** list of plain values (strings, numbers, booleans, enum members): what one entry is; lists of records have `fields`. */
+	/** list of plain values (strings, numbers, booleans, enum members) or map: what one entry (value) is; lists of records have `fields`. */
 	item?: ListItemNode;
+	/** map: the pattern the keys must match (`propertyNames.pattern`), when the schema sets one. */
+	keyPattern?: string;
 	/** text: the schema's maxLength, when it sets one. */
 	maxLength?: number;
 	/** object: its fields; list: the fields of one record (lists of plain values have none). */
@@ -243,18 +261,15 @@ function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
 		if (depth < 6 && kind === "object") out.fields = fieldTree(inner, depth + 1);
 		if (depth < 6 && kind === "list" && isObject(target.items)) {
 			const entry = target.items as JsonSchema;
-			const entryKind = kindOf(entry);
-			if (entryKind === "object") out.fields = fieldTree(entry, depth + 1);
-			else if (ITEM_KINDS.has(entryKind)) {
-				const value = valueOf(entry);
-				const item: ListItemNode = { kind: entryKind as ListItemNode["kind"] };
-				if (entryKind === "enum") {
-					item.enum = (value.enum as unknown[]).map(String);
-					item.enumValues = value.enum as ListItemNode["enumValues"];
-				}
-				if (entryKind === "text" && typeof value.maxLength === "number") item.maxLength = value.maxLength;
-				out.item = item;
-			}
+			if (kindOf(entry) === "object") out.fields = fieldTree(entry, depth + 1);
+			else out.item = itemNodeOf(entry);
+		}
+		if (kind === "map") {
+			out.item = itemNodeOf(target.additionalProperties as JsonSchema);
+			if (typeof target.minProperties === "number") out.minItems = target.minProperties;
+			if (typeof target.maxProperties === "number") out.maxItems = target.maxProperties;
+			const names = target.propertyNames as JsonSchema | undefined;
+			if (isObject(names) && typeof names.pattern === "string") out.keyPattern = names.pattern;
 		}
 		return out;
 	});
@@ -291,6 +306,8 @@ export type PointerInfo = {
 	required: boolean;
 	minItems?: number;
 	maxItems?: number;
+	/** map: the pattern its keys must match. */
+	keyPattern?: string;
 };
 
 /** What the schema says about a prop pointer (`/filter/tabs`, `/features/2/icon`), or null when the path is not in the schema. */
@@ -325,8 +342,9 @@ export function pointerInfo(item: string, pointer: string): PointerInfo | null {
 	return {
 		kind,
 		required,
-		...(typeof value.minItems === "number" ? { minItems: value.minItems } : {}),
-		...(typeof value.maxItems === "number" ? { maxItems: value.maxItems } : {})
+		...(typeof (value.minItems ?? value.minProperties) === "number" ? { minItems: (value.minItems ?? value.minProperties) as number } : {}),
+		...(typeof (value.maxItems ?? value.maxProperties) === "number" ? { maxItems: (value.maxItems ?? value.maxProperties) as number } : {}),
+		...(isObject(value.propertyNames) && typeof (value.propertyNames as JsonSchema).pattern === "string" ? { keyPattern: (value.propertyNames as JsonSchema).pattern as string } : {})
 	};
 }
 
@@ -365,6 +383,21 @@ export function newPropsListRow(item: string, pointer: string, taken: readonly u
 	return row;
 }
 
+function plainEntry(entry: JsonSchema, n: number, taken: readonly unknown[]): string | number | boolean | undefined {
+	if (Array.isArray(entry.enum)) {
+		const members = entry.enum as unknown[];
+		const free = members.find((member) => !taken.includes(member)) ?? members[0];
+		return typeof free === "string" || typeof free === "number" || typeof free === "boolean" ? free : undefined;
+	}
+	if (entry.type === "number" || entry.type === "integer") return typeof entry.minimum === "number" ? entry.minimum : 0;
+	if (entry.type === "boolean") return false;
+	if (entry.type === "string") {
+		const text = `Item ${n}`;
+		return typeof entry.maxLength === "number" ? text.slice(0, entry.maxLength) : text;
+	}
+	return undefined;
+}
+
 /**
  * A new entry for the list of plain values at `pointer` (`/plan/features`): the first enum member not used yet, 0, false,
  * or a readable "Item n" for text (cut to the schema's maxLength). Undefined when the pointer is not a list of plain values.
@@ -374,19 +407,35 @@ export function newPropsListValue(item: string, pointer: string, taken: readonly
 	if (!node) return undefined;
 	const list = valueOf(node);
 	if (list.type !== "array" || !isObject(list.items)) return undefined;
-	const entry = valueOf(list.items as JsonSchema);
-	if (Array.isArray(entry.enum)) {
-		const members = entry.enum as unknown[];
-		const free = members.find((member) => !taken.includes(member)) ?? members[0];
-		return typeof free === "string" || typeof free === "number" || typeof free === "boolean" ? free : undefined;
+	return plainEntry(valueOf(list.items as JsonSchema), taken.length + 1, taken);
+}
+
+/** A new value for the free-form map at `pointer` (`/badges`), as a new list entry is made; undefined when it is not such a map. */
+export function newPropsMapValue(item: string, pointer: string, taken: readonly unknown[] = []): string | number | boolean | undefined {
+	const node = schemaAt(item, pointer);
+	if (!node) return undefined;
+	const map = valueOf(node);
+	if (map.type !== "object" || isObject(map.properties) || !isObject(map.additionalProperties)) return undefined;
+	return plainEntry(valueOf(map.additionalProperties as JsonSchema), taken.length + 1, taken);
+}
+
+/** The keys a page may write inside props (`propertyNames` of the page-spec v2 schema: a letter first, then letters, digits, `_`; 48 at most). */
+export const PAGE_KEY_PATTERN = "^[A-Za-z][A-Za-z0-9_]{0,47}$";
+
+/** Why a key cannot name an entry of a map (non-empty, unique, a key a page may write, matches the schema's pattern), or null when it can. */
+export function mapKeyIssue(key: string, others: readonly string[], pattern?: string): "empty_key" | "duplicate_key" | "bad_key" | null {
+	if (!key.trim()) return "empty_key";
+	if (others.includes(key)) return "duplicate_key";
+	if (key === "__proto__" || key === "constructor" || key === "prototype") return "bad_key";
+	if (!new RegExp(PAGE_KEY_PATTERN).test(key)) return "bad_key";
+	if (pattern) {
+		try {
+			if (!new RegExp(pattern, "u").test(key)) return "bad_key";
+		} catch {
+			return null;
+		}
 	}
-	if (entry.type === "number" || entry.type === "integer") return typeof entry.minimum === "number" ? entry.minimum : 0;
-	if (entry.type === "boolean") return false;
-	if (entry.type === "string") {
-		const text = `Item ${taken.length + 1}`;
-		return typeof entry.maxLength === "number" ? text.slice(0, entry.maxLength) : text;
-	}
-	return undefined;
+	return null;
 }
 
 /** "addToCart" -> "Add to cart": a readable placeholder for a required label the content does not fill. */

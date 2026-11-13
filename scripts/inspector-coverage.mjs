@@ -10,7 +10,7 @@
  *
  * Output: catalog/inspector-coverage.json, keyed `item/variant`, stable (sorted keys, no dates). The inputs are pinned by
  * digest: the props schemas, the registry sources and the Inspector code. `--check` fails when the file is stale.
- * `fixable` marks a gap that a small Inspector change closes (report only); the others need a new widget.
+ * `fixable` marks a gap that a small Inspector change closes (report only); none is open today.
  *
  *   node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts scripts/inspector-coverage.mjs [--check]
  */
@@ -40,7 +40,7 @@ function renderHtml(organism, props) {
 }
 
 const sha = (text) => createHash("sha256").update(text).digest("hex").slice(0, 16);
-const inspectorFiles = ["packages/builder-core/src/catalog/props-schema.ts", "packages/builder-core/src/page-doc/inspect.ts", "packages/builder-core/src/page-doc/ops.ts", "apps/chat-web/src/app/InspectorFields.svelte", "apps/chat-web/src/lib/inspector/inspector.svelte.ts"];
+const inspectorFiles = ["packages/builder-core/src/catalog/props-schema.ts", "packages/builder-core/src/page-doc/inspect.ts", "packages/builder-core/src/page-doc/ops.ts", "apps/chat-web/src/app/InspectorFields.svelte", "apps/chat-web/src/lib/inspector/inspector.svelte.ts", "apps/chat-web/src/lib/inspector/fields.ts"];
 const inspectorDigest = sha(inspectorFiles.map((f) => readFileSync(join(repo, f), "utf8")).join("\n--\n"));
 const config = JSON.parse(readFileSync(join(repo, "catalog", "snapshot.config.json"), "utf8"));
 
@@ -84,7 +84,8 @@ function schemaReader(item) {
 	return { valueOf, why };
 }
 
-const FIXABLE = new Set(["non_string_enum", "optional_object_absent", "optional_list_absent"]);
+/** `fixable`: a gap a small Inspector change closes. None is open: what is left is the contract's own boundary (trusted markup). */
+const FIXABLE = new Set();
 const gap = (path, reason) => ({ path, reason, fixable: FIXABLE.has(reason) });
 
 /** Schema-level gaps of an item (the same for every variant) and its property counts. */
@@ -122,6 +123,9 @@ function staticGaps(item) {
 					walk(node.fields, valueOf(raw).items ?? {}, `${path}[]`, depth + 1);
 				} else if (node.item) counts.editable += 1;
 				else gaps.push(gap(path, why(raw)));
+			} else if (node.kind === "map") {
+				if (node.item) counts.editable += 1;
+				else gaps.push(gap(path, "free_form_map"));
 			} else if (node.kind === "markup") gaps.push(gap(path, "trusted_markup"));
 			else if (node.kind === "other") gaps.push(gap(path, why(raw)));
 			else counts.editable += 1;
@@ -159,7 +163,7 @@ const lists = (fields, acc = []) => {
 		if (f.widget === "list") {
 			acc.push(f);
 			for (const r of f.rows ?? []) lists(r.fields, acc);
-		} else if (f.widget === "values") acc.push(f);
+		} else if (f.widget === "values" || f.widget === "map") acc.push(f);
 		else if (f.widget === "object") lists(f.fields ?? [], acc);
 	}
 	return acc;
@@ -168,6 +172,7 @@ const scalars = (fields, acc = []) => {
 	for (const f of fields) {
 		if (f.widget === "list") for (const r of f.rows ?? []) scalars(r.fields, acc);
 		else if (f.widget === "values") acc.push(...(f.items ?? []));
+		else if (f.widget === "map") acc.push(...(f.entries ?? []).map((e) => e.field));
 		else if (f.widget === "object") scalars(f.fields ?? [], acc);
 		else if (f.widget !== "other") acc.push(f);
 	}
@@ -223,11 +228,24 @@ for (const item of allItems()) {
 		for (let guard = 0; guard < 60; guard += 1) {
 			const model = inspectorModel(view());
 			if (!model.ok) break;
-			const pending = lists(model.fields).filter((l) => (l.rows ?? l.items ?? []).length < Math.min(2, l.list?.max ?? 0));
+			const pending = lists(model.fields).filter((l) => (l.rows ?? l.items ?? l.entries ?? []).length < Math.min(2, l.list?.max ?? 0));
 			if (!pending.length) break;
-			const result = applyOp(page, { op: "list_row", blockId, pointer: pending[0].pointer, action: "add" });
+			const result = applyOp(page, pending[0].widget === "map" ? { op: "map_entry", blockId, pointer: pending[0].pointer, action: "add" } : { op: "list_row", blockId, pointer: pending[0].pointer, action: "add" });
 			if (!result.ok) {
 				add(opGap(result.code, result.message, pending[0].pointer));
+				break;
+			}
+			page = result.page;
+		}
+		// a map: the first key renamed, as the key field does
+		for (let guard = 0; guard < 12; guard += 1) {
+			const model = inspectorModel(view());
+			const map = model.ok ? lists(model.fields).find((l) => l.widget === "map" && (l.entries ?? []).some((e) => !e.key.startsWith("renamed"))) : null;
+			if (!map) break;
+			const entry = map.entries.find((e) => !e.key.startsWith("renamed"));
+			const result = applyOp(page, { op: "map_entry", blockId, pointer: map.pointer, action: "rename", key: entry.key, to: `renamed${entry.key}` });
+			if (!result.ok) {
+				add(opGap(result.code, result.message, map.pointer));
 				break;
 			}
 			page = result.page;
@@ -251,7 +269,6 @@ for (const item of allItems()) {
 const keys = Object.keys(manifest).sort();
 const combos = Object.fromEntries(keys.map((k) => [k, manifest[k]]));
 const covered = keys.filter((k) => combos[k].covered).length;
-const afterFixes = keys.filter((k) => combos[k].rendersFilled === "content" && combos[k].unsupported.every((g) => g.fixable)).length;
 const reasons = {};
 for (const k of keys) for (const g of combos[k].unsupported) reasons[g.reason] = (reasons[g.reason] ?? 0) + 1;
 const doc = {
@@ -264,7 +281,7 @@ const doc = {
 		stockContentCommit: config.codegenX?.commit ?? null,
 		inspectorDigest
 	},
-	summary: { combos: keys.length, items: allItems().length, covered, notCovered: keys.length - covered, coveredAfterFixes: afterFixes, reasons: Object.fromEntries(Object.entries(reasons).sort(([a], [b]) => a.localeCompare(b))) },
+	summary: { combos: keys.length, items: allItems().length, covered, notCovered: keys.length - covered, reasons: Object.fromEntries(Object.entries(reasons).sort(([a], [b]) => a.localeCompare(b))) },
 	combos
 };
 const text = `${JSON.stringify(doc, null, "\t")}\n`;
@@ -277,5 +294,5 @@ if (process.argv.includes("--check")) {
 	console.log(`inspector coverage current: ${covered}/${keys.length} covered`);
 } else {
 	writeFileSync(OUT, text);
-	console.log(`wrote catalog/inspector-coverage.json: ${covered}/${keys.length} covered, ${afterFixes} after the 3 Inspector fixes`);
+	console.log(`wrote catalog/inspector-coverage.json: ${covered}/${keys.length} covered`);
 }

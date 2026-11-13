@@ -6,16 +6,14 @@
 		"propsDigest": "sha256:bb4ae0ac537ba08d921557046bf75ee59ea592da181dc5ba3a020ccce9b31896",
 		"registrySourceCommit": "9e57f9ccaf710eb3b50d5599e6e49355fcc32136",
 		"stockContentCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
-		"inspectorDigest": "de6276473881e40d"
+		"inspectorDigest": "b4631259017067e9"
 	},
 	"summary": {
 		"combos": 532,
 		"items": 113,
-		"covered": 495,
-		"notCovered": 37,
-		"coveredAfterFixes": 495,
+		"covered": 526,
+		"notCovered": 6,
 		"reasons": {
-			"free_form_map": 31,
 			"trusted_markup": 12
 		}
 	},
@@ -922,63 +920,39 @@
 		},
 		"credit-packs/muted": {
 			"leaves": 17,
-			"editable": 14,
+			"editable": 15,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"credit-packs/rows": {
 			"leaves": 17,
-			"editable": 14,
+			"editable": 15,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"credit-packs/tiles2": {
 			"leaves": 17,
-			"editable": 14,
+			"editable": 15,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"credit-packs/tiles4": {
 			"leaves": 17,
-			"editable": 14,
+			"editable": 15,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"cta-band/agency": {
 			"leaves": 16,
@@ -2773,63 +2747,39 @@
 		},
 		"order-table/cards": {
 			"leaves": 27,
-			"editable": 24,
+			"editable": 25,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/statuses",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"order-table/compactMuted": {
 			"leaves": 27,
-			"editable": 24,
+			"editable": 25,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/statuses",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"order-table/noPager": {
 			"leaves": 27,
-			"editable": 24,
+			"editable": 25,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/statuses",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"order-table/table": {
 			"leaves": 27,
-			"editable": 24,
+			"editable": 25,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/statuses",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"page-intro/center": {
 			"leaves": 10,
@@ -3310,213 +3260,129 @@
 		},
 		"product-detail/compact": {
 			"leaves": 35,
-			"editable": 32,
+			"editable": 33,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-detail/muted": {
 			"leaves": 35,
-			"editable": 32,
+			"editable": 33,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-detail/split": {
 			"leaves": 35,
-			"editable": 32,
+			"editable": 33,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-detail/splitEnd": {
 			"leaves": 35,
-			"editable": 32,
+			"editable": 33,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-detail/stacked": {
 			"leaves": 35,
-			"editable": 32,
+			"editable": 33,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-grid/browse": {
 			"leaves": 31,
-			"editable": 28,
+			"editable": 29,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-grid/catalog": {
 			"leaves": 31,
-			"editable": 28,
+			"editable": 29,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-grid/grid2": {
 			"leaves": 31,
-			"editable": 28,
+			"editable": 29,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-grid/grid3": {
 			"leaves": 31,
-			"editable": 28,
+			"editable": 29,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-grid/grid4": {
 			"leaves": 31,
-			"editable": 28,
+			"editable": 29,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-grid/list": {
 			"leaves": 31,
-			"editable": 28,
+			"editable": 29,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-grid/rail": {
 			"leaves": 31,
-			"editable": 28,
+			"editable": 29,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-grid/railCompact": {
 			"leaves": 31,
-			"editable": 28,
+			"editable": 29,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-grid/showcase": {
 			"leaves": 31,
-			"editable": 28,
+			"editable": 29,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/badges",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"product-info/closed": {
 			"leaves": 15,
@@ -4468,48 +4334,30 @@
 		},
 		"store-locations/cards": {
 			"leaves": 18,
-			"editable": 15,
+			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/kinds",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"store-locations/list": {
 			"leaves": 18,
-			"editable": 15,
+			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/kinds",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"store-locations/map": {
 			"leaves": 18,
-			"editable": 15,
+			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/kinds",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"story-tabs/carouselSplit": {
 			"leaves": 18,
@@ -4594,93 +4442,57 @@
 		},
 		"team-grid/cards3": {
 			"leaves": 18,
-			"editable": 15,
+			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/depts",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"team-grid/cards4": {
 			"leaves": 18,
-			"editable": 15,
+			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/depts",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"team-grid/detailed": {
 			"leaves": 18,
-			"editable": 15,
+			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/depts",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"team-grid/directory": {
 			"leaves": 18,
-			"editable": 15,
+			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/depts",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"team-grid/list": {
 			"leaves": 18,
-			"editable": 15,
+			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/depts",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"team-grid/minimal": {
 			"leaves": 18,
-			"editable": 15,
+			"editable": 16,
 			"locked": 2,
-			"unsupported": [
-				{
-					"path": "/depts",
-					"reason": "free_form_map",
-					"fixable": false
-				}
-			],
+			"unsupported": [],
 			"rendersSample": "content",
 			"rendersFilled": "content",
-			"covered": false
+			"covered": true
 		},
 		"template-grid/grid3": {
 			"leaves": 23,

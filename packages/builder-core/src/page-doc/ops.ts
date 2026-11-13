@@ -4,11 +4,12 @@
  * diff), so a hand edit and an agent edit follow exactly the same rules. Pure: returns the next page or why not.
  */
 import type { BlockV2, PageV2, PropValueV2 } from "@buildytech/page-contract";
-import { coerceEnumValue, newPropsListRow, newPropsListValue, pointerInfo } from "../catalog/props-schema.ts";
+import { coerceEnumValue, mapKeyIssue, newPropsListRow, newPropsListValue, newPropsMapValue, pointerInfo } from "../catalog/props-schema.ts";
 import { addSlotCheck, moveSlotCheck, naturalIndex } from "./slots.ts";
 import { screenItems } from "./start.ts";
 import { catalogEntryBySpec } from "../catalog/sources.ts";
 import { itemInfo, itemOfSpec } from "./items.ts";
+import { pointerKey } from "./inspect.ts";
 import { cloneJson, effectiveProps, sampleProps } from "./render.ts";
 import { freshBlockId, writePage, type WriteResult } from "./write.ts";
 import type { DocIssue } from "./gate.ts";
@@ -24,6 +25,7 @@ export type PageOp =
 	| { op: "add"; item: string; variant?: string | null; at?: number }
 	| { op: "replace"; blockId: string; item: string; variant?: string | null }
 	| { op: "list_row"; blockId: string; pointer: string; action: "add" | "remove" | "up" | "down" | "duplicate"; row?: number }
+	| { op: "map_entry"; blockId: string; pointer: string; action: "add" | "remove" | "rename"; key?: string; to?: string }
 	| { op: "page"; field: "title" | "slug" | "locale" | "seo.title" | "seo.description"; value: string };
 
 /** Whether a Stock catalog block variant can be added to a page (the Blocks feed "+" and drag): a registry item that renders. */
@@ -124,7 +126,7 @@ function pruneEmpty(item: string, props: Record<string, unknown>, pointer: strin
 		const prefix = `/${parts.slice(0, depth).join("/")}`;
 		const here = valueAt(next, prefix);
 		const info = pointerInfo(item, prefix);
-		if (!info || info.required || info.kind !== "object" || !here || typeof here !== "object" || Array.isArray(here) || Object.keys(here).length) break;
+		if (!info || info.required || (info.kind !== "object" && info.kind !== "map") || !here || typeof here !== "object" || Array.isArray(here) || Object.keys(here).length) break;
 		next = setAtPointer(next, prefix, undefined) ?? next;
 	}
 	return next;
@@ -211,6 +213,63 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 				{ op: "replace", path: `/blocks/${index}/variant`, value: variant }
 			];
 			return done(writePage(page, { patch }), block.id, "replace");
+		}
+		case "map_entry": {
+			let props = liveProps(block);
+			const shape = pointerInfo(block.item, input.pointer);
+			if (shape?.kind !== "map") return fail("not_a_map", `${input.pointer} is not a map of values.`, input.pointer);
+			let map = valueAt(props, input.pointer);
+			// an optional map that is absent: `add` creates it (and the optional objects above it)
+			if (map === undefined || map === null) {
+				const parents = input.action === "add" ? ensureParents(block.item, props, input.pointer) : null;
+				if (!parents) return fail("not_a_map", `${input.pointer} has no entries.`, input.pointer);
+				props = parents;
+				map = {};
+			}
+			if (typeof map !== "object" || Array.isArray(map)) return fail("not_a_map", `${input.pointer} is not a map of values.`, input.pointer);
+			const entries = Object.entries(map as Record<string, unknown>);
+			const keys = entries.map(([key]) => key);
+			const max = Math.min(shape.maxItems ?? MAX_ROWS, MAX_ROWS);
+			const issue = (code: "empty_key" | "duplicate_key" | "bad_key", key: string) =>
+				fail(code, code === "empty_key" ? "A key is not empty." : code === "duplicate_key" ? `The key "${key}" is already used.` : `"${key}" is not a key a page may write here: a letter first, then letters, digits or _ (48 at most)${shape.keyPattern ? `, and ${shape.keyPattern}` : ""}.`, input.pointer);
+			let next: Array<[string, unknown]>;
+			let touched = input.key ?? "";
+			let name: OpName = "set_field";
+			if (input.action === "add") {
+				if (keys.length >= max) return fail("max_rows", `${input.pointer} holds at most ${max} entries.`, input.pointer);
+				let key = input.key;
+				if (key === undefined) {
+					let n = keys.length + 1;
+					while (keys.includes(`key${n}`)) n += 1;
+					key = `key${n}`;
+				}
+				const bad = mapKeyIssue(key, keys, shape.keyPattern);
+				if (bad) return issue(bad, key);
+				const value = newPropsMapValue(block.item, input.pointer, Object.values(map as Record<string, unknown>));
+				if (value === undefined) return fail("not_a_map", `${input.pointer} is not a map the Inspector adds to.`, input.pointer);
+				next = [...entries, [key, value]];
+				touched = key;
+				name = "add";
+			} else {
+				const key = input.key ?? "";
+				if (!keys.includes(key)) return fail("unknown_key", `${input.pointer} has no key "${key}".`, input.pointer);
+				if (input.action === "remove") {
+					if (keys.length - 1 < (shape.minItems ?? 0) && !(keys.length === 1 && shape.required === false)) return fail("min_rows", `${input.pointer} needs at least ${shape.minItems} entries.`, input.pointer);
+					next = entries.filter(([k]) => k !== key);
+					name = "remove";
+				} else {
+					const to = input.to ?? "";
+					const bad = to === key ? null : mapKeyIssue(to, keys.filter((k) => k !== key), shape.keyPattern);
+					if (bad) return issue(bad, to);
+					next = entries.map(([k, v]) => (k === key ? [to, v] : [k, v]));
+					touched = to;
+				}
+			}
+			const emptied = !next.length && shape.required === false;
+			const written = setAtPointer(props, input.pointer, emptied ? undefined : Object.fromEntries(next));
+			const result = written && emptied ? pruneEmpty(block.item, written, input.pointer) : written;
+			if (!result) return fail("path_not_found", `${input.pointer} does not exist.`, input.pointer);
+			return replaceProps(page, index, result, name, `${input.pointer}/${pointerKey(touched)}`);
 		}
 		case "list_row": {
 			let props = liveProps(block);

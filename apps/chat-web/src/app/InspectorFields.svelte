@@ -21,7 +21,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 	import Text from "$registry/compose/Text.svelte";
 	import Textarea from "$registry/compose/Textarea.svelte";
 	import Field from "$registry/components/field.svelte";
-	import type { InspectorField } from "@buildytech/builder-core";
+	import { mapKeyIssue, type InspectorField } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { canvas } from "$lib/inspector/canvas.svelte";
 	import { closestAllowed, fieldDomId, hasContent, issueText, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
@@ -56,6 +56,25 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 		return field.required ? `${field.name} *` : field.name;
 	}
 
+	/** Entry keys that were refused, by entry pointer (the text stays in the field until it is fixed). */
+	let keyErrors = $state<Record<string, string>>({});
+
+	/** Rename a map key: checked here for the message beside the field, and again by the operation. */
+	function renameKey(field: InspectorField, key: string, pointer: string, to: string) {
+		if (to === key) {
+			delete keyErrors[pointer];
+			return;
+		}
+		const others = (field.entries ?? []).map((entry) => entry.key).filter((name) => name !== key);
+		const bad = mapKeyIssue(to, others, field.keyPattern);
+		if (bad) {
+			keyErrors[pointer] = t(`inspector.key.${bad}`);
+			return;
+		}
+		delete keyErrors[pointer];
+		handlers.onmap?.(field.pointer, "rename", key, to);
+	}
+
 	function onFocus(event: FocusEvent) {
 		const pointer = (event.target as Element | null)?.closest("[data-pointer]")?.getAttribute("data-pointer");
 		if (pointer) canvas.selectField(blockId, pointer, "inspector");
@@ -65,6 +84,52 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 		return (event.currentTarget as HTMLInputElement | HTMLTextAreaElement).value;
 	}
 </script>
+
+{#snippet entryInput(item: InspectorField, itemId: string)}
+	{#if item.widget === "enum"}
+		<Select
+			id={itemId}
+			size="sm"
+			class="min-w-0 flex-1"
+			aria-label={item.name}
+			value={text(item.value)}
+			onchange={(event: Event) => handlers.onedit(item, (event.currentTarget as HTMLSelectElement).value, false)}
+		>
+			{#each item.options ?? [] as option (option)}
+				<SelectOption value={option}>{option}</SelectOption>
+			{/each}
+		</Select>
+	{:else if item.widget === "boolean"}
+		<Checkbox
+			id={itemId}
+			aria-label={item.name}
+			checked={item.value === true}
+			onchange={(event: Event) => handlers.onedit(item, String((event.currentTarget as HTMLInputElement).checked), false)}
+		/>
+	{:else if item.widget === "number"}
+		<Input
+			id={itemId}
+			size="sm"
+			type="number"
+			class="min-w-0 flex-1"
+			aria-label={item.name}
+			state={issues[item.pointer] ? "error" : undefined}
+			value={text(item.value)}
+			onchange={(event: Event) => handlers.onedit(item, valueOf(event), false)}
+		/>
+	{:else}
+		<Input
+			id={itemId}
+			size="sm"
+			class="min-w-0 flex-1"
+			aria-label={item.name}
+			state={issues[item.pointer] ? "error" : undefined}
+			value={text(item.value)}
+			oninput={(event: Event) => handlers.onedit(item, valueOf(event), true)}
+			onblur={() => handlers.onseal()}
+		/>
+	{/if}
+{/snippet}
 
 <Stack align="stretch" gap="4" data-slot="inspector-fields" onfocusin={onFocus}>
 	{#each fields as field (field.pointer)}
@@ -211,42 +276,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 				{#each field.items ?? [] as item, index (item.pointer)}
 					{@const itemId = fieldDomId(blockId, item.pointer)}
 					<Group gap="2" align="center" data-pointer={item.pointer} data-slot="inspector-item">
-						{#if item.widget === "enum"}
-							<Select
-								id={itemId}
-								size="sm"
-								class="min-w-0 flex-1"
-								aria-label={item.name}
-								value={text(item.value)}
-								onchange={(event: Event) => handlers.onedit(item, (event.currentTarget as HTMLSelectElement).value, false)}
-							>
-								{#each item.options ?? [] as option (option)}
-									<SelectOption value={option}>{option}</SelectOption>
-								{/each}
-							</Select>
-						{:else if item.widget === "number"}
-							<Input
-								id={itemId}
-								size="sm"
-								type="number"
-								class="min-w-0 flex-1"
-								aria-label={item.name}
-								state={issues[item.pointer] ? "error" : undefined}
-								value={text(item.value)}
-								onchange={(event: Event) => handlers.onedit(item, valueOf(event), false)}
-							/>
-						{:else}
-							<Input
-								id={itemId}
-								size="sm"
-								class="min-w-0 flex-1"
-								aria-label={item.name}
-								state={issues[item.pointer] ? "error" : undefined}
-								value={text(item.value)}
-								oninput={(event: Event) => handlers.onedit(item, valueOf(event), true)}
-								onblur={() => handlers.onseal()}
-							/>
-						{/if}
+						{@render entryInput(item, itemId)}
 						{#if handlers.onlist}
 							<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.itemUp").replace("{n}", String(index + 1))} title={t("inspector.itemUp").replace("{n}", String(index + 1))} disabled={index === 0} data-action="item-up" onclick={() => handlers.onlist!(field.pointer, "up", index)}>
 								<ArrowUp />
@@ -267,6 +297,56 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 					<Button size="sm" variant="outline" disabled={count >= max} data-action="add-item" onclick={() => handlers.onlist!(field.pointer, "add")}>
 						<Plus />
 						{t("inspector.addItem")}
+					</Button>
+				{/if}
+			</Fieldset>
+		{:else if field.widget === "map"}
+			{@const count = field.entries?.length ?? 0}
+			{@const max = field.list?.max ?? 0}
+			<Fieldset variant="card" data-pointer={field.pointer}>
+				<Legend class="text-xs">{label(field)} · {t("inspector.entries").replace("{count}", String(count))}</Legend>
+				{#if errorOf(field)}
+					<Text tag="p" class="text-xs font-semibold text-destructive" role="alert">{errorOf(field)}</Text>
+				{/if}
+				{#if !count}
+					<Text tag="p" class="text-xs text-muted-foreground">{t("inspector.noEntries")}</Text>
+				{/if}
+				{#each field.entries ?? [] as entry (entry.field.pointer)}
+					{@const keyId = `${fieldDomId(blockId, entry.field.pointer)}-key`}
+					<Stack gap="2" data-pointer={entry.field.pointer} data-slot="inspector-entry">
+						<Group gap="2" align="center">
+							<Input
+								id={keyId}
+								size="sm"
+								class="min-w-0 flex-1"
+								aria-label={t("inspector.entryKey")}
+								state={keyErrors[entry.field.pointer] ? "error" : undefined}
+								value={entry.key}
+								autocomplete="off"
+								spellcheck="false"
+								onchange={(event: Event) => renameKey(field, entry.key, entry.field.pointer, valueOf(event))}
+							/>
+							{#if handlers.onmap}
+								<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.removeEntry").replace("{key}", entry.key)} title={t("inspector.removeEntry").replace("{key}", entry.key)} disabled={count <= (field.list?.min ?? 0) && !(count === 1 && !field.required)} data-action="remove-entry" onclick={() => handlers.onmap!(field.pointer, "remove", entry.key)}>
+									<Trash2 />
+								</Button>
+							{/if}
+						</Group>
+						{#if keyErrors[entry.field.pointer]}
+							<Text tag="p" class="text-xs font-semibold text-destructive" role="alert">{keyErrors[entry.field.pointer]}</Text>
+						{/if}
+						<Group gap="2" align="center">
+							{@render entryInput(entry.field, fieldDomId(blockId, entry.field.pointer))}
+						</Group>
+						{#if issues[entry.field.pointer]}
+							<Text tag="p" class="text-xs font-semibold text-destructive" role="alert">{errorOf(entry.field)}</Text>
+						{/if}
+					</Stack>
+				{/each}
+				{#if handlers.onmap}
+					<Button size="sm" variant="outline" disabled={count >= max} data-action="add-entry" onclick={() => handlers.onmap!(field.pointer, "add")}>
+						<Plus />
+						{t("inspector.addEntry")}
 					</Button>
 				{/if}
 			</Fieldset>

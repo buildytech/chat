@@ -9,7 +9,7 @@ import { propsEventsFor, propsFieldTree, type ListItemNode, type PropsFieldNode 
 import { itemInfo } from "./items.ts";
 import { effectiveProps } from "./render.ts";
 
-export type InspectorWidget = "text" | "longtext" | "icon" | "enum" | "boolean" | "number" | "object" | "list" | "values" | "other";
+export type InspectorWidget = "text" | "longtext" | "icon" | "enum" | "boolean" | "number" | "object" | "list" | "values" | "map" | "other";
 
 export type InspectorField = {
 	/** JSON Pointer of the prop in the block's props (`/title`, `/features/2/icon`). */
@@ -27,6 +27,9 @@ export type InspectorField = {
 	list?: { max: number; min: number };
 	/** list of plain values (`values`): one field per entry, at `<list pointer>/<index>`. */
 	items?: InspectorField[];
+	/** free-form map (`map`): one entry per key, its value as a field at `<map pointer>/<key>`; the keys a rename must match. */
+	entries?: Array<{ key: string; field: InspectorField }>;
+	keyPattern?: string;
 	/** object: its fields. */
 	fields?: InspectorField[];
 	/** list of records: one entry per row. */
@@ -64,6 +67,8 @@ function widgetFor(node: PropsFieldNode): InspectorWidget {
 			return node.kind;
 		case "list":
 			return node.fields ? "list" : node.item ? "values" : "other";
+		case "map":
+			return node.item ? "map" : "other";
 		default:
 			return "other";
 	}
@@ -89,10 +94,19 @@ function fieldsOf(props: Record<string, unknown>, nodes: PropsFieldNode[], base:
 			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
 			field.items = entries.map((entry, index) => entryField(node.item!, `${pointer}/${index}`, `${node.name} ${index + 1}`, entry));
 		}
+		if (field.widget === "map" && node.item) {
+			const map = field.value && typeof field.value === "object" && !Array.isArray(field.value) ? (field.value as Record<string, unknown>) : {};
+			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
+			if (node.keyPattern) field.keyPattern = node.keyPattern;
+			field.entries = Object.entries(map).map(([key, entry]) => ({ key, field: entryField(node.item!, `${pointer}/${pointerKey(key)}`, key, entry) }));
+		}
 		out.push(field);
 	}
 	return out;
 }
+
+/** A map key as one part of a JSON Pointer. */
+export const pointerKey = (key: string): string => key.replace(/~/g, "~0").replace(/\//g, "~1");
 
 /** One entry of a list of plain values as a field of its own (so it edits like any scalar prop). */
 function entryField(item: ListItemNode, pointer: string, name: string, value: unknown): InspectorField {

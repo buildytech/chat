@@ -11,8 +11,12 @@ import {
 	emptyPage,
 	inspectorModel,
 	inspectorValue,
+	mapKeyIssue,
+	PAGE_KEY_PATTERN,
+	pointerKey,
 	writePage,
-	type InspectorField
+	type InspectorField,
+	type PageOp
 } from "../../packages/builder-core/src/index.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 
@@ -184,7 +188,7 @@ test("widget UI: compact, icons from the shell set, text-xs, en and ru words for
 	assert.match(fields, /from "\$lib\/shell-icons"/);
 	assert.doesNotMatch(fields, /lucide|text-\[11px\]|\sstyle=/);
 	assert.match(fields, /widget === "values"/);
-	for (const action of ["item-up", "item-down", "remove-item", "add-item"]) assert.match(fields, new RegExp(`data-action="${action}"`));
+	for (const action of ["item-up", "item-down", "remove-item", "add-item", "remove-entry", "add-entry"]) assert.match(fields, new RegExp(`data-action="${action}"`));
 	const en = JSON.parse(source("lib/i18n/en.json")) as Record<string, Record<string, string>> | Record<string, string>;
 	const ru = JSON.parse(source("lib/i18n/ru.json")) as Record<string, Record<string, string>> | Record<string, string>;
 	const flat = (o: unknown): Record<string, string> => {
@@ -201,4 +205,64 @@ test("widget UI: compact, icons from the shell set, text-xs, en and ru words for
 		assert.ok(flat(en)[key], `en has ${key}`);
 		assert.ok(flat(ru)[key], `ru has ${key}`);
 	}
+});
+
+test("free-form map (product badges): add, edit, rename, remove; keys are checked", () => {
+	let { page, id } = withBlock("product-grid");
+	const badges = fieldOf(page, "badges");
+	assert.equal(badges.widget, "map", "a map of strings is an editable map, not a read-only field");
+	const map = () => (propsOf(page).badges ?? {}) as Record<string, unknown>;
+	const run = (op: Omit<Extract<PageOp, { op: "map_entry" }>, "op" | "blockId">) => {
+		const r = applyOp(page, { op: "map_entry", blockId: id, ...op });
+		return r;
+	};
+	assert.deepEqual(map(), {}, "badges is required and starts empty");
+	let r = run({ pointer: "/badges", action: "add" });
+	assert.ok(r.ok, JSON.stringify(r));
+	page = r.page;
+	assert.deepEqual(Object.keys(map()), ["key1"], "the first entry gets a key a page may write");
+	r = run({ pointer: "/badges", action: "add", key: "p2" });
+	assert.ok(r.ok, JSON.stringify(r));
+	page = r.page;
+	// edit the value of an entry: the same set as any prop, at the entry's pointer
+	const edit = applyOp(page, { op: "set", blockId: id, pointer: "/badges/p2", value: "Sale" });
+	assert.ok(edit.ok, JSON.stringify(edit));
+	page = edit.page;
+	assert.equal(map().p2, "Sale");
+	// the model lists the entries in order with their value fields
+	const model = fieldOf(page, "badges");
+	assert.deepEqual(model.entries!.map((e) => e.key), ["key1", "p2"]);
+	assert.equal(model.entries![1]!.field.pointer, "/badges/p2");
+	assert.equal(model.entries![1]!.field.value, "Sale");
+	// rename keeps the value and the order
+	r = run({ pointer: "/badges", action: "rename", key: "key1", to: "p1" });
+	assert.ok(r.ok, JSON.stringify(r));
+	page = r.page;
+	assert.deepEqual(Object.keys(map()), ["p1", "p2"]);
+	// the key rules: not empty, unique, a key a page may write
+	for (const [to, code] of [["", "empty_key"], ["p2", "duplicate_key"], ["has space", "bad_key"], ["1st", "bad_key"], ["a-b", "bad_key"], ["__proto__", "bad_key"]] as const) {
+		const bad = run({ pointer: "/badges", action: "rename", key: "p1", to });
+		assert.ok(!bad.ok, `rename to "${to}" is refused`);
+		assert.equal(bad.code, code, to);
+	}
+	assert.equal(run({ pointer: "/badges", action: "add", key: "p2" }).ok, false);
+	assert.equal(run({ pointer: "/badges", action: "remove", key: "zzz" }).ok, false);
+	// remove: a required map stays, empty
+	for (const key of ["p1", "p2"]) {
+		r = run({ pointer: "/badges", action: "remove", key });
+		assert.ok(r.ok, JSON.stringify(r));
+		page = r.page;
+	}
+	assert.deepEqual(propsOf(page).badges, {});
+	assert.equal(run({ pointer: "/badges", action: "remove", key: "p1" }).ok, false);
+	assert.equal(run({ pointer: "/title", action: "add" }).ok, false, "a text prop is not a map");
+});
+
+test("map keys: the contract's own pattern, and a pointer-safe path for any key", () => {
+	const schema = JSON.parse(readFileSync(new URL("../../packages/page-contract/schema/page-spec-v2.schema.json", import.meta.url), "utf8")) as { $defs: { props?: { propertyNames: { pattern: string } } } };
+	assert.equal(PAGE_KEY_PATTERN, schema.$defs.props!.propertyNames.pattern, "the Inspector checks the very pattern the page schema enforces");
+	assert.equal(mapKeyIssue("sku_1", []), null);
+	assert.equal(mapKeyIssue("sku_1", ["sku_1"]), "duplicate_key");
+	assert.equal(mapKeyIssue("abc", [], "^x"), "bad_key", "the item schema's own pattern applies too");
+	assert.equal(pointerKey("a/b~c"), "a~1b~0c");
 });
