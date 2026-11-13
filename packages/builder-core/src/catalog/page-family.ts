@@ -9,7 +9,7 @@ import { itemInfo } from "../page-doc/items.ts";
 import { familyLabelForKind, FAMILY_HOME_SCREENS } from "./provenance.ts";
 import { getScreenById } from "./search.ts";
 import { catalogSnapshot } from "./snapshot.ts";
-import { rendererKindForLabel } from "./compatibility.ts";
+import { rendererKindForLabel } from "./renderer-kind.ts";
 
 export const PAGE_FAMILIES = ["dashboard", "landing", "food-grill", "restaurant", "generic"] as const;
 export type PageFamily = (typeof PAGE_FAMILIES)[number];

@@ -31,7 +31,8 @@ export {
 	type StockSearchResult,
 	type StockSearchType
 } from "./catalog/stock-search.ts";
-export { compatibilityFor, getBlockIndex, rendererKindForLabel, sendBlockedByScreen, screenSupport, compareScreenSupport } from "./catalog/compatibility.ts";
+export { compatibilityFor, getBlockIndex, sendBlockedByScreen, screenSupport, compareScreenSupport } from "./catalog/compatibility.ts";
+export { rendererKindForLabel } from "./catalog/renderer-kind.ts";
 export { getBlockDetails, askBlockCard, screenCanonicalJson, type AskBlockCard } from "./catalog/details.ts";
 export {
 	AGENT_MODES,

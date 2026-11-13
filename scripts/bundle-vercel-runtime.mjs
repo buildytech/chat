@@ -184,11 +184,15 @@ function transformModule(id, source) {
 					continue;
 				}
 				if (/^export\b/.test(stmt)) {
+					if (/^export\s+\*\s+from\b/.test(stmt)) {
+						// `export * from`: every name but default (this was silently dropped before: itemInfo and the page-doc API were missing from the bundle).
+						prelude.push(`{ const __m = __req(${JSON.stringify(resolved.id)}); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }`);
+						continue;
+					}
 					const brace = stmt.match(/export\s+\{([^}]*)\}/);
-					if (brace) {
-						for (const name of valueNamesFromBraceList(brace[1])) {
-							prelude.push(`exports[${JSON.stringify(name)}] = __req(${JSON.stringify(resolved.id)})[${JSON.stringify(name)}];`);
-						}
+					if (!brace) throw new Error(`Unhandled re-export in ${id}: ${stmt.slice(0, 120)}`);
+					for (const name of valueNamesFromBraceList(brace[1])) {
+						prelude.push(`exports[${JSON.stringify(name)}] = __req(${JSON.stringify(resolved.id)})[${JSON.stringify(name)}];`);
 					}
 					continue;
 				}
@@ -244,10 +248,18 @@ function transformModule(id, source) {
 function collect(startId) {
 	const order = [];
 	const seen = new Set();
+	/** Modules being loaded: a value import back into one of them would read an empty `const { x } = __req(...)` at run time. */
+	const stack = [];
 	function walk(id) {
+		const at = stack.indexOf(id);
+		if (at !== -1) {
+			throw new Error(`import cycle in the Vercel runtime graph (live ESM bindings hide it, the bundle's __req snapshot does not): ${[...stack.slice(at), id].join(" -> ")}. Move the shared code to a leaf module.`);
+		}
 		if (seen.has(id)) return;
 		seen.add(id);
+		stack.push(id);
 		if (id.endsWith(".json")) {
+			stack.pop();
 			order.push(id);
 			return;
 		}
@@ -272,6 +284,7 @@ function collect(startId) {
 			if (next === -1) break;
 			i += rest[next] === "\n" ? next + 1 : next;
 		}
+		stack.pop();
 		order.push(id);
 	}
 	walk(startId);

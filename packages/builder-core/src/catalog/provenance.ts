@@ -1,6 +1,7 @@
 import type { PageBlock, PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
-import { getBlockIndex, rendererKindForLabel, screenSlots } from "./compatibility.ts";
+import { getBlockIndex, screenSlots } from "./compatibility.ts";
+import { rendererKindForLabel } from "./renderer-kind.ts";
 import { getScreenById } from "./search.ts";
 import type { CatalogScreen } from "./types.ts";
 import { catalogSourceFor } from "./sources.ts";

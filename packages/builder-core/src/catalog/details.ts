@@ -1,6 +1,7 @@
 import { PAGE_BLOCK_KINDS, PAGE_COPY_KEYS, type PageBlockKind } from "@buildytech/page-contract";
 import { catalogProvenance, catalogSnapshot } from "./snapshot.ts";
-import { getBlockIndex, getBlockIndexByCatalogId, rendererKindForLabel } from "./compatibility.ts";
+import { getBlockIndex, getBlockIndexByCatalogId } from "./compatibility.ts";
+import { rendererKindForLabel } from "./renderer-kind.ts";
 import { getScreenById } from "./search.ts";
 import { blockVariantSummary, catalogSourceFor, catalogVariantsFor, variantProps } from "./sources.ts";
 import { blockAssetUrl, blockThumbUrl, stockSearchUrl } from "./provenance.ts";

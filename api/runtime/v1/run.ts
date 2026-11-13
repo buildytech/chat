@@ -12792,6 +12792,27 @@ exports["parsePageV2"] = __req("packages/page-contract/src/v2.ts")["parsePageV2"
 
 });
 
+__def("packages/builder-core/src/catalog/renderer-kind.ts", function (exports) {
+const { PAGE_BLOCK_KINDS } = __req("packages/page-contract/src/index.ts");
+const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
+const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
+
+/**
+ * Renderer kind of a Stock block label (registry metadata: a ranking / role hint). A leaf module on purpose: the bundled
+ * Vercel entry (scripts/bundle-vercel-runtime.mjs) snapshots `const { x } = __req(...)` at load, so an import cycle
+ * between catalog and page-doc modules leaves the name undefined there (it works with live ESM bindings only).
+ */
+function rendererKindForLabel(label: string): PageBlockKind | null {
+	const mapped = catalogSnapshot.rendererMap[label];
+	if (mapped && KIND_SET.has(mapped)) return mapped as PageBlockKind;
+	if (KIND_SET.has(label)) return label as PageBlockKind;
+	return null;
+}
+
+exports["rendererKindForLabel"] = rendererKindForLabel;
+
+});
+
 __def("packages/builder-core/src/catalog/sources.json", function (exports) {
   exports.default = {
 	"format": "buildy-catalog-sources",
@@ -26729,7 +26750,7 @@ exports["propsSummaryFor"] = propsSummaryFor;
 __def("packages/builder-core/src/catalog/sources.ts", function (exports) {
 const raw = __req("packages/builder-core/src/catalog/sources.json").default;
 const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
-const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/renderer-kind.ts");
 const { LUCIDE_ICON_HINT, propShapeFor, propsSummaryFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const catalogSources = raw as unknown as CatalogSources;
 
@@ -26897,7 +26918,7 @@ exports["blockVariantSummary"] = blockVariantSummary;
 __def("packages/builder-core/src/page-doc/items.ts", function (exports) {
 const { catalogSources } = __req("packages/builder-core/src/catalog/sources.ts");
 const { catalogEntryBySpec } = __req("packages/builder-core/src/catalog/sources.ts");
-const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/renderer-kind.ts");
 const { hasPropsSchema } = __req("packages/builder-core/src/catalog/props-schema.ts");
 function chromeEdge(kind: string): "top" | "bottom" | null {
 	return kind === "nav" || kind === "sidenav" ? "top" : kind === "footer" || kind === "bottomnav" ? "bottom" : null;
@@ -26954,11 +26975,9 @@ exports["variantOrDefault"] = variantOrDefault;
 });
 
 __def("packages/builder-core/src/catalog/compatibility.ts", function (exports) {
-const { PAGE_BLOCK_KINDS } = __req("packages/page-contract/src/index.ts");
+const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/renderer-kind.ts");
 const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
 const { itemInfo, itemOfSpec } = __req("packages/builder-core/src/page-doc/items.ts");
-const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
-
 function getBlockIndex(label: string): CatalogBlockIndexEntry | null {
 	return catalogSnapshot.blockIndex.find((b) => b.blockId === label) ?? null;
 }
@@ -26968,13 +26987,6 @@ function getBlockIndexByCatalogId(catalogId: string): CatalogBlockIndexEntry | n
 		catalogSnapshot.blockIndex.find((b) => b.catalogIds.includes(catalogId) || b.blockId === catalogId) ??
 		null
 	);
-}
-
-function rendererKindForLabel(label: string): PageBlockKind | null {
-	const mapped = catalogSnapshot.rendererMap[label];
-	if (mapped && KIND_SET.has(mapped)) return mapped as PageBlockKind;
-	if (KIND_SET.has(label)) return label as PageBlockKind;
-	return null;
 }
 
 /**
@@ -27055,7 +27067,6 @@ function compareScreenSupport(a: CatalogScreen, b: CatalogScreen): number {
 
 exports["getBlockIndex"] = getBlockIndex;
 exports["getBlockIndexByCatalogId"] = getBlockIndexByCatalogId;
-exports["rendererKindForLabel"] = rendererKindForLabel;
 exports["screenSlots"] = screenSlots;
 exports["compatibilityFor"] = compatibilityFor;
 exports["sendBlockedByScreen"] = sendBlockedByScreen;
@@ -27439,7 +27450,8 @@ exports["facetTree"] = facetTree;
 
 __def("packages/builder-core/src/catalog/provenance.ts", function (exports) {
 const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
-const { getBlockIndex, rendererKindForLabel, screenSlots } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { getBlockIndex, screenSlots } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/renderer-kind.ts");
 const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
 const { catalogSourceFor } = __req("packages/builder-core/src/catalog/sources.ts");
 const STOCK_APP_URL = "https://app.codegen-x.com/";
@@ -27898,7 +27910,8 @@ exports["stockSearch"] = stockSearch;
 __def("packages/builder-core/src/catalog/details.ts", function (exports) {
 const { PAGE_BLOCK_KINDS, PAGE_COPY_KEYS } = __req("packages/page-contract/src/index.ts");
 const { catalogProvenance, catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
-const { getBlockIndex, getBlockIndexByCatalogId, rendererKindForLabel } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { getBlockIndex, getBlockIndexByCatalogId } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/renderer-kind.ts");
 const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
 const { blockVariantSummary, catalogSourceFor, catalogVariantsFor, variantProps } = __req("packages/builder-core/src/catalog/sources.ts");
 const { blockAssetUrl, blockThumbUrl, stockSearchUrl } = __req("packages/builder-core/src/catalog/provenance.ts");
@@ -30580,7 +30593,7 @@ const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
 const { familyLabelForKind, FAMILY_HOME_SCREENS } = __req("packages/builder-core/src/catalog/provenance.ts");
 const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
 const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
-const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/renderer-kind.ts");
 const PAGE_FAMILIES = ["dashboard", "landing", "food-grill", "restaurant", "generic"] as const;
 const NAMED_FAMILIES = ["landing", "food-grill", "restaurant", "dashboard"] as const satisfies PageFamily[];
 type NamedFamily = (typeof NAMED_FAMILIES)[number];
@@ -31407,10 +31420,10 @@ exports["STOCK_SEARCH_MAX_PAGE_SIZE"] = __req("packages/builder-core/src/catalog
 exports["STOCK_SEARCH_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_PAGE_SIZE"];
 exports["compatibilityFor"] = __req("packages/builder-core/src/catalog/compatibility.ts")["compatibilityFor"];
 exports["getBlockIndex"] = __req("packages/builder-core/src/catalog/compatibility.ts")["getBlockIndex"];
-exports["rendererKindForLabel"] = __req("packages/builder-core/src/catalog/compatibility.ts")["rendererKindForLabel"];
 exports["sendBlockedByScreen"] = __req("packages/builder-core/src/catalog/compatibility.ts")["sendBlockedByScreen"];
 exports["screenSupport"] = __req("packages/builder-core/src/catalog/compatibility.ts")["screenSupport"];
 exports["compareScreenSupport"] = __req("packages/builder-core/src/catalog/compatibility.ts")["compareScreenSupport"];
+exports["rendererKindForLabel"] = __req("packages/builder-core/src/catalog/renderer-kind.ts")["rendererKindForLabel"];
 exports["getBlockDetails"] = __req("packages/builder-core/src/catalog/details.ts")["getBlockDetails"];
 exports["askBlockCard"] = __req("packages/builder-core/src/catalog/details.ts")["askBlockCard"];
 exports["screenCanonicalJson"] = __req("packages/builder-core/src/catalog/details.ts")["screenCanonicalJson"];
@@ -31557,6 +31570,7 @@ exports["familyOfScreen"] = __req("packages/builder-core/src/catalog/page-family
 exports["familiesOfKind"] = __req("packages/builder-core/src/catalog/page-family.ts")["familiesOfKind"];
 exports["familyKinds"] = __req("packages/builder-core/src/catalog/page-family.ts")["familyKinds"];
 exports["deriveFamily"] = __req("packages/builder-core/src/catalog/page-family.ts")["deriveFamily"];
+{ const __m = __req("packages/builder-core/src/page-doc/index.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 exports["askBlockCards"] = __req("packages/builder-core/src/agent/blocks.ts")["askBlockCards"];
 exports["itemIndex"] = __req("packages/builder-core/src/agent/blocks.ts")["itemIndex"];
 exports["propsOutline"] = __req("packages/builder-core/src/agent/blocks.ts")["propsOutline"];
@@ -31950,6 +31964,8 @@ async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnConte
 	} catch (err) {
 		const safe = safeErrorMessage(err);
 		const aborted = safe.code === "AbortError" || safe.message.toLowerCase().includes("abort") || signal.aborted;
+		// The caller only sees a generic failure; the function log must name the exception (redacted, 280 chars).
+		if (!aborted) console.error(JSON.stringify({ runtime: "xai-grok", event: "xai_run_exception", modelId, name: err instanceof Error ? err.name : typeof err, code: safe.code, message: safe.message }));
 		return {
 			result: {
 				ok: false,

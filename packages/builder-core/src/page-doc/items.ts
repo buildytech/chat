@@ -6,7 +6,7 @@
  */
 import { catalogSources } from "../catalog/sources.ts";
 import { catalogEntryBySpec } from "../catalog/sources.ts";
-import { rendererKindForLabel } from "../catalog/compatibility.ts";
+import { rendererKindForLabel } from "../catalog/renderer-kind.ts";
 import { hasPropsSchema } from "../catalog/props-schema.ts";
 import type { PageBlockKind } from "@buildytech/page-contract";
 

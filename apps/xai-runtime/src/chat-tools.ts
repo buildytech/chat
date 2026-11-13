@@ -342,6 +342,8 @@ export async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: Tu
 	} catch (err) {
 		const safe = safeErrorMessage(err);
 		const aborted = safe.code === "AbortError" || safe.message.toLowerCase().includes("abort") || signal.aborted;
+		// The caller only sees a generic failure; the function log must name the exception (redacted, 280 chars).
+		if (!aborted) console.error(JSON.stringify({ runtime: "xai-grok", event: "xai_run_exception", modelId, name: err instanceof Error ? err.name : typeof err, code: safe.code, message: safe.message }));
 		return {
 			result: {
 				ok: false,

@@ -7,7 +7,7 @@
 import raw from "./sources.json" with { type: "json" };
 import type { PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
-import { rendererKindForLabel } from "./compatibility.ts";
+import { rendererKindForLabel } from "./renderer-kind.ts";
 import type { CatalogBlockIndexEntry } from "./types.ts";
 import { LUCIDE_ICON_HINT, propShapeFor, propsSummaryFor } from "./props-schema.ts";
 

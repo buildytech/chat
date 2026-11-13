@@ -1,9 +1,7 @@
-import { PAGE_BLOCK_KINDS, type PageBlockKind } from "@buildytech/page-contract";
+import { rendererKindForLabel } from "./renderer-kind.ts";
 import { catalogSnapshot } from "./snapshot.ts";
 import { itemInfo, itemOfSpec } from "../page-doc/items.ts";
 import type { CatalogBlockIndexEntry, CatalogScreen, CatalogScreenSlot, ScreenCompatibility } from "./types.ts";
-
-const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
 
 export function getBlockIndex(label: string): CatalogBlockIndexEntry | null {
 	return catalogSnapshot.blockIndex.find((b) => b.blockId === label) ?? null;
@@ -14,13 +12,6 @@ export function getBlockIndexByCatalogId(catalogId: string): CatalogBlockIndexEn
 		catalogSnapshot.blockIndex.find((b) => b.catalogIds.includes(catalogId) || b.blockId === catalogId) ??
 		null
 	);
-}
-
-export function rendererKindForLabel(label: string): PageBlockKind | null {
-	const mapped = catalogSnapshot.rendererMap[label];
-	if (mapped && KIND_SET.has(mapped)) return mapped as PageBlockKind;
-	if (KIND_SET.has(label)) return label as PageBlockKind;
-	return null;
 }
 
 /**
