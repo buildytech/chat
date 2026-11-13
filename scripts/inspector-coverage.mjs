@@ -120,7 +120,8 @@ function staticGaps(item) {
 				if (node.fields) {
 					counts.editable += 1;
 					walk(node.fields, valueOf(raw).items ?? {}, `${path}[]`, depth + 1);
-				} else gaps.push(gap(path, why(raw)));
+				} else if (node.item) counts.editable += 1;
+				else gaps.push(gap(path, why(raw)));
 			} else if (node.kind === "markup") gaps.push(gap(path, "trusted_markup"));
 			else if (node.kind === "other") gaps.push(gap(path, why(raw)));
 			else counts.editable += 1;
@@ -158,13 +159,15 @@ const lists = (fields, acc = []) => {
 		if (f.widget === "list") {
 			acc.push(f);
 			for (const r of f.rows ?? []) lists(r.fields, acc);
-		} else if (f.widget === "object") lists(f.fields ?? [], acc);
+		} else if (f.widget === "values") acc.push(f);
+		else if (f.widget === "object") lists(f.fields ?? [], acc);
 	}
 	return acc;
 };
 const scalars = (fields, acc = []) => {
 	for (const f of fields) {
 		if (f.widget === "list") for (const r of f.rows ?? []) scalars(r.fields, acc);
+		else if (f.widget === "values") acc.push(...(f.items ?? []));
 		else if (f.widget === "object") scalars(f.fields ?? [], acc);
 		else if (f.widget !== "other") acc.push(f);
 	}
@@ -220,7 +223,7 @@ for (const item of allItems()) {
 		for (let guard = 0; guard < 60; guard += 1) {
 			const model = inspectorModel(view());
 			if (!model.ok) break;
-			const pending = lists(model.fields).filter((l) => (l.rows?.length ?? 0) < Math.min(2, l.list?.max ?? 0));
+			const pending = lists(model.fields).filter((l) => (l.rows ?? l.items ?? []).length < Math.min(2, l.list?.max ?? 0));
 			if (!pending.length) break;
 			const result = applyOp(page, { op: "list_row", blockId, pointer: pending[0].pointer, action: "add" });
 			if (!result.ok) {

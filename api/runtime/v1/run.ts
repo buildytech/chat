@@ -26581,6 +26581,9 @@ function propShapeFor(item: string): PropShape | null {
 	return shape;
 }
 
+/** One entry of a list of plain values. */
+const ITEM_KINDS = new Set<FieldKind>(["text", "number", "boolean", "enum"]);
+
 /** One prop of a block schema as a tree: its kind, whether it is required, enum values and nested fields. */
 function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
 	const value = valueOf(node);
@@ -26595,10 +26598,23 @@ function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
 			out.enumValues = target.enum as Array<string | number | boolean | null>;
 		}
 		if (kind === "list" && typeof target.maxItems === "number") out.maxItems = target.maxItems;
+		if (kind === "list" && typeof target.minItems === "number") out.minItems = target.minItems;
 		if (kind === "text" && typeof target.maxLength === "number") out.maxLength = target.maxLength;
 		if (depth < 6 && kind === "object") out.fields = fieldTree(inner, depth + 1);
-		if (depth < 6 && kind === "list" && isObject(target.items) && kindOf(target.items as JsonSchema) === "object") {
-			out.fields = fieldTree(target.items as JsonSchema, depth + 1);
+		if (depth < 6 && kind === "list" && isObject(target.items)) {
+			const entry = target.items as JsonSchema;
+			const entryKind = kindOf(entry);
+			if (entryKind === "object") out.fields = fieldTree(entry, depth + 1);
+			else if (ITEM_KINDS.has(entryKind)) {
+				const value = valueOf(entry);
+				const item: ListItemNode = { kind: entryKind as ListItemNode["kind"] };
+				if (entryKind === "enum") {
+					item.enum = (value.enum as unknown[]).map(String);
+					item.enumValues = value.enum as ListItemNode["enumValues"];
+				}
+				if (entryKind === "text" && typeof value.maxLength === "number") item.maxLength = value.maxLength;
+				out.item = item;
+			}
 		}
 		return out;
 	});
@@ -26687,7 +26703,7 @@ function newPropsListRow(item: string, pointer: string, taken: unknown[] = []): 
 	const node = schemaAt(item, pointer);
 	if (!node) return null;
 	const value = valueOf(node);
-	if (value.type !== "array" || !isObject(value.items)) return null;
+	if (value.type !== "array" || !isObject(value.items) || valueOf(value.items as JsonSchema).type !== "object") return null;
 	const row = fill(value.items as JsonSchema, {}, 1, true);
 	if (!isObject(row)) return null;
 	if (typeof row.id === "string") {
@@ -26697,6 +26713,30 @@ function newPropsListRow(item: string, pointer: string, taken: unknown[] = []): 
 		row.id = `item-${n}`;
 	}
 	return row;
+}
+
+/**
+ * A new entry for the list of plain values at `pointer` (`/plan/features`): the first enum member not used yet, 0, false,
+ * or a readable "Item n" for text (cut to the schema's maxLength). Undefined when the pointer is not a list of plain values.
+ */
+function newPropsListValue(item: string, pointer: string, taken: unknown[] = []): string | number | boolean | undefined {
+	const node = schemaAt(item, pointer);
+	if (!node) return undefined;
+	const list = valueOf(node);
+	if (list.type !== "array" || !isObject(list.items)) return undefined;
+	const entry = valueOf(list.items as JsonSchema);
+	if (Array.isArray(entry.enum)) {
+		const members = entry.enum as unknown[];
+		const free = members.find((member) => !taken.includes(member)) ?? members[0];
+		return typeof free === "string" || typeof free === "number" || typeof free === "boolean" ? free : undefined;
+	}
+	if (entry.type === "number" || entry.type === "integer") return typeof entry.minimum === "number" ? entry.minimum : 0;
+	if (entry.type === "boolean") return false;
+	if (entry.type === "string") {
+		const text = `Item ${taken.length + 1}`;
+		return typeof entry.maxLength === "number" ? text.slice(0, entry.maxLength) : text;
+	}
+	return undefined;
 }
 
 /** "addToCart" -> "Add to cart": a readable placeholder for a required label the content does not fill. */
@@ -26799,6 +26839,7 @@ exports["propsFieldTree"] = propsFieldTree;
 exports["pointerInfo"] = pointerInfo;
 exports["coerceEnumValue"] = coerceEnumValue;
 exports["newPropsListRow"] = newPropsListRow;
+exports["newPropsListValue"] = newPropsListValue;
 exports["humanizeName"] = humanizeName;
 exports["fillProps"] = fillProps;
 exports["propsSummaryFor"] = propsSummaryFor;
@@ -30928,7 +30969,7 @@ exports["migratePageV1"] = migratePageV1;
 });
 
 __def("packages/builder-core/src/page-doc/ops.ts", function (exports) {
-const { coerceEnumValue, newPropsListRow, pointerInfo } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { coerceEnumValue, newPropsListRow, newPropsListValue, pointerInfo } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { addSlotCheck, moveSlotCheck, naturalIndex } = __req("packages/builder-core/src/page-doc/slots.ts");
 const { screenItems } = __req("packages/builder-core/src/page-doc/start.ts");
 const { catalogEntryBySpec } = __req("packages/builder-core/src/catalog/sources.ts");
@@ -30945,6 +30986,9 @@ function checkAdd(spec: string, variant?: string | null): AddCheck {
 	if (!info.variants.includes(want)) return { ok: false, code: "unknown_variant", message: `${spec} has no variant ${want}.` };
 	return { ok: true, item, variant: want };
 }
+
+/** The most entries a list holds in the Inspector (records and plain values alike), unless its schema says fewer. */
+const MAX_ROWS = 24;
 
 /** What a session history entry says an edit did (session 1.6.0 `op`). */
 const fail = (code: string, message: string, pointer = ""): OpResult => ({ ok: false, code, message, pointer, issues: [{ path: pointer || "/", code, expected: message }] });
@@ -31122,11 +31166,17 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 			const row = input.row ?? rows.length - 1;
 			const list = [...rows];
 			let name: OpName = "replace";
+			const shape = pointerInfo(block.item, input.pointer);
+			const max = Math.min(shape?.maxItems ?? MAX_ROWS, MAX_ROWS);
+			if ((input.action === "add" || input.action === "duplicate") && list.length >= max) return fail("max_rows", `${input.pointer} holds at most ${max} entries.`, input.pointer);
 			if (input.action === "add") {
-				const fresh = newPropsListRow(block.item, input.pointer, rows);
-				if (!fresh) return fail("not_a_record_list", `${input.pointer} is not a list of records.`, input.pointer);
+				// a list of records adds a row of its required fields, a list of plain values one new entry
+				const fresh = newPropsListRow(block.item, input.pointer, rows) ?? newPropsListValue(block.item, input.pointer, rows);
+				if (fresh === undefined || fresh === null) return fail("not_a_record_list", `${input.pointer} is not a list the Inspector adds to.`, input.pointer);
 				list.push(fresh);
 				name = "add";
+			} else if (input.action === "remove" && list.length - 1 < (shape?.minItems ?? 0) && !(list.length === 1 && shape?.required === false)) {
+				return fail("min_rows", `${input.pointer} needs at least ${shape?.minItems} entries.`, input.pointer);
 			} else if (!Number.isInteger(row) || row < 0 || row >= list.length) return fail("index_out_of_range", `Row ${row + 1} is not in the list.`, input.pointer);
 			else if (input.action === "remove") {
 				list.splice(row, 1);
@@ -31221,7 +31271,7 @@ function widgetFor(node: PropsFieldNode): InspectorWidget {
 		case "object":
 			return node.kind;
 		case "list":
-			return node.fields ? "list" : "other";
+			return node.fields ? "list" : node.item ? "values" : "other";
 		default:
 			return "other";
 	}
@@ -31239,12 +31289,26 @@ function fieldsOf(props: Record<string, unknown>, nodes: PropsFieldNode[], base:
 		if (field.widget === "object" && node.fields) field.fields = fieldsOf(props, node.fields, pointer, new Set());
 		if (field.widget === "list" && node.fields) {
 			const rows = Array.isArray(field.value) ? field.value : [];
-			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS) };
+			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
 			field.rows = rows.map((_, index) => ({ pointer: `${pointer}/${index}`, fields: fieldsOf(props, node.fields!, `${pointer}/${index}`, new Set()) }));
+		}
+		if (field.widget === "values" && node.item) {
+			const entries = Array.isArray(field.value) ? field.value : [];
+			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
+			field.items = entries.map((entry, index) => entryField(node.item!, `${pointer}/${index}`, `${node.name} ${index + 1}`, entry));
 		}
 		out.push(field);
 	}
 	return out;
+}
+
+/** One entry of a list of plain values as a field of its own (so it edits like any scalar prop). */
+function entryField(item: ListItemNode, pointer: string, name: string, value: unknown): InspectorField {
+	const field: InspectorField = { pointer, name, widget: item.kind, required: true, value };
+	if (item.enum) field.options = item.enum;
+	if (item.enumValues?.some((entry) => typeof entry !== "string")) field.optionValues = item.enumValues;
+	if (item.maxLength !== undefined) field.maxLength = item.maxLength;
+	return field;
 }
 
 /** The inspector fields of a block, or an honest stub when its item is not in the registry or has no published schema. */
@@ -31731,6 +31795,7 @@ exports["coerceEnumValue"] = __req("packages/builder-core/src/catalog/props-sche
 exports["fillProps"] = __req("packages/builder-core/src/catalog/props-schema.ts")["fillProps"];
 exports["hasPropsSchema"] = __req("packages/builder-core/src/catalog/props-schema.ts")["hasPropsSchema"];
 exports["lucideIcons"] = __req("packages/builder-core/src/catalog/props-schema.ts")["lucideIcons"];
+exports["newPropsListValue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["newPropsListValue"];
 exports["LUCIDE_ICON_HINT"] = __req("packages/builder-core/src/catalog/props-schema.ts")["LUCIDE_ICON_HINT"];
 exports["propShapeFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propShapeFor"];
 exports["propsDigest"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsDigest"];

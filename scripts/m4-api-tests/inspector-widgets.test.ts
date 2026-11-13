@@ -4,6 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { readFileSync } from "node:fs";
 import {
 	applyOp,
 	coerceEnumValue,
@@ -114,4 +115,90 @@ test("trusted markup (`{ __html }`) is not authorable: the Inspector shows it re
 	// the plain fields beside it still edit
 	const r = applyOp(page, { op: "set", blockId: id, pointer: "/aside/title", value: "Note" });
 	assert.ok(r.ok, JSON.stringify(r));
+});
+
+test("list of plain values (plan features): add, edit, move, remove; at most 24 entries", () => {
+	let { page, id } = withBlock("pricing-card");
+	const plan = fieldOf(page, "plan");
+	assert.equal(plan.widget, "object");
+	const features = plan.fields!.find((f) => f.name === "features")!;
+	assert.equal(features.widget, "values", "a list of strings is an editable list, not a read-only field");
+	assert.equal(features.list?.max, 24);
+	const entries = () => ((propsOf(page).plan as Record<string, unknown>).features ?? []) as unknown[];
+	const start = entries().length;
+	for (const action of ["add", "add"] as const) {
+		const r = applyOp(page, { op: "list_row", blockId: id, pointer: "/plan/features", action });
+		assert.ok(r.ok, JSON.stringify(r));
+		page = r.page;
+	}
+	assert.equal(entries().length, start + 2);
+	const last = start + 1;
+	const edit = applyOp(page, { op: "set", blockId: id, pointer: `/plan/features/${last}`, value: "Free shipping" });
+	assert.ok(edit.ok, JSON.stringify(edit));
+	page = edit.page;
+	const up = applyOp(page, { op: "list_row", blockId: id, pointer: "/plan/features", action: "up", row: last });
+	assert.ok(up.ok, JSON.stringify(up));
+	page = up.page;
+	assert.equal(entries()[last - 1], "Free shipping");
+	const model = inspectorModel(page.blocks[0]!);
+	assert.ok(model.ok);
+	const shown = (model.fields.find((f) => f.name === "plan")!.fields!.find((f) => f.name === "features")!).items!;
+	assert.equal(shown.length, start + 2);
+	assert.equal(shown[last - 1]!.pointer, `/plan/features/${last - 1}`);
+	assert.equal(shown[last - 1]!.value, "Free shipping");
+	assert.equal(shown[0]!.widget, "text");
+	const rm = applyOp(page, { op: "list_row", blockId: id, pointer: "/plan/features", action: "remove", row: last - 1 });
+	assert.ok(rm.ok, JSON.stringify(rm));
+	page = rm.page;
+	assert.ok(!entries().includes("Free shipping"));
+	// the cap
+	while (entries().length < 24) {
+		const r = applyOp(page, { op: "list_row", blockId: id, pointer: "/plan/features", action: "add" });
+		assert.ok(r.ok, JSON.stringify(r));
+		page = r.page;
+	}
+	const over = applyOp(page, { op: "list_row", blockId: id, pointer: "/plan/features", action: "add" });
+	assert.ok(!over.ok);
+	assert.equal(over.code, "max_rows");
+});
+
+test("a list of plain values inside list rows (plans[].features) edits through the row pointer", () => {
+	let { page, id } = withBlock("pricing-tiers");
+	const r = applyOp(page, { op: "list_row", blockId: id, pointer: "/plans", action: "add" });
+	assert.ok(r.ok, JSON.stringify(r));
+	page = r.page;
+	const a = applyOp(page, { op: "list_row", blockId: id, pointer: "/plans/0/features", action: "add" });
+	assert.ok(a.ok, JSON.stringify(a));
+	const model = inspectorModel(a.page.blocks[0]!);
+	assert.ok(model.ok);
+	const plans = model.fields.find((f) => f.name === "plans")!;
+	const features = plans.rows![0]!.fields.find((f) => f.name === "features")!;
+	assert.equal(features.widget, "values");
+	assert.equal(features.items!.length >= 1, true);
+});
+
+const source = (path: string) => readFileSync(new URL(`../../apps/chat-web/src/${path}`, import.meta.url), "utf8");
+
+test("widget UI: compact, icons from the shell set, text-xs, en and ru words for every new key", () => {
+	const fields = source("app/InspectorFields.svelte");
+	assert.match(fields, /from "\$lib\/shell-icons"/);
+	assert.doesNotMatch(fields, /lucide|text-\[11px\]|\sstyle=/);
+	assert.match(fields, /widget === "values"/);
+	for (const action of ["item-up", "item-down", "remove-item", "add-item"]) assert.match(fields, new RegExp(`data-action="${action}"`));
+	const en = JSON.parse(source("lib/i18n/en.json")) as Record<string, Record<string, string>> | Record<string, string>;
+	const ru = JSON.parse(source("lib/i18n/ru.json")) as Record<string, Record<string, string>> | Record<string, string>;
+	const flat = (o: unknown): Record<string, string> => {
+		const out: Record<string, string> = {};
+		const walk = (v: unknown) => {
+			if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) typeof x === "string" ? (out[k] = x) : walk(x);
+		};
+		walk(o);
+		return out;
+	};
+	const used = new Set([...fields.matchAll(/t\("(inspector\.[A-Za-z]+)"\)/g)].map((m) => m[1]!));
+	assert.ok(used.size > 10);
+	for (const key of used) {
+		assert.ok(flat(en)[key], `en has ${key}`);
+		assert.ok(flat(ru)[key], `ru has ${key}`);
+	}
 });

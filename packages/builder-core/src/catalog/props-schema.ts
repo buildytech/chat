@@ -194,6 +194,16 @@ export function propShapeFor(item: string): PropShape | null {
 	return shape;
 }
 
+/** One entry of a list of plain values. */
+export type ListItemNode = {
+	kind: "text" | "number" | "boolean" | "enum";
+	enum?: string[];
+	enumValues?: Array<string | number | boolean | null>;
+	maxLength?: number;
+};
+
+const ITEM_KINDS = new Set<FieldKind>(["text", "number", "boolean", "enum"]);
+
 /** One prop of a block schema as a tree: its kind, whether it is required, enum values and nested fields. */
 export type PropsFieldNode = {
 	name: string;
@@ -205,6 +215,10 @@ export type PropsFieldNode = {
 	enumValues?: Array<string | number | boolean | null>;
 	/** list: the schema's maxItems, when it sets one. */
 	maxItems?: number;
+	/** list: the schema's minItems, when it sets one. */
+	minItems?: number;
+	/** list of plain values (strings, numbers, booleans, enum members): what one entry is; lists of records have `fields`. */
+	item?: ListItemNode;
 	/** text: the schema's maxLength, when it sets one. */
 	maxLength?: number;
 	/** object: its fields; list: the fields of one record (lists of plain values have none). */
@@ -224,10 +238,23 @@ function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
 			out.enumValues = target.enum as Array<string | number | boolean | null>;
 		}
 		if (kind === "list" && typeof target.maxItems === "number") out.maxItems = target.maxItems;
+		if (kind === "list" && typeof target.minItems === "number") out.minItems = target.minItems;
 		if (kind === "text" && typeof target.maxLength === "number") out.maxLength = target.maxLength;
 		if (depth < 6 && kind === "object") out.fields = fieldTree(inner, depth + 1);
-		if (depth < 6 && kind === "list" && isObject(target.items) && kindOf(target.items as JsonSchema) === "object") {
-			out.fields = fieldTree(target.items as JsonSchema, depth + 1);
+		if (depth < 6 && kind === "list" && isObject(target.items)) {
+			const entry = target.items as JsonSchema;
+			const entryKind = kindOf(entry);
+			if (entryKind === "object") out.fields = fieldTree(entry, depth + 1);
+			else if (ITEM_KINDS.has(entryKind)) {
+				const value = valueOf(entry);
+				const item: ListItemNode = { kind: entryKind as ListItemNode["kind"] };
+				if (entryKind === "enum") {
+					item.enum = (value.enum as unknown[]).map(String);
+					item.enumValues = value.enum as ListItemNode["enumValues"];
+				}
+				if (entryKind === "text" && typeof value.maxLength === "number") item.maxLength = value.maxLength;
+				out.item = item;
+			}
 		}
 		return out;
 	});
@@ -326,7 +353,7 @@ export function newPropsListRow(item: string, pointer: string, taken: readonly u
 	const node = schemaAt(item, pointer);
 	if (!node) return null;
 	const value = valueOf(node);
-	if (value.type !== "array" || !isObject(value.items)) return null;
+	if (value.type !== "array" || !isObject(value.items) || valueOf(value.items as JsonSchema).type !== "object") return null;
 	const row = fill(value.items as JsonSchema, {}, 1, true);
 	if (!isObject(row)) return null;
 	if (typeof row.id === "string") {
@@ -336,6 +363,30 @@ export function newPropsListRow(item: string, pointer: string, taken: readonly u
 		row.id = `item-${n}`;
 	}
 	return row;
+}
+
+/**
+ * A new entry for the list of plain values at `pointer` (`/plan/features`): the first enum member not used yet, 0, false,
+ * or a readable "Item n" for text (cut to the schema's maxLength). Undefined when the pointer is not a list of plain values.
+ */
+export function newPropsListValue(item: string, pointer: string, taken: readonly unknown[] = []): string | number | boolean | undefined {
+	const node = schemaAt(item, pointer);
+	if (!node) return undefined;
+	const list = valueOf(node);
+	if (list.type !== "array" || !isObject(list.items)) return undefined;
+	const entry = valueOf(list.items as JsonSchema);
+	if (Array.isArray(entry.enum)) {
+		const members = entry.enum as unknown[];
+		const free = members.find((member) => !taken.includes(member)) ?? members[0];
+		return typeof free === "string" || typeof free === "number" || typeof free === "boolean" ? free : undefined;
+	}
+	if (entry.type === "number" || entry.type === "integer") return typeof entry.minimum === "number" ? entry.minimum : 0;
+	if (entry.type === "boolean") return false;
+	if (entry.type === "string") {
+		const text = `Item ${taken.length + 1}`;
+		return typeof entry.maxLength === "number" ? text.slice(0, entry.maxLength) : text;
+	}
+	return undefined;
 }
 
 /** "addToCart" -> "Add to cart": a readable placeholder for a required label the content does not fill. */

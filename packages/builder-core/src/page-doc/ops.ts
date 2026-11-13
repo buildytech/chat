@@ -4,7 +4,7 @@
  * diff), so a hand edit and an agent edit follow exactly the same rules. Pure: returns the next page or why not.
  */
 import type { BlockV2, PageV2, PropValueV2 } from "@buildytech/page-contract";
-import { coerceEnumValue, newPropsListRow, pointerInfo } from "../catalog/props-schema.ts";
+import { coerceEnumValue, newPropsListRow, newPropsListValue, pointerInfo } from "../catalog/props-schema.ts";
 import { addSlotCheck, moveSlotCheck, naturalIndex } from "./slots.ts";
 import { screenItems } from "./start.ts";
 import { catalogEntryBySpec } from "../catalog/sources.ts";
@@ -41,6 +41,9 @@ export function checkAdd(spec: string, variant?: string | null): AddCheck {
 	if (!info.variants.includes(want)) return { ok: false, code: "unknown_variant", message: `${spec} has no variant ${want}.` };
 	return { ok: true, item, variant: want };
 }
+
+/** The most entries a list holds in the Inspector (records and plain values alike), unless its schema says fewer. */
+const MAX_ROWS = 24;
 
 /** What a session history entry says an edit did (session 1.6.0 `op`). */
 export type OpName = "set_field" | "set_variant" | "add" | "move" | "remove" | "insert" | "replace";
@@ -224,11 +227,17 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 			const row = input.row ?? rows.length - 1;
 			const list = [...rows];
 			let name: OpName = "replace";
+			const shape = pointerInfo(block.item, input.pointer);
+			const max = Math.min(shape?.maxItems ?? MAX_ROWS, MAX_ROWS);
+			if ((input.action === "add" || input.action === "duplicate") && list.length >= max) return fail("max_rows", `${input.pointer} holds at most ${max} entries.`, input.pointer);
 			if (input.action === "add") {
-				const fresh = newPropsListRow(block.item, input.pointer, rows);
-				if (!fresh) return fail("not_a_record_list", `${input.pointer} is not a list of records.`, input.pointer);
+				// a list of records adds a row of its required fields, a list of plain values one new entry
+				const fresh = newPropsListRow(block.item, input.pointer, rows) ?? newPropsListValue(block.item, input.pointer, rows);
+				if (fresh === undefined || fresh === null) return fail("not_a_record_list", `${input.pointer} is not a list the Inspector adds to.`, input.pointer);
 				list.push(fresh);
 				name = "add";
+			} else if (input.action === "remove" && list.length - 1 < (shape?.minItems ?? 0) && !(list.length === 1 && shape?.required === false)) {
+				return fail("min_rows", `${input.pointer} needs at least ${shape?.minItems} entries.`, input.pointer);
 			} else if (!Number.isInteger(row) || row < 0 || row >= list.length) return fail("index_out_of_range", `Row ${row + 1} is not in the list.`, input.pointer);
 			else if (input.action === "remove") {
 				list.splice(row, 1);

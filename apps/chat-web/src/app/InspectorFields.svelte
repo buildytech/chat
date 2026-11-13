@@ -197,6 +197,79 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 					</Button>
 				{/if}
 			</Fieldset>
+		{:else if field.widget === "values"}
+			{@const count = field.items?.length ?? 0}
+			{@const max = field.list?.max ?? 0}
+			<Fieldset variant="card" data-pointer={field.pointer}>
+				<Legend class="text-xs">{label(field)} · {t("inspector.items").replace("{count}", String(count))}</Legend>
+				{#if errorOf(field)}
+					<Text tag="p" class="text-xs font-semibold text-destructive" role="alert">{errorOf(field)}</Text>
+				{/if}
+				{#if !count}
+					<Text tag="p" class="text-xs text-muted-foreground">{t("inspector.noItems")}</Text>
+				{/if}
+				{#each field.items ?? [] as item, index (item.pointer)}
+					{@const itemId = fieldDomId(blockId, item.pointer)}
+					<Group gap="2" align="center" data-pointer={item.pointer} data-slot="inspector-item">
+						{#if item.widget === "enum"}
+							<Select
+								id={itemId}
+								size="sm"
+								class="min-w-0 flex-1"
+								aria-label={item.name}
+								value={text(item.value)}
+								onchange={(event: Event) => handlers.onedit(item, (event.currentTarget as HTMLSelectElement).value, false)}
+							>
+								{#each item.options ?? [] as option (option)}
+									<SelectOption value={option}>{option}</SelectOption>
+								{/each}
+							</Select>
+						{:else if item.widget === "number"}
+							<Input
+								id={itemId}
+								size="sm"
+								type="number"
+								class="min-w-0 flex-1"
+								aria-label={item.name}
+								state={issues[item.pointer] ? "error" : undefined}
+								value={text(item.value)}
+								onchange={(event: Event) => handlers.onedit(item, valueOf(event), false)}
+							/>
+						{:else}
+							<Input
+								id={itemId}
+								size="sm"
+								class="min-w-0 flex-1"
+								aria-label={item.name}
+								state={issues[item.pointer] ? "error" : undefined}
+								value={text(item.value)}
+								oninput={(event: Event) => handlers.onedit(item, valueOf(event), true)}
+								onblur={() => handlers.onseal()}
+							/>
+						{/if}
+						{#if handlers.onlist}
+							<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.itemUp").replace("{n}", String(index + 1))} title={t("inspector.itemUp").replace("{n}", String(index + 1))} disabled={index === 0} data-action="item-up" onclick={() => handlers.onlist!(field.pointer, "up", index)}>
+								<ArrowUp />
+							</Button>
+							<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.itemDown").replace("{n}", String(index + 1))} title={t("inspector.itemDown").replace("{n}", String(index + 1))} disabled={index >= count - 1} data-action="item-down" onclick={() => handlers.onlist!(field.pointer, "down", index)}>
+								<ArrowDown />
+							</Button>
+							<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.removeItem").replace("{n}", String(index + 1))} title={t("inspector.removeItem").replace("{n}", String(index + 1))} disabled={count <= (field.list?.min ?? 0) && !(count === 1 && !field.required)} data-action="remove-item" onclick={() => handlers.onlist!(field.pointer, "remove", index)}>
+								<Trash2 />
+							</Button>
+						{/if}
+					</Group>
+					{#if issues[item.pointer]}
+						<Text tag="p" class="text-xs font-semibold text-destructive" role="alert">{errorOf(item)}</Text>
+					{/if}
+				{/each}
+				{#if handlers.onlist}
+					<Button size="sm" variant="outline" disabled={count >= max} data-action="add-item" onclick={() => handlers.onlist!(field.pointer, "add")}>
+						<Plus />
+						{t("inspector.addItem")}
+					</Button>
+				{/if}
+			</Fieldset>
 		{:else}
 			<Field label={label(field)} htmlFor={id}>
 				<Box {id} class="break-all text-xs text-muted-foreground" data-pointer={field.pointer}>{text(field.value) || t("inspector.unset")}</Box>

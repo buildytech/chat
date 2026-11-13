@@ -5,11 +5,11 @@
  * come from the published props schema. Pure data, no Svelte.
  */
 import type { BlockV2 } from "@buildytech/page-contract";
-import { propsEventsFor, propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
+import { propsEventsFor, propsFieldTree, type ListItemNode, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { itemInfo } from "./items.ts";
 import { effectiveProps } from "./render.ts";
 
-export type InspectorWidget = "text" | "longtext" | "icon" | "enum" | "boolean" | "number" | "object" | "list" | "other";
+export type InspectorWidget = "text" | "longtext" | "icon" | "enum" | "boolean" | "number" | "object" | "list" | "values" | "other";
 
 export type InspectorField = {
 	/** JSON Pointer of the prop in the block's props (`/title`, `/features/2/icon`). */
@@ -23,8 +23,10 @@ export type InspectorField = {
 	/** enum: the schema's values in their own type, only when one is not a string (`level` is 1 | 2): what an edit writes. */
 	optionValues?: Array<string | number | boolean | null>;
 	maxLength?: number;
-	/** list of records: how many rows it may hold (null: not editable as rows). */
-	list?: { max: number };
+	/** list of records or of plain values: how many entries it may hold. */
+	list?: { max: number; min: number };
+	/** list of plain values (`values`): one field per entry, at `<list pointer>/<index>`. */
+	items?: InspectorField[];
 	/** object: its fields. */
 	fields?: InspectorField[];
 	/** list of records: one entry per row. */
@@ -61,7 +63,7 @@ function widgetFor(node: PropsFieldNode): InspectorWidget {
 		case "object":
 			return node.kind;
 		case "list":
-			return node.fields ? "list" : "other";
+			return node.fields ? "list" : node.item ? "values" : "other";
 		default:
 			return "other";
 	}
@@ -79,12 +81,26 @@ function fieldsOf(props: Record<string, unknown>, nodes: PropsFieldNode[], base:
 		if (field.widget === "object" && node.fields) field.fields = fieldsOf(props, node.fields, pointer, new Set());
 		if (field.widget === "list" && node.fields) {
 			const rows = Array.isArray(field.value) ? field.value : [];
-			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS) };
+			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
 			field.rows = rows.map((_, index) => ({ pointer: `${pointer}/${index}`, fields: fieldsOf(props, node.fields!, `${pointer}/${index}`, new Set()) }));
+		}
+		if (field.widget === "values" && node.item) {
+			const entries = Array.isArray(field.value) ? field.value : [];
+			field.list = { max: Math.min(node.maxItems ?? MAX_ROWS, MAX_ROWS), min: node.minItems ?? 0 };
+			field.items = entries.map((entry, index) => entryField(node.item!, `${pointer}/${index}`, `${node.name} ${index + 1}`, entry));
 		}
 		out.push(field);
 	}
 	return out;
+}
+
+/** One entry of a list of plain values as a field of its own (so it edits like any scalar prop). */
+function entryField(item: ListItemNode, pointer: string, name: string, value: unknown): InspectorField {
+	const field: InspectorField = { pointer, name, widget: item.kind, required: true, value };
+	if (item.enum) field.options = item.enum;
+	if (item.enumValues?.some((entry) => typeof entry !== "string")) field.optionValues = item.enumValues;
+	if (item.maxLength !== undefined) field.maxLength = item.maxLength;
+	return field;
 }
 
 /** The inspector fields of a block, or an honest stub when its item is not in the registry or has no published schema. */

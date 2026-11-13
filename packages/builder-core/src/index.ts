@@ -87,6 +87,7 @@ export {
 	fillProps,
 	hasPropsSchema,
 	lucideIcons,
+	newPropsListValue,
 	LUCIDE_ICON_HINT,
 	propShapeFor,
 	propsDigest,
@@ -97,6 +98,7 @@ export {
 	propsSummaryFor,
 	type FieldKind,
 	type JsonSchema,
+	type ListItemNode,
 	type PropShape,
 	type PropsFieldNode
 } from "./catalog/props-schema.ts";

@@ -13,6 +13,7 @@ export function fieldDomId(blockId: string, pointer: string): string {
 export function hasContent(field: InspectorField): boolean {
 	if (field.widget === "object") return (field.fields ?? []).some(hasContent);
 	if (field.widget === "list") return (field.rows?.length ?? 0) > 0;
+	if (field.widget === "values") return (field.items?.length ?? 0) > 0;
 	return field.value !== undefined && field.value !== null && field.value !== "";
 }
 
