@@ -3,13 +3,22 @@
  * with the props the chat maps from a page block: no stub, no throw, the block title on the page.
  */
 import assert from "node:assert/strict";
+import { realpathSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { catalogSnapshot, organismFor } from "../../packages/builder-core/src/index.ts";
 
-const SNAPSHOT = fileURLToPath(new URL("../../registry/svelte", import.meta.url));
+const SNAPSHOT = realpathSync.native(fileURLToPath(new URL("../../registry/svelte", import.meta.url)));
+
+/** Vite's module id, with the drive letter in the same case as the real path. Windows otherwise loads Svelte twice. */
+function viteFileId(id: string): string {
+	const queryAt = id.indexOf("?");
+	const file = queryAt === -1 ? id : id.slice(0, queryAt);
+	const query = queryAt === -1 ? "" : id.slice(queryAt);
+	return realpathSync.native(file).replaceAll("\\", "/") + query;
+}
 
 test("all 532 catalog assets render via their registry block (SSR)", { timeout: 240_000 }, async () => {
 	const server = await createServer({
@@ -22,7 +31,12 @@ test("all 532 catalog assets render via their registry block (SSR)", { timeout: 
 		optimizeDeps: { noDiscovery: true, include: [] }
 	});
 	try {
-		const { render } = (await server.ssrLoadModule("svelte/server")) as { render: (component: unknown, options: { props: Record<string, unknown> }) => { body: string } };
+		// Load the same Svelte module the blocks use. A bare "svelte/server" import is a second copy on Windows
+		// when the drive letter differs (E: vs e:), and snippet checks then fail instanceof.
+		const svelteServer = await server.pluginContainer.resolveId("svelte/server");
+		const resolved = typeof svelteServer === "string" ? svelteServer : svelteServer?.id;
+		assert.ok(resolved, "svelte/server resolved");
+		const { render } = (await server.ssrLoadModule(viteFileId(resolved))) as { render: (component: unknown, options: { props: Record<string, unknown> }) => { body: string } };
 		const failures: string[] = [];
 		let rendered = 0;
 		let titled = 0;
