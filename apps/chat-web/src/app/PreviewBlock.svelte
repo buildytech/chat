@@ -79,7 +79,7 @@
 			{/if}
 		</Text>
  <Text tag="span" class="text-xs text-muted-foreground">{block.id}</Text>
- <Button size="sm" variant="ghost" aria-pressed={blockScope.ids(getSelectedSession()?.id).includes(block.id)} onclick={(event: MouseEvent) => { event.stopPropagation(); const session = getSelectedSession(); if (session) blockScope.toggle(session.id, block.id); }}>
+ <Button size="sm" variant="ghost" pressed={blockScope.ids(getSelectedSession()?.id).includes(block.id)} onclick={(event: MouseEvent) => { event.stopPropagation(); const session = getSelectedSession(); if (session) blockScope.toggle(session.id, block.id); }}>
  {t(blockScope.ids(getSelectedSession()?.id).includes(block.id) ? "scope.remove" : "scope.add")}
  </Button>
 	</Group>

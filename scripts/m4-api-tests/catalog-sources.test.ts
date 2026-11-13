@@ -241,7 +241,10 @@ test("CSS: theme and tokens only from the registry tree; the chat declares no co
 test("layout: lib holds only logic (no .svelte), no chat-owned 'compose' path, no own primitives", () => {
 	const src = join(ROOT, "apps/chat-web/src");
 	const files = walk(src).map((path) => path.slice(src.length + 1).split("\\").join("/"));
-	assert.deepEqual(files.filter((path) => path.startsWith("lib/") && path.endsWith(".svelte")), []);
+	// Vendored Tabler glyphs for the shell. Not compositions: each file is one SVG, and page blocks stay on Lucide.
+	const shellIcon = (path: string) => path.startsWith("lib/shell-icons/") && path.endsWith(".svelte");
+	assert.deepEqual(files.filter((path) => path.startsWith("lib/") && path.endsWith(".svelte") && !shellIcon(path)), []);
+	assert.ok(files.some(shellIcon));
 	assert.deepEqual(files.filter((path) => /(^|\/)compose(\/|\.|$)/i.test(path)), []);
 	assert.deepEqual(files.filter((path) => path.startsWith("ui/") || path.startsWith("utils/") || path.startsWith("registry/")), []);
 	for (const file of files.filter((path) => path.endsWith(".svelte"))) {

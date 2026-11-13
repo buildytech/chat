@@ -115,14 +115,14 @@ import { ExternalLink, FilePlus, Plus } from "$lib/shell-icons";
 		{item.variant}
 	</Text>
 	{#if item.type === "screen"}
-		<Text tag="span" class="text-[11px] text-muted-foreground">{t("feed.screen")} · {item.subtitle}</Text>
+		<Text tag="span" class="text-xs text-muted-foreground">{t("feed.screen")} · {item.subtitle}</Text>
 		{#if !item.supported}
-			<Text tag="span" class="text-[11px] text-muted-foreground" data-slot="feed-why">{t("feed.why.screen_not_renderable")}</Text>
+			<Text tag="span" class="text-xs text-muted-foreground" data-slot="feed-why">{t("feed.why.screen_not_renderable")}</Text>
 		{/if}
 	{:else if item.isDefault}
-		<Text tag="span" class="text-[11px] text-muted-foreground">{t("feed.default")}</Text>
+		<Text tag="span" class="text-xs text-muted-foreground">{t("feed.default")}</Text>
 	{/if}
 	{#if why && check && !check.ok && check.code !== "no_screen"}
-		<Text tag="span" class="text-[11px] text-muted-foreground" data-slot="feed-why">{why}</Text>
+		<Text tag="span" class="text-xs text-muted-foreground" data-slot="feed-why">{why}</Text>
 	{/if}
 </StockMediaCard>

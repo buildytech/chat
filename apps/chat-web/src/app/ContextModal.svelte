@@ -65,7 +65,7 @@
 				{/if}
 			</Stack>
 			<Button
-				class="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+				class="rounded border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
 				onclick={onClose}
 				autofocus
 			>
@@ -81,7 +81,7 @@
 		{/if}
 		<Group class="justify-end gap-2">
 			<Button
-				class="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+				class="rounded border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
 				onclick={copy}
 			>
 				<Text tag="span">{copied ? t("modal.copied") : t("modal.copy")}</Text>

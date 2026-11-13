@@ -60,10 +60,10 @@ import { Check, ExternalLink, Paperclip } from "$lib/shell-icons";
 			</Button>
 		</Group>
 	</Group>
-	<Text tag="span" class="truncate font-mono text-[11px] text-muted-foreground" title={screen.screenId}>{screen.screenId}</Text>
-	<Text tag="span" class="truncate text-[11px] text-muted-foreground" title={screen.subtitle}>{screen.subtitle}</Text>
+	<Text tag="span" class="truncate font-mono text-xs text-muted-foreground" title={screen.screenId}>{screen.screenId}</Text>
+	<Text tag="span" class="truncate text-xs text-muted-foreground" title={screen.subtitle}>{screen.subtitle}</Text>
 	{#if missing}
-		<Text tag="span" class="text-[11px] text-muted-foreground" data-slot="stock-missing">
+		<Text tag="span" class="text-xs text-muted-foreground" data-slot="stock-missing">
 			{t("home.incompatible")}
 			{t("home.missing").replace("{list}", missing)}
 		</Text>

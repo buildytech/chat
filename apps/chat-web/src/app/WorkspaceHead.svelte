@@ -44,7 +44,7 @@ import { Maximize2, Minimize2, PanelLeft, PanelRight } from "$lib/shell-icons";
 		class="max-lg:hidden"
 		aria-label={chatOpen ? t("workspace.hideChat") : t("workspace.showChat")}
 		title={`${chatOpen ? t("workspace.hideChat") : t("workspace.showChat")} (Ctrl+B)`}
-		aria-expanded={chatOpen}
+		expanded={chatOpen}
 		aria-controls="creator-chat-column"
 		data-action="chat-toggle"
 		onclick={ontogglechat}
@@ -78,7 +78,7 @@ import { Maximize2, Minimize2, PanelLeft, PanelRight } from "$lib/shell-icons";
 				variant="ghost"
 				aria-label={inspectorOpen ? t("inspector.collapse") : t("inspector.expand")}
 				title={`${inspectorOpen ? t("inspector.collapse") : t("inspector.expand")} (Ctrl+I)`}
-				aria-expanded={inspectorOpen}
+				expanded={inspectorOpen}
 				aria-controls="creator-inspector"
 				data-action="inspector-toggle"
 				onclick={ontoggleinspector}
@@ -93,7 +93,7 @@ import { Maximize2, Minimize2, PanelLeft, PanelRight } from "$lib/shell-icons";
 			class="max-lg:hidden"
 			aria-label={focus ? t("workspace.focusOff") : t("workspace.focusOn")}
 			title={`${focus ? t("workspace.focusOff") : t("workspace.focusOn")} (Ctrl+\\)`}
-			aria-pressed={focus}
+			pressed={focus}
 			data-action="focus-toggle"
 			onclick={() => creatorLayout.toggleFocus()}
 		>

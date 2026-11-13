@@ -435,8 +435,14 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 		data-slot="preview-stage"
 	>
 		<Box class="relative mx-auto h-full overflow-hidden" style={`width: ${Math.round(frameWidth * frameScale)}px`}>
+			<!-- Host element: the kit has no iframe tag. This frame is a separate document, not a shell composition. -->
 			<iframe
-				bind:this={frameEl}
+				{@attach (element) => {
+					frameEl = element as HTMLIFrameElement;
+					return () => {
+						frameEl = null;
+					};
+				}}
 				title={t("preview.frame")}
 				srcdoc={FRAME_DOC}
 				class="block origin-top-left border-0 bg-background"

@@ -30,7 +30,7 @@ import { Layers, X } from "$lib/shell-icons";
 			<Icon size="sm" class="text-muted-foreground"><Layers /></Icon>
 			<Text tag="span" class="truncate text-xs font-medium text-foreground">{t("collection.label")}: {collection.title}</Text>
 			{#if collection.items.length}
-				<Text tag="span" class="text-[11px] text-muted-foreground">{t("collection.hint")}</Text>
+				<Text tag="span" class="text-xs text-muted-foreground">{t("collection.hint")}</Text>
 			{/if}
 		</Group>
 		{#if collection.items.length}
@@ -52,7 +52,7 @@ import { Layers, X } from "$lib/shell-icons";
 							{:else}
 								<Text tag="span" class="truncate text-xs text-foreground">{collectionItemName(item)}</Text>
 							{/if}
-							<Text tag="span" class="truncate text-[11px] text-muted-foreground">{collectionItemDetail(item)}</Text>
+							<Text tag="span" class="truncate text-xs text-muted-foreground">{collectionItemDetail(item)}</Text>
 						</Stack>
 						<Button
 							type="button"
@@ -68,7 +68,7 @@ import { Layers, X } from "$lib/shell-icons";
 			</Group>
 		{/if}
 		{#if note}
-			<Text tag="p" class="text-[11px] text-muted-foreground" role="status" data-slot="collection-note">{note}</Text>
+			<Text tag="p" class="text-xs text-muted-foreground" role="status" data-slot="collection-note">{note}</Text>
 		{/if}
 	</Stack>
 {/if}

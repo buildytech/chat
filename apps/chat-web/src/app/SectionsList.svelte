@@ -274,7 +274,7 @@ import { ArrowDown, ArrowUp, GripVertical, Redo2, Trash2, Undo2 } from "$lib/she
 								<StockThumb src={blockThumbUrl(block.catalogBlock ?? "", block.variant)} title={block.title} class="w-14" />
 								<Stack align="stretch" class="min-w-0 flex-1 gap-0">
 									<Text tag="span" class="truncate text-xs font-medium text-foreground">{block.title}</Text>
-									<Text tag="span" class="truncate font-mono text-[11px] text-muted-foreground">{block.catalogBlock ?? block.kind}{block.variant ? `/${block.variant}` : ""}</Text>
+									<Text tag="span" class="truncate font-mono text-xs text-muted-foreground">{block.catalogBlock ?? block.kind}{block.variant ? `/${block.variant}` : ""}</Text>
 								</Stack>
 							</Button>
 							<Group class="shrink-0 items-center gap-0">

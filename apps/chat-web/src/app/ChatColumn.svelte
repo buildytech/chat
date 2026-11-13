@@ -132,7 +132,7 @@ import { Blocks, ListTree, MessageSquare } from "$lib/shell-icons";
 			</Button>
 		{/each}
 		<!-- ADR 0027: advisory family change, a small non-modal label. Undo reverts it. There is no family picker. -->
-		<Text tag="span" class="min-w-0 flex-1 truncate text-right text-[11px] text-muted-foreground" role="status" aria-live="polite" data-slot="family-note">
+		<Text tag="span" class="min-w-0 flex-1 truncate text-right text-xs text-muted-foreground" role="status" aria-live="polite" data-slot="family-note">
 			{#if inspector.familyNote}
 				{@const note = inspector.familyNote}
 				{t("family.note").replace("{from}", t(`family.${note.from ?? "none"}`)).replace("{to}", t(`family.${note.to ?? "none"}`))}

@@ -131,26 +131,26 @@
 			{/if}
 			<Group class="flex-wrap justify-end gap-2">
 				<Button
-					class="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+					class="rounded border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
 					onclick={onClose}
 				>
 					<Text tag="span">{t("model.cancel")}</Text>
 				</Button>
 				<Button
-					class="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+					class="rounded border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
 					onclick={forget}
 				>
 					<Text tag="span">{t("model.forget")}</Text>
 				</Button>
 				<Button
-					class="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+					class="rounded border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
 					onclick={test}
 				>
 					<Text tag="span">{t("model.test")}</Text>
 				</Button>
 				<Button
 					type="submit"
-					class="rounded bg-foreground px-3 py-1.5 text-sm text-background hover:bg-foreground/90"
+					class="rounded bg-foreground px-3 py-2 text-sm text-background hover:bg-foreground/90"
 				>
 					<Text tag="span">{t("model.save")}</Text>
 				</Button>

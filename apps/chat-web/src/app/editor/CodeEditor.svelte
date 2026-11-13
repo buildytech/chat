@@ -13,8 +13,10 @@
 
 <script lang="ts">
 	import { untrack } from "svelte";
+	import type { Attachment } from "svelte/attachments";
 	import { EditorView } from "@codemirror/view";
 	import { EditorState } from "@codemirror/state";
+	import Box from "$registry/kit/ui/box/Box.svelte";
 	import { cn } from "$registry/utils/cn";
 	import { editorCode, remeasure } from "$lib/editor/editor-code";
 
@@ -29,6 +31,14 @@
 
 	let host: HTMLDivElement | undefined = $state();
 	let view: EditorView | undefined;
+
+	// CodeMirror needs the DOM node. Box spreads attachments onto its element, so this stays a retag.
+	const takeHost: Attachment<HTMLElement> = (element) => {
+		host = element as HTMLDivElement;
+		return () => {
+			host = undefined;
+		};
+	};
 
 	$effect(() => {
 		const el = host;
@@ -67,4 +77,4 @@
 	});
 </script>
 
-<div class={cn("code-editor", className)} data-slot="code-editor" bind:this={host} {...rest}></div>
+<Box class={cn("code-editor", className)} data-slot="code-editor" {@attach takeHost} {...rest}></Box>

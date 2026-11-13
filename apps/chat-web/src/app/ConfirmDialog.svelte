@@ -62,14 +62,14 @@
 			<Button
 				id="confirm-dialog-cancel"
 				type="button"
-				class="rounded border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+				class="rounded border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
 				onclick={onClose}
 			>
 				<Text tag="span">{cancelText}</Text>
 			</Button>
 			<Button
 				type="button"
-				class="rounded bg-foreground px-3 py-1.5 text-sm text-background hover:bg-foreground/90"
+				class="rounded bg-foreground px-3 py-2 text-sm text-background hover:bg-foreground/90"
 				onclick={onConfirm}
 			>
 				<Text tag="span">{confirmLabel}</Text>
