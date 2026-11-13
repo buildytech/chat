@@ -5,3 +5,7 @@ export { applyJsonPatch, type PatchOpLike } from "./jsonpatch.ts";
 export { changedPointers, diffIsEmpty, diffPages, type DiffEntry } from "./diff.ts";
 export { migratePageV1, type MigrationResult } from "./migrate.ts";
 export { freshBlockId, normalizeBlocks, writePage, type WriteFailure, type WriteInput, type WriteOk, type WriteResult } from "./write.ts";
+export { addSlotCheck, itemEdge, moveSlotCheck, naturalIndex, type SlotCheck } from "./slots.ts";
+export { DEFAULT_START_SCREEN, emptyPage, screenBlocks, screenItems, type ScreenItem, type ScreenItems } from "./start.ts";
+export { addScreen, applyOp, setAtPointer, type OpName, type OpResult, type PageOp } from "./ops.ts";
+export { inspectorModel, type InspectorField, type InspectorModel, type InspectorWidget } from "./inspect.ts";

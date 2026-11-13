@@ -173,5 +173,6 @@ export function writePage(base: PageV2, input: WriteInput, options: { now?: stri
 	const gate = checkPageDoc(doc);
 	if (!gate.ok) return failure(gate.issues);
 	const diff = diffPages(base, gate.page);
+	if (diff.length > 0 && base.updatedAt !== undefined) gate.page.updatedAt = options.now ?? new Date().toISOString();
 	return { ok: true, page: gate.page, diff, warnings: notes, changed: diff.length > 0 };
 }
