@@ -209,6 +209,18 @@ test("loop guard: the same error list twice ends the turn, nothing is written", 
 	}
 });
 
+test("loop guard: a different rejected value at the same path is a new attempt, not a repeat", async () => {
+	const base = fitnessPage();
+	const attempt = (value: string) => ({ patch: [{ op: "replace", path: "/blocks/1/props/tone", value }] });
+	const good = { patch: [{ op: "replace", path: "/blocks/1/props/tone", value: "muted" }] };
+	const { out, seen } = await withProvider(
+		[{ calls: [{ name: "write_page", arguments: attempt("neon") }] }, { calls: [{ name: "write_page", arguments: attempt("pink") }] }, { calls: [{ name: "write_page", arguments: good }] }, { content: "Muted the hero." }],
+		async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: "Mute the hero", mode: "build", page: base, expectedRevision: 3 }, signal()), seen })
+	);
+	assert.equal(seen.requests.length, 4);
+	assert.ok(out.result.ok, JSON.stringify(out.result));
+});
+
 test("every item variant starts from sample props that pass the registry props schema (no invented copy)", () => {
 	let checked = 0;
 	for (const item of allItems()) {

@@ -240,9 +240,9 @@ function userPrompt(ctx: TurnContext): string {
 
 const BUDGET = { maxSteps: RUN_BUDGET.maxToolCalls, maxTokens: 8192 } as const;
 
-/** Identity of an error list: the paths and codes, not the values; two equal lists in a row end the turn. */
-function signature(issues: Array<{ path: string; code: string }>): string {
-	return JSON.stringify(issues.map((issue) => `${issue.code} ${issue.path}`).sort());
+/** Identity of an error list: code, path and the rejected value; two equal lists in a row end the turn. A new value at the same path is a new attempt, not a repeat. */
+function signature(issues: Array<{ path: string; code: string; got?: unknown }>): string {
+	return JSON.stringify(issues.map((issue) => `${issue.code} ${issue.path} ${JSON.stringify(issue.got ?? null)}`).sort());
 }
 
 type TurnResultOut = { result: AgentReply | AgentFailure; meta: LiveTurnMeta };
