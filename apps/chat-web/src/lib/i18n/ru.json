@@ -487,6 +487,7 @@
 		"plan.op.set": "{block}: {field} = «{value}»",
 		"plan.op.set_items": "{block}: строк {n}",
 		"plan.op.add": "Добавить {kind}: {title}",
+		"plan.op.addBlock": "Добавить {to}: {title}",
 		"plan.op.replace": "Заменить {block} на {kind}",
 		"change.block": "блок каталога {from} → {to}",
 		"plan.droppedLine": "- {op}: новый блок это не показывает, убрано: {list}",

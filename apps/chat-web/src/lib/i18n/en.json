@@ -486,6 +486,7 @@
 		"plan.op.set": "{block}: {field} = “{value}”",
 		"plan.op.set_items": "{block}: {n} rows",
 		"plan.op.add": "Add {kind}: {title}",
+		"plan.op.addBlock": "Add {to}: {title}",
 		"plan.op.replace": "Replace {block} with {kind}",
 		"change.block": "catalog block {from} → {to}",
 		"plan.droppedLine": "- {op}: not shown by the new block, dropped: {list}",

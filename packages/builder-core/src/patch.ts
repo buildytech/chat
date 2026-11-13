@@ -4,6 +4,7 @@ import {
 	PAGE_SLOTS,
 	pagePatchIssues,
 	pagePatchSchema,
+	type SchemaIssue,
 	parsePageSpec,
 	type Page,
 	type PageBlock,
@@ -25,7 +26,9 @@ import {
 import { catalogProvenance } from "./catalog/snapshot.ts";
 import { getScreenById } from "./catalog/search.ts";
 import { attachCatalogSources, familyLabelForKind, kindSourceFor, validateCatalogProvenance } from "./catalog/provenance.ts";
-import { catalogSourceFor, resolveCatalogChoice } from "./catalog/sources.ts";
+import { catalogSourceFor, catalogVariantsFor, resolveCatalogChoice } from "./catalog/sources.ts";
+import { addSlotCheck, walkIds, withFreshIds } from "./page-slots.ts";
+import { catalogBlocksForKind } from "./block-swap.ts";
 import { swapCatalogBlock } from "./block-swap.ts";
 import { DATA_KINDS, defaultDemoLabel, demoLabelForLocale } from "./content.ts";
 import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION } from "./policy.ts";
@@ -59,8 +62,8 @@ export type PagePatchContext = {
 	brief?: string;
 };
 
-type Failure = { ok: false; code: string; message: string; path?: string };
-const fail = (code: string, message: string, path?: string): Failure => ({ ok: false, code, message, path });
+type Failure = { ok: false; code: string; message: string; path?: string; fix?: Record<string, unknown> };
+const fail = (code: string, message: string, path?: string, fix?: Record<string, unknown>): Failure => ({ ok: false, code, message, path, ...(fix ? { fix } : {}) });
 
 function walk(blocks: PageBlock[]): PageBlock[] {
 	return blocks.flatMap((node) => [node, ...walk(node.children ?? [])]);
@@ -141,6 +144,76 @@ const OP_KEYS: Record<string, readonly string[]> = Object.fromEntries(
 );
 const UNION_KEYS = new Set(Object.values(OP_KEYS).flat());
 
+/** One op the page-patch schema rejects, in words the model can act on (ops are never echoed, only keys and enums). */
+export type PatchIssueReport = {
+	index: number;
+	op: string | null;
+	keyword: string;
+	key?: string;
+	message: string;
+	allowedOps?: string[];
+	allowedKeys?: string[];
+	required?: string[];
+	allowedValues?: string[];
+};
+
+type OpBranch = { properties: Record<string, { enum?: unknown[]; const?: string }>; required?: string[] };
+const OP_BRANCHES = new Map<string, OpBranch>(
+	(pagePatchSchema.$defs.op.oneOf as unknown as OpBranch[]).map((branch) => [String(branch.properties.op?.const), branch])
+);
+const OP_NAMES = [...OP_BRANCHES.keys()];
+
+/**
+ * Schema issues of a patch as one report per rejected op (ADR 0033): the op index and name, the key at fault, the
+ * keys the op takes (and requires) or the enum the key allows. The first issue of an op names the problem; the
+ * oneOf marker the schema walker adds is only used when nothing more specific exists.
+ */
+export function patchIssueReports(patch: unknown, issues: readonly SchemaIssue[]): PatchIssueReport[] {
+	const ops = patch && typeof patch === "object" && Array.isArray((patch as { ops?: unknown }).ops) ? ((patch as { ops: unknown[] }).ops) : [];
+	const seen = new Map<number, SchemaIssue>();
+	const rootIssues: SchemaIssue[] = [];
+	for (const issue of issues) {
+		const match = /^\$\.ops\[(\d+)\](?:\.([A-Za-z_]+))?/.exec(issue.path);
+		if (!match) {
+			rootIssues.push(issue);
+			continue;
+		}
+		const index = Number(match[1]);
+		const prior = seen.get(index);
+		if (!prior || (prior.keyword === "oneOf" && issue.keyword !== "oneOf")) seen.set(index, issue);
+	}
+	const reports: PatchIssueReport[] = [];
+	for (const [index, issue] of [...seen].sort((a, b) => a[0] - b[0])) {
+		const row = ops[index] && typeof ops[index] === "object" && !Array.isArray(ops[index]) ? (ops[index] as Record<string, unknown>) : null;
+		const name = row && typeof row.op === "string" ? row.op : null;
+		const branch = name ? OP_BRANCHES.get(name) : undefined;
+		const key = /^\$\.ops\[\d+\]\.([A-Za-z_]+)/.exec(issue.path)?.[1];
+		const head = `ops[${index}]${name ? ` (${name})` : ""}`;
+		if (!branch) {
+			reports.push({ index, op: name, keyword: issue.keyword, message: `${head}: op must be one of ${OP_NAMES.join(", ")}.`, allowedOps: OP_NAMES });
+			continue;
+		}
+		const allowedKeys = Object.keys(branch.properties);
+		const required = branch.required ?? [];
+		const takes = `${name} takes ${allowedKeys.join(", ")} (required: ${required.join(", ")}).`;
+		if (issue.keyword === "additionalProperties" && key) {
+			reports.push({ index, op: name, keyword: issue.keyword, key, message: `${head}: ${key} is not a key of ${name}; remove it. ${takes}`, allowedKeys, required });
+		} else if (issue.keyword === "required" && key) {
+			reports.push({ index, op: name, keyword: issue.keyword, key, message: `${head}: ${key} is required. ${takes}`, allowedKeys, required });
+		} else if (issue.keyword === "enum" && key) {
+			const allowedValues = (branch.properties[key]?.enum ?? []).map(String);
+			reports.push({ index, op: name, keyword: issue.keyword, key, message: `${head}: ${key} must be one of ${allowedValues.join(", ")}.`, allowedValues, allowedKeys, required });
+		} else {
+			reports.push({ index, op: name, keyword: issue.keyword, ...(key ? { key } : {}), message: `${head}: ${key ?? "the op"} failed the ${issue.keyword} check (plain text only, lengths as in the schema). ${takes}`, allowedKeys, required });
+		}
+	}
+	if (!reports.length && rootIssues.length) {
+		const first = rootIssues[0]!;
+		reports.push({ index: -1, op: null, keyword: first.keyword, message: `The patch must be {ops: [1..24 ops]}${first.path !== "$" ? ` (${first.path} failed ${first.keyword})` : ""}.` });
+	}
+	return reports;
+}
+
 /**
  * Tool-call hygiene before the strict schema: a model fills unused union fields with null or "".
  * Those empty fields are dropped; any other key stays, so the schema still rejects it.
@@ -188,7 +261,14 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 	const issues = pagePatchIssues(ctx.patch);
 	if (issues.length) {
 		const first = issues[0]!;
-		return fail("page_patch_invalid", `page-patch/v1 ${first.keyword} failed. Send ops only (set, set_items, add, replace, remove, move, set_page, set_variant).`, first.path);
+		const invalid = patchIssueReports(ctx.patch, issues);
+		const said = invalid.slice(0, 4).map((row) => row.message).join(" ");
+		return fail(
+			"page_patch_invalid",
+			`page-patch/v1 rejected ${invalid.length || 1} op(s). ${said} The patch is all or nothing: send every op again with these fixed or left out.`.trim(),
+			first.path,
+			{ invalidOps: invalid.slice(0, 8) }
+		);
 	}
 	const patch = ctx.patch as { baseRevision?: number; ops: PatchOp[] };
 	if (typeof patch.baseRevision === "number" && patch.baseRevision !== ctx.expectedRevision) {
@@ -231,7 +311,17 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 			return fail("slot_required", `The page language is ${base.locale}: send title (and copy) for the new ${kind} block.`, `${at}.title`);
 		}
 		let node = attachCatalogSources([stockBlockFor(kind, { screen: sampleScreen, scenarioId: source ? null : scenarioId, brief: ctx.brief ?? title, pageTitle: title })], sampleScreen)[0]!;
-		if (typeof op.variant === "string") {
+		if (op.op === "add" && typeof op.catalogBlock === "string") {
+			// ADR 0033: add a named Stock catalog block of this kind (block.steps, block.pricing), like the inspector's add.
+			const choice = resolveCatalogChoice({ kind, catalogBlock: op.catalogBlock, variant: typeof op.variant === "string" ? op.variant : null });
+			if (!choice.ok) {
+				const allowed = choice.code === "unknown_variant" ? catalogVariantsFor(op.catalogBlock.split("/")[0]!.startsWith("block.") ? op.catalogBlock.split("/")[0]! : `block.${op.catalogBlock.split("/")[0]}`) : catalogBlocksForKind(kind);
+				return fail(choice.code, choice.message, choice.code === "unknown_variant" ? `${at}.variant` : `${at}.catalogBlock`, { allowed: allowed.slice(0, 40) });
+			}
+			const swap = swapCatalogBlock(node, { catalogBlock: choice.catalogBlock, variant: choice.variant });
+			if (!swap.ok && swap.code !== "no_change") return fail(swap.code, swap.message, swap.code === "unknown_variant" ? `${at}.variant` : `${at}.catalogBlock`, swap.allowed ? { allowed: swap.allowed } : undefined);
+			if (swap.ok) node = swap.node;
+		} else if (typeof op.variant === "string") {
 			const choice = resolveCatalogChoice({ kind, catalogBlock: node.catalogBlock, variant: op.variant });
 			if (!choice.ok) return fail(choice.code, choice.message, `${at}.variant`);
 			node = { ...node, variant: op.variant };
@@ -295,12 +385,24 @@ export function editPage(ctx: PagePatchContext): LayoutProposal | LayoutProposal
 			changed.add(target.kind);
 		} else if (op.op === "add") {
 			const kind = op.kind as PageBlockKind;
-			if (walk(blocks).some((node) => node.kind === kind)) {
-				return fail("block_exists", `The page already has a ${kind} block. Use set or replace.`, `${at}.kind`);
+			const named = typeof op.catalogBlock === "string";
+			const same = walk(blocks).filter((node) => node.kind === kind && !CHILD_ONLY_KINDS.has(node.kind));
+			if (!named && same.length) {
+				return fail(
+					"block_exists",
+					`The page already has a ${kind} block (${same.map((node) => node.id).join(", ")}). Use set or replace on it, or add with catalogBlock (block.<name> of kind ${kind}) to add another.`,
+					`${at}.kind`,
+					{ blockIds: same.map((node) => node.id), allowed: catalogBlocksForKind(kind).slice(0, 40) }
+				);
 			}
-			const node = fromCatalog(kind, at, op);
-			if ("ok" in node) return node;
+			const made = fromCatalog(kind, at, op);
+			if ("ok" in made) return made;
 			const index = typeof op.at === "number" ? Math.min(op.at, blocks.length) : naturalIndexFor(kind, blocks);
+			if (named) {
+				const slot = addSlotCheck(blocks, kind, index);
+				if (!slot.ok) return fail(slot.code, slot.message, `${at}.at`, { slots: `0..${blocks.length}` });
+			}
+			const node = withFreshIds(made, walkIds(blocks));
 			blocks.splice(index, 0, node);
 			added.push(kind);
 			if (kind === "sidenav" || kind === "bottomnav") shellAdded = true;

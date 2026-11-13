@@ -10,6 +10,7 @@ import {
 	compactPlanPayload,
 	planHasInvalid,
 	pageDirectory,
+	sameRejection,
 	deriveFamily,
 	type PagePlan,
 	assertNoFallback,
@@ -68,7 +69,7 @@ const SYSTEM = [
 	"propose_layout assembles from the pinned Stock catalog and adds required blocks only from Stock screens that contain them (it may switch to a sibling that has them and says so in warnings). It never accepts a caller layout.",
 	"If propose_layout returns screen_not_renderable or scenario_screen_mismatch, call it once more with a suggestedScreenId. Do not retry the same screenId.",
 	"scopeBlockIds, when nonempty, is a hard edit boundary: use edit_page only on these IDs. No new page or other blocks.",
-	"If currentPage is present, edit it with edit_page (no search): page-patch/v1 ops on currentPage block ids, writing only the slots listed on each block (slots.copy, slots.rows). set changes one slot (null removes a copy key); set_items replaces all rows of a list block (send the full new list, existing rows are in rows); add / replace name a Stock kind of the page's screen family with title and copy in the page language; remove; move; set_page. Everything you do not touch stays exactly as it is. Never remove anything the author did not ask to remove. Use propose_layout on a current page only when the author asks for a new page (newPage=true) or a different Stock screen.",
+	"If currentPage is present, edit it with edit_page (no search): page-patch/v1 ops on currentPage block ids, writing only the slots listed on each block (slots.copy, slots.rows). set {blockId, field, value} changes one slot (null removes a copy key; field is only for set and set_page); set_items replaces all rows of a list block (send the full new list, existing rows are in rows); replace {blockId, kind, catalogBlock?, variant?} puts another Stock catalog block of the same kind in the block's place (kind = the block's kind, catalogBlock = block.<name> from catalogSources); add {kind, catalogBlock, at, title, copy?, items?} adds a Stock catalog block of that kind at top-level slot at (0 = first; between the header and the footer), several blocks of one kind are fine when catalogBlock is named; remove; move; set_page. If an op is rejected, the reply names its index (opIndex) and fix (keys, allowed values): resend the ops with only that op fixed or left out. Everything you do not touch stays exactly as it is. Never remove anything the author did not ask to remove. Use propose_layout on a current page only when the author asks for a new page (newPage=true) or a different Stock screen.",
 	"Always pass propose_layout.blocks with one entry per block kind of the picked screen (pick.mappedKinds plus sidenav and bottomnav on dashboards): a visible title (page language) and a lede, nav brand plus 3-5 items naming the page sections, sidenav title, brand and 3-7 items, bottomnav 3-5 short items. Keep copy about the author's topic. Kinds the screen does not contain are not rendered; never invent blocks.",
 	"Only when demoData is true: fill overview, metrics, chart and activity items with plausible rows about the request (metrics: label + value + note; chart: 5-8 points label + numeric value; activity: 4-6 events label + detail + note) and set demoLabel in the page language. Otherwise leave data items empty and do not invent figures, reviews, prices or contacts.",
 	"catalogSources lists the Stock catalog blocks that render as their real UI8Kit organism, with variants (as organism props), the row and text fields of each block from its published props schema (rows: fields with :icon take an icon name) and how icons are named (icons: any Lucide kebab-case name). For such a block set blocks[].variant to the variant that matches the author's words (columns, tiles, cells, rows, muted; default otherwise), give every feature row a Lucide icon (kebab-case, e.g. chef-hat) that fits its text, and for a section link set copy action (label) and href. The host validates the merged props against the schema: unknown variants return unknown_variant, a value the schema rejects returns props_invalid with its path and the allowed values; fix that field and call again. On edits use edit_page set_variant {blockId, variant} and set_items rows with icon.",
@@ -426,6 +427,13 @@ function compactToolPayload(
 		code: result.code,
 		message: result.message,
 		path: "path" in result ? result.path : undefined,
+		// edit_page: the failed op's index and what fixes it (invalid ops with keys and enums, allowed values, block ids).
+		...(name === "edit_page" && result.result && typeof result.result === "object"
+			? {
+					...("opIndex" in result.result ? { opIndex: (result.result as { opIndex: number }).opIndex } : {}),
+					...("fix" in result.result ? { fix: (result.result as { fix: unknown }).fix } : {})
+				}
+			: {}),
 		// unknown_variant: the caller's block, the catalog block it rendered as and every allowed value.
 		...(result.code === "unknown_variant" && result.result && typeof result.result === "object" && "allowedVariants" in result.result
 			? { fix: result.result }
@@ -485,6 +493,44 @@ function acceptPartially(
 		if (isCollectionCode(next.code)) {
 			const inside = acceptInsideCollection(current, next, host);
 			return inside ? { proposal: { ...inside.proposal, warnings: [...inside.proposal.warnings, ...warnings] }, args: inside.args } : null;
+		}
+		rejection = next;
+	}
+	return null;
+}
+
+/** The `$.ops[i]` index a rejection names (null for a patch-level path such as $.baseRevision). */
+function failedOpIndex(path: string | undefined): number | null {
+	const hit = path ? /^\$\.ops\[(\d+)\]/.exec(path) : null;
+	return hit ? Number(hit[1]) : null;
+}
+
+/**
+ * Partial acceptance for edit_page (ADR 0033, like ADR 0018 for propose_layout): the same op rejected twice, so the
+ * host leaves that op out, runs the rest and says each skipped op in warnings. An op that depended on a skipped one
+ * fails next and is left out as well (up to `max` ops). Null when nothing is left or the failure is not one op's.
+ */
+function acceptEditPartially(
+	args: Record<string, unknown>,
+	failed: { code: string; path?: string },
+	host: Parameters<typeof executeTool>[1],
+	max = 3
+): { proposal: LayoutProposal; args: Record<string, unknown> } | null {
+	let current = args;
+	let rejection = failed;
+	const skipped: string[] = [];
+	for (let i = 0; i < max; i += 1) {
+		const index = failedOpIndex(rejection.path);
+		const ops = Array.isArray(current.ops) ? (current.ops as unknown[]) : null;
+		if (index === null || !ops || index >= ops.length || ops.length < 2) return null;
+		const row = ops[index] && typeof ops[index] === "object" ? (ops[index] as Record<string, unknown>) : {};
+		const what = ["op", "blockId", "kind", "catalogBlock", "field"].filter((key) => typeof row[key] === "string").map((key) => String(row[key])).join(" ");
+		skipped.push(`Skipped op ${index + 1} (${what || "unknown"}): ${rejection.code}.`);
+		current = { ...current, ops: ops.filter((_, at) => at !== index) };
+		const next = executeTool({ name: "edit_page", arguments: current }, host);
+		if (next.ok) {
+			const proposal = next.result as LayoutProposal;
+			return { proposal: { ...proposal, warnings: [...proposal.warnings, ...skipped] }, args: current };
 		}
 		rejection = next;
 	}
@@ -705,6 +751,9 @@ async function buildToolLoop(
 	let text = "";
 	const blocks: string[] = [];
 	let lastRejected: { args: Record<string, unknown>; result: { code: string; path?: string; result?: unknown } } | null = null;
+	let proposeLocked = false;
+	let stopped: { last?: string } | null = null;
+	let lastMessage = "";
 	let nearestScreens: string[] = [];
 	let modelFields: Array<{ kind: string; fields: string[] }> | undefined;
 
@@ -717,7 +766,7 @@ async function buildToolLoop(
 			apiKey,
 			modelId,
 			messages,
-			tools: draft ? intakeTools(draft) : editTurn ? EDIT_TOOLS() : BUILD_TOOLS(),
+			tools: draft ? intakeTools(draft) : editTurn ? (proposeLocked ? agentOpenAiTools("build", ["edit_page"]) : EDIT_TOOLS()) : BUILD_TOOLS(),
 			toolChoice: "auto",
 			maxTokens: 3200,
 			signal,
@@ -741,10 +790,14 @@ async function buildToolLoop(
 			if (name === "propose_layout" && reassemblesCurrentPage(args, ctx)) {
 				const left = maxSteps - trace.steps;
 				rejections.push({ code: "use_edit_page", path: "$.newPage" } as ToolLoopRejection);
+				lastMessage = "propose_layout was called on the current page; edit_page is the tool for it.";
+				// ADR 0033: one rejection is enough; from the next step on only edit_page is offered.
+				proposeLocked = true;
 				const reply = {
 					ok: false,
 					code: "use_edit_page",
-					message: "currentPage exists: call edit_page with page-patch ops on the block ids below (only the blocks the author named). propose_layout is only for a new page (newPage=true) or another Stock screen.",
+					message: "currentPage exists: call edit_page with page-patch ops on the block ids below (only the blocks the author named): replace {blockId, kind, catalogBlock, variant} for another catalog block, add {kind, catalogBlock, at, title} for a new section, set {blockId, field, value}. propose_layout is no longer offered in this turn.",
+					next: "edit_page",
 					blocks: pageDirectory(ctx.currentPage!),
 					budget: { step: trace.steps, maxSteps, left }
 				};
@@ -775,6 +828,17 @@ async function buildToolLoop(
 					args = partial.args;
 				}
 			}
+			if (name === "edit_page" && !result.ok) {
+				// The same op rejected twice: leave it out, apply the rest, say it (ADR 0033).
+				if (repeatedRejection(result, rejections)) {
+					const partial = acceptEditPartially(args, result, host);
+					if (partial) {
+						rejections.push(toolLoopRejection(args, result));
+						result = { ok: true, name: "edit_page", result: partial.proposal };
+						args = partial.args;
+					}
+				}
+			}
 			// What pre-placement changed is said on the proposal (also after a host repair).
 			if (placeNotes.length && name === "propose_layout" && result.ok) {
 				const made = result.result as LayoutProposal;
@@ -802,11 +866,17 @@ async function buildToolLoop(
 				}
 			} else if (!result.ok && (name === "propose_layout" || name === "edit_page")) {
 				rejections.push(toolLoopRejection(args, result));
+				lastMessage = result.message;
 			}
 			messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
 		}
 		// A valid proposal ends the turn: no extra provider round trip for a closing sentence.
 		if (lastProposal?.ok) break;
+		// The same rejection twice in a row and no host repair: another try would burn the budget (ADR 0033).
+		if (!draft && sameRejection(rejections.at(-1), rejections.at(-2))) {
+			stopped = { last: lastMessage };
+			break;
+		}
 	}
 
 	const usage = aggregateStepUsage(stepUsage);
@@ -851,7 +921,8 @@ async function buildToolLoop(
 		proposal: toolLoopProposalFailure({
 			toolsCalled: trace.toolsCalled,
 			rejections,
-			nearest: { screens: nearestScreens, fixes, budget: trace.steps >= maxSteps ? maxSteps : undefined }
+			nearest: { screens: nearestScreens, fixes, budget: trace.steps >= maxSteps ? maxSteps : undefined },
+			...(stopped ? { stopped } : {})
 		}),
 		meta
 	};
@@ -899,13 +970,22 @@ function askPrompt(ctx: ProposalContext): string {
 
 const ASK_BUDGET = { maxSteps: 5, maxTokens: 2400 } as const;
 
-const PLAN_FOLLOW_UP =
-	"Your answer recommends changes to currentPage. Call propose_plan now with exactly those changes as ops on currentPage block ids (set_variant with a variant of that block, set for copy). Do not repeat the answer.";
+const PLAN_OPS_HELP =
+	"as ops on currentPage block ids: set_variant with a variant of that block, set for copy, replace {blockId, catalogBlock, variant} for another catalog block in a block's place, add {kind, catalogBlock, at, title} for a new section, remove, move. Do not repeat the answer.";
+const PLAN_FOLLOW_UP = `Your answer recommends changes to currentPage. Call propose_plan now with exactly those changes ${PLAN_OPS_HELP}`;
+/** The answer named no block id but the model read catalog blocks the page lacks: ask for the plan, allow none. */
+const PLAN_FOLLOW_UP_OFFER = `You read catalog blocks the page does not have. If your answer recommends changes to currentPage, call propose_plan now with exactly those changes ${PLAN_OPS_HELP} If it recommends no concrete change, call nothing.`;
 
-/** True when an Ask answer names at least one currentPage block id: it talks about changing this page. */
-export function recommendsPageChanges(text: string, page: ProposalContext["currentPage"]): boolean {
-	if (!page || !text) return false;
-	return page.layout.blocks.some((node) => text.includes(node.id));
+/**
+ * Whether an Ask answer is about changing the current page (ADR 0033). "id": it names a block id (certain). "candidate":
+ * the model read the spec of a catalog block the page does not have, to replace a block with it or to add it (the
+ * prompt makes it call get_block for every block it discusses), so a plan is probably owed. Program data only: ids and
+ * the catalog blocks of the tool results, never the words of the answer.
+ */
+export function recommendsPageChanges(text: string, page: ProposalContext["currentPage"], readBlocks: readonly string[] = []): "id" | "candidate" | null {
+	if (!page) return null;
+	if (text && page.layout.blocks.some((node) => text.includes(node.id))) return "id";
+	return readBlocks.some((spec) => !page.layout.blocks.some((node) => node.catalogBlock === spec)) ? "candidate" : null;
 }
 
 async function askToolLoop(
@@ -937,6 +1017,7 @@ async function askToolLoop(
 	let text = "";
 	let plan: PagePlan | null = null;
 	let planForced = false;
+	let planRequired = false;
 	let answer = "";
 
 	while (trace.steps < ASK_BUDGET.maxSteps) {
@@ -948,7 +1029,7 @@ async function askToolLoop(
 			modelId,
 			messages,
 			tools: ASK_TOOLS(),
-			toolChoice: last ? "none" : planForced && !plan ? { type: "function", function: { name: "propose_plan" } } : "auto",
+			toolChoice: last ? "none" : planForced && planRequired && !plan ? { type: "function", function: { name: "propose_plan" } } : "auto",
 			maxTokens: ASK_BUDGET.maxTokens,
 			signal,
 			stepUsage,
@@ -961,11 +1042,14 @@ async function askToolLoop(
 		if (calls.length === 0) {
 			// A recommendation about the current page without a plan gets one forced propose_plan step, so the
 			// author always gets a plan card for it. The model's answer stays the reply; no free text is parsed.
-			if (!plan && !planForced && trace.steps < ASK_BUDGET.maxSteps - 1 && recommendsPageChanges(said, ctx.currentPage)) {
+			const mention = !plan && !planForced && trace.steps < ASK_BUDGET.maxSteps - 1 ? recommendsPageChanges(said, ctx.currentPage, blocks) : null;
+			if (mention) {
 				planForced = true;
+				// A named block id forces the call; a read candidate block only offers it (the model may need no plan).
+				planRequired = mention === "id";
 				answer = said;
 				messages.push({ role: "assistant", content: message.content ?? said });
-				messages.push({ role: "user", content: PLAN_FOLLOW_UP });
+				messages.push({ role: "user", content: planRequired ? PLAN_FOLLOW_UP : PLAN_FOLLOW_UP_OFFER });
 				continue;
 			}
 			text = answer || said;

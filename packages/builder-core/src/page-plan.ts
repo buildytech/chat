@@ -105,20 +105,23 @@ function norm(value: string): string {
  * catalog block (block.logos or logos), the catalog title of that block (Logo cloud) or a page kind that only one
  * block has. Null when nothing or more than one block matches.
  */
+/** The names a block goes by: id, title, catalog block (block.logos / logos) and the catalog's title and label. */
+function blockNames(node: PageBlock): string[] {
+	const out = [node.title, node.id, node.id.replace(/^block-/, "")];
+	if (node.catalogBlock) {
+		out.push(node.catalogBlock, node.catalogBlock.replace(/^block\./, ""));
+		const card = askBlockCard(node.catalogBlock);
+		if (card) out.push(card.title, card.label);
+	}
+	return out;
+}
+
 export function resolveBlockRef(page: Page | null | undefined, ref: unknown): string | null {
 	if (!page || typeof ref !== "string" || !ref.trim()) return null;
 	const blocks = page.layout.blocks;
 	if (blocks.some((node) => node.id === ref)) return ref;
 	const want = norm(ref);
-	const names = (node: PageBlock): string[] => {
-		const out = [node.title, node.id, node.id.replace(/^block-/, "")];
-		if (node.catalogBlock) {
-			out.push(node.catalogBlock, node.catalogBlock.replace(/^block\./, ""));
-			const card = askBlockCard(node.catalogBlock);
-			if (card) out.push(card.title, card.label);
-		}
-		return out.map(norm);
-	};
+	const names = (node: PageBlock): string[] => blockNames(node).map(norm);
 	const hits = blocks.filter((node) => names(node).includes(want));
 	if (hits.length === 1) return hits[0]!.id;
 	if (hits.length > 1) return null;
@@ -170,11 +173,16 @@ function rawOp(raw: unknown, page: Page, index: number): PagePlanOp {
 	if (typeof rec.value === "string" || rec.value === null) op.value = rec.value as string | null;
 	if (typeof rec.variant === "string" || (rec.variant === null && name === "set_variant")) op.variant = rec.variant as string | null;
 	if (typeof rec.kind === "string") op.kind = rec.kind;
-	if (name === "replace" && typeof rec.catalogBlock === "string" && rec.catalogBlock.trim()) {
+	if ((name === "replace" || name === "add") && typeof rec.catalogBlock === "string" && rec.catalogBlock.trim()) {
 		// block.storehero, storehero or storehero/overlay; the variant after the slash when none is given.
 		const [spec, inline] = rec.catalogBlock.trim().split("/");
 		op.catalogBlock = spec!.startsWith("block.") ? spec! : `block.${spec}`;
 		if (inline && typeof rec.variant !== "string") op.variant = inline;
+	}
+	// add names its catalog block: the kind is the block's own role when the caller left it out.
+	if (name === "add" && op.catalogBlock && !op.kind) {
+		const kind = askBlockCard(op.catalogBlock)?.kind;
+		if (kind) op.kind = kind;
 	}
 	if (typeof rec.title === "string") op.title = rec.title;
 	if (rec.copy && typeof rec.copy === "object" && !Array.isArray(rec.copy)) {
@@ -219,6 +227,13 @@ function allowedFor(op: PagePlanOp, page: Page, code: string): string[] | undefi
 			return catalogBlocksForKind(target.kind).filter((spec) => spec !== target.catalogBlock);
 		}
 	}
+	if (op.op === "add" && op.catalogBlock) {
+		if (code === "unknown_variant") return catalogVariantsFor(op.catalogBlock);
+		if (op.kind && (code === "catalog_block_kind_mismatch" || code === "unknown_catalog_block" || code === "no_renderer" || code === "block_exists")) {
+			return catalogBlocksForKind(op.kind as PageBlock["kind"]);
+		}
+	}
+	if (op.op === "add" && !op.catalogBlock && code === "block_exists" && op.kind) return catalogBlocksForKind(op.kind as PageBlock["kind"]);
 	if (code === "unknown_variant" && target?.catalogBlock) return catalogVariantsFor(target.catalogBlock);
 	if (code === "block_not_found") return page.layout.blocks.map((node) => node.id);
 	return undefined;

@@ -99,7 +99,7 @@
 			"modes": [
 				"ask"
 			],
-			"description": "Ask only. When you recommend changes to currentPage, call this once with the changes as page-patch/v1 ops on currentPage block ids, alongside your text answer: set_variant {blockId, variant from get_block}; set {blockId, field (title or a key of currentPage.blocks[].copyKeys; when copyKeys has headline, headline is the visible heading and title only names the block in the section list), value}; set_items {blockId, items}; add {kind, title, variant?, copy?}; replace {blockId, catalogBlock, variant?}: another Stock catalog block of the same kind in the block's place (e.g. block.hero -> block.storehero; get_block lists its variants; the host carries the text fields the new block renders and names the rest as dropped); remove {blockId}; move {blockId, to}. Each op gets a short reason. The host checks every op against the page and the pinned catalog and returns valid op ids and invalid ops with allowed values; fix invalid ops once with a second call. Nothing changes: the author sees a plan card and may run the ops they tick with Apply in Build.",
+			"description": "Ask only. When you recommend changes to currentPage, call this once with the changes as page-patch/v1 ops on currentPage block ids, alongside your text answer: set_variant {blockId, variant from get_block}; set {blockId, field (title or a key of currentPage.blocks[].copyKeys; when copyKeys has headline, headline is the visible heading and title only names the block in the section list), value}; set_items {blockId, items}; add {kind, catalogBlock, at?, title, variant?, copy?}: a new section from the Stock catalog (catalogBlock = block.<name> of that kind, e.g. block.steps of kind features; call get_block for it first; several blocks of one kind are fine); replace {blockId, catalogBlock, variant?}: another Stock catalog block of the same kind in the block's place (e.g. block.hero -> block.storehero; get_block lists its variants; the host carries the text fields the new block renders and names the rest as dropped); remove {blockId}; move {blockId, to}. Each op gets a short reason. The host checks every op against the page and the pinned catalog and returns valid op ids and invalid ops with allowed values; fix invalid ops once with a second call. Nothing changes: the author sees a plan card and may run the ops they tick with Apply in Build.",
 			"parameters": {
 				"type": "object",
 				"properties": {
@@ -143,7 +143,7 @@
 								},
 								"catalogBlock": {
 									"type": "string",
-									"description": "replace: the Stock catalog block (block.<label>) that takes the block's place; same kind as the block."
+									"description": "replace: the Stock catalog block (block.<label>) that takes the block's place, same kind as the block. add: the Stock catalog block to add (its kind goes in kind)."
 								},
 								"at": {
 									"type": "integer"
@@ -464,13 +464,13 @@
 			"modes": [
 				"build"
 			],
-			"description": "Edit currentPage with page-patch/v1 operations (https://schema.buildy.tw/page-patch.schema.json). The host validates every op against the block slots and the Stock catalog and returns an unapplied proposal; a rejected op returns code and path, fix that op and call again. Never send a layout.",
+			"description": "Edit currentPage with page-patch/v1 operations (https://schema.buildy.tw/page-patch.schema.json). The host validates every op against the block slots and the Stock catalog and returns an unapplied proposal. A rejection names the failed op (opIndex) and what fixes it (fix: the keys the op takes, allowed values, block ids): resend the ops with only that op fixed or left out. Never send a layout.",
 			"parameters": {
 				"type": "object",
 				"properties": {
 					"ops": {
 						"type": "array",
-						"description": "page-patch/v1 operations, applied in order, all or nothing. set {blockId, field: title|summary|copy key, value (null removes a copy key)}; set_items {blockId, items} replaces rows; add {kind, at?, title, variant?, copy?, items?}; replace {blockId, kind, title, variant?, copy?, items?}; remove {blockId}; move {blockId, to}; set_page {field: title|seo.title|seo.description, value}; set_variant {blockId, variant (a catalog variant of the block from get_block_details; null = catalog default)}. Use block ids from currentPage.blocks and only the slots listed there.",
+						"description": "page-patch/v1 operations, applied in order, all or nothing. set {blockId, field: title|summary|copy key, value (null removes a copy key)}; set_items {blockId, items} replaces rows; add {kind, catalogBlock, at, title, variant?, copy?, items?} adds a Stock catalog block of that kind (block.<name> from catalogSources; several blocks of one kind are fine) at top-level slot at between the header and the footer; replace {blockId, kind, catalogBlock?, title?, variant?, copy?, items?} puts another catalog block of the same kind (catalogBlock) or the page's sample block (without it) in the block's place; remove {blockId}; move {blockId, to}; set_page {field: title|seo.title|seo.description, value}; set_variant {blockId, variant (a catalog variant of the block from get_block_details; null = catalog default)}. field belongs to set and set_page only. Use block ids from currentPage.blocks and only the slots listed there.",
 						"items": {
 							"type": "object",
 							"properties": {
@@ -501,6 +501,10 @@
 								},
 								"kind": {
 									"type": "string"
+								},
+								"catalogBlock": {
+									"type": "string",
+									"description": "add / replace: the Stock catalog block (block.<name>) of this kind, e.g. block.steps, block.pricing, block.features."
 								},
 								"at": {
 									"type": "integer"

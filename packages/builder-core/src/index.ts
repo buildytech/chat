@@ -170,13 +170,14 @@ export {
 	placeCollectionDraft,
 	placeCollectionDraftWithNotes,
 	searchRelaxed,
-	toolLoopRejection
+	toolLoopRejection,
+	sameRejection
 } from "./tools.ts";
 export type { ToolHost, CompactSearchItem, CompactSearchPayload, ToolLoopRejection, CollectionDraft, CollectionDraftBlock } from "./tools.ts";
 export { isScenarioId, displayTitleFromBrief, occasionFromBrief, titleFromSavedEdit } from "./brief.ts";
 export { parseLayoutCopyEdits } from "./edits.ts";
-export { editPage, normalizePatch } from "./patch.ts";
-export type { PagePatchContext, PatchOp } from "./patch.ts";
+export { editPage, normalizePatch, patchIssueReports } from "./patch.ts";
+export type { PagePatchContext, PatchIssueReport, PatchOp } from "./patch.ts";
 export {
 	PLAN_LIMITS,
 	PLAN_NOOP,

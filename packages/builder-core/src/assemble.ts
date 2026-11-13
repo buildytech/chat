@@ -136,6 +136,8 @@ export type LayoutProposalError = {
 	code: string;
 	message: string;
 	path?: string;
+	/** What would fix the call, host-made (ADR 0033): invalid ops with their keys and enums, allowed values, block ids. */
+	fix?: Record<string, unknown>;
 	usage?: import("./usage.ts").RunUsage;
 	modelId?: string;
 	suggestedScreenIds?: string[];

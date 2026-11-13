@@ -195,6 +195,13 @@ export function isAllowedTool(name: string): name is AllowedTool {
 
 export type ToolLoopRejection = { code: string; path?: string; screenId?: string };
 
+/** Two rejections the model would repeat: the same code on the same op / block (the path up to its first index). */
+export function sameRejection(a: Pick<ToolLoopRejection, "code" | "path"> | undefined, b: Pick<ToolLoopRejection, "code" | "path"> | undefined): boolean {
+	if (!a || !b || a.code !== b.code) return false;
+	const head = (path: string | undefined) => (path ? path.slice(0, path.indexOf("]") + 1) || path : "");
+	return head(a.path) === head(b.path);
+}
+
 const SCREEN_TOKEN = /^[A-Za-z0-9][A-Za-z0-9./_-]{0,159}$/;
 
 /**
@@ -225,6 +232,8 @@ export function toolLoopProposalFailure(input: {
 	rejections: ToolLoopRejection[];
 	/** Step budget summary: the nearest renderable screens the search returned and the allowed values of rejected blocks (catalog tokens only). */
 	nearest?: { screens?: string[]; fixes?: string[]; budget?: number };
+	/** The loop stopped on the same rejection twice (ADR 0033); `last` is the host's own words for it. */
+	stopped?: { last?: string };
 }): LayoutProposalError {
 	const near = nearestSummary(input.nearest);
 	const proposeCount = input.toolsCalled.filter((name) => name === "propose_layout" || name === "edit_page").length;
@@ -242,7 +251,9 @@ export function toolLoopProposalFailure(input: {
 		return {
 			ok: false,
 			code: "propose_layout_rejected",
-			message: `${proposeLabel(input.toolsCalled)} was called ${proposeCount} time(s) and rejected (${detail}). No local layout was substituted.${near}`,
+			message: `${proposeLabel(input.toolsCalled)} was called ${proposeCount} time(s) and rejected (${detail}).${
+				input.stopped ? ` Stopped on the same rejection twice; the rest of the step budget was not spent.${input.stopped.last ? ` Last: ${input.stopped.last.slice(0, 280)}` : ""}` : ""
+			} No local layout was substituted. The page did not change.${near}`,
 			path: paths[0]
 		};
 	}
@@ -391,9 +402,16 @@ export function executeTool(
 		const page = host.currentPage;
 		const ops = Array.isArray(args.ops)
 			? args.ops.map((op) => {
-					if (!op || typeof op !== "object" || typeof (op as { blockId?: unknown }).blockId !== "string") return op;
-					const ref = (op as { blockId: string }).blockId;
-					return { ...(op as Record<string, unknown>), blockId: resolveBlockRef(page, ref) ?? ref };
+					if (!op || typeof op !== "object") return op;
+					let row = op as Record<string, unknown>;
+					if (typeof row.blockId === "string") row = { ...row, blockId: resolveBlockRef(page, row.blockId) ?? row.blockId };
+					// A named catalog block carries its own page role: kind is that block's kind when the call left it out.
+					if (typeof row.catalogBlock === "string" && row.catalogBlock && typeof row.kind !== "string" && (row.op === "add" || row.op === "replace")) {
+						const target = typeof row.blockId === "string" ? page.layout.blocks.find((node) => node.id === row.blockId) : undefined;
+						const kind = row.op === "replace" && target ? target.kind : askBlockCard(row.catalogBlock.split("/")[0]!.startsWith("block.") ? row.catalogBlock.split("/")[0]! : `block.${row.catalogBlock.split("/")[0]}`)?.kind;
+						if (kind) row = { ...row, kind };
+					}
+					return row;
 				})
 			: args.ops;
 		const result = editPage({
@@ -409,7 +427,21 @@ export function executeTool(
 			brief: host.authorBrief
 		});
 		if (!result.ok) {
-			return { ok: false, code: result.code, message: result.message, path: result.path, result: result.path ? { path: result.path } : {} };
+			// The op that failed, by index (never its text): the model fixes that op and leaves the others as they are.
+			const at = result.path ? /^\$\.ops\[(\d+)\]/.exec(result.path) : null;
+			const index = at ? Number(at[1]) : null;
+			const failed = index !== null && Array.isArray(ops) && ops[index] && typeof ops[index] === "object" ? (ops[index] as Record<string, unknown>) : null;
+			const summary = failed ? Object.fromEntries(["op", "blockId", "kind", "catalogBlock", "field"].filter((key) => typeof failed[key] === "string").map((key) => [key, failed[key]])) : null;
+			const fix: Record<string, unknown> = { ...(result.fix ?? {}) };
+			if (result.code === "block_not_found") fix.blockIds = page.layout.blocks.map((node) => node.id);
+			const message = index !== null && result.code !== "page_patch_invalid" ? `ops[${index}]${summary?.op ? ` (${String(summary.op)}${summary.blockId ? ` ${String(summary.blockId)}` : ""})` : ""}: ${result.message}` : result.message;
+			return {
+				ok: false,
+				code: result.code,
+				message,
+				path: result.path,
+				result: { ...(result.path ? { path: result.path } : {}), ...(index !== null ? { opIndex: index } : {}), ...(Object.keys(fix).length ? { fix } : {}) }
+			};
 		}
 		return { ok: true, name: call.name, result };
 	}

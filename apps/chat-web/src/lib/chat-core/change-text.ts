@@ -79,6 +79,10 @@ export function planOpText(op: PagePlan["ops"][number], t: T): string {
 		case "set_items":
 			return t("plan.op.set_items").replace("{block}", block).replace("{n}", String(op.items?.length ?? 0));
 		case "add":
+			if (op.catalogBlock) {
+				const to = `${op.catalogBlock}${op.variant ? `/${op.variant}` : ""}`;
+				return t("plan.op.addBlock").replace("{to}", to).replace("{title}", op.title ?? "");
+			}
 			return t("plan.op.add").replace("{kind}", op.kind ?? "").replace("{title}", op.title ?? "");
 		case "replace":
 			if (op.catalogBlock) {
