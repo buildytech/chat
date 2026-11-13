@@ -25,6 +25,7 @@ Numbering: `NNNN-kebab-title.md`. Numbers only increase; files are never renamed
 | [0033](0033-edit-page-actionable-rejections-and-loop-guard.md) | Actionable edit_page rejections, add of catalog blocks, bounded Build loop | Superseded by 0034 (loop guard kept, as the write_page guard) |
 | [0034](0034-page-spec-2-one-write-tool.md) | page-spec 2.0: a page is a document of registry blocks, one write tool | Accepted |
 | [0035](0035-render-probe-gate.md) | The write gate renders what it accepts (render probe); no blank blocks in the preview | Accepted |
+| [0036](0036-inspector-coverage-buildy-label.md) | Inspector coverage manifest (`catalog/inspector-coverage.json`) and the `buildy` label of Stock | Accepted |
 
 Status values: Proposed, Accepted, Superseded, Deprecated.
 

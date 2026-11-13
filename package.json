@@ -26,6 +26,8 @@
     "schema:check": "node scripts/check-page-spec-schema.mjs",
     "theme:neutrals": "node scripts/skin-neutrals.mjs",
     "theme:neutrals:check": "node scripts/skin-neutrals.mjs --check",
+    "inspector:coverage": "node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts scripts/inspector-coverage.mjs",
+    "inspector:coverage:check": "node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts scripts/inspector-coverage.mjs --check",
     "registry:snapshot": "node scripts/registry-snapshot.mjs",
     "registry:check": "node scripts/registry-snapshot.mjs --check",
     "registry:sources": "node scripts/registry-snapshot.mjs --sources",
