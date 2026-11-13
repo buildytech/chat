@@ -8,7 +8,13 @@ export async function withProvider<T>(script: Scripted[], run: (seen: Seen) => P
 	const original = globalThis.fetch;
 	const seen: Seen = { requests: [], toolMessages: [] };
 	let index = 0;
-	globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+	globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+		const url = String(input);
+		if (!url.includes("/chat/completions")) {
+			// Model discovery of the runtime: the one scripted model is listed, no image models.
+			const ids = url.includes("/image-generation-models") ? [] : [{ id: MODEL }];
+			return new Response(JSON.stringify({ data: ids }), { status: 200, headers: { "content-type": "application/json" } });
+		}
 		const body = JSON.parse(String(init?.body ?? "{}")) as { messages: Array<{ role: string; name?: string; content?: string }> };
 		seen.requests.push(body as Record<string, unknown>);
 		seen.toolMessages = body.messages.filter((m) => m.role === "tool").map((m) => ({ name: String(m.name), content: JSON.parse(String(m.content)) as Record<string, unknown> }));

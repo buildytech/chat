@@ -264,8 +264,10 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, { incomplete: "error" }) : unknownUsage("error", trace.steps);
 		return turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId);
 	};
+	let endedOnCalls = false;
 	while (trace.steps < BUDGET.maxSteps && !stuck) {
 		trace.steps += 1;
+		endedOnCalls = false;
 		const step = await providerStep({ apiKey, modelId, messages, tools, toolChoice: "auto", maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
 		if (!step.ok) return { result: step.result, meta: step.meta };
 		const message = step.message;
@@ -273,6 +275,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 		if (said) text = said;
 		const calls = message.tool_calls ?? [];
 		if (calls.length === 0) break;
+		endedOnCalls = true;
 		trace.toolCallingWorked = true;
 		messages.push({ role: "assistant", content: message.content ?? null, tool_calls: calls });
 		for (const call of calls) {
@@ -305,6 +308,11 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 			}
 			messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
 		}
+	}
+	if (endedOnCalls && !stuck && !proposal) {
+		// The step budget ended on tool calls: one more request, no tools, so the model answers with what it read.
+		const last = await providerStep({ apiKey, modelId, messages, tools, toolChoice: "none", maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
+		if (last.ok) text = modelText(last.message) || text;
 	}
 	const meta = finish();
 	if (stuck) {

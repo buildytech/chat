@@ -10,7 +10,8 @@ export function fieldDomId(blockId: string, pointer: string): string {
 }
 
 /** The field (or a field inside it) has a value. */
-export function hasContent(field: InspectorField): boolean {	if (field.widget === "object") return (field.fields ?? []).some(hasContent);
+export function hasContent(field: InspectorField): boolean {
+	if (field.widget === "object") return (field.fields ?? []).some(hasContent);
 	if (field.widget === "list") return (field.rows?.length ?? 0) > 0;
 	return field.value !== undefined && field.value !== null && field.value !== "";
 }

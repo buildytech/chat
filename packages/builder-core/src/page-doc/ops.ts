@@ -103,7 +103,13 @@ function replaceProps(page: PageV2, index: number, props: Record<string, unknown
 	return done(writePage(page, { patch: [{ op: "replace", path: `/blocks/${index}/props`, value: props }] }), block.id, op, path);
 }
 
+/** One page operation. An operation that changes nothing returns the very same page object (no step, no revision). */
 export function applyOp(page: PageV2, input: PageOp): OpResult {
+	const result = applyOpInner(page, input);
+	return result.ok && result.diff.length === 0 ? { ...result, page } : result;
+}
+
+function applyOpInner(page: PageV2, input: PageOp): OpResult {
 	if (input.op === "page") {
 		const path = input.field === "seo.title" ? "/seo/title" : input.field === "seo.description" ? "/seo/description" : `/${input.field}`;
 		const patch: Array<{ op: "add" | "replace"; path: string; value: unknown }> = [];

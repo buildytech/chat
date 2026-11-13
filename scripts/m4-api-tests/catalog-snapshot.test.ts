@@ -111,35 +111,25 @@ test("generated catalog files are ASCII (locale labels stay as \\u escapes)", ()
 	assert.equal(graph.entities.facetValue["section/marketing"].label.ru.length > 0, true);
 });
 
-test("ADR 0013: every supported non-dashboard screen renders all its Stock blocks in screen order, props gate-valid, no invented rows", async () => {
+test("ADR 0013/0034: every supported non-dashboard screen starts a page of all its Stock blocks in screen order, as registry items that pass the page gate", async () => {
 	const core = await import("../../packages/builder-core/src/index.ts");
-	const { validateRegistryProps } = await import("../../packages/builder-core/src/catalog/props-gate.ts");
 	const supported = core.catalogSnapshot.screens.filter((screen) => core.screenSupport(screen).supported && !screen.labels.section.includes("dashboard"));
 	assert.ok(supported.length >= 8, `supported screens: ${supported.length}`);
 	for (const screen of supported) {
-		const r = core.proposeLayout({ brief: "Create a page", screenId: screen.screenId, scenarioId: null, expectedRevision: 0, now: "2026-11-10T00:00:00.000Z" });
-		assert.equal(r.ok, true, screen.screenId);
-		if (!r.ok) continue;
-		assert.deepEqual(r.missing, [], screen.screenId);
-		const blocks = r.page.layout.blocks;
-		// Row kinds (dish, metric, ...) fill their section's rows instead of a block of their own.
-		const sections = screen.layout!.filter((slot) => !["dish", "metric", "feature", "nav-link", "activity-item"].includes(core.rendererKindForLabel(slot.block)!));
-		assert.deepEqual(blocks.map((block) => block.catalogBlock), sections.map((slot) => `block.${slot.block}`), screen.screenId);
-		for (const block of blocks) {
-			const render = core.organismFor(block);
-			assert.ok(render, `${screen.screenId} ${block.id} has a registry block`);
-			assert.deepEqual(validateRegistryProps(render!), [], `${screen.screenId} ${block.id} props`);
-			// List sections other than the page's own features rows start empty: nothing is invented.
-			if (block.kind === "features" && block.id !== "block-features") assert.equal(block.children, undefined, block.id);
+		const shown = core.screenItems(screen.screenId);
+		assert.deepEqual(shown.missing, [], screen.screenId);
+		const started = core.addScreen(core.emptyPage({ title: "Start", locale: "en", now: "2026-11-10T00:00:00.000Z" }), screen.screenId);
+		assert.ok(started.ok, `${screen.screenId}: ${JSON.stringify(!started.ok && started)}`);
+		if (!started.ok) continue;
+		// One header and one footer per page: a second header-like or footer-like block of the screen is reported as skipped.
+		assert.equal(started.page.blocks.length + started.skipped.length, shown.items.length, screen.screenId);
+		assert.deepEqual(started.page.blocks.map((block) => block.item), shown.items.map((entry) => entry.item).filter((_, index) => !started.skipped.includes(String(index)) && !started.skipped.includes(shown.items[index]!.item)), screen.screenId);
+		assert.ok(core.checkPageDoc(started.page).ok, screen.screenId);
+		for (const block of started.page.blocks) {
+			// A new block carries the registry sample props: structure only, no invented copy.
+			assert.ok(core.renderBlock(block), `${screen.screenId} ${block.id} has a registry block`);
+			assert.deepEqual((await import("../../packages/builder-core/src/catalog/provenance.ts")).validateItemProps(block.item, core.effectiveProps(block.item, block.variant, block.props)), [], `${screen.screenId} ${block.id} props`);
 		}
-	}
-	const studio = core.proposeLayout({ brief: "Create a page", screenId: "screen.theme-marketing-landing/studio", scenarioId: "website", expectedRevision: 0, now: "2026-11-10T00:00:00.000Z" });
-	assert.equal(studio.ok, true);
-	if (studio.ok) {
-		const items = studio.page.layout.blocks.map((block) => core.organismFor(block)?.item);
-		assert.ok(items.includes("logo-cloud") && items.includes("testimonial-grid"), items.join(","));
-		const logos = studio.page.layout.blocks.find((block) => block.catalogBlock === "block.logos")!;
-		assert.match(String(core.organismFor(logos)!.props.empty), /until the author supplies them/);
 	}
 });
 
@@ -163,15 +153,18 @@ test("ADR 0012 addendum: two codegen-x pins; Stock content descends from the reg
 	assert.equal(lock.codegenX.files["props.v0.json"].sha256, lock.ui8kit.files["props/v0.json"].sha256);
 });
 
-test("site type facet: Landing and Website seeds pick different fully rendered screens of their own site type", async () => {
+test("site type facet: a Landing and a Website search pick different screens of their own site type; every screen has one site type", async () => {
 	const core = await import("../../packages/builder-core/src/index.ts");
-	const tools = await import("../../packages/builder-core/src/tools.ts");
-	const landing = tools.scenarioCatalogContext("landing")!;
-	const website = tools.scenarioCatalogContext("website")!;
-	assert.ok(landing.pick && website.pick);
-	assert.notEqual(landing.pick!.screenId, website.pick!.screenId);
-	for (const [seed, site] of [[landing, "landing"], [website, "website"]] as const) {
-		const screen = core.catalogSnapshot.screens.find((s) => s.screenId === seed.pick!.screenId)!;
+	const first = (site: string) => {
+		const out = core.executeCatalogTool({ name: "search_catalog", arguments: { site } }, { mode: "build" });
+		assert.ok(out.ok);
+		return (out.result as { items: Array<{ screenId: string }> }).items[0]!.screenId;
+	};
+	const landing = first("landing");
+	const website = first("website");
+	assert.notEqual(landing, website);
+	for (const [id, site] of [[landing, "landing"], [website, "website"]] as const) {
+		const screen = core.catalogSnapshot.screens.find((s) => s.screenId === id)!;
 		assert.ok(screen.labels.site.includes(site), screen.screenId);
 		assert.equal(core.screenSupport(screen).supported, true, screen.screenId);
 	}

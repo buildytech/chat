@@ -11,9 +11,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { parsePage, type Page } from "../../packages/page-contract/src/index.ts";
-import { emptyPageStart, executeTool, inspectorOp, proposeLayout, registrySkins, SCENARIO_IDS, type LayoutProposal } from "../../packages/builder-core/src/index.ts";
-import { APP_FILE, registryItemsOf, stubAlertImport, svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
+import { type PageV2 } from "../../packages/page-contract/src/index.ts";
+import { addScreen, catalogSnapshot, emptyPage, migratePageV1, registrySkins, screenSupport, writePage } from "../../packages/builder-core/src/index.ts";
+import { APP_FILE, registryItemsOf, svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
 import {
 	buildStoreZip,
 	CLI_CONFIG,
@@ -28,7 +28,9 @@ import {
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const SNAPSHOT = path.join(ROOT, "registry/svelte");
 const NOW = "2026-11-09T00:00:00.000Z";
-const fixture = parsePage(JSON.parse(readFileSync(path.join(ROOT, "packages/page-contract/fixtures/north-harbor-kitchen.json"), "utf8")));
+/** The owner's fitness page (13.11), migrated 1.x -> 2.0: 8 registry blocks. */
+const fixture = migratePageV1(JSON.parse(readFileSync(path.join(ROOT, "scripts/m4-api-tests/fixtures/fitness-session-3933dbf.json"), "utf8")).sessions[0].page.applied).page;
+const SCENARIOS = ["dashboard", "landing", "website"] as const;
 
 /** Node stand-in for the browser's import.meta.glob reader: the pinned CLI snapshot on disk. */
 async function readSnapshot(paths: string[]): Promise<Record<string, string>> {
@@ -38,38 +40,45 @@ async function readSnapshot(paths: string[]): Promise<Record<string, string>> {
 type CompileFn = (source: string, options: { filename: string; generate: "client" }) => { js: { code: string } };
 const compile = createRequire(path.join(ROOT, "apps/chat-web/package.json"))("svelte/compiler").compile as CompileFn;
 
-function scenarioPage(id: string): Page {
-	const r = proposeLayout({ brief: `Create a ${id} for a bakery`, scenarioId: id as never, screenId: null, expectedRevision: 0, now: NOW });
+/** A page that starts from the first supported Stock screen of a kind: the page the chat starts from a screen. */
+function scenarioPage(id: string): PageV2 {
+	const screen = catalogSnapshot.screens.find((entry) => screenSupport(entry).supported && (id === "dashboard" ? entry.labels.section.includes("dashboard") : entry.labels.site.includes(id) && !entry.labels.section.includes("dashboard")));
+	assert.ok(screen, id);
+	const r = addScreen(emptyPage({ title: `A ${id} for a bakery`, locale: "en", now: NOW }), screen.screenId);
 	assert.ok(r.ok, `${id}: ${JSON.stringify(r)}`);
 	return r.page;
 }
 
-function featuresPage(variant: string): Page {
-	const result = executeTool(
+function featuresPage(variant: string): PageV2 {
+	const r = writePage(
+		emptyPage({ title: "Static site builder", locale: "en", now: NOW }),
 		{
-			name: "propose_layout",
-			arguments: {
-				brief: "Landing for a static site builder with a features grid",
-				screenId: "screen.site/home",
+			page: {
+				version: 2,
+				title: "Static site builder",
+				slug: "static-site-builder",
 				locale: "en",
 				blocks: [
 					{
-						kind: "features",
-						title: "Features of our service",
+						id: "block-features",
+						item: "feature-grid",
 						variant,
-						action: { label: "View all", href: "#/features" },
-						items: [
-							{ label: "Fast by default", detail: "Pages render from static data.", icon: "zap" },
-							{ label: "Clear structure", detail: "One heading per page.", icon: "layers" }
-						]
+						props: {
+							title: "Features of our service",
+							action: { label: "View all", href: "#/features" },
+							features: [
+								{ id: "f1", title: "Fast by default", text: "Pages render from static data.", icon: "zap" },
+								{ id: "f2", title: "Clear structure", text: "One heading per page.", icon: "layers" }
+							]
+						}
 					}
 				]
 			}
 		},
-		{ liveTurn: true, authorBrief: "Landing with features" }
+		{ now: NOW }
 	);
-	assert.equal(result.ok, true, JSON.stringify(result));
-	return (result.result as LayoutProposal).page;
+	assert.ok(r.ok, JSON.stringify(!r.ok && r.issues));
+	return r.page;
 }
 
 /** Every relative import of a .svelte/.ts file resolves to a file of the pack; bare imports are declared npm deps. */
@@ -100,26 +109,23 @@ test("Code: App.svelte lists one section per block; each section imports one reg
 	assert.equal(files[0]!.path, APP_FILE);
 	const section = files.find((file) => file.path.startsWith("src/sections/") && file.content.includes("feature-grid"))!;
 	assert.match(section.content, /import FeatureGrid from "\.\.\/blocks\/feature-grid\.svelte"/);
-	assert.match(section.content, /"cols": "1-4"|"cols": "1-2"|"cols": "1-3"/);
 	assert.match(section.content, /"icon": "zap"/);
 	assert.match(section.content, /"href": "#\/features"/);
+	assert.match(section.content, /"title": "Fast by default"/, "the props the page holds are the props the section passes");
 	assert.doesNotMatch(files.map((file) => file.content).join("\n"), /\$lib\/|\$ui\/|lib\/compose|"\$":/);
 	for (const file of files) assert.ok(compile(file.content, { filename: file.path, generate: "client" }).js.code.length > 0, file.path);
 });
 
-test("blocks without a registry item render the explicit stub (registry Alert), never a chat-made layout", () => {
+test("every block of a page is a registry block: one section file per block, no stub (the gate rejects an item without a renderer)", () => {
 	const files = sveltePackFiles(fixture);
 	const sections = files.filter((file) => file.path.startsWith("src/sections/"));
-	assert.equal(sections.length, fixture.layout.blocks.length);
-	for (const section of sections) {
-		assert.match(section.content, new RegExp(`import Alert from "${stubAlertImport().replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}"`));
-		assert.match(section.content, /data-slot="registry-stub"/);
-	}
-	assert.deepEqual(registryItemsOf(fixture), ["alert"]);
+	assert.equal(sections.length, fixture.blocks.length);
+	for (const section of sections) assert.doesNotMatch(section.content, /registry-stub|import Alert from/);
+	assert.ok(registryItemsOf(fixture).length >= 1 && !registryItemsOf(fixture).includes("alert"));
 });
 
 test("Landing, Website and Dashboard scenarios: every block is a registry block (0 stubs)", () => {
-	for (const id of SCENARIO_IDS) {
+	for (const id of SCENARIOS) {
 		const page = scenarioPage(id);
 		const stubs = sveltePackFiles(page).filter((file) => file.content.includes('data-slot="registry-stub"'));
 		assert.deepEqual(stubs.map((file) => file.path), [], id);
@@ -170,11 +176,10 @@ function unzipStore(bytes: Uint8Array): PackFile[] {
 	return out;
 }
 
-test("mixed ZIP (registry blocks + stub, with a skin) unzips and builds with vite, styles include dark, responsive and skin rules", async () => {
+test("ZIP (registry blocks, with a skin) unzips and builds with vite, styles include dark, responsive and skin rules", async () => {
 	const page = scenarioPage("landing");
-	const withStub: Page = { ...page, layout: { ...page.layout, blocks: [...page.layout.blocks, { ...fixture.layout.blocks[0]!, id: "block-legacy" }] } };
 	const skin = registrySkins()[0]!;
-	const entries = unzipStore(buildStoreZip(await packZipFiles(withStub, readSnapshot, { skin: skin.id })));
+	const entries = unzipStore(buildStoreZip(await packZipFiles(page, readSnapshot, { skin: skin.id })));
 	const dir = mkdtempSync(path.join(tmpdir(), "buildy-pack-"));
 	try {
 		for (const entry of entries) {
@@ -197,30 +202,27 @@ test("mixed ZIP (registry blocks + stub, with a skin) unzips and builds with vit
 	}
 });
 
-/** ADR 0024 empty start: Hero, Features and CTA added from the Blocks feed to an empty page, no header or footer. */
-function headerlessPage(): Page {
-	const start = emptyPageStart({ kind: "hero", title: "Spring promo", locale: "en", now: NOW })!;
-	let page = start.page;
-	let selected = "";
-	for (const [catalogBlock, variant] of [["block.hero", null], ["block.features", "grid2"], ["block.cta", null]] as const) {
-		const r = inspectorOp({ page, provenance: start.provenance, revision: 0, now: NOW }, { op: "add", blockId: selected, catalogBlock, variant });
-		assert.ok(r.ok, JSON.stringify(r));
-		page = r.page;
-		selected = r.blockId;
-	}
-	return page;
+/** A page without header or footer: Hero, Features and CTA written to an empty page. */
+function headerlessPage(): PageV2 {
+	const r = writePage(
+		emptyPage({ title: "Spring promo", locale: "en", now: NOW }),
+		{ page: { version: 2, title: "Spring promo", slug: "spring-promo", locale: "en", blocks: [{ item: "hero-classic", variant: "centered" }, { item: "feature-grid", variant: "grid2" }, { item: "cta-band", variant: "band" }] } },
+		{ now: NOW }
+	);
+	assert.ok(r.ok, JSON.stringify(!r.ok && r.issues));
+	return r.page;
 }
 
 test("headerless page (starts with Hero, no footer): ZIP and `npx ui8kit add` list carry only its sections and it builds with vite", async () => {
 	const page = headerlessPage();
-	assert.deepEqual(page.layout.blocks.map((node) => node.kind), ["hero", "features", "cta"]);
+	assert.deepEqual(page.blocks.map((block) => block.item), ["hero-classic", "feature-grid", "cta-band"]);
 	const items = registryItemsOf(page);
 	assert.ok(items.length >= 1 && !items.includes("alert"), `no stub: ${items.join(", ")}`);
 	assert.ok(!items.some((item) => /navbar|nav-bar|sitemap|footer/.test(item)), `no header or footer item: ${items.join(", ")}`);
 	const files = await packZipFiles(page, readSnapshot);
 	assertSelfContained("headerless", files);
 	const sections = files.filter((file) => file.path.startsWith("src/sections/"));
-	assert.equal(sections.length, page.layout.blocks.length, "one section file per block, nothing else");
+	assert.equal(sections.length, page.blocks.length, "one section file per block, nothing else");
 	const entries = unzipStore(buildStoreZip(files));
 	const dir = mkdtempSync(path.join(tmpdir(), "buildy-headerless-"));
 	try {
@@ -236,29 +238,24 @@ test("headerless page (starts with Hero, no footer): ZIP and `npx ui8kit add` li
 		rmSync(dir, { recursive: true, force: true });
 	}
 	// An empty page (undo back to the start) still packs to a valid, compiling project.
-	const empty = emptyPageStart({ title: "Empty", now: NOW })!.page;
+	const empty = emptyPage({ title: "Empty", now: NOW });
 	assertSelfContained("empty", await packZipFiles(empty, readSnapshot));
 });
 
-test("exported code carries no preview attributes; the stub imports Alert from the path `npx ui8kit add alert` writes", async () => {
+test("exported code carries no preview attributes; the pack lists only registry files and the sections", async () => {
 	const lock = JSON.parse(readFileSync(path.join(SNAPSHOT, "ui8kit.lock.json"), "utf8")) as { items: Record<string, { name: string; files: Record<string, string> }> };
-	const alertFiles = Object.values(lock.items).filter((item) => item.name === "alert").flatMap((item) => Object.keys(item.files));
-	assert.deepEqual(alertFiles.map((file) => `../${file.slice("src/".length)}`), [stubAlertImport()], "1:1 with the CLI install path");
 	const page = scenarioPage("landing");
-	const withStub: Page = { ...page, layout: { ...page.layout, blocks: [...page.layout.blocks, { ...fixture.layout.blocks[0]!, id: "block-legacy" }] } };
-	const files = await packZipFiles(withStub, readSnapshot);
+	const files = await packZipFiles(page, readSnapshot);
 	const registry = new Set(Object.values(lock.items).flatMap((item) => Object.keys(item.files)));
 	// BuildY-authored files: everything but the verbatim registry files and the CLI inventories (config, lock, manifest list real paths).
 	const inventories = new Set([CLI_CONFIG, CLI_LOCK, "manifest.json"]);
 	const generated = files.filter((file) => !registry.has(file.path) && !inventories.has(file.path));
-	assert.ok(generated.some((file) => file.path === "src/sections/block-legacy.svelte"), "the stub section is in the pack");
+	assert.ok(generated.some((file) => file.path.startsWith("src/sections/")), "the sections are generated");
 	for (const file of generated) {
 		for (const attr of ["data-block-id", "data-renderer", "data-registry-item", "data-variant"]) {
 			assert.ok(!file.content.includes(attr), `${file.path} carries the preview attribute ${attr}`);
 		}
-		// "compose/" may appear only as the CLI install path of a registry import, never as BuildY's own naming.
-		const leaks = file.content.split("\n").filter((line) => line.includes("compose/") && !line.includes(`from "${stubAlertImport()}"`));
-		assert.deepEqual(leaks, [], `${file.path} leaks compose naming`);
+		assert.doesNotMatch(file.content, /registry-stub/, file.path);
 	}
 	// Registry files are verbatim CLI output (their own data-variant on a component is UI8Kit, not a preview attribute).
 	for (const file of files.filter((f) => registry.has(f.path))) assert.ok(!/data-(block-id|renderer|registry-item)/.test(file.content), file.path);

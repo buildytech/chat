@@ -31,8 +31,8 @@ import {
 } from "../../apps/chat-web/src/lib/browser/session-file.ts";
 import { commitChange, nextRevision } from "../../apps/chat-web/src/lib/page-store/revision.ts";
 import { EditHistory } from "../../apps/chat-web/src/lib/inspector/history.ts";
-import { inspectorSetField, proposeLayout } from "../../packages/builder-core/src/index.ts";
-import type { Page } from "../../packages/page-contract/src/index.ts";
+import { addScreen, applyOp, emptyPage } from "../../packages/builder-core/src/index.ts";
+import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 import { SESSION_MAX_HISTORY, sessionDefIssues, sessionFileIssues, sessionSchema } from "../../packages/page-contract/src/session.ts";
 
 class MemoryStorage {
@@ -67,8 +67,8 @@ afterEach(() => {
 	useStorageForTests(store);
 });
 
-function landing(): Page {
-	const r = proposeLayout({ brief: "Landing for a coffee house", scenarioId: "landing", screenId: null, expectedRevision: 0, now: NOW, content: { locale: "en", blocks: [] } });
+function landing(): PageV2 {
+	const r = addScreen(emptyPage({ title: "Coffee house", locale: "en", now: NOW }), "screen.theme-marketing-landing/home");
 	assert.ok(r.ok, JSON.stringify(r));
 	return r.page;
 }
@@ -190,7 +190,7 @@ test("load: unreadable chats JSON is quarantined whole and the key starts empty"
 test("load: a page record the page-spec schema rejects is quarantined; valid records load", () => {
 	const page = landing();
 	const ok = { applied: page, candidate: null, selectedBlockId: null, revision: 2 };
-	const broken = { applied: { ...page, layout: { version: 2, blocks: [] } }, candidate: null, selectedBlockId: null, revision: 1 };
+	const broken = { applied: { ...page, blocks: "none" }, candidate: null, selectedBlockId: null, revision: 1 };
 	store.setItem(STORAGE_KEYS.pages, JSON.stringify({ version: 1, pages: { "session-a": ok, "session-b": broken } }));
 	const blob = loadPagesBlob();
 	assert.deepEqual(Object.keys(blob.pages), ["session-a"]);
@@ -229,7 +229,7 @@ test("export: a real chat with its page is a schema-valid buildy:v1 file with pi
 	assert.ok(parsed.ok, JSON.stringify(parsed));
 	const { chats, pages } = splitSessionFile(parsed.file);
 	assert.equal(chats[0]!.id, "session-a");
-	assert.equal((pages["session-a"]!.applied as Page).id, page.id);
+	assert.equal((pages["session-a"]!.applied as PageV2).id, page.id);
 	// Lab BuildY (lab-console importer.go) reads {"sessions":[{id,title,updatedAt,messages:[{id,role,text,createdAt,proposal,run}]}]}.
 	const lab = JSON.parse(JSON.stringify(file)) as { sessions: { id: string; title: string; updatedAt: string; messages: { id: string; role: string; text: string; createdAt: string; run?: { modelId: string } }[] }[] };
 	assert.equal(lab.sessions[0]!.messages[1]!.run?.modelId, "grok-4");
@@ -357,9 +357,10 @@ test("revisions: undo is a committed change (next revision); edits of a pending 
 
 test("revisions: an unchanged value is a no-op (same page object, so no step and no revision)", () => {
 	const page = landing();
-	const first = inspectorSetField(page, "block-hero", "/title", "Fresh coffee", NOW);
-	assert.ok(first.ok);
-	const again = inspectorSetField(first.page, "block-hero", "/title", "Fresh coffee", NOW);
+	const hero = page.blocks.find((block) => block.item === "hero-classic")!;
+	const first = applyOp(page, { op: "set", blockId: hero.id, pointer: "/title", value: "Fresh coffee" });
+	assert.ok(first.ok, JSON.stringify(first));
+	const again = applyOp(first.page, { op: "set", blockId: hero.id, pointer: "/title", value: "Fresh coffee" });
 	assert.ok(again.ok);
 	assert.equal(again.page, first.page);
 	const store = readFileSync(new URL("../../apps/chat-web/src/lib/inspector/inspector.svelte.ts", import.meta.url), "utf8");

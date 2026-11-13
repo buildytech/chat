@@ -61,7 +61,7 @@ test("clean mode hides service labels in Preview, keeps Apply / Discard", () => 
 });
 
 test("Apply / Discard on a chat proposal card reach the session (were unwired)", () => {
-	const message = web("app/ChatMessage.svelte");
+	const message = web("app/ProposalDiff.svelte");
 	assert.match(message, /onclick=\{\(\) => \(onApply \? onApply\(\) : applyProposal\(\)\)\}/);
 	assert.match(message, /onclick=\{\(\) => \(onDiscard \? onDiscard\(\) : discardProposal\(\)\)\}/);
 });

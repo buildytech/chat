@@ -59,14 +59,13 @@ test("each text model maps to itself on the run request", () => {
 	for (const id of PARENT_VERIFIED_CHAT_IDS) {
 		if (!modelRunsToolLoop(getChatModel(id))) continue;
 		const mapped = mapChatRunRequest(
-			{ modelId: id, brief: "same general scenario", scenarioId: "landing" },
+			{ modelId: id, brief: "same general scenario" },
 			{ discoveredChatIds: discovered }
 		);
 		assert.equal(mapped.ok, true);
 		if (mapped.ok) {
 			assert.equal(mapped.request.modelId, id);
 			assert.equal(mapped.request.brief, "same general scenario");
-			assert.equal(mapped.request.scenarioId, "landing");
 			assert.equal(mapped.request.live, true);
 		}
 	}

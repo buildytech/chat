@@ -73,26 +73,28 @@ export function askBlockCards(ids: readonly unknown[] | undefined): AskBlockCard
 	return out;
 }
 
-export type BlockRead =
-	| {
-			ok: true;
-			item: string;
-			title: string;
-			install: string;
-			role: "header" | "footer" | "section";
-			defaultVariant: string;
-			variants: string[];
-			/** What each variant sets apart from the default (layout axes). */
-			variantSets: Record<string, string>;
-			/** The props of the item: names, kinds, enums, rows. Write exactly these. */
-			props: string[];
-			/** What a new block of the default variant starts with (no invented copy). */
-			sample: Record<string, unknown>;
-			icons: string;
-			stockUrl?: string | null;
-			thumb?: string | null;
-	  }
-	| { ok: false; code: "unknown_item"; message: string; near: string[] };
+export type BlockReadOk = {
+	ok: true;
+	item: string;
+	title: string;
+	install: string;
+	role: "header" | "footer" | "section";
+	defaultVariant: string;
+	variants: string[];
+	/** What each variant sets apart from the default (layout axes). */
+	variantSets: Record<string, string>;
+	/** The props of the item: names, kinds, enums, rows. Write exactly these. */
+	props: string[];
+	/** What a new block of the default variant starts with (no invented copy). */
+	sample: Record<string, unknown>;
+	icons: string;
+	stockUrl?: string | null;
+	thumb?: string | null;
+};
+
+export type BlockReadUnknown = { ok: false; code: "unknown_item"; message: string; near: string[] };
+
+export type BlockRead = BlockReadOk | BlockReadUnknown;
 
 /** get_block: one registry item as the agent needs it to write its props. */
 export function readBlock(id: unknown, variant?: unknown): BlockRead {

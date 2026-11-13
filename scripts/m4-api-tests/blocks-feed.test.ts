@@ -5,23 +5,16 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import {
-	canAddCatalogBlock,
-	catalogSnapshot,
-	inspectorOp,
-	proposeLayout,
-	STOCK_SEARCH_FORMAT,
-	stockSearch
-} from "../../packages/builder-core/src/index.ts";
+import { addScreen, applyOp, catalogSnapshot, checkAdd, checkPageDoc, emptyPage, STOCK_SEARCH_FORMAT, stockSearch } from "../../packages/builder-core/src/index.ts";
 import { FEED_PAGE_SIZE, defaultFeedPrefs, loadFeedPrefs, parseFeedPrefs, saveFeedPrefs } from "../../apps/chat-web/src/lib/feed/prefs.ts";
 import { STORAGE_KEYS } from "../../apps/chat-web/src/lib/browser/storage-v1.ts";
 
 const web = (path: string) => readFileSync(new URL(`../../apps/chat-web/src/${path}`, import.meta.url), "utf8");
 
 function sitePage() {
-	const made = proposeLayout({ brief: "Bakery site", scenarioId: null, screenId: "screen.site/home", expectedRevision: 0, now: "2026-11-11T00:00:00.000Z", content: { locale: "en", blocks: [] } });
+	const made = addScreen(emptyPage({ title: "Bakery site", locale: "en", now: "2026-11-11T00:00:00.000Z" }), "screen.site/home");
 	if (!made.ok) throw new Error(made.code);
-	return { page: made.page, provenance: { screenId: "screen.site/home", scenarioId: null } };
+	return made.page;
 }
 
 test("stockSearch: one JSON format over every Stock block variant and screen", () => {
@@ -70,44 +63,41 @@ test("stockSearch type=screen scopes by section; the chat home no longer lists s
 	const ids = new Set(catalogSnapshot.screens.filter((s) => s.labels.section.includes("dashboard")).map((s) => s.screenId));
 	assert.ok(scoped.items.every((item) => ids.has(item.id)));
 	assert.doesNotMatch(web("lib/browser/onboarding.svelte.ts"), /stockSearch|selectScenario|attachScreen/);
-	assert.match(web("lib/feed/feed.svelte.ts"), /stockSearch\(\{ q, \.\.\.filters, page, pageSize: FEED_PAGE_SIZE, boostRoles: family \? familyKinds\(family\) : null \}\)/);
+	assert.match(web("lib/feed/feed.svelte.ts"), /stockSearch\(\{ q, \.\.\.filters, page, pageSize: FEED_PAGE_SIZE, boostRoles/);
 });
 
 test("Blocks feed add: after the selected section or at the end, every gate, no model call", () => {
-	const { page, provenance } = sitePage();
-	const ctx = { page, provenance, revision: 1, now: "2026-11-11T00:00:01.000Z" };
-	const after = inspectorOp(ctx, { op: "add", blockId: "block-hero", catalogBlock: "block.features", variant: "grid2" });
+	const page = sitePage();
+	const hero = page.blocks.find((block) => block.item.startsWith("hero"))!;
+	const heroAt = page.blocks.indexOf(hero);
+	const before = JSON.stringify(page);
+	const check = checkAdd("block.features", "grid2");
+	assert.ok(check.ok, JSON.stringify(check));
+	const after = applyOp(page, { op: "add", item: check.item, variant: check.variant, at: heroAt + 1 });
 	assert.ok(after.ok, JSON.stringify(after));
-	const blocks = after.page.layout.blocks;
-	const index = blocks.findIndex((node) => node.id === after.blockId);
-	assert.equal(blocks[index - 1]!.id, "block-hero");
-	assert.equal(blocks[index]!.catalogBlock, "block.features");
-	assert.equal(blocks[index]!.variant, "grid2");
-	assert.equal(new Set(blocks.map((node) => node.id)).size, blocks.length, "ids stay unique");
-	const end = inspectorOp(ctx, { op: "add", blockId: "", catalogBlock: "block.featureshowcase", variant: null });
+	const index = after.page.blocks.findIndex((block) => block.id === after.blockId);
+	assert.equal(index, heroAt + 1);
+	assert.equal(after.page.blocks[index]!.item, check.item);
+	assert.equal(after.page.blocks[index]!.variant, "grid2");
+	assert.equal(new Set(after.page.blocks.map((block) => block.id)).size, after.page.blocks.length, "ids stay unique");
+	const end = applyOp(page, { op: "add", item: "feature-grid", variant: "grid" });
 	assert.ok(end.ok);
-	assert.equal(end.page.layout.blocks.at(-1)!.catalogBlock, "block.featureshowcase");
-	assert.equal(page.layout.blocks.length, 5, "the base page is never modified");
-	// The reasons the feed shows on a disabled "+".
-	// No page yet: the first block starts an empty page on a default Stock screen (ADR 0024 empty start).
-	const start = canAddCatalogBlock({ page: null, provenance: null }, "block.hero", null);
-	assert.ok(start.ok && start.startScreenId === "screen.theme-marketing-landing/home", JSON.stringify(start));
-	const check = (spec: string, variant: string | null = null) => {
-		const r = canAddCatalogBlock({ page, provenance }, spec, variant);
+	assert.ok(end.page.blocks.some((block) => block.id === end.blockId) && checkPageDoc(end.page).ok, "the block is in and header first / footer last still hold");
+	assert.equal(JSON.stringify(page), before, "the base page is never modified");
+	// The reasons the feed shows on a disabled "+": the registry has no renderer for the block, or no such variant.
+	const reason = (spec: string, variant: string | null = null) => {
+		const r = checkAdd(spec, variant);
 		return r.ok ? "ok" : r.code;
 	};
-	// ADR 0027: the screen family never rejects a block that has a renderer.
-	assert.equal(check("block.metrics"), "ok");
-	assert.equal(check("block.about"), "not_a_page_block");
-	assert.equal(check("block.features", "nosuch"), "unknown_variant");
-	assert.equal(canAddCatalogBlock({ page, provenance: null }, "block.hero", null).ok ? "ok" : "no_screen", "no_screen");
-	const mixed = inspectorOp(ctx, { op: "add", blockId: "", catalogBlock: "block.metrics" });
-	assert.ok(mixed.ok, JSON.stringify(mixed));
-	// Every block the feed offers as addable on this page passes the full gate.
+	assert.equal(reason("block.metrics"), "ok");
+	assert.equal(reason("block.nosuchblock"), "unknown_block");
+	assert.equal(reason("block.features", "nosuch"), "unknown_variant");
+	// Every block the feed offers as addable passes the full gate with its registry sample props.
 	for (let n = 1; n <= stockSearch({ type: "block", pageSize: 48 }).pageCount; n += 1) {
 		for (const item of stockSearch({ type: "block", page: n, pageSize: 48 }).items) {
-			if (!canAddCatalogBlock({ page, provenance }, item.spec, item.variant).ok) continue;
-			const done = inspectorOp(ctx, { op: "add", blockId: "", catalogBlock: item.spec, variant: item.variant });
+			const addable = checkAdd(item.spec, item.variant);
+			if (!addable.ok) continue;
+			const done = applyOp(page, { op: "add", item: addable.item, variant: addable.variant });
 			assert.ok(done.ok, `${item.id}: ${done.ok ? "" : done.message}`);
 		}
 	}
