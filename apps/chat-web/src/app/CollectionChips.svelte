@@ -3,8 +3,7 @@
   items as removable chips above the composer (Build uses only these blocks) and one note for the skipped ones.
 -->
 <script lang="ts">
-	import Layers from "@lucide/svelte/icons/layers";
-	import X from "@lucide/svelte/icons/x";
+import { Layers, X } from "$lib/shell-icons";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";

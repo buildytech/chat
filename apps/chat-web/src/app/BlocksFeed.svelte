@@ -5,10 +5,7 @@
   add operation after the selected section or at the end, gated, one undo step, no model call.
 -->
 <script lang="ts">
-	import Columns2 from "@lucide/svelte/icons/columns-2";
-	import Rows3 from "@lucide/svelte/icons/rows-3";
-	import ChevronLeft from "@lucide/svelte/icons/chevron-left";
-	import ChevronRight from "@lucide/svelte/icons/chevron-right";
+import { Columns2, Rows3, ChevronLeft, ChevronRight } from "$lib/shell-icons";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
  import Block from "$registry/compose/Block.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";

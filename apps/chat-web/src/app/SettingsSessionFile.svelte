@@ -4,8 +4,7 @@
   lists the stored values that failed their checks at load: kept, never loaded, downloadable as JSON.
 -->
 <script lang="ts">
-	import Download from "@lucide/svelte/icons/download";
-	import Upload from "@lucide/svelte/icons/upload";
+import { Download, Upload } from "$lib/shell-icons";
 	import Disclosure from "$registry/compose/Disclosure.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";

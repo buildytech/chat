@@ -1,7 +1,5 @@
 <script lang="ts">
-	import Copy from "@lucide/svelte/icons/copy";
-	import Check from "@lucide/svelte/icons/check";
-	import ExternalLink from "@lucide/svelte/icons/external-link";
+import { Copy, Check, ExternalLink } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";

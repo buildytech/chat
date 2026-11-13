@@ -5,14 +5,7 @@
   honest stub; no field is invented.
 -->
 <script lang="ts">
-	import ArrowDown from "@lucide/svelte/icons/arrow-down";
-	import ArrowUp from "@lucide/svelte/icons/arrow-up";
-	import Copy from "@lucide/svelte/icons/copy";
-	import Redo2 from "@lucide/svelte/icons/redo-2";
-	import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
-	import Trash2 from "@lucide/svelte/icons/trash-2";
-	import SlidersHorizontal from "@lucide/svelte/icons/sliders-horizontal";
-	import Undo2 from "@lucide/svelte/icons/undo-2";
+import { ArrowDown, ArrowUp, Copy, Redo2, RotateCcw, Trash2, SlidersHorizontal, Undo2 } from "$lib/shell-icons";
 	import { onMount } from "svelte";
 	import Alert from "$registry/compose/Alert.svelte";
 	import Badge from "$registry/compose/Badge.svelte";

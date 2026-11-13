@@ -7,9 +7,7 @@
   supported flag) and the current page's hard rules; nothing is cached from the first result page.
 -->
 <script lang="ts">
-	import ExternalLink from "@lucide/svelte/icons/external-link";
-	import FilePlus from "@lucide/svelte/icons/file-plus";
-	import Plus from "@lucide/svelte/icons/plus";
+import { ExternalLink, FilePlus, Plus } from "$lib/shell-icons";
 	import Button from "$registry/compose/Button.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Link from "$registry/kit/ui/link/Link.svelte";

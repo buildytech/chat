@@ -1,13 +1,5 @@
 <script lang="ts">
-	import Boxes from "@lucide/svelte/icons/boxes";
-	import ChevronDown from "@lucide/svelte/icons/chevron-down";
-	import ChevronUp from "@lucide/svelte/icons/chevron-up";
-	import Circle from "@lucide/svelte/icons/circle";
-	import X from "@lucide/svelte/icons/x";
-	import Search from "@lucide/svelte/icons/search";
-	import Settings from "@lucide/svelte/icons/settings";
-	import Trash2 from "@lucide/svelte/icons/trash-2";
-	import MessageSquarePlus from "@lucide/svelte/icons/message-square-plus";
+import { SquareRoundedLetterB, ChevronDown, ChevronUp, Circle, X, Search, Settings, Trash2, MessageSquarePlus } from "$lib/shell-icons";
 	import { tick, type Component } from "svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -170,8 +162,8 @@
 >
 	<Group class="h-10 shrink-0 items-center justify-between gap-2 border-b border-sidebar-border px-2 in-data-[nav=collapsed]:justify-center">
 		<Group class="min-w-0 items-center gap-2 in-data-[nav=collapsed]:hidden">
-			<Icon size="sm"><Boxes /></Icon>
-			<Text tag="span" class="truncate text-sm font-semibold">{t("sidebar.brand")}</Text>
+			<Icon size="lg"><SquareRoundedLetterB /></Icon>
+			<Text tag="span" data-slot="brand-word" class="truncate text-sm font-medium">{t("sidebar.brand")}</Text>
 		</Group>
 		<Group class="items-center gap-0">
 			<Button

@@ -6,7 +6,7 @@
   validation and undo are the inspector's own (InspectorPanel).
 -->
 <script lang="ts">
-	import X from "@lucide/svelte/icons/x";
+import { X } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Button from "$registry/compose/Button.svelte";
 	import Group from "$registry/compose/Group.svelte";

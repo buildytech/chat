@@ -1,7 +1,5 @@
 <script lang="ts">
-	import Blocks from "@lucide/svelte/icons/blocks";
-	import ListTree from "@lucide/svelte/icons/list-tree";
-	import MessageSquare from "@lucide/svelte/icons/message-square";
+import { Blocks, ListTree, MessageSquare } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";

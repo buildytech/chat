@@ -6,11 +6,7 @@
   applies to the preview site and its export only, never to the chat UI.
 -->
 <script lang="ts">
-	import Check from "@lucide/svelte/icons/check";
-	import Download from "@lucide/svelte/icons/download";
-	import FileUp from "@lucide/svelte/icons/file-up";
-	import Trash2 from "@lucide/svelte/icons/trash-2";
-	import Upload from "@lucide/svelte/icons/upload";
+import { Check, Download, FileUp, Trash2, Upload } from "$lib/shell-icons";
 	import Group from "$registry/compose/Group.svelte";
 	import Label from "$registry/compose/Label.svelte";
 	import Stack from "$registry/compose/Stack.svelte";

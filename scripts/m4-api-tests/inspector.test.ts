@@ -468,7 +468,8 @@ test("P0 ui: locked controls are muted, aria-readonly, with a lock icon; axis se
 	const view = web("app/InspectorFields.svelte");
 	assert.match(view, /aria-readonly=\{canEdit \? undefined : "true"\}/);
 	assert.match(view, /class=\{canEdit \? undefined : LOCKED_CONTROL\}/);
-	assert.match(view, /@lucide\/svelte\/icons\/lock/);
+	assert.match(view, /\$lib\/shell-icons/);
+	assert.match(view, /\bLock\b/);
 	assert.match(view, /handlers\?\.onvariant\?\.\(action\.variant\)/);
 	assert.match(LOCKED_CONTROL, /cursor-not-allowed/);
 	assert.match(LOCKED_CONTROL, /bg-muted/);

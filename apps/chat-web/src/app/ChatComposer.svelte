@@ -2,8 +2,7 @@
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
  import { blockScope } from "$lib/chat-core/block-scope.svelte";
  import { getSelectedSession } from "$lib/chat-core";
- import ArrowUp from "@lucide/svelte/icons/arrow-up";
-	import X from "@lucide/svelte/icons/x";
+	import { Send, X, Check, ChevronDown } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
@@ -15,8 +14,6 @@
 	import Textarea from "$registry/kit/ui/textarea/Textarea.svelte";
 	import Disclosure from "$registry/kit/ui/disclosure/Disclosure.svelte";
 	import Summary from "$registry/compose/Summary.svelte";
-	import Check from "@lucide/svelte/icons/check";
-	import ChevronDown from "@lucide/svelte/icons/chevron-down";
 	import CollectionChips from "./CollectionChips.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
@@ -165,14 +162,14 @@
  </Group>
  </Stack>
  {/if}
-		<Stack align="stretch" class="gap-2 rounded border border-input bg-card p-2" data-slot="composer-surface">
+		<Stack align="stretch" class="gap-2 rounded border border-input bg-card p-1" data-slot="composer-surface">
 			<Label for="composer" class="sr-only">{t("composer.label")}</Label>
 			<Textarea
 				id="composer"
 				name="message"
 				rows="3"
 				placeholder={fieldPlaceholder}
-				class="min-h-16 w-full resize-none overflow-y-auto rounded border-0 bg-transparent px-2 py-2 text-sm leading-5 text-foreground shadow-none outline-none"
+				class="min-h-16 w-full resize-none overflow-y-auto rounded border-0 bg-transparent px-2 py-2 text-xs leading-4 text-foreground shadow-none outline-none"
 				value={draft}
 				aria-describedby="composer-hint"
 				oninput={(event: Event) => (draft = (event.currentTarget as HTMLTextAreaElement).value)}
@@ -193,7 +190,7 @@
 					<Button
 						id="composer-mode-trigger"
 						type="button"
-						class="inline-flex h-8 w-fit items-center gap-1 rounded px-2 text-xs text-foreground hover:bg-accent"
+						class="inline-flex h-6 w-fit items-center gap-1 rounded px-2 text-xs text-foreground hover:bg-accent"
 						aria-label={t("composer.modeLabel")}
 						title={t(`composer.mode.${mode}.hint`)}
 						expanded={modeOpen}
@@ -214,7 +211,7 @@
 					<Button
 						id="composer-model-trigger"
 						type="button"
-						class="inline-flex h-8 min-w-24 flex-1 items-center justify-start gap-1 rounded px-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+						class="inline-flex h-6 w-fit shrink-0 items-center justify-start gap-1 rounded px-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
 						aria-label={t("composer.model")}
 						title={modelButtonLabel}
 						expanded={modelOpen}
@@ -231,7 +228,7 @@
 							);
 						}}
 					>
-						<Text tag="span" class="truncate">{modelButtonLabel}</Text><Icon size="sm"><ChevronDown /></Icon>
+						<Text tag="span">{modelButtonLabel}</Text><Icon size="sm"><ChevronDown /></Icon>
 					</Button>
 				</Group>
 				<Group class="shrink-0 items-center gap-2">
@@ -247,12 +244,12 @@
 							type="submit"
 							disabled={cannotSend}
 							class={cn(
-								"inline-flex size-8 items-center justify-center rounded-full disabled:opacity-50",
+								"inline-flex size-7 items-center justify-center rounded-full disabled:opacity-50",
 								mode === "ask"
 									? "bg-chart-2 text-background hover:bg-chart-2/90"
 									: "bg-foreground text-background hover:bg-foreground/90",
 							)}
-							aria-label={t("composer.send")}><Icon size="sm"><ArrowUp /></Icon></Button
+							aria-label={t("composer.send")}><Icon><Send /></Icon></Button
 						>
 					{/if}
 				</Group>

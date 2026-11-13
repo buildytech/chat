@@ -9,12 +9,7 @@
 
 <script lang="ts">
 	import Box from "$registry/kit/ui/box/Box.svelte";
-	import ChevronDown from "@lucide/svelte/icons/chevron-down";
-	import ChevronRight from "@lucide/svelte/icons/chevron-right";
-	import FileCode from "@lucide/svelte/icons/file-code";
-	import Files from "@lucide/svelte/icons/files";
-	import PanelLeft from "@lucide/svelte/icons/panel-left";
-	import Search from "@lucide/svelte/icons/search";
+import { ChevronDown, ChevronRight, FileCode, Files, PanelLeft, Search } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";

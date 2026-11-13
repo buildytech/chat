@@ -1,12 +1,6 @@
 <script lang="ts">
 	import { base } from "$app/paths";
-	import ArrowLeft from "@lucide/svelte/icons/arrow-left";
-	import ArrowRight from "@lucide/svelte/icons/arrow-right";
-	import ExternalLink from "@lucide/svelte/icons/external-link";
-	import Monitor from "@lucide/svelte/icons/monitor";
-	import RefreshCw from "@lucide/svelte/icons/refresh-cw";
-	import Smartphone from "@lucide/svelte/icons/smartphone";
-	import Tablet from "@lucide/svelte/icons/tablet";
+import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Tablet } from "$lib/shell-icons";
 	import { mount, unmount } from "svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";

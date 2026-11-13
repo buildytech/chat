@@ -4,9 +4,7 @@
   screen has sections BuildY cannot render, that note.
 -->
 <script lang="ts">
-	import Check from "@lucide/svelte/icons/check";
-	import ExternalLink from "@lucide/svelte/icons/external-link";
-	import Paperclip from "@lucide/svelte/icons/paperclip";
+import { Check, ExternalLink, Paperclip } from "$lib/shell-icons";
 	import Button from "$registry/compose/Button.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";

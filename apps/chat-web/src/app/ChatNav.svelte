@@ -1,8 +1,5 @@
 <script lang="ts">
-	import Menu from "@lucide/svelte/icons/menu";
-	import Moon from "@lucide/svelte/icons/moon";
-	import Sun from "@lucide/svelte/icons/sun";
-	import X from "@lucide/svelte/icons/x";
+import { Menu, Moon, Sun, X } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";

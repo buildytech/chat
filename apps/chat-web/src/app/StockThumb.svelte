@@ -4,7 +4,7 @@
   `bleed`: edge-to-edge media of a card (no own radius or frame; the card clips it, a divider class may be passed).
 -->
 <script lang="ts">
-	import ImageOff from "@lucide/svelte/icons/image-off";
+import { ImageOff } from "$lib/shell-icons";
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Image from "$registry/compose/Image.svelte";

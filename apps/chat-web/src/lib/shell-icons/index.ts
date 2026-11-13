@@ -1,0 +1,64 @@
+/**
+ * BuildY shell icons. Tabler Icons 3.51.0, MIT.
+ * Only the glyphs this shell uses. Page blocks stay on Lucide.
+ * A name without "-filled" is the outline glyph: Tabler has no filled drawing for it.
+ */
+export { default as ArrowUp } from "./arrow-big-up-filled.svelte";
+export { default as ArrowDown } from "./arrow-big-down-filled.svelte";
+export { default as ArrowLeft } from "./arrow-big-left-filled.svelte";
+export { default as ArrowRight } from "./arrow-big-right-filled.svelte";
+export { default as Send } from "./send-filled.svelte";
+export { default as X } from "./x-filled.svelte";
+export { default as Check } from "./check-filled.svelte";
+export { default as ChevronDown } from "./caret-down-filled.svelte";
+export { default as ChevronUp } from "./caret-up-filled.svelte";
+export { default as ChevronLeft } from "./caret-left-filled.svelte";
+export { default as ChevronRight } from "./caret-right-filled.svelte";
+export { default as SquareRoundedLetterB } from "./square-rounded-letter-b-filled.svelte";
+export { default as Circle } from "./circle-filled.svelte";
+export { default as Search } from "./search-filled.svelte";
+export { default as Settings } from "./settings-filled.svelte";
+export { default as Trash2 } from "./trash-filled.svelte";
+export { default as MessageSquarePlus } from "./message-filled.svelte";
+export { default as ExternalLink } from "./external-link-filled.svelte";
+export { default as Monitor } from "./device-desktop-filled.svelte";
+export { default as RefreshCw } from "./refresh.svelte";
+export { default as Smartphone } from "./device-mobile-filled.svelte";
+export { default as Tablet } from "./device-tablet-filled.svelte";
+export { default as Columns2 } from "./columns-2-filled.svelte";
+export { default as Rows3 } from "./layout-list-filled.svelte";
+export { default as Blocks } from "./apps-filled.svelte";
+export { default as ListTree } from "./list-filled.svelte";
+export { default as MessageSquare } from "./message-filled.svelte";
+export { default as GripVertical } from "./grip-vertical.svelte";
+export { default as Redo2 } from "./arrow-forward-up.svelte";
+export { default as Undo2 } from "./arrow-back-up.svelte";
+export { default as FileCode } from "./file-code-filled.svelte";
+export { default as Files } from "./files-filled.svelte";
+export { default as PanelLeft } from "./layout-sidebar-filled.svelte";
+export { default as Copy } from "./copy-filled.svelte";
+export { default as Maximize2 } from "./zoom-in-filled.svelte";
+export { default as Minimize2 } from "./zoom-out-filled.svelte";
+export { default as PanelRight } from "./layout-sidebar-right-filled.svelte";
+export { default as FolderArchive } from "./archive-filled.svelte";
+export { default as PanelLeftOpen } from "./layout-sidebar-left-expand-filled.svelte";
+export { default as PanelLeftClose } from "./layout-sidebar-left-collapse-filled.svelte";
+export { default as RotateCcw } from "./rotate.svelte";
+export { default as SlidersHorizontal } from "./adjustments-horizontal-filled.svelte";
+export { default as FileText } from "./file-text-filled.svelte";
+export { default as Pencil } from "./pencil-filled.svelte";
+export { default as Share2 } from "./share.svelte";
+export { default as ThumbsDown } from "./thumb-down-filled.svelte";
+export { default as ThumbsUp } from "./thumb-up-filled.svelte";
+export { default as FilePlus } from "./copy-plus-filled.svelte";
+export { default as Plus } from "./plus-filled.svelte";
+export { default as Layers } from "./stack-2-filled.svelte";
+export { default as Paperclip } from "./paperclip.svelte";
+export { default as Download } from "./download-filled.svelte";
+export { default as Upload } from "./file-upload-filled.svelte";
+export { default as FileUp } from "./file-upload-filled.svelte";
+export { default as ImageOff } from "./photo-off.svelte";
+export { default as Menu } from "./menu-2-filled.svelte";
+export { default as Moon } from "./moon-filled.svelte";
+export { default as Sun } from "./sun-filled.svelte";
+export { default as Lock } from "./lock-filled.svelte";

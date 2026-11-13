@@ -9,12 +9,7 @@
   drops between rows through the same add operation as "+" (ADR 0024 step C).
 -->
 <script lang="ts">
-	import ArrowDown from "@lucide/svelte/icons/arrow-down";
-	import ArrowUp from "@lucide/svelte/icons/arrow-up";
-	import GripVertical from "@lucide/svelte/icons/grip-vertical";
-	import Redo2 from "@lucide/svelte/icons/redo-2";
-	import Trash2 from "@lucide/svelte/icons/trash-2";
-	import Undo2 from "@lucide/svelte/icons/undo-2";
+import { ArrowDown, ArrowUp, GripVertical, Redo2, Trash2, Undo2 } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Badge from "$registry/compose/Badge.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";

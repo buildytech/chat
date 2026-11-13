@@ -1,7 +1,5 @@
 <script lang="ts">
-	import FolderArchive from "@lucide/svelte/icons/folder-archive";
-	import PanelLeftOpen from "@lucide/svelte/icons/panel-left-open";
-	import PanelLeftClose from "@lucide/svelte/icons/panel-left-close";
+import { FolderArchive, PanelLeftOpen, PanelLeftClose } from "$lib/shell-icons";
 	import Group from "$registry/compose/Group.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";

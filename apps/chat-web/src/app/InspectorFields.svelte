@@ -8,12 +8,7 @@
   in a field selects it on the canvas (ADR 0021): the overlay outlines where the preview shows it.
 -->
 <script lang="ts">
-	import ArrowDown from "@lucide/svelte/icons/arrow-down";
-	import ArrowUp from "@lucide/svelte/icons/arrow-up";
-	import Copy from "@lucide/svelte/icons/copy";
-	import Lock from "@lucide/svelte/icons/lock";
-	import Plus from "@lucide/svelte/icons/plus";
-	import Trash2 from "@lucide/svelte/icons/trash-2";
+import { ArrowDown, ArrowUp, Copy, Lock, Plus, Trash2 } from "$lib/shell-icons";
 	import Box from "$registry/compose/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";
 	import Checkbox from "$registry/compose/Checkbox.svelte";

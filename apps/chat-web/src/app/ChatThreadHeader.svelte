@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Moon from "@lucide/svelte/icons/moon";
-	import Sun from "@lucide/svelte/icons/sun";
+import { Moon, Sun } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";

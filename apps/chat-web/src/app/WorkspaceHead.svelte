@@ -4,10 +4,7 @@
 -->
 <script lang="ts">
 	import Box from "$registry/kit/ui/box/Box.svelte";
-	import Maximize2 from "@lucide/svelte/icons/maximize-2";
-	import Minimize2 from "@lucide/svelte/icons/minimize-2";
-	import PanelLeft from "@lucide/svelte/icons/panel-left";
-	import PanelRight from "@lucide/svelte/icons/panel-right";
+import { Maximize2, Minimize2, PanelLeft, PanelRight } from "$lib/shell-icons";
 	import Button from "$registry/compose/Button.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";

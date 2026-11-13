@@ -2,11 +2,7 @@
 <script lang="ts">
 	import { packSkinOptions } from "$lib/theme/custom-skin.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
-	import ChevronLeft from "@lucide/svelte/icons/chevron-left";
-	import Copy from "@lucide/svelte/icons/copy";
-	import FileCode from "@lucide/svelte/icons/file-code";
-	import Files from "@lucide/svelte/icons/files";
-	import X from "@lucide/svelte/icons/x";
+import { ChevronLeft, Copy, FileCode, Files, X } from "$lib/shell-icons";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
  import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";

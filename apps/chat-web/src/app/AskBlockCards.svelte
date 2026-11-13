@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
- import ExternalLink from "@lucide/svelte/icons/external-link";
+	import { ExternalLink } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Stack from "$registry/compose/Stack.svelte";

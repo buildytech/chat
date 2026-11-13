@@ -1,11 +1,5 @@
 <script lang="ts">
-	import Copy from "@lucide/svelte/icons/copy";
-	import Check from "@lucide/svelte/icons/check";
-	import FileText from "@lucide/svelte/icons/file-text";
-	import Pencil from "@lucide/svelte/icons/pencil";
-	import Share2 from "@lucide/svelte/icons/share-2";
-	import ThumbsDown from "@lucide/svelte/icons/thumbs-down";
-	import ThumbsUp from "@lucide/svelte/icons/thumbs-up";
+import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$lib/shell-icons";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
  import Block from "$registry/compose/Block.svelte";
 	import Disclosure from "$registry/kit/ui/disclosure/Disclosure.svelte";
@@ -135,7 +129,7 @@
 					</Group>
 				</Group>
 				<Box class="rounded bg-muted px-3 py-2 text-foreground">
-					<Text tag="p" class="break-words text-sm leading-relaxed whitespace-pre-wrap">{message.text}</Text>
+					<Text tag="p" class="break-words text-xs leading-4 whitespace-pre-wrap">{message.text}</Text>
 				</Box>
 			</Stack>
 		</Group>

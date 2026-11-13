@@ -1,6 +1,5 @@
 <script lang="ts">
-	import MessageSquare from "@lucide/svelte/icons/message-square";
-	import PanelLeft from "@lucide/svelte/icons/panel-left";
+import { MessageSquare, PanelLeft } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";

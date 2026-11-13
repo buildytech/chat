@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const source = (file: string) =>
@@ -66,7 +66,24 @@ test("Escape closes the model menu and Ctrl+K searches saved chats", () => {
 	assert.match(sidebar, /ConfirmDialog/);
 	assert.match(sidebar, /pendingDelete/);
 	assert.match(sidebar, /sidebar\.deleteAllConfirmBody/);
-	assert.match(sidebar, /Boxes/);
+	assert.match(sidebar, /SquareRoundedLetterB/);
+	assert.match(sidebar, /data-slot="brand-word"/);
+	assert.doesNotMatch(sidebar, /Boxes/);
+	const fonts = readFileSync(new URL("../../apps/chat-web/src/styles/fonts.css", import.meta.url), "utf8");
+	assert.match(fonts, /font-family: "Google Sans"/);
+	assert.match(fonts, /GoogleSans-latin\.woff2/);
+	assert.match(fonts, /GoogleSans-cyrillic\.woff2/);
+	assert.match(fonts, /GoogleSans-greek\.woff2/);
+	for (const lang of ["en", "ru"]) {
+		const dict = readFileSync(new URL(`../../apps/chat-web/src/lib/i18n/${lang}.json`, import.meta.url), "utf8");
+		assert.match(dict, /"sidebar\.brand": "βuildγ"/, lang);
+	}
+	assert.match(sidebar, /\$lib\/shell-icons/);
+	const appDir = new URL("../../apps/chat-web/src/app/", import.meta.url);
+	for (const name of readdirSync(appDir)) {
+		if (!name.endsWith(".svelte")) continue;
+		assert.doesNotMatch(readFileSync(new URL(name, appDir), "utf8"), /@lucide\/svelte/, name);
+	}
 	assert.doesNotMatch(sidebar, /sidebar\.brandMark/);
 	assert.doesNotMatch(sidebar, /function clearStorage/);
 	assert.doesNotMatch(sidebar, /sidebar\.comingSoon/);
