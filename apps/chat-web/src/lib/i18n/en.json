@@ -528,6 +528,8 @@
 		"proposal.askNotFound": "The Ask proposal is no longer in this chat.",
 		"proposal.askOutdated": "The page changed after this proposal. Ask again.",
 		"proposal.outsideScope": "The proposal changes blocks outside the selection.",
-		"proposal.rejected": "The page was not changed: {code} {message}"
+		"proposal.rejected": "The page was not changed: {code} {message}",
+		"preview.renderFailed": "This block failed to render",
+		"preview.renderEmpty": "This block renders nothing yet. Write its texts, rows and images in the inspector or ask Build to"
 	}
 }

@@ -4,15 +4,17 @@
  */
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { contractFingerprint, migratePageV1 } from "../../packages/builder-core/src/index.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const OUT = join(ROOT, "node_modules", ".cache", "runtime-bundle-test");
+// Beside api/runtime/_render, where the bundled entry finds the compiled registry blocks of the render probe (../_render/blocks.mjs).
+const OUT = join(ROOT, "api", "runtime", "_t");
 mkdirSync(OUT, { recursive: true });
+if (!existsSync(join(ROOT, "api", "runtime", "_render", "blocks.mjs"))) execFileSync(process.execPath, [join(ROOT, "scripts/build-render-bundle.mjs")], { cwd: ROOT, stdio: "pipe" });
 execFileSync("npx", ["esbuild", "api/runtime/v1/run.ts", "--format=esm", "--platform=node", "--log-level=error", `--outdir=${OUT}`], { cwd: ROOT, stdio: "pipe" });
 const entry = (await import(pathToFileURL(join(OUT, "run.js")).href)) as { default: { fetch(request: Request): Promise<Response> } };
 
@@ -89,4 +91,20 @@ test("bundled run entry: a full 8-block page write (food fill) passes the bundle
 	assert.equal(response.status, 200, JSON.stringify(body));
 	assert.equal(seen.length, 2);
 	assert.equal(((body.proposal as { page: { blocks: unknown[] } }).page).blocks.length, 8);
+});
+
+test("bundled run entry: the render probe is live; a page with a currency symbol is rejected with the prop path, ISO codes are accepted", async () => {
+	const owner = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/blocks-page-1e1031a.json"), "utf8"));
+	const fixed = JSON.parse(JSON.stringify(owner).replaceAll('"currency":"\u20bd"', '"currency":"RUB"'));
+	const { response, body, seen } = await run(MODELS[0]!, "build", [
+		{ calls: [{ name: "write_page", arguments: { page: owner } }] },
+		{ calls: [{ name: "write_page", arguments: { page: fixed } }] },
+		{ content: "Done." }
+	]);
+	assert.equal(response.status, 200, JSON.stringify(body));
+	const first = JSON.parse(String((seen[1]!.messages as Array<{ role: string; content: string }>).findLast((m) => m.role === "tool")!.content)) as { ok: boolean; issues: Array<{ path: string; code: string }> };
+	assert.equal(first.ok, false);
+	assert.deepEqual(first.issues.map((issue) => `${issue.code} ${issue.path}`), ["render_failed /blocks/2/props/dishes/0/currency", "render_failed /blocks/4/props/zones/0/currency"]);
+	assert.equal(seen.length, 3);
+	assert.equal(((body.proposal as { page: { blocks: unknown[] } }).page).blocks.length, 9);
 });

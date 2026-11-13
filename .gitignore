@@ -14,6 +14,8 @@ coverage/
 !.env.example
 apps/chat-web/.svelte-kit/
 apps/chat-web/build/
+api/runtime/_render/
+api/runtime/_t/
 apps/orchestrator/.cursor/
 **/.wrangler/
 tmp/

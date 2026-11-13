@@ -104,7 +104,7 @@
     "ask",
     "build"
    ],
-   "description": "Read the page document as it is now in this turn: { version, slug, title, locale, seo, blocks:[{ id, item, variant, props }] }. props are exactly the component props. Read-only.",
+   "description": "Read the page document as it is now in this turn: { version, slug, title, locale, seo, blocks:[{ id, item, variant, props }] }. props are exactly the component props. When a block throws or shows nothing in the preview, renderProblems lists it with the path of the prop to fix. Read-only.",
    "parameters": {
     "type": "object",
     "properties": {}

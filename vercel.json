@@ -2,7 +2,7 @@
 	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"framework": null,
 	"installCommand": "npm ci",
-	"buildCommand": "node scripts/bundle-vercel-runtime.mjs && npm run build --workspace=@buildytech/chat-web",
+	"buildCommand": "node scripts/bundle-vercel-runtime.mjs && node scripts/build-render-bundle.mjs && npm run build --workspace=@buildytech/chat-web",
 	"outputDirectory": "apps/chat-web/build",
 	"functions": {
 		"api/runtime/v1/status.ts": {

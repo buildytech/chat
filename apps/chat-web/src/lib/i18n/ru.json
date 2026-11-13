@@ -529,6 +529,8 @@
 		"proposal.askNotFound": "Предложения Ask больше нет в этом чате.",
 		"proposal.askOutdated": "Страница изменилась после этого предложения. Спросите снова.",
 		"proposal.outsideScope": "Предложение меняет блоки вне выделения.",
-		"proposal.rejected": "Страница не изменена: {code} {message}"
+		"proposal.rejected": "Страница не изменена: {code} {message}",
+		"preview.renderFailed": "Блок не удалось отобразить",
+		"preview.renderEmpty": "Блок пока ничего не показывает. Заполните его тексты, строки и изображения в инспекторе или попросите Build"
 	}
 }

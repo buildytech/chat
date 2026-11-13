@@ -10,6 +10,7 @@ import type { SearchQuery, SearchResult } from "../catalog/types.ts";
 import { toolOffersMode, type AgentMode } from "./agent-tools.ts";
 import { readBlock } from "./blocks.ts";
 import { screenItems } from "../page-doc/start.ts";
+import { renderProblems } from "../page-doc/probe.ts";
 import { ALLOWED_TOOLS, RUN_BUDGET, type AllowedTool } from "../policy.ts";
 
 export type ToolCall = { name: string; arguments?: Record<string, unknown> };
@@ -165,7 +166,8 @@ export function executeCatalogTool(call: ToolCall, host: ToolHost = {}): ToolOut
 	}
 	if (call.name === "get_page") {
 		if (!host.page) return { ok: false, code: "missing_page", message: "There is no page document in this turn." };
-		return { ok: true, name: "get_page", result: host.page };
+		const problems = renderProblems(host.page);
+		return { ok: true, name: "get_page", result: problems.length ? { ...host.page, renderProblems: problems } : host.page };
 	}
 	return { ok: false, code: "not_a_read_tool", message: `${call.name} is handled by the turn, not by the catalog tools.` };
 }

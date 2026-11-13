@@ -24,6 +24,7 @@ Numbering: `NNNN-kebab-title.md`. Numbers only increase; files are never renamed
 | [0032](0032-manual-inspector-in-ask-and-build.md) | Manual inspector independent of model mode | Accepted (fields now read `blocks[].props`, 0034) |
 | [0033](0033-edit-page-actionable-rejections-and-loop-guard.md) | Actionable edit_page rejections, add of catalog blocks, bounded Build loop | Superseded by 0034 (loop guard kept, as the write_page guard) |
 | [0034](0034-page-spec-2-one-write-tool.md) | page-spec 2.0: a page is a document of registry blocks, one write tool | Accepted |
+| [0035](0035-render-probe-gate.md) | The write gate renders what it accepts (render probe); no blank blocks in the preview | Accepted |
 
 Status values: Proposed, Accepted, Superseded, Deprecated.
 
@@ -58,3 +59,4 @@ Status values: Proposed, Accepted, Superseded, Deprecated.
 0032 makes the manual inspector available in Ask and Build alike; with 0034 its fields come from `blocks[].props`.
 0033 made rejections actionable and bounded the Build loop (same rejection twice ends the turn); the loop guard lives on as the `write_page` guard of 0034.
 0034 replaces page-spec 1.x (kind, family, copy slots, props overrides, plan ops, `propose_layout`, `edit_page`, `propose_plan`) with page-spec 2.0: a page is the export document `{title, slug, locale, seo, blocks:[{id, item, variant, props}]}` where `item` is the `npx ui8kit add` registry name and `props` are validated against the registry props schema; the agent has one write tool `write_page` (a full page or an RFC 6902 patch) plus `get_page`, `search_catalog`, `get_block`; failures return `{path, code, expected, got}` and the same error set twice ends the turn; Ask and Build share one per-block diff proposal, Ask reaches Build only through the card's Apply; 1.x pages and sessions migrate automatically.
+0035 makes the write gate render what it accepts: the runtime renders every added or changed block with the compiled registry components (`api/runtime/_render/blocks.mjs`) and rejects a throw (`render_failed`) or an empty result (`render_empty`) with the prop path; fail closed without the probe; `get_page` lists `renderProblems`; the preview shows a visible error or empty state instead of a blank (found by the owner session where an icon-less currency symbol made `Intl.NumberFormat` throw in two blocks).

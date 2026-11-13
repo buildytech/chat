@@ -1,6 +1,8 @@
 // @ts-nocheck
 /* Bundled Vercel Function entry. Do not import workspace .ts at runtime. */
 import __ext_ajv2020 from "ajv/dist/2020.js";
+// The render probe's compiled registry blocks (scripts/build-render-bundle.mjs): a sibling file the function traces.
+globalThis.__buildyRenderLoader = () => import("../_render/blocks.mjs");
 const __mods = Object.create(null);
 function __def(id, factory) {
 	__mods[id] = { factory, exports: undefined };
@@ -28182,7 +28184,7 @@ __def("packages/builder-core/src/agent/agent-tools.v1.json", function (exports) 
     "ask",
     "build"
    ],
-   "description": "Read the page document as it is now in this turn: { version, slug, title, locale, seo, blocks:[{ id, item, variant, props }] }. props are exactly the component props. Read-only.",
+   "description": "Read the page document as it is now in this turn: { version, slug, title, locale, seo, blocks:[{ id, item, variant, props }] }. props are exactly the component props. When a block throws or shows nothing in the preview, renderProblems lists it with the path of the prop to fix. Read-only.",
    "parameters": {
     "type": "object",
     "properties": {}
@@ -29342,6 +29344,127 @@ exports["blankRequired"] = blankRequired;
 
 });
 
+__def("packages/builder-core/src/page-doc/probe.ts", function (exports) {
+const { renderBlock } = __req("packages/builder-core/src/page-doc/render.ts");
+let probe: RenderProbe | null = null;
+let required = false;
+const CACHE = new Map<string, ProbeIssue | null>();
+
+function installRenderProbe(fn: RenderProbe | null, options: { required?: boolean } = {}): void {
+	probe = fn;
+	required = Boolean(options.required);
+	CACHE.clear();
+}
+
+function renderProbeInstalled(): boolean {
+	return probe !== null;
+}
+
+/** HTML without comments and styles. */
+function visible(html: string): { html: string; text: string } {
+	const clean = html.replace(/<!--[\s\S]*?-->/g, "").replace(/<style[\s\S]*?<\/style>/g, "").replace(/<script[\s\S]*?<\/script>/g, "");
+	return { html: clean.trim(), text: clean.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim() };
+}
+
+/** What the rendered markup shows: any text, or an image, icon, media or control. */
+function showsContent(html: string): boolean {
+	const { html: clean, text } = visible(html);
+	return clean !== "" && (text !== "" || /<(img|svg|video|picture|canvas|iframe|input|textarea|select|button)\b/i.test(clean));
+}
+
+/**
+ * V8 writes the argument of some Intl errors ("Invalid currency code : ...") one byte per character, so a non-Latin-1 value
+ * comes back as its UTF-8 bytes read as Latin-1 (a rouble sign as "a" + two more characters). Undo that when it round-trips.
+ */
+function readable(message: string): string {
+	const back = Buffer.from(message, "latin1").toString("utf8");
+	return back !== message && !back.includes("\ufffd") ? back : message;
+}
+
+/** JSON Pointer of the first string leaf whose value appears in an error message (the prop the component choked on). */
+function culprit(props: unknown, message: string): string | null {
+	let found: string | null = null;
+	const bytes = (value: string) => Buffer.from(value, "utf8").toString("latin1");
+	const walk = (value: unknown, path: string): void => {
+		if (found) return;
+		if (typeof value === "string") {
+			if (value.length > 0 && value.length <= 40 && (message.includes(value) || message.includes(bytes(value)))) found = path;
+		} else if (Array.isArray(value)) value.forEach((entry, i) => walk(entry, `${path}/${i}`));
+		else if (value && typeof value === "object") for (const [key, entry] of Object.entries(value)) walk(entry, `${path}/${key.replace(/~/g, "~0").replace(/\//g, "~1")}`);
+	};
+	walk(props, "");
+	return found;
+}
+
+/** Props that are empty lists: what a block with no content most likely lacks. */
+function emptyLists(props: Record<string, unknown>): string[] {
+	return Object.entries(props).filter(([, value]) => Array.isArray(value) && value.length === 0).map(([key]) => key);
+}
+
+function probeBlock(item: string, variant: string | undefined, props: Record<string, unknown> | undefined, at: string): ProbeIssue | null {
+	const rendered = renderBlock({ item, variant, props } as never);
+	if (!rendered) return null;
+	const key = `${rendered.organism}\n${JSON.stringify(rendered.props)}`;
+	const hit = CACHE.get(key);
+	if (hit !== undefined) return hit && { ...hit, path: `${at}${hit.path}` };
+	let issue: ProbeIssue | null = null;
+	let result: ProbeResult;
+	try {
+		result = probe!(rendered.organism, rendered.props);
+	} catch (err) {
+		result = { ok: false, error: err instanceof Error ? err.message : String(err) };
+	}
+	if (!result.ok) {
+		const raw = result.error.split("\n")[0]!.slice(0, 200);
+		const where = culprit(rendered.props, raw);
+		const message = readable(raw);
+		issue = {
+			path: `/props${where ?? ""}`,
+			code: "render_failed",
+			expected: `props ${item} can render: its component threw "${message}" while rendering${where ? " with this value" : ""}`,
+			got: where ? undefined : "see the error above"
+		};
+		if (where) issue.got = message;
+	} else if (!showsContent(result.html)) {
+		const lists = emptyLists(rendered.props);
+		issue = {
+			path: "/props",
+			code: "render_empty",
+			expected: `props that make ${item}/${rendered.variant} show content: it renders nothing now${lists.length ? ` (empty lists: ${lists.join(", ")})` : ""}; write its texts, rows and images`,
+			got: lists.length ? lists.map((name) => `${name}: []`).join(", ") : "nothing visible"
+		};
+	}
+	CACHE.set(key, issue);
+	return issue && { ...issue, path: `${at}${issue.path}` };
+}
+
+/** Render issues of a (schema-valid) page; `at` indexes are the block indexes of the page. Blocks whose props already failed are skipped by the caller. */
+function renderIssues(page: PageV2, skip: ReadonlySet<number> = new Set()): ProbeIssue[] {
+	if (!probe) {
+		return required ? [{ path: "/", code: "render_probe_unavailable", expected: "the render probe (api/runtime/_render/blocks.mjs, `npm run bundle:runtime`) to be loaded" }] : [];
+	}
+	const out: ProbeIssue[] = [];
+	page.blocks.forEach((block, index) => {
+		if (skip.has(index)) return;
+		const issue = probeBlock(block.item, block.variant, block.props as Record<string, unknown> | undefined, `/blocks/${index}`);
+		if (issue) out.push(issue);
+	});
+	return out;
+}
+
+/** Blocks of the page that throw or show nothing in the preview now (what get_page tells the agent); empty without a probe. */
+function renderProblems(page: PageV2): ProbeIssue[] {
+	return renderIssues(page).filter((issue) => issue.code !== "render_probe_unavailable");
+}
+
+exports["installRenderProbe"] = installRenderProbe;
+exports["renderProbeInstalled"] = renderProbeInstalled;
+exports["showsContent"] = showsContent;
+exports["renderIssues"] = renderIssues;
+exports["renderProblems"] = renderProblems;
+
+});
+
 __def("packages/builder-core/src/page-doc/gate.ts", function (exports) {
 const { closestIconNames } = __req("packages/builder-core/src/icon-name.ts");
 const { pageV2Issues, pageV2ProgramIssues } = __req("packages/page-contract/src/index.ts");
@@ -29591,6 +29714,7 @@ const { propsFieldTree, propShapeFor } = __req("packages/builder-core/src/catalo
 const { variantAxisProps, variantPreset } = __req("packages/builder-core/src/catalog/organism.ts");
 const { resolveIconName } = __req("packages/builder-core/src/icon-name.ts");
 const { diffPages } = __req("packages/builder-core/src/page-doc/diff.ts");
+const { renderIssues } = __req("packages/builder-core/src/page-doc/probe.ts");
 const { checkPageDoc, pointerOfSchemaPath, valueAtPointer } = __req("packages/builder-core/src/page-doc/gate.ts");
 const { applyJsonPatch } = __req("packages/builder-core/src/page-doc/jsonpatch.ts");
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
@@ -29749,6 +29873,11 @@ function writePage(base: PageV2, input: WriteInput, options: { now?: string } = 
 	if (Array.isArray(doc.blocks)) normalizeBlocks(base, doc, notes);
 	const gate = checkPageDoc(doc);
 	if (!gate.ok) return failure(gate.issues);
+	// Render probe (ADR 0035): the blocks this write adds or changes must show something in the preview (server side only).
+	const before = new Map(base.blocks.map((block) => [block.id, JSON.stringify(block)]));
+	const unchanged = new Set(gate.page.blocks.flatMap((block, index) => (before.get(block.id) === JSON.stringify(block) ? [index] : [])));
+	const rendering = renderIssues(gate.page, unchanged);
+	if (rendering.length) return failure(rendering);
 	const diff = diffPages(base, gate.page);
 	if (diff.length > 0 && base.updatedAt !== undefined) gate.page.updatedAt = options.now ?? new Date().toISOString();
 	return { ok: true, page: gate.page, diff, warnings: notes, changed: diff.length > 0 };
@@ -31066,6 +31195,11 @@ exports["applyOp"] = __req("packages/builder-core/src/page-doc/ops.ts")["applyOp
 exports["checkAdd"] = __req("packages/builder-core/src/page-doc/ops.ts")["checkAdd"];
 exports["setAtPointer"] = __req("packages/builder-core/src/page-doc/ops.ts")["setAtPointer"];
 exports["inspectorModel"] = __req("packages/builder-core/src/page-doc/inspect.ts")["inspectorModel"];
+exports["installRenderProbe"] = __req("packages/builder-core/src/page-doc/probe.ts")["installRenderProbe"];
+exports["renderProbeInstalled"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderProbeInstalled"];
+exports["renderIssues"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderIssues"];
+exports["renderProblems"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderProblems"];
+exports["showsContent"] = __req("packages/builder-core/src/page-doc/probe.ts")["showsContent"];
 
 
 
@@ -31187,6 +31321,7 @@ const { blockLabelVocabulary, vocabularyValues } = __req("packages/builder-core/
 const { toolOffersMode } = __req("packages/builder-core/src/agent/agent-tools.ts");
 const { readBlock } = __req("packages/builder-core/src/agent/blocks.ts");
 const { screenItems } = __req("packages/builder-core/src/page-doc/start.ts");
+const { renderProblems } = __req("packages/builder-core/src/page-doc/probe.ts");
 const { ALLOWED_TOOLS, RUN_BUDGET } = __req("packages/builder-core/src/policy.ts");
 function isAllowedTool(name: string): name is AllowedTool {
 	return (ALLOWED_TOOLS as string[]).includes(name);
@@ -31303,7 +31438,8 @@ function executeCatalogTool(call: ToolCall, host: ToolHost = {}): ToolOutcome {
 	}
 	if (call.name === "get_page") {
 		if (!host.page) return { ok: false, code: "missing_page", message: "There is no page document in this turn." };
-		return { ok: true, name: "get_page", result: host.page };
+		const problems = renderProblems(host.page);
+		return { ok: true, name: "get_page", result: problems.length ? { ...host.page, renderProblems: problems } : host.page };
 	}
 	return { ok: false, code: "not_a_read_tool", message: `${call.name} is handled by the turn, not by the catalog tools.` };
 }
@@ -31669,7 +31805,7 @@ exports["installPropsGate"] = installPropsGate;
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { RUN_BUDGET, XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, itemIndex, propsOutline, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage, collectionPromptContext, itemInfo } = __req("packages/builder-core/src/index.ts");
+const { RUN_BUDGET, XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, itemIndex, propsOutline, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage, collectionPromptContext, itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
 
@@ -31680,7 +31816,7 @@ const SYSTEM_COMMON = [
 	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field; an icon is a real Lucide icon name in kebab-case: an unknown name is rejected with its path and the nearest real names, pick one of those.",
 	"- Hard rules only: header-like items first, footer-like items last, every block's props pass the item's props schema. Everything else is your design decision: pick, replace, add, remove and reorder blocks as the request needs. Screens from search_catalog are hints, never constraints.",
 	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
-	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way.",
+	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
 	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",
 	"- scope.blockIds, when present, are the blocks the author selected: edit only those (props, variant, item). Do not change page fields, other blocks, or the order.",
 	"- Write content when asked. A fictional product is fine when the author says so; never present invented facts as real ones when the author gave real ones.",
@@ -31852,6 +31988,7 @@ function userPrompt(ctx: TurnContext): string {
 		request: ctx.brief,
 		...(ctx.conversation?.length ? { conversation: ctx.conversation } : {}),
 		page: pageView(ctx.page),
+		...(renderProblems(ctx.page).length ? { renderProblems: renderProblems(ctx.page) } : {}),
 		...(ctx.scopeBlockIds?.length ? { scope: { blockIds: ctx.scopeBlockIds } } : {}),
 		...(ctx.screenId ? { screenHint: ctx.screenId } : {}),
 		...(ctx.collection ? { collection: collectionPromptContext(ctx.collection) } : {}),
@@ -32177,11 +32314,46 @@ exports["runtimeStatus"] = runtimeStatus;
 });
 
 __def("apps/xai-runtime/src/http.ts", function (exports) {
-const { clampRunBudgetMs, emptyPage, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, stripRuntimePrefix } = __req("packages/builder-core/src/index.ts");
+const { clampRunBudgetMs, emptyPage, contractFingerprint, isAgentReply, gateRequest, installRenderProbe, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, stripRuntimePrefix } = __req("packages/builder-core/src/index.ts");
 const { runXaiCatalogTurn } = __req("apps/xai-runtime/src/chat-tools.ts");
 const { runtimeStatus } = __req("apps/xai-runtime/src/status.ts");
 exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = __req("packages/builder-core/src/index.ts")["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"];
 const MAX_BODY = 256_000;
+
+type RenderModule = { blocks: Record<string, unknown>; render: (component: unknown, options: { props: Record<string, unknown> }) => { body: string } };
+
+let probeReady: Promise<void> | null = null;
+
+/**
+ * Install the render probe (ADR 0035) from the compiled registry blocks. The entry sets `globalThis.__buildyRenderLoader`
+ * (the Vercel bundle: ../_render/blocks.mjs; server.ts: the same file in the repo). Without the module every write fails with
+ * `render_probe_unavailable`: a page is never accepted on a check that did not run.
+ */
+function ensureRenderProbe(): Promise<void> {
+	probeReady ??= (async () => {
+		try {
+			const loader = (globalThis as { __buildyRenderLoader?: () => Promise<RenderModule> }).__buildyRenderLoader;
+			if (!loader) throw new Error("no render loader");
+			const mod = await loader();
+			installRenderProbe(
+				(organism, props) => {
+					const component = mod.blocks[organism];
+					if (!component) return { ok: false, error: `no compiled block ${organism}` };
+					try {
+						return { ok: true, html: mod.render(component, { props }).body };
+					} catch (err) {
+						return { ok: false, error: err instanceof Error ? err.message : String(err) };
+					}
+				},
+				{ required: true }
+			);
+		} catch (err) {
+			console.error(JSON.stringify({ runtime: "xai-grok", event: "render_probe_unavailable", ...safeErrorMessage(err) }));
+			installRenderProbe(null, { required: true });
+		}
+	})();
+	return probeReady;
+}
 
 function toolCounts(names: string[]): Array<{ name: string; count: number }> {
 	const map = new Map<string, number>();
@@ -32299,6 +32471,7 @@ async function handleRuntimeFetch(
 					liveModel: false
 				});
 			}
+			await ensureRenderProbe();
 			const ms = clampRunBudgetMs(body.abortMs, env);
 			const signal = combinedAbort(request, ms);
 			try {
@@ -32393,6 +32566,7 @@ async function handleRuntimeFetch(
 	}
 }
 
+exports["ensureRenderProbe"] = ensureRenderProbe;
 exports["handleRuntimeFetch"] = handleRuntimeFetch;
 
 });

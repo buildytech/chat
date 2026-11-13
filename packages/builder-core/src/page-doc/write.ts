@@ -16,6 +16,7 @@ import { propsFieldTree, propShapeFor, type PropsFieldNode } from "../catalog/pr
 import { variantAxisProps, variantPreset } from "../catalog/organism.ts";
 import { resolveIconName } from "../icon-name.ts";
 import { diffPages, type DiffEntry } from "./diff.ts";
+import { renderIssues } from "./probe.ts";
 import { checkPageDoc, pointerOfSchemaPath, valueAtPointer, type DocIssue } from "./gate.ts";
 import { applyJsonPatch } from "./jsonpatch.ts";
 import { itemInfo } from "./items.ts";
@@ -181,6 +182,11 @@ export function writePage(base: PageV2, input: WriteInput, options: { now?: stri
 	if (Array.isArray(doc.blocks)) normalizeBlocks(base, doc, notes);
 	const gate = checkPageDoc(doc);
 	if (!gate.ok) return failure(gate.issues);
+	// Render probe (ADR 0035): the blocks this write adds or changes must show something in the preview (server side only).
+	const before = new Map(base.blocks.map((block) => [block.id, JSON.stringify(block)]));
+	const unchanged = new Set(gate.page.blocks.flatMap((block, index) => (before.get(block.id) === JSON.stringify(block) ? [index] : [])));
+	const rendering = renderIssues(gate.page, unchanged);
+	if (rendering.length) return failure(rendering);
 	const diff = diffPages(base, gate.page);
 	if (diff.length > 0 && base.updatedAt !== undefined) gate.page.updatedAt = options.now ?? new Date().toISOString();
 	return { ok: true, page: gate.page, diff, warnings: notes, changed: diff.length > 0 };

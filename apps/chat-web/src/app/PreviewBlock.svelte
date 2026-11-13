@@ -14,7 +14,7 @@
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
-	import { itemInfo, renderBlock } from "@buildytech/builder-core";
+	import { itemInfo, renderBlock, showsContent } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { tick } from "svelte";
 	import { selectBlock, type PageBlock } from "$lib/page-store";
@@ -32,6 +32,17 @@
 	let { block, clean = false, standalone = false }: { block: PageBlock; clean?: boolean; standalone?: boolean } = $props();
 
 	const render = $derived(renderBlock(block));
+	// A block that shows nothing is said, never left blank (ADR 0035): the component's own output is checked after it renders.
+	let empty = $state(false);
+	function watchBody(node: Element) {
+		const check = () => {
+			empty = !showsContent(node.innerHTML);
+		};
+		check();
+		const observer = new MutationObserver(check);
+		observer.observe(node, { childList: true, subtree: true, characterData: true });
+		return () => observer.disconnect();
+	}
 	const load = $derived(render ? byFile[render.organism] : undefined);
 
 	async function pick(event: MouseEvent) {
@@ -86,7 +97,19 @@
 	{/if}
 	{#if render && load}
 		{#await load() then module}
-			<module.default {...render.props} />
+			<Block tag="div" class="contents" data-slot="block-body" {@attach watchBody}>
+				<svelte:boundary>
+					<module.default {...render.props} />
+					{#snippet failed(error)}
+						<Alert variant="destructive" data-slot="render-failed">
+							{t("preview.renderFailed")}: {render.item} / {render.variant}. {error instanceof Error ? error.message.split("\n")[0] : String(error)}
+						</Alert>
+					{/snippet}
+				</svelte:boundary>
+			</Block>
+			{#if empty && !clean}
+				<Alert data-slot="render-empty">{t("preview.renderEmpty")}: {render.item} / {render.variant}</Alert>
+			{/if}
 		{:catch}
 			<Alert variant="destructive" data-slot="registry-stub">{t("preview.registryLoadFailed")}: {render.organism}</Alert>
 		{/await}

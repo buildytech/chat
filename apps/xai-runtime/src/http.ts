@@ -4,6 +4,7 @@ import {
 	contractFingerprint,
 	isAgentReply,
 	gateRequest,
+	installRenderProbe,
 	isSharedPublicSurface,
 	mapChatRunRequest,
 	readEnv,
@@ -18,6 +19,41 @@ import { runtimeStatus } from "./status.ts";
 export { VERCEL_HOBBY_SAFE_MAX_DURATION_SEC } from "@buildytech/builder-core";
 
 const MAX_BODY = 256_000;
+
+type RenderModule = { blocks: Record<string, unknown>; render: (component: unknown, options: { props: Record<string, unknown> }) => { body: string } };
+
+let probeReady: Promise<void> | null = null;
+
+/**
+ * Install the render probe (ADR 0035) from the compiled registry blocks. The entry sets `globalThis.__buildyRenderLoader`
+ * (the Vercel bundle: ../_render/blocks.mjs; server.ts: the same file in the repo). Without the module every write fails with
+ * `render_probe_unavailable`: a page is never accepted on a check that did not run.
+ */
+export function ensureRenderProbe(): Promise<void> {
+	probeReady ??= (async () => {
+		try {
+			const loader = (globalThis as { __buildyRenderLoader?: () => Promise<RenderModule> }).__buildyRenderLoader;
+			if (!loader) throw new Error("no render loader");
+			const mod = await loader();
+			installRenderProbe(
+				(organism, props) => {
+					const component = mod.blocks[organism];
+					if (!component) return { ok: false, error: `no compiled block ${organism}` };
+					try {
+						return { ok: true, html: mod.render(component, { props }).body };
+					} catch (err) {
+						return { ok: false, error: err instanceof Error ? err.message : String(err) };
+					}
+				},
+				{ required: true }
+			);
+		} catch (err) {
+			console.error(JSON.stringify({ runtime: "xai-grok", event: "render_probe_unavailable", ...safeErrorMessage(err) }));
+			installRenderProbe(null, { required: true });
+		}
+	})();
+	return probeReady;
+}
 
 function toolCounts(names: string[]): Array<{ name: string; count: number }> {
 	const map = new Map<string, number>();
@@ -135,6 +171,7 @@ export async function handleRuntimeFetch(
 					liveModel: false
 				});
 			}
+			await ensureRenderProbe();
 			const ms = clampRunBudgetMs(body.abortMs, env);
 			const signal = combinedAbort(request, ms);
 			try {

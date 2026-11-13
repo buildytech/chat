@@ -316,6 +316,8 @@ for (const id of ids) {
 const header = `// @ts-nocheck
 /* Bundled Vercel Function entry. Do not import workspace .ts at runtime. */
 ${[...STATIC_EXTERNAL].map(([spec, name]) => `import ${name} from ${JSON.stringify(spec)};`).join("\n")}
+// The render probe's compiled registry blocks (scripts/build-render-bundle.mjs): a sibling file the function traces.
+globalThis.__buildyRenderLoader = () => import("../_render/blocks.mjs");
 const __mods = Object.create(null);
 function __def(id, factory) {
 	__mods[id] = { factory, exports: undefined };

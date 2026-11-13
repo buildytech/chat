@@ -2,6 +2,9 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { isLoopbackBind, readBasicAuthConfig } from "@buildytech/builder-core";
 import { handleRuntimeFetch } from "./http.ts";
 
+// Compiled registry blocks of the render probe (npm run bundle:runtime).
+(globalThis as { __buildyRenderLoader?: () => Promise<unknown> }).__buildyRenderLoader = () => import(new URL("../../../api/runtime/_render/blocks.mjs", import.meta.url).href);
+
 const BIND = process.env.BUILDY_RUNTIME_BIND?.trim() || "127.0.0.1";
 const PORT = Number(process.env.BUILDY_RUNTIME_PORT || 18100);
 
