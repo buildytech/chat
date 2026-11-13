@@ -11961,6 +11961,42 @@ function equal(a: unknown, b: unknown): boolean {
 	return JSON.stringify(a) === JSON.stringify(b);
 }
 
+function expectedOf(keyword: string, schema: Record<string, unknown>): string | undefined {
+	const has = (key: string) => schema[key] !== undefined;
+	switch (keyword) {
+		case "enum":
+			return `one of ${JSON.stringify(schema.enum)}`;
+		case "const":
+			return `exactly ${JSON.stringify(schema.const)}`;
+		case "type":
+			return `type ${Array.isArray(schema.type) ? (schema.type as string[]).join(" | ") : String(schema.type)}`;
+		case "pattern":
+			return `a string matching /${String(schema.pattern)}/`;
+		case "maxLength":
+			return `at most ${String(schema.maxLength)} characters`;
+		case "minLength":
+			return `at least ${String(schema.minLength)} characters`;
+		case "maxItems":
+			return `at most ${String(schema.maxItems)} items`;
+		case "minItems":
+			return `at least ${String(schema.minItems)} items`;
+		case "maxProperties":
+			return `at most ${String(schema.maxProperties)} keys`;
+		case "required":
+			return `the key to be present (required: ${JSON.stringify(schema.required)})`;
+		case "additionalProperties":
+			return has("properties") ? `only the keys ${JSON.stringify(Object.keys(schema.properties as object))}` : "no other keys";
+		case "minimum":
+			return `a number >= ${String(schema.minimum)}`;
+		case "maximum":
+			return `a number <= ${String(schema.maximum)}`;
+		case "propertyNames":
+			return `key names matching ${JSON.stringify((schema.propertyNames as { pattern?: string }).pattern ?? "the schema")}`;
+		default:
+			return undefined;
+	}
+}
+
 class SchemaRegistry {
 	private roots = new Map<string, Record<string, unknown>>();
 	private regex = new Map<string, RegExp>();
@@ -12009,7 +12045,7 @@ class SchemaRegistry {
 			out.push({ path, keyword: "false" });
 			return;
 		}
-		const fail = (keyword: string, at = path) => out.push({ path: at, keyword });
+		const fail = (keyword: string, at = path) => out.push({ path: at, keyword, expected: expectedOf(keyword, schema) });
 		const sub = (v: unknown, s: unknown, at: string): SchemaIssue[] => {
 			const issues: SchemaIssue[] = [];
 			this.walk(v, s as Schema, base, at, issues);
@@ -12091,7 +12127,7 @@ const { PageContractError, parseDraftPage, parsePage } = __req("packages/page-co
 const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
 const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
 /** ui8kit/contract commit the vendored schemas come from. */
-const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "c351cdb" } as const;
+const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "9c687c1" } as const;
 
 const registry = new SchemaRegistry();
 registry.add(pageSpecSchema as Record<string, unknown>);
@@ -12139,6 +12175,561 @@ exports["parsePageSpec"] = parsePageSpec;
 
 });
 
+__def("packages/page-contract/schema/page-spec-v2.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.buildy.tw/page-spec-v2.schema.json",
+  "title": "Page spec page-spec/v2 — a page as registry items with their props",
+  "x-page-spec-profile": "page-spec/v2",
+  "x-page-spec-version": "2.0.0",
+  "description": "A BuildY page as ONE document: { version: 2, title, slug, locale, seo, blocks: [{ id, item, variant, props }] }. `item` is the registry item of `npx ui8kit add`, `props` are exactly the props of its component, `variant` names the preset of its layout axes. An agent reads it, reads the props schema of an item and writes a new version or an RFC 6902 patch (page-patch-v2.schema.json); the host validates and answers with compiler-style errors { path, expected, got }. Replaces the kind / copy / children model of page-spec/v1 (still published). After the schema, consumers run x-program-checks, then the registry checks x-host-checks.",
+  "x-program-checks": [
+    "duplicate_id",
+    "too_many_blocks",
+    "too_large",
+    "too_deep"
+  ],
+  "x-host-checks": [
+    "unknown_item",
+    "unknown_variant",
+    "no_renderer",
+    "props_invalid",
+    "header_not_first",
+    "footer_not_last"
+  ],
+  "x-limits": {
+    "maxBlocks": 64,
+    "maxIdLength": 63,
+    "maxSlugLength": 48,
+    "maxTitleLength": 160,
+    "maxItemLength": 80,
+    "maxVariantLength": 40,
+    "maxTextLength": 2000,
+    "maxSeoLength": 200,
+    "maxLocaleLength": 16,
+    "maxJsonChars": 200000,
+    "maxDatetimeLength": 40,
+    "maxPropKeys": 32,
+    "maxListItems": 24,
+    "maxDepth": 8
+  },
+  "$ref": "#/$defs/page",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,62}$",
+      "maxLength": 63,
+      "description": "Lowercase ASCII id of a block, unique in the whole page (page id included; program check duplicate_id). Safe in generated code (data-block-id)."
+    },
+    "item": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 80,
+      "description": "Registry item name as used by `npx ui8kit add <item>` (hero-split, feature-grid, site-footer). The host rejects an item its registry does not have (unknown_item) or cannot render (no_renderer)."
+    },
+    "variant": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9-]*$",
+      "maxLength": 40,
+      "description": "A published variant of the item (registry.buildy.tw/variants/v0.json): a named preset of the layout axes of its props (extra, media, columns, tone). Optional: the item's default variant. The host rejects a variant the item does not have (unknown_variant)."
+    },
+    "propValue": {
+      "description": "A prop value: plain JSON; strings are safe text. The item's props schema (registry.buildy.tw/props/v0.json) decides what is valid for each prop (x-host-checks props_invalid).",
+      "anyOf": [
+        {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "$ref": "#/$defs/propValue"
+          }
+        },
+        {
+          "type": "object",
+          "maxProperties": 32,
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/propValue"
+          }
+        }
+      ]
+    },
+    "props": {
+      "type": "object",
+      "maxProperties": 32,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/propValue"
+      },
+      "description": "Exactly the props of the registry item's component (what `<Item {...props} />` receives, and what the exported code writes). Nothing else lives in a block: no copy slots, no rows, no children. A host that inserts a block without props fills the sample props of the variant (the preset of its layout axes plus the minimum the props schema requires); layout axes are props like any other."
+    },
+    "block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "item"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "item": {
+          "$ref": "#/$defs/item"
+        },
+        "variant": {
+          "$ref": "#/$defs/variant"
+        },
+        "props": {
+          "$ref": "#/$defs/props"
+        }
+      },
+      "description": "One section of the page: a registry item, the variant it was picked as and its props."
+    },
+    "seo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 200
+        },
+        "description": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 200
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "slug",
+        "title",
+        "locale",
+        "blocks"
+      ],
+      "properties": {
+        "version": {
+          "const": 2,
+          "description": "Document version: 2."
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 48,
+          "description": "Ordinary page slug, no query or UTM variants."
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "pending",
+            "scheduled",
+            "published",
+            "archived",
+            "trashed"
+          ],
+          "description": "Lifecycle (optional; a host defaults a new page to draft)."
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "locale": {
+          "type": "string",
+          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+          "maxLength": 16,
+          "description": "BCP 47 language of the page copy; follows the language the author writes in."
+        },
+        "seo": {
+          "$ref": "#/$defs/seo"
+        },
+        "createdAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+          "maxLength": 40
+        },
+        "updatedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+          "maxLength": 40
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block"
+          },
+          "maxItems": 64,
+          "description": "Sections in render order. The exported project (page file + the block files `npx ui8kit add` writes) is generated from this list."
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One chat's pages in the browser store: the applied page, the pending candidate and the last proposal (page-spec/v2 documents) with their provenance (page-spec/v1 provenance: the Stock screen the page started from and the advisory screen family, never a rule).",
+      "properties": {
+        "applied": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastProposed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "appliedProvenance": {
+          "anyOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidateProvenance": {
+          "anyOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastProposedProvenance": {
+          "anyOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectedBlockId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 63
+        },
+        "revision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    }
+  }
+};
+});
+
+__def("packages/page-contract/schema/page-patch-v2.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.buildy.tw/page-patch-v2.schema.json",
+  "title": "Page patch page-patch/v2 — RFC 6902 JSON Patch on a page-spec/v2 document",
+  "x-page-patch-profile": "page-patch/v2",
+  "x-page-spec-version": "2.0.0",
+  "description": "An edit of a page-spec/v2 document as an RFC 6902 JSON Patch: an ordered list of operations applied to a copy of the base page; one failing operation rejects the whole patch. Paths are pointers into the document (title, slug, locale, seo, blocks, blocks/<i>/props/...). The result must be a valid page-spec/v2 document; the host answers a failure with a list of { path, expected, got }. Blocks that no operation touches stay exactly as they are.",
+  "x-limits": {
+    "maxOps": 64,
+    "maxPathLength": 200
+  },
+  "type": "array",
+  "minItems": 1,
+  "maxItems": 64,
+  "items": {
+    "$ref": "#/$defs/op"
+  },
+  "$defs": {
+    "pointer": {
+      "type": "string",
+      "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+      "maxLength": 200
+    },
+    "op": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "value"
+          ],
+          "description": "Add value at path (blocks/- appends; blocks/<i> inserts before index i).",
+          "properties": {
+            "op": {
+              "const": "add"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "value": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path"
+          ],
+          "description": "Remove the value at path.",
+          "properties": {
+            "op": {
+              "const": "remove"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "value"
+          ],
+          "description": "Replace the value at path.",
+          "properties": {
+            "op": {
+              "const": "replace"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "value": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "from"
+          ],
+          "description": "Move the value at from to path (reorder blocks).",
+          "properties": {
+            "op": {
+              "const": "move"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "from"
+          ],
+          "description": "Copy the value at from to path.",
+          "properties": {
+            "op": {
+              "const": "copy"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "value"
+          ],
+          "description": "Fail the whole patch unless the value at path equals value.",
+          "properties": {
+            "op": {
+              "const": "test"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "value": {}
+          }
+        }
+      ]
+    }
+  }
+};
+});
+
+__def("packages/page-contract/src/v2.ts", function (exports) {
+const pageSpecV2Schema = __req("packages/page-contract/schema/page-spec-v2.schema.json").default;
+const pagePatchV2Schema = __req("packages/page-contract/schema/page-patch-v2.schema.json").default;
+const pageSpecSchema = __req("packages/page-contract/schema/page-spec.schema.json").default;
+const { SchemaRegistry } = __req("packages/page-contract/src/json-schema.ts");
+const { PageContractError } = __req("packages/page-contract/src/validate.ts");
+const PAGE_SPEC_V2_SCHEMA_URL = "https://schema.buildy.tw/page-spec-v2.schema.json";
+const PAGE_PATCH_V2_SCHEMA_URL = "https://schema.buildy.tw/page-patch-v2.schema.json";
+const PAGE_DOCUMENT_VERSION = 2 as const;
+
+const PAGE_V2_LIMITS = (pageSpecV2Schema as { "x-limits": { maxBlocks: number; maxJsonChars: number; maxDepth: number; maxIdLength: number; maxListItems: number; maxPropKeys: number } })["x-limits"];
+const PAGE_PATCH_V2_LIMITS = (pagePatchV2Schema as { "x-limits": { maxOps: number } })["x-limits"];
+
+const registry = new SchemaRegistry();
+registry.add(pageSpecSchema as Record<string, unknown>);
+registry.add(pageSpecV2Schema as Record<string, unknown>);
+registry.add(pagePatchV2Schema as Record<string, unknown>);
+
+function pageV2Issues(input: unknown): SchemaIssue[] {
+	return registry.check(input, PAGE_SPEC_V2_SCHEMA_URL);
+}
+
+/** Schema issues against a page-spec/v2 $def (block, props, record, ...). */
+function pageV2DefIssues(input: unknown, def: "block" | "props" | "record" | "page"): SchemaIssue[] {
+	return registry.check(input, `${PAGE_SPEC_V2_SCHEMA_URL}#/$defs/${def}`);
+}
+
+/** Schema issues of an RFC 6902 page patch. */
+function pagePatchV2Issues(input: unknown): SchemaIssue[] {
+	return registry.check(input, PAGE_PATCH_V2_SCHEMA_URL);
+}
+
+function depthOf(value: unknown, depth = 0): number {
+	if (value === null || typeof value !== "object") return depth;
+	const children = Array.isArray(value) ? value : Object.values(value as Record<string, unknown>);
+	return children.reduce<number>((max, child) => Math.max(max, depthOf(child, depth + 1)), depth);
+}
+
+/** Program checks (x-program-checks) after the schema: duplicate ids, block count, size, props depth. */
+function pageV2ProgramIssues(page: PageV2): SchemaIssue[] {
+	const out: SchemaIssue[] = [];
+	const seen = new Set<string>();
+	if (page.id) seen.add(page.id);
+	page.blocks.forEach((block, index) => {
+		if (seen.has(block.id)) out.push({ path: `$.blocks[${index}].id`, keyword: "duplicate_id", expected: "an id no other block (or the page) uses" });
+		seen.add(block.id);
+		if (block.props && depthOf(block.props) > PAGE_V2_LIMITS.maxDepth) out.push({ path: `$.blocks[${index}].props`, keyword: "too_deep", expected: `props nested at most ${PAGE_V2_LIMITS.maxDepth} levels` });
+	});
+	if (page.blocks.length > PAGE_V2_LIMITS.maxBlocks) out.push({ path: "$.blocks", keyword: "too_many_blocks", expected: `at most ${PAGE_V2_LIMITS.maxBlocks} blocks` });
+	if (JSON.stringify(page).length > PAGE_V2_LIMITS.maxJsonChars) out.push({ path: "$", keyword: "too_large", expected: `at most ${PAGE_V2_LIMITS.maxJsonChars} characters of JSON` });
+	return out;
+}
+
+/** Strict gate of a page-spec/v2 document: the published schema, then the program checks (throws PageContractError). */
+function parsePageV2(input: unknown): PageV2 {
+	const issues = pageV2Issues(input);
+	if (issues.length) throw new PageContractError("page_spec_invalid", issues[0]!.path, `page-spec/v2 ${issues[0]!.keyword} failed`);
+	const page = input as PageV2;
+	const program = pageV2ProgramIssues(page);
+	if (program.length) throw new PageContractError(program[0]!.keyword, program[0]!.path, `page-spec/v2 ${program[0]!.keyword}`);
+	return page;
+}
+
+exports["PAGE_SPEC_V2_SCHEMA_URL"] = PAGE_SPEC_V2_SCHEMA_URL;
+exports["PAGE_PATCH_V2_SCHEMA_URL"] = PAGE_PATCH_V2_SCHEMA_URL;
+exports["PAGE_DOCUMENT_VERSION"] = PAGE_DOCUMENT_VERSION;
+exports["PAGE_V2_LIMITS"] = PAGE_V2_LIMITS;
+exports["PAGE_PATCH_V2_LIMITS"] = PAGE_PATCH_V2_LIMITS;
+exports["pagePatchV2Schema"] = pagePatchV2Schema;
+exports["pageSpecV2Schema"] = pageSpecV2Schema;
+exports["pageV2Issues"] = pageV2Issues;
+exports["pageV2DefIssues"] = pageV2DefIssues;
+exports["pagePatchV2Issues"] = pagePatchV2Issues;
+exports["pageV2ProgramIssues"] = pageV2ProgramIssues;
+exports["parsePageV2"] = parsePageV2;
+
+});
+
 __def("packages/page-contract/src/index.ts", function (exports) {
 exports["PAGE_BLOCK_KINDS"] = __req("packages/page-contract/src/types.ts")["PAGE_BLOCK_KINDS"];
 exports["PAGE_CATALOG_LIMITS"] = __req("packages/page-contract/src/types.ts")["PAGE_CATALOG_LIMITS"];
@@ -12164,6 +12755,18 @@ exports["pageSpecIssues"] = __req("packages/page-contract/src/spec.ts")["pageSpe
 exports["pageSpecSchema"] = __req("packages/page-contract/src/spec.ts")["pageSpecSchema"];
 exports["parsePageSpec"] = __req("packages/page-contract/src/spec.ts")["parsePageSpec"];
 exports["SchemaRegistry"] = __req("packages/page-contract/src/json-schema.ts")["SchemaRegistry"];
+exports["PAGE_DOCUMENT_VERSION"] = __req("packages/page-contract/src/v2.ts")["PAGE_DOCUMENT_VERSION"];
+exports["PAGE_PATCH_V2_LIMITS"] = __req("packages/page-contract/src/v2.ts")["PAGE_PATCH_V2_LIMITS"];
+exports["PAGE_PATCH_V2_SCHEMA_URL"] = __req("packages/page-contract/src/v2.ts")["PAGE_PATCH_V2_SCHEMA_URL"];
+exports["PAGE_SPEC_V2_SCHEMA_URL"] = __req("packages/page-contract/src/v2.ts")["PAGE_SPEC_V2_SCHEMA_URL"];
+exports["PAGE_V2_LIMITS"] = __req("packages/page-contract/src/v2.ts")["PAGE_V2_LIMITS"];
+exports["pagePatchV2Issues"] = __req("packages/page-contract/src/v2.ts")["pagePatchV2Issues"];
+exports["pagePatchV2Schema"] = __req("packages/page-contract/src/v2.ts")["pagePatchV2Schema"];
+exports["pageV2DefIssues"] = __req("packages/page-contract/src/v2.ts")["pageV2DefIssues"];
+exports["pageV2Issues"] = __req("packages/page-contract/src/v2.ts")["pageV2Issues"];
+exports["pageV2ProgramIssues"] = __req("packages/page-contract/src/v2.ts")["pageV2ProgramIssues"];
+exports["pageSpecV2Schema"] = __req("packages/page-contract/src/v2.ts")["pageSpecV2Schema"];
+exports["parsePageV2"] = __req("packages/page-contract/src/v2.ts")["parsePageV2"];
 
 
 
@@ -27867,6 +28470,11 @@ function propsValidatorInstalled(): boolean {
 	return PROPS_VALIDATOR !== null;
 }
 
+/** Issues of the props of one registry item; null while no validator is installed (the gate is fail-closed). */
+function validateItemProps(item: string, props: Record<string, unknown>): PropsIssue[] | null {
+	return PROPS_VALIDATOR ? PROPS_VALIDATOR({ item, props } as OrganismRender) : null;
+}
+
 function quote(value: unknown): string {
 	return typeof value === "string" ? JSON.stringify(value) : JSON.stringify(value) ?? String(value);
 }
@@ -28231,6 +28839,7 @@ function sameCatalogRefs(a: CatalogRefs | null | undefined, b: CatalogRefs): boo
 exports["STOCK_APP_URL"] = STOCK_APP_URL;
 exports["setPropsValidator"] = setPropsValidator;
 exports["propsValidatorInstalled"] = propsValidatorInstalled;
+exports["validateItemProps"] = validateItemProps;
 exports["checkBlockProps"] = checkBlockProps;
 exports["screenFamily"] = screenFamily;
 exports["attachCatalogSources"] = attachCatalogSources;
@@ -35203,6 +35812,678 @@ exports["deriveFamily"] = deriveFamily;
 exports["familyKinds"] = familyKinds;
 exports["nextFamilyState"] = nextFamilyState;
 exports["withFamily"] = withFamily;
+
+});
+
+__def("packages/builder-core/src/page-doc/items.ts", function (exports) {
+const { catalogSources } = __req("packages/builder-core/src/catalog/sources.ts");
+const { catalogEntryBySpec } = __req("packages/builder-core/src/catalog/sources.ts");
+const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/compatibility.ts");
+const { hasPropsSchema } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { chromeEdge } = __req("packages/builder-core/src/page-slots.ts");
+const CACHE = new Map<string, ItemInfo | null>();
+
+/** What the registry says about an item, or null when the registry snapshot has no such renderable item. */
+function itemInfo(item: string): ItemInfo | null {
+	if (CACHE.has(item)) return CACHE.get(item)!;
+	const block = Object.hasOwn(catalogSources.blocks, item) ? catalogSources.blocks[item] : undefined;
+	let info: ItemInfo | null = null;
+	if (block && hasPropsSchema(item)) {
+		const entry = catalogEntryBySpec(block.spec);
+		const kind = entry ? rendererKindForLabel(entry.blockId) : null;
+		info = {
+			item,
+			spec: block.spec,
+			title: entry?.title ?? item,
+			organism: block.organism,
+			defaultVariant: block.defaultVariant,
+			variants: Object.keys(block.variants),
+			edge: kind ? chromeEdge(kind) : null
+		};
+	}
+	CACHE.set(item, info);
+	return info;
+}
+
+/** Every renderable registry item of the snapshot, in registry order. */
+function allItems(): string[] {
+	return Object.keys(catalogSources.blocks).filter((item) => itemInfo(item) !== null);
+}
+
+/** The registry item of a Stock catalog block spec (`block.features` -> `feature-grid`), or null. */
+function itemOfSpec(spec: string | null | undefined): string | null {
+	return spec ? (catalogSources.specs[spec]?.item ?? null) : null;
+}
+
+/** The variant of an item the page document calls `variant` (default variant when null / empty). */
+function variantOrDefault(item: string, variant: string | null | undefined): string | null {
+	const info = itemInfo(item);
+	if (!info) return null;
+	if (!variant) return info.defaultVariant;
+	return info.variants.includes(variant) ? variant : null;
+}
+
+exports["itemInfo"] = itemInfo;
+exports["allItems"] = allItems;
+exports["itemOfSpec"] = itemOfSpec;
+exports["variantOrDefault"] = variantOrDefault;
+
+});
+
+__def("packages/builder-core/src/page-doc/render.ts", function (exports) {
+const { fillProps, propShapeFor, propsEventsFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { variantPreset } = __req("packages/builder-core/src/catalog/organism.ts");
+const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
+type Json = unknown;
+const isObject = (value: Json): value is Record<string, Json> => typeof value === "object" && value !== null && !Array.isArray(value);
+
+function merge(base: Json, over: Json): Json {
+	if (!isObject(base) || !isObject(over)) return over === undefined ? base : over;
+	const out: Record<string, Json> = { ...base };
+	for (const [key, value] of Object.entries(over)) out[key] = merge(base[key], value);
+	return out;
+}
+
+function cloneJson<T>(value: T): T {
+	return value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T);
+}
+
+/** props = fill(merge(variant preset, block props)): what `<Item {...props} />` receives. */
+function effectiveProps(item: string, variant: string | null | undefined, props: Record<string, PropValueV2> | undefined): Record<string, unknown> {
+	const info = itemInfo(item);
+	const name = variant && info?.variants.includes(variant) ? variant : (info?.defaultVariant ?? "");
+	return fillProps(item, merge(variantPreset(item, name), cloneJson(props ?? {})) as Record<string, unknown>);
+}
+
+/** The registry block a v2 block renders as, or null when the registry has no such item (the host rejects those on write). */
+function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">): BlockRender | null {
+	const info = itemInfo(block.item);
+	if (!info) return null;
+	const variant = block.variant && info.variants.includes(block.variant) ? block.variant : info.defaultVariant;
+	const { events, slots } = propsEventsFor(block.item);
+	return { item: block.item, variant, organism: info.organism, props: effectiveProps(block.item, variant, block.props), events, slots };
+}
+
+const SAMPLE_TITLE_PROPS = ["title", "heading", "name"];
+
+/**
+ * The sample props of a new block (ADR 0034): the preset of the variant's layout axes plus the minimum the props schema
+ * requires, with the catalog title of the block as its heading when the schema has a heading prop. The registry
+ * publishes structure, not copy: a new block starts empty of invented text (no "Why this page"); the agent or the author
+ * writes the content. The block id fills the item's `id` prop when it has one.
+ */
+function sampleProps(item: string, variant: string | null | undefined, id: string): Record<string, PropValueV2> {
+	const info = itemInfo(item);
+	const shape = propShapeFor(item);
+	const seed: Record<string, PropValueV2> = {};
+	if (shape?.props.includes("id")) seed.id = id;
+	const heading = shape?.text.find((name) => SAMPLE_TITLE_PROPS.includes(name));
+	if (heading && info) seed[heading] = info.title;
+	return effectiveProps(item, variant, seed) as Record<string, PropValueV2>;
+}
+
+exports["cloneJson"] = cloneJson;
+exports["effectiveProps"] = effectiveProps;
+exports["renderBlock"] = renderBlock;
+exports["sampleProps"] = sampleProps;
+
+});
+
+__def("packages/builder-core/src/page-doc/gate.ts", function (exports) {
+const { pageV2Issues, pageV2ProgramIssues } = __req("packages/page-contract/src/index.ts");
+const { validateItemProps } = __req("packages/builder-core/src/catalog/provenance.ts");
+const { itemInfo, allItems } = __req("packages/builder-core/src/page-doc/items.ts");
+const { effectiveProps } = __req("packages/builder-core/src/page-doc/render.ts");
+function pointerOfSchemaPath(path: string): string {
+	return (
+		"/" +
+		path
+			.replace(/^\$\.?/, "")
+			.replace(/\[(\d+)\]/g, ".$1")
+			.split(".")
+			.filter(Boolean)
+			.map((part) => part.replace(/~/g, "~0").replace(/\//g, "~1"))
+			.join("/")
+	).replace(/\/$/, "") || "/";
+}
+
+function valueAtPointer(data: unknown, pointer: string): unknown {
+	let current = data;
+	for (const part of pointer.split("/").slice(1)) {
+		if (current === null || typeof current !== "object") return undefined;
+		current = (current as Record<string, unknown>)[part.replace(/~1/g, "/").replace(/~0/g, "~")];
+	}
+	return current;
+}
+
+function short(value: unknown): unknown {
+	if (typeof value === "string") return value.length > 80 ? `${value.slice(0, 77)}...` : value;
+	if (value && typeof value === "object") {
+		const text = JSON.stringify(value);
+		return text.length > 120 ? `${text.slice(0, 117)}...` : value;
+	}
+	return value;
+}
+
+function schemaIssue(issue: SchemaIssue, doc: unknown): DocIssue {
+	const path = pointerOfSchemaPath(issue.path);
+	const inProps = /^\/blocks\/\d+\/props(\/|$)/.test(path);
+	const expected =
+		issue.expected ?? (inProps ? "a plain-text string, number, boolean, null, list or object whose keys are prop names (no markup, no { } < >)" : `a value the page-spec/v2 schema accepts (${issue.keyword})`);
+	return { path, code: "schema_invalid", expected, got: issue.keyword === "required" ? undefined : short(valueAtPointer(doc, path)) };
+}
+
+/** Allowed values of a props enum, cut for a long list (Lucide icons). */
+function allowedText(allowed: unknown[] | undefined): string {
+	if (!allowed?.length) return "";
+	const shown = allowed.slice(0, 12).map(String).join(" | ");
+	return allowed.length > 12 ? `one of ${allowed.length} values, e.g. ${shown}` : `one of ${shown}`;
+}
+
+const GATE_MISSING: DocIssue = { path: "/", code: "props_gate_unavailable", expected: "the props schema gate to be loaded", got: undefined };
+
+/** Registry and chrome checks of a schema-valid page. */
+function registryIssues(page: PageV2): DocIssue[] {
+	const out: DocIssue[] = [];
+	page.blocks.forEach((block, index) => {
+		const at = `/blocks/${index}`;
+		const info = itemInfo(block.item);
+		if (!info) {
+			const near = allItems().filter((name) => name.includes(block.item) || block.item.includes(name)).slice(0, 6);
+			out.push({ path: `${at}/item`, code: "unknown_item", expected: `a registry item that renders (search_catalog, get_block name them)${near.length ? `; similar: ${near.join(", ")}` : ""}`, got: block.item });
+			return;
+		}
+		if (block.variant !== undefined && !info.variants.includes(block.variant)) {
+			out.push({ path: `${at}/variant`, code: "unknown_variant", expected: `one of ${info.variants.join(" | ")}`, got: block.variant });
+		}
+		const issues = validateItemProps(block.item, effectiveProps(block.item, block.variant, block.props));
+		if (issues === null) {
+			out.push({ ...GATE_MISSING, path: `${at}/props` });
+			return;
+		}
+		for (const issue of issues.slice(0, 8)) {
+			out.push({
+				path: `${at}/props${issue.pointer}`,
+				code: "props_invalid",
+				expected: issue.allowed?.length ? allowedText(issue.allowed) : `${issue.message} (props schema of ${block.item})`,
+				got: issue.keyword === "required" ? undefined : issue.value
+			});
+		}
+	});
+	// Header-like items first, footer-like items last (role from the registry metadata of the item).
+	let top = 0;
+	while (top < page.blocks.length && itemInfo(page.blocks[top]!.item)?.edge === "top") top += 1;
+	let bottom = page.blocks.length;
+	while (bottom > top && itemInfo(page.blocks[bottom - 1]!.item)?.edge === "bottom") bottom -= 1;
+	page.blocks.forEach((block, index) => {
+		const edge = itemInfo(block.item)?.edge;
+		if (edge === "top" && index >= top) out.push({ path: `/blocks/${index}`, code: "header_not_first", expected: "header-like items (site-header, side navigation) before every section", got: block.item });
+		if (edge === "bottom" && index < bottom) out.push({ path: `/blocks/${index}`, code: "footer_not_last", expected: "footer-like items (footer, bottom navigation) after every section", got: block.item });
+	});
+	return out;
+}
+
+/** Schema + program + registry checks of a document (no normalization: see writePage). */
+function checkPageDoc(input: unknown): DocGate {
+	const schema = pageV2Issues(input);
+	if (schema.length) return { ok: false, issues: schema.slice(0, 12).map((issue) => schemaIssue(issue, input)) };
+	const page = input as PageV2;
+	const program = pageV2ProgramIssues(page);
+	if (program.length) return { ok: false, issues: program.slice(0, 12).map((issue) => ({ path: pointerOfSchemaPath(issue.path), code: issue.keyword, expected: issue.expected ?? issue.keyword, got: undefined })) };
+	const issues = registryIssues(page);
+	return issues.length ? { ok: false, issues: issues.slice(0, 16) } : { ok: true, page };
+}
+
+exports["pointerOfSchemaPath"] = pointerOfSchemaPath;
+exports["valueAtPointer"] = valueAtPointer;
+exports["registryIssues"] = registryIssues;
+exports["checkPageDoc"] = checkPageDoc;
+
+});
+
+__def("packages/builder-core/src/page-doc/jsonpatch.ts", function (exports) {
+const { cloneJson } = __req("packages/builder-core/src/page-doc/render.ts");
+type Json = unknown;
+const isObject = (value: Json): value is Record<string, Json> => typeof value === "object" && value !== null && !Array.isArray(value);
+
+function parts(pointer: string): string[] {
+	return pointer.split("/").slice(1).map((part) => part.replace(/~1/g, "/").replace(/~0/g, "~"));
+}
+
+function same(a: Json, b: Json): boolean {
+	return JSON.stringify(a) === JSON.stringify(b);
+}
+
+type Failure = { code: string; expected: string; got?: unknown };
+
+/** The container and key a pointer names (the parent must exist). */
+function locate(doc: Json, pointer: string): { parent: Json; key: string } | Failure {
+	const keys = parts(pointer);
+	if (!keys.length) return { code: "path_invalid", expected: "a pointer below the document root" };
+	let current = doc;
+	for (const key of keys.slice(0, -1)) {
+		if (Array.isArray(current)) {
+			if (!/^(0|[1-9]\d*)$/.test(key) || Number(key) >= current.length) return { code: "path_not_found", expected: `an existing array index (0..${current.length - 1})`, got: key };
+			current = current[Number(key)];
+		} else if (isObject(current) && Object.hasOwn(current, key)) current = current[key];
+		else return { code: "path_not_found", expected: `an existing key (${isObject(current) ? Object.keys(current).slice(0, 12).join(", ") : "an object"})`, got: key };
+	}
+	return { parent: current, key: keys.at(-1)! };
+}
+
+function isFailure(value: { parent: Json; key: string } | Failure): value is Failure {
+	return "code" in value;
+}
+
+function read(parent: Json, key: string): { found: boolean; value?: Json } {
+	if (Array.isArray(parent)) {
+		if (!/^(0|[1-9]\d*)$/.test(key) || Number(key) >= parent.length) return { found: false };
+		return { found: true, value: parent[Number(key)] };
+	}
+	if (isObject(parent) && Object.hasOwn(parent, key)) return { found: true, value: parent[key] };
+	return { found: false };
+}
+
+function insert(parent: Json, key: string, value: Json, replace: boolean): Failure | null {
+	if (Array.isArray(parent)) {
+		if (key === "-") {
+			if (replace) return { code: "path_not_found", expected: "an existing array index (replace takes no '-')", got: key };
+			parent.push(value);
+			return null;
+		}
+		if (!/^(0|[1-9]\d*)$/.test(key)) return { code: "path_invalid", expected: "an array index or '-'", got: key };
+		const at = Number(key);
+		if (replace) {
+			if (at >= parent.length) return { code: "path_not_found", expected: `an existing array index (0..${parent.length - 1})`, got: key };
+			parent[at] = value;
+			return null;
+		}
+		if (at > parent.length) return { code: "index_out_of_range", expected: `an index 0..${parent.length} (or '-')`, got: key };
+		parent.splice(at, 0, value);
+		return null;
+	}
+	if (isObject(parent)) {
+		if (replace && !Object.hasOwn(parent, key)) return { code: "path_not_found", expected: `an existing key (${Object.keys(parent).slice(0, 12).join(", ")}); use add to create one`, got: key };
+		parent[key] = value;
+		return null;
+	}
+	return { code: "path_invalid", expected: "an object or array parent", got: typeof parent };
+}
+
+function remove(parent: Json, key: string): { removed: Json } | Failure {
+	const hit = read(parent, key);
+	if (!hit.found) return { code: "path_not_found", expected: Array.isArray(parent) ? `an existing array index (0..${parent.length - 1})` : `an existing key (${isObject(parent) ? Object.keys(parent).slice(0, 12).join(", ") : "an object"})`, got: key };
+	if (Array.isArray(parent)) parent.splice(Number(key), 1);
+	else delete (parent as Record<string, Json>)[key];
+	return { removed: hit.value };
+}
+
+/** Applies the patch to a copy of `doc`; `issues` name the first failing operation (index and path in `path`). */
+function applyJsonPatch<T>(doc: T, ops: PatchOpLike[]): { ok: true; doc: T } | { ok: false; issues: DocIssue[] } {
+	const work = cloneJson(doc) as Json;
+	let root: Json = work;
+	for (const [index, op] of ops.entries()) {
+		const at = (failure: Failure, path = op.path): { ok: false; issues: DocIssue[] } => ({
+			ok: false,
+			issues: [{ path, code: failure.code, expected: `ops[${index}] (${op.op} ${op.path}): ${failure.expected}`, got: failure.got }]
+		});
+		const target = locate(root, op.path);
+		if (isFailure(target)) return at(target);
+		if (op.op === "add" || op.op === "replace") {
+			const failure = insert(target.parent, target.key, cloneJson(op.value), op.op === "replace");
+			if (failure) return at(failure);
+		} else if (op.op === "remove") {
+			const out = remove(target.parent, target.key);
+			if ("code" in out) return at(out);
+		} else if (op.op === "test") {
+			const hit = read(target.parent, target.key);
+			if (!hit.found || !same(hit.value, op.value)) return at({ code: "test_failed", expected: `the value at ${op.path} to equal ${JSON.stringify(op.value)}`, got: hit.found ? hit.value : undefined });
+		} else if (op.op === "move" || op.op === "copy") {
+			const from = typeof op.from === "string" ? locate(root, op.from) : ({ code: "from_missing", expected: "a from pointer" } as Failure);
+			if (isFailure(from)) return at(from, op.from ?? op.path);
+			const hit = read(from.parent, from.key);
+			if (!hit.found) return at({ code: "path_not_found", expected: `an existing value at from ${op.from}`, got: undefined }, op.from);
+			const value = cloneJson(hit.value);
+			if (op.op === "move") {
+				if (op.path.startsWith(`${op.from}/`)) return at({ code: "path_invalid", expected: "a path outside the value being moved", got: op.path });
+				const out = remove(from.parent, from.key);
+				if ("code" in out) return at(out, op.from);
+				// A move within one array lands at the index after the removal (RFC 6902 evaluates path on the shortened document).
+				const after = locate(root, op.path);
+				if (isFailure(after)) return at(after);
+				const failure = insert(after.parent, after.key, value, false);
+				if (failure) return at(failure);
+			} else {
+				const failure = insert(target.parent, target.key, value, false);
+				if (failure) return at(failure);
+			}
+		} else return at({ code: "unknown_op", expected: "add, remove, replace, move, copy or test", got: op.op });
+		root = work;
+	}
+	return { ok: true, doc: root as T };
+}
+
+exports["applyJsonPatch"] = applyJsonPatch;
+
+});
+
+__def("packages/builder-core/src/page-doc/diff.ts", function (exports) {
+
+const MAX_PATHS = 40;
+
+function same(a: unknown, b: unknown): boolean {
+	return JSON.stringify(a) === JSON.stringify(b);
+}
+
+const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
+const esc = (key: string) => key.replace(/~/g, "~0").replace(/\//g, "~1");
+
+/** Pointers where two JSON values differ (a list that changes length is one pointer: the list). */
+function changedPointers(before: unknown, after: unknown, at = "", out: string[] = []): string[] {
+	if (out.length >= MAX_PATHS || same(before, after)) return out;
+	if (isObject(before) && isObject(after)) {
+		for (const key of new Set([...Object.keys(before), ...Object.keys(after)])) changedPointers(before[key], after[key], `${at}/${esc(key)}`, out);
+		return out;
+	}
+	if (Array.isArray(before) && Array.isArray(after) && before.length === after.length) {
+		before.forEach((entry, index) => changedPointers(entry, after[index], `${at}/${index}`, out));
+		return out;
+	}
+	out.push(at || "/");
+	return out;
+}
+
+/** Longest increasing subsequence of `values` (indices into it), to find the blocks that did not move. */
+function lis(values: number[]): Set<number> {
+	const tails: number[] = [];
+	const prev: number[] = new Array(values.length).fill(-1);
+	const at: number[] = [];
+	values.forEach((value, i) => {
+		let lo = 0;
+		let hi = tails.length;
+		while (lo < hi) {
+			const mid = (lo + hi) >> 1;
+			if (values[tails[mid]!]! < value) lo = mid + 1;
+			else hi = mid;
+		}
+		if (lo > 0) prev[i] = tails[lo - 1]!;
+		tails[lo] = i;
+		at[lo] = i;
+	});
+	const keep = new Set<number>();
+	let k = tails.at(-1);
+	while (k !== undefined && k >= 0) {
+		keep.add(k);
+		k = prev[k];
+	}
+	return keep;
+}
+
+function diffPages(base: PageV2 | null | undefined, next: PageV2): DiffEntry[] {
+	const out: DiffEntry[] = [];
+	const pagePaths: string[] = [];
+	if (base) {
+		if (base.title !== next.title) pagePaths.push("/title");
+		if (base.slug !== next.slug) pagePaths.push("/slug");
+		if (base.locale !== next.locale) pagePaths.push("/locale");
+		if ((base.seo?.title ?? "") !== (next.seo?.title ?? "")) pagePaths.push("/seo/title");
+		if ((base.seo?.description ?? "") !== (next.seo?.description ?? "")) pagePaths.push("/seo/description");
+	}
+	if (pagePaths.length) out.push({ scope: "page", change: "changed", paths: pagePaths });
+	const before = new Map((base?.blocks ?? []).map((block, index) => [block.id, { block, index }]));
+	const after = new Map(next.blocks.map((block, index) => [block.id, { block, index }]));
+	for (const [id, { block, index }] of before) {
+		if (!after.has(id)) out.push({ scope: "block", change: "removed", id, item: block.item, from: index });
+	}
+	const kept = next.blocks.map((block, index) => ({ block, index })).filter(({ block }) => before.has(block.id));
+	const unmoved = lis(kept.map(({ block }) => before.get(block.id)!.index));
+	kept.forEach(({ block, index }, rank) => {
+		const prior = before.get(block.id)!;
+		const paths: string[] = [];
+		if (prior.block.item !== block.item) paths.push("/item");
+		if ((prior.block.variant ?? "") !== (block.variant ?? "")) paths.push("/variant");
+		if (prior.block.item === block.item) paths.push(...changedPointers(prior.block.props ?? {}, block.props ?? {}).map((pointer) => `/props${pointer === "/" ? "" : pointer}`));
+		else if (!same(prior.block.props, block.props)) paths.push("/props");
+		if (!unmoved.has(rank)) out.push({ scope: "block", change: "moved", id: block.id, item: block.item, from: prior.index, to: index });
+		if (paths.length) out.push({ scope: "block", change: "changed", id: block.id, item: block.item, ...(block.variant ? { variant: block.variant } : {}), paths: paths.slice(0, MAX_PATHS) });
+	});
+	for (const { block, index } of next.blocks.map((entry, i) => ({ block: entry, index: i }))) {
+		if (!before.has(block.id)) out.push({ scope: "block", change: "added", id: block.id, item: block.item, ...(block.variant ? { variant: block.variant } : {}), to: index });
+	}
+	return out;
+}
+
+function diffIsEmpty(diff: DiffEntry[]): boolean {
+	return diff.length === 0;
+}
+
+exports["changedPointers"] = changedPointers;
+exports["diffPages"] = diffPages;
+exports["diffIsEmpty"] = diffIsEmpty;
+
+});
+
+__def("packages/builder-core/src/page-doc/migrate.ts", function (exports) {
+const { organismFor } = __req("packages/builder-core/src/catalog/organism.ts");
+function migratePageV1(page: Page): MigrationResult {
+	const skipped: MigrationResult["skipped"] = [];
+	const blocks: BlockV2[] = [];
+	for (const node of page.layout.blocks) {
+		const render = organismFor(node);
+		if (!render) {
+			skipped.push({ id: node.id, kind: node.kind, reason: "no registry block" });
+			continue;
+		}
+		blocks.push({ id: node.id, item: render.item, variant: render.variant, props: JSON.parse(JSON.stringify(render.props)) as Record<string, PropValueV2> });
+	}
+	const out: PageV2 = {
+		version: 2,
+		id: page.id,
+		slug: page.slug,
+		status: page.status,
+		title: page.title,
+		locale: page.locale,
+		seo: { ...page.seo },
+		createdAt: page.createdAt,
+		updatedAt: page.updatedAt,
+		blocks
+	};
+	return { page: out, skipped };
+}
+
+exports["migratePageV1"] = migratePageV1;
+
+});
+
+__def("packages/builder-core/src/page-doc/write.ts", function (exports) {
+const { pagePatchV2Issues } = __req("packages/page-contract/src/index.ts");
+const { propsFieldTree, propShapeFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { variantAxisProps, variantPreset } = __req("packages/builder-core/src/catalog/organism.ts");
+const { resolveIconName } = __req("packages/builder-core/src/icon-name.ts");
+const { diffPages } = __req("packages/builder-core/src/page-doc/diff.ts");
+const { checkPageDoc, pointerOfSchemaPath, valueAtPointer } = __req("packages/builder-core/src/page-doc/gate.ts");
+const { applyJsonPatch } = __req("packages/builder-core/src/page-doc/jsonpatch.ts");
+const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
+const { cloneJson, effectiveProps, sampleProps } = __req("packages/builder-core/src/page-doc/render.ts");
+const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
+
+function failure(issues: DocIssue[]): WriteFailure {
+	const first = issues[0]!;
+	return {
+		ok: false,
+		code: "write_invalid",
+		message: `The page was not written: ${issues.length} problem${issues.length > 1 ? "s" : ""}, first at ${first.path} (${first.code}). Nothing changed; fix the listed paths and call write_page again.`,
+		issues
+	};
+}
+
+/** `block-<item>`, made unique against `taken` within the id length. */
+function freshBlockId(item: string, taken: Set<string>): string {
+	const base = `block-${item}`.slice(0, 56).replace(/-+$/, "");
+	let id = base;
+	for (let n = 2; taken.has(id); n += 1) id = `${base}-${n}`;
+	taken.add(id);
+	return id;
+}
+
+/** Icon props (fields of kind icon, in lists and objects) mapped to the published Lucide names; unknown names dropped. */
+function repairIcons(item: string, props: Record<string, unknown>, notes: string[], at: string): Record<string, unknown> {
+	const tree = propsFieldTree(item);
+	if (!tree) return props;
+	const walk = (value: unknown, nodes: PropsFieldNode[] | undefined, path: string): unknown => {
+		if (!nodes || !isObject(value)) return value;
+		const out: Record<string, unknown> = {};
+		for (const [key, inner] of Object.entries(value)) {
+			const node = nodes.find((entry) => entry.name === key);
+			const here = `${path}/${key}`;
+			if (node?.kind === "icon" && typeof inner === "string") {
+				const fixed = resolveIconName(inner);
+				if (fixed === null) notes.push(`${here}: icon "${inner}" is not a Lucide icon; dropped.`);
+				else {
+					if (fixed !== inner) notes.push(`${here}: icon "${inner}" written as "${fixed}".`);
+					out[key] = fixed;
+				}
+			} else if (node?.kind === "list" && Array.isArray(inner)) out[key] = inner.map((row, index) => walk(row, node.fields, `${here}/${index}`));
+			else if (node?.kind === "object") out[key] = walk(inner, node.fields, here);
+			else out[key] = inner;
+		}
+		return out;
+	};
+	return walk(props, tree, `${at}/props`) as Record<string, unknown>;
+}
+
+/** Text props both items have (the same name, a string in the old props): kept when an item is swapped for another. */
+function carriedText(oldProps: Record<string, unknown> | undefined, item: string): Record<string, PropValueV2> {
+	const shape = propShapeFor(item);
+	const out: Record<string, PropValueV2> = {};
+	if (!oldProps || !shape) return out;
+	for (const name of shape.text) if (name !== "id" && typeof oldProps[name] === "string" && oldProps[name] !== "") out[name] = oldProps[name] as string;
+	return out;
+}
+
+/** The axes of a variant: top-level props every variant preset of the item sets (layout axes). */
+function applyVariantAxes(item: string, variant: string | undefined, props: Record<string, unknown>): Record<string, unknown> {
+	const info = itemInfo(item);
+	const name = variant && info?.variants.includes(variant) ? variant : info?.defaultVariant;
+	if (!name) return props;
+	const preset = variantPreset(item, name);
+	const out = { ...props };
+	for (const axis of variantAxisProps(item)) {
+		if (axis in preset) out[axis] = cloneJson(preset[axis]);
+		else delete out[axis];
+	}
+	return out;
+}
+
+/** Fill, carry and repair the blocks a write touched; blocks identical to the base keep their bytes. */
+function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): void {
+	const before = new Map(base.blocks.map((block) => [block.id, block]));
+	const taken = new Set<string>([...(next.id ? [next.id] : []), ...next.blocks.map((block) => block.id).filter((id): id is string => typeof id === "string")]);
+	next.blocks = next.blocks.map((block, index) => {
+		if (!isObject(block) || typeof (block as { item?: unknown }).item !== "string") return block;
+		const out: BlockV2 = { ...block } as BlockV2;
+		if (typeof out.id !== "string" || out.id === "") out.id = freshBlockId(out.item, taken);
+		const prior = before.get(out.id);
+		const at = `/blocks/${index}`;
+		if (prior && same(prior, out)) return prior;
+		const info = itemInfo(out.item);
+		if (!info) return out;
+		let props: Record<string, unknown>;
+		if (!prior) {
+			// A new block: the sample props of its variant under what the write gave it.
+			props = effectiveProps(out.item, out.variant, { ...sampleProps(out.item, out.variant, out.id), ...(out.props ?? {}) });
+		} else if (prior.item !== out.item) {
+			const wrote = out.props !== undefined && !same(out.props, prior.props);
+			props = wrote
+				? effectiveProps(out.item, out.variant, out.props)
+				: effectiveProps(out.item, out.variant, { ...sampleProps(out.item, out.variant, out.id), ...carriedText(prior.props, out.item) });
+			if (!wrote) notes.push(`${out.id}: item ${prior.item} -> ${out.item}; sample props of the new item, text carried over: ${Object.keys(carriedText(prior.props, out.item)).join(", ") || "none"}.`);
+		} else {
+			const props0 = out.props ?? prior.props ?? {};
+			if ((prior.variant ?? "") !== (out.variant ?? "") && same(prior.props, out.props ?? prior.props)) {
+				props = effectiveProps(out.item, out.variant, applyVariantAxes(out.item, out.variant, props0) as Record<string, PropValueV2>);
+				notes.push(`${out.id}: variant ${prior.variant ?? "default"} -> ${out.variant ?? "default"}; layout axes taken from the new variant.`);
+			} else props = effectiveProps(out.item, out.variant, props0);
+		}
+		out.props = repairIcons(out.item, props, notes, at) as Record<string, PropValueV2>;
+		return out;
+	});
+}
+
+const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
+
+/** One write: a full document or an RFC 6902 patch against `base`; the result is gated, normalized and diffed. */
+function writePage(base: PageV2, input: WriteInput, options: { now?: string } = {}): WriteResult {
+	const notes: string[] = [];
+	let next: unknown;
+	if (input.patch !== undefined && input.page !== undefined) {
+		return failure([{ path: "/", code: "write_ambiguous", expected: "either page (a full document) or patch (RFC 6902 operations), not both", got: "both" }]);
+	}
+	if (input.patch !== undefined) {
+		const ops = Array.isArray(input.patch) ? input.patch : isObject(input.patch) && Array.isArray(input.patch.ops) ? input.patch.ops : input.patch;
+		const issues = pagePatchV2Issues(ops);
+		if (issues.length) {
+			return failure(
+				issues.slice(0, 12).map((issue) => ({
+					path: pointerOfSchemaPath(issue.path),
+					code: "patch_invalid",
+					expected: issue.expected ?? `an RFC 6902 operation of page-patch/v2 (${issue.keyword})`,
+					got: valueAtPointer(ops, pointerOfSchemaPath(issue.path).replace(/^\/(\d+)/, "/$1"))
+				}))
+			);
+		}
+		const applied = applyJsonPatch(base, ops as Array<{ op: string; path: string }>);
+		if (!applied.ok) return failure(applied.issues);
+		next = applied.doc;
+	} else if (input.page !== undefined) {
+		if (!isObject(input.page)) return failure([{ path: "/", code: "schema_invalid", expected: "a page-spec/v2 document (an object)", got: typeof input.page }]);
+		next = cloneJson(input.page);
+	} else {
+		return failure([{ path: "/", code: "write_empty", expected: "page (a full document) or patch (RFC 6902 operations)", got: undefined }]);
+	}
+	const doc = next as PageV2;
+	if (isObject(doc) && doc.version === undefined) doc.version = 2;
+	for (const key of HOST_FIELDS) {
+		if (base[key] !== undefined) (doc as Record<string, unknown>)[key] = base[key];
+		else delete (doc as Record<string, unknown>)[key];
+	}
+	if (Array.isArray(doc.blocks)) normalizeBlocks(base, doc, notes);
+	const gate = checkPageDoc(doc);
+	if (!gate.ok) return failure(gate.issues);
+	const diff = diffPages(base, gate.page);
+	return { ok: true, page: gate.page, diff, warnings: notes, changed: diff.length > 0 };
+}
+
+exports["freshBlockId"] = freshBlockId;
+exports["normalizeBlocks"] = normalizeBlocks;
+exports["writePage"] = writePage;
+
+});
+
+__def("packages/builder-core/src/page-doc/index.ts", function (exports) {
+exports["allItems"] = __req("packages/builder-core/src/page-doc/items.ts")["allItems"];
+exports["itemInfo"] = __req("packages/builder-core/src/page-doc/items.ts")["itemInfo"];
+exports["itemOfSpec"] = __req("packages/builder-core/src/page-doc/items.ts")["itemOfSpec"];
+exports["variantOrDefault"] = __req("packages/builder-core/src/page-doc/items.ts")["variantOrDefault"];
+exports["cloneJson"] = __req("packages/builder-core/src/page-doc/render.ts")["cloneJson"];
+exports["effectiveProps"] = __req("packages/builder-core/src/page-doc/render.ts")["effectiveProps"];
+exports["renderBlock"] = __req("packages/builder-core/src/page-doc/render.ts")["renderBlock"];
+exports["sampleProps"] = __req("packages/builder-core/src/page-doc/render.ts")["sampleProps"];
+exports["checkPageDoc"] = __req("packages/builder-core/src/page-doc/gate.ts")["checkPageDoc"];
+exports["pointerOfSchemaPath"] = __req("packages/builder-core/src/page-doc/gate.ts")["pointerOfSchemaPath"];
+exports["registryIssues"] = __req("packages/builder-core/src/page-doc/gate.ts")["registryIssues"];
+exports["valueAtPointer"] = __req("packages/builder-core/src/page-doc/gate.ts")["valueAtPointer"];
+exports["applyJsonPatch"] = __req("packages/builder-core/src/page-doc/jsonpatch.ts")["applyJsonPatch"];
+exports["changedPointers"] = __req("packages/builder-core/src/page-doc/diff.ts")["changedPointers"];
+exports["diffIsEmpty"] = __req("packages/builder-core/src/page-doc/diff.ts")["diffIsEmpty"];
+exports["diffPages"] = __req("packages/builder-core/src/page-doc/diff.ts")["diffPages"];
+exports["migratePageV1"] = __req("packages/builder-core/src/page-doc/migrate.ts")["migratePageV1"];
+exports["freshBlockId"] = __req("packages/builder-core/src/page-doc/write.ts")["freshBlockId"];
+exports["normalizeBlocks"] = __req("packages/builder-core/src/page-doc/write.ts")["normalizeBlocks"];
+exports["writePage"] = __req("packages/builder-core/src/page-doc/write.ts")["writePage"];
+
+
 
 });
 
