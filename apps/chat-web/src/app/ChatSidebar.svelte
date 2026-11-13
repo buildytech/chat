@@ -19,6 +19,8 @@
 	import Title from "$registry/compose/Title.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
+	import { UI_LOCALES } from "$lib/i18n/locale-pref";
+	import { uiLocale } from "$lib/i18n/locale.svelte";
 	import { theme } from "$lib/theme/theme.svelte";
 	import { THEME_PREFS } from "$lib/theme/theme-pref";
 	import { cn } from "$registry/utils/cn";
@@ -66,9 +68,9 @@
 	let settingsOpen = $state(false);
 	let storageNote = $state("");
 	let pendingDelete = $state<{ kind: "one"; id: string; title: string } | { kind: "all" } | null>(null);
-	const mainItems: NavItem[] = [
+	const mainItems = $derived<NavItem[]>([
 		{ id: "search", label: t("sidebar.search"), icon: Search, kbd: t("sidebar.searchKbd") },
-	];
+	]);
 
 	const visibleSessions = $derived.by(() => {
 		const needle = searchDraft.trim().toLowerCase();
@@ -374,6 +376,31 @@
 							onclick={() => theme.setPref(option)}
 						>
 							{t(`settings.theme.${option}`)}
+						</Button>
+					{/each}
+				</Group>
+				<Text tag="p" class="text-xs font-medium text-foreground" id="creator-settings-locale-label"
+					>{t("settings.locale")}</Text
+				>
+				<Group
+					class="items-center gap-1 rounded-full bg-muted p-1"
+					role="group"
+					aria-labelledby="creator-settings-locale-label"
+					data-slot="settings-locale"
+				>
+					{#each UI_LOCALES as option (option)}
+						<Button
+							class={cn(
+								"flex-1 rounded-full px-2 py-1 text-xs",
+								uiLocale.current === option
+									? "bg-background text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground",
+							)}
+							pressed={uiLocale.current === option}
+							data-action={`locale-${option}`}
+							onclick={() => uiLocale.set(option)}
+						>
+							{t(`settings.locale.${option}`)}
 						</Button>
 					{/each}
 				</Group>

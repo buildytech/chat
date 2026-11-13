@@ -23,7 +23,7 @@
 	import { fieldAtClick, focusInspectorControl } from "$lib/inspector/field-select";
 
 	type Organism = Component<Record<string, unknown>>;
-	const loaders = import.meta.glob<{ default: Organism }>("$registry/blocks/*.svelte");
+	const loaders = import.meta.glob<{ default: Organism }>("../../../../registry/svelte/src/blocks/*.svelte");
 	const byFile: Record<string, () => Promise<{ default: Organism }>> = Object.fromEntries(
 		Object.entries(loaders).map(([path, load]) => [`blocks/${path.split("/").pop()}`, load])
 	);

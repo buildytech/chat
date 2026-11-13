@@ -229,7 +229,7 @@ export async function hydrateSessions(): Promise<void> {
 			mode: "localStorage",
 			liveModel: false,
 			tools: [],
-			note: t("runtime.liveOnSend")
+			note: "runtime.liveOnSend"
 		};
 		const initial = loadMock();
 		memory = initial;

@@ -22,6 +22,8 @@ export const STORAGE_KEYS = {
 	theme: "buildy:v1:theme",
 	/** The chat UI theme choice (ADR 0026): "system" | "dark" | "light"; absent = system. */
 	themePref: "buildy:v1:themePref",
+	/** Chat UI language: "en" | "ru"; absent = en. Not the page locale. */
+	locale: "buildy:v1:locale",
 	previewHideServiceLabels: "buildy:v1:preview.hideServiceLabels",
 	/** The one imported theme (Settings > Theme import, ADR 0025): `{ v: 1, config }`, config = magazine-theme v2. */
 	customSkin: "buildy:v1:customSkin",

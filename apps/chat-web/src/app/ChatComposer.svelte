@@ -80,6 +80,7 @@
 		if (!runtimeStatus) return "";
 		const caps = runtimeStatus.capabilities;
 		if (caps?.liveModel) return t("runtime.liveModel");
+		if (caps?.note === "runtime.liveOnSend") return t("runtime.liveOnSend");
 		if (caps?.note) return caps.note;
 		if (runtimeStatus.mode === "mock") return t("runtime.mockMode");
 		return t("runtime.localAssembler");

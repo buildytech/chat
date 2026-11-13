@@ -1,5 +1,6 @@
 import en from "./en.json";
 import ru from "./ru.json";
+import { uiLocale } from "./locale.svelte.ts";
 
 export type MessageKey = keyof typeof en.messages;
 
@@ -8,8 +9,7 @@ const catalogs = {
 	ru: ru.messages as Record<string, string>
 } as const;
 
-export const locale = "en" as const;
-
 export function t(key: MessageKey | string): string {
-	return catalogs.en[key] ?? catalogs.ru[key] ?? key;
+	const lang = uiLocale.current;
+	return catalogs[lang][key] ?? catalogs.en[key] ?? key;
 }

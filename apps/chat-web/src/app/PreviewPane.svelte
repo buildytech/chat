@@ -80,11 +80,11 @@
 	let device = $state<Device>("desktop");
 	// Frame widths in CSS px: the kit breakpoints (sm 640, lg 1024) follow the iframe width, not the chat window.
 	const DEVICE_WIDTH: Record<Device, number> = { desktop: 1280, tablet: 768, mobile: 390 };
-	const devices: Array<{ id: Device; label: string }> = [
+	const devices = $derived<Array<{ id: Device; label: string }>>([
 		{ id: "desktop", label: t("preview.desktop") },
 		{ id: "tablet", label: t("preview.tablet") },
 		{ id: "mobile", label: t("preview.mobile") },
-	];
+	]);
 
 	let stageWidth = $state(0);
 	let stageHeight = $state(0);

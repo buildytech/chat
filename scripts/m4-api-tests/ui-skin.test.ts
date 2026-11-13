@@ -5,6 +5,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { parseLocale, UI_LOCALES } from "../../apps/chat-web/src/lib/i18n/locale-pref.ts";
 import { parseThemePref, resolveThemeMode, THEME_PREFS } from "../../apps/chat-web/src/lib/theme/theme-pref.ts";
 import { STORAGE_KEYS } from "../../apps/chat-web/src/lib/browser/storage-v1.ts";
 
@@ -103,14 +104,29 @@ test("isolation: the skin is the chat document's only; the preview frame and /pr
 	assert.doesNotMatch(web("lib/page-store/pack.ts"), /chat-skin|--ui-/, "the ZIP never carries the chat skin");
 });
 
+test("locale choice: English by default, Russian is the only other stored value", () => {
+	assert.deepEqual([...UI_LOCALES], ["en", "ru"]);
+	assert.equal(parseLocale(null), "en");
+	assert.equal(parseLocale("ru"), "ru");
+	assert.equal(parseLocale("de"), "en");
+	assert.equal(STORAGE_KEYS.locale, "buildy:v1:locale");
+});
+
 test("Settings: theme choice, en+ru; secondary row actions stay keyboard reachable", () => {
 	const sidebar = web("app/ChatSidebar.svelte");
 	assert.match(sidebar, /\{#each THEME_PREFS as option/);
 	assert.match(sidebar, /pressed=\{theme\.pref === option\}/);
 	assert.match(sidebar, /data-slot="recent-row"/);
+	assert.match(sidebar, /data-slot="settings-locale"/);
+	assert.match(sidebar, /uiLocale\.set\(option\)/);
 	for (const lang of ["en", "ru"]) {
 		const m = JSON.parse(web(`lib/i18n/${lang}.json`)).messages;
-		for (const k of ["settings.theme", "settings.theme.system", "settings.theme.dark", "settings.theme.light"]) assert.ok(m[k], `${lang} ${k}`);
+		for (const k of ["settings.theme", "settings.theme.system", "settings.theme.dark", "settings.theme.light", "settings.locale", "settings.locale.en", "settings.locale.ru"]) assert.ok(m[k], `${lang} ${k}`);
+		const en = JSON.parse(web("lib/i18n/en.json")).messages;
+		for (const k of Object.keys(en)) {
+			assert.ok(m[k], `${lang} missing ${k}`);
+			for (const token of String(en[k]).match(/\{[a-z]+\}/g) ?? []) assert.ok(String(m[k]).includes(token), `${lang} ${k} ${token}`);
+		}
 	}
 	// hidden by opacity only (still in the tab order), shown on hover, focus-within and own focus; touch keeps them
 	assert.match(SKIN, /@media \(hover: hover\) and \(pointer: fine\)/);
