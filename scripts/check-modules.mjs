@@ -1,7 +1,8 @@
 /**
  * Module checks of the gate (ADR 0041).
  *   node scripts/check-modules.mjs              boundary + message ownership (source text, fast)
- *   node scripts/check-modules.mjs --no-trace   also builds the app with VITE_MODULE_CHAT=0 and checks the bundle has no trace of the chat
+ *   node scripts/check-modules.mjs --no-trace   also builds the app with VITE_MODULE_CHAT=0, checks the bundle has no trace of the chat
+ *                                               and runs the headless smoke on the chat-off build (and on the chat-on build when there is one)
  * No-trace: the chat module's own strings (its message keys and texts, its string literals and those of the chat-agent
  * package that no core source also uses) are absent from every file of the chat-off build. A control run over the
  * normal build (when one exists) proves the same tokens are found when the chat is on, so the check cannot pass empty.
@@ -10,6 +11,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { headlessSmoke } from "./lib/headless-smoke.mjs";
 import { WEB_SRC, boundaryViolations, catalogs, coreFiles, isSource, walk } from "./lib/module-boundary.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -56,7 +58,7 @@ export function chatTokens() {
 
 const bundleText = (dir) => walk(dir, (p) => /\.(js|css|html|json|map|txt)$/.test(p)).map((p) => readFileSync(p, "utf8")).join("\n");
 
-function noTrace() {
+async function noTrace() {
 	rmSync(out, { recursive: true, force: true });
 	const build = spawnSync("npm", ["run", "build", "--workspace=@buildytech/chat-web"], { cwd: root, stdio: "inherit", env: { ...process.env, VITE_MODULE_CHAT: "0", BUILDY_BUILD_DIR: out } });
 	if (build.status !== 0) return report("no-trace build", ["the chat-off build failed"]);
@@ -76,11 +78,17 @@ function noTrace() {
 		ok = report("no-trace control", share >= 0.6 ? [] : [`only ${present}/${tokens.length} chat-only strings are in the chat-on build: the check is not looking at the right files`]) && ok;
 		console.log(`control: ${present}/${tokens.length} chat-only strings found in the chat-on build`);
 	} else console.log("control: no chat-on build in apps/chat-web/build (run npm run build first for the control)");
+	ok = (await headless(out, false)) && ok;
+	if (existsSync(control)) ok = (await headless(control, true)) && ok;
 	return ok;
+}
+
+async function headless(dir, chat) {
+	return report(`headless smoke (${chat ? "chat on" : "chat off"})`, await headlessSmoke({ dir, chat }));
 }
 
 let ok = report("module boundary", boundaryViolations(root));
 const { i18nViolations } = await import("./lib/module-boundary.mjs");
 ok = report("message ownership", i18nViolations(root)) && ok;
-if (process.argv.includes("--no-trace")) ok = noTrace() && ok;
+if (process.argv.includes("--no-trace")) ok = (await noTrace()) && ok;
 process.exit(ok ? 0 : 1);

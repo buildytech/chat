@@ -232,9 +232,6 @@
 		"sidebar.settingsModel": "Chat model"
 	},
 	"overrides": {
-		"app.title": "SI Chat website builder",
-		"app.documentTitle": "SI Chat — BuildYtech",
-		"nav.brand": "SI Chat",
 		"sidebar.chats": "Chats",
 		"sidebar.newChat": "New chat",
 		"sidebar.empty": "No chats yet",

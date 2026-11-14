@@ -232,9 +232,6 @@
 		"sidebar.settingsModel": "Модель чата"
 	},
 	"overrides": {
-		"app.title": "SI чат-конструктор сайтов",
-		"app.documentTitle": "SI Чат — BuildYtech",
-		"nav.brand": "SI Чат",
 		"sidebar.chats": "Чаты",
 		"sidebar.newChat": "Новый чат",
 		"sidebar.empty": "Пока нет чатов",

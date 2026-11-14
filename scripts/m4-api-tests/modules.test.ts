@@ -3,7 +3,7 @@
  * trace. Pure parts and source rules here; the bundle check (`npm run modules:check -- --no-trace`) builds the app with the chat off.
  */
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
@@ -43,7 +43,22 @@ test("flag: VITE_MODULE_CHAT is on by default and off for 0 / false / off / no i
 	assert.match(read(".env.example"), /^VITE_MODULE_CHAT=1$/m);
 	assert.match(web("modules/index.ts"), /if \(__MODULE_CHAT__\) registerModule\(\(await import\("\.\/chat"\)\)\.chatModule\)/, "the one named import is dynamic and under the build-time flag");
 	assert.match(web("hooks.client.ts"), /await loadModules\(\)/);
-	assert.match(web("params/collectionalias.ts"), /__MODULE_CHAT__ && param === 'build'/, "/build exists only with the chat on");
+	assert.ok(existsSync(join(root, "apps/chat-web/src/routes/build/+page.svelte")), "/build is a route of the core, in every build");
+	assert.doesNotMatch(web("routes/build/+page.svelte"), /__MODULE_CHAT__|modules\//, "the /build route does not depend on a module");
+});
+
+test("the brand is βuildγ in the core and no module re-words it", () => {
+	const BRAND = "βuildγ";
+	for (const lang of ["en", "ru"]) {
+		const core = JSON.parse(web(`lib/i18n/${lang}.json`)).messages as Record<string, string>;
+		assert.equal(core["sidebar.brand"], BRAND, lang);
+		assert.equal(core["app.documentTitle"], `${BRAND} — BuildYtech`, lang);
+		const chat = JSON.parse(web(`modules/chat/i18n/${lang}.json`)) as { messages: Record<string, string>; overrides: Record<string, string> };
+		for (const key of ["sidebar.brand", "sidebar.brandMark", "app.documentTitle"]) {
+			assert.ok(!(key in chat.overrides) && !(key in chat.messages), `the chat does not re-word ${key} (${lang})`);
+		}
+		for (const [key, value] of Object.entries(core)) assert.doesNotMatch(value, /SI Builder|SI Chat|SI Конструктор|SI Чат/, `${lang} ${key}`);
+	}
 });
 
 test("chat off: a stored project keeps its chat keys untouched and a project without a chat gets none", () => {

@@ -27,8 +27,9 @@ not be built, shown or tested without the chat, and the agent, model and usage c
 - The flag: `VITE_MODULE_CHAT` (12-factor, default on; 0, false, off or no turns it off), parsed in `apps/chat-web/module-flags.ts`,
   turned into the constant `__MODULE_CHAT__` by `vite.config.ts` (`define`), documented in `.env.example`. `modules/index.ts` loads the
   module with `if (__MODULE_CHAT__) registerModule((await import("./chat")).chatModule)` from the `init` hook of `hooks.client.ts`, so
-  with the flag off the bundler drops the branch and the module is not in the bundle. The `/runtime` dev proxy and the `/build`
-  alias (a param matcher, `params/collectionalias.ts`) exist only with the chat on.
+  with the flag off the bundler drops the branch and the module is not in the bundle. The `/runtime` dev proxy exists only with the chat on.
+  `/build` is a route of the core (`routes/build`) in every build: it is the builder's own address, the chat module only adds the
+  reading of `?collection=` links.
 - Project data: modules register their `ext` keys (`registerProjectExtension`) before the first load. Keys no module claims travel in
   `Project.extra`, so a project stored with the chat survives a load and a save with the chat off, byte for byte. A project made
   with the chat off has no chat keys.
@@ -37,12 +38,15 @@ not be built, shown or tested without the chat, and the agent, model and usage c
   (`scripts/lib/module-boundary.mjs`, unit-tested on a fixture tree); the trace check builds with `VITE_MODULE_CHAT=0`
   (`BUILDY_BUILD_DIR`) and fails if any string only the chat uses (its message keys, texts and wording overrides, the string literals
   of the module and of the chat-agent package that no core source also uses) is in a file of the build; a control over the normal
-  build proves the same strings are found when the chat is on.
+  build proves the same strings are found when the chat is on. A headless smoke (`scripts/lib/headless-smoke.mjs`, Chrome through
+  playwright-core) then drives the chat-off build (and the chat-on build when there is one): brand, left tabs, feed add, Inspector
+  edit, reload, export and import, no `/runtime` call, no chat key in the stored or exported project, `/build` opens the builder.
 
 ## Consequences
 
 - Core wording is neutral (project, page, builder) and the chat module restores its own words through `overrides`; the chat-on UI is
-  unchanged, the chat-off UI says "project" and "SI Builder" (the product brand of a chat-less build is a decision to review).
+  unchanged, the chat-off UI says "project". The brand is the core's and is the same in both builds: `βuildγ` (sidebar mark, document title
+  `βuildγ — BuildYtech`); no module re-words it (a test and the headless smoke check it in both builds).
 - The composer CSS and the `selectedModelId` storage key (and its legacy key, `registerLegacyKey`) live in the module.
 - What the core still knows about the chat, on purpose: the session document schema (`messages`, `mode`, `usage`, `selectedModelId`
   are keys of the session profile, so import validation and key order name them), the counter `proposalApplied` in the migration
