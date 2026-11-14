@@ -46,11 +46,11 @@ test("slots: only the slot's existence is checked; the header / footer role is i
 	assert.equal(itemInfo(items[0]!)?.role, "header");
 	assert.equal(itemInfo(items.at(-1)!)?.role, "footer");
 	const last = page.blocks.length - 1;
-	assert.equal(addSlotCheck(page.blocks, "feature-grid", 0).ok, true, "a section above the header");
-	assert.equal(addSlotCheck(page.blocks, "feature-grid", page.blocks.length).ok, true, "a section below the footer");
-	assert.equal(addSlotCheck(page.blocks, "nav-bar", 3).ok, true, "a header in the middle");
-	assert.equal(addSlotCheck(page.blocks, "site-footer", 0).ok, true, "a footer at the top");
-	const out = addSlotCheck(page.blocks, "feature-grid", page.blocks.length + 1);
+	assert.equal(addSlotCheck(page.blocks, 0).ok, true, "a section above the header");
+	assert.equal(addSlotCheck(page.blocks, page.blocks.length).ok, true, "a section below the footer");
+	assert.equal(addSlotCheck(page.blocks, 3).ok, true, "a header in the middle");
+	assert.equal(addSlotCheck(page.blocks, 0).ok, true, "a footer at the top");
+	const out = addSlotCheck(page.blocks, page.blocks.length + 1);
 	assert.ok(!out.ok && out.code === "index_out_of_range");
 	assert.equal(moveSlotCheck(page.blocks, 1, 0).ok, true);
 	assert.equal(moveSlotCheck(page.blocks, 1, last).ok, true);

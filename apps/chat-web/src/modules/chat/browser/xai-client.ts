@@ -14,7 +14,6 @@ type XaiClientStatus = {
 		imageIds?: string[];
 		listed?: boolean;
 		toolCallingProven?: boolean;
-		parentVerifiedChat?: readonly string[];
 	};
 	error?: { code: string; message: string };
 };

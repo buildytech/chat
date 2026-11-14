@@ -16,7 +16,7 @@ export function itemRole(item: string): "header" | "footer" | null {
 }
 
 /** Whether slot `at` exists (0 = before the first block, length = after the last). */
-export function addSlotCheck(blocks: readonly Pick<BlockV2, "item">[], _item: string, at: number): SlotCheck {
+export function addSlotCheck(blocks: readonly Pick<BlockV2, "item">[], at: number): SlotCheck {
 	if (!Number.isInteger(at) || at < 0 || at > blocks.length) return { ok: false, code: "index_out_of_range", message: `A block goes to slot 0..${blocks.length}.` };
 	return { ok: true };
 }

@@ -1,4 +1,4 @@
-import { CANDIDATE_CHAT_MODEL, PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, RUNTIME_AUTH_ENV, XAI_RUNTIME_NOTES, XAI_SECRET_ENV, hasPublicSecretLeak, isSharedPublicSurface, readBasicAuthConfig, readEnv, readXaiKeyState, type EnvMap } from "@buildytech/chat-agent";
+import { CANDIDATE_CHAT_MODEL, RUNTIME_AUTH_ENV, XAI_RUNTIME_NOTES, XAI_SECRET_ENV, hasPublicSecretLeak, isSharedPublicSurface, readBasicAuthConfig, readEnv, readXaiKeyState, type EnvMap } from "@buildytech/chat-agent";
 import { discoverAccountModels } from "./discover.ts";
 
 type XaiRuntimeStatus = {
@@ -16,8 +16,6 @@ type XaiRuntimeStatus = {
 		candidate: string | null;
 		/** Status never claims a tool loop. Proven per /v1/run. */
 		toolCallingProven: boolean;
-		parentVerifiedChat: readonly string[];
-		parentVerifiedImage: readonly string[];
 	};
 	sdk: { openaiProvider: boolean; ai: boolean };
 	notes: typeof XAI_RUNTIME_NOTES;
@@ -75,9 +73,7 @@ export async function runtimeStatus(env: EnvMap = readEnv()): Promise<XaiRuntime
 			chatIds,
 			imageIds,
 			candidate: candidate ?? (key.present ? null : CANDIDATE_CHAT_MODEL),
-			toolCallingProven: false,
-			parentVerifiedChat: PARENT_VERIFIED_CHAT_IDS,
-			parentVerifiedImage: PARENT_VERIFIED_IMAGE_IDS
+			toolCallingProven: false
 		},
 		sdk,
 		notes: XAI_RUNTIME_NOTES,

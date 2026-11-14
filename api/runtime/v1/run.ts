@@ -28664,7 +28664,7 @@ function itemRole(item: string): "header" | "footer" | null {
 }
 
 /** Whether slot `at` exists (0 = before the first block, length = after the last). */
-function addSlotCheck(blocks: Pick<BlockV2, "item">[], _item: string, at: number): SlotCheck {
+function addSlotCheck(blocks: Pick<BlockV2, "item">[], at: number): SlotCheck {
 	if (!Number.isInteger(at) || at < 0 || at > blocks.length) return { ok: false, code: "index_out_of_range", message: `A block goes to slot 0..${blocks.length}.` };
 	return { ok: true };
 }
@@ -29379,7 +29379,7 @@ function addOp(page: PageV2, input: Extract<PageOp, { op: "add" }>): OpResult {
 	const named = itemAndVariant(input.item, input.variant);
 	if (!named.ok) return named.result;
 	const at = input.at ?? naturalIndex(page.blocks, input.item);
-	const slot = addSlotCheck(page.blocks, input.item, at);
+	const slot = addSlotCheck(page.blocks, at);
 	if (!slot.ok) return fail(slot.code, slot.message);
 	const result = writePage(page, { patch: [{ op: "add", path: `/blocks/${at}`, value: { item: input.item, variant: named.variant } }] });
 	return done(result, result.ok ? result.page.blocks[at]!.id : "", input.at === undefined ? "add" : "insert");
@@ -30484,19 +30484,14 @@ const { readEnv } = __req("packages/chat-agent/src/env-map.ts");
 const XAI_SECRET_ENV = ["XAI_API_KEY"] as const;
 const RUNTIME_AUTH_ENV = ["BUILDY_RUNTIME_BASIC_AUTH_USER", "BUILDY_RUNTIME_BASIC_AUTH_PASSWORD"] as const;
 
-const XAI_BASE_URL = "https://api.x.ai/v1";
+/** The xAI REST endpoint; `XAI_BASE_URL` in the environment overrides it (a proxy, a gateway, a test double). */
+const DEFAULT_XAI_BASE_URL = "https://api.x.ai/v1";
 
-const PARENT_VERIFIED_CHAT_IDS = [
-	"grok-4.20-0309-non-reasoning",
-	"grok-4.20-0309-reasoning",
-	"grok-4.20-multi-agent-0309",
-	"grok-4.7",
-	"grok-build-0.1"
-] as const;
+function xaiBaseUrl(env?: EnvMap): string {
+	return readEnv(env).XAI_BASE_URL?.trim().replace(/\/+$/, "") || DEFAULT_XAI_BASE_URL;
+}
 
-const PARENT_VERIFIED_IMAGE_IDS = ["grok-imagine-image", "grok-imagine-image-2.0"] as const;
-
-/** Chat Completions ping succeeded. Parent later proved tool protocol on a synthetic fixture; Stock assembly is not proven. */
+/** The model a fresh runtime proposes when discovery lists it (the first listed chat model otherwise). Never a promise that the key may use it. */
 const CANDIDATE_CHAT_MODEL = "grok-4.20-0309-non-reasoning";
 
 const XAI_RUNTIME_NOTES = {
@@ -30507,7 +30502,7 @@ const XAI_RUNTIME_NOTES = {
 	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
 	tools: "Application-executed tools only: get_page, search_catalog, get_block, write_page. Never mix hosted web_search / code_execution.",
 	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",
-	toolCalling: "Parent 2026-11-08: bounded Chat Completions tool-protocol test on grok-4.20-0309-non-reasoning succeeded (2 steps, HTTP 200, tool calls, no retries, usage 393+434=827). That test used synthetic TEST blocks and artificial search_blocks(section)/propose_page tools, not this app's Stock catalog or search_catalog/get_block_details/propose_layout. Protocol support is proven. Page assembly is not proven. Do not treat the fixture miss (section=hero vs job=hero, empty blocks) as a production catalog bug."
+	toolCalling: "Each live turn proves the tool protocol itself: the run reports toolCallingProven when the model called a tool (get_page, search_catalog, get_block, write_page) and the host accepted or rejected the call.",
 } as const;
 
 type XaiKeyState =
@@ -30552,9 +30547,8 @@ function classifyDiscoveredModels(ids: string[]): {
 
 exports["XAI_SECRET_ENV"] = XAI_SECRET_ENV;
 exports["RUNTIME_AUTH_ENV"] = RUNTIME_AUTH_ENV;
-exports["XAI_BASE_URL"] = XAI_BASE_URL;
-exports["PARENT_VERIFIED_CHAT_IDS"] = PARENT_VERIFIED_CHAT_IDS;
-exports["PARENT_VERIFIED_IMAGE_IDS"] = PARENT_VERIFIED_IMAGE_IDS;
+exports["DEFAULT_XAI_BASE_URL"] = DEFAULT_XAI_BASE_URL;
+exports["xaiBaseUrl"] = xaiBaseUrl;
 exports["CANDIDATE_CHAT_MODEL"] = CANDIDATE_CHAT_MODEL;
 exports["XAI_RUNTIME_NOTES"] = XAI_RUNTIME_NOTES;
 exports["readXaiKeyState"] = readXaiKeyState;
@@ -30565,7 +30559,7 @@ exports["classifyDiscoveredModels"] = classifyDiscoveredModels;
 
 __def("packages/chat-agent/src/models.ts", function (exports) {
 const { parsePageV2 } = __req("packages/page-contract/src/index.ts");
-const { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } = __req("packages/chat-agent/src/xai-env.ts");
+const { CANDIDATE_CHAT_MODEL } = __req("packages/chat-agent/src/xai-env.ts");
 const { isAgentMode } = __req("packages/chat-agent/src/agent/agent-tools.ts");
 const { collectionBounds } = __req("packages/builder-core/src/index.ts");
 const GROK_CHAT_MODELS = [
@@ -30675,7 +30669,7 @@ function resolveChatModelRequest(input: {
 			requestedId
 		};
 	}
-	if ((PARENT_VERIFIED_IMAGE_IDS as string[]).includes(requestedId) || /imagine|image/i.test(requestedId)) {
+	if (/imagine|image/i.test(requestedId)) {
 		return {
 			ok: false,
 			code: "image_model_not_for_chat",
@@ -30817,8 +30811,6 @@ function mapChatRunRequest(
 		}
 	};
 }
-
-void PARENT_VERIFIED_CHAT_IDS;
 
 exports["GROK_CHAT_MODELS"] = GROK_CHAT_MODELS;
 exports["modelRunsToolLoop"] = modelRunsToolLoop;
@@ -31435,7 +31427,7 @@ exports["installPropsGate"] = installPropsGate;
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
 const { RUN_BUDGET, itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
-const { XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
+const { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
 const { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } = __req("apps/xai-runtime/src/chat-prompts.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
@@ -31513,6 +31505,7 @@ type ProviderStep =
 
 /** One chat/completions round trip. Failures carry only codes, the HTTP status and timing (never the body). */
 async function providerStep(input: {
+	baseUrl: string;
 	apiKey: string;
 	modelId: string;
 	messages: ChatMessage[];
@@ -31525,7 +31518,7 @@ async function providerStep(input: {
 }): Promise<ProviderStep> {
 	const { trace } = input;
 	const requestStarted = Date.now();
-	const res = await silentFetch(`${XAI_BASE_URL}/chat/completions`, {
+	const res = await silentFetch(`${input.baseUrl}/chat/completions`, {
 		method: "POST",
 		headers: {
 			Authorization: `Bearer ${input.apiKey}`,
@@ -31657,7 +31650,7 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${steps} step${steps === 1 ? "" : "s"}.` }, meta };
 }
 
-async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal): Promise<TurnResultOut> {
+async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string): Promise<TurnResultOut> {
 	const trace = { runId: newRunId(), steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
@@ -31685,7 +31678,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 	let nudged = false;
 	let forceNamed = false;
 	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
-	const request = (toolChoice: Parameters<typeof providerStep>[0]["toolChoice"]) => providerStep({ apiKey, modelId, messages, tools, toolChoice, maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
+	const request = (toolChoice: Parameters<typeof providerStep>[0]["toolChoice"]) => providerStep({ baseUrl, apiKey, modelId, messages, tools, toolChoice, maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
 	while (trace.steps < BUDGET.maxSteps && !state.stuck) {
 		trace.steps += 1;
 		endedOnCalls = false;
@@ -31735,9 +31728,9 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 
 type TurnResult = AgentReply | AgentFailure;
 
-async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
+async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
 	try {
-		return await agentLoop(apiKey, modelId, ctx, signal);
+		return await agentLoop(apiKey, modelId, ctx, signal, baseUrl);
 	} catch (err) {
 		const safe = safeErrorMessage(err, [apiKey]);
 		const aborted = safe.code === "AbortError" || safe.message.toLowerCase().includes("abort") || signal.aborted;
@@ -31759,7 +31752,7 @@ exports["runXaiCatalogTurn"] = runXaiCatalogTurn;
 });
 
 __def("apps/xai-runtime/src/discover.ts", function (exports) {
-const { CANDIDATE_CHAT_MODEL, XAI_BASE_URL, classifyDiscoveredModels, readEnv, readXaiKeyState, redactValue } = __req("packages/chat-agent/src/index.ts");
+const { CANDIDATE_CHAT_MODEL, classifyDiscoveredModels, readEnv, readXaiKeyState, redactValue, xaiBaseUrl } = __req("packages/chat-agent/src/index.ts");
 type DiscoveredModels = {
 	ok: boolean;
 	code: string;
@@ -31788,8 +31781,8 @@ function idsFromPayload(payload: unknown): string[] {
 		.filter(Boolean);
 }
 
-async function getJson(path: string, apiKey: string, signal: AbortSignal): Promise<{ status: number; payload: unknown }> {
-	const res = await fetch(`${XAI_BASE_URL}${path}`, {
+async function getJson(baseUrl: string, path: string, apiKey: string, signal: AbortSignal): Promise<{ status: number; payload: unknown }> {
+	const res = await fetch(`${baseUrl}${path}`, {
 		method: "GET",
 		headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
 		signal
@@ -31823,12 +31816,13 @@ async function discoverAccountModels(
 		};
 	}
 	const apiKey = env.XAI_API_KEY!.trim();
+	const base = xaiBaseUrl(env);
 	const ac = signal ?? AbortSignal.timeout(15_000);
 	try {
 		const [models, language, images] = await Promise.all([
-			getJson("/models", apiKey, ac),
-			getJson("/language-models", apiKey, ac),
-			getJson("/image-generation-models", apiKey, ac)
+			getJson(base, "/models", apiKey, ac),
+			getJson(base, "/language-models", apiKey, ac),
+			getJson(base, "/image-generation-models", apiKey, ac)
 		]);
 		if (models.status !== 200 && language.status !== 200) {
 			return {
@@ -31879,7 +31873,7 @@ exports["discoverAccountModels"] = discoverAccountModels;
 });
 
 __def("apps/xai-runtime/src/status.ts", function (exports) {
-const { CANDIDATE_CHAT_MODEL, PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, RUNTIME_AUTH_ENV, XAI_RUNTIME_NOTES, XAI_SECRET_ENV, hasPublicSecretLeak, isSharedPublicSurface, readBasicAuthConfig, readEnv, readXaiKeyState } = __req("packages/chat-agent/src/index.ts");
+const { CANDIDATE_CHAT_MODEL, RUNTIME_AUTH_ENV, XAI_RUNTIME_NOTES, XAI_SECRET_ENV, hasPublicSecretLeak, isSharedPublicSurface, readBasicAuthConfig, readEnv, readXaiKeyState } = __req("packages/chat-agent/src/index.ts");
 const { discoverAccountModels } = __req("apps/xai-runtime/src/discover.ts");
 type XaiRuntimeStatus = {
 	runtime: "xai-grok";
@@ -31896,8 +31890,6 @@ type XaiRuntimeStatus = {
 		candidate: string | null;
 		/** Status never claims a tool loop. Proven per /v1/run. */
 		toolCallingProven: boolean;
-		parentVerifiedChat: string[];
-		parentVerifiedImage: string[];
 	};
 	sdk: { openaiProvider: boolean; ai: boolean };
 	notes: typeof XAI_RUNTIME_NOTES;
@@ -31955,9 +31947,7 @@ async function runtimeStatus(env: EnvMap = readEnv()): Promise<XaiRuntimeStatus>
 			chatIds,
 			imageIds,
 			candidate: candidate ?? (key.present ? null : CANDIDATE_CHAT_MODEL),
-			toolCallingProven: false,
-			parentVerifiedChat: PARENT_VERIFIED_CHAT_IDS,
-			parentVerifiedImage: PARENT_VERIFIED_IMAGE_IDS
+			toolCallingProven: false
 		},
 		sdk,
 		notes: XAI_RUNTIME_NOTES,
@@ -31978,7 +31968,7 @@ exports["runtimeStatus"] = runtimeStatus;
 
 __def("apps/xai-runtime/src/http.ts", function (exports) {
 const { emptyPage, installRenderProbe, probeFromModule } = __req("packages/builder-core/src/index.ts");
-const { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, secretValues, stripRuntimePrefix } = __req("packages/chat-agent/src/index.ts");
+const { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, xaiBaseUrl, secretValues, stripRuntimePrefix } = __req("packages/chat-agent/src/index.ts");
 const { runXaiCatalogTurn } = __req("apps/xai-runtime/src/chat-tools.ts");
 const { runtimeStatus } = __req("apps/xai-runtime/src/status.ts");
 exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = __req("packages/chat-agent/src/index.ts")["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"];
@@ -32149,7 +32139,7 @@ async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promi
 	const ms = clampRunBudgetMs(body.abortMs, env);
 	const signal = combinedAbort(request, ms);
 	try {
-		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal);
+		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal, xaiBaseUrl(env));
 		const { meta } = turn;
 		// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
 		const checked =

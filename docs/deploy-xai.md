@@ -49,10 +49,10 @@ Do not create the Vercel project from this Cloud Agent. After env is set on the 
 3. Confirm unauthenticated `GET /` is 401 before browsing
 4. Confirm `POST /runtime/v1/run` without key is 503
 
-Parent still runs `scripts/verify-xai-parent.mjs` with the real key. This checkout never receives `XAI_API_KEY`.
+This checkout never receives `XAI_API_KEY`; the key lives only in the deployment environment. `XAI_BASE_URL` (optional) overrides the xAI endpoint.
 
-## What is not proven
+## Live check
 
-Parent 2026-11-08 proved Chat Completions tool **protocol** on `grok-4.20-0309-non-reasoning` with synthetic TEST tools. That is not Stock catalog assembly. Do not claim live production page builds until a turn uses `search_catalog` / `get_block_details` / `propose_layout` against the pinned snapshot.
+A turn on a preview deployment proves the whole path: `GET /runtime/v1/status` lists the key-scoped models, `POST /runtime/v1/run` with a Build brief returns a gated page proposal (diff card in the UI). Every response reports `liveModel` and `toolCallingProven`; neither is claimed without a provider call.
 
 Hobby Function duration is 60s here. The local Node abort ceiling remains 90s. Do not infer a longer Vercel limit.

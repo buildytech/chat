@@ -11,7 +11,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "test": "node -e \"console.log(\"chat-web unit tests live under scripts/m4-api-tests (npm run test:api)\")\""
+    "test": "node ../../scripts/run-tests.mjs chat-web"
   },
   "ui8kit": {
     "runtime": "svelte",

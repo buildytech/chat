@@ -1,4 +1,4 @@
-import { CANDIDATE_CHAT_MODEL, XAI_BASE_URL, classifyDiscoveredModels, readEnv, readXaiKeyState, redactValue, type EnvMap } from "@buildytech/chat-agent";
+import { CANDIDATE_CHAT_MODEL, classifyDiscoveredModels, readEnv, readXaiKeyState, redactValue, xaiBaseUrl, type EnvMap } from "@buildytech/chat-agent";
 
 type DiscoveredModels = {
 	ok: boolean;
@@ -28,8 +28,8 @@ function idsFromPayload(payload: unknown): string[] {
 		.filter(Boolean);
 }
 
-async function getJson(path: string, apiKey: string, signal: AbortSignal): Promise<{ status: number; payload: unknown }> {
-	const res = await fetch(`${XAI_BASE_URL}${path}`, {
+async function getJson(baseUrl: string, path: string, apiKey: string, signal: AbortSignal): Promise<{ status: number; payload: unknown }> {
+	const res = await fetch(`${baseUrl}${path}`, {
 		method: "GET",
 		headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
 		signal
@@ -63,12 +63,13 @@ export async function discoverAccountModels(
 		};
 	}
 	const apiKey = env.XAI_API_KEY!.trim();
+	const base = xaiBaseUrl(env);
 	const ac = signal ?? AbortSignal.timeout(15_000);
 	try {
 		const [models, language, images] = await Promise.all([
-			getJson("/models", apiKey, ac),
-			getJson("/language-models", apiKey, ac),
-			getJson("/image-generation-models", apiKey, ac)
+			getJson(base, "/models", apiKey, ac),
+			getJson(base, "/language-models", apiKey, ac),
+			getJson(base, "/image-generation-models", apiKey, ac)
 		]);
 		if (models.status !== 200 && language.status !== 200) {
 			return {

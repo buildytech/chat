@@ -6,7 +6,7 @@
  * loop stops after two identical error lists. There is no local repair, no operation taxonomy, no phrase recognition.
  */
 import { RUN_BUDGET, itemInfo, renderProblems } from "@buildytech/builder-core";
-import { XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage, type AgentFailure, type AgentReply, type PageProposal, type RunUsage, type StepUsage, type TurnContext } from "@buildytech/chat-agent";
+import { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage, type AgentFailure, type AgentReply, type PageProposal, type RunUsage, type StepUsage, type TurnContext } from "@buildytech/chat-agent";
 import { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./chat-prompts.ts";
 import type { PageV2 } from "@buildytech/page-contract";
 import { installPropsGate } from "@buildytech/builder-core/props-gate";
@@ -87,6 +87,7 @@ type ProviderStep =
 
 /** One chat/completions round trip. Failures carry only codes, the HTTP status and timing (never the body). */
 async function providerStep(input: {
+	baseUrl: string;
 	apiKey: string;
 	modelId: string;
 	messages: ChatMessage[];
@@ -99,7 +100,7 @@ async function providerStep(input: {
 }): Promise<ProviderStep> {
 	const { trace } = input;
 	const requestStarted = Date.now();
-	const res = await silentFetch(`${XAI_BASE_URL}/chat/completions`, {
+	const res = await silentFetch(`${input.baseUrl}/chat/completions`, {
 		method: "POST",
 		headers: {
 			Authorization: `Bearer ${input.apiKey}`,
@@ -231,7 +232,7 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${steps} step${steps === 1 ? "" : "s"}.` }, meta };
 }
 
-async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal): Promise<TurnResultOut> {
+async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string): Promise<TurnResultOut> {
 	const trace = { runId: newRunId(), steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
@@ -259,7 +260,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 	let nudged = false;
 	let forceNamed = false;
 	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
-	const request = (toolChoice: Parameters<typeof providerStep>[0]["toolChoice"]) => providerStep({ apiKey, modelId, messages, tools, toolChoice, maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
+	const request = (toolChoice: Parameters<typeof providerStep>[0]["toolChoice"]) => providerStep({ baseUrl, apiKey, modelId, messages, tools, toolChoice, maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
 	while (trace.steps < BUDGET.maxSteps && !state.stuck) {
 		trace.steps += 1;
 		endedOnCalls = false;
@@ -309,9 +310,9 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 
 type TurnResult = AgentReply | AgentFailure;
 
-export async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
+export async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
 	try {
-		return await agentLoop(apiKey, modelId, ctx, signal);
+		return await agentLoop(apiKey, modelId, ctx, signal, baseUrl);
 	} catch (err) {
 		const safe = safeErrorMessage(err, [apiKey]);
 		const aborted = safe.code === "AbortError" || safe.message.toLowerCase().includes("abort") || signal.aborted;

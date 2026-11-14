@@ -26,7 +26,7 @@ test("drag UI: host drop layer over the preview iframe, Sections list drop, '+' 
 	const drop = web("lib/feed/drop.svelte.ts");
 	assert.match(drop, /inspector\.add\(item\.spec, item\.variant, at\)/);
 	assert.match(drop, /inspector\.addScreen\(item\.id, at\)/, "a screen card drops its sections");
-	assert.match(drop, /addSlotCheck\(page \? blocksOf\(page\) : \[\], check\.item, at\)/);
+	assert.match(drop, /addSlotCheck\(page \? blocksOf\(page\) : \[\], at\)/);
 	assert.doesNotMatch(drop, /no_page/, "no page yet is not a refusal: the drop starts an empty page");
 	const sections = web("app/SectionsList.svelte");
 	assert.match(sections, /ondrop=\{onFeedDrop\}/);

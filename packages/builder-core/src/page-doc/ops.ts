@@ -62,7 +62,7 @@ function addOp(page: PageV2, input: Extract<PageOp, { op: "add" }>): OpResult {
 	const named = itemAndVariant(input.item, input.variant);
 	if (!named.ok) return named.result;
 	const at = input.at ?? naturalIndex(page.blocks, input.item);
-	const slot = addSlotCheck(page.blocks, input.item, at);
+	const slot = addSlotCheck(page.blocks, at);
 	if (!slot.ok) return fail(slot.code, slot.message);
 	const result = writePage(page, { patch: [{ op: "add", path: `/blocks/${at}`, value: { item: input.item, variant: named.variant } }] });
 	return done(result, result.ok ? result.page.blocks[at]!.id : "", input.at === undefined ? "add" : "insert");

@@ -1,5 +1,5 @@
 import { parsePageV2, type PageV2 } from "@buildytech/page-contract";
-import { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } from "./xai-env.ts";
+import { CANDIDATE_CHAT_MODEL } from "./xai-env.ts";
 import { isAgentMode, type AgentMode } from "./agent/agent-tools.ts";
 import { collectionBounds, type CollectionBounds } from "@buildytech/builder-core";
 
@@ -119,7 +119,7 @@ export function resolveChatModelRequest(input: {
 			requestedId
 		};
 	}
-	if ((PARENT_VERIFIED_IMAGE_IDS as readonly string[]).includes(requestedId) || /imagine|image/i.test(requestedId)) {
+	if (/imagine|image/i.test(requestedId)) {
 		return {
 			ok: false,
 			code: "image_model_not_for_chat",
@@ -261,5 +261,3 @@ export function mapChatRunRequest(
 		}
 	};
 }
-
-void PARENT_VERIFIED_CHAT_IDS;

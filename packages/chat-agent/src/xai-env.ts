@@ -7,19 +7,14 @@ import { readEnv, type EnvMap } from "./env-map.ts";
 export const XAI_SECRET_ENV = ["XAI_API_KEY"] as const;
 export const RUNTIME_AUTH_ENV = ["BUILDY_RUNTIME_BASIC_AUTH_USER", "BUILDY_RUNTIME_BASIC_AUTH_PASSWORD"] as const;
 
-export const XAI_BASE_URL = "https://api.x.ai/v1";
+/** The xAI REST endpoint; `XAI_BASE_URL` in the environment overrides it (a proxy, a gateway, a test double). */
+export const DEFAULT_XAI_BASE_URL = "https://api.x.ai/v1";
 
-export const PARENT_VERIFIED_CHAT_IDS = [
-	"grok-4.20-0309-non-reasoning",
-	"grok-4.20-0309-reasoning",
-	"grok-4.20-multi-agent-0309",
-	"grok-4.7",
-	"grok-build-0.1"
-] as const;
+export function xaiBaseUrl(env?: EnvMap): string {
+	return readEnv(env).XAI_BASE_URL?.trim().replace(/\/+$/, "") || DEFAULT_XAI_BASE_URL;
+}
 
-export const PARENT_VERIFIED_IMAGE_IDS = ["grok-imagine-image", "grok-imagine-image-2.0"] as const;
-
-/** Chat Completions ping succeeded. Parent later proved tool protocol on a synthetic fixture; Stock assembly is not proven. */
+/** The model a fresh runtime proposes when discovery lists it (the first listed chat model otherwise). Never a promise that the key may use it. */
 export const CANDIDATE_CHAT_MODEL = "grok-4.20-0309-non-reasoning";
 
 export const XAI_RUNTIME_NOTES = {
@@ -30,7 +25,7 @@ export const XAI_RUNTIME_NOTES = {
 	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
 	tools: "Application-executed tools only: get_page, search_catalog, get_block, write_page. Never mix hosted web_search / code_execution.",
 	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",
-	toolCalling: "Parent 2026-11-08: bounded Chat Completions tool-protocol test on grok-4.20-0309-non-reasoning succeeded (2 steps, HTTP 200, tool calls, no retries, usage 393+434=827). That test used synthetic TEST blocks and artificial search_blocks(section)/propose_page tools, not this app's Stock catalog or search_catalog/get_block_details/propose_layout. Protocol support is proven. Page assembly is not proven. Do not treat the fixture miss (section=hero vs job=hero, empty blocks) as a production catalog bug."
+	toolCalling: "Each live turn proves the tool protocol itself: the run reports toolCallingProven when the model called a tool (get_page, search_catalog, get_block, write_page) and the host accepted or rejected the call.",
 } as const;
 
 type XaiKeyState =

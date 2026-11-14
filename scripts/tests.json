@@ -1,0 +1,62 @@
+{
+  "_comment": "Which test file runs for which package (scripts/run-tests.mjs). Every file in scripts/m4-api-tests must be in exactly one group; `live` needs UI8KIT_LIVE=1 and the network and is not part of `npm test`.",
+  "dir": "scripts/m4-api-tests",
+  "groups": {
+    "builder-core": [
+      "catalog-artifacts.test.ts",
+      "catalog-search.test.ts",
+      "catalog-snapshot.test.ts",
+      "money.test.ts",
+      "page-doc.test.ts",
+      "page-ops.test.ts",
+      "page-ops.fuzz.test.ts",
+      "registry-render.test.ts",
+      "registry-sources.test.ts",
+      "render-items.test.ts",
+      "render-probe.test.ts",
+      "render-recovery.test.ts",
+      "sample-rows.test.ts",
+      "view-map.test.ts",
+      "write-drop-props.test.ts"
+    ],
+    "chat-agent": [
+      "agent-tools.test.ts",
+      "build-forced-write.test.ts",
+      "collection-intake.test.ts",
+      "food-agent.test.ts",
+      "model-switch.test.ts",
+      "page-agent.test.ts",
+      "runtime-bundle.test.ts",
+      "usage.test.ts"
+    ],
+    "xai-runtime": [
+      "gate.test.ts",
+      "render-probe-callers.test.ts",
+      "vercel-protect.test.ts"
+    ],
+    "chat-web": [
+      "blocks-feed.test.ts",
+      "creator-shell.test.ts",
+      "custom-skin.test.ts",
+      "inspector.test.ts",
+      "inspector-widgets.test.ts",
+      "layout-prefs.test.ts",
+      "modules.test.ts",
+      "no-wordpress-runtime.test.ts",
+      "page-ui.test.ts",
+      "persist.test.ts",
+      "preview-window.test.ts",
+      "project-split.test.ts",
+      "proposal-state.test.ts",
+      "security-headers.test.ts",
+      "session-store.test.ts",
+      "session-url.test.ts",
+      "svelte-code.test.ts",
+      "ui-skin.test.ts"
+    ]
+  },
+  "live": [
+    "export-cli.test.ts",
+    "logs-secrets.test.ts"
+  ]
+}

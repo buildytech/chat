@@ -1,5 +1,5 @@
 import { emptyPage, installRenderProbe, probeFromModule, type RenderModule } from "@buildytech/builder-core";
-import { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, secretValues, stripRuntimePrefix, type EnvMap } from "@buildytech/chat-agent";
+import { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, xaiBaseUrl, secretValues, stripRuntimePrefix, type EnvMap } from "@buildytech/chat-agent";
 import { runXaiCatalogTurn } from "./chat-tools.ts";
 import { runtimeStatus } from "./status.ts";
 
@@ -172,7 +172,7 @@ async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promi
 	const ms = clampRunBudgetMs(body.abortMs, env);
 	const signal = combinedAbort(request, ms);
 	try {
-		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal);
+		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal, xaiBaseUrl(env));
 		const { meta } = turn;
 		// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
 		const checked =

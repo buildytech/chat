@@ -18,7 +18,7 @@ export function dropRefusal(at: number): string | null {
 	const check = inspector.canAdd(item.spec, item.variant);
 	if (!check.ok) return t(`feed.why.${check.code}`).replace("{role}", item.role ?? "");
 	const page = getCurrentPage();
-	const slot = addSlotCheck(page ? blocksOf(page) : [], check.item, at);
+	const slot = addSlotCheck(page ? blocksOf(page) : [], at);
 	return slot.ok ? null : t(`dnd.why.${slot.code}`);
 }
 
