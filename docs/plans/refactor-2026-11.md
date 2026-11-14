@@ -1,0 +1,131 @@
+# Plan: refactor 2026-11 (one block source, project/chat split, chat as a module, quality gate)
+
+Status: accepted by the owner (2026-11-14); audit done, implementation not started.
+
+Authority: owner decision of 2026-11-14 ("all proposals accepted"). Follow `AGENTS.md`, the ADRs in `.project/adr/` (0034 page-spec v2, 0035 render probe, 0036 map editor, 0037 free composition) and the gate below. Every item that changes a rule or a contract gets its own ADR.
+
+Related: [audit-2026-11.md](audit-2026-11.md) is the defect registry; each defect names the item that fixes it.
+
+Location note: the owner wrote `docs/plan/`; this repository keeps plans in `docs/plans/`, so both files live there.
+
+## Rules for the whole plan
+
+- No issues on any board; this file and the audit are the tracker. Update the **Status** line of an item in the same commit that moves it.
+- Each step is a small commit to `main` through the gate: `npm run check`, `npm test`, `npm run build`, `npm run inspector:coverage:check` (coverage stays 526/532 or better), and, when the catalog or schemas change, `npm run snapshot:check` and `npm run schema:check`.
+- No behaviour change inside a refactoring step except the one the item names. Staging (`byc-staging-7q4`) is checked after each pushed step.
+- Docs and code comments in English.
+
+Execution order: **audit (done)**, then items **3, 1, 2, 5, 6 (gate part), 4**. Item 7 runs alongside as needed. The rest of item 6 (criteria) applies to every step.
+
+## 0. Audit against the item 6 criteria
+
+Goal: know the real defects before moving code.
+
+Acceptance:
+- [x] A defect registry with id, file:line, criterion, severity, fix and plan item: [audit-2026-11.md](audit-2026-11.md).
+- [x] Counts by criterion and severity; measured facts (cycles, casts, dead code, i18n, sizes, coupling points).
+- [x] No code changed by the audit.
+
+Status: done (36 defects: 8 S1, 11 S2, 17 S3).
+
+## 1. Single block source
+
+Goal: one source for block knowledge, Stock plus `props/v0.json`. The stock registry graph (`catalog/stock-registry.v0.json`) and the agent item index are derived from it, with no hand-kept duplicates (audit B-01, B-02).
+
+Acceptance:
+- [ ] One generator reads the pinned sources and writes every derived artifact; the six stores listed in B-02 are either generated from it or deleted.
+- [ ] Block role and kind are derived (no `pageKindOfBlock` map in `catalog/policy.v0.json`, no `PAGE_BLOCK_KINDS` list, no `chromeRole` function); roles stay informational (ADR 0037).
+- [ ] `npm run snapshot:check` proves that every derived file is byte-identical to a fresh derivation.
+- [ ] A test fails when an item exists in one artifact and not in another.
+- [ ] Inspector coverage unchanged (526/532 or better); the agent item list and the Blocks feed show the same items as before.
+
+Status: todo.
+
+## 2. Session split: Project vs `ext.chat`
+
+Goal: a Project (page, skin, edit history) exists without a chat. Chat messages are an extension (`ext.chat`), and `messages` is optional in the contract (audit A-01, A-02, A-04, A-05, C-01).
+
+Acceptance:
+- [ ] A Project store owns the page, candidate/applied state, skin, selection and edit history; it does not import chat code.
+- [ ] A chat session references a project id; the page blob is keyed by project id.
+- [ ] `messages` is optional in the session profile; the contract change is released in `ui8kit/contract` first (page-spec/session version bump) and `packages/page-contract` follows.
+- [ ] `session.svelte.ts` is split (target under 300 lines per file); pure transitions (proposal state, page replacement, import) are plain functions with unit tests.
+- [ ] Loading, exporting and importing a session file work for old files (until item 4) and for files without messages.
+
+Status: todo.
+
+## 3. One render probe
+
+Goal: one render-probe function shared by write-time, turn-start and the coverage script, and installed wherever pages are written, the browser included (audit B-04, B-05).
+
+Acceptance:
+- [ ] One exported `renderProbe` (compiled registry blocks, `render` to `body`) used by `xai-runtime`, `scripts/inspector-coverage.mjs` and the browser preview/Inspector path.
+- [ ] No second copy of the render closure in `apps/xai-runtime/src/http.ts` or the scripts.
+- [ ] A browser write (Inspector edit, drag and drop, feed add) of a block that does not render is rejected with `render_failed` / `render_empty`, as on the server.
+- [ ] `renderProblems(page)` is computed once per turn step.
+- [ ] Tests: the probe module is the only place that calls the registry `render`; write-time, turn-start and coverage give the same verdict on a fixed fixture page.
+
+Status: todo (first implementation step).
+
+## 4. Remove the old persist migrations
+
+Goal: delete the page-spec v1 and `feed-screen` migrations (and the other old-data paths) once staging has no old sessions (audit B-06).
+
+How to know (browser data is local, so the server cannot see it): the migration marker `buildy:v1:migration` gets hit counters per path (`pageV1`, `feedScreen`, `legacyKeys`, `proposalApplied`, `lastAt`), and `window.buildy.migrationReport()` prints them. The owner and the team open staging once and report the counters. Removal starts when every reported browser shows zero hits since the counters shipped and the owner confirms.
+
+Acceptance:
+- [ ] Counters and `migrationReport()` shipped first, as its own commit, with a test.
+- [ ] Removal criterion recorded in this file with the date and the reported browsers.
+- [ ] Removed: `migratePageV1` and `page-doc/migrate.ts`, `catalog/props-overrides.ts`, the v1 model in `page-contract` (`types.ts`, `validate.ts`, `spec.ts`) where nothing else uses it, `LEGACY_STORAGE_KEYS` and `migrateLegacyStorage`, the `feed-screen` strip, `migrateProposal`, `migrateSessionFile`.
+- [ ] An old file or blob that still arrives is rejected with a clear message and goes to quarantine (nothing is dropped silently).
+- [ ] Tests for the migrations are deleted with the code; coverage and gate stay green.
+
+Status: todo (last, after the criterion is met).
+
+## 5. Chat as an optional module
+
+Goal: the core builds and runs with chat off (audit A-03, A-06, F-01).
+
+Acceptance:
+- [ ] `apps/chat-web/src/modules/chat` holds the chat UI and state; it registers through a `BuilderModule` interface (DIP); core imports nothing from `modules/chat`.
+- [ ] `VITE_MODULE_CHAT` (env, default on) switches the module; `.env.example` documents it.
+- [ ] With the flag off, `npm run build` passes and the app opens, edits and exports a project; the bundle has no chat code.
+- [ ] Gate "no trace": a script fails if, with the flag off, the built output or `src` outside `modules/chat` contains chat imports or chat i18n strings.
+- [ ] Agent, model and usage code leaves `builder-core` for a chat-side package (A-06).
+
+Status: todo.
+
+## 6. Quality criteria and the gate
+
+Goal: the criteria are enforced by the gate, not by memory.
+
+Criteria:
+- KISS and DRY: no second hand-kept copy of data or of a helper.
+- Light SOLID: one reason to change per package (SRP); the core depends on `BuilderModule`, not on chat (DIP).
+- Functional TypeScript over OOP: pure `applyOp` / validate over `@ui8kit/contract` types; state only in thin stores.
+- TDD with property-based fuzz: fuzz of ops with schema-random props, and an export snapshot compared with `npx ui8kit add`.
+- 12-factor: config in env (including `VITE_MODULE_CHAT`), secrets only in env, stateless API, logs without secrets.
+
+Acceptance (gate part, done before item 4):
+- [ ] ESLint (flat config): `no-explicit-any`, `import/no-cycle`, package boundaries (`apps -> packages`, `ports -> page-contract` only), svelte plugin, unused exports, `max-lines` warning at 300 and `max-lines-per-function` at 80; wired into `npm run check` (audit D-01).
+- [ ] `typecheck` script: `tsc --strict` over `packages/*` and `apps/xai-runtime` (0 errors today, D-02); `svelte-check` stays for chat-web.
+- [ ] `ui8px` lint for UI files in the same command.
+- [ ] A ratchet for `as unknown as` / `as never` / `as Type` counts (baseline 10 / 2 / about 297, D-03 to D-05) that may only go down.
+- [ ] Fuzz test of `applyOp` and the gate (fast-check or equal): valid in, valid out, undo restores the page (audit E-01).
+- [ ] Export snapshot test against `npx ui8kit add` for a fixed page (audit E-02).
+- [ ] i18n unused-key check (B-11) and dead-file check (B-08, B-09, B-10) in the gate.
+- [ ] 12-factor: `.env.example`, one typed config module per app, no direct `localStorage` outside `storage-v1` (F-01, F-03).
+- [ ] Cleanup items of the audit marked S3 are done as the areas are touched; none is left without an owner item.
+
+Status: todo.
+
+## 7. Open product items (kept, not part of the refactor)
+
+- [ ] Stale buildy digest pin in Stock: pull XGenBot `3cc9dce` first, then re-pin (`catalog/snapshot.config.json` still pins `afc826c`; Stock `buildy.v0.json` pins `inspectorDigest` b4631259017067e9, chat coverage has 2d545339e3f81ca9; audit B-03).
+- [ ] Currency and minor units upstream (in the contract and Stock; no local workaround).
+- [ ] Preview error alert contrast.
+- [ ] JSON-as-text failure (a model answers with JSON as plain text instead of calling the tool).
+- [ ] Six rich-text `__html` variants: delete or rework (owner decision; the BuildY guarantee protects the frontend).
+- [ ] `addScreen` sample props for navbar and footer placeholders.
+
+Status: open; each line is closed in the commit that fixes it.
