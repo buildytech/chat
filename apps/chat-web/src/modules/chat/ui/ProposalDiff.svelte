@@ -52,7 +52,7 @@
 			<Box tag="ul" class="flex flex-col gap-1 rounded border border-border p-2" aria-label={t("diff.title")} data-slot="proposal-diff">
 				{#each rows as row, index (`${row.kind}-${row.id ?? ""}-${index}`)}
 					<Box tag="li" class="flex items-start gap-2" data-diff={row.kind}>
-						<Icon size="sm" class="mt-0.5 shrink-0 text-muted-foreground">
+						<Icon size="sm" class="shrink-0 text-muted-foreground">
 							{#if row.kind === "removed"}<Trash2 />{:else if row.kind === "added"}<Plus />{:else if row.kind === "moved"}<ArrowUp />{:else}<Pencil />{/if}
 						</Icon>
 						<Text tag="span" class="min-w-0 break-words text-xs text-foreground">{row.text}</Text>

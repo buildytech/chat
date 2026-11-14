@@ -38,3 +38,9 @@ read nowhere else (a test), every name is in `.env.example` (a test).
 - The audit's "habit" facts are now failures. The first run found 19 lint errors (fixed), one secret leak (a provider error text repeated the xAI key into the function log and the 500 response; `safeErrorMessage` now removes the configured secret values and `xai-` keys), one import outside the app, 117 unused message keys and 4 dead files (removed).
 - Deferred on purpose and held by ratchets: 16 size warnings, 365 plain assertions, 16 `as unknown as`, 2 `localStorage` reads in the ported magazine theme, 207 unused exports (about 50 of them in the ported magazine theme and the gateway client that only tests use), 26 grid violations (z-index and size tokens outside the default scale).
 - `tsc` over tests, `import-x` unused-export rules and a curated ui8px policy are possible later steps; none is needed to keep the ratchets honest.
+
+## Addendum (2026-11-15): ratchets lowered
+
+- `unusedExports` 207 to 0 (147 un-exported, 51 declarations deleted with what only they used), `directLocalStorage` 2 to 0 (the dead part of the ported magazine theme went), `asType` 343 to 332.
+- `ui8pxGrid` 26 to 0. The 26 hits were not spacing: z-index stacking (`z-20`, `z-30`, `z-50`, `z-auto`), sizes that are multiples of 8 or 4 px (`w-14`, `w-24`, `w-32`, `w-56`, `w-80`, `min-h-16`, `min-h-64`, `max-h-64`, `max-h-3/4`, `min-h-screen`, `max-w-full`, `max-h-full`, `bottom-full`) which the generated allow-list did not name, and one half step (`mt-0.5`, removed). The 17 names are now in `.ui8px/policy/allowed.json`; no class off the grid was admitted.
+- Still open (not gated): 415 `UI8PX002` default allow-list gaps (token colours with an opacity such as `bg-foreground/40`, and similar), and the 15 size warnings.
