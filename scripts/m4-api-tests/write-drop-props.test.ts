@@ -87,9 +87,8 @@ test("the live turn: a write with an unknown prop is accepted, the model is told
 	assert.ok(out.result.ok);
 	if (!out.result.ok) return;
 	assert.ok(out.result.proposal, "a proposal");
-	const told = seen.toolMessages.find((m) => m.name === "write_page")!.content;
-	assert.equal(told.ok, true);
-	assert.deepEqual(told.notes, ["Dropped (not in the props schema of the block): /blocks/2/props/dishes/0/spice."]);
+	assert.equal(seen.requests.length, 1, "the accepted write ends the turn");
+	assert.deepEqual(out.result.proposal.warnings, ["Dropped (not in the props schema of the block): /blocks/2/props/dishes/0/spice."]);
 });
 
 test("the prompt names the currency as an ISO code", async () => {

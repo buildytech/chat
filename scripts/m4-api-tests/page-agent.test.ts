@@ -153,7 +153,7 @@ test("scope: with selected blocks only those change; a write outside them is rej
 		],
 		async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: "Rename the hero", mode: "build", page: base, expectedRevision: 3, scopeBlockIds: ["block-hero"] }, signal()), seen })
 	);
-	assert.equal(seen.requests.length, 3);
+	assert.equal(seen.requests.length, 2);
 	const first = (seen.toolMessages[0]!.content as { issues: Array<{ code: string; path: string }> }).issues;
 	assert.equal(first[0]!.code, "outside_scope");
 	const reply = out.result as AgentReply;
@@ -171,7 +171,7 @@ test("a rejected write comes back as { path, code, expected, got }; the model fi
 		],
 		async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: "Mute the hero", mode: "build", page: base, expectedRevision: 3 }, signal()), seen })
 	);
-	assert.equal(seen.requests.length, 3);
+	assert.equal(seen.requests.length, 2);
 	const issues = (seen.toolMessages[0]!.content as { issues: Array<{ path: string; code: string; expected: string; got: unknown }> }).issues;
 	assert.equal(issues[0]!.path, "/blocks/1/props/tone");
 	assert.equal(issues[0]!.code, "props_invalid");
@@ -203,7 +203,7 @@ test("loop guard: a different rejected value at the same path is a new attempt, 
 		[{ calls: [{ name: "write_page", arguments: attempt("neon") }] }, { calls: [{ name: "write_page", arguments: attempt("pink") }] }, { calls: [{ name: "write_page", arguments: good }] }, { content: "Muted the hero." }],
 		async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: "Mute the hero", mode: "build", page: base, expectedRevision: 3 }, signal()), seen })
 	);
-	assert.equal(seen.requests.length, 4);
+	assert.equal(seen.requests.length, 3);
 	assert.ok(out.result.ok, JSON.stringify(out.result));
 });
 

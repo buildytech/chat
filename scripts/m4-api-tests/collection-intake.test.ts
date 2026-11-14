@@ -125,7 +125,7 @@ test("collection chat: write_page outside the collection comes back as outside_c
 		[{ calls: [{ name: "write_page", arguments: outside }] }, { calls: [{ name: "write_page", arguments: fixed }] }, { content: "Done." }],
 		async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: "A bakery page", mode: "build", page: draft.page, expectedRevision: 0, collection: bounds }, signal()), seen })
 	);
-	assert.equal(seen.requests.length, 3);
+	assert.equal(seen.requests.length, 2, "the accepted write ends the turn");
 	const first = (seen.toolMessages[0]!.content as { issues: Array<{ code: string; got: unknown }> }).issues;
 	assert.ok(first.some((issue) => issue.code === "outside_collection" && issue.got === "pricing-tiers"));
 	const reply = out.result as AgentReply;

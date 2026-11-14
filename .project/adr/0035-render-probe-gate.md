@@ -30,3 +30,12 @@ The page of session 1e1031a still had two blocks that threw. Two later turns (Bu
 - Status line: a reply without a proposal shows "No changes were made to the page." (`message.noChange`, en and ru) under the text, whatever the text says. An accepted `write_page` whose diff is empty counts as no write.
 - The usage record of a normal run was always `incomplete` (reason `error`); it is `complete` unless a request did not report usage.
 - Tests: `render-recovery.test.ts` replays this page with a model that repeats the no-write claim (nudged once, no proposal, no nudge when there is nothing to fix) and with a model that writes `RUB` (one accepted write, no problems left); `render-items.test.ts` renders all nine blocks of the page after the fix (prices are minor units: `450` renders as 4.50) and shows exactly two throw before it.
+
+## Addendum (session 5c155d3): Build forces a tool call
+
+The model printed a whole page document as text and never called write_page. Build now sends `tool_choice: "required"` on every
+step, and the turn ends with the first accepted write_page (no extra model step; the diff and the status line come from the host).
+A step that still comes back as plain text is nudged once ("call write_page with the page document, do not print it") and the next
+request forces `{"type":"function","function":{"name":"write_page"}}` (docs.x.ai lists it under tool choice; a 400/422 falls back to
+`required`). Ask stays on `auto`. No text is parsed for a document. A write that fails validation keeps the localized
+"page not changed (code)" line. Consequence: the empty-required-text fill hint of an accepted write no longer gets a follow-up step.

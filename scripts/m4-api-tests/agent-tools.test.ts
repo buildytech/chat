@@ -108,7 +108,7 @@ test("Build turn: a text-only answer is shown and creates no proposal", async ()
 		out: await runXaiCatalogTurn("k", MODEL, { brief: BRIEF, mode: "build", page: page(), expectedRevision: 0 }, signal()),
 		seen
 	}));
-	assert.equal(seen.requests.length, 1);
+	assert.equal(seen.requests.length, 2, "required, then the nudge with write_page forced by name");
 	const reply = out.result as AgentReply;
 	assert.equal(reply.mode, "build");
 	assert.equal(reply.proposal, undefined);

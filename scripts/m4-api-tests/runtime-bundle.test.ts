@@ -79,7 +79,7 @@ test("bundled run entry: the tool loop (get_page, search_catalog, get_block, wri
 	]);
 	assert.equal(response.status, 200, JSON.stringify(body));
 	assert.equal(body.ok, true, JSON.stringify(body));
-	assert.equal(seen.length, 3);
+	assert.equal(seen.length, 2);
 	assert.ok(body.proposal, "a write_page proposal");
 	assert.equal(((body.proposal as { page: { title: string } }).page).title, "Spring plans");
 });
@@ -88,7 +88,7 @@ test("bundled run entry: a full 8-block page write (food fill) passes the bundle
 	const fill = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/food-fill.json"), "utf8"));
 	const { response, body, seen } = await run(MODELS[1]!, "build", [{ calls: [{ name: "write_page", arguments: { page: fill } }] }, { content: "Done." }]);
 	assert.equal(response.status, 200, JSON.stringify(body));
-	assert.equal(seen.length, 2);
+	assert.equal(seen.length, 1);
 	assert.equal(((body.proposal as { page: { blocks: unknown[] } }).page).blocks.length, 8);
 });
 
@@ -104,6 +104,6 @@ test("bundled run entry: the render probe is live; a page with a currency symbol
 	const first = JSON.parse(String((seen[1]!.messages as Array<{ role: string; content: string }>).findLast((m) => m.role === "tool")!.content)) as { ok: boolean; issues: Array<{ path: string; code: string }> };
 	assert.equal(first.ok, false);
 	assert.deepEqual(first.issues.map((issue) => `${issue.code} ${issue.path}`), ["render_failed /blocks/2/props/dishes/0/currency", "render_failed /blocks/4/props/zones/0/currency"]);
-	assert.equal(seen.length, 3);
+	assert.equal(seen.length, 2);
 	assert.equal(((body.proposal as { page: { blocks: unknown[] } }).page).blocks.length, 9);
 });

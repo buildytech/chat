@@ -13,7 +13,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { blankRequired, checkPageDoc, effectiveProps, emptyPage, itemInfo, renderBlock, sampleProps, screenItems, writePage } from "../../packages/builder-core/src/index.ts";
-import { executeCatalogTool, type AgentReply } from "../../packages/chat-agent/src/index.ts";
+import { executeCatalogTool, runWriteTool, type AgentReply } from "../../packages/chat-agent/src/index.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
 import { MODEL, signal, toolNames, withProvider, type Scripted } from "./agent-replay.ts";
@@ -66,7 +66,7 @@ test("2. ranking: the food request finds food screens and dish blocks through th
 	for (const screen of ["screen.theme-food-delivery/home", "screen.theme-food-grill/home", "screen.theme-restaurant-house/home"]) assert.deepEqual(screenItems(screen)!.missing, [], screen);
 });
 
-test("3. Build: assembly and content in ONE write_page, 3 model requests, nothing empty, the title from the request", async () => {
+test("3. Build: assembly and content in ONE write_page, 2 model requests, nothing empty, the title from the request", async () => {
 	const base = newPage();
 	const script: Scripted[] = [
 		{
@@ -84,9 +84,9 @@ test("3. Build: assembly and content in ONE write_page, 3 model requests, nothin
 		seen
 	}));
 	assert.deepEqual(toolNames(seen.requests[0]!).sort(), ["get_block", "get_page", "search_catalog", "write_page"]);
-	assert.equal(seen.requests.length, 3);
+	assert.equal(seen.requests.length, 2);
 	assert.equal(out.meta.toolsCalled.filter((name) => name === "write_page").length, 1);
-	assert.equal(out.meta.usage.totalTokens, 1100 * 3);
+	assert.equal(out.meta.usage.totalTokens, 1100 * 2);
 	const reply = out.result as AgentReply;
 	assert.ok(reply.ok && reply.proposal, JSON.stringify(out.result));
 	const page = reply.proposal!.page;
@@ -104,8 +104,7 @@ test("3. Build: assembly and content in ONE write_page, 3 model requests, nothin
 		assert.deepEqual(blankRequired(block), [], `${block.id} has empty required text`);
 		assert.ok(!FILL_INS.test(JSON.stringify(renderBlock(block)!.props)), block.id);
 	}
-	const written = seen.toolMessages.find((m) => m.name === "write_page")!.content as Record<string, unknown>;
-	assert.equal(written.empty_required_text, undefined);
+	// no fill hint: the accepted write left no required text empty, so the turn ended on it
 	// the search the model ran put food screens first
 	const searched = seen.toolMessages.find((m) => m.name === "search_catalog")!.content as { items: Array<{ screenId: string }> };
 	assert.ok(FOOD_SCREEN.test(searched.items[0]!.screenId), JSON.stringify(searched).slice(0, 300));
@@ -119,15 +118,14 @@ test("4. a write that leaves required text empty is told which paths; unknown ic
 	[links[0]!.icon, links[1]!.icon, links[2]!.icon] = ["home", "lamb", "chicken"];
 	const script: Scripted[] = [
 		{ calls: [{ name: "write_page", arguments: { page: badIcons } }] },
-		{ calls: [{ name: "write_page", arguments: { page: bareHero } }] },
 		{ calls: [{ name: "write_page", arguments: { page: fill } }] },
-		{ content: "Done." }
+		{ content: "Never asked for." }
 	];
 	const { out, seen } = await withProvider(script, async (seen) => ({
 		out: await runXaiCatalogTurn("k", MODEL, { brief: BRIEF, mode: "build", page: base, expectedRevision: 0 }, signal()),
 		seen
 	}));
-	assert.equal(seen.requests.length, 4);
+	assert.equal(seen.requests.length, 2, "the accepted write ends the turn");
 	const rejected = (seen.requests[1]!.messages as Array<{ role: string; content?: string }>).filter((m) => m.role === "tool").map((m) => JSON.parse(m.content!) as { issues: Array<{ path: string; code: string; expected: string; got: unknown }> });
 	assert.deepEqual(rejected[0]!.issues.map((i) => [i.path, i.code, i.got]), [
 		["/blocks/0/props/links/0/icon", "props_invalid", "home"],
@@ -135,8 +133,10 @@ test("4. a write that leaves required text empty is told which paths; unknown ic
 		["/blocks/0/props/links/2/icon", "props_invalid", "chicken"]
 	]);
 	assert.match(rejected[0]!.issues[0]!.expected, /not one, nearest: .*; any other real name works/);
-	const second = (seen.requests[2]!.messages as Array<{ role: string; content?: string }>).filter((m) => m.role === "tool").map((m) => JSON.parse(m.content!) as Record<string, unknown>);
-	const hint = second[1]!.empty_required_text as Array<{ id: string; paths: string[] }>;
+	// the fill hint of an accepted write that leaves required text empty (the turn itself ends on the accepted write)
+	const bare = runWriteTool({ brief: BRIEF, mode: "build", page: base, expectedRevision: 0 }, base, { page: bareHero });
+	assert.ok(bare.ok);
+	const hint = (bare.ok ? bare.payload.empty_required_text : []) as Array<{ id: string; paths: string[] }>;
 	assert.deepEqual(hint.map((h) => h.id), ["block-hero"]);
 	assert.ok(hint[0]!.paths.includes("/title") || hint[0]!.paths.includes("/text"), JSON.stringify(hint));
 	assert.ok(((out.result as AgentReply).proposal?.page.blocks.length ?? 0) === 8);
