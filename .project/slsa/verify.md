@@ -1,19 +1,19 @@
 # Verify provenance (release artefact)
 
-После workflow `SLSA provenance` (tag `v*` / Release / `workflow_dispatch`) артефакт — tarball `chat-web-spa-*.tgz`. Attestation хранится в GitHub Attestations API (Sigstore).
+After the `SLSA provenance` workflow (tag `v*`, Release or `workflow_dispatch`) the artefact is the tarball `chat-web-spa-*.tgz`. The attestation is stored in the GitHub Attestations API (Sigstore).
 
-Нужен GitHub CLI (`gh`) ≥ 2.49 с `attestation` command.
+Needs GitHub CLI (`gh`) 2.49 or newer with the `attestation` command.
 
-## 1. Скачать subject
+## 1. Download the subject
 
-С run provenance workflow: artefact `chat-web-spa`. Или с GitHub Release, если attached.
+From the provenance workflow run: artefact `chat-web-spa`; or from the GitHub Release when attached.
 
 ```sh
 gh run download <RUN_ID> -n chat-web-spa -R buildytech/chat
 # → chat-web-spa-<sha>.tgz
 ```
 
-## 2. `gh attestation verify` (основной путь)
+## 2. `gh attestation verify` (main path)
 
 ```sh
 gh attestation verify ./chat-web-spa-<sha>.tgz \
@@ -21,11 +21,11 @@ gh attestation verify ./chat-web-spa-<sha>.tgz \
   --signer-workflow buildytech/chat/.github/workflows/slsa-provenance.yml
 ```
 
-Минимум (слабее): `--owner buildytech` без signer workflow.
+Minimum (weaker): `--owner buildytech` without the signer workflow.
 
-Ожидание: predicate type `https://slsa.dev/provenance/v1`, identity = этот repo + workflow. Exit 0 = digest совпал с attestation.
+Expected: predicate type `https://slsa.dev/provenance/v1`, identity = this repo and workflow. Exit 0 means the digest matches the attestation.
 
-Показать bundle:
+Show the bundle:
 
 ```sh
 gh attestation verify ./chat-web-spa-<sha>.tgz \
@@ -35,7 +35,7 @@ gh attestation verify ./chat-web-spa-<sha>.tgz \
 
 ## 3. Cosign-style (optional / offline)
 
-Если есть bundle с `gh attestation download`:
+With a bundle from `gh attestation download`:
 
 ```sh
 gh attestation download ./chat-web-spa-<sha>.tgz -R buildytech/chat
@@ -48,15 +48,15 @@ cosign verify-blob-attestation \
   ./chat-web-spa-<sha>.tgz
 ```
 
-Cosign не обязателен для P0, если `gh attestation verify` доступен.
+Cosign is not required when `gh attestation verify` is available.
 
-## 4. Что проверять глазами
+## 4. What to check by eye
 
-- Subject digest = SHA256 tarball, не «имя файла».
-- `builder.id` / workflow ref указывает на `.github/workflows/slsa-provenance.yml`.
-- Source commit = git tag / SHA релиза.
-- Не доверять артефакту, скачанному не из того run, на который смотрит attestation.
+- The subject digest is the SHA256 of the tarball, not the file name.
+- `builder.id` / the workflow ref points to `.github/workflows/slsa-provenance.yml`.
+- The source commit is the release tag or SHA.
+- Do not trust an artefact downloaded from a different run than the one the attestation names.
 
 ## Gaps
 
-Пока не было ни одного `v*` release, verify не на чем гонять — это ожидаемо для scaffold. Private repo: attestations требуют GitHub Enterprise Cloud; public — доступны на текущих планах.
+Until the first `v*` release exists there is nothing to verify; that is expected. Private repository: attestations need GitHub Enterprise Cloud; public repositories have them on current plans.

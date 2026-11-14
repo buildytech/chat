@@ -2,28 +2,22 @@
 
 Operator notes for this repository. See `intent.md` when present.
 
-Краткий индекс: продукт, ADR, SLO, SLSA. Архитектура кода — в `docs/`, не дублируем её здесь.
+Index: product intent, ADRs, SLOs, SLSA. Code architecture lives in `docs/`, not here.
 
 | Path | What |
 | --- | --- |
-| [intent.md](intent.md) | One-page product intent (Creator shell + optional cursor-sdk) |
-| [adr/](adr/README.md) | Architecture Decision Records |
-| [adr/0001-cms-agnostic-chat-builder.md](adr/0001-cms-agnostic-chat-builder.md) | Dual builders, Page Store ports, stack split (WP host superseded by 0006) |
-| [adr/0006-browser-first-no-wordpress-runtime.md](adr/0006-browser-first-no-wordpress-runtime.md) | Browser-first Creator; no WordPress runtime |
-| [adr/0007-one-buildy-three-hosts.md](adr/0007-one-buildy-three-hosts.md) | One BuildY product on Browser, WordPress builder page, Desktop Wails3; shared Stock |
-| [../docs/plans/one-buildy-three-hosts.md](../docs/plans/one-buildy-three-hosts.md) | Sequenced plan for ADR-0007 (Browser first; no desktop/WP work in this repo yet) |
-| [adr/0002-supply-chain-slsa.md](adr/0002-supply-chain-slsa.md) | SLSA Build L1 + CI provenance toward L2 |
-| [adr/0003-creator-surfaces-preview-code.md](adr/0003-creator-surfaces-preview-code.md) | ChatCore / ChatColumn / CreatorShell; Preview Svelte + Code Latte |
-| [adr/0004-agent-runtime-adapters.md](adr/0004-agent-runtime-adapters.md) | Agent Gateway, AdapterRegistry, opt-in `cursor-sdk` |
-| [slo/chat-web.md](slo/chat-web.md) | Early-stage SLO: build CI + Creator/ChatCore/Gateway indicators |
-| [adr/0028-chat-ui-refinement.md](adr/0028-chat-ui-refinement.md) | UI8Kit chat UI refinement; initial implementation and evidence recorded |
+| [intent.md](intent.md) | One-page product intent |
+| [adr/](adr/README.md) | Architecture Decision Records (index of all 47) |
+| [slo/chat-web.md](slo/chat-web.md) | Early-stage SLO: build CI and the app's indicators |
 | [slo/chat-ui-refinement.md](slo/chat-ui-refinement.md) | Visual, accessibility and regression acceptance targets for ADR 0028 |
-| [../docs/plans/chat-ui-refinement.md](../docs/plans/chat-ui-refinement.md) | Shell refactor sequence and verification results |
-| [../docs/acceptance/chat-ui-refinement.md](../docs/acceptance/chat-ui-refinement.md) | Browser measurements, screenshots and remaining review limits |
-| [slsa/controls.md](slsa/controls.md) | P0 supply-chain checklist + build recipe |
+| [slsa/controls.md](slsa/controls.md) | Supply-chain checklist and build recipe (ADR 0002) |
 | [slsa/verify.md](slsa/verify.md) | How to verify GitHub artefact provenance |
+| [../docs/architecture.md](../docs/architecture.md) | Code architecture |
+| [../docs/plans/refactor-2026-11.md](../docs/plans/refactor-2026-11.md) | Refactor plan and its status; [audit](../docs/plans/audit-2026-11.md) |
+| [../docs/plans/one-buildy-three-hosts.md](../docs/plans/one-buildy-three-hosts.md) | Sequenced plan for ADR 0007 (Browser first) |
+| [../docs/plans/chat-ui-refinement.md](../docs/plans/chat-ui-refinement.md), [../docs/acceptance/](../docs/acceptance/) | Shell refactor plan and browser evidence |
 
 CI:
 
-- [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) — `apps/chat-web` build on push/PR to `main`
+- [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) — `apps/chat-web` chat-web build and the Go placeholder on push and PR to `main`
 - [`.github/workflows/slsa-provenance.yml`](../.github/workflows/slsa-provenance.yml) — P0 provenance / attestation for release artefacts

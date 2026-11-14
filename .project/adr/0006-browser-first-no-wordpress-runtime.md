@@ -25,6 +25,5 @@
 
 ## Related
 
-- [docs/browser-handoff.md](../../docs/browser-handoff.md)
 - [docs/architecture.md](../../docs/architecture.md)
 - [ADR-0007](0007-one-buildy-three-hosts.md) — three-host product; this ADR still bans a WordPress **runtime** in this repo

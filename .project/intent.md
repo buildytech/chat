@@ -1,15 +1,24 @@
 # Intent
 
-SI Chat Website Builder — turnkey **landing page + embedded chat**, собранный модульно (не клон ChatGPT). CMS-agnostic: обычные страницы (`page` + unique slug) рядом с visual Builder. Один Page Store, разные оболочки.
+BuildY Chat is a browser-first website builder: assemble a page from the pinned Stock catalog (UI8Kit registry blocks), edit
+schema-backed fields in the Inspector, and ask or build with a model (Ask / Build chat). The page is one document
+(page-spec 2.0, [ADR 0034](adr/0034-page-spec-2-one-write-tool.md)) that exports as Svelte code and a ZIP identical to what
+`npx ui8kit add` installs. CMS-agnostic: ordinary pages (`page` + unique slug), no checkout, payment, fabricated promo or stock,
+no multilanding or UTM.
 
-**Creator:** ChatCore (логика, без DOM) · ChatColumn (thread + composer) · CreatorShell (AppNav + top bar + Workspace). Workspace = BlockTree **текущей** лендинг-страницы. PreviewPort = Svelte admin preview; CodePort = Latte renderer stub; оба из одного Page DTO. Paint = UI8Kit / ui8px + shadcn HSL + Istok + `rounded-default` (структура как spline BuilderScreen, скин spline не копируем).
+**Creator:** the shell (nav, left panel with Blocks / Sections / Chat tabs, preview, inspector slide-over) is the core; the chat is
+an optional module behind a `BuilderModule` port ([ADR 0041](adr/0041-chat-as-optional-module.md)): `VITE_MODULE_CHAT=0` builds the
+page builder with no trace of it. The browser keeps projects and chats under `buildy:v1:*` ([ADR 0015](adr/0015-session-standard-buildy-v1.md)).
 
-**Agents:** единственный канал — Agent Gateway (Contract v1). AdapterRegistry: default `context-local` (лёгкий harness / context-serve); opt-in VPS `agent_runtime=cursor-sdk` + env key + local cwd. UI ветвится по **capabilities**, не по имени runtime. `buildytech/vibecode` — spike, не референс.
+**Agent:** one write tool, `write_page`, behind a host gate (document schema, props schema, a renderer exists). The optional
+protected runtime (`apps/xai-runtime`, server-side `XAI_API_KEY`) serves Grok models; nothing calls a model until the author sends
+a message.
 
-**P0:** runnable SPA (`apps/chat-web`) с каркасом CreatorShell, контракт портов, mock ChatCore. Нет checkout/payment, нет fabricated promo/stock, нет multilanding/UTM. Нет live `@cursor/sdk` / Docker / CMS publish в этом этапе.
+**Targets:** one BuildY product on three hosts (WordPress builder page, Browser, Desktop Wails3) sharing the pinned CodeGen-X Stock
+catalog ([ADR-0007](adr/0007-one-buildy-three-hosts.md)). This repository ships the Browser host first ([ADR-0006](adr/0006-browser-first-no-wordpress-runtime.md)).
+Wails3 is a later copy of the same core; WordPress is a separate runtime.
 
-**Targets:** one BuildY product on three hosts (WordPress builder page, Browser, Desktop Wails3) sharing the pinned CodeGen-X Stock catalog ([ADR-0007](adr/0007-one-buildy-three-hosts.md)). This repo ships the **Browser first** (ADR-0006). Wails3 is a later copy of the same core, not a catalog fork (stub today). WordPress remains a separate runtime; portable data import is planned, not implemented here. Telegram Mini App stays an unrelated stub.
+Figma is a layout reference only. Copyright **BuildYtech**, Apache-2.0.
 
-Figma — только layout reference. Copyright **BuildYtech**, Apache-2.0.
-
-See [docs/architecture.md](../docs/architecture.md), [docs/plans/one-buildy-three-hosts.md](../docs/plans/one-buildy-three-hosts.md), [adr/0001](adr/0001-cms-agnostic-chat-builder.md), [adr/0003](adr/0003-creator-surfaces-preview-code.md), [adr/0004](adr/0004-agent-runtime-adapters.md), [adr/0006](adr/0006-browser-first-no-wordpress-runtime.md), [adr/0007](adr/0007-one-buildy-three-hosts.md).
+See [docs/architecture.md](../docs/architecture.md), [docs/plans/one-buildy-three-hosts.md](../docs/plans/one-buildy-three-hosts.md),
+[adr/](adr/README.md).

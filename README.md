@@ -44,7 +44,7 @@ Open the URL printed by Vite (normally `http://127.0.0.1:5173`). No model key is
 assemble/edit pages locally. Live inference requires the optional runtime.
 
 ```sh
-npm run verify          # tests, svelte-check and static build
+npm run verify          # tests, secret scan, audit, checks, static build and headless smoke
 npm run registry:check # offline registry snapshot verification
 ```
 

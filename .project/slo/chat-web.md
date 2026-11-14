@@ -1,41 +1,34 @@
 # SLO: apps/chat-web
 
-For the approved shell refactor's visual and accessibility acceptance, see
-[Chat UI refinement](chat-ui-refinement.md) (ADR 0028). Its targets and pending measurements are separate from the
-historical early-product indicators below; this document's scaffold-era backend descriptions are not a current
-runtime inventory (see `AGENTS.md` and `docs/runbook.md`).
+For the visual and accessibility acceptance of the shell refactor, see [Chat UI refinement](chat-ui-refinement.md) (ADR 0028).
+This document holds the build and CI indicators of the app. There is no production traffic and no hosted backend yet, so the
+numbers are about **build, CI and smoke indicators**, not about 99.99% uptime.
 
-Ранняя стадия (scaffold + CreatorShell skeleton). Нет production traffic и live backends — цифры про **сборку, CI и дымовые индикаторы**, не про 99.99% uptime.
-
-## Build / CI (kept)
+## Build / CI
 
 | Indicator | Target | Window | Notes |
 | --- | --- | --- | --- |
-| Build success rate on `main` | ≥ **90%** green `chat-web` job | rolling 28 days / last 20 runs (что больше) | `npm run build` in `apps/chat-web` |
-| Time-to-green (`apps/chat-web` CI) | p90 **≤ 10 min** | same | checkout + Node LTS + `npm ci` + contract tests + `svelte-check` + build |
+| Build success rate on `main` | at least **90%** green `chat-web` job | rolling 28 days or the last 20 runs, whichever is larger | `npm run build` in `apps/chat-web` |
+| Time-to-green (`apps/chat-web` CI) | p90 **at most 10 min** | same | checkout, Node 22, `npm ci`, tests, `svelte-check`, build |
 
-## Early product indicators (not production SLOs)
+## Product indicators (not production SLOs)
 
 | Indicator | Target | Window | Notes |
 | --- | --- | --- | --- |
-| CreatorShell layout smoke | **compile + mount** | each `main` build | 3 columns on `lg+` (AppNav \| ChatColumn \| Workspace) or Chat \| Workspace tabs below `lg`. Fail = build/typecheck red, not a latency SLO. |
-| ChatCore mock path | **works locally** | `npm run dev` | create session, send, persist (`session.svelte.ts` / ChatCore). N/A as production availability until live Gateway. |
-| Gateway stub health | **N/A** | — | No Gateway HTTP yet (ADR-0004). When a stub exists: process-up **2xx** on its health route. Not a production SLO. |
-| cursor-sdk agent latency | **N/A** | — | No opt-in profile (`agent_runtime=cursor-sdk` + key + VPS cwd) yet. Do not invent p95 until that path is runnable. |
-| Mock-session local path availability | **N/A (production)** | — | in-memory + localStorage; same as ChatCore mock. Live orchestrator / Page Store still stub. |
+| Shell smoke | **compile and mount** | each `main` build | The headless smoke of `npm run verify` mounts the shell with the chat on and off (ADR 0041). Fail means a red build, not a latency SLO. |
+| Local persistence | **works locally** | `npm run dev` | Projects and chats persist under `buildy:v1:*` in the browser (ADR 0015). Not a production availability figure. |
+| Runtime latency | **N/A** | n/a | The optional runtime (`apps/xai-runtime`) has a run budget (60 s on Vercel Hobby, 90 s locally) but no latency SLO until a hosted profile exists. |
 
 ## Measurement
 
-- **Build success / time-to-green:** GitHub Actions [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) (`chat-web` job). Источник: Actions run duration + conclusion на `main`.
-- **Release path:** [`.github/workflows/slsa-provenance.yml`](../../.github/workflows/slsa-provenance.yml) — success rate считается отдельно; красный provenance не жжёт build SLO, но блокирует объявление release-ready.
-- **CreatorShell smoke:** same `chat-web` job (`npm run build` must compile Shell / Column / Workspace). Visual check is local/dev, not CI until a smoke test exists.
-- **ChatCore mock:** только локальный `npm run dev` (см. [docs/runbook.md](../../docs/runbook.md)).
-- **Gateway / cursor-sdk:** не измеряем, пока нет stub health и opt-in profile (ADR-0004).
+- **Build success and time-to-green:** GitHub Actions [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) (`chat-web` job): run duration and conclusion on `main`.
+- **Release path:** [`.github/workflows/slsa-provenance.yml`](../../.github/workflows/slsa-provenance.yml). Its success rate is counted separately; a red provenance run does not burn the build SLO but blocks calling a release ready.
+- **Shell smoke:** `npm run verify` (see [docs/runbook.md](../../docs/runbook.md)).
 
-## Error budget (greenfield)
+## Error budget
 
-10% неуспешных CI runs на 28 дней — бюджет на registry flakes, toolchain drift и отсутствие lockfile.
+10% failed CI runs over 28 days is the budget for registry flakes and toolchain drift.
 
-Пока бюджет горит (main красный дольше одного рабочего цикла): не публиковать теги `v*`, не считать SPA release-ready. On-call нет; реакция — починить build на `main`, не маскировать skip-ами.
+While the budget is burning (`main` red for more than one working cycle): do not publish `v*` tags and do not call the SPA release-ready. There is no on-call; the response is to fix the build on `main`, never to mask it with skips.
 
-Когда появится lockfile + live backend, пересмотреть targets (ожидаемо: build ≥ 95%, отдельный availability SLO). Agent latency для cursor-sdk появляется **только** вместе с opt-in профилем — не раньше.
+Revisit the targets when a hosted backend exists (expected: build at least 95% and a separate availability SLO).

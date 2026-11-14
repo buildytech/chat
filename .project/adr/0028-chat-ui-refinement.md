@@ -23,7 +23,7 @@ styles and interactive states must be checked in the browser before treating sou
 
 Design inputs (owner-local files, not repository dependencies):
 
-- `C:/Users/alexe/OneDrive/Документы/ChatGPT/DesignUXUI/output/dark-ui-2026-11-11/`: `01-graphite-chat.png`,
+- the owner's design folder `DesignUXUI/output/dark-ui-2026-11-11/`: `01-graphite-chat.png`,
   `02-near-black-media.png`, `03-charcoal-workspace.png`, `prompts.md`.
 - `C:/Users/alexe/Downloads/Screenshot_114.png` and `Screenshot_116.png`.
 

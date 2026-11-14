@@ -24,7 +24,7 @@ Root cause (reproduced offline with the same screen):
    vocabulary, and a fresh live run spent all 8 steps re-searching (`propose_layout_missing`, ~95k tokens).
 3. The chat's Stock screens search box matched one lowercased substring against screen id, English title, subtitle,
    block labels and jobs, inside the scenario's filter: no Russian, no industry or facet labels, no multi-word
-   queries ("новый год"), and a scenario hid every match outside it without saying so.
+   queries (a Russian holiday phrase), and a scenario hid every match outside it without saying so.
 
 ## Decision
 

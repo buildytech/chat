@@ -4,11 +4,11 @@ Numbering: `NNNN-kebab-title.md`. Numbers only increase; files are never renamed
 
 | ADR | Title | Status |
 | --- | --- | --- |
-| [0001](0001-cms-agnostic-chat-builder.md) | CMS-agnostic chat builder (dual builders + Page Store ports) | Accepted (WP embed host superseded by 0006) |
+| [0001](0001-cms-agnostic-chat-builder.md) | CMS-agnostic chat builder | Accepted in part (WP host: 0006; Page DTO: 0034) |
 | [0002](0002-supply-chain-slsa.md) | Verifiable technical supply via SLSA-aligned CI | Accepted |
-| [0003](0003-creator-surfaces-preview-code.md) | Creator surfaces & Preview/Code ports | Accepted (WP embed composition superseded by 0006) |
-| [0004](0004-agent-runtime-adapters.md) | Agent runtime adapters & VPS cursor-sdk opt-in | Accepted |
-| [0005](0005-contextly-historical-lexproto-cr-gates.md) | ContextlY historical CR + lexproto/Jev gate scheme (future only) | Proposed |
+| [0003](0003-creator-surfaces-preview-code.md) | Creator surfaces and Preview / Code | Accepted in part (WP embed: 0006; Latte CodePort: 0034, 0008) |
+| [0004](0004-agent-runtime-adapters.md) | Agent runtime adapters (superseded) | Superseded by 0011, 0034, 0041 |
+| [0005](0005-contextly-historical-lexproto-cr-gates.md) | Historical CR + lexproto/Jev gate scheme (withdrawn) | Withdrawn (never implemented) |
 | [0006](0006-browser-first-no-wordpress-runtime.md) | Browser-first Creator; no WordPress runtime in this repo | Accepted |
 | [0007](0007-one-buildy-three-hosts.md) | One BuildY product, three hosts, shared Stock | Accepted |
 | [0008](0008-registry-single-source-of-ui.md) | The UI8Kit registry is the single source of UI | Accepted |
@@ -17,6 +17,20 @@ Numbering: `NNNN-kebab-title.md`. Numbers only increase; files are never renamed
 | [0011](0011-ask-build-modes-shared-agent-tools.md) | Ask / Build chat modes and one shared agent tools file | Accepted |
 | [0012](0012-unified-catalog-snapshot.md) | Unified catalog snapshot (codegen-x Stock + UI8Kit registry) | Accepted |
 | [0013](0013-stock-blocks-render-by-composition.md) | Stock blocks render by screen composition; strict screen support | Accepted |
+| [0014](0014-build-inspector.md) | Build inspector: canvas identity, schema fields, validated write-back, local history | Accepted |
+| [0015](0015-session-standard-buildy-v1.md) | Session standard buildy:v1: one key space, validated load, portable export, one revision per edit | Accepted |
+| [0016](0016-skins-registry-theme-items.md) | Skins are registry items `theme-<skin>`; the chat's skin is part of the session | Accepted |
+| [0017](0017-ide-layout-resizable-panes.md) | Compact IDE layout: resizable, collapsible panes; one inspector column | Accepted |
+| [0018](0018-build-self-correction.md) | Build self-correction: no dead-end search, per-block rejections, partial acceptance, step budget | Accepted |
+| [0019](0019-stock-collection-intake.md) | Stock collection intake (Open in BuildY) | Accepted |
+| [0020](0020-ask-plan-apply-in-build.md) | Ask page plans, Apply in Build, shared page context and honest reply text | Accepted |
+| [0021](0021-field-level-selection-viewmap.md) | Field-level selection through the registry viewMap and generated `data-slot` | Accepted |
+| [0022](0022-collection-intake-draft.md) | Collection intake draft (host pre-placement, compact intake turn) | Accepted |
+| [0023](0023-intake-copy-quality-and-block-replace.md) | Collection intake copy quality, and block replacement in the Ask plan | Accepted |
+| [0024](0024-agent-free-build-layout.md) | Agent-free Build layout: left panel tabs, Blocks feed, one shared Stock search | Accepted |
+| [0025](0025-custom-skin-magazine-theme-import.md) | Custom Skin, one imported Stock theme (magazine-theme v2) | Accepted |
+| [0026](0026-chat-ui-skin.md) | Chat UI skin, a tonal dark and light theme for the chat shell | Accepted |
+| [0027](0027-advisory-screen-family.md) | The screen family is advisory; feed availability is a property of the card | Accepted |
 | [0028](0028-chat-ui-refinement.md) | Chat UI refinement through UI8Kit composition and one shell theme | Accepted |
 | [0029](0029-page-slug-preview-address.md) | Page slug and standalone preview address | Accepted |
 | [0030](0030-scoped-block-context-and-plan-repair.md) | Explicit block context and local Ask plan repair | Superseded by 0034 (plan repair) |
@@ -32,12 +46,17 @@ Numbering: `NNNN-kebab-title.md`. Numbers only increase; files are never renamed
 | [0040](0040-session-split-project-and-chat.md) | The session is a project plus `ext.chat`: `lib/project` without chat imports, `messages` optional (session 1.9.0), page store keyed by project | Accepted |
 | [0041](0041-chat-as-optional-module.md) | The chat is an optional module behind a `BuilderModule` port; `VITE_MODULE_CHAT` folds it out of the bundle; no-trace gate | Accepted |
 | [0042](0042-quality-gate.md) | The criteria are enforced by the gate: ESLint with layers and cycles, tsc strict, ui8px grid, ratchets, fuzz, export vs CLI, typed config, logs without secrets | Accepted |
+| [0043](0043-security-gate.md) | Secret scan, dependency audit and security headers are part of the gate | Accepted |
+| [0044](0044-chat-keys-in-ext.md) | The chat keys live in `ext.chat` of the session document; the left pane is `side` | Accepted |
+| [0045](0045-remove-old-data-paths.md) | The old-data paths are removed; old data is refused and set aside, never converted | Accepted |
+| [0046](0046-money-minor-units.md) | Money: minor units in the document, major units for the model and the author | Accepted |
+| [0047](0047-rich-text-block-removed.md) | The rich-text block is removed | Accepted |
 
-Status values: Proposed, Accepted, Superseded, Deprecated.
+Status values: Proposed, Accepted, Superseded, Deprecated, Withdrawn.
 
-0003/0004 extend 0001 (surfaces + agent channel); they do not replace Page Store ports or SLSA.
-0005 records a historical ContextlY gate scheme for future design only; it does not implement lexproto or change runtime defaults.
-0006 removes the WordPress runtime from this repo and makes mock ChatCore the default start; optional Session HTTP stays non-default.
+0003 extends 0001 (surfaces); 0004 proposed an agent gateway and is superseded by 0011, 0034 and 0041. None of them replaces the Page Store ports or SLSA.
+0005 recorded a historical lexproto gate scheme; it was never implemented and is withdrawn.
+0006 removes the WordPress runtime from this repo and makes the browser SPA the only host.
 0007 records the product-level three-host strategy (WordPress builder page, Browser, Desktop Wails3) on one pinned Stock catalog. Browser first; Wails3 later, same core. Portable export / WP import / round-trip tests are planned, not implemented. 0006 still bans a WordPress runtime in this repository. Plan: [docs/plans/one-buildy-three-hosts.md](../../docs/plans/one-buildy-three-hosts.md).
 0008 makes registry.buildy.tw/svelte the only source of UI: a pinned CLI snapshot (`registry/svelte`, sha256 lock), published variants, `lib` without components, a "not in the registry" stub instead of own layouts, and a ZIP identical to `ui8kit init` + `add`.
 0009 records that brands (badge + filter) live in the CodeGen-X database, not as per-brand kits or author namespaces/URLs. Contribution is closed and trusted, through XGenBot and the generator; `registry.buildy.tw` publishes one cleaned `@ui8kit` registry, with brand visible as metadata. Chat and WP FastY Builder both snapshot that registry. Catalog data for WordPress, a CLI snapshot for the plugin, and the brand field remain open (WordPress to be discussed further).

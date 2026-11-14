@@ -1,17 +1,14 @@
-# ADR 0003: Creator surfaces & Preview/Code ports
+# ADR 0003: Creator surfaces and Preview / Code
 
-- Status: Accepted (WordPress embed composition **superseded** by [ADR-0006](0006-browser-first-no-wordpress-runtime.md); CreatorShell / Preview+Code remain)
+- Status: Accepted in part. The WordPress embed composition is **superseded** by [ADR-0006](0006-browser-first-no-wordpress-runtime.md); the Latte CodePort is **superseded**: Code is generated Svelte UI8Kit source and the ZIP export ([ADR-0034](0034-page-spec-2-one-write-tool.md), [ADR-0008](0008-registry-single-source-of-ui.md)); the shell layout is refined by ADR 0017, 0024 and 0041
 - Date: 2026-11-06
 - Extends: [0001-cms-agnostic-chat-builder.md](0001-cms-agnostic-chat-builder.md)
-- Related: [0004-agent-runtime-adapters.md](0004-agent-runtime-adapters.md)
 
 ## Context
 
-ADR-0001 зафиксировал CMS-agnostic чат-билдер, один Page Store и четыре host-цели. Не зафиксированы **поверхности UI** (что рисует SPA vs WP embed) и **два рендер-порта** одной страницы: Svelte preview в админке и Latte на публикацию в WordPress.
+ADR-0001 fixed a CMS-agnostic chat builder with one Page Store. It did not fix the **UI surfaces** (what the SPA draws) or the **two render ports** of one page: the Svelte preview and the code view.
 
-Продукт — turnkey landing page + встроенный чат, собранный **модульно**. Это не клон ChatGPT и не Lovable-холст с контейнерами.
-
-Структура оболочки как у ui8kit/spline-svelte `BuilderScreen` (nav | chat | workspace с Preview/Code). **Paint** — UI8Kit / ui8px + shadcn HSL tokens, Istok Web, `rounded-default`. Скин spline (круглые primary-кнопки и т.п.) **не** копируем.
+The product is a turnkey landing page with a built-in chat, assembled **modularly**: not a ChatGPT clone, not a Lovable canvas with containers. The shell structure follows ui8kit/spline-svelte `BuilderScreen` (nav, chat, workspace with Preview and Code); the **paint** is UI8Kit / ui8px, shadcn HSL tokens, Istok Web and `rounded-default` (the spline skin is not copied).
 
 ## Decision
 
@@ -19,61 +16,40 @@ ADR-0001 зафиксировал CMS-agnostic чат-билдер, один Pag
 
 | Surface | DOM | Role |
 | --- | --- | --- |
-| **ChatCore** | no | Session / messages / send. Logic only (`apps/chat-web` mock today: `session.svelte.ts`). Hosts never import DOM from here. |
-| **ChatColumn** | yes | Thread + composer. Reusable column for SPA and embeds. |
-| **CreatorShell** | yes | AppNav (~248px / `w-62`) + top bar + Workspace. Composes ChatColumn in the SPA host. |
+| **ChatCore** | no | Session, messages, send. Logic only. Hosts never import DOM from here. |
+| **ChatColumn** | yes | Thread and composer. |
+| **CreatorShell** | yes | AppNav, top bar and Workspace. Composes the chat column. |
 
-Один `Block` на файл / render path (UI8Kit rule 01). ChatCore не является composition.
+One `Block` per file and render path (UI8Kit rule 01). ChatCore is not a composition.
 
-### Workspace = Page BlockTree (current page)
+### Workspace is the current page
 
-Workspace показывает **дерево блоков текущей лендинг-страницы** (какие секции в Page DTO `layout.blocks`). Это не конструктор уровня Lovable (контейнеры, agent shell, произвольный canvas).
+The Workspace shows the **current page** (its sections), not a Lovable-level builder (containers, an agent shell, an arbitrary canvas). The source of truth is the page document (ADR 0034).
 
-Источник правды — тот же Page DTO, что в ADR-0001 (`packages/page-contract`: `page` + unique slug, status, title, layout, seo).
+### Preview and Code
 
-### PreviewPort (Svelte) + CodePort (Latte)
-
-Оба порта **выводятся из одного Page DTO / layout** в Page Store. Паттерн как у существующего WP Builder: runtime Svelte, write Latte.
-
-| Port | Runtime | Where |
-| --- | --- | --- |
-| **PreviewPort** (Creator render) | Svelte / UI8Kit | Workspace tab Preview — admin preview текущей страницы |
-| **CodePort** | Latte | Workspace tab Code — исходник для WP publish |
-
-Это **не** то же самое, что `packages/ports` `PreviewPort.previewUrl()` из ADR-0001 (URL превью у адаптера CMS). URL-порт остаётся. Creator Preview/Code — рендер/экспорт плоскости той же DTO. Имена можно уточнить в коде (`PreviewRenderPort` / `CodeExportPort`) без смены решения.
-
-P0: заглушки из mock Page DTO. Реальный Latte-компилятор и WP publish — вне этой ADR (follow-up).
+Both are derived from the one page: **Preview** renders the blocks with the registry components (Svelte, UI8Kit); **Code** shows the Svelte source of the export. A divergence between them is a contract bug, not "two editors". The `PreviewPort.previewUrl()` of `packages/ports` (a CMS adapter's preview URL) is a different thing and stays.
 
 ### Paint vs structure
 
 | Axis | Decision |
 | --- | --- |
-| Structure | Как spline `BuilderScreen`: AppNav \| ChatColumn \| Workspace (Preview \| Code). Ниже `lg` — вкладки Chat \| Workspace. |
-| Paint | UI8Kit Svelte primitives, Istok Web, `rounded-default`, shadcn HSL tokens. Нет spline round-button skin, нет Inter / kit radii из Figma. |
+| Structure | AppNav, chat column, Workspace (Preview, Code). Below `lg`, tabs switch the chat and the workspace. |
+| Paint | UI8Kit Svelte primitives, Istok Web, `rounded-default`, shadcn HSL tokens. No spline round-button skin, no Inter or kit radii from Figma. |
 
-Figma по-прежнему только layout reference (ADR-0001).
+Figma remains a layout reference only (ADR-0001).
 
-### Host composition
+### Hosts
 
-| Host | Compose |
-| --- | --- |
-| Browser SPA (`apps/chat-web`) | CreatorShell + ChatColumn + Workspace (active) |
-| WordPress embed | *removed from this repo; see ADR-0006* |
-| Wails3 | Same SPA as browser (Shell + Column + Workspace) in the webview. |
-| Telegram Mini App | Same SPA; compact Chat \| Workspace tabs acceptable. |
-
-ChatCore общий. Агентский канал — ADR-0004 (Gateway); UI не знает runtime id.
+Browser SPA (`apps/chat-web`): the whole shell (active). Wails3 and Telegram Mini App would run the same SPA in a webview. The WordPress embed was removed (ADR-0006).
 
 ### Non-goals
 
-- Lovable-level canvas: контейнеры, произвольная иерархия, agent shell в workspace.
-- Копирование `buildytech/vibecode` Studio / Solid / Docker isolation / multi-tenant TEE. vibecode — spike; паттерны — в ADR-0004.
-- Скин spline-svelte (round primary buttons, их paint tokens).
-- Живой Latte compiler, WP plugin publish, `@cursor/sdk` wiring — не этот ADR.
+- A Lovable-level canvas: containers, arbitrary hierarchy, an agent shell in the workspace.
+- Copying `buildytech/vibecode` (Studio, Docker isolation, multi-tenant TEE) or the spline-svelte skin.
 
 ## Consequences
 
-- `apps/chat-web` собирается вокруг CreatorShell; mock ChatCore path не ломаем.
-- WP embed может подключить только ChatColumn.
-- Preview и Code всегда смотрят на одну текущую страницу; расхождение Svelte vs Latte — баг контракта, не «два редактора».
-- ADR-0001 (dual builders, Page Store, hosts, ordinary pages only) остаётся в силе.
+- `apps/chat-web` is built around CreatorShell.
+- Preview and Code always show the one current page.
+- ADR-0001 (Page Store, ordinary pages only) stays in force.

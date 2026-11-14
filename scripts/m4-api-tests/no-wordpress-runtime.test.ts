@@ -23,7 +23,6 @@ const SKIP_DIRS = new Set([
 
 const SKIP_REL = new Set([
 	".project/adr",
-	"design/fig-ref/ARCH.md",
 	"scripts/m4-api-tests/no-wordpress-runtime.test.ts"
 ]);
 

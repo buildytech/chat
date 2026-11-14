@@ -2,7 +2,7 @@
   "name": "@buildytech/chat",
   "private": true,
   "version": "0.0.0",
-  "description": "Browser-first SI Chat Creator (CMS-agnostic Page Store)",
+  "description": "BuildY Chat: browser-first creator of websites from UI8Kit registry blocks (Svelte 5 SPA, optional protected xAI runtime)",
   "license": "Apache-2.0",
   "type": "module",
   "workspaces": [

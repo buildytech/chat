@@ -7,37 +7,36 @@
 
 ## Context
 
-Монорепозиторий зелёный (scaffold): runnable artefact — static SPA `apps/chat-web`. Нужна **verifiable technical supply**: оператор должен понимать, *какой* workflow собрал релиз и связать файл с provenance, без претензии на hermetic / L3.
+The monorepo builds green; its runnable artefact is the static SPA `apps/chat-web`. It needs a **verifiable technical supply**: an operator must be able to tell *which* workflow built a release and tie the file to its provenance, without claiming a hermetic build or SLSA L3.
 
 ## Decision
 
-P0 цель: **SLSA Build L1 documented + CI provenance toward L2**.
+Goal: **SLSA Build L1 documented, CI provenance toward L2**.
 
-- **L1:** документированный build recipe (этот ADR + workflows) и воспроизводимый путь сборки на GitHub-hosted runners.
-- **Toward L2:** hosted GitHub Actions + GitHub artifact attestations (`actions/attest-build-provenance`) на release artefacts. Это не hardened builder и не bit-for-bit reproducibility.
+- **L1:** a documented build recipe (this ADR and the workflows) and a reproducible build path on GitHub-hosted runners.
+- **Toward L2:** hosted GitHub Actions and GitHub artifact attestations (`actions/attest-build-provenance`) on release artefacts. This is not a hardened builder and not bit-for-bit reproducibility.
 
-Контрольный путь P0: [`.github/workflows/slsa-provenance.yml`](../../.github/workflows/slsa-provenance.yml) (см. controls.md).
+The control path is [`.github/workflows/slsa-provenance.yml`](../../.github/workflows/slsa-provenance.yml) (see controls.md).
 
-### In scope (P0)
+### In scope
 
-- SHA-pin GitHub Actions (или явная pin policy + CI pin-check).
-- Documented build recipe для `apps/chat-web` static output.
-- `id-token: write` + `attestations: write` на provenance job.
-- Upload release artefact + SLSA provenance attestation.
-- Нет секретов в git (`.env` в `.gitignore`; stub orchestrator без live keys).
-- Честный gap: нет `package-lock.json` — follow-up для reproducible installs.
+- SHA-pinned GitHub Actions (or an explicit pin policy and a CI pin check).
+- A documented build recipe for the `apps/chat-web` static output.
+- `id-token: write` and `attestations: write` on the provenance job.
+- Release artefact upload and the SLSA provenance attestation.
+- No secrets in git (`.env` is in `.gitignore`; a secret scan runs in the gate, ADR 0043).
+- `package-lock.json` is committed, so installs are reproducible (`npm ci`).
 
-### Out of scope (P0)
+### Out of scope
 
-- Hermetic build (fixed toolchain, no network during compile).
-- SLSA Build **L3** (isolated / hardened builders, non-falsifiable provenance).
-- Provenance для stub-артефактов (`context-serve`, orchestrator).
-- SBOM как gate (optional later; см. controls.md).
-- Self-hosted runners, reusable SLSA3 generator (`slsa-github-generator`).
-- Подпись git-тегов / GPG commits.
+- A hermetic build (fixed toolchain, no network during compile).
+- SLSA Build **L3** (isolated, hardened builders, non-falsifiable provenance).
+- Provenance for placeholder artefacts (`services/context-serve`).
+- An SBOM as a gate (optional later; see controls.md).
+- Self-hosted runners, the reusable SLSA3 generator (`slsa-github-generator`).
+- Signed git tags and GPG commits.
 
 ## Consequences
 
-- CI на `main` проверяет, что SPA **собирается**; provenance — на `v*` / Release / `workflow_dispatch`, не на каждый push.
-- Пока нет lockfile, installs не bit-reproducible; это зафиксированный gap, не скрытый L2.
-- Повышение до L2 «полностью» — после первого реального release artefact и успешного `gh attestation verify`.
+- CI on `main` proves the SPA **builds**; provenance runs on `v*` tags, Releases and `workflow_dispatch`, not on every push.
+- Full L2 follows the first real release artefact and a successful `gh attestation verify`.

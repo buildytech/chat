@@ -2,7 +2,7 @@
 
 Source dump: fig2design of `chat.fig` ("Chat Preview Site" frames at 1600 / 768 / 360).
 
-Slim copies live in `design/fig-ref/` (ARCH, frames-summary, manifest). The full ~21MB dump is **not** stored here.
+Slim copies live in `design/fig-ref/` (frames-summary, manifest). The full ~21MB dump is **not** stored here.
 
 ## Layout to implement
 

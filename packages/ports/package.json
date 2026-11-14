@@ -1,5 +1,6 @@
 {
   "name": "@buildytech/ports",
+  "description": "Framework-neutral Catalog, Page, Publish and Preview ports (types only)",
   "version": "0.0.0",
   "private": true,
   "type": "module",

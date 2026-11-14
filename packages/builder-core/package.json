@@ -1,5 +1,6 @@
 {
   "name": "@buildytech/builder-core",
+  "description": "BuildY page and catalog core: page document, edit gates, props gate, render probe, Stock catalog snapshot and search. No chat or model dependencies.",
   "version": "0.0.0",
   "private": true,
   "type": "module",

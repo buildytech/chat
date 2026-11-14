@@ -2,7 +2,7 @@
 
 P0 control path: [`.github/workflows/slsa-provenance.yml`](../../.github/workflows/slsa-provenance.yml)  
 CI build: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)  
-Решение: [ADR 0002](../adr/0002-supply-chain-slsa.md)
+Decision: [ADR 0002](../adr/0002-supply-chain-slsa.md)
 
 ## Checklist
 
@@ -13,12 +13,12 @@ CI build: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
 | `id-token: write` + artefact **provenance** | **in** — provenance workflow (`contents: read`, `attestations: write`) |
 | Upload build artefact | **in** — `chat-web-spa` tarball of `apps/chat-web/build/` |
 | Optional **SBOM** for release artefacts | **out (documented)** — generate later (`npm sbom` / CycloneDX) after lockfile exists |
-| No secrets in repo | **in** — `.env` gitignored; orchestrator stub without live keys |
+| No secrets in repo | **in** — `.env` gitignored; a secret scan (history and staged) runs in the gate (ADR 0043) |
 | Documented build recipe | **in** — this file + workflows |
 
 ## Pin policy
 
-Каждый `uses: owner/repo@...` в `.github/workflows/` — 40-hex SHA. Рядом комментарий с tag (`# v7.0.1`). Обновление pin — отдельный commit на `main`. `pin-check` падает, если ref не SHA.
+Every `uses: owner/repo@...` in `.github/workflows/` is a 40-hex SHA with the tag in a comment (`# v7.0.1`). A pin update is its own commit on `main`. `pin-check` fails when a ref is not a SHA.
 
 ## Build recipe (`apps/chat-web`)
 
@@ -37,9 +37,9 @@ go test ./...
 go build -o context-serve .
 ```
 
-Release packaging: `chat-web-spa-<git-sha>.tgz` from `apps/chat-web/build/`. Subject of attestation = этот tarball.
+Release packaging: `chat-web-spa-<git-sha>.tgz` from `apps/chat-web/build/`. The subject of the attestation is this tarball.
 
-Не hermetic: сеть для npm registry разрешена. Не L3: GitHub-hosted, не isolated hardened builder.
+Not hermetic: the network is allowed for the npm registry. Not L3: GitHub-hosted, not an isolated hardened builder.
 
 ## Provenance job (P0 SLSA path)
 
@@ -49,12 +49,12 @@ Trigger: `workflow_dispatch`, push tags `v*`, GitHub Release `published`.
 2. `actions/upload-artifact` — tarball.
 3. `actions/attest-build-provenance` — SLSA provenance, Sigstore (public-good if public repo).
 
-Permissions: `id-token: write`, `contents: read`, `attestations: write` (плюс `artifact-metadata: write` для storage record в v4).
+Permissions: `id-token: write`, `contents: read`, `attestations: write` (plus `artifact-metadata: write` for the storage record in v4).
 
-Если Release создаётся с нового `v*` tag, workflow может стартовать дважды — допустимо для P0; subject digest тот же.
+If a Release is created from a new `v*` tag the workflow may start twice; that is acceptable, the subject digest is the same.
 
 ## Follow-ups
 
-1. Commit `package-lock.json` (npm workspaces, **корень** репо) → переключить CI на `npm ci`.
-2. Optional SBOM рядом с tarball + attest SBOM predicate.
-3. Реальный L2 claim после первого `gh attestation verify` на опубликованном артефакте.
+1. Done: `package-lock.json` (npm workspaces, repository root) is committed and CI uses `npm ci`.
+2. Optional SBOM next to the tarball and an attested SBOM predicate.
+3. A real L2 claim after the first `gh attestation verify` on a published artefact.

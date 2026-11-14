@@ -1,5 +1,6 @@
 {
 	"name": "@buildytech/page-contract",
+	"description": "Page and portable-session contracts (JSON Schema and validators)",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
