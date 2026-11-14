@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { boundaryViolations, i18nViolations } from "../lib/module-boundary.mjs";
-import { moduleEnabled } from "../../apps/chat-web/module-flags.ts";
+import { moduleEnabled } from "../../apps/chat-web/config.js";
 import { docOfProject, projectOfDoc } from "../../apps/chat-web/src/lib/project/doc.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");

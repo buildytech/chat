@@ -1,12 +1,13 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { isLoopbackBind, readBasicAuthConfig } from "@buildytech/chat-agent";
+import { readServerConfig, runtimeEnv } from "./config.ts";
 import { handleRuntimeFetch } from "./http.ts";
 
 // Compiled registry blocks of the render probe (npm run bundle:runtime).
 (globalThis as { __buildyRenderLoader?: () => Promise<unknown> }).__buildyRenderLoader = () => import(new URL("../../../api/runtime/_render/blocks.mjs", import.meta.url).href);
 
-const BIND = process.env.BUILDY_RUNTIME_BIND?.trim() || "127.0.0.1";
-const PORT = Number(process.env.BUILDY_RUNTIME_PORT || 18100);
+const env = runtimeEnv();
+const { bind: BIND, port: PORT } = readServerConfig(env);
 
 function logSafe(event: string, extra: Record<string, unknown> = {}): void {
 	process.stdout.write(
@@ -60,7 +61,7 @@ const server = createServer(async (req, res) => {
 	const requestId = `xai-${Date.now().toString(36)}`;
 	try {
 		const webReq = await toWebRequest(req);
-		const webRes = await handleRuntimeFetch(webReq, process.env, { surface: "node" });
+		const webRes = await handleRuntimeFetch(webReq, env, { surface: "node" });
 		if (webRes.status === 401) {
 			logSafe("auth_rejected", { requestId, status: 401, code: "unauthorized", durationMs: Date.now() - started });
 		}
@@ -79,7 +80,7 @@ const server = createServer(async (req, res) => {
 });
 
 if (!isLoopbackBind(BIND)) {
-	const { configured } = readBasicAuthConfig(process.env);
+	const { configured } = readBasicAuthConfig(env);
 	if (!configured) {
 		logSafe("refusing_shared_bind", { code: "basic_auth_required_before_shared_bind" });
 		process.stderr.write(

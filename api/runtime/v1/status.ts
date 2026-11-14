@@ -17,6 +17,20 @@ function __req(id) {
 	return exports;
 }
 
+__def("apps/xai-runtime/src/config.ts", function (exports) {
+
+const runtimeEnv = (): EnvMap => process.env;
+
+function readServerConfig(env: EnvMap): ServerConfig {
+	const port = Number(env.BUILDY_RUNTIME_PORT || 18100);
+	return { bind: env.BUILDY_RUNTIME_BIND?.trim() || "127.0.0.1", port: Number.isInteger(port) && port > 0 && port < 65536 ? port : 18100 };
+}
+
+exports["runtimeEnv"] = runtimeEnv;
+exports["readServerConfig"] = readServerConfig;
+
+});
+
 __def("packages/builder-core/src/copy.ts", function (exports) {
 
 const SCENARIO_IDS = ["dashboard", "landing", "website"] as const;
@@ -32001,7 +32015,7 @@ __def("packages/chat-agent/src/redact.ts", function (exports) {
 const SECRET_HEADER = /^(authorization|proxy-authorization|x-api-key|x-user-api-key|cookie|set-cookie)$/i;
 const SECRET_KEY = /(api[_-]?key|authorization|secret|token|password|credential|cursor_api_key|xai_api_key)/i;
 const BEARER = /\bBearer\s+[A-Za-z0-9._\-+/=]+/gi;
-const CANARY_HINT = /\bsk-[A-Za-z0-9]{8,}\b/g;
+const CANARY_HINT = /\b(?:sk|xai)-[A-Za-z0-9_-]{8,}\b/g;
 
 function redactValue(value: unknown, key = ""): unknown {
 	if (SECRET_KEY.test(key) || SECRET_HEADER.test(key)) return "[redacted]";
@@ -32019,13 +32033,19 @@ function redactValue(value: unknown, key = ""): unknown {
 	return value;
 }
 
-function safeErrorMessage(err: unknown): { code: string; message: string } {
+/** The configured secret values of an env bag (the xAI key, the Basic Auth password): what an error text must never repeat. */
+function secretValues(env: Record<string, string | undefined>): string[] {
+	return ["XAI_API_KEY", "BUILDY_RUNTIME_BASIC_AUTH_PASSWORD", "BUILDY_RUNTIME_BASIC_AUTH_USER"].map((name) => env[name]?.trim() ?? "").filter((value) => value.length >= 4);
+}
+
+/** `secrets`: exact values removed from the text whatever their format (a provider may echo the key it was given). */
+function safeErrorMessage(err: unknown, secrets: string[] = []): { code: string; message: string } {
 	const raw = err instanceof Error ? err.message : String(err);
 	const code =
 		err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string"
 			? (err as { code: string }).code
 			: "error";
-	const message = String(redactValue(raw)).slice(0, 280);
+	const message = secrets.reduce((text, secret) => text.split(secret).join("[redacted]"), String(redactValue(raw))).slice(0, 280);
 	return { code, message };
 }
 
@@ -32038,6 +32058,7 @@ function assertNoSecret(payload: unknown, canary: string): void {
 }
 
 exports["redactValue"] = redactValue;
+exports["secretValues"] = secretValues;
 exports["safeErrorMessage"] = safeErrorMessage;
 exports["assertNoSecret"] = assertNoSecret;
 
@@ -32506,7 +32527,7 @@ async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnConte
 	try {
 		return await agentLoop(apiKey, modelId, ctx, signal);
 	} catch (err) {
-		const safe = safeErrorMessage(err);
+		const safe = safeErrorMessage(err, [apiKey]);
 		const aborted = safe.code === "AbortError" || safe.message.toLowerCase().includes("abort") || signal.aborted;
 		// The caller only sees a generic failure; the function log must name the exception (redacted, 280 chars).
 		if (!aborted) console.error(JSON.stringify({ runtime: "xai-grok", event: "xai_run_exception", modelId, name: err instanceof Error ? err.name : typeof err, code: safe.code, message: safe.message }));
@@ -32709,7 +32730,7 @@ exports["runtimeStatus"] = runtimeStatus;
 
 __def("apps/xai-runtime/src/http.ts", function (exports) {
 const { emptyPage, installRenderProbe, probeFromModule } = __req("packages/builder-core/src/index.ts");
-const { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, stripRuntimePrefix } = __req("packages/chat-agent/src/index.ts");
+const { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, secretValues, stripRuntimePrefix } = __req("packages/chat-agent/src/index.ts");
 const { runXaiCatalogTurn } = __req("apps/xai-runtime/src/chat-tools.ts");
 const { runtimeStatus } = __req("apps/xai-runtime/src/status.ts");
 exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = __req("packages/chat-agent/src/index.ts")["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"];
@@ -32928,7 +32949,7 @@ async function handleRuntimeFetch(
 					usage: meta.usage
 				});
 			} catch (err) {
-				const safe = safeErrorMessage(err);
+				const safe = safeErrorMessage(err, secretValues(env));
 				const aborted =
 					signal.aborted || safe.code === "AbortError" || safe.message.toLowerCase().includes("abort");
 				return jsonResponse(aborted ? 499 : 500, {
@@ -32943,7 +32964,7 @@ async function handleRuntimeFetch(
 		}
 		return jsonResponse(404, { error: { code: "not_found", message: "Unknown runtime path." } });
 	} catch (err) {
-		const safe = safeErrorMessage(err);
+		const safe = safeErrorMessage(err, secretValues(env));
 		return jsonResponse(500, { error: safe, liveModel: false });
 	}
 }
@@ -32954,6 +32975,7 @@ exports["handleRuntimeFetch"] = handleRuntimeFetch;
 });
 
 __def("apps/xai-runtime/src/vercel-fetch.ts", function (exports) {
+const { runtimeEnv } = __req("apps/xai-runtime/src/config.ts");
 const { handleRuntimeFetch } = __req("apps/xai-runtime/src/http.ts");
 const config = {
 	maxDuration: 300
@@ -32961,7 +32983,7 @@ const config = {
 
 const __default = {
 	async fetch(request: Request): Promise<Response> {
-		return handleRuntimeFetch(request, process.env, { surface: "vercel" });
+		return handleRuntimeFetch(request, runtimeEnv(), { surface: "vercel" });
 	}
 };
 

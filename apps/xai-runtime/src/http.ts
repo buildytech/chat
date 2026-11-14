@@ -1,5 +1,5 @@
 import { emptyPage, installRenderProbe, probeFromModule, type RenderModule } from "@buildytech/builder-core";
-import { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, stripRuntimePrefix, type EnvMap } from "@buildytech/chat-agent";
+import { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, secretValues, stripRuntimePrefix, type EnvMap } from "@buildytech/chat-agent";
 import { runXaiCatalogTurn } from "./chat-tools.ts";
 import { runtimeStatus } from "./status.ts";
 
@@ -220,7 +220,7 @@ export async function handleRuntimeFetch(
 					usage: meta.usage
 				});
 			} catch (err) {
-				const safe = safeErrorMessage(err);
+				const safe = safeErrorMessage(err, secretValues(env));
 				const aborted =
 					signal.aborted || safe.code === "AbortError" || safe.message.toLowerCase().includes("abort");
 				return jsonResponse(aborted ? 499 : 500, {
@@ -235,7 +235,7 @@ export async function handleRuntimeFetch(
 		}
 		return jsonResponse(404, { error: { code: "not_found", message: "Unknown runtime path." } });
 	} catch (err) {
-		const safe = safeErrorMessage(err);
+		const safe = safeErrorMessage(err, secretValues(env));
 		return jsonResponse(500, { error: safe, liveModel: false });
 	}
 }

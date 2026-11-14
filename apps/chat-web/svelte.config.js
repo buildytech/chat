@@ -1,5 +1,8 @@
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { readBuildConfig } from './config.js';
+
+const { buildDir } = readBuildConfig(process.env);
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -7,8 +10,8 @@ const config = {
 	kit: {
 		adapter: adapter({
 			// BUILDY_BUILD_DIR: a second build (the chat-off no-trace check) beside the default one.
-			pages: process.env.BUILDY_BUILD_DIR || 'build',
-			assets: process.env.BUILDY_BUILD_DIR || 'build',
+			pages: buildDir,
+			assets: buildDir,
 			fallback: '200.html',
 			strict: false
 		}),

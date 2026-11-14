@@ -4,6 +4,7 @@
  * and run.ts so /var/task does not import @buildytech/xai-runtime/src/http.ts.
  * https://vercel.com/docs/functions/runtimes/node-js
  */
+import { runtimeEnv } from "./config.ts";
 import { handleRuntimeFetch } from "./http.ts";
 
 // Upper bound for the bundled run entry (Hobby + fluid compute max). vercel.json keeps
@@ -14,6 +15,6 @@ export const config = {
 
 export default {
 	async fetch(request: Request): Promise<Response> {
-		return handleRuntimeFetch(request, process.env, { surface: "vercel" });
+		return handleRuntimeFetch(request, runtimeEnv(), { surface: "vercel" });
 	}
 };

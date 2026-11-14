@@ -38,7 +38,7 @@
     "lint": "eslint packages apps",
     "lint:ratchet": "node scripts/check-ratchet.mjs",
     "lint:ui8px": "node scripts/ui8px-extract.mjs",
-    "test:export:live": "UI8KIT_LIVE=1 node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts --test scripts/m4-api-tests/export-cli.test.ts"
+    "test:export:live": "UI8KIT_LIVE=1 node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts --test scripts/m4-api-tests/export-cli.test.ts scripts/m4-api-tests/logs-secrets.test.ts"
   },
   "engines": {
     "node": "22.x"
