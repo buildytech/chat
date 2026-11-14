@@ -1,5 +1,5 @@
 export { allItems, itemInfo, itemOfSpec, variantOrDefault, type ItemInfo } from "./items.ts";
-export { blankRequired, cloneJson, effectiveProps, renderBlock, sampleProps, type BlockRender } from "./render.ts";
+export { blankRequired, effectiveProps, renderBlock, sampleProps, type BlockRender } from "./render.ts";
 export { checkPageDoc, pointerOfSchemaPath, registryIssues, valueAtPointer, type DocGate, type DocIssue } from "./gate.ts";
 export { applyJsonPatch, type PatchOpLike } from "./jsonpatch.ts";
 export { changedPointers, diffIsEmpty, diffPages, type DiffEntry } from "./diff.ts";

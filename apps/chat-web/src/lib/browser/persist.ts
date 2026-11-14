@@ -7,7 +7,7 @@
  */
 
 import { isScenarioId, type ScenarioId } from "@buildytech/builder-core";
-import { pageV2DefIssues } from "@buildytech/page-contract";
+import { cloneJson, pageV2DefIssues } from "@buildytech/page-contract";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
 import { STORAGE_KEYS, browserStorage, quarantine, type StorageLike } from "./storage-v1.ts";
 
@@ -260,7 +260,7 @@ export function loadPagesBlob(): PagesBlobV1 {
 	for (const [id, record] of Object.entries(parsed.pages)) {
 		const migrated = record && typeof record === "object" ? normalizePageRecord(record) : null;
 		const v1 = Boolean(record && typeof record === "object" && [record.applied, record.candidate, record.lastProposed].some(isV1Page));
-		const issues = v1 ? [{ path: "$", keyword: "page_v1_unsupported" }] : migrated ? pageV2DefIssues(JSON.parse(JSON.stringify(migrated)), "record") : [{ path: "$", keyword: "type" }];
+		const issues = v1 ? [{ path: "$", keyword: "page_v1_unsupported" }] : migrated ? pageV2DefIssues(cloneJson(migrated), "record") : [{ path: "$", keyword: "type" }];
 		if (!issues.length) {
 			pages[id] = migrated!;
 			continue;

@@ -3,7 +3,7 @@
  * over the preset of its variant and filled with what the props schema requires. The preview, the code pane and the ZIP
  * export call this one function (`renderBlock`); there is no copy slot, row or children mapping any more.
  */
-import type { BlockV2, PropValueV2 } from "@buildytech/page-contract";
+import { cloneJson, type BlockV2, type PropValueV2 } from "@buildytech/page-contract";
 import { fillProps, humanizeName, propShapeFor, propsEventsFor, propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { variantPreset } from "../catalog/organism.ts";
 import { itemInfo } from "./items.ts";
@@ -27,10 +27,6 @@ function merge(base: Json, over: Json): Json {
 	const out: Record<string, Json> = { ...base };
 	for (const [key, value] of Object.entries(over)) out[key] = merge(base[key], value);
 	return out;
-}
-
-export function cloneJson<T>(value: T): T {
-	return value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T);
 }
 
 /** props = fill(merge(variant preset, block props)): what `<Item {...props} />` receives. */

@@ -4,7 +4,7 @@
  * the operation needed and what the document has.
  */
 import type { DocIssue } from "./gate.ts";
-import { cloneJson } from "./render.ts";
+import { cloneJson } from "@buildytech/page-contract";
 
 type Json = unknown;
 const isObject = (value: Json): value is Record<string, Json> => typeof value === "object" && value !== null && !Array.isArray(value);

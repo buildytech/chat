@@ -7,6 +7,7 @@
  *
  * Nothing here is hand-written block data: every name, type, enum and default comes from the published schema.
  */
+import { cloneJson } from "@buildytech/page-contract";
 import raw from "./props.json" with { type: "json" };
 import { SAMPLE_MINOR, isMoneyName } from "./money.ts";
 
@@ -443,20 +444,16 @@ export function humanizeName(name: string): string {
 	return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
-function clone<T>(value: T): T {
-	return value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T);
-}
-
 /** The smallest valid value of a required prop: the schema default, else the first enum value, else by type. */
 function defaultFor(node: JsonSchema, name: string, depth: number, blank: boolean, rows = 0): unknown {
-	if (node.default !== undefined) return clone(node.default);
+	if (node.default !== undefined) return cloneJson(node.default);
 	const value = valueOf(node);
-	if (value.default !== undefined) return clone(value.default);
+	if (value.default !== undefined) return cloneJson(value.default);
 	if (kindOf(node) === "icon") {
 		const icons = lucideIcons();
 		return icons.includes(PLACEHOLDER_ICON) ? PLACEHOLDER_ICON : icons[0];
 	}
-	if (Array.isArray(value.enum)) return clone(value.enum[0]);
+	if (Array.isArray(value.enum)) return cloneJson(value.enum[0]);
 	if (value.type === "string") return STRING_DEFAULTS[name] ?? (blank && rows === 0 ? "" : humanizeName(name));
 	if (value.type === "number" || value.type === "integer") return 0;
 	if (value.type === "boolean") return false;

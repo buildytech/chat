@@ -3,6 +3,7 @@
  * stores, parse and check one before an import, and keep session.pageRevision / history in step with the page store.
  * Pure: no Svelte, no storage. Lab BuildY opens the same file (its importer reads `sessions[]`).
  */
+import { cloneJson } from "@buildytech/page-contract";
 import {
 	SESSION_FORMAT,
 	SESSION_MAX_HISTORY,
@@ -58,11 +59,6 @@ export type ParsedSessionFile =
 	| { ok: true; file: SessionFile }
 	| { ok: false; code: "invalid_json" | "schema_invalid" | "program_invalid" | "page_v1_unsupported"; issues: SessionFileIssue[] };
 
-/** JSON round trip: drops `undefined` and functions so the file is exactly what JSON.stringify would write. */
-function plain<T>(value: T): T {
-	return JSON.parse(JSON.stringify(value)) as T;
-}
-
 /** The revision of a chat's applied page (the page store is the source of truth). */
 function revisionOf(record: StoredPageRecord | null | undefined): number | null {
 	if (!record || !record.applied) return null;
@@ -79,14 +75,14 @@ export function reconcileChatRevision<T extends StoredChat>(chat: T, record: Sto
 
 /** Record one page revision on the chat: pageRevision, pageId and one history entry (last SESSION_MAX_HISTORY kept). */
 export function recordRevision<T extends StoredChat>(chat: T, entry: SessionRevisionEntry): T {
-	const history = [...(chat.history ?? []), plain(entry)].slice(-SESSION_MAX_HISTORY);
+	const history = [...(chat.history ?? []), cloneJson(entry)].slice(-SESSION_MAX_HISTORY);
 	return { ...chat, pageRevision: entry.revision, pageId: entry.pageId ?? chat.pageId, history };
 }
 
 /** The page record as it goes into the file (null when the chat has none). */
 function fileRecord(record: StoredPageRecord | null | undefined): StoredPageRecord | null {
 	if (!record) return null;
-	return plain({ ...record, revision: revisionOf(record) });
+	return cloneJson({ ...record, revision: revisionOf(record) });
 }
 
 export function buildSessionFile(input: {
@@ -102,19 +98,19 @@ export function buildSessionFile(input: {
 	const sessions = input.chats.map((chat) => {
 		const page = fileRecord(input.pages[projectIdOf(chat)]);
 		const synced = reconcileChatRevision(chat, page ?? null);
-		return plain({ ...synced, page });
+		return cloneJson({ ...synced, page });
 	});
 	const ids = new Set(sessions.map((s) => s.id));
 	return {
 		$schema: SESSION_SCHEMA_URL,
 		format: SESSION_FORMAT,
 		exportedAt: input.now ?? new Date().toISOString(),
-		app: plain(input.app),
-		pins: plain(input.pins),
+		app: cloneJson(input.app),
+		pins: cloneJson(input.pins),
 		selectedSessionId: input.selectedSessionId && ids.has(input.selectedSessionId) ? input.selectedSessionId : null,
 		sessions,
-		...(input.settings ? { settings: plain(input.settings) } : {}),
-		...(input.prefs ? { prefs: plain(input.prefs) } : {})
+		...(input.settings ? { settings: cloneJson(input.settings) } : {}),
+		...(input.prefs ? { prefs: cloneJson(input.prefs) } : {})
 	};
 }
 
@@ -161,5 +157,5 @@ export function splitSessionFile(file: SessionFile): { chats: StoredChat[]; page
 
 /** A session file with the sibling provenance of every page record complete; chats, history and settings are untouched. */
 function normalizeSessionFile(file: SessionFile): SessionFile {
-	return plain({ ...file, sessions: file.sessions.map((chat) => ({ ...chat, page: chat.page ? normalizePageRecord(chat.page) : null })) });
+	return cloneJson({ ...file, sessions: file.sessions.map((chat) => ({ ...chat, page: chat.page ? normalizePageRecord(chat.page) : null })) });
 }

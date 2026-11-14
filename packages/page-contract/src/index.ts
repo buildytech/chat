@@ -1,4 +1,5 @@
 export { PAGE_BLOCK_KINDS, type PageBlockKind } from "./types.ts";
+export { cloneJson } from "./clone.ts";
 export { SchemaRegistry, type SchemaIssue } from "./json-schema.ts";
 // Session profile buildy:v1 is its own entry (@buildytech/page-contract/session) so the runtime bundle does not carry it.
 export {

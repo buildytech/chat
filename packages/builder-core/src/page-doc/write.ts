@@ -11,7 +11,7 @@
  * Blocks nothing touched stay byte for byte as they are. Then the one gate (gate.ts) judges the result; on failure the
  * answer is a list of { path, code, expected, got }. No local repair of a rejected write, no operation taxonomy.
  */
-import { pagePatchV2Issues, type BlockV2, type PageV2, type PropValueV2 } from "@buildytech/page-contract";
+import { cloneJson, pagePatchV2Issues, type BlockV2, type PageV2, type PropValueV2 } from "@buildytech/page-contract";
 import { pointerInfo, propsFieldTree, propShapeFor, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { variantAxisProps, variantPreset } from "../catalog/organism.ts";
 import { resolveIconName } from "../icon-name.ts";
@@ -20,7 +20,7 @@ import { renderIssues } from "./probe.ts";
 import { checkPageDoc, pointerOfSchemaPath, valueAtPointer, type DocIssue } from "./gate.ts";
 import { applyJsonPatch } from "./jsonpatch.ts";
 import { itemInfo } from "./items.ts";
-import { cloneJson, effectiveProps, sampleProps } from "./render.ts";
+import { effectiveProps, sampleProps } from "./render.ts";
 
 export type WriteInput = { page?: unknown; patch?: unknown };
 export type WriteOk = { ok: true; page: PageV2; diff: DiffEntry[]; warnings: string[]; changed: boolean };

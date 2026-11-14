@@ -6,7 +6,7 @@
 		"propsDigest": "sha256:7cc5ce00fb2b9538c324a47580c5c70a4115c09808fc36378d364ce88d622e61",
 		"registrySourceCommit": "466225e7757aa0ed039d92e175ba569eb1ef4ddc",
 		"stockContentCommit": "a4c5bebdbd107a8e06ba83aff32b7c1aa155d7da",
-		"inspectorDigest": "dadc17028c7435c6"
+		"inspectorDigest": "a6b88fec23709b65"
 	},
 	"summary": {
 		"combos": 526,

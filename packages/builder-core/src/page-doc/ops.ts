@@ -3,14 +3,14 @@
  * a plain JSON edit of the page document that goes through the one write (`writePage`: normalization, the gate, the
  * diff), so a hand edit and an agent edit follow exactly the same rules. Pure: returns the next page or why not.
  */
-import type { BlockV2, PageV2, PropValueV2 } from "@buildytech/page-contract";
+import { cloneJson, type BlockV2, type PageV2, type PropValueV2 } from "@buildytech/page-contract";
 import { coerceEnumValue, mapKeyIssue, newPropsListRow, newPropsListValue, newPropsMapValue, pointerInfo } from "../catalog/props-schema.ts";
 import { addSlotCheck, moveSlotCheck, naturalIndex } from "./slots.ts";
 import { screenItems } from "./start.ts";
 import { catalogEntryBySpec } from "../catalog/sources.ts";
 import { itemInfo, itemOfSpec } from "./items.ts";
 import { pointerKey } from "./inspect.ts";
-import { cloneJson, effectiveProps, sampleProps } from "./render.ts";
+import { effectiveProps, sampleProps } from "./render.ts";
 import { freshBlockId, writePage, type WriteResult } from "./write.ts";
 import type { DocIssue } from "./gate.ts";
 import type { DiffEntry } from "./diff.ts";

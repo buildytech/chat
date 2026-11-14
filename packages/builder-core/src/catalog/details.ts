@@ -1,4 +1,4 @@
-import { PAGE_BLOCK_KINDS, type PageBlockKind } from "@buildytech/page-contract";
+import { PAGE_BLOCK_KINDS, cloneJson, type PageBlockKind } from "@buildytech/page-contract";
 import { catalogProvenance, catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, getBlockIndexByCatalogId } from "./compatibility.ts";
 import { rendererKindForLabel } from "./renderer-kind.ts";
@@ -184,7 +184,7 @@ export function screenCanonicalJson(screenId: string): { json: unknown; bytes: n
 		compatibility: undefined,
 		snapshot: catalogProvenance()
 	};
-	const json = JSON.parse(JSON.stringify(payload));
+	const json = cloneJson(payload);
 	const bytes = new TextEncoder().encode(JSON.stringify(json)).length;
 	return { json, bytes };
 }
