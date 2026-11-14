@@ -10,7 +10,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { emptyPage, installRenderProbe, writePage, type DocIssue } from "../../packages/builder-core/src/index.ts";
+import { emptyPage, installRenderProbe, probeFromModule, writePage, type DocIssue } from "../../packages/builder-core/src/index.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
@@ -20,14 +20,8 @@ const owner = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/
 
 before(async () => {
 	if (!existsSync(BUNDLE)) spawnSync(process.execPath, [join(ROOT, "scripts/build-render-bundle.mjs")], { cwd: ROOT, stdio: "pipe" });
-	const mod = (await import(pathToFileURL(BUNDLE).href)) as { blocks: Record<string, unknown>; render: (c: unknown, o: { props: Record<string, unknown> }) => { body: string } };
-	installRenderProbe((organism, props) => {
-		try {
-			return { ok: true, html: mod.render(mod.blocks[organism], { props }).body };
-		} catch (err) {
-			return { ok: false, error: (err as Error).message };
-		}
-	}, { required: true });
+	const mod = (await import(pathToFileURL(BUNDLE).href)) as Parameters<typeof probeFromModule>[0];
+	installRenderProbe(probeFromModule(mod), { required: true });
 });
 after(() => installRenderProbe(null));
 

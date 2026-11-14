@@ -222,14 +222,14 @@ function pageView(page: PageV2): Record<string, unknown> {
 	return view;
 }
 
-function userPrompt(ctx: TurnContext): string {
+function userPrompt(ctx: TurnContext, problems: ReturnType<typeof renderProblems>): string {
 	const items = [...new Set(ctx.page.blocks.map((block) => block.item))];
 	const outlines = Object.fromEntries(items.map((item) => [item, propsOutline(item)]).filter(([, lines]) => lines));
 	return JSON.stringify({
 		request: ctx.brief,
 		...(ctx.conversation?.length ? { conversation: ctx.conversation } : {}),
 		page: pageView(ctx.page),
-		...(renderProblems(ctx.page).length ? { renderProblems: renderProblems(ctx.page), renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
+		...(problems.length ? { renderProblems: problems, renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
 		...(ctx.scopeBlockIds?.length ? { scope: { blockIds: ctx.scopeBlockIds } } : {}),
 		...(ctx.screenId ? { screenHint: ctx.screenId } : {}),
 		...(ctx.collection ? { collection: collectionPromptContext(ctx.collection) } : {}),
@@ -259,9 +259,11 @@ type TurnResultOut = { result: AgentReply | AgentFailure; meta: LiveTurnMeta };
 async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal): Promise<TurnResultOut> {
 	const trace = { runId: newRunId(), steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
+	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
+	const problems = renderProblems(ctx.page);
 	const messages: ChatMessage[] = [
 		{ role: "system", content: ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD },
-		{ role: "user", content: userPrompt(ctx) }
+		{ role: "user", content: userPrompt(ctx, problems) }
 	];
 	const tools = agentOpenAiTools(ctx.mode);
 	let working: PageV2 = ctx.page;
@@ -279,7 +281,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 	let endedOnCalls = false;
 	// A turn with blocks that do not render (every block of the current page is probed here, not only the ones a write touches),
 	// or an edit scoped to selected blocks, is expected to end with an accepted write; if it does not, the model is asked once.
-	const open = renderProblems(ctx.page).length;
+	const open = problems.length;
 	const expectsChange = open > 0 || (ctx.mode === "build" && Boolean(ctx.scopeBlockIds?.length));
 	let nudged = false;
 	const changed = () => Boolean(proposal && proposal.diff.length > 0);

@@ -28,16 +28,11 @@ const HIDDEN = new Set(["id", "class", "className"]);
 
 if (!existsSync(BUNDLE)) spawnSync(process.execPath, [join(repo, "scripts", "build-render-bundle.mjs")], { cwd: repo, stdio: "inherit" });
 const core = await import(pathToFileURL(join(repo, "packages/builder-core/src/index.ts")).href);
-const { allItems, itemInfo, emptyPage, writePage, sampleProps, propsFieldTree, propsSchemaFor, propsEventsFor, propsDigest, inspectorModel, inspectorValue, applyOp, renderBlock, showsContent } = core;
+const { allItems, itemInfo, emptyPage, writePage, sampleProps, propsFieldTree, propsSchemaFor, propsEventsFor, propsDigest, inspectorModel, inspectorValue, applyOp, renderBlock, probeFromModule, probeOutcome } = core;
 const bundle = await import(pathToFileURL(BUNDLE).href);
 
-function renderHtml(organism, props) {
-	try {
-		return { ok: true, html: bundle.render(bundle.blocks[organism], { props }).body };
-	} catch (err) {
-		return { ok: false, error: String(err.message).split("\n")[0].slice(0, 160) };
-	}
-}
+// The one render probe (ADR 0038), the same function the runtime and the browser install; here it only classifies, it is not installed.
+const probe = probeFromModule(bundle);
 
 const sha = (text) => createHash("sha256").update(text).digest("hex").slice(0, 16);
 const inspectorFiles = ["packages/builder-core/src/catalog/props-schema.ts", "packages/builder-core/src/page-doc/inspect.ts", "packages/builder-core/src/page-doc/ops.ts", "apps/chat-web/src/app/InspectorFields.svelte", "apps/chat-web/src/lib/inspector/inspector.svelte.ts", "apps/chat-web/src/lib/inspector/fields.ts"];
@@ -220,8 +215,7 @@ for (const item of allItems()) {
 		const view = () => page.blocks[0];
 		const outcome = (block) => {
 			const r = renderBlock(block);
-			const html = renderHtml(r.organism, r.props);
-			return !html.ok ? "throws" : showsContent(html.html) ? "content" : "empty";
+			return probeOutcome(probe(r.organism, r.props));
 		};
 		record.rendersSample = outcome(view());
 		// two rows per list, through the list_row operation of the Inspector

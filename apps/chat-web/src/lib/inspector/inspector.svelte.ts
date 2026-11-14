@@ -123,7 +123,7 @@ export const inspector = {
 		const result = applyOp(page, { op: "set", blockId, pointer: field.pointer, value: inspectorValue(field, value) });
 		if (!result.ok) {
 			const first = result.issues[0];
-			setIssue(blockId, field.pointer, { pointer: result.pointer ?? field.pointer, code: result.code, message: first?.expected ? `${first.expected}${first.got ? ` (${first.got})` : ""}` : result.message, ...(field.options ? { allowed: field.options } : {}), value });
+			setIssue(blockId, field.pointer, { pointer: result.pointer ?? field.pointer, code: result.code, message: first?.expected ? `${first.expected}${first.got && !first.expected.includes(String(first.got)) ? ` (${first.got})` : ""}` : result.message, ...(field.options ? { allowed: field.options } : {}), value });
 			return false;
 		}
 		setIssue(blockId, field.pointer, null);

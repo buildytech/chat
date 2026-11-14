@@ -29489,13 +29489,33 @@ exports["blankRequired"] = blankRequired;
 
 __def("packages/builder-core/src/page-doc/probe.ts", function (exports) {
 const { renderBlock } = __req("packages/builder-core/src/page-doc/render.ts");
+function probeFromModule(mod: RenderModule): RenderProbe {
+	return (organism, props) => {
+		const component = mod.blocks[organism];
+		if (!component) return { ok: false, error: `no compiled block ${organism}` };
+		try {
+			return { ok: true, html: mod.render(component as never, { props }).body };
+		} catch (err) {
+			return { ok: false, error: err instanceof Error ? err.message : String(err) };
+		}
+	};
+}
+
+/** What a render result amounts to for the page: it threw, shows nothing, or shows content. */
+function probeOutcome(result: ProbeResult): ProbeOutcome {
+	return !result.ok ? "throws" : showsContent(result.html) ? "content" : "empty";
+}
+
 let probe: RenderProbe | null = null;
 let required = false;
+/** "reject": a block that shows nothing fails the write (the agent host). "allow": it passes and the preview says so (the browser: a freshly added block with registry sample props is a placeholder the author fills in). A block that throws fails either way. */
+let emptyPolicy: "reject" | "allow" = "reject";
 const CACHE = new Map<string, ProbeIssue | null>();
 
-function installRenderProbe(fn: RenderProbe | null, options: { required?: boolean } = {}): void {
+function installRenderProbe(fn: RenderProbe | null, options: { required?: boolean; empty?: "reject" | "allow" } = {}): void {
 	probe = fn;
 	required = Boolean(options.required);
+	emptyPolicy = options.empty ?? "reject";
 	CACHE.clear();
 }
 
@@ -29515,23 +29535,38 @@ function showsContent(html: string): boolean {
 	return clean !== "" && (text !== "" || /<(img|svg|video|picture|canvas|iframe|input|textarea|select|button)\b/i.test(clean));
 }
 
+/** UTF-8 bytes of a string, one per character (what V8 writes into some Intl errors); no Node `Buffer`, so it runs in the browser. */
+function latin1Bytes(value: string): string {
+	return Array.from(new TextEncoder().encode(value), (byte) => String.fromCharCode(byte)).join("");
+}
+
+/** A string whose characters are all bytes (< 256) read as UTF-8; null when it is not one. */
+function fromLatin1Bytes(value: string): string | null {
+	const bytes = new Uint8Array(value.length);
+	for (let i = 0; i < value.length; i += 1) {
+		const code = value.charCodeAt(i);
+		if (code > 255) return null;
+		bytes[i] = code;
+	}
+	return new TextDecoder("utf-8").decode(bytes);
+}
+
 /**
  * V8 writes the argument of some Intl errors ("Invalid currency code : ...") one byte per character, so a non-Latin-1 value
  * comes back as its UTF-8 bytes read as Latin-1 (a rouble sign as "a" + two more characters). Undo that when it round-trips.
  */
 function readable(message: string): string {
-	const back = Buffer.from(message, "latin1").toString("utf8");
-	return back !== message && !back.includes("\ufffd") ? back : message;
+	const back = fromLatin1Bytes(message);
+	return back !== null && back !== message && !back.includes("\ufffd") ? back : message;
 }
 
 /** JSON Pointer of the first string leaf whose value appears in an error message (the prop the component choked on). */
 function culprit(props: unknown, message: string): string | null {
 	let found: string | null = null;
-	const bytes = (value: string) => Buffer.from(value, "utf8").toString("latin1");
 	const walk = (value: unknown, path: string): void => {
 		if (found) return;
 		if (typeof value === "string") {
-			if (value.length > 0 && value.length <= 40 && (message.includes(value) || message.includes(bytes(value)))) found = path;
+			if (value.length > 0 && value.length <= 40 && (message.includes(value) || message.includes(latin1Bytes(value)))) found = path;
 		} else if (Array.isArray(value)) value.forEach((entry, i) => walk(entry, `${path}/${i}`));
 		else if (value && typeof value === "object") for (const [key, entry] of Object.entries(value)) walk(entry, `${path}/${key.replace(/~/g, "~0").replace(/\//g, "~1")}`);
 	};
@@ -29545,7 +29580,7 @@ function emptyLists(props: Record<string, unknown>): string[] {
 }
 
 function probeBlock(item: string, variant: string | undefined, props: Record<string, unknown> | undefined, at: string): ProbeIssue | null {
-	const rendered = renderBlock({ item, variant, props } as never);
+	const rendered = renderBlock({ item, variant, props: props as BlockV2["props"] });
 	if (!rendered) return null;
 	const key = `${rendered.organism}\n${JSON.stringify(rendered.props)}`;
 	const hit = CACHE.get(key);
@@ -29583,15 +29618,17 @@ function probeBlock(item: string, variant: string | undefined, props: Record<str
 
 /** Render issues of a (schema-valid) page; `at` indexes are the block indexes of the page. Blocks whose props already failed are skipped by the caller. */
 function renderIssues(page: PageV2, skip: ReadonlySet<number> = new Set()): ProbeIssue[] {
+	const todo = page.blocks.flatMap((block, index) => (skip.has(index) ? [] : [{ block, index }]));
+	// Nothing to render (a rename, a move, a removal): nothing was left unchecked, so a missing probe is not a failure.
+	if (todo.length === 0) return [];
 	if (!probe) {
 		return required ? [{ path: "/", code: "render_probe_unavailable", expected: "the render probe (api/runtime/_render/blocks.mjs, `npm run bundle:runtime`) to be loaded" }] : [];
 	}
 	const out: ProbeIssue[] = [];
-	page.blocks.forEach((block, index) => {
-		if (skip.has(index)) return;
+	for (const { block, index } of todo) {
 		const issue = probeBlock(block.item, block.variant, block.props as Record<string, unknown> | undefined, `/blocks/${index}`);
-		if (issue) out.push(issue);
-	});
+		if (issue && !(emptyPolicy === "allow" && issue.code === "render_empty")) out.push(issue);
+	}
 	return out;
 }
 
@@ -29600,6 +29637,8 @@ function renderProblems(page: PageV2): ProbeIssue[] {
 	return renderIssues(page).filter((issue) => issue.code !== "render_probe_unavailable");
 }
 
+exports["probeFromModule"] = probeFromModule;
+exports["probeOutcome"] = probeOutcome;
 exports["installRenderProbe"] = installRenderProbe;
 exports["renderProbeInstalled"] = renderProbeInstalled;
 exports["showsContent"] = showsContent;
@@ -31479,6 +31518,8 @@ exports["inspectorModel"] = __req("packages/builder-core/src/page-doc/inspect.ts
 exports["inspectorValue"] = __req("packages/builder-core/src/page-doc/inspect.ts")["inspectorValue"];
 exports["pointerKey"] = __req("packages/builder-core/src/page-doc/inspect.ts")["pointerKey"];
 exports["installRenderProbe"] = __req("packages/builder-core/src/page-doc/probe.ts")["installRenderProbe"];
+exports["probeFromModule"] = __req("packages/builder-core/src/page-doc/probe.ts")["probeFromModule"];
+exports["probeOutcome"] = __req("packages/builder-core/src/page-doc/probe.ts")["probeOutcome"];
 exports["renderProbeInstalled"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderProbeInstalled"];
 exports["renderIssues"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderIssues"];
 exports["renderProblems"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderProblems"];
@@ -32269,14 +32310,14 @@ function pageView(page: PageV2): Record<string, unknown> {
 	return view;
 }
 
-function userPrompt(ctx: TurnContext): string {
+function userPrompt(ctx: TurnContext, problems: ReturnType<typeof renderProblems>): string {
 	const items = [...new Set(ctx.page.blocks.map((block) => block.item))];
 	const outlines = Object.fromEntries(items.map((item) => [item, propsOutline(item)]).filter(([, lines]) => lines));
 	return JSON.stringify({
 		request: ctx.brief,
 		...(ctx.conversation?.length ? { conversation: ctx.conversation } : {}),
 		page: pageView(ctx.page),
-		...(renderProblems(ctx.page).length ? { renderProblems: renderProblems(ctx.page), renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
+		...(problems.length ? { renderProblems: problems, renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
 		...(ctx.scopeBlockIds?.length ? { scope: { blockIds: ctx.scopeBlockIds } } : {}),
 		...(ctx.screenId ? { screenHint: ctx.screenId } : {}),
 		...(ctx.collection ? { collection: collectionPromptContext(ctx.collection) } : {}),
@@ -32306,9 +32347,11 @@ type TurnResultOut = { result: AgentReply | AgentFailure; meta: LiveTurnMeta };
 async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal): Promise<TurnResultOut> {
 	const trace = { runId: newRunId(), steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
+	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
+	const problems = renderProblems(ctx.page);
 	const messages: ChatMessage[] = [
 		{ role: "system", content: ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD },
-		{ role: "user", content: userPrompt(ctx) }
+		{ role: "user", content: userPrompt(ctx, problems) }
 	];
 	const tools = agentOpenAiTools(ctx.mode);
 	let working: PageV2 = ctx.page;
@@ -32326,7 +32369,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 	let endedOnCalls = false;
 	// A turn with blocks that do not render (every block of the current page is probed here, not only the ones a write touches),
 	// or an edit scoped to selected blocks, is expected to end with an accepted write; if it does not, the model is asked once.
-	const open = renderProblems(ctx.page).length;
+	const open = problems.length;
 	const expectsChange = open > 0 || (ctx.mode === "build" && Boolean(ctx.scopeBlockIds?.length));
 	let nudged = false;
 	const changed = () => Boolean(proposal && proposal.diff.length > 0);
@@ -32625,13 +32668,11 @@ exports["runtimeStatus"] = runtimeStatus;
 });
 
 __def("apps/xai-runtime/src/http.ts", function (exports) {
-const { clampRunBudgetMs, emptyPage, contractFingerprint, isAgentReply, gateRequest, installRenderProbe, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, stripRuntimePrefix } = __req("packages/builder-core/src/index.ts");
+const { clampRunBudgetMs, emptyPage, contractFingerprint, isAgentReply, gateRequest, installRenderProbe, probeFromModule, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, stripRuntimePrefix } = __req("packages/builder-core/src/index.ts");
 const { runXaiCatalogTurn } = __req("apps/xai-runtime/src/chat-tools.ts");
 const { runtimeStatus } = __req("apps/xai-runtime/src/status.ts");
 exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = __req("packages/builder-core/src/index.ts")["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"];
 const MAX_BODY = 256_000;
-
-type RenderModule = { blocks: Record<string, unknown>; render: (component: unknown, options: { props: Record<string, unknown> }) => { body: string } };
 
 let probeReady: Promise<void> | null = null;
 
@@ -32646,18 +32687,7 @@ function ensureRenderProbe(): Promise<void> {
 			const loader = (globalThis as { __buildyRenderLoader?: () => Promise<RenderModule> }).__buildyRenderLoader;
 			if (!loader) throw new Error("no render loader");
 			const mod = await loader();
-			installRenderProbe(
-				(organism, props) => {
-					const component = mod.blocks[organism];
-					if (!component) return { ok: false, error: `no compiled block ${organism}` };
-					try {
-						return { ok: true, html: mod.render(component, { props }).body };
-					} catch (err) {
-						return { ok: false, error: err instanceof Error ? err.message : String(err) };
-					}
-				},
-				{ required: true }
-			);
+			installRenderProbe(probeFromModule(mod), { required: true });
 		} catch (err) {
 			console.error(JSON.stringify({ runtime: "xai-grok", event: "render_probe_unavailable", ...safeErrorMessage(err) }));
 			installRenderProbe(null, { required: true });

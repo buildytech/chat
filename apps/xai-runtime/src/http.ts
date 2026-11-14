@@ -5,13 +5,15 @@ import {
 	isAgentReply,
 	gateRequest,
 	installRenderProbe,
+	probeFromModule,
 	isSharedPublicSurface,
 	mapChatRunRequest,
 	readEnv,
 	readXaiKeyState,
 	safeErrorMessage,
 	stripRuntimePrefix,
-	type EnvMap
+	type EnvMap,
+	type RenderModule
 } from "@buildytech/builder-core";
 import { runXaiCatalogTurn } from "./chat-tools.ts";
 import { runtimeStatus } from "./status.ts";
@@ -19,8 +21,6 @@ import { runtimeStatus } from "./status.ts";
 export { VERCEL_HOBBY_SAFE_MAX_DURATION_SEC } from "@buildytech/builder-core";
 
 const MAX_BODY = 256_000;
-
-type RenderModule = { blocks: Record<string, unknown>; render: (component: unknown, options: { props: Record<string, unknown> }) => { body: string } };
 
 let probeReady: Promise<void> | null = null;
 
@@ -35,18 +35,7 @@ export function ensureRenderProbe(): Promise<void> {
 			const loader = (globalThis as { __buildyRenderLoader?: () => Promise<RenderModule> }).__buildyRenderLoader;
 			if (!loader) throw new Error("no render loader");
 			const mod = await loader();
-			installRenderProbe(
-				(organism, props) => {
-					const component = mod.blocks[organism];
-					if (!component) return { ok: false, error: `no compiled block ${organism}` };
-					try {
-						return { ok: true, html: mod.render(component, { props }).body };
-					} catch (err) {
-						return { ok: false, error: err instanceof Error ? err.message : String(err) };
-					}
-				},
-				{ required: true }
-			);
+			installRenderProbe(probeFromModule(mod), { required: true });
 		} catch (err) {
 			console.error(JSON.stringify({ runtime: "xai-grok", event: "render_probe_unavailable", ...safeErrorMessage(err) }));
 			installRenderProbe(null, { required: true });

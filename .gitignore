@@ -15,6 +15,7 @@ coverage/
 apps/chat-web/.svelte-kit/
 apps/chat-web/build/
 api/runtime/_render/
+apps/chat-web/static/render/
 api/runtime/_t/
 apps/orchestrator/.cursor/
 **/.wrangler/

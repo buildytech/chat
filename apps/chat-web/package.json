@@ -5,7 +5,9 @@
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
+    "predev": "node ../../scripts/build-render-bundle.mjs",
     "dev": "vite dev",
+    "prebuild": "node ../../scripts/build-render-bundle.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

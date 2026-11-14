@@ -44,17 +44,11 @@ export async function installBundleProbe(): Promise<() => void> {
 	const { spawnSync } = await import("node:child_process");
 	const { join } = await import("node:path");
 	const { fileURLToPath, pathToFileURL } = await import("node:url");
-	const { installRenderProbe } = await import("../../packages/builder-core/src/index.ts");
+	const { installRenderProbe, probeFromModule } = await import("../../packages/builder-core/src/index.ts");
 	const root = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
 	const bundle = join(root, "api", "runtime", "_render", "blocks.mjs");
 	if (!existsSync(bundle)) spawnSync(process.execPath, [join(root, "scripts/build-render-bundle.mjs")], { cwd: root, stdio: "pipe" });
-	const mod = (await import(pathToFileURL(bundle).href)) as { blocks: Record<string, unknown>; render: (c: unknown, o: { props: Record<string, unknown> }) => { body: string } };
-	installRenderProbe((organism, props) => {
-		try {
-			return { ok: true, html: mod.render(mod.blocks[organism], { props }).body };
-		} catch (err) {
-			return { ok: false, error: (err as Error).message };
-		}
-	}, { required: true });
+	const mod = (await import(pathToFileURL(bundle).href)) as Parameters<typeof probeFromModule>[0];
+	installRenderProbe(probeFromModule(mod), { required: true });
 	return () => installRenderProbe(null);
 }
