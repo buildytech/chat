@@ -3,14 +3,14 @@ import type { SessionRevisionCause, SessionRevisionOp } from "@buildytech/page-c
 import { findBlock, firstBlockId, hasBlock } from "./tree";
 import { nextRevision, type VisibleChange } from "./revision";
 import {
-	readSessionPages,
-	writeSessionPages,
+	readProjectPage,
+	writeProjectPage,
 	type StoredPageProvenance,
 	type StoredPageRecord
 } from "../browser/persist";
 
 /**
- * Client page state. Unbound sessions keep `null` (blank Workspace — not the North Harbor fixture).
+ * Client page state of the bound project. An unbound store keeps `null` (blank Workspace — not the North Harbor fixture).
  * `$state.raw` avoids proxying the DTO. Do not introduce shared SSR module state.
  */
 let currentPage = $state.raw<Page | null>(null);
@@ -21,11 +21,11 @@ let lastProposedPage = $state.raw<Page | null>(null);
 let lastProposedProvenance = $state.raw<StoredPageProvenance | null>(null);
 let selectedBlockId = $state<string | null>(null);
 let pageRevision = $state<number | null>(null);
-let boundSessionId: string | null = null;
+let boundProjectId: string | null = null;
 
-/** A new revision of the applied page: one per committed change (ADR 0015). The chat store keeps session.pageRevision and the history in sync. */
+/** A new revision of the applied page: one per committed change (ADR 0015). The project store keeps pageRevision and the history of the project in sync. */
 export type RevisionEvent = {
-	sessionId: string;
+	projectId: string;
 	revision: number;
 	cause: SessionRevisionCause;
 	pageId: string;
@@ -44,12 +44,12 @@ export function onPageRevision(listener: ((event: RevisionEvent) => void) | null
 }
 
 function announce(cause: SessionRevisionCause, blockId?: string | null, meta?: RevisionMeta): void {
-	if (!boundSessionId || !currentPage || pageRevision == null) return;
+	if (!boundProjectId || !currentPage || pageRevision == null) return;
 	revisionListener?.({
-		sessionId: boundSessionId,
+		projectId: boundProjectId,
 		revision: pageRevision,
 		cause,
-		pageId: currentPage.id ?? `page-${boundSessionId.replace(/^session-/, "")}`.slice(0, 64),
+		pageId: currentPage.id ?? `page-${boundProjectId.replace(/^(session|project)-/, "")}`.slice(0, 64),
 		...(blockId ? { blockId } : {}),
 		...(meta?.op ? { op: meta.op } : {}),
 		...(meta?.path ? { path: meta.path } : {})
@@ -67,7 +67,7 @@ function parseStored(raw: unknown): Page | null {
 }
 
 function persistBound(): void {
-	if (!boundSessionId) return;
+	if (!boundProjectId) return;
 	const record: StoredPageRecord = {
 		applied: currentPage,
 		candidate: candidatePage,
@@ -78,7 +78,7 @@ function persistBound(): void {
 		lastProposed: lastProposedPage,
 		lastProposedProvenance
 	};
-	writeSessionPages(boundSessionId, record);
+	writeProjectPage(boundProjectId, record);
 }
 
 function syncSelection(page: Page | null): void {
@@ -109,11 +109,11 @@ function restoreRecord(record: StoredPageRecord | null): void {
 	}
 }
 
-/** Bind Workspace to a chat. Persists the previous session first. Does not write on restore. */
-export function bindPageSession(sessionId: string | null): void {
-	if (boundSessionId && boundSessionId !== sessionId) persistBound();
-	boundSessionId = sessionId;
-	if (!sessionId) {
+/** Bind the page store to a project (the key of its page record). Persists the previous project first. Does not write on restore. */
+export function bindProject(projectId: string | null): void {
+	if (boundProjectId && boundProjectId !== projectId) persistBound();
+	boundProjectId = projectId;
+	if (!projectId) {
 		currentPage = null;
 		candidatePage = null;
 		appliedProvenance = null;
@@ -124,17 +124,17 @@ export function bindPageSession(sessionId: string | null): void {
 		pageRevision = null;
 		return;
 	}
-	restoreRecord(readSessionPages(sessionId));
+	restoreRecord(readProjectPage(projectId));
 }
 
-export function getBoundPageSessionId(): string | null {
-	return boundSessionId;
+export function getBoundProjectId(): string | null {
+	return boundProjectId;
 }
 
-/** Read-only: the page a chat shows in Preview (candidate, else applied), straight from storage. Binds and writes nothing. */
-export function readPreviewPage(sessionId: string | null | undefined): Page | null {
-	if (!sessionId) return null;
-	const record = readSessionPages(sessionId);
+/** Read-only: the page a project shows in Preview (candidate, else applied), straight from storage. Binds and writes nothing. */
+export function readPreviewPage(projectId: string | null | undefined): Page | null {
+	if (!projectId) return null;
+	const record = readProjectPage(projectId);
 	return parseStored(record?.candidate) ?? parseStored(record?.applied);
 }
 
@@ -279,12 +279,12 @@ export function replaceVisiblePage(
 }
 
 /**
- * Empty start (ADR 0024): the bound chat gets an empty page (no sections) on its start Stock screen as the applied
+ * Empty start (ADR 0024): the bound project gets an empty page (no sections) on its start Stock screen as the applied
  * page, revision 0 and no history entry; the first section is the next change (revision 1, one undo step back to
- * this empty page). A chat that already shows a page or a pending proposal is left alone (false).
+ * this empty page). A project that already shows a page or a pending proposal is left alone (false).
  */
 export function startEmptyPage(page: Page, provenance: StoredPageProvenance): boolean {
-	if (!boundSessionId || candidatePage || (currentPage && currentPage.blocks.length > 0)) return false;
+	if (!boundProjectId || candidatePage || (currentPage && currentPage.blocks.length > 0)) return false;
 	currentPage = parsePageV2(page);
 	appliedProvenance = provenance;
 	candidateProvenance = null;
@@ -294,7 +294,7 @@ export function startEmptyPage(page: Page, provenance: StoredPageProvenance): bo
 	return true;
 }
 
-/** Blank Workspace for a new / unbound session. Never loads the demo fixture. */
+/** Blank Workspace for a new / unbound project. Never loads the demo fixture. */
 export function clearCurrentPage(): void {
 	currentPage = null;
 	candidatePage = null;

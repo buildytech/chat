@@ -100,8 +100,14 @@ export type ChatMessage = {
 	plan?: unknown;
 };
 
+/**
+ * The chat's view of a project (the stored session document): the project fields plus `ext.chat` (messages, mode,
+ * selected model, usage). The project store keeps the project; this view is derived from it (chat.svelte.ts).
+ */
 export type ChatSession = {
 	id: string;
+	/** Key of the page record when it differs from `id` (session file 1.9.0). */
+	projectId?: string;
 	title: string;
 	updatedAt: string;
 	messages: ChatMessage[];

@@ -104,7 +104,7 @@ test("UI: the first '+' or drop starts the page, the preview shows the empty dro
 	const inspector = web("lib/inspector/inspector.svelte.ts");
 	assert.match(inspector, /!getCurrentPage\(\) && !startEmptyPageInChat\(\)/);
 	assert.doesNotMatch(inspector, /There is no page yet\./);
-	const session = web("lib/chat-core/session.svelte.ts");
+	const session = web("lib/chat-core/proposal-flow.ts");
 	assert.match(session, /export function startEmptyPageInChat\(screenId: string \| null = null\): boolean/);
 	const store = web("lib/page-store/mock.svelte.ts");
 	assert.match(store, /export function startEmptyPage\(page: (?:Page|PageV2), provenance: StoredPageProvenance\): boolean/);

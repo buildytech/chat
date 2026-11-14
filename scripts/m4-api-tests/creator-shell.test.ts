@@ -4,8 +4,11 @@ import { test } from "node:test";
 
 const source = (file: string) =>
 	readFileSync(new URL(`../../apps/chat-web/src/app/${file}.svelte`, import.meta.url), "utf8");
+/** The chat modules and the project store (the former chat-core/session.svelte.ts, ADR 0040), one text. */
 const sessionCore = () =>
-	readFileSync(new URL("../../apps/chat-web/src/lib/chat-core/session.svelte.ts", import.meta.url), "utf8");
+	["chat-core/chat.svelte.ts", "chat-core/send.ts", "chat-core/proposal-flow.ts", "project/store.svelte.ts"]
+		.map((file) => readFileSync(new URL(`../../apps/chat-web/src/lib/${file}`, import.meta.url), "utf8"))
+		.join("\n");
 
 test("desktop panes never combine global hidden with responsive flex", () => {
 	for (const name of ["Workspace", "ChatColumn", "ChatDrawer"]) {
@@ -109,10 +112,10 @@ test("Stock search lives on the Blocks feed; the chat home does not pick screens
 
 test("local session delete is enabled and removes pages", () => {
 	const s = sessionCore();
-	assert.match(s, /canDeleteSessions = \$state\(true\)/);
+	assert.match(s, /canDeleteSessions: true/);
 	assert.match(s, /export function deleteSession/);
 	assert.match(s, /export function deleteAllSessions/);
-	assert.match(s, /deleteSessionPages/);
+	assert.match(s, /deleteProjectPage/);
 	assert.match(s, /clearPagesBlob/);
 });
 

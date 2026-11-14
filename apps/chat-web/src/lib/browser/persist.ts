@@ -339,28 +339,29 @@ export function quarantineValue(key: string, reason: string, raw: string): boole
 }
 
 /** Write every page record at once (import). */
-export function writeAllSessionPages(records: Record<string, StoredPageRecord>): boolean {
+export function writeAllProjectPages(records: Record<string, StoredPageRecord>): boolean {
 	const blob = loadPagesBlob();
 	Object.assign(blob.pages, records);
 	return writeJson(PAGES_KEY, blob);
 }
 
-export function readSessionPages(sessionId: string): StoredPageRecord | null {
-	const rec = loadPagesBlob().pages[sessionId];
+/** The page record of a project (the pages blob is keyed by project id; for sessions written before session 1.9.0 that is the session id). */
+export function readProjectPage(projectId: string): StoredPageRecord | null {
+	const rec = loadPagesBlob().pages[projectId];
 	if (!rec) return null;
 	return migrateStoredPageRecord(rec);
 }
 
-export function writeSessionPages(sessionId: string, record: StoredPageRecord): boolean {
+export function writeProjectPage(projectId: string, record: StoredPageRecord): boolean {
 	const blob = loadPagesBlob();
-	blob.pages[sessionId] = record;
+	blob.pages[projectId] = record;
 	return writeJson(PAGES_KEY, blob);
 }
 
-export function deleteSessionPages(sessionId: string): boolean {
+export function deleteProjectPage(projectId: string): boolean {
 	const blob = loadPagesBlob();
-	if (!(sessionId in blob.pages)) return true;
-	delete blob.pages[sessionId];
+	if (!(projectId in blob.pages)) return true;
+	delete blob.pages[projectId];
 	return writeJson(PAGES_KEY, blob);
 }
 

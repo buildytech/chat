@@ -43,7 +43,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
 	import { pageSlug } from "$lib/browser/page-address";
 	import { previewWindowUrl } from "$lib/browser/preview-settings";
-	import { getBoundPageSessionId } from "$lib/page-store";
+	import { getBoundProjectId } from "$lib/page-store";
 	import { forwardShortcut } from "$lib/layout/shortcuts";
 
 	const page = $derived(getCurrentPage());
@@ -185,13 +185,13 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 
 	const currentUrl = $derived(slugUrl);
 	$effect(() => {
-		getBoundPageSessionId();
+		getBoundProjectId();
 		const slug = page?.slug;
 		draft = slug ? "/" + slug : "/";
 	});
 
 	$effect(() => {
-		getBoundPageSessionId();
+		getBoundProjectId();
 		history = [];
 		future = [];
 	});
@@ -266,7 +266,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	// the applied page) with the registry blocks and kit theme, no chat UI and no service labels.
 	function openNew() {
 		window.open(
-			previewWindowUrl(getSelectedSession()?.id ?? getBoundPageSessionId(), base, page?.slug),
+			previewWindowUrl(getSelectedSession()?.id ?? getBoundProjectId(), base, page?.slug),
 			"_blank",
 			"noopener",
 		);

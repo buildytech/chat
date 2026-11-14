@@ -35,7 +35,7 @@ test("/preview renders registry blocks only: no chat UI, no labels, read-only pa
 	assert.match(view, /<PreviewBlock \{block\} clean standalone \/>/);
 	assert.match(view, /readPreviewPage/);
 	assert.match(view, /theme\.init\(\)/);
-	assert.doesNotMatch(view, /bindPageSession|ChatSidebar|ChatComposer|session\.svelte/);
+	assert.doesNotMatch(view, /bindProject|ChatSidebar|ChatComposer|session\.svelte/);
 	// Chat CSS stays with the chat route, so the standalone window gets the kit theme alone.
 	assert.doesNotMatch(web("routes/+layout.svelte"), /import\s+"[^"]*app\.css"/);
 	assert.match(web("routes/+page.svelte"), /app\.css/);

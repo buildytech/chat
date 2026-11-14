@@ -1,10 +1,10 @@
 export { blocksOf, parseDraftPage, parsePage, type CreatorPage, type Page, type PageBlock, type PageStatus } from "./page";
 export {
 	applyCandidate,
-	bindPageSession,
+	bindProject,
 	clearCurrentPage,
 	discardCandidate,
-	getBoundPageSessionId,
+	getBoundProjectId,
 	getCandidatePage,
 	getAppliedProvenance,
 	getCurrentPage,

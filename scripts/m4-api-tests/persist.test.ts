@@ -9,12 +9,12 @@ import {
 	loadPagesBlob,
 	loadSessionsJson,
 	clearPagesBlob,
-	deleteSessionPages,
+	deleteProjectPage,
 	migrateStoredPageRecord,
-	readSessionPages,
+	readProjectPage,
 	repairSession,
 	saveSessionsJson,
-	writeSessionPages
+	writeProjectPage
 } from "../../apps/chat-web/src/lib/browser/persist.ts";
 
 class MemoryStorage {
@@ -88,28 +88,28 @@ test("when even the quarantine write is refused, the corrupt value is frozen, no
 });
 
 test("pages are stored per session and discard does not need a write of applied", () => {
-	assert.equal(writeSessionPages("session-1", {
+	assert.equal(writeProjectPage("session-1", {
 		applied: { id: "page-a" },
 		candidate: { id: "page-b" },
 		selectedBlockId: "block-hero",
 		revision: 2
 	}), true);
-	const rec = readSessionPages("session-1");
+	const rec = readProjectPage("session-1");
 	assert.equal(rec?.revision, 2);
 	assert.equal((rec?.applied as { id: string }).id, "page-a");
-	assert.equal(readSessionPages("session-2"), null);
+	assert.equal(readProjectPage("session-2"), null);
 	assert.equal(loadPagesBlob().version, 1);
 	assert.ok(memory.getItem(PAGES_KEY)?.includes("session-1"));
 });
 
 test("QA can delete a session's pages or clear the pages blob", () => {
-	assert.equal(writeSessionPages("session-1", { applied: { id: "page-a" }, candidate: null, selectedBlockId: null, revision: 1 }), true);
-	assert.equal(writeSessionPages("session-2", { applied: { id: "page-b" }, candidate: null, selectedBlockId: null, revision: 1 }), true);
-	assert.equal(deleteSessionPages("session-1"), true);
-	assert.equal(readSessionPages("session-1"), null);
-	assert.equal(readSessionPages("session-2")?.revision, 1);
+	assert.equal(writeProjectPage("session-1", { applied: { id: "page-a" }, candidate: null, selectedBlockId: null, revision: 1 }), true);
+	assert.equal(writeProjectPage("session-2", { applied: { id: "page-b" }, candidate: null, selectedBlockId: null, revision: 1 }), true);
+	assert.equal(deleteProjectPage("session-1"), true);
+	assert.equal(readProjectPage("session-1"), null);
+	assert.equal(readProjectPage("session-2")?.revision, 1);
 	assert.equal(clearPagesBlob(), true);
-	assert.equal(readSessionPages("session-2"), null);
+	assert.equal(readProjectPage("session-2"), null);
 	assert.equal(loadPagesBlob().version, 1);
 });
 

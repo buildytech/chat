@@ -392,10 +392,10 @@ test("page store and chat store are wired: applyCandidate and replaceVisiblePage
 	const pages = web("lib/page-store/mock.svelte.ts");
 	assert.match(pages, /announce\("apply"\)/);
 	assert.match(pages, /nextRevision\(pageRevision, change, !candidatePage\)/);
-	const chats = web("lib/chat-core/session.svelte.ts");
-	assert.match(chats, /onPageRevision\(\(event\) =>/);
-	assert.match(chats, /recordRevision\(/);
-	assert.match(chats, /reconcileChatRevision\(/);
+	const store = web("lib/project/store.svelte.ts");
+	assert.match(store, /onPageRevision\(\(event\) =>/);
+	assert.match(web("lib/project/transitions.ts"), /recordRevision\(/);
+	assert.match(store, /reconcileChatRevision\(/);
 });
 
 // ---- session 1.9.0: a project without a chat, projectId (ADR 0040) --------------------------------------------------

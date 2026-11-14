@@ -151,7 +151,7 @@ test("chat mode is kept per chat; default Build; the mode is never inferred from
 	assert.equal(chatModeOf({ mode: "ask" }, "build"), "ask");
 	assert.equal(chatModeOf({ mode: undefined }, "ask"), "ask");
 	assert.equal(chatModeOf({ mode: "chat" as never }), "build");
-	const source = readFileSync(new URL("../../apps/chat-web/src/lib/chat-core/session.svelte.ts", import.meta.url), "utf8");
+	const source = ["chat.svelte.ts", "send.ts", "turn.ts", "proposal-flow.ts"].map((f) => readFileSync(new URL(`../../apps/chat-web/src/lib/chat-core/${f}`, import.meta.url), "utf8")).join("\n");
 	assert.doesNotMatch(source, /isClearPageCommand|looksLike|detectIntent|parseAskProse/);
 });
 

@@ -8,7 +8,7 @@
 import { addScreen, applyOp, checkAdd, deriveFamily, inspectorValue, type AddCheck, type InspectorField, type OpResult, type PageFamily, type PageOp } from "@buildytech/builder-core";
 import type { PageV2 } from "@buildytech/page-contract";
 import { loadPropsGate, startEmptyPageInChat } from "../chat-core";
-import { getBoundPageSessionId, getCurrentPage, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
+import { getBoundProjectId, getCurrentPage, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
 import { commitChange } from "../page-store/revision";
 import type { FieldIssue } from "./fields";
 import { EditHistory } from "./history";
@@ -27,7 +27,7 @@ let opIssue = $state<{ blockId: string; code: string; message: string } | null>(
 
 /** The history of the bound chat for the page Preview shows; reset when the chat or the page changed elsewhere. */
 function historyFor(page: Page): EditHistory<Page> {
-	const bound = getBoundPageSessionId();
+	const bound = getBoundProjectId();
 	const head = history.head();
 	if (bound !== historySession || (head !== null && head !== page)) {
 		history.clear();
@@ -97,13 +97,13 @@ export const inspector = {
 	get canUndo(): boolean {
 		void version;
 		const head = history.head();
-		return history.canUndo && historySession === getBoundPageSessionId() && head === getCurrentPage();
+		return history.canUndo && historySession === getBoundProjectId() && head === getCurrentPage();
 	},
 
 	get canRedo(): boolean {
 		void version;
 		const head = history.head();
-		return history.canRedo && historySession === getBoundPageSessionId() && head === getCurrentPage();
+		return history.canRedo && historySession === getBoundProjectId() && head === getCurrentPage();
 	},
 
 	/**
@@ -162,13 +162,13 @@ export const inspector = {
 	 * becomes the selection.
 	 */
 	async add(spec: string, variant: string | null, at?: number): Promise<Added> {
-		const bound = getBoundPageSessionId();
+		const bound = getBoundProjectId();
 		try {
 			await loadPropsGate();
 		} catch {
 			return { ok: false, code: "props_gate_unavailable", message: "Validation could not load. Retry adding the block or screen." };
 		}
-		if (bound !== getBoundPageSessionId()) return { ok: false, code: "page_changed", message: "The selected chat changed while validation loaded. Retry in this chat." };
+		if (bound !== getBoundProjectId()) return { ok: false, code: "page_changed", message: "The selected chat changed while validation loaded. Retry in this chat." };
 		const check = checkAdd(spec, variant);
 		if (!check.ok) return { ok: false, code: check.code, message: check.message };
 		// Empty start: no page yet. The chat gets an empty page first, with no history step, so the section is the one undo step.
@@ -191,13 +191,13 @@ export const inspector = {
 	 * hard rules only, one undo step. With no page yet the chat first gets an empty page.
 	 */
 	async addScreen(screenId: string, at?: number): Promise<{ ok: true; blockId: string; added: number; skipped: string[] } | { ok: false; code: string; message: string }> {
-		const bound = getBoundPageSessionId();
+		const bound = getBoundProjectId();
 		try {
 			await loadPropsGate();
 		} catch {
 			return { ok: false, code: "props_gate_unavailable", message: "Validation could not load. Retry adding the block or screen." };
 		}
-		if (bound !== getBoundPageSessionId()) return { ok: false, code: "page_changed", message: "The selected chat changed while validation loaded. Retry in this chat." };
+		if (bound !== getBoundProjectId()) return { ok: false, code: "page_changed", message: "The selected chat changed while validation loaded. Retry in this chat." };
 		let page = getCurrentPage();
 		if (!page && !startEmptyPageInChat(screenId)) return { ok: false, code: "not_started", message: "The empty page could not be started." };
 		page = getCurrentPage();
