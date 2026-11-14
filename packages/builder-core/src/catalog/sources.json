@@ -3,16 +3,16 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:161d25a2a1983e4bba4bcf811eb5099fcc4da4daa6a57fb857ae736ed5268621",
+	"lockDigest": "sha256:69a4ee6061185cffa36110d63a2224bef1f142d10cb2507667f52ba9ba4f3033",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4",
-		"digest": "sha256:39b97e88abe27f2946e5e3d9d0bd0192abb176986303c1f873aec4b914024f33"
+		"sha256": "10dedbb0f4305681903ec981a58f7e86df2e3cc670f1ce85efd13cac6b1c6458",
+		"digest": "sha256:d429a446d35a085e44a4762e6af4d60266784a1c6a13093f24b4eeaa8b107b53"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "eee29ee17b714110532d994b8cfff8bf8b8f7baab09398f33f3b91c43305b3af",
-		"digest": "sha256:bb4ae0ac537ba08d921557046bf75ee59ea592da181dc5ba3a020ccce9b31896"
+		"sha256": "68d2a9e6dd2081bdd62e648e31e1ab84b07bf5cb2bc0d84c061ff461d535f0d9",
+		"digest": "sha256:7cc5ce00fb2b9538c324a47580c5c70a4115c09808fc36378d364ce88d622e61"
 	},
 	"initItems": [
 		"presets",
@@ -4495,27 +4495,6 @@
 			"files": [
 				"src/blocks/review-list.svelte",
 				"src/blocks/review-list.types.ts"
-			]
-		},
-		"rich-text": {
-			"type": "registry:block",
-			"registryDependencies": [
-				"box",
-				"card",
-				"grid",
-				"group",
-				"media-frame",
-				"pill",
-				"prose",
-				"section-frame",
-				"text",
-				"title",
-				"utils"
-			],
-			"dependencies": [],
-			"files": [
-				"src/blocks/rich-text.svelte",
-				"src/blocks/rich-text.types.ts"
 			]
 		},
 		"search-field": {
@@ -10026,33 +10005,6 @@
 				}
 			}
 		},
-		"rich-text": {
-			"spec": "block.richtext",
-			"organism": "blocks/rich-text.svelte",
-			"organismName": "RichText",
-			"defaultVariant": "narrow",
-			"variants": {
-				"narrow": {
-					"layout": "narrow"
-				},
-				"wide": {
-					"layout": "wide"
-				},
-				"sidebar": {
-					"layout": "sidebar"
-				},
-				"media": {
-					"layout": "media"
-				},
-				"card": {
-					"layout": "card"
-				},
-				"heroTitle": {
-					"layout": "hero",
-					"level": 1
-				}
-			}
-		},
 		"shopping-cart": {
 			"spec": "block.cartpage",
 			"organism": "blocks/shopping-cart.svelte",
@@ -12670,30 +12622,6 @@
 			"item": "review-list",
 			"variant": "mutedGrid"
 		},
-		"block.richtext/narrow": {
-			"item": "rich-text",
-			"variant": "narrow"
-		},
-		"block.richtext/wide": {
-			"item": "rich-text",
-			"variant": "wide"
-		},
-		"block.richtext/sidebar": {
-			"item": "rich-text",
-			"variant": "sidebar"
-		},
-		"block.richtext/media": {
-			"item": "rich-text",
-			"variant": "media"
-		},
-		"block.richtext/card": {
-			"item": "rich-text",
-			"variant": "card"
-		},
-		"block.richtext/heroTitle": {
-			"item": "rich-text",
-			"variant": "heroTitle"
-		},
 		"block.cartpage/split": {
 			"item": "shopping-cart",
 			"variant": "split"
@@ -13483,10 +13411,6 @@
 		"block.reviews": {
 			"item": "review-list",
 			"variant": "list"
-		},
-		"block.richtext": {
-			"item": "rich-text",
-			"variant": "narrow"
 		},
 		"block.cartpage": {
 			"item": "shopping-cart",

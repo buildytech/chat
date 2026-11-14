@@ -20,7 +20,7 @@ function viteFileId(id: string): string {
 	return realpathSync.native(file).replaceAll("\\", "/") + query;
 }
 
-test("all 532 catalog assets render via their registry block (SSR)", { timeout: 240_000 }, async () => {
+test("all 526 catalog assets render via their registry block (SSR)", { timeout: 240_000 }, async () => {
 	const server = await createServer({
 		root: SNAPSHOT,
 		configFile: false,
@@ -58,7 +58,7 @@ test("all 532 catalog assets render via their registry block (SSR)", { timeout: 
 			}
 		}
 		assert.deepEqual(failures, []);
-		assert.equal(rendered, 532);
+		assert.equal(rendered, 526);
 	} finally {
 		await server.close();
 	}

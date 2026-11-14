@@ -137,9 +137,9 @@ test("published variants: sha256 pinned, every Stock catalog asset maps to a reg
 	assert.equal(createHash("sha256").update(text).digest("hex"), catalogSources.variants.sha256);
 	const variants = JSON.parse(text.toString("utf8")) as { items: Record<string, { variants: Record<string, { asset: string }> }> };
 	const assets = Object.values(variants.items).flatMap((item) => Object.values(item.variants).map((variant) => variant.asset));
-	assert.equal(assets.length, 532);
+	assert.equal(assets.length, 526);
 	const catalogIds = catalogSnapshot.blockIndex.flatMap((entry) => entry.catalogIds);
-	assert.equal(catalogIds.length, 532, "no cap on variants per catalog block");
+	assert.equal(catalogIds.length, 526, "no cap on variants per catalog block");
 	for (const id of catalogIds) {
 		const [spec, variant] = [id.slice(0, id.indexOf("/")), id.slice(id.indexOf("/") + 1)];
 		const hit = registryItemFor(spec, variant);
@@ -216,9 +216,9 @@ test("production snapshot is pinned codegen-x Stock, not a synthetic TEST fixtur
 	assert.equal(raw.sourceArtifact, "apps/stock/content/assets.v0.json");
 	// the digest is the pin of the graph (catalog/stock-registry.v0.json), not a literal that goes stale at every re-pin
 	assert.equal(raw.sourceDigest, (JSON.parse(read("catalog/stock-registry.v0.json")) as { sources: { codegenX: { assetsDigest: string } } }).sources.codegenX.assetsDigest);
-	assert.equal(raw.counts.screen, 80);
-	assert.equal(raw.screens.length, 80);
-	assert.equal(catalogSnapshot.screens.length, 80);
+	assert.equal(raw.counts.screen, 79);
+	assert.equal(raw.screens.length, 79);
+	assert.equal(catalogSnapshot.screens.length, 79);
 	assert.equal(JSON.stringify(raw).includes("search_blocks"), false);
 	assert.equal(
 		raw.screens.some((screen) => /synthetic|TEST block/i.test(`${screen.screenId} ${screen.title}`)),

@@ -2755,17 +2755,6 @@
         "src/blocks/review-list.types.ts": "3fafbb9443d863c96f6a0ac075238e7c2d7abbe6cfceff38cc75ff30f966cc19"
       }
     },
-    "registry.buildy.tw|svelte|rich-text": {
-      "name": "rich-text",
-      "type": "registry:block",
-      "source": "https://registry.buildy.tw/svelte",
-      "version": "0.1.0",
-      "runtime": "svelte",
-      "files": {
-        "src/blocks/rich-text.svelte": "b3fc7c97c4020086a750696e7cb0fadff76c7816cd1cac3e20df2d326da0c767",
-        "src/blocks/rich-text.types.ts": "75e09a8057645e3ec46a4507beb86cee1e86c31f391f8622f056b5c7ebdaae10"
-      }
-    },
     "registry.buildy.tw|svelte|search-field": {
       "name": "search-field",
       "type": "registry:component",

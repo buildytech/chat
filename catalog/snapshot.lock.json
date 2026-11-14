@@ -3,7 +3,7 @@
 	"version": 0,
 	"config": {
 		"path": "catalog/snapshot.config.json",
-		"sha256": "b86a9d62337fbc22ad508c7ad98d88069fd88acac1c7643b10a76d8f3ba8f3fa"
+		"sha256": "6ffb605790a2eac83fc41b69cd1d33d2b1adbf61ca95d0ec373726a4dcf67848"
 	},
 	"policy": {
 		"path": "catalog/policy.v0.json",
@@ -11,47 +11,47 @@
 	},
 	"codegenX": {
 		"repo": "codegen-x/ui8kit",
-		"commit": "9eeabcaca83dc5ad920c337418086eb3707d94f8",
+		"commit": "a4c5bebdbd107a8e06ba83aff32b7c1aa155d7da",
 		"files": {
 			"added.v0.json": {
 				"sha256": "c596d20022e765e0e01da6212ba8c2b4c6fc71c2dde4ab43966850d67efe327e",
 				"bytes": 388
 			},
 			"assets.v0.json": {
-				"sha256": "6eb0c40ec796b45681ce5478eaa5e10e68722452278c9d7a93e11d03eeb17a89",
-				"bytes": 734353
+				"sha256": "b3fae2ba8d846a342ce9d0dbc69a5457119543a33dd2ccbca76aa72a8bee579d",
+				"bytes": 713119
 			},
 			"facets.v0.json": {
-				"sha256": "7ba5aef5f292bfb434d1a231fdeeb4e4ec3e6b7b6f479221710bc28ab70911bd",
-				"bytes": 107504
+				"sha256": "0f507ae277b11391b6f0a6ea52d7d5714bb1b819c8baf9b1ce26f26df3ed8e7e",
+				"bytes": 107474
 			},
 			"i18n/locales.json": {
 				"sha256": "1ba54ca2bb4e289c8046e10ef03b77a05c3fb3420971815f2f564e6e9e3e9656",
 				"bytes": 331
 			},
 			"install.v0.json": {
-				"sha256": "ee93d20cf85a08e2c099bb2c519d0b9cf06ee215c9e9efcf1c7e27ec0f26974f",
-				"bytes": 177680
+				"sha256": "ab70d8e760b7c2b629e0201482ebaf98e4d74476cc7ab6aa5276be2e48ce8277",
+				"bytes": 176195
 			},
 			"pattern-map.v0.json": {
 				"sha256": "81d95e237d372079b02331b809467bb26902fcc82d752d4520b8a2aa5df8c768",
 				"bytes": 3752
 			},
 			"previews.v0.json": {
-				"sha256": "73927c2cd1ef85b95cdbc4b785d0e785bfb0a1958e2c74c340e60de5da39e4f4",
-				"bytes": 242789
+				"sha256": "9809967aad6d8668125db4deade23815d28c395317d0b774ca3c8792ec2ca584",
+				"bytes": 240928
 			},
 			"props.v0.json": {
-				"sha256": "eee29ee17b714110532d994b8cfff8bf8b8f7baab09398f33f3b91c43305b3af",
-				"bytes": 1959069
+				"sha256": "68d2a9e6dd2081bdd62e648e31e1ab84b07bf5cb2bc0d84c061ff461d535f0d9",
+				"bytes": 1953989
 			},
 			"terms/pattern.v0.json": {
 				"sha256": "8516b8a03d49a4017946f06ace08be4ae6a090b5e7881710e295c23c1677ec91",
 				"bytes": 14837
 			},
 			"variants.v0.json": {
-				"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4",
-				"bytes": 124758
+				"sha256": "10dedbb0f4305681903ec981a58f7e86df2e3cc670f1ce85efd13cac6b1c6458",
+				"bytes": 123980
 			}
 		}
 	},
@@ -59,59 +59,59 @@
 		"cli": "ui8kit@3.5.0",
 		"registry": "https://registry.buildy.tw",
 		"runtime": "svelte",
-		"sourceCommit": "9e57f9ccaf710eb3b50d5599e6e49355fcc32136",
+		"sourceCommit": "466225e7757aa0ed039d92e175ba569eb1ef4ddc",
 		"files": {
 			"manifest.json": {
-				"sha256": "1d67ce145ad9c24ccf98552dda7c082cf097138ff6019b55ae66e8d94bc728df",
-				"bytes": 917709
+				"sha256": "036a832e974969cfee66ab4fe6d401898fff669fc4faee8b2f9cda23cb7ce3a8",
+				"bytes": 914784
 			},
 			"props/v0.json": {
-				"sha256": "eee29ee17b714110532d994b8cfff8bf8b8f7baab09398f33f3b91c43305b3af",
-				"bytes": 1959069
+				"sha256": "68d2a9e6dd2081bdd62e648e31e1ab84b07bf5cb2bc0d84c061ff461d535f0d9",
+				"bytes": 1953989
 			},
 			"registry.json": {
-				"sha256": "43ad09efe583283a8f73b6f2c3891dad43e8714e9d54b229850360a1ce1f5f3c",
-				"bytes": 1213838
+				"sha256": "87722b7d9397750aa3f73541ffa730ddf22ba8e0cd35b2cf55ec952279c63225",
+				"bytes": 1209664
 			},
 			"svelte/index.json": {
-				"sha256": "eb83a4b05f7ff09ee4bbb8fde85a542dd6be29b1b23d9821a7aa091dac3256ce",
-				"bytes": 136592
+				"sha256": "be62823f6023a6d57b6840827afb1f127b93468a259dedbdb581730e9988b432",
+				"bytes": 135960
 			},
 			"variants/v0.json": {
-				"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4",
-				"bytes": 124758
+				"sha256": "10dedbb0f4305681903ec981a58f7e86df2e3cc670f1ce85efd13cac6b1c6458",
+				"bytes": 123980
 			}
 		},
 		"pinned": {
 			"registry/variants.v0.json": {
-				"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4"
+				"sha256": "10dedbb0f4305681903ec981a58f7e86df2e3cc670f1ce85efd13cac6b1c6458"
 			},
 			"registry/props.v0.json": {
-				"sha256": "eee29ee17b714110532d994b8cfff8bf8b8f7baab09398f33f3b91c43305b3af"
+				"sha256": "68d2a9e6dd2081bdd62e648e31e1ab84b07bf5cb2bc0d84c061ff461d535f0d9"
 			},
 			"registry/snapshot.json": {
-				"sha256": "5fb7bf42a8248dade63b78abb91beb611a064e74f1350a19383437924b8b8ae9"
+				"sha256": "5d4791d8a9127c70adb63ee5cf21cfd6887d5fdc435d1980b51d8efbd04fb771"
 			}
 		}
 	},
 	"outputs": {
 		"catalog/stock-registry.v0.json": {
-			"sha256": "ac4fff4e3e5196d2309fc2b98694716904c1cd505b08190152fb08254acf626e"
+			"sha256": "1b617c49a2440a244c4bcdaca6385517a1fd2253df2dbe5632c7589add10daa9"
 		},
 		"catalog/coverage.json": {
-			"sha256": "ab0183b03e28e14a9aa5d4f3862b52c29ae2406fb0c9cc2f354b8fecb0766b09"
+			"sha256": "438d993ea8c3eab0e90f650def292699295125c4b10eb90471acdea77e901d37"
 		},
 		"packages/builder-core/src/catalog/snapshot.json": {
-			"sha256": "9206c5df8b09701c7c0f488a304f2a70bc21cb7135466220c8999b92abd131a1"
+			"sha256": "aab17dc44192d624f9db033f764949c4305b5fbef4bf1047b9ac7633d6000ab7"
 		},
 		"packages/builder-core/src/catalog/search-index.json": {
-			"sha256": "5e0c33a673601a0edb470c63f7fdfeb9ca5f2c5b45949081e56aed2afe3cdf01"
+			"sha256": "42133ef39e0901375d2e9cf434c5c0f3cb7f2db7135b972908c8e4870f6eb511"
 		},
 		"packages/builder-core/src/catalog/sources.json": {
-			"sha256": "6059e343a61388a0c56e6c61f1485bf233f8b044c2f467703d9d03322be33366"
+			"sha256": "da8914870f8243fc648466bf7d75074037bb52cd858c284e75e21f83773c9886"
 		},
 		"packages/builder-core/src/catalog/props.json": {
-			"sha256": "eb52d3ece929d586e213062e97c71298146c385b85c8d1bb0aa160878a6ccf63"
+			"sha256": "911594115cad2938368ab7d0d8b0865498d2bac007f1c646ad1767fcdcfd626e"
 		},
 		"packages/builder-core/src/catalog/money.json": {
 			"sha256": "9c093687a90a0087e3f680fac918b6438b38aa527ac299b4add4e4a8ac8725cc"

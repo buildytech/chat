@@ -109,18 +109,6 @@ test("a list inside an absent optional object: `add` creates both", () => {
 	assert.ok(filter.mode, "required siblings of the created object are filled");
 });
 
-test("trusted markup (`{ __html }`) is not authorable: the Inspector shows it read-only, never as an object that the contract refuses", () => {
-	const { page, id } = withBlock("rich-text");
-	assert.equal(fieldOf(page, "content").widget, "other");
-	const aside = fieldOf(page, "aside");
-	assert.equal(aside.widget, "object");
-	assert.equal(aside.fields?.find((f) => f.name === "content")?.widget, "other");
-	assert.equal(aside.fields?.find((f) => f.name === "title")?.widget, "text");
-	// the plain fields beside it still edit
-	const r = applyOp(page, { op: "set", blockId: id, pointer: "/aside/title", value: "Note" });
-	assert.ok(r.ok, JSON.stringify(r));
-});
-
 test("list of plain values (plan features): add, edit, move, remove; at most 24 entries", () => {
 	let { page, id } = withBlock("pricing-card");
 	const plan = fieldOf(page, "plan");

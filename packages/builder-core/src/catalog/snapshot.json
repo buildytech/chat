@@ -3,14 +3,14 @@
   "schemaVersion": 1,
   "provider": "codegen-x",
   "repo": "codegen-x/ui8kit",
-  "pinnedCommit": "9eeabcaca83dc5ad920c337418086eb3707d94f8",
+  "pinnedCommit": "a4c5bebdbd107a8e06ba83aff32b7c1aa155d7da",
   "sourceArtifact": "apps/stock/content/assets.v0.json",
-  "sourceDigest": "sha256:376518f3d74c229ae2ae791486239dcbd906aa65598ffb89d7cb8373ebc1accc",
+  "sourceDigest": "sha256:dc156a323d17f94267b7308cda39161e5eff307874a60aff91c74949b7dce1ff",
   "sourceVersion": "0",
   "counts": {
-    "screen": 80,
-    "upstreamBlock": 532,
-    "upstreamScreen": 80
+    "screen": 79,
+    "upstreamBlock": 526,
+    "upstreamScreen": 79
   },
   "pageSize": 12,
   "facetVocabulary": {
@@ -105,7 +105,7 @@
       "spec": "screen.site",
       "variant": "home",
       "group": "screen.site/home",
-      "order": 532,
+      "order": 526,
       "preview": {
         "kind": "screen",
         "screen": "site",
@@ -176,7 +176,7 @@
       "spec": "screen.site",
       "variant": "pricing",
       "group": "screen.site/pricing",
-      "order": 533,
+      "order": 527,
       "preview": {
         "kind": "screen",
         "screen": "site",
@@ -249,7 +249,7 @@
       "spec": "screen.site",
       "variant": "notfound",
       "group": "screen.site/notfound",
-      "order": 534,
+      "order": 528,
       "preview": {
         "kind": "screen",
         "screen": "site",
@@ -306,7 +306,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "home",
       "group": "screen.theme-account-portal/home",
-      "order": 535,
+      "order": 529,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -368,7 +368,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "start",
       "group": "screen.theme-account-portal/start",
-      "order": 536,
+      "order": 530,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -430,7 +430,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "signup",
       "group": "screen.theme-account-portal/signup",
-      "order": 537,
+      "order": 531,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -492,7 +492,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "welcome",
       "group": "screen.theme-account-portal/welcome",
-      "order": 538,
+      "order": 532,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -554,7 +554,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "reset",
       "group": "screen.theme-account-portal/reset",
-      "order": 539,
+      "order": 533,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -616,7 +616,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "magic",
       "group": "screen.theme-account-portal/magic",
-      "order": 540,
+      "order": 534,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -678,7 +678,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "minimal",
       "group": "screen.theme-account-portal/minimal",
-      "order": 541,
+      "order": 535,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -739,7 +739,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "options",
       "group": "screen.theme-account-portal/options",
-      "order": 542,
+      "order": 536,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -801,7 +801,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "join",
       "group": "screen.theme-account-portal/join",
-      "order": 543,
+      "order": 537,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -869,7 +869,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "cards",
       "group": "screen.theme-account-portal/cards",
-      "order": 544,
+      "order": 538,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -937,7 +937,7 @@
       "spec": "screen.theme-account-portal",
       "variant": "profile",
       "group": "screen.theme-account-portal/profile",
-      "order": 545,
+      "order": 539,
       "preview": {
         "kind": "screen",
         "screen": "theme-account-portal",
@@ -1006,7 +1006,7 @@
       "spec": "screen.theme-commerce-shop",
       "variant": "home",
       "group": "screen.theme-commerce-shop/home",
-      "order": 546,
+      "order": 540,
       "preview": {
         "kind": "screen",
         "screen": "theme-commerce-shop",
@@ -1102,7 +1102,7 @@
       "spec": "screen.theme-commerce-shop",
       "variant": "catalog",
       "group": "screen.theme-commerce-shop/catalog",
-      "order": 547,
+      "order": 541,
       "preview": {
         "kind": "screen",
         "screen": "theme-commerce-shop",
@@ -1175,7 +1175,7 @@
       "spec": "screen.theme-commerce-shop",
       "variant": "browse",
       "group": "screen.theme-commerce-shop/browse",
-      "order": 548,
+      "order": 542,
       "preview": {
         "kind": "screen",
         "screen": "theme-commerce-shop",
@@ -1248,7 +1248,7 @@
       "spec": "screen.theme-commerce-shop",
       "variant": "offers",
       "group": "screen.theme-commerce-shop/offers",
-      "order": 549,
+      "order": 543,
       "preview": {
         "kind": "screen",
         "screen": "theme-commerce-shop",
@@ -1326,7 +1326,7 @@
       "spec": "screen.theme-commerce-shop",
       "variant": "product",
       "group": "screen.theme-commerce-shop/product",
-      "order": 550,
+      "order": 544,
       "preview": {
         "kind": "screen",
         "screen": "theme-commerce-shop",
@@ -1405,7 +1405,7 @@
       "spec": "screen.theme-commerce-shop",
       "variant": "cart",
       "group": "screen.theme-commerce-shop/cart",
-      "order": 551,
+      "order": 545,
       "preview": {
         "kind": "screen",
         "screen": "theme-commerce-shop",
@@ -1484,7 +1484,7 @@
       "spec": "screen.theme-commerce-shop",
       "variant": "checkout",
       "group": "screen.theme-commerce-shop/checkout",
-      "order": 552,
+      "order": 546,
       "preview": {
         "kind": "screen",
         "screen": "theme-commerce-shop",
@@ -1551,7 +1551,7 @@
       "spec": "screen.theme-commerce-shop",
       "variant": "delivery",
       "group": "screen.theme-commerce-shop/delivery",
-      "order": 553,
+      "order": 547,
       "preview": {
         "kind": "screen",
         "screen": "theme-commerce-shop",
@@ -1638,7 +1638,7 @@
       "spec": "screen.theme-commerce-shop",
       "variant": "orders",
       "group": "screen.theme-commerce-shop/orders",
-      "order": 554,
+      "order": 548,
       "preview": {
         "kind": "screen",
         "screen": "theme-commerce-shop",
@@ -1707,7 +1707,7 @@
       "spec": "screen.theme-content-blog",
       "variant": "home",
       "group": "screen.theme-content-blog/home",
-      "order": 555,
+      "order": 549,
       "preview": {
         "kind": "screen",
         "screen": "theme-content-blog",
@@ -1786,7 +1786,7 @@
       "spec": "screen.theme-content-blog",
       "variant": "articles",
       "group": "screen.theme-content-blog/articles",
-      "order": 556,
+      "order": 550,
       "preview": {
         "kind": "screen",
         "screen": "theme-content-blog",
@@ -1852,7 +1852,7 @@
       "spec": "screen.theme-content-blog",
       "variant": "archive",
       "group": "screen.theme-content-blog/archive",
-      "order": 557,
+      "order": 551,
       "preview": {
         "kind": "screen",
         "screen": "theme-content-blog",
@@ -1917,7 +1917,7 @@
       "spec": "screen.theme-content-blog",
       "variant": "post",
       "group": "screen.theme-content-blog/post",
-      "order": 558,
+      "order": 552,
       "preview": {
         "kind": "screen",
         "screen": "theme-content-blog",
@@ -1981,7 +1981,7 @@
       "spec": "screen.theme-content-blog",
       "variant": "story",
       "group": "screen.theme-content-blog/story",
-      "order": 559,
+      "order": 553,
       "preview": {
         "kind": "screen",
         "screen": "theme-content-blog",
@@ -2046,7 +2046,7 @@
       "spec": "screen.theme-content-blog",
       "variant": "essay",
       "group": "screen.theme-content-blog/essay",
-      "order": 560,
+      "order": 554,
       "preview": {
         "kind": "screen",
         "screen": "theme-content-blog",
@@ -2118,7 +2118,7 @@
       "spec": "screen.theme-content-blog",
       "variant": "plain",
       "group": "screen.theme-content-blog/plain",
-      "order": 561,
+      "order": 555,
       "preview": {
         "kind": "screen",
         "screen": "theme-content-blog",
@@ -2181,75 +2181,14 @@
       ]
     },
     {
-      "screenId": "screen.theme-content-blog/page",
-      "sourceOrdinal": 30,
-      "title": "Content blog",
-      "subtitle": "Page",
-      "spec": "screen.theme-content-blog",
-      "variant": "page",
-      "group": "screen.theme-content-blog/page",
-      "order": 562,
-      "preview": {
-        "kind": "screen",
-        "screen": "theme-content-blog",
-        "area": "page"
-      },
-      "thumb": "thumbs/screen.theme-content-blog--page.webp?v=e44b5a0f",
-      "labels": {
-        "type": [
-          "screen"
-        ],
-        "site": [
-          "blog"
-        ],
-        "section": [
-          "content"
-        ],
-        "job": [
-          "article"
-        ],
-        "blocks": [
-          "navbar",
-          "richtext",
-          "sitemap"
-        ],
-        "industry": []
-      },
-      "added": "2025-01-01",
-      "missingFacets": [
-        "composition",
-        "character",
-        "density",
-        "pattern",
-        "media"
-      ],
-      "layout": [
-        {
-          "block": "navbar",
-          "variant": "inline",
-          "region": "before"
-        },
-        {
-          "block": "richtext",
-          "variant": "heroTitle",
-          "region": "area"
-        },
-        {
-          "block": "sitemap",
-          "variant": "compact",
-          "region": "after"
-        }
-      ]
-    },
-    {
       "screenId": "screen.theme-dashboard-console/home",
-      "sourceOrdinal": 31,
+      "sourceOrdinal": 30,
       "title": "Dashboard console",
       "subtitle": "Home",
       "spec": "screen.theme-dashboard-console",
       "variant": "home",
       "group": "screen.theme-dashboard-console/home",
-      "order": 563,
+      "order": 556,
       "preview": {
         "kind": "screen",
         "screen": "theme-dashboard-console",
@@ -2327,13 +2266,13 @@
     },
     {
       "screenId": "screen.theme-dashboard-console/board",
-      "sourceOrdinal": 32,
+      "sourceOrdinal": 31,
       "title": "Dashboard console",
       "subtitle": "Board",
       "spec": "screen.theme-dashboard-console",
       "variant": "board",
       "group": "screen.theme-dashboard-console/board",
-      "order": 564,
+      "order": 557,
       "preview": {
         "kind": "screen",
         "screen": "theme-dashboard-console",
@@ -2395,13 +2334,13 @@
     },
     {
       "screenId": "screen.theme-dashboard-console/workspace",
-      "sourceOrdinal": 33,
+      "sourceOrdinal": 32,
       "title": "Dashboard console",
       "subtitle": "Workspace",
       "spec": "screen.theme-dashboard-console",
       "variant": "workspace",
       "group": "screen.theme-dashboard-console/workspace",
-      "order": 565,
+      "order": 558,
       "preview": {
         "kind": "screen",
         "screen": "theme-dashboard-console",
@@ -2460,13 +2399,13 @@
     },
     {
       "screenId": "screen.theme-dashboard-console/shells",
-      "sourceOrdinal": 34,
+      "sourceOrdinal": 33,
       "title": "Dashboard console",
       "subtitle": "Shells",
       "spec": "screen.theme-dashboard-console",
       "variant": "shells",
       "group": "screen.theme-dashboard-console/shells",
-      "order": 566,
+      "order": 559,
       "preview": {
         "kind": "screen",
         "screen": "theme-dashboard-console",
@@ -2527,13 +2466,13 @@
     },
     {
       "screenId": "screen.theme-dashboard-console/layouts",
-      "sourceOrdinal": 35,
+      "sourceOrdinal": 34,
       "title": "Dashboard console",
       "subtitle": "Layouts",
       "spec": "screen.theme-dashboard-console",
       "variant": "layouts",
       "group": "screen.theme-dashboard-console/layouts",
-      "order": 567,
+      "order": 560,
       "preview": {
         "kind": "screen",
         "screen": "theme-dashboard-console",
@@ -2617,13 +2556,13 @@
     },
     {
       "screenId": "screen.theme-dashboard-console/states",
-      "sourceOrdinal": 36,
+      "sourceOrdinal": 35,
       "title": "Dashboard console",
       "subtitle": "States",
       "spec": "screen.theme-dashboard-console",
       "variant": "states",
       "group": "screen.theme-dashboard-console/states",
-      "order": 568,
+      "order": 561,
       "preview": {
         "kind": "screen",
         "screen": "theme-dashboard-console",
@@ -2688,13 +2627,13 @@
     },
     {
       "screenId": "screen.theme-food-delivery/home",
-      "sourceOrdinal": 37,
+      "sourceOrdinal": 36,
       "title": "Food delivery",
       "subtitle": "Home",
       "spec": "screen.theme-food-delivery",
       "variant": "home",
       "group": "screen.theme-food-delivery/home",
-      "order": 569,
+      "order": 562,
       "preview": {
         "kind": "screen",
         "screen": "theme-food-delivery",
@@ -2774,13 +2713,13 @@
     },
     {
       "screenId": "screen.theme-food-delivery/pizza",
-      "sourceOrdinal": 38,
+      "sourceOrdinal": 37,
       "title": "Food delivery",
       "subtitle": "Pizza",
       "spec": "screen.theme-food-delivery",
       "variant": "pizza",
       "group": "screen.theme-food-delivery/pizza",
-      "order": 570,
+      "order": 563,
       "preview": {
         "kind": "screen",
         "screen": "theme-food-delivery",
@@ -2855,13 +2794,13 @@
     },
     {
       "screenId": "screen.theme-food-delivery/sets",
-      "sourceOrdinal": 39,
+      "sourceOrdinal": 38,
       "title": "Food delivery",
       "subtitle": "Sets",
       "spec": "screen.theme-food-delivery",
       "variant": "sets",
       "group": "screen.theme-food-delivery/sets",
-      "order": 571,
+      "order": 564,
       "preview": {
         "kind": "screen",
         "screen": "theme-food-delivery",
@@ -2942,13 +2881,13 @@
     },
     {
       "screenId": "screen.theme-food-delivery/kits",
-      "sourceOrdinal": 40,
+      "sourceOrdinal": 39,
       "title": "Food delivery",
       "subtitle": "Kits",
       "spec": "screen.theme-food-delivery",
       "variant": "kits",
       "group": "screen.theme-food-delivery/kits",
-      "order": 572,
+      "order": 565,
       "preview": {
         "kind": "screen",
         "screen": "theme-food-delivery",
@@ -3024,13 +2963,13 @@
     },
     {
       "screenId": "screen.theme-food-delivery/market",
-      "sourceOrdinal": 41,
+      "sourceOrdinal": 40,
       "title": "Food delivery",
       "subtitle": "Market",
       "spec": "screen.theme-food-delivery",
       "variant": "market",
       "group": "screen.theme-food-delivery/market",
-      "order": 573,
+      "order": 566,
       "preview": {
         "kind": "screen",
         "screen": "theme-food-delivery",
@@ -3106,13 +3045,13 @@
     },
     {
       "screenId": "screen.theme-food-delivery/menu",
-      "sourceOrdinal": 42,
+      "sourceOrdinal": 41,
       "title": "Food delivery",
       "subtitle": "Menu",
       "spec": "screen.theme-food-delivery",
       "variant": "menu",
       "group": "screen.theme-food-delivery/menu",
-      "order": 574,
+      "order": 567,
       "preview": {
         "kind": "screen",
         "screen": "theme-food-delivery",
@@ -3192,13 +3131,13 @@
     },
     {
       "screenId": "screen.theme-food-delivery/week",
-      "sourceOrdinal": 43,
+      "sourceOrdinal": 42,
       "title": "Food delivery",
       "subtitle": "Week",
       "spec": "screen.theme-food-delivery",
       "variant": "week",
       "group": "screen.theme-food-delivery/week",
-      "order": 575,
+      "order": 568,
       "preview": {
         "kind": "screen",
         "screen": "theme-food-delivery",
@@ -3274,13 +3213,13 @@
     },
     {
       "screenId": "screen.theme-food-grill/home",
-      "sourceOrdinal": 44,
+      "sourceOrdinal": 43,
       "title": "Food grill",
       "subtitle": "Home",
       "spec": "screen.theme-food-grill",
       "variant": "home",
       "group": "screen.theme-food-grill/home",
-      "order": 576,
+      "order": 569,
       "preview": {
         "kind": "screen",
         "screen": "theme-food-grill",
@@ -3360,13 +3299,13 @@
     },
     {
       "screenId": "screen.theme-food-grill/dishes",
-      "sourceOrdinal": 45,
+      "sourceOrdinal": 44,
       "title": "Food grill",
       "subtitle": "Dishes",
       "spec": "screen.theme-food-grill",
       "variant": "dishes",
       "group": "screen.theme-food-grill/dishes",
-      "order": 577,
+      "order": 570,
       "preview": {
         "kind": "screen",
         "screen": "theme-food-grill",
@@ -3441,13 +3380,13 @@
     },
     {
       "screenId": "screen.theme-food-grill/compare",
-      "sourceOrdinal": 46,
+      "sourceOrdinal": 45,
       "title": "Food grill",
       "subtitle": "Compare",
       "spec": "screen.theme-food-grill",
       "variant": "compare",
       "group": "screen.theme-food-grill/compare",
-      "order": 578,
+      "order": 571,
       "preview": {
         "kind": "screen",
         "screen": "theme-food-grill",
@@ -3524,13 +3463,13 @@
     },
     {
       "screenId": "screen.theme-marketing-landing/home",
-      "sourceOrdinal": 47,
+      "sourceOrdinal": 46,
       "title": "Marketing landing",
       "subtitle": "Home",
       "spec": "screen.theme-marketing-landing",
       "variant": "home",
       "group": "screen.theme-marketing-landing/home",
-      "order": 579,
+      "order": 572,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-landing",
@@ -3630,13 +3569,13 @@
     },
     {
       "screenId": "screen.theme-marketing-landing/launch",
-      "sourceOrdinal": 48,
+      "sourceOrdinal": 47,
       "title": "Marketing landing",
       "subtitle": "Launch",
       "spec": "screen.theme-marketing-landing",
       "variant": "launch",
       "group": "screen.theme-marketing-landing/launch",
-      "order": 580,
+      "order": 573,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-landing",
@@ -3717,13 +3656,13 @@
     },
     {
       "screenId": "screen.theme-marketing-landing/developers",
-      "sourceOrdinal": 49,
+      "sourceOrdinal": 48,
       "title": "Marketing landing",
       "subtitle": "Developers",
       "spec": "screen.theme-marketing-landing",
       "variant": "developers",
       "group": "screen.theme-marketing-landing/developers",
-      "order": 581,
+      "order": 574,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-landing",
@@ -3806,13 +3745,13 @@
     },
     {
       "screenId": "screen.theme-marketing-landing/studio",
-      "sourceOrdinal": 50,
+      "sourceOrdinal": 49,
       "title": "Marketing landing",
       "subtitle": "Studio",
       "spec": "screen.theme-marketing-landing",
       "variant": "studio",
       "group": "screen.theme-marketing-landing/studio",
-      "order": 582,
+      "order": 575,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-landing",
@@ -3891,13 +3830,13 @@
     },
     {
       "screenId": "screen.theme-marketing-landing/events",
-      "sourceOrdinal": 51,
+      "sourceOrdinal": 50,
       "title": "Marketing landing",
       "subtitle": "Events",
       "spec": "screen.theme-marketing-landing",
       "variant": "events",
       "group": "screen.theme-marketing-landing/events",
-      "order": 583,
+      "order": 576,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-landing",
@@ -3976,13 +3915,13 @@
     },
     {
       "screenId": "screen.theme-marketing-landing/company",
-      "sourceOrdinal": 52,
+      "sourceOrdinal": 51,
       "title": "Marketing landing",
       "subtitle": "Company",
       "spec": "screen.theme-marketing-landing",
       "variant": "company",
       "group": "screen.theme-marketing-landing/company",
-      "order": 584,
+      "order": 577,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-landing",
@@ -4069,13 +4008,13 @@
     },
     {
       "screenId": "screen.theme-marketing-landing/work",
-      "sourceOrdinal": 53,
+      "sourceOrdinal": 52,
       "title": "Marketing landing",
       "subtitle": "Work",
       "spec": "screen.theme-marketing-landing",
       "variant": "work",
       "group": "screen.theme-marketing-landing/work",
-      "order": 585,
+      "order": 578,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-landing",
@@ -4142,13 +4081,13 @@
     },
     {
       "screenId": "screen.theme-marketing-landing/teams",
-      "sourceOrdinal": 54,
+      "sourceOrdinal": 53,
       "title": "Marketing landing",
       "subtitle": "Teams",
       "spec": "screen.theme-marketing-landing",
       "variant": "teams",
       "group": "screen.theme-marketing-landing/teams",
-      "order": 586,
+      "order": 579,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-landing",
@@ -4228,13 +4167,13 @@
     },
     {
       "screenId": "screen.theme-marketing-pricing/home",
-      "sourceOrdinal": 55,
+      "sourceOrdinal": 54,
       "title": "Marketing pricing",
       "subtitle": "Home",
       "spec": "screen.theme-marketing-pricing",
       "variant": "home",
       "group": "screen.theme-marketing-pricing/home",
-      "order": 587,
+      "order": 580,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-pricing",
@@ -4322,13 +4261,13 @@
     },
     {
       "screenId": "screen.theme-marketing-pricing/plans",
-      "sourceOrdinal": 56,
+      "sourceOrdinal": 55,
       "title": "Marketing pricing",
       "subtitle": "Plans",
       "spec": "screen.theme-marketing-pricing",
       "variant": "plans",
       "group": "screen.theme-marketing-pricing/plans",
-      "order": 588,
+      "order": 581,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-pricing",
@@ -4403,13 +4342,13 @@
     },
     {
       "screenId": "screen.theme-marketing-pricing/usage",
-      "sourceOrdinal": 57,
+      "sourceOrdinal": 56,
       "title": "Marketing pricing",
       "subtitle": "Usage",
       "spec": "screen.theme-marketing-pricing",
       "variant": "usage",
       "group": "screen.theme-marketing-pricing/usage",
-      "order": 589,
+      "order": 582,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-pricing",
@@ -4489,13 +4428,13 @@
     },
     {
       "screenId": "screen.theme-marketing-pricing/compare",
-      "sourceOrdinal": 58,
+      "sourceOrdinal": 57,
       "title": "Marketing pricing",
       "subtitle": "Compare",
       "spec": "screen.theme-marketing-pricing",
       "variant": "compare",
       "group": "screen.theme-marketing-pricing/compare",
-      "order": 590,
+      "order": 583,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-pricing",
@@ -4576,13 +4515,13 @@
     },
     {
       "screenId": "screen.theme-marketing-product/home",
-      "sourceOrdinal": 59,
+      "sourceOrdinal": 58,
       "title": "Marketing product",
       "subtitle": "Home",
       "spec": "screen.theme-marketing-product",
       "variant": "home",
       "group": "screen.theme-marketing-product/home",
-      "order": 591,
+      "order": 584,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-product",
@@ -4671,13 +4610,13 @@
     },
     {
       "screenId": "screen.theme-marketing-product/tour",
-      "sourceOrdinal": 60,
+      "sourceOrdinal": 59,
       "title": "Marketing product",
       "subtitle": "Tour",
       "spec": "screen.theme-marketing-product",
       "variant": "tour",
       "group": "screen.theme-marketing-product/tour",
-      "order": 592,
+      "order": 585,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-product",
@@ -4764,13 +4703,13 @@
     },
     {
       "screenId": "screen.theme-marketing-product/capabilities",
-      "sourceOrdinal": 61,
+      "sourceOrdinal": 60,
       "title": "Marketing product",
       "subtitle": "Capabilities",
       "spec": "screen.theme-marketing-product",
       "variant": "capabilities",
       "group": "screen.theme-marketing-product/capabilities",
-      "order": 593,
+      "order": 586,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-product",
@@ -4863,13 +4802,13 @@
     },
     {
       "screenId": "screen.theme-marketing-product/navigation",
-      "sourceOrdinal": 62,
+      "sourceOrdinal": 61,
       "title": "Marketing product",
       "subtitle": "Navigation",
       "spec": "screen.theme-marketing-product",
       "variant": "navigation",
       "group": "screen.theme-marketing-product/navigation",
-      "order": 594,
+      "order": 587,
       "preview": {
         "kind": "screen",
         "screen": "theme-marketing-product",
@@ -4942,13 +4881,13 @@
     },
     {
       "screenId": "screen.theme-onboarding-flow/home",
-      "sourceOrdinal": 63,
+      "sourceOrdinal": 62,
       "title": "Onboarding flow",
       "subtitle": "Home",
       "spec": "screen.theme-onboarding-flow",
       "variant": "home",
       "group": "screen.theme-onboarding-flow/home",
-      "order": 595,
+      "order": 588,
       "preview": {
         "kind": "screen",
         "screen": "theme-onboarding-flow",
@@ -5024,13 +4963,13 @@
     },
     {
       "screenId": "screen.theme-onboarding-flow/welcome",
-      "sourceOrdinal": 64,
+      "sourceOrdinal": 63,
       "title": "Onboarding flow",
       "subtitle": "Welcome",
       "spec": "screen.theme-onboarding-flow",
       "variant": "welcome",
       "group": "screen.theme-onboarding-flow/welcome",
-      "order": 596,
+      "order": 589,
       "preview": {
         "kind": "screen",
         "screen": "theme-onboarding-flow",
@@ -5099,13 +5038,13 @@
     },
     {
       "screenId": "screen.theme-onboarding-flow/setup",
-      "sourceOrdinal": 65,
+      "sourceOrdinal": 64,
       "title": "Onboarding flow",
       "subtitle": "Setup",
       "spec": "screen.theme-onboarding-flow",
       "variant": "setup",
       "group": "screen.theme-onboarding-flow/setup",
-      "order": 597,
+      "order": 590,
       "preview": {
         "kind": "screen",
         "screen": "theme-onboarding-flow",
@@ -5178,13 +5117,13 @@
     },
     {
       "screenId": "screen.theme-onboarding-flow/tour",
-      "sourceOrdinal": 66,
+      "sourceOrdinal": 65,
       "title": "Onboarding flow",
       "subtitle": "Tour",
       "spec": "screen.theme-onboarding-flow",
       "variant": "tour",
       "group": "screen.theme-onboarding-flow/tour",
-      "order": 598,
+      "order": 591,
       "preview": {
         "kind": "screen",
         "screen": "theme-onboarding-flow",
@@ -5259,13 +5198,13 @@
     },
     {
       "screenId": "screen.theme-promo-campaign/home",
-      "sourceOrdinal": 67,
+      "sourceOrdinal": 66,
       "title": "Promo campaign",
       "subtitle": "Home",
       "spec": "screen.theme-promo-campaign",
       "variant": "home",
       "group": "screen.theme-promo-campaign/home",
-      "order": 599,
+      "order": 592,
       "preview": {
         "kind": "screen",
         "screen": "theme-promo-campaign",
@@ -5344,13 +5283,13 @@
     },
     {
       "screenId": "screen.theme-promo-campaign/launch",
-      "sourceOrdinal": 68,
+      "sourceOrdinal": 67,
       "title": "Promo campaign",
       "subtitle": "Launch",
       "spec": "screen.theme-promo-campaign",
       "variant": "launch",
       "group": "screen.theme-promo-campaign/launch",
-      "order": 600,
+      "order": 593,
       "preview": {
         "kind": "screen",
         "screen": "theme-promo-campaign",
@@ -5429,13 +5368,13 @@
     },
     {
       "screenId": "screen.theme-promo-campaign/offer",
-      "sourceOrdinal": 69,
+      "sourceOrdinal": 68,
       "title": "Promo campaign",
       "subtitle": "Offer",
       "spec": "screen.theme-promo-campaign",
       "variant": "offer",
       "group": "screen.theme-promo-campaign/offer",
-      "order": 601,
+      "order": 594,
       "preview": {
         "kind": "screen",
         "screen": "theme-promo-campaign",
@@ -5509,13 +5448,13 @@
     },
     {
       "screenId": "screen.theme-promo-campaign/notices",
-      "sourceOrdinal": 70,
+      "sourceOrdinal": 69,
       "title": "Promo campaign",
       "subtitle": "Notices",
       "spec": "screen.theme-promo-campaign",
       "variant": "notices",
       "group": "screen.theme-promo-campaign/notices",
-      "order": 602,
+      "order": 595,
       "preview": {
         "kind": "screen",
         "screen": "theme-promo-campaign",
@@ -5589,13 +5528,13 @@
     },
     {
       "screenId": "screen.theme-restaurant-house/home",
-      "sourceOrdinal": 71,
+      "sourceOrdinal": 70,
       "title": "Restaurant house",
       "subtitle": "Home",
       "spec": "screen.theme-restaurant-house",
       "variant": "home",
       "group": "screen.theme-restaurant-house/home",
-      "order": 603,
+      "order": 596,
       "preview": {
         "kind": "screen",
         "screen": "theme-restaurant-house",
@@ -5671,13 +5610,13 @@
     },
     {
       "screenId": "screen.theme-restaurant-house/menu",
-      "sourceOrdinal": 72,
+      "sourceOrdinal": 71,
       "title": "Restaurant house",
       "subtitle": "Menu",
       "spec": "screen.theme-restaurant-house",
       "variant": "menu",
       "group": "screen.theme-restaurant-house/menu",
-      "order": 604,
+      "order": 597,
       "preview": {
         "kind": "screen",
         "screen": "theme-restaurant-house",
@@ -5746,13 +5685,13 @@
     },
     {
       "screenId": "screen.theme-restaurant-house/book",
-      "sourceOrdinal": 73,
+      "sourceOrdinal": 72,
       "title": "Restaurant house",
       "subtitle": "Book",
       "spec": "screen.theme-restaurant-house",
       "variant": "book",
       "group": "screen.theme-restaurant-house/book",
-      "order": 605,
+      "order": 598,
       "preview": {
         "kind": "screen",
         "screen": "theme-restaurant-house",
@@ -5817,13 +5756,13 @@
     },
     {
       "screenId": "screen.theme-restaurant-house/room",
-      "sourceOrdinal": 74,
+      "sourceOrdinal": 73,
       "title": "Restaurant house",
       "subtitle": "Room",
       "spec": "screen.theme-restaurant-house",
       "variant": "room",
       "group": "screen.theme-restaurant-house/room",
-      "order": 606,
+      "order": 599,
       "preview": {
         "kind": "screen",
         "screen": "theme-restaurant-house",
@@ -5886,13 +5825,13 @@
     },
     {
       "screenId": "screen.theme-support-center/home",
-      "sourceOrdinal": 75,
+      "sourceOrdinal": 74,
       "title": "Support center",
       "subtitle": "Home",
       "spec": "screen.theme-support-center",
       "variant": "home",
       "group": "screen.theme-support-center/home",
-      "order": 607,
+      "order": 600,
       "preview": {
         "kind": "screen",
         "screen": "theme-support-center",
@@ -5971,13 +5910,13 @@
     },
     {
       "screenId": "screen.theme-support-center/faq",
-      "sourceOrdinal": 76,
+      "sourceOrdinal": 75,
       "title": "Support center",
       "subtitle": "Faq",
       "spec": "screen.theme-support-center",
       "variant": "faq",
       "group": "screen.theme-support-center/faq",
-      "order": 608,
+      "order": 601,
       "preview": {
         "kind": "screen",
         "screen": "theme-support-center",
@@ -6037,13 +5976,13 @@
     },
     {
       "screenId": "screen.theme-support-center/contact",
-      "sourceOrdinal": 77,
+      "sourceOrdinal": 76,
       "title": "Support center",
       "subtitle": "Contact",
       "spec": "screen.theme-support-center",
       "variant": "contact",
       "group": "screen.theme-support-center/contact",
-      "order": 609,
+      "order": 602,
       "preview": {
         "kind": "screen",
         "screen": "theme-support-center",
@@ -6109,13 +6048,13 @@
     },
     {
       "screenId": "screen.theme-support-center/missing",
-      "sourceOrdinal": 78,
+      "sourceOrdinal": 77,
       "title": "Support center",
       "subtitle": "Missing",
       "spec": "screen.theme-support-center",
       "variant": "missing",
       "group": "screen.theme-support-center/missing",
-      "order": 610,
+      "order": 603,
       "preview": {
         "kind": "screen",
         "screen": "theme-support-center",
@@ -6169,13 +6108,13 @@
     },
     {
       "screenId": "screen.theme-support-center/moved",
-      "sourceOrdinal": 79,
+      "sourceOrdinal": 78,
       "title": "Support center",
       "subtitle": "Moved",
       "spec": "screen.theme-support-center",
       "variant": "moved",
       "group": "screen.theme-support-center/moved",
-      "order": 611,
+      "order": 604,
       "preview": {
         "kind": "screen",
         "screen": "theme-support-center",
@@ -9017,38 +8956,6 @@
       "jobs": [
         "product",
         "testimonials"
-      ]
-    },
-    {
-      "blockId": "richtext",
-      "spec": "block.richtext",
-      "catalogIds": [
-        "block.richtext/narrow",
-        "block.richtext/wide",
-        "block.richtext/sidebar",
-        "block.richtext/media",
-        "block.richtext/card",
-        "block.richtext/heroTitle"
-      ],
-      "variants": [
-        "narrow",
-        "wide",
-        "sidebar",
-        "media",
-        "card",
-        "heroTitle"
-      ],
-      "thumbs": {
-        "media": "thumbs/block.richtext--media.webp?v=4c065820",
-        "heroTitle": "thumbs/block.richtext--heroTitle.webp?v=d6171263"
-      },
-      "title": "Rich text",
-      "available": true,
-      "rendererKind": null,
-      "rendererCompatible": false,
-      "role": null,
-      "jobs": [
-        "article"
       ]
     },
     {

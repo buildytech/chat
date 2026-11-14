@@ -31,7 +31,7 @@ test("required lists of a sample start with two rows; rows are unique, English, 
 test("coverage file: the sample renders content for every combination (empty labels are the humanized key)", () => {
 	const coverage = JSON.parse(read("../../catalog/inspector-coverage.json")) as { combos?: Record<string, { rendersSample?: string }>; items?: Record<string, { rendersSample?: string }> };
 	const rows = Object.entries(coverage.combos ?? coverage.items ?? {});
-	assert.ok(rows.length >= 532, `${rows.length} combinations`);
+	assert.ok(rows.length >= 526, `${rows.length} combinations`);
 	assert.deepEqual(rows.filter(([, row]) => row.rendersSample === "empty").map(([key]) => key).sort(), []);
 	assert.deepEqual(sampleProps("site-footer", "minimal", "b1").labels, { copyright: "Copyright", nav: "Nav", home: "Home", pricing: "Pricing" });
 });

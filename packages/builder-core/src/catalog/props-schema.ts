@@ -126,8 +126,7 @@ function valueOf(node: JsonSchema): JsonSchema {
 }
 
 /** `map`: an object with free keys whose values are plain (strings, numbers, booleans, enum members): `badges: { sku: "Sale" }`. */
-/** `markup`: trusted markup (`{ __html }`); a page never carries markup (the contract refuses it), so no widget writes it. */
-export type FieldKind = "text" | "icon" | "enum" | "number" | "boolean" | "list" | "object" | "map" | "markup" | "other";
+export type FieldKind = "text" | "icon" | "enum" | "number" | "boolean" | "list" | "object" | "map" | "other";
 
 function kindOf(node: JsonSchema): FieldKind {
 	if (refName(node) === ICON_DEF) return "icon";
@@ -138,10 +137,7 @@ function kindOf(node: JsonSchema): FieldKind {
 	if (value.type === "number" || value.type === "integer") return "number";
 	if (value.type === "boolean") return "boolean";
 	if (value.type === "array") return "list";
-	if (value.type === "object" && isObject(value.properties)) {
-		const names = Object.keys(value.properties);
-		return names.length === 1 && names[0] === "__html" ? "markup" : "object";
-	}
+	if (value.type === "object" && isObject(value.properties)) return "object";
 	if (value.type === "object" && !isObject(value.properties) && isObject(value.additionalProperties) && ITEM_KINDS.has(kindOf(value.additionalProperties as JsonSchema))) return "map";
 	return "other";
 }

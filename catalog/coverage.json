@@ -2,19 +2,19 @@
 	"format": "buildy-catalog-coverage",
 	"version": 0,
 	"summary": {
-		"stockBlocks": 112,
-		"stockBlocksWithRegistryItem": 112,
-		"stockVariants": 532,
-		"stockVariantsWithRegistryVariant": 532,
-		"registryBlocks": 117,
-		"registryBlocksWithStockBlock": 113,
+		"stockBlocks": 111,
+		"stockBlocksWithRegistryItem": 111,
+		"stockVariants": 526,
+		"stockVariantsWithRegistryVariant": 526,
+		"registryBlocks": 116,
+		"registryBlocksWithStockBlock": 112,
 		"stockBlocksWithPageKind": 34,
-		"screens": 80,
+		"screens": 79,
 		"screensFullyPageKinded": 10,
 		"facets": 19,
-		"facetValues": 313,
-		"facetValuesOnAssets": 287,
-		"collections": 90,
+		"facetValues": 309,
+		"facetValuesOnAssets": 282,
+		"collections": 89,
 		"collectionsWithData": 0
 	},
 	"stock": {
@@ -22,7 +22,8 @@
 		"variantsWithoutRegistryVariant": [],
 		"facetsWithoutAssets": [
 			"mood",
-			"runtime"
+			"runtime",
+			"buildy"
 		],
 		"facetValuesWithoutAssets": [
 			"character/calm",
@@ -50,26 +51,27 @@
 			"runtime/jinja2",
 			"runtime/latte",
 			"markup/human",
-			"markup/disputed"
+			"markup/disputed",
+			"buildy/inspector"
 		],
 		"screensWhoseBlockLabelsDifferFromComposition": [],
 		"missingFacetLabels": {
-			"character": 521,
-			"composition": 150,
-			"density": 278,
-			"media": 268,
-			"pattern": 431
+			"character": 514,
+			"composition": 146,
+			"density": 271,
+			"media": 261,
+			"pattern": 424
 		},
 		"weakFacetLabels": {
 			"character": 91,
-			"composition": 462,
+			"composition": 459,
 			"industry": 316,
-			"job": 612,
+			"job": 605,
 			"media": 344,
 			"pattern": 121,
-			"role": 612,
-			"site": 80,
-			"slots": 405
+			"role": 605,
+			"site": 79,
+			"slots": 399
 		},
 		"blocksInNoScreen": [],
 		"collectionsWithoutData": [
@@ -120,7 +122,6 @@
 			"navlinks",
 			"orders",
 			"outline",
-			"pages",
 			"payments",
 			"perks",
 			"photos",
@@ -241,7 +242,6 @@
 			"block.posts",
 			"block.postshowcase",
 			"block.postsplit",
-			"block.richtext",
 			"block.storytabs",
 			"block.timeline",
 			"block.auth",
@@ -289,7 +289,6 @@
 			"screen.theme-content-blog/story",
 			"screen.theme-content-blog/essay",
 			"screen.theme-content-blog/plain",
-			"screen.theme-content-blog/page",
 			"screen.theme-dashboard-console/board",
 			"screen.theme-dashboard-console/workspace",
 			"screen.theme-dashboard-console/shells",

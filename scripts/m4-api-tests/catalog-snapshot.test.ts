@@ -40,7 +40,7 @@ test("graph: every entity type and edge type is present, counts are exact, every
 	for (const type of ENTITY_TYPES) assert.ok(Object.keys(graph.entities[type]).length > 0, type);
 	for (const type of Object.keys(EDGE_TYPES)) assert.ok(graph.edges[type].length > 0, type);
 	assert.deepEqual(validateGraph(graph, props), []);
-	assert.equal(graph.counts.entities.screen, 80);
+	assert.equal(graph.counts.entities.screen, 79);
 	assert.equal(graph.counts.entities.variant, graph.catalog.assetCounts.block);
 	assert.equal(graph.counts.edges["variant-sets-props"], graph.counts.entities.variant);
 });

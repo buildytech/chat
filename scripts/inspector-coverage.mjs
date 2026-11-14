@@ -79,7 +79,7 @@ function schemaReader(item) {
 	return { valueOf, why };
 }
 
-/** `fixable`: a gap a small Inspector change closes. None is open: what is left is the contract's own boundary (trusted markup). */
+/** `fixable`: a gap a small Inspector change closes. None is open. */
 const FIXABLE = new Set();
 const gap = (path, reason) => ({ path, reason, fixable: FIXABLE.has(reason) });
 
@@ -121,8 +121,7 @@ function staticGaps(item) {
 			} else if (node.kind === "map") {
 				if (node.item) counts.editable += 1;
 				else gaps.push(gap(path, "free_form_map"));
-			} else if (node.kind === "markup") gaps.push(gap(path, "trusted_markup"));
-			else if (node.kind === "other") gaps.push(gap(path, why(raw)));
+			} else if (node.kind === "other") gaps.push(gap(path, why(raw)));
 			else counts.editable += 1;
 		}
 	};

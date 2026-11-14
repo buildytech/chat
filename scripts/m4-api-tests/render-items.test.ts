@@ -84,7 +84,7 @@ test("every item + variant: what write_page accepts with its sample props render
 		}
 	}
 	assert.deepEqual(wrong, []);
-	assert.ok(accepted.length + rejected.length >= 532, `${accepted.length + rejected.length} combinations`);
+	assert.ok(accepted.length + rejected.length >= 526, `${accepted.length + rejected.length} combinations`);
 	assert.ok(accepted.length > 400, `${accepted.length} accepted`);
 });
 

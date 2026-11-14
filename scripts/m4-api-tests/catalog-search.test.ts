@@ -69,7 +69,7 @@ test("property: every Stock screen starts a page the gate accepts, or is reporte
 		const twice = addScreen(r.page, screen.screenId);
 		if (twice.ok) assert.ok(checkPageDoc(twice.page).ok, `${screen.screenId} twice`);
 	}
-	assert.ok(started >= 80, `started ${started}`);
+	assert.ok(started >= 79, `started ${started}`);
 });
 
 test("search index is generated from the pinned catalog commit; contract fingerprint covers it", async () => {

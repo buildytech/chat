@@ -5,19 +5,19 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "eb83a4b05f7ff09ee4bbb8fde85a542dd6be29b1b23d9821a7aa091dac3256ce",
-		"lastUpdated": "2026-11-11T17:14:01+03:00",
+		"sha256": "be62823f6023a6d57b6840827afb1f127b93468a259dedbdb581730e9988b432",
+		"lastUpdated": "2026-11-15T00:17:47+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "c2e72d4ed35a53cae6e6e1d56a4f3b6b4c6516cc4bc8de7283fb359ec81088b4"
+		"sha256": "10dedbb0f4305681903ec981a58f7e86df2e3cc670f1ce85efd13cac6b1c6458"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "eee29ee17b714110532d994b8cfff8bf8b8f7baab09398f33f3b91c43305b3af",
-		"digest": "sha256:bb4ae0ac537ba08d921557046bf75ee59ea592da181dc5ba3a020ccce9b31896",
-		"items": 117
+		"sha256": "68d2a9e6dd2081bdd62e648e31e1ab84b07bf5cb2bc0d84c061ff461d535f0d9",
+		"digest": "sha256:7cc5ce00fb2b9538c324a47580c5c70a4115c09808fc36378d364ce88d622e61",
+		"items": 116
 	},
 	"manifest": {
 		"url": "https://registry.buildy.tw/manifest.json",
@@ -4505,27 +4505,6 @@
 			"files": [
 				"src/blocks/review-list.svelte",
 				"src/blocks/review-list.types.ts"
-			]
-		},
-		"rich-text": {
-			"type": "registry:block",
-			"registryDependencies": [
-				"box",
-				"card",
-				"grid",
-				"group",
-				"media-frame",
-				"pill",
-				"prose",
-				"section-frame",
-				"text",
-				"title",
-				"utils"
-			],
-			"dependencies": [],
-			"files": [
-				"src/blocks/rich-text.svelte",
-				"src/blocks/rich-text.types.ts"
 			]
 		},
 		"search-field": {
