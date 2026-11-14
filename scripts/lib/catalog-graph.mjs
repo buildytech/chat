@@ -334,7 +334,7 @@ export function coverage(graph, policy) {
 	const screensOfBlock = groupBy(G["screen-contains-block"], "to");
 	const screenTags = groupBy(G["screen-tagged-facet"], "from");
 	const blockKinds = Object.keys(E.block);
-	const pageKind = (spec) => policy.pageKindOfBlock[spec.slice(6)] ?? (policy.pageKinds.includes(spec.slice(6)) ? spec.slice(6) : null);
+	const pageKind = (spec) => policy.pageKindOfBlock[spec.slice(6)] ?? null;
 	const noPageKind = blockKinds.filter((spec) => !pageKind(spec));
 	const registryBlocks = Object.entries(E.item).filter(([, item]) => item.type === "registry:block").map(([name]) => name);
 	const valuesWithoutAssets = Object.keys(E.facetValue).filter((id) => !tagged.has(id));
@@ -457,6 +457,7 @@ export function deriveSnapshot(graph, policy) {
 				available: true,
 				rendererKind: kind,
 				rendererCompatible: kind !== null,
+				role: roleOfKind(policy, kind),
 				jobs: [...(jobsOf.get(spec) ?? [])].sort()
 			};
 		});
@@ -474,7 +475,7 @@ export function deriveSnapshot(graph, policy) {
 		pageSize: policy.pageSize,
 		facetVocabulary: { type: [...policy.assetTypes], site: sortedValues("site"), section: sortedValues("section"), job: sortedValues("job") },
 		ownerFilters: policy.ownerFilters,
-		rendererKinds: policy.pageKinds,
+		rendererKinds: pageKindsOf(policy),
 		screens,
 		blockIndex,
 		rendererMap: policy.pageKindOfBlock
@@ -573,15 +574,30 @@ export function deriveSearchIndex(graph, policy) {
 	};
 }
 
+/** The renderer kinds of the policy: derived from the one block -> kind map, never listed twice. */
+export function pageKindsOf(policy) {
+	return [...new Set(Object.values(policy.pageKindOfBlock))].sort();
+}
+
+/** The informational role (header / footer / null) of a renderer kind (ADR 0037): data of the policy, read by the generator only. */
+export function roleOfKind(policy, kind) {
+	return kind === null ? null : (policy.kindRoles[kind] ?? null);
+}
+
 /** Policy problems: every value must name something that exists in the graph or in the Page DTO kinds. */
 export function validatePolicy(graph, policy, pageBlockKinds) {
 	const problems = [];
 	const E = graph.entities;
-	for (const kind of policy.pageKinds) if (!pageBlockKinds.includes(kind)) problems.push(`pageKinds: ${kind} is not a Page DTO kind`);
 	for (const [blockId, kind] of Object.entries(policy.pageKindOfBlock)) {
 		if (!E.block[`block.${blockId}`]) problems.push(`pageKindOfBlock: block.${blockId} is not a Stock block`);
-		if (!policy.pageKinds.includes(kind)) problems.push(`pageKindOfBlock.${blockId}: ${kind} is not in pageKinds`);
+		if (!pageBlockKinds.includes(kind)) problems.push(`pageKindOfBlock.${blockId}: ${kind} is not a Page DTO kind`);
 	}
+	const kinds = pageKindsOf(policy);
+	for (const [kind, role] of Object.entries(policy.kindRoles ?? {})) {
+		if (!kinds.includes(kind)) problems.push(`kindRoles: ${kind} is not a kind of any block in pageKindOfBlock`);
+		if (role !== "header" && role !== "footer") problems.push(`kindRoles.${kind}: ${role} is not header or footer`);
+	}
+	if (!policy.kindRoles) problems.push("kindRoles: missing");
 	for (const type of policy.assetTypes) if (!E.facetValue[`type/${type}`]) problems.push(`assetTypes: ${type} is not a type facet value`);
 	for (const facet of policy.searchFacets) if (!E.facet[facet]) problems.push(`searchFacets: ${facet} is not a facet`);
 	for (const [name, filter] of Object.entries(policy.ownerFilters)) {

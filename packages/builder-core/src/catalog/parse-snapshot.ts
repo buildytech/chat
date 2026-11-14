@@ -128,6 +128,11 @@ function parseBlockIndexEntry(value: unknown, path: string): CatalogBlockIndexEn
 		rendererKind,
 		rendererCompatible: asBoolean(rec.rendererCompatible, `${path}.rendererCompatible`)
 	};
+	if (rec.role !== undefined && rec.role !== null) {
+		const role = asString(rec.role, `${path}.role`);
+		if (role !== "header" && role !== "footer") fail(`${path}.role`, "must be header, footer or null");
+		entry.role = role;
+	}
 	if (rec.jobs !== undefined) entry.jobs = asStringArray(rec.jobs, `${path}.jobs`);
 	if (rec.thumbs !== undefined) {
 		const thumbs = asRecord(rec.thumbs, `${path}.thumbs`);

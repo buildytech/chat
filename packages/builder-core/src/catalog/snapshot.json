@@ -86,16 +86,12 @@
     "chart",
     "cta",
     "dish",
-    "feature",
     "features",
     "footer",
     "hero",
-    "hours",
     "menu",
-    "metric",
     "metrics",
     "nav",
-    "nav-link",
     "overview",
     "pagehead",
     "sidenav"
@@ -6261,6 +6257,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "value"
       ]
@@ -6290,6 +6287,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "value"
       ]
@@ -6319,6 +6317,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -6348,6 +6347,7 @@
       "available": true,
       "rendererKind": "activity",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -6389,6 +6389,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "cta"
       ]
@@ -6418,6 +6419,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "article"
       ]
@@ -6459,6 +6461,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "auth"
       ]
@@ -6503,6 +6506,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "auth"
       ]
@@ -6532,6 +6536,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "features",
         "value"
@@ -6562,6 +6567,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -6591,6 +6597,7 @@
       "available": true,
       "rendererKind": "bottomnav",
       "rendererCompatible": true,
+      "role": "footer",
       "jobs": [
         "dashboard",
         "navigation"
@@ -6621,6 +6628,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -6647,6 +6655,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -6673,6 +6682,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -6711,6 +6721,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -6740,6 +6751,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "contacts"
       ]
@@ -6769,6 +6781,7 @@
       "available": true,
       "rendererKind": "chart",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -6807,6 +6820,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -6833,6 +6847,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -6856,6 +6871,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -6885,6 +6901,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "comparison"
       ]
@@ -6920,6 +6937,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "contacts"
       ]
@@ -6949,6 +6967,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "navigation"
       ]
@@ -6978,6 +6997,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "pricing"
       ]
@@ -7028,6 +7048,7 @@
       "available": true,
       "rendererKind": "cta",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "cta",
         "lead"
@@ -7067,6 +7088,7 @@
       "available": true,
       "rendererKind": "cta",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "cta",
         "proof"
@@ -7121,6 +7143,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -7147,6 +7170,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "delivery"
       ]
@@ -7179,6 +7203,7 @@
       "available": true,
       "rendererKind": "dish",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7202,6 +7227,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7225,6 +7251,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7248,6 +7275,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7274,6 +7302,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7297,6 +7326,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7332,6 +7362,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -7364,6 +7395,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard",
         "navigation"
@@ -7403,6 +7435,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "faq"
       ]
@@ -7441,6 +7474,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "faq"
       ]
@@ -7482,6 +7516,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -7511,6 +7546,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "features",
         "value"
@@ -7544,6 +7580,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -7570,6 +7607,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -7596,6 +7634,7 @@
       "available": true,
       "rendererKind": "footer",
       "rendererCompatible": true,
+      "role": "footer",
       "jobs": [
         "footer"
       ]
@@ -7631,6 +7670,7 @@
       "available": true,
       "rendererKind": "footer",
       "rendererCompatible": true,
+      "role": "footer",
       "jobs": [
         "footer"
       ]
@@ -7654,6 +7694,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7677,6 +7718,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7706,6 +7748,7 @@
       "available": true,
       "rendererKind": "nav",
       "rendererCompatible": true,
+      "role": "header",
       "jobs": [
         "navigation"
       ]
@@ -7768,6 +7811,7 @@
       "available": true,
       "rendererKind": "hero",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "hero",
         "lead"
@@ -7807,6 +7851,7 @@
       "available": true,
       "rendererKind": "hero",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "hero"
       ]
@@ -7839,6 +7884,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "features",
         "value"
@@ -7869,6 +7915,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7898,6 +7945,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -7927,6 +7975,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7953,6 +8002,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "contacts",
         "delivery"
@@ -7989,6 +8039,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "logos"
       ]
@@ -8024,6 +8075,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "proof"
       ]
@@ -8053,6 +8105,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "navigation"
       ]
@@ -8085,6 +8138,7 @@
       "available": true,
       "rendererKind": "menu",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8114,6 +8168,7 @@
       "available": true,
       "rendererKind": "metrics",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "dashboard",
         "numbers"
@@ -8150,6 +8205,7 @@
       "available": true,
       "rendererKind": "nav",
       "rendererCompatible": true,
+      "role": "header",
       "jobs": [
         "navigation"
       ]
@@ -8182,6 +8238,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "lead"
       ]
@@ -8211,6 +8268,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -8240,6 +8298,7 @@
       "available": true,
       "rendererKind": "overview",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -8266,6 +8325,7 @@
       "available": true,
       "rendererKind": "pagehead",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "navigation"
       ]
@@ -8295,6 +8355,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "navigation"
       ]
@@ -8330,6 +8391,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8353,6 +8415,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8379,6 +8442,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "pricing"
       ]
@@ -8408,6 +8472,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "article"
       ]
@@ -8458,6 +8523,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "blog"
       ]
@@ -8487,6 +8553,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "blog"
       ]
@@ -8522,6 +8589,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "blog"
       ]
@@ -8569,6 +8637,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "pricing"
       ]
@@ -8601,6 +8670,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "product"
       ]
@@ -8627,6 +8697,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "product"
       ]
@@ -8671,6 +8742,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8700,6 +8772,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -8735,6 +8808,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8764,6 +8838,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "proof"
       ]
@@ -8787,6 +8862,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8822,6 +8898,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "testimonials"
       ]
@@ -8845,6 +8922,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8877,6 +8955,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog",
         "lead"
@@ -8901,6 +8980,7 @@
       "available": true,
       "rendererKind": "menu",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8933,6 +9013,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "product",
         "testimonials"
@@ -8965,6 +9046,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "article"
       ]
@@ -8994,6 +9076,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -9023,6 +9106,7 @@
       "available": true,
       "rendererKind": "sidenav",
       "rendererCompatible": true,
+      "role": "header",
       "jobs": [
         "dashboard",
         "navigation"
@@ -9059,6 +9143,7 @@
       "available": true,
       "rendererKind": "footer",
       "rendererCompatible": true,
+      "role": "footer",
       "jobs": [
         "footer"
       ]
@@ -9088,6 +9173,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -9114,6 +9200,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "delivery"
       ]
@@ -9155,6 +9242,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "numbers"
       ]
@@ -9184,6 +9272,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -9219,6 +9308,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "how"
       ]
@@ -9248,6 +9338,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -9277,6 +9368,7 @@
       "available": true,
       "rendererKind": "hero",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "hero"
       ]
@@ -9303,6 +9395,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "article"
       ]
@@ -9332,6 +9425,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -9355,6 +9449,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -9390,6 +9485,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "proof"
       ]
@@ -9419,6 +9515,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -9466,6 +9563,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "testimonials"
       ]
@@ -9495,6 +9593,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "article"
       ]
@@ -9524,6 +9623,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "how"
       ]
@@ -9553,6 +9653,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "pricing"
       ]
@@ -9585,6 +9686,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "value"
       ]
@@ -9608,6 +9710,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -9637,6 +9740,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "how"
       ]
@@ -9666,6 +9770,7 @@
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "proof"
       ]
@@ -9689,6 +9794,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -9718,6 +9824,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "auth"
       ]
@@ -9744,6 +9851,7 @@
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "delivery"
       ]

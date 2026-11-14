@@ -1,7 +1,7 @@
-import { PAGE_BLOCK_KINDS, type PageBlockKind } from "@buildytech/page-contract";
+import type { PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
 
-const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
+const KIND_SET = new Set<string>(catalogSnapshot.rendererKinds);
 
 /**
  * Renderer kind of a Stock block label (registry metadata: a ranking / role hint). A leaf module on purpose: the bundled

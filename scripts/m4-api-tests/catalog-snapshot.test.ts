@@ -100,7 +100,7 @@ test("policy: the only hand-written catalog data; stale names fail", () => {
 	bad.ownerFilters.landing.section = "nowhere";
 	const problems = validatePolicy(graph, bad, KINDS);
 	assert.ok(problems.some((p) => /block\.nope is not a Stock block/.test(p)));
-	assert.ok(problems.some((p) => /banner is not in pageKinds/.test(p)));
+	assert.ok(problems.some((p) => /banner is not a Page DTO kind/.test(p)));
 	assert.ok(problems.some((p) => /ownerFilters\.landing\.section: nowhere/.test(p)));
 });
 

@@ -1,5 +1,5 @@
 {
-	"$comment": "BuildY policy over the catalog (ADR 0012): the only hand-written catalog data in this repository. pageKindOfBlock names the Page DTO slot shape a Stock block fills (`features` = heading + rows); the block itself (catalogBlock) decides what renders, so several blocks of one kind render side by side. Everything else in catalog/ is generated from the pinned sources. `npm run snapshot` validates every value here against the snapshot (facet values, block ids, Page DTO kinds) and fails on a stale entry.",
+	"$comment": "BuildY policy over the catalog (ADR 0012): the only hand-written catalog data in this repository. pageKindOfBlock names the Page DTO slot shape a Stock block fills (`features` = heading + rows); the block itself (catalogBlock) decides what renders, so several blocks of one kind render side by side. kindRoles gives a kind the informational role page chrome shows in the Blocks feed and the agent item list (ADR 0037: a label, never a placement rule); the generator writes the role of each block into snapshot.json, nothing reads kindRoles at run time. The renderer kinds are derived from pageKindOfBlock. Everything else in catalog/ is generated from the pinned sources. `npm run snapshot` validates every value here against the snapshot (facet values, block ids, Page DTO kinds, roles) and fails on a stale entry.",
 	"version": 0,
 	"pageSize": 12,
 	"assetTypes": ["screen", "block"],
@@ -10,7 +10,6 @@
 		"landing": { "type": "screen", "site": "landing" },
 		"website": { "type": "screen", "site": "website" }
 	},
-	"pageKinds": ["activity", "bottomnav", "chart", "cta", "dish", "feature", "features", "footer", "hero", "hours", "menu", "metric", "metrics", "nav", "nav-link", "overview", "pagehead", "sidenav"],
 	"pageKindOfBlock": {
 		"navbar": "nav",
 		"header": "nav",
@@ -46,5 +45,6 @@
 		"proof": "features",
 		"quotesplit": "features",
 		"videos": "features"
-	}
+	},
+	"kindRoles": { "nav": "header", "sidenav": "header", "footer": "footer", "bottomnav": "footer" }
 }

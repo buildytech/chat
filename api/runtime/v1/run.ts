@@ -183,16 +183,12 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
     "chart",
     "cta",
     "dish",
-    "feature",
     "features",
     "footer",
     "hero",
-    "hours",
     "menu",
-    "metric",
     "metrics",
     "nav",
-    "nav-link",
     "overview",
     "pagehead",
     "sidenav"
@@ -6358,6 +6354,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "value"
       ]
@@ -6387,6 +6384,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "value"
       ]
@@ -6416,6 +6414,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -6445,6 +6444,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "activity",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -6486,6 +6486,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "cta"
       ]
@@ -6515,6 +6516,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "article"
       ]
@@ -6556,6 +6558,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "auth"
       ]
@@ -6600,6 +6603,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "auth"
       ]
@@ -6629,6 +6633,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "features",
         "value"
@@ -6659,6 +6664,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -6688,6 +6694,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "bottomnav",
       "rendererCompatible": true,
+      "role": "footer",
       "jobs": [
         "dashboard",
         "navigation"
@@ -6718,6 +6725,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -6744,6 +6752,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -6770,6 +6779,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -6808,6 +6818,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -6837,6 +6848,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "contacts"
       ]
@@ -6866,6 +6878,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "chart",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -6904,6 +6917,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -6930,6 +6944,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -6953,6 +6968,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -6982,6 +6998,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "comparison"
       ]
@@ -7017,6 +7034,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "contacts"
       ]
@@ -7046,6 +7064,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "navigation"
       ]
@@ -7075,6 +7094,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "pricing"
       ]
@@ -7125,6 +7145,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "cta",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "cta",
         "lead"
@@ -7164,6 +7185,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "cta",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "cta",
         "proof"
@@ -7218,6 +7240,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -7244,6 +7267,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "delivery"
       ]
@@ -7276,6 +7300,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "dish",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7299,6 +7324,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7322,6 +7348,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7345,6 +7372,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7371,6 +7399,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7394,6 +7423,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7429,6 +7459,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -7461,6 +7492,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard",
         "navigation"
@@ -7500,6 +7532,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "faq"
       ]
@@ -7538,6 +7571,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "faq"
       ]
@@ -7579,6 +7613,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -7608,6 +7643,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "features",
         "value"
@@ -7641,6 +7677,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -7667,6 +7704,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -7693,6 +7731,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "footer",
       "rendererCompatible": true,
+      "role": "footer",
       "jobs": [
         "footer"
       ]
@@ -7728,6 +7767,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "footer",
       "rendererCompatible": true,
+      "role": "footer",
       "jobs": [
         "footer"
       ]
@@ -7751,6 +7791,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7774,6 +7815,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7803,6 +7845,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "nav",
       "rendererCompatible": true,
+      "role": "header",
       "jobs": [
         "navigation"
       ]
@@ -7865,6 +7908,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "hero",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "hero",
         "lead"
@@ -7904,6 +7948,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "hero",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "hero"
       ]
@@ -7936,6 +7981,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "features",
         "value"
@@ -7966,6 +8012,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -7995,6 +8042,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -8024,6 +8072,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8050,6 +8099,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "contacts",
         "delivery"
@@ -8086,6 +8136,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "logos"
       ]
@@ -8121,6 +8172,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "proof"
       ]
@@ -8150,6 +8202,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "navigation"
       ]
@@ -8182,6 +8235,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "menu",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8211,6 +8265,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "metrics",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "dashboard",
         "numbers"
@@ -8247,6 +8302,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "nav",
       "rendererCompatible": true,
+      "role": "header",
       "jobs": [
         "navigation"
       ]
@@ -8279,6 +8335,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "lead"
       ]
@@ -8308,6 +8365,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -8337,6 +8395,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "overview",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -8363,6 +8422,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "pagehead",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "navigation"
       ]
@@ -8392,6 +8452,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "navigation"
       ]
@@ -8427,6 +8488,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8450,6 +8512,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8476,6 +8539,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "pricing"
       ]
@@ -8505,6 +8569,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "article"
       ]
@@ -8555,6 +8620,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "blog"
       ]
@@ -8584,6 +8650,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "blog"
       ]
@@ -8619,6 +8686,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "blog"
       ]
@@ -8666,6 +8734,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "pricing"
       ]
@@ -8698,6 +8767,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "product"
       ]
@@ -8724,6 +8794,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "product"
       ]
@@ -8768,6 +8839,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8797,6 +8869,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -8832,6 +8905,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8861,6 +8935,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "proof"
       ]
@@ -8884,6 +8959,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8919,6 +8995,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "testimonials"
       ]
@@ -8942,6 +9019,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -8974,6 +9052,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog",
         "lead"
@@ -8998,6 +9077,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "menu",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -9030,6 +9110,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "product",
         "testimonials"
@@ -9062,6 +9143,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "article"
       ]
@@ -9091,6 +9173,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -9120,6 +9203,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "sidenav",
       "rendererCompatible": true,
+      "role": "header",
       "jobs": [
         "dashboard",
         "navigation"
@@ -9156,6 +9240,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "footer",
       "rendererCompatible": true,
+      "role": "footer",
       "jobs": [
         "footer"
       ]
@@ -9185,6 +9270,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -9211,6 +9297,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "delivery"
       ]
@@ -9252,6 +9339,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "numbers"
       ]
@@ -9281,6 +9369,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "dashboard"
       ]
@@ -9316,6 +9405,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "how"
       ]
@@ -9345,6 +9435,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "features"
       ]
@@ -9374,6 +9465,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "hero",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "hero"
       ]
@@ -9400,6 +9492,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "article"
       ]
@@ -9429,6 +9522,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "checkout"
       ]
@@ -9452,6 +9546,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -9487,6 +9582,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "proof"
       ]
@@ -9516,6 +9612,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -9563,6 +9660,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "testimonials"
       ]
@@ -9592,6 +9690,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "article"
       ]
@@ -9621,6 +9720,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "how"
       ]
@@ -9650,6 +9750,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "pricing"
       ]
@@ -9682,6 +9783,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "value"
       ]
@@ -9705,6 +9807,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -9734,6 +9837,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "how"
       ]
@@ -9763,6 +9867,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": "features",
       "rendererCompatible": true,
+      "role": null,
       "jobs": [
         "proof"
       ]
@@ -9786,6 +9891,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "catalog"
       ]
@@ -9815,6 +9921,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "auth"
       ]
@@ -9841,6 +9948,7 @@ __def("packages/builder-core/src/catalog/snapshot.json", function (exports) {
       "available": true,
       "rendererKind": null,
       "rendererCompatible": false,
+      "role": null,
       "jobs": [
         "delivery"
       ]
@@ -10009,6 +10117,11 @@ function parseBlockIndexEntry(value: unknown, path: string): CatalogBlockIndexEn
 		rendererKind,
 		rendererCompatible: asBoolean(rec.rendererCompatible, `${path}.rendererCompatible`)
 	};
+	if (rec.role !== undefined && rec.role !== null) {
+		const role = asString(rec.role, `${path}.role`);
+		if (role !== "header" && role !== "footer") fail(`${path}.role`, "must be header, footer or null");
+		entry.role = role;
+	}
 	if (rec.jobs !== undefined) entry.jobs = asStringArray(rec.jobs, `${path}.jobs`);
 	if (rec.thumbs !== undefined) {
 		const thumbs = asRecord(rec.thumbs, `${path}.thumbs`);
@@ -10119,2683 +10232,9 @@ exports["catalogProvenance"] = catalogProvenance;
 
 });
 
-__def("packages/page-contract/src/types.ts", function (exports) {
-
-const PAGE_LAYOUT_VERSION = 1 as const;
-
-/** Closed allowlist from implemented Preview components (PreviewBlock / PreviewItem). */
-const PAGE_BLOCK_KINDS = [
-	"nav",
-	"nav-link",
-	"hero",
-	"features",
-	"feature",
-	"menu",
-	"dish",
-	"hours",
-	"cta",
-	"footer",
-	"pagehead",
-	"overview",
-	"metrics",
-	"metric",
-	"chart",
-	"activity",
-	"activity-item",
-	"sidenav",
-	"bottomnav"
-] as const;
-
-const PAGE_COPY_KEYS = [
-	"eyebrow",
-	"headline",
-	"lede",
-	"action",
-	"note",
-	"brand",
-	"contact",
-	"legal",
-	"days",
-	"address",
-	"value",
-	"badge",
-	"icon",
-	"href"
-] as const;
-
-const PAGE_STATUSES = [
-	"draft",
-	"pending",
-	"scheduled",
-	"published",
-	"archived",
-	"trashed"
-] as const;
-
-const PAGE_LIMITS = {
-	maxBlocks: 64,
-	maxDepth: 4,
-	maxIdLength: 63,
-	maxSlugLength: 48,
-	maxTitleLength: 160,
-	maxSummaryLength: 500,
-	maxCopyLength: 2000,
-	maxSeoLength: 200,
-	maxLocaleLength: 16,
-	maxJsonChars: 65_536
-} as const;
-
-/** Lengths of the page-spec 1.1.0 catalog fields (catalogBlock, variant, copy.icon). */
-const PAGE_CATALOG_LIMITS = {
-	maxCatalogBlockLength: 80,
-	maxVariantLength: 40,
-	maxIconLength: 64
-} as const;
-
-const PAGE_PROPS_LIMITS = { maxEntries: 64, maxPointerLength: 200, maxListItems: 24, maxObjectKeys: 32 } as const;
-const PAGE_PROPS_POINTER_PATTERN = /^(?:\/(?:[A-Za-z][A-Za-z0-9_]{0,47}|[0-9]{1,2}))+$/;
-
-function blocksOf(page: Page): PageBlock[] {
-	return page.layout.blocks;
-}
-
-exports["PAGE_LAYOUT_VERSION"] = PAGE_LAYOUT_VERSION;
-exports["PAGE_BLOCK_KINDS"] = PAGE_BLOCK_KINDS;
-exports["PAGE_COPY_KEYS"] = PAGE_COPY_KEYS;
-exports["PAGE_STATUSES"] = PAGE_STATUSES;
-exports["PAGE_LIMITS"] = PAGE_LIMITS;
-exports["PAGE_CATALOG_LIMITS"] = PAGE_CATALOG_LIMITS;
-exports["PAGE_PROPS_LIMITS"] = PAGE_PROPS_LIMITS;
-exports["PAGE_PROPS_POINTER_PATTERN"] = PAGE_PROPS_POINTER_PATTERN;
-exports["blocksOf"] = blocksOf;
-
-});
-
-__def("packages/page-contract/src/validate.ts", function (exports) {
-const { PAGE_BLOCK_KINDS, PAGE_CATALOG_LIMITS, PAGE_COPY_KEYS, PAGE_LAYOUT_VERSION, PAGE_LIMITS, PAGE_PROPS_LIMITS, PAGE_PROPS_POINTER_PATTERN, PAGE_STATUSES } = __req("packages/page-contract/src/types.ts");
-class PageContractError extends Error {
-	code: string;
-	path: string;
-
-	constructor(code: string, path: string, message: string) {
-		super(`${code} at ${path}: ${message}`);
-		this.name = "PageContractError";
-		this.code = code;
-		this.path = path;
-	}
-}
-
-const PAGE_KEYS = new Set([
-	"id",
-	"slug",
-	"status",
-	"title",
-	"layout",
-	"seo",
-	"locale",
-	"createdAt",
-	"updatedAt"
-]);
-const LAYOUT_KEYS = new Set(["version", "blocks"]);
-const BLOCK_KEYS = new Set(["id", "kind", "title", "summary", "catalogBlock", "variant", "copy", "props", "children"]);
-const PROP_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9_]{0,47}$/;
-const SEO_KEYS = new Set(["title", "description"]);
-const COPY_KEY_SET = new Set<string>(PAGE_COPY_KEYS);
-const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
-const STATUS_SET = new Set<string>(PAGE_STATUSES);
-
-const ID_PATTERN = /^[a-z][a-z0-9-]{0,62}$/;
-const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const LOCALE_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
-const DATETIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/;
-const ALLOWED_URL_SCHEMES = new Set(["http:", "https:", "mailto:"]);
-const DANGEROUS_URL_SCHEMES = ["javascript:", "data:", "vbscript:", "file:"] as const;
-const MARKUP_PATTERN = /[<>{}]|<\?/;
-const URL_SHAPED_AT_START = /^[a-z][a-z0-9+.-]*:\/\//;
-const CATALOG_BLOCK_PATTERN = /^block\.[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const VARIANT_PATTERN = /^[A-Za-z][A-Za-z0-9-]*$/;
-const ICON_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const HREF_PATTERN = /^(?:#|\/|https?:\/\/|mailto:)/;
-
-function fail(code: string, path: string, message: string): never {
-	throw new PageContractError(code, path, message);
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-	if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
-	const proto = Object.getPrototypeOf(value);
-	return proto === Object.prototype || proto === null;
-}
-
-function asObject(value: unknown, path: string): Record<string, unknown> {
-	if (!isPlainObject(value)) fail("invalid_type", path, "expected object");
-	return value;
-}
-
-function assertOnlyKeys(obj: Record<string, unknown>, allowed: ReadonlySet<string>, path: string): void {
-	for (const key of Object.keys(obj)) {
-		if (!allowed.has(key)) fail("unexpected_key", path, `unexpected key "${key}"`);
-	}
-}
-
-function requirePresent(obj: Record<string, unknown>, key: string, path: string): unknown {
-	if (!(key in obj)) fail("missing_field", path, `missing "${key}"`);
-	return obj[key];
-}
-
-function asString(value: unknown, path: string): string {
-	if (typeof value !== "string") fail("invalid_type", path, "expected string");
-	return value;
-}
-
-function assertPlainText(value: string, path: string): void {
-	if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(value)) {
-		fail("unsafe_text", path, "control characters are not allowed");
-	}
-	if (MARKUP_PATTERN.test(value)) {
-		fail("unsafe_text", path, "markup or template syntax is not allowed");
-	}
-}
-
-/**
- * Injection: reject javascript/data/vbscript/file even when whitespace is used to hide the scheme.
- * URL-shaped values: scheme + "://" (http/https only) or mailto:. Prose with a colon is not a URL.
- */
-function assertSafeUrlPolicy(value: string, path: string): void {
-	const collapsed = value.replace(/[\u0000-\u0020]/g, "").toLowerCase();
-	for (const scheme of DANGEROUS_URL_SCHEMES) {
-		if (collapsed.startsWith(scheme)) {
-			fail("unsafe_url", path, `scheme "${scheme}" is not allowed`);
-		}
-	}
-	const trimmed = value.trim().toLowerCase();
-	if (trimmed.startsWith("mailto:")) return;
-	const urlShaped = URL_SHAPED_AT_START.exec(trimmed);
-	if (!urlShaped) return;
-	const scheme = urlShaped[0].slice(0, -2);
-	if (!ALLOWED_URL_SCHEMES.has(scheme)) {
-		fail("unsafe_url", path, `scheme "${scheme}" is not allowed`);
-	}
-}
-
-function parseBoundedText(
-	value: unknown,
-	path: string,
-	maxLength: number,
-	options: { required?: boolean; pattern?: RegExp; patternCode?: string } = {}
-): string {
-	const text = asString(value, path);
-	if (options.required && text.trim() === "") {
-		fail("empty_required", path, "must be non-empty");
-	}
-	if (text.length > maxLength) fail("too_long", path, `exceeds ${maxLength} characters`);
-	assertPlainText(text, path);
-	assertSafeUrlPolicy(text, path);
-	if (options.pattern && !options.pattern.test(text)) {
-		fail(options.patternCode ?? "invalid_type", path, "value does not match required pattern");
-	}
-	return text;
-}
-
-function parseId(value: unknown, path: string, seen: Set<string>): string {
-	const id = parseBoundedText(value, path, PAGE_LIMITS.maxIdLength, {
-		required: true,
-		pattern: ID_PATTERN,
-		patternCode: "invalid_id"
-	});
-	if (seen.has(id)) fail("duplicate_id", path, `duplicate id "${id}"`);
-	seen.add(id);
-	return id;
-}
-
-function parseCopy(value: unknown, path: string): PageBlockCopy {
-	const obj = asObject(value, path);
-	assertOnlyKeys(obj, COPY_KEY_SET, path);
-	const copy: PageBlockCopy = {};
-	for (const key of PAGE_COPY_KEYS) {
-		if (!(key in obj)) continue;
-		if (key === "icon") {
-			copy.icon = parseBoundedText(obj.icon, `${path}.icon`, PAGE_CATALOG_LIMITS.maxIconLength, { pattern: ICON_PATTERN, patternCode: "invalid_icon" });
-		} else if (key === "href") {
-			copy.href = parseBoundedText(obj.href, `${path}.href`, PAGE_LIMITS.maxCopyLength, { pattern: HREF_PATTERN, patternCode: "invalid_href" });
-		} else {
-			copy[key] = parseBoundedText(obj[key], `${path}.${key}`, PAGE_LIMITS.maxCopyLength);
-		}
-	}
-	return copy;
-}
-
-function parsePropValue(value: unknown, path: string, depth: number): PagePropValue {
-	if (depth > 8) fail("too_deep", path, "props value nested deeper than 8");
-	if (value === null || typeof value === "boolean") return value;
-	if (typeof value === "number") {
-		if (!Number.isFinite(value)) fail("invalid_type", path, "expected a finite number");
-		return value;
-	}
-	if (typeof value === "string") return parseBoundedText(value, path, PAGE_LIMITS.maxCopyLength);
-	if (Array.isArray(value)) {
-		if (value.length > PAGE_PROPS_LIMITS.maxListItems) fail("too_many_items", path, `more than ${PAGE_PROPS_LIMITS.maxListItems} items`);
-		return value.map((item, index) => parsePropValue(item, `${path}[${index}]`, depth + 1));
-	}
-	const obj = asObject(value, path);
-	const keys = Object.keys(obj);
-	if (keys.length > PAGE_PROPS_LIMITS.maxObjectKeys) fail("too_many_keys", path, `more than ${PAGE_PROPS_LIMITS.maxObjectKeys} keys`);
-	const out: Record<string, PagePropValue> = {};
-	for (const key of keys) {
-		if (!PROP_KEY_PATTERN.test(key)) fail("invalid_prop_key", `${path}.${key}`, "not a prop name");
-		out[key] = parsePropValue(obj[key], `${path}.${key}`, depth + 1);
-	}
-	return out;
-}
-
-/** page-spec 1.3.0 block props: pointer -> plain JSON (the props schema of the registry item is a host check). */
-function parseProps(value: unknown, path: string): Record<string, PagePropValue> {
-	const obj = asObject(value, path);
-	const keys = Object.keys(obj);
-	if (keys.length > PAGE_PROPS_LIMITS.maxEntries) fail("too_many_keys", path, `more than ${PAGE_PROPS_LIMITS.maxEntries} overrides`);
-	const out: Record<string, PagePropValue> = {};
-	for (const key of keys) {
-		if (key.length > PAGE_PROPS_LIMITS.maxPointerLength || !PAGE_PROPS_POINTER_PATTERN.test(key)) fail("invalid_props_pointer", `${path}.${key}`, "not a props JSON Pointer");
-		out[key] = parsePropValue(obj[key], `${path}["${key}"]`, 1);
-	}
-	return out;
-}
-
-function parseBlock(
-	value: unknown,
-	path: string,
-	depth: number,
-	seen: Set<string>,
-	counts: { blocks: number }
-): PageBlock {
-	if (depth > PAGE_LIMITS.maxDepth) {
-		fail("too_deep", path, `tree deeper than ${PAGE_LIMITS.maxDepth}`);
-	}
-	counts.blocks += 1;
-	if (counts.blocks > PAGE_LIMITS.maxBlocks) {
-		fail("too_many_blocks", path, `more than ${PAGE_LIMITS.maxBlocks} blocks`);
-	}
-
-	const obj = asObject(value, path);
-	assertOnlyKeys(obj, BLOCK_KEYS, path);
-
-	const id = parseId(requirePresent(obj, "id", path), `${path}.id`, seen);
-	const kindRaw = asString(requirePresent(obj, "kind", path), `${path}.kind`);
-	if (!KIND_SET.has(kindRaw)) {
-		fail("unsupported_kind", `${path}.kind`, `unsupported block kind "${kindRaw}"`);
-	}
-	const kind = kindRaw as PageBlockKind;
-	const title = parseBoundedText(requirePresent(obj, "title", path), `${path}.title`, PAGE_LIMITS.maxTitleLength, {
-		required: true
-	});
-	const summary = parseBoundedText(
-		requirePresent(obj, "summary", path),
-		`${path}.summary`,
-		PAGE_LIMITS.maxSummaryLength,
-		{ required: true }
-	);
-
-	const block: PageBlock = { id, kind, title, summary };
-
-	if ("catalogBlock" in obj) {
-		block.catalogBlock = parseBoundedText(obj.catalogBlock, `${path}.catalogBlock`, PAGE_CATALOG_LIMITS.maxCatalogBlockLength, {
-			required: true,
-			pattern: CATALOG_BLOCK_PATTERN,
-			patternCode: "invalid_catalog_block"
-		});
-	}
-	if ("variant" in obj) {
-		block.variant = parseBoundedText(obj.variant, `${path}.variant`, PAGE_CATALOG_LIMITS.maxVariantLength, {
-			required: true,
-			pattern: VARIANT_PATTERN,
-			patternCode: "invalid_variant"
-		});
-	}
-	if ("copy" in obj) {
-		block.copy = parseCopy(obj.copy, `${path}.copy`);
-	}
-	if ("props" in obj) {
-		if (depth !== 1) fail("unexpected_key", path, 'unexpected key "props" (top-level blocks only)');
-		block.props = parseProps(obj.props, `${path}.props`);
-	}
-	if ("children" in obj) {
-		if (!Array.isArray(obj.children)) fail("invalid_type", `${path}.children`, "expected array");
-		block.children = obj.children.map((child, index) =>
-			parseBlock(child, `${path}.children[${index}]`, depth + 1, seen, counts)
-		);
-	}
-	return block;
-}
-
-function parseSeo(value: unknown, path: string): PageSeo {
-	const obj = asObject(value, path);
-	assertOnlyKeys(obj, SEO_KEYS, path);
-	const seo: PageSeo = {};
-	if ("title" in obj) {
-		seo.title = parseBoundedText(obj.title, `${path}.title`, PAGE_LIMITS.maxSeoLength);
-	}
-	if ("description" in obj) {
-		seo.description = parseBoundedText(obj.description, `${path}.description`, PAGE_LIMITS.maxSeoLength);
-	}
-	return seo;
-}
-
-function parseLayout(value: unknown, path: string, seen: Set<string>): PageLayout {
-	const obj = asObject(value, path);
-	assertOnlyKeys(obj, LAYOUT_KEYS, path);
-	const version = requirePresent(obj, "version", path);
-	if (typeof version !== "number" || !Number.isInteger(version)) {
-		fail("invalid_type", `${path}.version`, "expected integer");
-	}
-	if (version !== PAGE_LAYOUT_VERSION) {
-		fail("unsupported_version", `${path}.version`, `unsupported layout.version ${String(version)}`);
-	}
-	const blocksRaw = requirePresent(obj, "blocks", path);
-	if (!Array.isArray(blocksRaw)) fail("invalid_type", `${path}.blocks`, "expected array");
-	const counts = { blocks: 0 };
-	const blocks = blocksRaw.map((block, index) =>
-		parseBlock(block, `${path}.blocks[${index}]`, 1, seen, counts)
-	);
-	return { version: PAGE_LAYOUT_VERSION, blocks };
-}
-
-/**
- * Strict runtime parse of an unknown Store / adapter payload into Page.
- * Reconstructs a plain object so unknown keys cannot leak through.
- */
-function parsePage(input: unknown): Page {
-	if (typeof input === "string" && input.length > PAGE_LIMITS.maxJsonChars) {
-		fail("too_large", "$", "payload exceeds size limit");
-	}
-	let encoded: string;
-	try {
-		encoded = JSON.stringify(input);
-	} catch {
-		fail("invalid_type", "$", "value is not JSON-serializable");
-	}
-	if (encoded.length > PAGE_LIMITS.maxJsonChars) {
-		fail("too_large", "$", "payload exceeds size limit");
-	}
-
-	const obj = asObject(input, "$");
-	assertOnlyKeys(obj, PAGE_KEYS, "$");
-
-	const seen = new Set<string>();
-	const id = parseId(requirePresent(obj, "id", "$"), "id", seen);
-	const slug = parseBoundedText(requirePresent(obj, "slug", "$"), "slug", PAGE_LIMITS.maxSlugLength, {
-		required: true,
-		pattern: SLUG_PATTERN,
-		patternCode: "invalid_slug"
-	});
-	const statusRaw = asString(requirePresent(obj, "status", "$"), "status");
-	if (!STATUS_SET.has(statusRaw)) {
-		fail("invalid_status", "status", `unsupported status "${statusRaw}"`);
-	}
-	const status = statusRaw as PageStatus;
-	const title = parseBoundedText(requirePresent(obj, "title", "$"), "title", PAGE_LIMITS.maxTitleLength, {
-		required: true
-	});
-	const layout = parseLayout(requirePresent(obj, "layout", "$"), "layout", seen);
-	const seo = parseSeo(requirePresent(obj, "seo", "$"), "seo");
-	const locale = parseBoundedText(requirePresent(obj, "locale", "$"), "locale", PAGE_LIMITS.maxLocaleLength, {
-		required: true,
-		pattern: LOCALE_PATTERN,
-		patternCode: "invalid_locale"
-	});
-	const createdAt = parseBoundedText(requirePresent(obj, "createdAt", "$"), "createdAt", 40, {
-		required: true,
-		pattern: DATETIME_PATTERN,
-		patternCode: "invalid_datetime"
-	});
-	const updatedAt = parseBoundedText(requirePresent(obj, "updatedAt", "$"), "updatedAt", 40, {
-		required: true,
-		pattern: DATETIME_PATTERN,
-		patternCode: "invalid_datetime"
-	});
-
-	return { id, slug, status, title, layout, seo, locale, createdAt, updatedAt };
-}
-
-/** Ordinary draft creation: same Page contract, status must be draft. */
-function parseDraftPage(input: unknown): Page {
-	const page = parsePage(input);
-	if (page.status !== "draft") {
-		fail("invalid_status", "status", 'ordinary draft creation requires status "draft"');
-	}
-	return page;
-}
-
-function isPage(input: unknown): input is Page {
-	try {
-		parsePage(input);
-		return true;
-	} catch {
-		return false;
-	}
-}
-
-exports["PageContractError"] = PageContractError;
-exports["parsePage"] = parsePage;
-exports["parseDraftPage"] = parseDraftPage;
-exports["isPage"] = isPage;
-
-});
-
-__def("packages/page-contract/schema/page-spec.schema.json", function (exports) {
-  exports.default = {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.buildy.tw/page-spec.schema.json",
-  "title": "Page spec page-spec/v1 — a page as Stock catalog blocks with their copy",
-  "x-page-spec-profile": "page-spec/v1",
-  "x-page-spec-version": "1.5.0",
-  "description": "The primary artifact of a BuildY page: an agent proposes it (propose_layout), the host validates it against the Stock catalog, saves it, and regenerates code from it for a UI8Kit target (Svelte today). History, edits (page-patch/v1) and rollback work on this JSON; code is never the source. Root: the page (identical to buildytech/chat Page DTO, layout.version 1: every saved page validates unchanged). $defs: provenance, record and store describe the browser page store. Not a Codex v0.4 entry. After the schema, consumers run x-program-checks (duplicate ids, block count, payload size). x-page-slots lists the copy keys each kind renders and the rows of list kinds; a saved page may hold other copy keys, a patch may only write slots.",
-  "x-program-checks": [
-    "duplicate_id",
-    "too_many_blocks",
-    "too_large"
-  ],
-  "x-host-checks": [
-    "props_invalid"
-  ],
-  "x-limits": {
-    "maxBlocks": 64,
-    "maxDepth": 4,
-    "maxIdLength": 63,
-    "maxSlugLength": 48,
-    "maxTitleLength": 160,
-    "maxSummaryLength": 500,
-    "maxCopyLength": 2000,
-    "maxSeoLength": 200,
-    "maxLocaleLength": 16,
-    "maxJsonChars": 65536,
-    "maxDatetimeLength": 40
-  },
-  "x-page-slots": {
-    "nav": {
-      "copy": [
-        "brand",
-        "badge"
-      ],
-      "items": {
-        "kind": "nav-link",
-        "max": 6,
-        "fields": [
-          "label",
-          "group"
-        ]
-      }
-    },
-    "sidenav": {
-      "copy": [
-        "brand",
-        "badge"
-      ],
-      "items": {
-        "kind": "nav-link",
-        "max": 8,
-        "fields": [
-          "label",
-          "group"
-        ]
-      }
-    },
-    "bottomnav": {
-      "copy": [
-        "badge"
-      ],
-      "items": {
-        "kind": "nav-link",
-        "max": 5,
-        "fields": [
-          "label",
-          "group"
-        ]
-      }
-    },
-    "hero": {
-      "copy": [
-        "eyebrow",
-        "headline",
-        "lede",
-        "action",
-        "badge"
-      ]
-    },
-    "pagehead": {
-      "copy": [
-        "headline",
-        "lede",
-        "badge"
-      ]
-    },
-    "overview": {
-      "copy": [
-        "lede",
-        "badge"
-      ],
-      "items": {
-        "kind": "metric",
-        "max": 4,
-        "fields": [
-          "label",
-          "value",
-          "note"
-        ]
-      }
-    },
-    "metrics": {
-      "copy": [
-        "lede",
-        "badge"
-      ],
-      "items": {
-        "kind": "metric",
-        "max": 6,
-        "fields": [
-          "label",
-          "value",
-          "note"
-        ]
-      }
-    },
-    "chart": {
-      "copy": [
-        "lede",
-        "badge"
-      ],
-      "items": {
-        "kind": "metric",
-        "max": 12,
-        "fields": [
-          "label",
-          "value",
-          "note"
-        ]
-      }
-    },
-    "activity": {
-      "copy": [
-        "lede",
-        "badge"
-      ],
-      "items": {
-        "kind": "activity-item",
-        "max": 8,
-        "fields": [
-          "label",
-          "detail",
-          "note"
-        ]
-      }
-    },
-    "features": {
-      "copy": [
-        "action",
-        "href",
-        "badge"
-      ],
-      "items": {
-        "kind": "feature",
-        "max": 6,
-        "fields": [
-          "label",
-          "detail",
-          "icon"
-        ]
-      }
-    },
-    "menu": {
-      "copy": [
-        "badge"
-      ],
-      "items": {
-        "kind": "dish",
-        "max": 8,
-        "fields": [
-          "label",
-          "detail"
-        ]
-      }
-    },
-    "hours": {
-      "copy": [
-        "days",
-        "address",
-        "badge"
-      ]
-    },
-    "cta": {
-      "copy": [
-        "lede",
-        "action",
-        "note",
-        "badge"
-      ]
-    },
-    "footer": {
-      "copy": [
-        "contact",
-        "legal",
-        "badge"
-      ]
-    },
-    "nav-link": {
-      "copy": [
-        "eyebrow",
-        "badge"
-      ]
-    },
-    "feature": {
-      "copy": [
-        "icon",
-        "badge"
-      ]
-    },
-    "dish": {
-      "copy": [
-        "badge"
-      ]
-    },
-    "metric": {
-      "copy": [
-        "value",
-        "note",
-        "badge"
-      ]
-    },
-    "activity-item": {
-      "copy": [
-        "note",
-        "badge"
-      ]
-    }
-  },
-  "$ref": "#/$defs/page",
-  "$defs": {
-    "safeText": {
-      "type": "string",
-      "description": "Plain text. Rejected (parsePage codes): control characters other than tab, LF and CR, and any of < > { } (unsafe_text); a value that starts with javascript:, data:, vbscript: or file: even with whitespace or control characters between the letters (unsafe_url); a value that starts with <scheme>:// other than http(s) (unsafe_url). mailto: is allowed. Prose with a colon (`Hours: 11:00`) is not a URL.",
-      "pattern": "^[^<>{}\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]*$",
-      "not": {
-        "anyOf": [
-          {
-            "pattern": "^[\\u0000-\\u0020]*[jJ][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^[\\u0000-\\u0020]*[dD][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^[\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[bB][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^[\\u0000-\\u0020]*[fF][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[lL][\\u0000-\\u0020]*[eE][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^\\s*(?![hH][tT][tT][pP][sS]?://)[A-Za-z][A-Za-z0-9+.\\-]*://"
-          }
-        ]
-      }
-    },
-    "id": {
-      "type": "string",
-      "pattern": "^[a-z][a-z0-9-]{0,62}$",
-      "maxLength": 63,
-      "description": "Lowercase ASCII id, unique in the whole page (page id included; checked by the program: duplicate_id). Safe in generated code (data-block-id)."
-    },
-    "kind": {
-      "enum": [
-        "nav",
-        "nav-link",
-        "hero",
-        "features",
-        "feature",
-        "menu",
-        "dish",
-        "hours",
-        "cta",
-        "footer",
-        "pagehead",
-        "overview",
-        "metrics",
-        "metric",
-        "chart",
-        "activity",
-        "activity-item",
-        "sidenav",
-        "bottomnav"
-      ],
-      "description": "Renderer kind a Stock catalog block maps onto."
-    },
-    "copy": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "eyebrow": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "headline": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "lede": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "action": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "note": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "brand": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "contact": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "legal": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "days": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "address": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "value": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "badge": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        "icon": {
-          "type": "string",
-          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          "maxLength": 64,
-          "description": "Lucide icon name; the host checks it against the Lucide set of its pinned registry snapshot."
-        },
-        "href": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            },
-            {
-              "pattern": "^(?:#|/|https?://|mailto:)"
-            }
-          ],
-          "maxLength": 2000,
-          "description": "Link of the block action: #fragment, /path, http(s) URL or mailto."
-        }
-      },
-      "description": "Copy of a block by closed key. Which keys a kind renders: x-page-slots."
-    },
-    "catalogBlock": {
-      "type": "string",
-      "pattern": "^block\\.[a-z0-9]+(?:-[a-z0-9]+)*$",
-      "maxLength": 80,
-      "description": "Stock catalog block asset the block was built from (block.<name>, the spec of the catalog block index). Optional (1.1.0). The host rejects a block its pinned catalog does not have."
-    },
-    "variant": {
-      "type": "string",
-      "pattern": "^[A-Za-z][A-Za-z0-9-]*$",
-      "maxLength": 40,
-      "description": "Catalog variant of catalogBlock (block.<name>/<variant> is the catalog asset id); the host renders the registry organism with the variant's props. Optional (1.1.0). The host rejects a variant its pinned catalog does not have."
-    },
-    "propValue": {
-      "description": "A props override value (1.3.0): plain JSON (strings are safe text); the host checks it against the props schema of the block's registry item.",
-      "anyOf": [
-        {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 2000
-        },
-        {
-          "type": "number"
-        },
-        {
-          "type": "boolean"
-        },
-        {
-          "type": "null"
-        },
-        {
-          "type": "array",
-          "maxItems": 24,
-          "items": {
-            "$ref": "#/$defs/propValue"
-          }
-        },
-        {
-          "type": "object",
-          "maxProperties": 32,
-          "propertyNames": {
-            "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
-          },
-          "additionalProperties": {
-            "$ref": "#/$defs/propValue"
-          }
-        }
-      ]
-    },
-    "props": {
-      "type": "object",
-      "maxProperties": 64,
-      "propertyNames": {
-        "pattern": "^(?:/(?:[A-Za-z][A-Za-z0-9_]{0,47}|[0-9]{1,2}))+$",
-        "maxLength": 200
-      },
-      "additionalProperties": {
-        "$ref": "#/$defs/propValue"
-      },
-      "description": "Props overrides of a top-level block (1.3.0, optional): JSON Pointer of a prop of the registry item its catalog variant renders (registry.buildy.tw/props/v0.json: /actions/secondary, /content/card/title, /content/features) -> value. Merged over the variant preset and the page content (copy slots still carry the text they map); the host validates the merged props against the item's props schema (x-host-checks: props_invalid). Pointers do not overlap (no key is a prefix path of another)."
-    },
-    "block1": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "kind",
-        "title",
-        "summary"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "kind": {
-          "$ref": "#/$defs/kind"
-        },
-        "title": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 160,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "summary": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 500,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "catalogBlock": {
-          "$ref": "#/$defs/catalogBlock"
-        },
-        "variant": {
-          "$ref": "#/$defs/variant"
-        },
-        "copy": {
-          "$ref": "#/$defs/copy"
-        },
-        "props": {
-          "$ref": "#/$defs/props"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/block2"
-          },
-          "maxItems": 64
-        }
-      }
-    },
-    "block2": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "kind",
-        "title",
-        "summary"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "kind": {
-          "$ref": "#/$defs/kind"
-        },
-        "title": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 160,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "summary": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 500,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "catalogBlock": {
-          "$ref": "#/$defs/catalogBlock"
-        },
-        "variant": {
-          "$ref": "#/$defs/variant"
-        },
-        "copy": {
-          "$ref": "#/$defs/copy"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/block3"
-          },
-          "maxItems": 64
-        }
-      }
-    },
-    "block3": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "kind",
-        "title",
-        "summary"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "kind": {
-          "$ref": "#/$defs/kind"
-        },
-        "title": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 160,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "summary": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 500,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "catalogBlock": {
-          "$ref": "#/$defs/catalogBlock"
-        },
-        "variant": {
-          "$ref": "#/$defs/variant"
-        },
-        "copy": {
-          "$ref": "#/$defs/copy"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/block4"
-          },
-          "maxItems": 64
-        }
-      }
-    },
-    "block4": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "kind",
-        "title",
-        "summary"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "kind": {
-          "$ref": "#/$defs/kind"
-        },
-        "title": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 160,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "summary": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 500,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "catalogBlock": {
-          "$ref": "#/$defs/catalogBlock"
-        },
-        "variant": {
-          "$ref": "#/$defs/variant"
-        },
-        "copy": {
-          "$ref": "#/$defs/copy"
-        },
-        "children": {
-          "type": "array",
-          "maxItems": 0,
-          "description": "Depth 4 is the deepest level (too_deep)."
-        }
-      }
-    },
-    "page": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "slug",
-        "status",
-        "title",
-        "layout",
-        "seo",
-        "locale",
-        "createdAt",
-        "updatedAt"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "slug": {
-          "type": "string",
-          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          "minLength": 1,
-          "maxLength": 48,
-          "description": "Ordinary page slug, no query or UTM variants."
-        },
-        "status": {
-          "enum": [
-            "draft",
-            "pending",
-            "scheduled",
-            "published",
-            "archived",
-            "trashed"
-          ],
-          "description": "Lifecycle. A new draft has status draft."
-        },
-        "title": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/safeText"
-            }
-          ],
-          "maxLength": 160,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "layout": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "version",
-            "blocks"
-          ],
-          "properties": {
-            "version": {
-              "const": 1
-            },
-            "blocks": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/block1"
-              },
-              "maxItems": 64,
-              "description": "Blocks in render order. Code (page.svelte + one file per block) is generated from this tree."
-            }
-          }
-        },
-        "seo": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "title": {
-              "allOf": [
-                {
-                  "$ref": "#/$defs/safeText"
-                }
-              ],
-              "maxLength": 200
-            },
-            "description": {
-              "allOf": [
-                {
-                  "$ref": "#/$defs/safeText"
-                }
-              ],
-              "maxLength": 200
-            }
-          }
-        },
-        "locale": {
-          "type": "string",
-          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
-          "maxLength": 16,
-          "description": "BCP 47 language of all copy."
-        },
-        "createdAt": {
-          "type": "string",
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-          "maxLength": 40
-        },
-        "updatedAt": {
-          "type": "string",
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-          "maxLength": 40
-        }
-      }
-    },
-    "provenance": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Where a saved spec came from. screenId is the Stock catalog screen the blocks were assembled from (null = not recorded).",
-      "properties": {
-        "screenId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 200
-        },
-        "scenarioId": {
-          "enum": [
-            "dashboard",
-            "landing",
-            "website",
-            null
-          ]
-        },
-        "missing": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "maxLength": 200
-          },
-          "description": "Catalog block labels of the screen that the host cannot render."
-        },
-        "assembler": {
-          "type": "string",
-          "maxLength": 80
-        },
-        "family": {
-          "enum": [
-            "dashboard",
-            "landing",
-            "food-grill",
-            "restaurant",
-            "generic",
-            null
-          ],
-          "description": "1.4.0, optional, advisory: the page's screen family, derived from its composition after every operation (role majority; mixed -> generic) unless familyPinned. Never rejects a block."
-        },
-        "familyPinned": {
-          "type": "boolean",
-          "description": "1.4.0, optional: the author pinned family; the host stops deriving it until the pin is reset."
-        }
-      }
-    },
-    "record": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "One chat's pages in the browser store: the applied page, the pending candidate and the last proposal, each with its provenance.",
-      "properties": {
-        "applied": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/page"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "candidate": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/page"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "lastProposed": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/page"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "appliedProvenance": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/provenance"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "candidateProvenance": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/provenance"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "lastProposedProvenance": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/provenance"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "selectedBlockId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 63
-        },
-        "revision": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "minimum": 0
-        }
-      }
-    },
-    "store": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "version",
-        "pages"
-      ],
-      "description": "The browser page store blob (localStorage key buildy:v1:pages; before session buildy:v1 the key buildytech-creator-pages-v1, migrated once): pages by chat id.",
-      "properties": {
-        "version": {
-          "const": 1
-        },
-        "pages": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/record"
-          }
-        }
-      }
-    }
-  }
-};
-});
-
-__def("packages/page-contract/schema/page-patch.schema.json", function (exports) {
-  exports.default = {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.buildy.tw/page-patch.schema.json",
-  "title": "Page patch page-patch/v1 — edit operations on a page spec",
-  "x-page-patch-profile": "page-patch/v1",
-  "x-page-spec-version": "1.5.0",
-  "description": "An edit of a page-spec/v1 page as an ordered list of operations, applied in order to a copy of the base page; the whole patch is rejected if any operation fails. Unchanged blocks keep their content. Slot validation: set / add / replace may only write copy keys and row fields the target kind renders (page-spec x-page-slots); rows beyond the kind's limit are rejected. The result must be a valid page-spec/v1 page. baseRevision, when sent, must equal the page revision the patch was made for.",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "ops"
-  ],
-  "properties": {
-    "baseRevision": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "ops": {
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 24,
-      "items": {
-        "$ref": "#/$defs/op"
-      }
-    }
-  },
-  "$defs": {
-    "item": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "label"
-      ],
-      "properties": {
-        "label": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 80,
-          "description": "Row title.",
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "detail": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 200,
-          "description": "Row summary."
-        },
-        "value": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 24,
-          "description": "Row copy.value."
-        },
-        "note": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 120,
-          "description": "Row copy.note."
-        },
-        "group": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 40,
-          "description": "Row copy.eyebrow."
-        },
-        "icon": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 64,
-          "description": "Row copy.icon."
-        }
-      }
-    },
-    "op": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId",
-            "field",
-            "value"
-          ],
-          "description": "Set one slot of a block. null removes a copy key; title and summary cannot be removed.",
-          "properties": {
-            "op": {
-              "const": "set"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            },
-            "field": {
-              "enum": [
-                "title",
-                "summary",
-                "eyebrow",
-                "headline",
-                "lede",
-                "action",
-                "note",
-                "brand",
-                "contact",
-                "legal",
-                "days",
-                "address",
-                "value",
-                "badge",
-                "icon",
-                "href"
-              ]
-            },
-            "value": {
-              "anyOf": [
-                {
-                  "allOf": [
-                    {
-                      "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-                    }
-                  ],
-                  "maxLength": 2000
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId",
-            "items"
-          ],
-          "description": "Replace the rows of a list block.",
-          "properties": {
-            "op": {
-              "const": "set_items"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            },
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/item"
-              },
-              "maxItems": 12,
-              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "kind"
-          ],
-          "description": "Add a Stock block at a top-level index (default: its natural place). Optional copy and rows overlay the catalog defaults; variant picks a catalog variant of the block. catalogBlock (1.5.0, optional): the Stock catalog block to add (block.steps, block.pricing), a block of the given kind; without it the host picks the page's sample block of that kind and sets catalogBlock itself. With catalogBlock the page may hold several blocks of one kind.",
-          "properties": {
-            "op": {
-              "const": "add"
-            },
-            "kind": {
-              "enum": [
-                "nav",
-                "hero",
-                "features",
-                "menu",
-                "hours",
-                "cta",
-                "footer",
-                "pagehead",
-                "overview",
-                "metrics",
-                "chart",
-                "activity",
-                "sidenav",
-                "bottomnav"
-              ],
-              "description": "A top-level kind. The host builds the block from the page's Stock screen family; a kind the family does not have is rejected."
-            },
-            "catalogBlock": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/catalogBlock"
-            },
-            "at": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "title": {
-              "allOf": [
-                {
-                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-                }
-              ],
-              "maxLength": 160,
-              "minLength": 1,
-              "pattern": "\\S"
-            },
-            "variant": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/variant"
-            },
-            "copy": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/copy"
-            },
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/item"
-              },
-              "maxItems": 12,
-              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId",
-            "kind"
-          ],
-          "description": "Replace a top-level block by another Stock block in the same place. catalogBlock (1.2.0, optional): another Stock catalog block of the same kind (block.hero -> block.storehero); the host keeps the block id, kind and title, carries the text the new block renders and says which fields it dropped; variant is one of that block's variants (default: its catalog default).",
-          "properties": {
-            "op": {
-              "const": "replace"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            },
-            "kind": {
-              "enum": [
-                "nav",
-                "hero",
-                "features",
-                "menu",
-                "hours",
-                "cta",
-                "footer",
-                "pagehead",
-                "overview",
-                "metrics",
-                "chart",
-                "activity",
-                "sidenav",
-                "bottomnav"
-              ],
-              "description": "A top-level kind. The host builds the block from the page's Stock screen family; a kind the family does not have is rejected."
-            },
-            "catalogBlock": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/catalogBlock"
-            },
-            "title": {
-              "allOf": [
-                {
-                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-                }
-              ],
-              "maxLength": 160,
-              "minLength": 1,
-              "pattern": "\\S"
-            },
-            "variant": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/variant"
-            },
-            "copy": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/copy"
-            },
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/item"
-              },
-              "maxItems": 12,
-              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId"
-          ],
-          "description": "Remove a block and its rows.",
-          "properties": {
-            "op": {
-              "const": "remove"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId",
-            "to"
-          ],
-          "description": "Move a block to an index among its siblings.",
-          "properties": {
-            "op": {
-              "const": "move"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            },
-            "to": {
-              "type": "integer",
-              "minimum": 0
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "field",
-            "value"
-          ],
-          "description": "Set the page title or an SEO field.",
-          "properties": {
-            "op": {
-              "const": "set_page"
-            },
-            "field": {
-              "enum": [
-                "title",
-                "seo.title",
-                "seo.description"
-              ]
-            },
-            "value": {
-              "allOf": [
-                {
-                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-                }
-              ],
-              "maxLength": 160,
-              "minLength": 1,
-              "pattern": "\\S"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId",
-            "variant"
-          ],
-          "description": "Switch a block to another catalog variant of its catalog block (1.1.0); null returns to the catalog default. Unknown variants are rejected.",
-          "properties": {
-            "op": {
-              "const": "set_variant"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            },
-            "variant": {
-              "anyOf": [
-                {
-                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/variant"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    }
-  }
-};
-});
-
-__def("packages/page-contract/src/json-schema.ts", function (exports) {
-
-type Schema = Record<string, unknown> | boolean;
-
-const ANNOTATIONS = new Set(["$schema", "$id", "$defs", "title", "description", "default", "examples"]);
-const ASSERTIONS = new Set([
-	"$ref", "allOf", "anyOf", "oneOf", "not", "type", "enum", "const", "pattern", "minLength", "maxLength",
-	"minimum", "maximum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties",
-	"maxProperties", "propertyNames"
-]);
-
-function typeOf(value: unknown): string {
-	if (value === null) return "null";
-	if (Array.isArray(value)) return "array";
-	if (typeof value === "number") return Number.isInteger(value) ? "integer" : "number";
-	return typeof value;
-}
-
-function typeMatches(value: unknown, type: string): boolean {
-	const actual = typeOf(value);
-	return actual === type || (type === "number" && actual === "integer");
-}
-
-function equal(a: unknown, b: unknown): boolean {
-	return JSON.stringify(a) === JSON.stringify(b);
-}
-
-function expectedOf(keyword: string, schema: Record<string, unknown>): string | undefined {
-	const has = (key: string) => schema[key] !== undefined;
-	switch (keyword) {
-		case "enum":
-			return `one of ${JSON.stringify(schema.enum)}`;
-		case "const":
-			return `exactly ${JSON.stringify(schema.const)}`;
-		case "type":
-			return `type ${Array.isArray(schema.type) ? (schema.type as string[]).join(" | ") : String(schema.type)}`;
-		case "pattern":
-			return `a string matching /${String(schema.pattern)}/`;
-		case "maxLength":
-			return `at most ${String(schema.maxLength)} characters`;
-		case "minLength":
-			return `at least ${String(schema.minLength)} characters`;
-		case "maxItems":
-			return `at most ${String(schema.maxItems)} items`;
-		case "minItems":
-			return `at least ${String(schema.minItems)} items`;
-		case "maxProperties":
-			return `at most ${String(schema.maxProperties)} keys`;
-		case "required":
-			return `the key to be present (required: ${JSON.stringify(schema.required)})`;
-		case "additionalProperties":
-			return has("properties") ? `only the keys ${JSON.stringify(Object.keys(schema.properties as object))}` : "no other keys";
-		case "minimum":
-			return `a number >= ${String(schema.minimum)}`;
-		case "maximum":
-			return `a number <= ${String(schema.maximum)}`;
-		case "propertyNames":
-			return `key names matching ${JSON.stringify((schema.propertyNames as { pattern?: string }).pattern ?? "the schema")}`;
-		default:
-			return undefined;
-	}
-}
-
-class SchemaRegistry {
-	private roots = new Map<string, Record<string, unknown>>();
-	private regex = new Map<string, RegExp>();
-
-	add(schema: Record<string, unknown>): void {
-		const id = schema.$id;
-		if (typeof id !== "string" || !id) throw new Error("schema needs an $id");
-		this.roots.set(id, schema);
-	}
-
-	/** Issues of `value` against `ref` (an $id, optionally with a #/json/pointer). Empty = valid. */
-	check(value: unknown, ref: string): SchemaIssue[] {
-		const out: SchemaIssue[] = [];
-		const [base, schema] = this.resolve(ref, "");
-		this.walk(value, schema, base, "$", out);
-		return out;
-	}
-
-	private resolve(ref: string, currentBase: string): [string, Schema] {
-		const hash = ref.indexOf("#");
-		const base = hash === 0 ? currentBase : hash > 0 ? ref.slice(0, hash) : ref;
-		const pointer = hash >= 0 ? ref.slice(hash + 1) : "";
-		const root = this.roots.get(base);
-		if (!root) throw new Error(`unknown schema ${base}`);
-		let node: unknown = root;
-		for (const raw of pointer.split("/").filter(Boolean)) {
-			const key = raw.replace(/~1/g, "/").replace(/~0/g, "~");
-			node = node && typeof node === "object" ? (node as Record<string, unknown>)[key] : undefined;
-		}
-		if (node === undefined) throw new Error(`unresolved $ref ${ref}`);
-		return [base, node as Schema];
-	}
-
-	private pattern(source: string): RegExp {
-		let re = this.regex.get(source);
-		if (!re) {
-			re = new RegExp(source, "u");
-			this.regex.set(source, re);
-		}
-		return re;
-	}
-
-	private walk(value: unknown, schema: Schema, base: string, path: string, out: SchemaIssue[]): void {
-		if (schema === true) return;
-		if (schema === false) {
-			out.push({ path, keyword: "false" });
-			return;
-		}
-		const fail = (keyword: string, at = path) => out.push({ path: at, keyword, expected: expectedOf(keyword, schema) });
-		const sub = (v: unknown, s: unknown, at: string): SchemaIssue[] => {
-			const issues: SchemaIssue[] = [];
-			this.walk(v, s as Schema, base, at, issues);
-			return issues;
-		};
-		for (const key of Object.keys(schema)) {
-			if (!ASSERTIONS.has(key) && !ANNOTATIONS.has(key) && !key.startsWith("x-")) {
-				throw new Error(`unsupported schema keyword ${key}`);
-			}
-		}
-		if (typeof schema.$ref === "string") {
-			const [refBase, target] = this.resolve(schema.$ref, base);
-			this.walk(value, target, refBase, path, out);
-		}
-		if (Array.isArray(schema.allOf)) for (const s of schema.allOf) out.push(...sub(value, s, path));
-		if (Array.isArray(schema.anyOf) && !schema.anyOf.some((s) => sub(value, s, path).length === 0)) fail("anyOf");
-		if (Array.isArray(schema.oneOf)) {
-			const branches = schema.oneOf.map((s) => sub(value, s, path));
-			const passing = branches.filter((issues) => issues.length === 0).length;
-			if (passing !== 1) {
-				// Report the issues of the closest branch so the caller gets a useful path.
-				const closest = [...branches].sort((a, b) => a.length - b.length)[0] ?? [];
-				out.push(...(passing === 0 ? closest : []), { path, keyword: "oneOf" });
-			}
-		}
-		if (schema.not !== undefined && sub(value, schema.not, path).length === 0) fail("not");
-		if (schema.type !== undefined) {
-			const types = Array.isArray(schema.type) ? schema.type : [schema.type];
-			if (!types.some((t) => typeMatches(value, String(t)))) {
-				fail("type");
-				return;
-			}
-		}
-		if (Array.isArray(schema.enum) && !schema.enum.some((e) => equal(e, value))) fail("enum");
-		if ("const" in schema && !equal(schema.const, value)) fail("const");
-		if (typeof value === "string") {
-			const length = [...value].length;
-			if (typeof schema.minLength === "number" && length < schema.minLength) fail("minLength");
-			if (typeof schema.maxLength === "number" && length > schema.maxLength) fail("maxLength");
-			if (typeof schema.pattern === "string" && !this.pattern(schema.pattern).test(value)) fail("pattern");
-		}
-		if (typeof value === "number" && typeof schema.minimum === "number" && value < schema.minimum) fail("minimum");
-		if (typeof value === "number" && typeof schema.maximum === "number" && value > schema.maximum) fail("maximum");
-		if (Array.isArray(value)) {
-			if (typeof schema.minItems === "number" && value.length < schema.minItems) fail("minItems");
-			if (typeof schema.maxItems === "number" && value.length > schema.maxItems) fail("maxItems");
-			if (schema.items !== undefined) value.forEach((item, i) => out.push(...sub(item, schema.items, `${path}[${i}]`)));
-		}
-		if (value && typeof value === "object" && !Array.isArray(value)) {
-			const obj = value as Record<string, unknown>;
-			const props = (schema.properties ?? {}) as Record<string, unknown>;
-			if (Array.isArray(schema.required)) {
-				for (const key of schema.required) if (!(String(key) in obj)) fail("required", `${path}.${String(key)}`);
-			}
-			if (typeof schema.maxProperties === "number" && Object.keys(obj).length > schema.maxProperties) fail("maxProperties");
-			if (schema.propertyNames !== undefined) {
-				for (const key of Object.keys(obj)) if (sub(key, schema.propertyNames, `${path}.${key}`).length) fail("propertyNames", `${path}.${key}`);
-			}
-			for (const [key, v] of Object.entries(obj)) {
-				if (key in props) out.push(...sub(v, props[key], `${path}.${key}`));
-				else if (schema.additionalProperties === false) fail("additionalProperties", `${path}.${key}`);
-				else if (schema.additionalProperties && typeof schema.additionalProperties === "object") {
-					out.push(...sub(v, schema.additionalProperties, `${path}.${key}`));
-				}
-			}
-		}
-	}
-}
-
-exports["SchemaRegistry"] = SchemaRegistry;
-
-});
-
-__def("packages/page-contract/src/spec.ts", function (exports) {
-const pageSpecSchema = __req("packages/page-contract/schema/page-spec.schema.json").default;
-const pagePatchSchema = __req("packages/page-contract/schema/page-patch.schema.json").default;
-const { SchemaRegistry } = __req("packages/page-contract/src/json-schema.ts");
-const { PageContractError, parseDraftPage, parsePage } = __req("packages/page-contract/src/validate.ts");
-const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
-const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
-/** ui8kit/contract commit the vendored schemas come from. */
-const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "9c687c1" } as const;
-
-const registry = new SchemaRegistry();
-registry.add(pageSpecSchema as Record<string, unknown>);
-registry.add(pagePatchSchema as Record<string, unknown>);
-
-const PAGE_SLOTS = (pageSpecSchema as { "x-page-slots": Record<PageBlockKind, PageSlot> })["x-page-slots"];
-
-/** Schema issues of a page (root of page-spec). Empty = the shape is valid; run parsePage for program checks. */
-function pageSpecIssues(input: unknown): SchemaIssue[] {
-	return registry.check(input, PAGE_SPEC_SCHEMA_URL);
-}
-
-/** Schema issues against a page-spec $def (provenance, record, store). */
-function pageSpecDefIssues(input: unknown, def: "provenance" | "record" | "store"): SchemaIssue[] {
-	return registry.check(input, `${PAGE_SPEC_SCHEMA_URL}#/$defs/${def}`);
-}
-
-function pagePatchIssues(input: unknown): SchemaIssue[] {
-	return registry.check(input, PAGE_PATCH_SCHEMA_URL);
-}
-
-/**
- * Page spec gate: the published schema first (code page_spec_invalid with the first schema path),
- * then parsePage for the program checks (duplicate ids, block count, size) and the normalized copy.
- */
-function parsePageSpec(input: unknown, options: { draft?: boolean } = {}): Page {
-	const issues = pageSpecIssues(input);
-	if (issues.length) {
-		const first = issues[0]!;
-		throw new PageContractError("page_spec_invalid", first.path, `page-spec/v1 ${first.keyword} failed`);
-	}
-	return options.draft ? parseDraftPage(input) : parsePage(input);
-}
-
-exports["PAGE_SPEC_SCHEMA_URL"] = PAGE_SPEC_SCHEMA_URL;
-exports["PAGE_PATCH_SCHEMA_URL"] = PAGE_PATCH_SCHEMA_URL;
-exports["PAGE_SPEC_SCHEMA_SOURCE"] = PAGE_SPEC_SCHEMA_SOURCE;
-exports["pagePatchSchema"] = pagePatchSchema;
-exports["pageSpecSchema"] = pageSpecSchema;
-exports["PAGE_SLOTS"] = PAGE_SLOTS;
-exports["pageSpecIssues"] = pageSpecIssues;
-exports["pageSpecDefIssues"] = pageSpecDefIssues;
-exports["pagePatchIssues"] = pagePatchIssues;
-exports["parsePageSpec"] = parsePageSpec;
-
-});
-
-__def("packages/page-contract/schema/page-spec-v2.schema.json", function (exports) {
-  exports.default = {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.buildy.tw/page-spec-v2.schema.json",
-  "title": "Page spec page-spec/v2 — a page as registry items with their props",
-  "x-page-spec-profile": "page-spec/v2",
-  "x-page-spec-version": "2.0.0",
-  "description": "A BuildY page as ONE document: { version: 2, title, slug, locale, seo, blocks: [{ id, item, variant, props }] }. `item` is the registry item of `npx ui8kit add`, `props` are exactly the props of its component, `variant` names the preset of its layout axes. An agent reads it, reads the props schema of an item and writes a new version or an RFC 6902 patch (page-patch-v2.schema.json); the host validates and answers with compiler-style errors { path, expected, got }. Replaces the kind / copy / children model of page-spec/v1 (still published). After the schema, consumers run x-program-checks, then the registry checks x-host-checks.",
-  "x-program-checks": [
-    "duplicate_id",
-    "too_many_blocks",
-    "too_large",
-    "too_deep"
-  ],
-  "x-host-checks": [
-    "unknown_item",
-    "unknown_variant",
-    "no_renderer",
-    "props_invalid"
-  ],
-  "x-limits": {
-    "maxBlocks": 64,
-    "maxIdLength": 63,
-    "maxSlugLength": 48,
-    "maxTitleLength": 160,
-    "maxItemLength": 80,
-    "maxVariantLength": 40,
-    "maxTextLength": 2000,
-    "maxSeoLength": 200,
-    "maxLocaleLength": 16,
-    "maxJsonChars": 200000,
-    "maxDatetimeLength": 40,
-    "maxPropKeys": 64,
-    "maxListItems": 24,
-    "maxDepth": 8
-  },
-  "$ref": "#/$defs/page",
-  "$defs": {
-    "id": {
-      "type": "string",
-      "pattern": "^[a-z][a-z0-9-]{0,62}$",
-      "maxLength": 63,
-      "description": "Lowercase ASCII id of a block, unique in the whole page (page id included; program check duplicate_id). Safe in generated code (data-block-id)."
-    },
-    "item": {
-      "type": "string",
-      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-      "maxLength": 80,
-      "description": "Registry item name as used by `npx ui8kit add <item>` (hero-split, feature-grid, site-footer). The host rejects an item its registry does not have (unknown_item) or cannot render (no_renderer)."
-    },
-    "variant": {
-      "type": "string",
-      "pattern": "^[A-Za-z][A-Za-z0-9-]*$",
-      "maxLength": 40,
-      "description": "A published variant of the item (registry.buildy.tw/variants/v0.json): a named preset of the layout axes of its props (extra, media, columns, tone). Optional: the item's default variant. The host rejects a variant the item does not have (unknown_variant)."
-    },
-    "propText": {
-      "type": "string",
-      "description": "Plain text of a prop. As safeText of page-spec/v1 (control characters, `<` `>`, dangerous URL schemes are rejected) except that `{` and `}` are allowed: registry presets carry templates such as `?paged={0}`.",
-      "pattern": "^[^<>\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]*$",
-      "not": {
-        "anyOf": [
-          {
-            "pattern": "^[\\u0000-\\u0020]*[jJ][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^[\\u0000-\\u0020]*[dD][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^[\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[bB][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^[\\u0000-\\u0020]*[fF][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[lL][\\u0000-\\u0020]*[eE][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^\\s*(?![hH][tT][tT][pP][sS]?://)[A-Za-z][A-Za-z0-9+.\\-]*://"
-          }
-        ]
-      },
-      "maxLength": 2000
-    },
-    "propValue": {
-      "description": "A prop value: plain JSON; strings are plain text (propText). The item's props schema (registry.buildy.tw/props/v0.json) decides what is valid for each prop (x-host-checks props_invalid).",
-      "anyOf": [
-        {
-          "$ref": "#/$defs/propText"
-        },
-        {
-          "type": "number"
-        },
-        {
-          "type": "boolean"
-        },
-        {
-          "type": "null"
-        },
-        {
-          "type": "array",
-          "maxItems": 24,
-          "items": {
-            "$ref": "#/$defs/propValue"
-          }
-        },
-        {
-          "type": "object",
-          "maxProperties": 64,
-          "propertyNames": {
-            "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
-          },
-          "additionalProperties": {
-            "$ref": "#/$defs/propValue"
-          }
-        }
-      ]
-    },
-    "props": {
-      "type": "object",
-      "maxProperties": 64,
-      "propertyNames": {
-        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
-      },
-      "additionalProperties": {
-        "$ref": "#/$defs/propValue"
-      },
-      "description": "Exactly the props of the registry item's component (what `<Item {...props} />` receives, and what the exported code writes). Nothing else lives in a block: no copy slots, no rows, no children. A host that inserts a block without props fills the sample props of the variant (the preset of its layout axes plus the minimum the props schema requires); layout axes are props like any other."
-    },
-    "block": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "item"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "item": {
-          "$ref": "#/$defs/item"
-        },
-        "variant": {
-          "$ref": "#/$defs/variant"
-        },
-        "props": {
-          "$ref": "#/$defs/props"
-        }
-      },
-      "description": "One section of the page: a registry item, the variant it was picked as and its props."
-    },
-    "seo": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "title": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 200
-        },
-        "description": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 200
-        }
-      }
-    },
-    "page": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "version",
-        "slug",
-        "title",
-        "locale",
-        "blocks"
-      ],
-      "properties": {
-        "version": {
-          "const": 2,
-          "description": "Document version: 2."
-        },
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "slug": {
-          "type": "string",
-          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          "minLength": 1,
-          "maxLength": 48,
-          "description": "Ordinary page slug, no query or UTM variants."
-        },
-        "status": {
-          "enum": [
-            "draft",
-            "pending",
-            "scheduled",
-            "published",
-            "archived",
-            "trashed"
-          ],
-          "description": "Lifecycle (optional; a host defaults a new page to draft)."
-        },
-        "title": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 160,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "locale": {
-          "type": "string",
-          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
-          "maxLength": 16,
-          "description": "BCP 47 language of the page copy; follows the language the author writes in."
-        },
-        "seo": {
-          "$ref": "#/$defs/seo"
-        },
-        "createdAt": {
-          "type": "string",
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-          "maxLength": 40
-        },
-        "updatedAt": {
-          "type": "string",
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-          "maxLength": 40
-        },
-        "blocks": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/block"
-          },
-          "maxItems": 64,
-          "description": "Sections in render order. The exported project (page file + the block files `npx ui8kit add` writes) is generated from this list."
-        }
-      }
-    },
-    "record": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "One chat's pages in the browser store: the applied page, the pending candidate and the last proposal (page-spec/v2 documents) with their provenance (page-spec/v1 provenance: the Stock screen the page started from and the advisory screen family, never a rule).",
-      "properties": {
-        "applied": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/page"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "candidate": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/page"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "lastProposed": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/page"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "appliedProvenance": {
-          "anyOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "candidateProvenance": {
-          "anyOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "lastProposedProvenance": {
-          "anyOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "selectedBlockId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 63
-        },
-        "revision": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "minimum": 0
-        }
-      }
-    }
-  }
-};
-});
-
-__def("packages/page-contract/schema/page-patch-v2.schema.json", function (exports) {
-  exports.default = {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.buildy.tw/page-patch-v2.schema.json",
-  "title": "Page patch page-patch/v2 — RFC 6902 JSON Patch on a page-spec/v2 document",
-  "x-page-patch-profile": "page-patch/v2",
-  "x-page-spec-version": "2.0.0",
-  "description": "An edit of a page-spec/v2 document as an RFC 6902 JSON Patch: an ordered list of operations applied to a copy of the base page; one failing operation rejects the whole patch. Paths are pointers into the document (title, slug, locale, seo, blocks, blocks/<i>/props/...). The result must be a valid page-spec/v2 document; the host answers a failure with a list of { path, expected, got }. Blocks that no operation touches stay exactly as they are.",
-  "x-limits": {
-    "maxOps": 64,
-    "maxPathLength": 200
-  },
-  "type": "array",
-  "minItems": 1,
-  "maxItems": 64,
-  "items": {
-    "$ref": "#/$defs/op"
-  },
-  "$defs": {
-    "pointer": {
-      "type": "string",
-      "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-      "maxLength": 200
-    },
-    "op": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path",
-            "value"
-          ],
-          "description": "Add value at path (blocks/- appends; blocks/<i> inserts before index i).",
-          "properties": {
-            "op": {
-              "const": "add"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            },
-            "value": {}
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path"
-          ],
-          "description": "Remove the value at path.",
-          "properties": {
-            "op": {
-              "const": "remove"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path",
-            "value"
-          ],
-          "description": "Replace the value at path.",
-          "properties": {
-            "op": {
-              "const": "replace"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            },
-            "value": {}
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path",
-            "from"
-          ],
-          "description": "Move the value at from to path (reorder blocks).",
-          "properties": {
-            "op": {
-              "const": "move"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            },
-            "from": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path",
-            "from"
-          ],
-          "description": "Copy the value at from to path.",
-          "properties": {
-            "op": {
-              "const": "copy"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            },
-            "from": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path",
-            "value"
-          ],
-          "description": "Fail the whole patch unless the value at path equals value.",
-          "properties": {
-            "op": {
-              "const": "test"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            },
-            "value": {}
-          }
-        }
-      ]
-    }
-  }
-};
-});
-
-__def("packages/page-contract/src/v2.ts", function (exports) {
-const pageSpecV2Schema = __req("packages/page-contract/schema/page-spec-v2.schema.json").default;
-const pagePatchV2Schema = __req("packages/page-contract/schema/page-patch-v2.schema.json").default;
-const pageSpecSchema = __req("packages/page-contract/schema/page-spec.schema.json").default;
-const { SchemaRegistry } = __req("packages/page-contract/src/json-schema.ts");
-const { PageContractError } = __req("packages/page-contract/src/validate.ts");
-const PAGE_SPEC_V2_SCHEMA_URL = "https://schema.buildy.tw/page-spec-v2.schema.json";
-const PAGE_PATCH_V2_SCHEMA_URL = "https://schema.buildy.tw/page-patch-v2.schema.json";
-const PAGE_DOCUMENT_VERSION = 2 as const;
-
-const PAGE_V2_LIMITS = (pageSpecV2Schema as { "x-limits": { maxBlocks: number; maxJsonChars: number; maxDepth: number; maxIdLength: number; maxListItems: number; maxPropKeys: number } })["x-limits"];
-const PAGE_PATCH_V2_LIMITS = (pagePatchV2Schema as { "x-limits": { maxOps: number } })["x-limits"];
-
-const registry = new SchemaRegistry();
-registry.add(pageSpecSchema as Record<string, unknown>);
-registry.add(pageSpecV2Schema as Record<string, unknown>);
-registry.add(pagePatchV2Schema as Record<string, unknown>);
-
-function pageV2Issues(input: unknown): SchemaIssue[] {
-	return registry.check(input, PAGE_SPEC_V2_SCHEMA_URL);
-}
-
-/** Schema issues against a page-spec/v2 $def (block, props, record, ...). */
-function pageV2DefIssues(input: unknown, def: "block" | "props" | "record" | "page"): SchemaIssue[] {
-	return registry.check(input, `${PAGE_SPEC_V2_SCHEMA_URL}#/$defs/${def}`);
-}
-
-/** Schema issues of an RFC 6902 page patch. */
-function pagePatchV2Issues(input: unknown): SchemaIssue[] {
-	return registry.check(input, PAGE_PATCH_V2_SCHEMA_URL);
-}
-
-function depthOf(value: unknown, depth = 0): number {
-	if (value === null || typeof value !== "object") return depth;
-	const children = Array.isArray(value) ? value : Object.values(value as Record<string, unknown>);
-	return children.reduce<number>((max, child) => Math.max(max, depthOf(child, depth + 1)), depth);
-}
-
-/** Program checks (x-program-checks) after the schema: duplicate ids, block count, size, props depth. */
-function pageV2ProgramIssues(page: PageV2): SchemaIssue[] {
-	const out: SchemaIssue[] = [];
-	const seen = new Set<string>();
-	if (page.id) seen.add(page.id);
-	page.blocks.forEach((block, index) => {
-		if (seen.has(block.id)) out.push({ path: `$.blocks[${index}].id`, keyword: "duplicate_id", expected: "an id no other block (or the page) uses" });
-		seen.add(block.id);
-		if (block.props && depthOf(block.props) > PAGE_V2_LIMITS.maxDepth) out.push({ path: `$.blocks[${index}].props`, keyword: "too_deep", expected: `props nested at most ${PAGE_V2_LIMITS.maxDepth} levels` });
-	});
-	if (page.blocks.length > PAGE_V2_LIMITS.maxBlocks) out.push({ path: "$.blocks", keyword: "too_many_blocks", expected: `at most ${PAGE_V2_LIMITS.maxBlocks} blocks` });
-	if (JSON.stringify(page).length > PAGE_V2_LIMITS.maxJsonChars) out.push({ path: "$", keyword: "too_large", expected: `at most ${PAGE_V2_LIMITS.maxJsonChars} characters of JSON` });
-	return out;
-}
-
-/** Strict gate of a page-spec/v2 document: the published schema, then the program checks (throws PageContractError). */
-function parsePageV2(input: unknown): PageV2 {
-	const issues = pageV2Issues(input);
-	if (issues.length) throw new PageContractError("page_spec_invalid", issues[0]!.path, `page-spec/v2 ${issues[0]!.keyword} failed`);
-	const page = input as PageV2;
-	const program = pageV2ProgramIssues(page);
-	if (program.length) throw new PageContractError(program[0]!.keyword, program[0]!.path, `page-spec/v2 ${program[0]!.keyword}`);
-	return page;
-}
-
-exports["PAGE_SPEC_V2_SCHEMA_URL"] = PAGE_SPEC_V2_SCHEMA_URL;
-exports["PAGE_PATCH_V2_SCHEMA_URL"] = PAGE_PATCH_V2_SCHEMA_URL;
-exports["PAGE_DOCUMENT_VERSION"] = PAGE_DOCUMENT_VERSION;
-exports["PAGE_V2_LIMITS"] = PAGE_V2_LIMITS;
-exports["PAGE_PATCH_V2_LIMITS"] = PAGE_PATCH_V2_LIMITS;
-exports["pagePatchV2Schema"] = pagePatchV2Schema;
-exports["pageSpecV2Schema"] = pageSpecV2Schema;
-exports["pageV2Issues"] = pageV2Issues;
-exports["pageV2DefIssues"] = pageV2DefIssues;
-exports["pagePatchV2Issues"] = pagePatchV2Issues;
-exports["pageV2ProgramIssues"] = pageV2ProgramIssues;
-exports["parsePageV2"] = parsePageV2;
-
-});
-
-__def("packages/page-contract/src/index.ts", function (exports) {
-exports["PAGE_BLOCK_KINDS"] = __req("packages/page-contract/src/types.ts")["PAGE_BLOCK_KINDS"];
-exports["PAGE_CATALOG_LIMITS"] = __req("packages/page-contract/src/types.ts")["PAGE_CATALOG_LIMITS"];
-exports["PAGE_COPY_KEYS"] = __req("packages/page-contract/src/types.ts")["PAGE_COPY_KEYS"];
-exports["PAGE_LAYOUT_VERSION"] = __req("packages/page-contract/src/types.ts")["PAGE_LAYOUT_VERSION"];
-exports["PAGE_LIMITS"] = __req("packages/page-contract/src/types.ts")["PAGE_LIMITS"];
-exports["PAGE_PROPS_LIMITS"] = __req("packages/page-contract/src/types.ts")["PAGE_PROPS_LIMITS"];
-exports["PAGE_PROPS_POINTER_PATTERN"] = __req("packages/page-contract/src/types.ts")["PAGE_PROPS_POINTER_PATTERN"];
-exports["PAGE_STATUSES"] = __req("packages/page-contract/src/types.ts")["PAGE_STATUSES"];
-exports["blocksOf"] = __req("packages/page-contract/src/types.ts")["blocksOf"];
-exports["isPage"] = __req("packages/page-contract/src/validate.ts")["isPage"];
-exports["PageContractError"] = __req("packages/page-contract/src/validate.ts")["PageContractError"];
-exports["parseDraftPage"] = __req("packages/page-contract/src/validate.ts")["parseDraftPage"];
-exports["parsePage"] = __req("packages/page-contract/src/validate.ts")["parsePage"];
-exports["PAGE_PATCH_SCHEMA_URL"] = __req("packages/page-contract/src/spec.ts")["PAGE_PATCH_SCHEMA_URL"];
-exports["PAGE_SLOTS"] = __req("packages/page-contract/src/spec.ts")["PAGE_SLOTS"];
-exports["PAGE_SPEC_SCHEMA_SOURCE"] = __req("packages/page-contract/src/spec.ts")["PAGE_SPEC_SCHEMA_SOURCE"];
-exports["PAGE_SPEC_SCHEMA_URL"] = __req("packages/page-contract/src/spec.ts")["PAGE_SPEC_SCHEMA_URL"];
-exports["pagePatchIssues"] = __req("packages/page-contract/src/spec.ts")["pagePatchIssues"];
-exports["pagePatchSchema"] = __req("packages/page-contract/src/spec.ts")["pagePatchSchema"];
-exports["pageSpecDefIssues"] = __req("packages/page-contract/src/spec.ts")["pageSpecDefIssues"];
-exports["pageSpecIssues"] = __req("packages/page-contract/src/spec.ts")["pageSpecIssues"];
-exports["pageSpecSchema"] = __req("packages/page-contract/src/spec.ts")["pageSpecSchema"];
-exports["parsePageSpec"] = __req("packages/page-contract/src/spec.ts")["parsePageSpec"];
-exports["SchemaRegistry"] = __req("packages/page-contract/src/json-schema.ts")["SchemaRegistry"];
-exports["PAGE_DOCUMENT_VERSION"] = __req("packages/page-contract/src/v2.ts")["PAGE_DOCUMENT_VERSION"];
-exports["PAGE_PATCH_V2_LIMITS"] = __req("packages/page-contract/src/v2.ts")["PAGE_PATCH_V2_LIMITS"];
-exports["PAGE_PATCH_V2_SCHEMA_URL"] = __req("packages/page-contract/src/v2.ts")["PAGE_PATCH_V2_SCHEMA_URL"];
-exports["PAGE_SPEC_V2_SCHEMA_URL"] = __req("packages/page-contract/src/v2.ts")["PAGE_SPEC_V2_SCHEMA_URL"];
-exports["PAGE_V2_LIMITS"] = __req("packages/page-contract/src/v2.ts")["PAGE_V2_LIMITS"];
-exports["pagePatchV2Issues"] = __req("packages/page-contract/src/v2.ts")["pagePatchV2Issues"];
-exports["pagePatchV2Schema"] = __req("packages/page-contract/src/v2.ts")["pagePatchV2Schema"];
-exports["pageV2DefIssues"] = __req("packages/page-contract/src/v2.ts")["pageV2DefIssues"];
-exports["pageV2Issues"] = __req("packages/page-contract/src/v2.ts")["pageV2Issues"];
-exports["pageV2ProgramIssues"] = __req("packages/page-contract/src/v2.ts")["pageV2ProgramIssues"];
-exports["pageSpecV2Schema"] = __req("packages/page-contract/src/v2.ts")["pageSpecV2Schema"];
-exports["parsePageV2"] = __req("packages/page-contract/src/v2.ts")["parsePageV2"];
-
-
-
-});
-
 __def("packages/builder-core/src/catalog/renderer-kind.ts", function (exports) {
-const { PAGE_BLOCK_KINDS } = __req("packages/page-contract/src/index.ts");
 const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
-const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
+const KIND_SET = new Set<string>(catalogSnapshot.rendererKinds);
 
 /**
  * Renderer kind of a Stock block label (registry metadata: a ranking / role hint). A leaf module on purpose: the bundled
@@ -27065,10 +24504,6 @@ const { catalogSources } = __req("packages/builder-core/src/catalog/sources.ts")
 const { catalogEntryBySpec } = __req("packages/builder-core/src/catalog/sources.ts");
 const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/renderer-kind.ts");
 const { hasPropsSchema } = __req("packages/builder-core/src/catalog/props-schema.ts");
-function chromeRole(kind: string): "header" | "footer" | null {
-	return kind === "nav" || kind === "sidenav" ? "header" : kind === "footer" || kind === "bottomnav" ? "footer" : null;
-}
-
 const CACHE = new Map<string, ItemInfo | null>();
 
 /** What the registry says about an item, or null when the registry snapshot has no such renderable item. */
@@ -27087,7 +24522,7 @@ function itemInfo(item: string): ItemInfo | null {
 			defaultVariant: block.defaultVariant,
 			variants: Object.keys(block.variants),
 			kind,
-			role: kind ? chromeRole(kind) : null
+			role: entry?.role ?? null
 		};
 	}
 	CACHE.set(item, info);
@@ -28049,6 +25484,2679 @@ exports["STOCK_SEARCH_PAGE_SIZE"] = STOCK_SEARCH_PAGE_SIZE;
 exports["STOCK_SEARCH_MAX_PAGE_SIZE"] = STOCK_SEARCH_MAX_PAGE_SIZE;
 exports["STOCK_SEARCH_FACETS"] = STOCK_SEARCH_FACETS;
 exports["stockSearch"] = stockSearch;
+
+});
+
+__def("packages/page-contract/src/types.ts", function (exports) {
+
+const PAGE_LAYOUT_VERSION = 1 as const;
+
+/** Closed allowlist from implemented Preview components (PreviewBlock / PreviewItem). */
+const PAGE_BLOCK_KINDS = [
+	"nav",
+	"nav-link",
+	"hero",
+	"features",
+	"feature",
+	"menu",
+	"dish",
+	"hours",
+	"cta",
+	"footer",
+	"pagehead",
+	"overview",
+	"metrics",
+	"metric",
+	"chart",
+	"activity",
+	"activity-item",
+	"sidenav",
+	"bottomnav"
+] as const;
+
+const PAGE_COPY_KEYS = [
+	"eyebrow",
+	"headline",
+	"lede",
+	"action",
+	"note",
+	"brand",
+	"contact",
+	"legal",
+	"days",
+	"address",
+	"value",
+	"badge",
+	"icon",
+	"href"
+] as const;
+
+const PAGE_STATUSES = [
+	"draft",
+	"pending",
+	"scheduled",
+	"published",
+	"archived",
+	"trashed"
+] as const;
+
+const PAGE_LIMITS = {
+	maxBlocks: 64,
+	maxDepth: 4,
+	maxIdLength: 63,
+	maxSlugLength: 48,
+	maxTitleLength: 160,
+	maxSummaryLength: 500,
+	maxCopyLength: 2000,
+	maxSeoLength: 200,
+	maxLocaleLength: 16,
+	maxJsonChars: 65_536
+} as const;
+
+/** Lengths of the page-spec 1.1.0 catalog fields (catalogBlock, variant, copy.icon). */
+const PAGE_CATALOG_LIMITS = {
+	maxCatalogBlockLength: 80,
+	maxVariantLength: 40,
+	maxIconLength: 64
+} as const;
+
+const PAGE_PROPS_LIMITS = { maxEntries: 64, maxPointerLength: 200, maxListItems: 24, maxObjectKeys: 32 } as const;
+const PAGE_PROPS_POINTER_PATTERN = /^(?:\/(?:[A-Za-z][A-Za-z0-9_]{0,47}|[0-9]{1,2}))+$/;
+
+function blocksOf(page: Page): PageBlock[] {
+	return page.layout.blocks;
+}
+
+exports["PAGE_LAYOUT_VERSION"] = PAGE_LAYOUT_VERSION;
+exports["PAGE_BLOCK_KINDS"] = PAGE_BLOCK_KINDS;
+exports["PAGE_COPY_KEYS"] = PAGE_COPY_KEYS;
+exports["PAGE_STATUSES"] = PAGE_STATUSES;
+exports["PAGE_LIMITS"] = PAGE_LIMITS;
+exports["PAGE_CATALOG_LIMITS"] = PAGE_CATALOG_LIMITS;
+exports["PAGE_PROPS_LIMITS"] = PAGE_PROPS_LIMITS;
+exports["PAGE_PROPS_POINTER_PATTERN"] = PAGE_PROPS_POINTER_PATTERN;
+exports["blocksOf"] = blocksOf;
+
+});
+
+__def("packages/page-contract/src/validate.ts", function (exports) {
+const { PAGE_BLOCK_KINDS, PAGE_CATALOG_LIMITS, PAGE_COPY_KEYS, PAGE_LAYOUT_VERSION, PAGE_LIMITS, PAGE_PROPS_LIMITS, PAGE_PROPS_POINTER_PATTERN, PAGE_STATUSES } = __req("packages/page-contract/src/types.ts");
+class PageContractError extends Error {
+	code: string;
+	path: string;
+
+	constructor(code: string, path: string, message: string) {
+		super(`${code} at ${path}: ${message}`);
+		this.name = "PageContractError";
+		this.code = code;
+		this.path = path;
+	}
+}
+
+const PAGE_KEYS = new Set([
+	"id",
+	"slug",
+	"status",
+	"title",
+	"layout",
+	"seo",
+	"locale",
+	"createdAt",
+	"updatedAt"
+]);
+const LAYOUT_KEYS = new Set(["version", "blocks"]);
+const BLOCK_KEYS = new Set(["id", "kind", "title", "summary", "catalogBlock", "variant", "copy", "props", "children"]);
+const PROP_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9_]{0,47}$/;
+const SEO_KEYS = new Set(["title", "description"]);
+const COPY_KEY_SET = new Set<string>(PAGE_COPY_KEYS);
+const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
+const STATUS_SET = new Set<string>(PAGE_STATUSES);
+
+const ID_PATTERN = /^[a-z][a-z0-9-]{0,62}$/;
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const LOCALE_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
+const DATETIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/;
+const ALLOWED_URL_SCHEMES = new Set(["http:", "https:", "mailto:"]);
+const DANGEROUS_URL_SCHEMES = ["javascript:", "data:", "vbscript:", "file:"] as const;
+const MARKUP_PATTERN = /[<>{}]|<\?/;
+const URL_SHAPED_AT_START = /^[a-z][a-z0-9+.-]*:\/\//;
+const CATALOG_BLOCK_PATTERN = /^block\.[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const VARIANT_PATTERN = /^[A-Za-z][A-Za-z0-9-]*$/;
+const ICON_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const HREF_PATTERN = /^(?:#|\/|https?:\/\/|mailto:)/;
+
+function fail(code: string, path: string, message: string): never {
+	throw new PageContractError(code, path, message);
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+	if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
+	const proto = Object.getPrototypeOf(value);
+	return proto === Object.prototype || proto === null;
+}
+
+function asObject(value: unknown, path: string): Record<string, unknown> {
+	if (!isPlainObject(value)) fail("invalid_type", path, "expected object");
+	return value;
+}
+
+function assertOnlyKeys(obj: Record<string, unknown>, allowed: ReadonlySet<string>, path: string): void {
+	for (const key of Object.keys(obj)) {
+		if (!allowed.has(key)) fail("unexpected_key", path, `unexpected key "${key}"`);
+	}
+}
+
+function requirePresent(obj: Record<string, unknown>, key: string, path: string): unknown {
+	if (!(key in obj)) fail("missing_field", path, `missing "${key}"`);
+	return obj[key];
+}
+
+function asString(value: unknown, path: string): string {
+	if (typeof value !== "string") fail("invalid_type", path, "expected string");
+	return value;
+}
+
+function assertPlainText(value: string, path: string): void {
+	if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(value)) {
+		fail("unsafe_text", path, "control characters are not allowed");
+	}
+	if (MARKUP_PATTERN.test(value)) {
+		fail("unsafe_text", path, "markup or template syntax is not allowed");
+	}
+}
+
+/**
+ * Injection: reject javascript/data/vbscript/file even when whitespace is used to hide the scheme.
+ * URL-shaped values: scheme + "://" (http/https only) or mailto:. Prose with a colon is not a URL.
+ */
+function assertSafeUrlPolicy(value: string, path: string): void {
+	const collapsed = value.replace(/[\u0000-\u0020]/g, "").toLowerCase();
+	for (const scheme of DANGEROUS_URL_SCHEMES) {
+		if (collapsed.startsWith(scheme)) {
+			fail("unsafe_url", path, `scheme "${scheme}" is not allowed`);
+		}
+	}
+	const trimmed = value.trim().toLowerCase();
+	if (trimmed.startsWith("mailto:")) return;
+	const urlShaped = URL_SHAPED_AT_START.exec(trimmed);
+	if (!urlShaped) return;
+	const scheme = urlShaped[0].slice(0, -2);
+	if (!ALLOWED_URL_SCHEMES.has(scheme)) {
+		fail("unsafe_url", path, `scheme "${scheme}" is not allowed`);
+	}
+}
+
+function parseBoundedText(
+	value: unknown,
+	path: string,
+	maxLength: number,
+	options: { required?: boolean; pattern?: RegExp; patternCode?: string } = {}
+): string {
+	const text = asString(value, path);
+	if (options.required && text.trim() === "") {
+		fail("empty_required", path, "must be non-empty");
+	}
+	if (text.length > maxLength) fail("too_long", path, `exceeds ${maxLength} characters`);
+	assertPlainText(text, path);
+	assertSafeUrlPolicy(text, path);
+	if (options.pattern && !options.pattern.test(text)) {
+		fail(options.patternCode ?? "invalid_type", path, "value does not match required pattern");
+	}
+	return text;
+}
+
+function parseId(value: unknown, path: string, seen: Set<string>): string {
+	const id = parseBoundedText(value, path, PAGE_LIMITS.maxIdLength, {
+		required: true,
+		pattern: ID_PATTERN,
+		patternCode: "invalid_id"
+	});
+	if (seen.has(id)) fail("duplicate_id", path, `duplicate id "${id}"`);
+	seen.add(id);
+	return id;
+}
+
+function parseCopy(value: unknown, path: string): PageBlockCopy {
+	const obj = asObject(value, path);
+	assertOnlyKeys(obj, COPY_KEY_SET, path);
+	const copy: PageBlockCopy = {};
+	for (const key of PAGE_COPY_KEYS) {
+		if (!(key in obj)) continue;
+		if (key === "icon") {
+			copy.icon = parseBoundedText(obj.icon, `${path}.icon`, PAGE_CATALOG_LIMITS.maxIconLength, { pattern: ICON_PATTERN, patternCode: "invalid_icon" });
+		} else if (key === "href") {
+			copy.href = parseBoundedText(obj.href, `${path}.href`, PAGE_LIMITS.maxCopyLength, { pattern: HREF_PATTERN, patternCode: "invalid_href" });
+		} else {
+			copy[key] = parseBoundedText(obj[key], `${path}.${key}`, PAGE_LIMITS.maxCopyLength);
+		}
+	}
+	return copy;
+}
+
+function parsePropValue(value: unknown, path: string, depth: number): PagePropValue {
+	if (depth > 8) fail("too_deep", path, "props value nested deeper than 8");
+	if (value === null || typeof value === "boolean") return value;
+	if (typeof value === "number") {
+		if (!Number.isFinite(value)) fail("invalid_type", path, "expected a finite number");
+		return value;
+	}
+	if (typeof value === "string") return parseBoundedText(value, path, PAGE_LIMITS.maxCopyLength);
+	if (Array.isArray(value)) {
+		if (value.length > PAGE_PROPS_LIMITS.maxListItems) fail("too_many_items", path, `more than ${PAGE_PROPS_LIMITS.maxListItems} items`);
+		return value.map((item, index) => parsePropValue(item, `${path}[${index}]`, depth + 1));
+	}
+	const obj = asObject(value, path);
+	const keys = Object.keys(obj);
+	if (keys.length > PAGE_PROPS_LIMITS.maxObjectKeys) fail("too_many_keys", path, `more than ${PAGE_PROPS_LIMITS.maxObjectKeys} keys`);
+	const out: Record<string, PagePropValue> = {};
+	for (const key of keys) {
+		if (!PROP_KEY_PATTERN.test(key)) fail("invalid_prop_key", `${path}.${key}`, "not a prop name");
+		out[key] = parsePropValue(obj[key], `${path}.${key}`, depth + 1);
+	}
+	return out;
+}
+
+/** page-spec 1.3.0 block props: pointer -> plain JSON (the props schema of the registry item is a host check). */
+function parseProps(value: unknown, path: string): Record<string, PagePropValue> {
+	const obj = asObject(value, path);
+	const keys = Object.keys(obj);
+	if (keys.length > PAGE_PROPS_LIMITS.maxEntries) fail("too_many_keys", path, `more than ${PAGE_PROPS_LIMITS.maxEntries} overrides`);
+	const out: Record<string, PagePropValue> = {};
+	for (const key of keys) {
+		if (key.length > PAGE_PROPS_LIMITS.maxPointerLength || !PAGE_PROPS_POINTER_PATTERN.test(key)) fail("invalid_props_pointer", `${path}.${key}`, "not a props JSON Pointer");
+		out[key] = parsePropValue(obj[key], `${path}["${key}"]`, 1);
+	}
+	return out;
+}
+
+function parseBlock(
+	value: unknown,
+	path: string,
+	depth: number,
+	seen: Set<string>,
+	counts: { blocks: number }
+): PageBlock {
+	if (depth > PAGE_LIMITS.maxDepth) {
+		fail("too_deep", path, `tree deeper than ${PAGE_LIMITS.maxDepth}`);
+	}
+	counts.blocks += 1;
+	if (counts.blocks > PAGE_LIMITS.maxBlocks) {
+		fail("too_many_blocks", path, `more than ${PAGE_LIMITS.maxBlocks} blocks`);
+	}
+
+	const obj = asObject(value, path);
+	assertOnlyKeys(obj, BLOCK_KEYS, path);
+
+	const id = parseId(requirePresent(obj, "id", path), `${path}.id`, seen);
+	const kindRaw = asString(requirePresent(obj, "kind", path), `${path}.kind`);
+	if (!KIND_SET.has(kindRaw)) {
+		fail("unsupported_kind", `${path}.kind`, `unsupported block kind "${kindRaw}"`);
+	}
+	const kind = kindRaw as PageBlockKind;
+	const title = parseBoundedText(requirePresent(obj, "title", path), `${path}.title`, PAGE_LIMITS.maxTitleLength, {
+		required: true
+	});
+	const summary = parseBoundedText(
+		requirePresent(obj, "summary", path),
+		`${path}.summary`,
+		PAGE_LIMITS.maxSummaryLength,
+		{ required: true }
+	);
+
+	const block: PageBlock = { id, kind, title, summary };
+
+	if ("catalogBlock" in obj) {
+		block.catalogBlock = parseBoundedText(obj.catalogBlock, `${path}.catalogBlock`, PAGE_CATALOG_LIMITS.maxCatalogBlockLength, {
+			required: true,
+			pattern: CATALOG_BLOCK_PATTERN,
+			patternCode: "invalid_catalog_block"
+		});
+	}
+	if ("variant" in obj) {
+		block.variant = parseBoundedText(obj.variant, `${path}.variant`, PAGE_CATALOG_LIMITS.maxVariantLength, {
+			required: true,
+			pattern: VARIANT_PATTERN,
+			patternCode: "invalid_variant"
+		});
+	}
+	if ("copy" in obj) {
+		block.copy = parseCopy(obj.copy, `${path}.copy`);
+	}
+	if ("props" in obj) {
+		if (depth !== 1) fail("unexpected_key", path, 'unexpected key "props" (top-level blocks only)');
+		block.props = parseProps(obj.props, `${path}.props`);
+	}
+	if ("children" in obj) {
+		if (!Array.isArray(obj.children)) fail("invalid_type", `${path}.children`, "expected array");
+		block.children = obj.children.map((child, index) =>
+			parseBlock(child, `${path}.children[${index}]`, depth + 1, seen, counts)
+		);
+	}
+	return block;
+}
+
+function parseSeo(value: unknown, path: string): PageSeo {
+	const obj = asObject(value, path);
+	assertOnlyKeys(obj, SEO_KEYS, path);
+	const seo: PageSeo = {};
+	if ("title" in obj) {
+		seo.title = parseBoundedText(obj.title, `${path}.title`, PAGE_LIMITS.maxSeoLength);
+	}
+	if ("description" in obj) {
+		seo.description = parseBoundedText(obj.description, `${path}.description`, PAGE_LIMITS.maxSeoLength);
+	}
+	return seo;
+}
+
+function parseLayout(value: unknown, path: string, seen: Set<string>): PageLayout {
+	const obj = asObject(value, path);
+	assertOnlyKeys(obj, LAYOUT_KEYS, path);
+	const version = requirePresent(obj, "version", path);
+	if (typeof version !== "number" || !Number.isInteger(version)) {
+		fail("invalid_type", `${path}.version`, "expected integer");
+	}
+	if (version !== PAGE_LAYOUT_VERSION) {
+		fail("unsupported_version", `${path}.version`, `unsupported layout.version ${String(version)}`);
+	}
+	const blocksRaw = requirePresent(obj, "blocks", path);
+	if (!Array.isArray(blocksRaw)) fail("invalid_type", `${path}.blocks`, "expected array");
+	const counts = { blocks: 0 };
+	const blocks = blocksRaw.map((block, index) =>
+		parseBlock(block, `${path}.blocks[${index}]`, 1, seen, counts)
+	);
+	return { version: PAGE_LAYOUT_VERSION, blocks };
+}
+
+/**
+ * Strict runtime parse of an unknown Store / adapter payload into Page.
+ * Reconstructs a plain object so unknown keys cannot leak through.
+ */
+function parsePage(input: unknown): Page {
+	if (typeof input === "string" && input.length > PAGE_LIMITS.maxJsonChars) {
+		fail("too_large", "$", "payload exceeds size limit");
+	}
+	let encoded: string;
+	try {
+		encoded = JSON.stringify(input);
+	} catch {
+		fail("invalid_type", "$", "value is not JSON-serializable");
+	}
+	if (encoded.length > PAGE_LIMITS.maxJsonChars) {
+		fail("too_large", "$", "payload exceeds size limit");
+	}
+
+	const obj = asObject(input, "$");
+	assertOnlyKeys(obj, PAGE_KEYS, "$");
+
+	const seen = new Set<string>();
+	const id = parseId(requirePresent(obj, "id", "$"), "id", seen);
+	const slug = parseBoundedText(requirePresent(obj, "slug", "$"), "slug", PAGE_LIMITS.maxSlugLength, {
+		required: true,
+		pattern: SLUG_PATTERN,
+		patternCode: "invalid_slug"
+	});
+	const statusRaw = asString(requirePresent(obj, "status", "$"), "status");
+	if (!STATUS_SET.has(statusRaw)) {
+		fail("invalid_status", "status", `unsupported status "${statusRaw}"`);
+	}
+	const status = statusRaw as PageStatus;
+	const title = parseBoundedText(requirePresent(obj, "title", "$"), "title", PAGE_LIMITS.maxTitleLength, {
+		required: true
+	});
+	const layout = parseLayout(requirePresent(obj, "layout", "$"), "layout", seen);
+	const seo = parseSeo(requirePresent(obj, "seo", "$"), "seo");
+	const locale = parseBoundedText(requirePresent(obj, "locale", "$"), "locale", PAGE_LIMITS.maxLocaleLength, {
+		required: true,
+		pattern: LOCALE_PATTERN,
+		patternCode: "invalid_locale"
+	});
+	const createdAt = parseBoundedText(requirePresent(obj, "createdAt", "$"), "createdAt", 40, {
+		required: true,
+		pattern: DATETIME_PATTERN,
+		patternCode: "invalid_datetime"
+	});
+	const updatedAt = parseBoundedText(requirePresent(obj, "updatedAt", "$"), "updatedAt", 40, {
+		required: true,
+		pattern: DATETIME_PATTERN,
+		patternCode: "invalid_datetime"
+	});
+
+	return { id, slug, status, title, layout, seo, locale, createdAt, updatedAt };
+}
+
+/** Ordinary draft creation: same Page contract, status must be draft. */
+function parseDraftPage(input: unknown): Page {
+	const page = parsePage(input);
+	if (page.status !== "draft") {
+		fail("invalid_status", "status", 'ordinary draft creation requires status "draft"');
+	}
+	return page;
+}
+
+function isPage(input: unknown): input is Page {
+	try {
+		parsePage(input);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+exports["PageContractError"] = PageContractError;
+exports["parsePage"] = parsePage;
+exports["parseDraftPage"] = parseDraftPage;
+exports["isPage"] = isPage;
+
+});
+
+__def("packages/page-contract/schema/page-spec.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.buildy.tw/page-spec.schema.json",
+  "title": "Page spec page-spec/v1 — a page as Stock catalog blocks with their copy",
+  "x-page-spec-profile": "page-spec/v1",
+  "x-page-spec-version": "1.5.0",
+  "description": "The primary artifact of a BuildY page: an agent proposes it (propose_layout), the host validates it against the Stock catalog, saves it, and regenerates code from it for a UI8Kit target (Svelte today). History, edits (page-patch/v1) and rollback work on this JSON; code is never the source. Root: the page (identical to buildytech/chat Page DTO, layout.version 1: every saved page validates unchanged). $defs: provenance, record and store describe the browser page store. Not a Codex v0.4 entry. After the schema, consumers run x-program-checks (duplicate ids, block count, payload size). x-page-slots lists the copy keys each kind renders and the rows of list kinds; a saved page may hold other copy keys, a patch may only write slots.",
+  "x-program-checks": [
+    "duplicate_id",
+    "too_many_blocks",
+    "too_large"
+  ],
+  "x-host-checks": [
+    "props_invalid"
+  ],
+  "x-limits": {
+    "maxBlocks": 64,
+    "maxDepth": 4,
+    "maxIdLength": 63,
+    "maxSlugLength": 48,
+    "maxTitleLength": 160,
+    "maxSummaryLength": 500,
+    "maxCopyLength": 2000,
+    "maxSeoLength": 200,
+    "maxLocaleLength": 16,
+    "maxJsonChars": 65536,
+    "maxDatetimeLength": 40
+  },
+  "x-page-slots": {
+    "nav": {
+      "copy": [
+        "brand",
+        "badge"
+      ],
+      "items": {
+        "kind": "nav-link",
+        "max": 6,
+        "fields": [
+          "label",
+          "group"
+        ]
+      }
+    },
+    "sidenav": {
+      "copy": [
+        "brand",
+        "badge"
+      ],
+      "items": {
+        "kind": "nav-link",
+        "max": 8,
+        "fields": [
+          "label",
+          "group"
+        ]
+      }
+    },
+    "bottomnav": {
+      "copy": [
+        "badge"
+      ],
+      "items": {
+        "kind": "nav-link",
+        "max": 5,
+        "fields": [
+          "label",
+          "group"
+        ]
+      }
+    },
+    "hero": {
+      "copy": [
+        "eyebrow",
+        "headline",
+        "lede",
+        "action",
+        "badge"
+      ]
+    },
+    "pagehead": {
+      "copy": [
+        "headline",
+        "lede",
+        "badge"
+      ]
+    },
+    "overview": {
+      "copy": [
+        "lede",
+        "badge"
+      ],
+      "items": {
+        "kind": "metric",
+        "max": 4,
+        "fields": [
+          "label",
+          "value",
+          "note"
+        ]
+      }
+    },
+    "metrics": {
+      "copy": [
+        "lede",
+        "badge"
+      ],
+      "items": {
+        "kind": "metric",
+        "max": 6,
+        "fields": [
+          "label",
+          "value",
+          "note"
+        ]
+      }
+    },
+    "chart": {
+      "copy": [
+        "lede",
+        "badge"
+      ],
+      "items": {
+        "kind": "metric",
+        "max": 12,
+        "fields": [
+          "label",
+          "value",
+          "note"
+        ]
+      }
+    },
+    "activity": {
+      "copy": [
+        "lede",
+        "badge"
+      ],
+      "items": {
+        "kind": "activity-item",
+        "max": 8,
+        "fields": [
+          "label",
+          "detail",
+          "note"
+        ]
+      }
+    },
+    "features": {
+      "copy": [
+        "action",
+        "href",
+        "badge"
+      ],
+      "items": {
+        "kind": "feature",
+        "max": 6,
+        "fields": [
+          "label",
+          "detail",
+          "icon"
+        ]
+      }
+    },
+    "menu": {
+      "copy": [
+        "badge"
+      ],
+      "items": {
+        "kind": "dish",
+        "max": 8,
+        "fields": [
+          "label",
+          "detail"
+        ]
+      }
+    },
+    "hours": {
+      "copy": [
+        "days",
+        "address",
+        "badge"
+      ]
+    },
+    "cta": {
+      "copy": [
+        "lede",
+        "action",
+        "note",
+        "badge"
+      ]
+    },
+    "footer": {
+      "copy": [
+        "contact",
+        "legal",
+        "badge"
+      ]
+    },
+    "nav-link": {
+      "copy": [
+        "eyebrow",
+        "badge"
+      ]
+    },
+    "feature": {
+      "copy": [
+        "icon",
+        "badge"
+      ]
+    },
+    "dish": {
+      "copy": [
+        "badge"
+      ]
+    },
+    "metric": {
+      "copy": [
+        "value",
+        "note",
+        "badge"
+      ]
+    },
+    "activity-item": {
+      "copy": [
+        "note",
+        "badge"
+      ]
+    }
+  },
+  "$ref": "#/$defs/page",
+  "$defs": {
+    "safeText": {
+      "type": "string",
+      "description": "Plain text. Rejected (parsePage codes): control characters other than tab, LF and CR, and any of < > { } (unsafe_text); a value that starts with javascript:, data:, vbscript: or file: even with whitespace or control characters between the letters (unsafe_url); a value that starts with <scheme>:// other than http(s) (unsafe_url). mailto: is allowed. Prose with a colon (`Hours: 11:00`) is not a URL.",
+      "pattern": "^[^<>{}\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]*$",
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^[\\u0000-\\u0020]*[jJ][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[dD][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[bB][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[fF][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[lL][\\u0000-\\u0020]*[eE][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^\\s*(?![hH][tT][tT][pP][sS]?://)[A-Za-z][A-Za-z0-9+.\\-]*://"
+          }
+        ]
+      }
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,62}$",
+      "maxLength": 63,
+      "description": "Lowercase ASCII id, unique in the whole page (page id included; checked by the program: duplicate_id). Safe in generated code (data-block-id)."
+    },
+    "kind": {
+      "enum": [
+        "nav",
+        "nav-link",
+        "hero",
+        "features",
+        "feature",
+        "menu",
+        "dish",
+        "hours",
+        "cta",
+        "footer",
+        "pagehead",
+        "overview",
+        "metrics",
+        "metric",
+        "chart",
+        "activity",
+        "activity-item",
+        "sidenav",
+        "bottomnav"
+      ],
+      "description": "Renderer kind a Stock catalog block maps onto."
+    },
+    "copy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eyebrow": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "headline": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "lede": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "action": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "note": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "brand": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "contact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "legal": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "days": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "address": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "value": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "badge": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        "icon": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 64,
+          "description": "Lucide icon name; the host checks it against the Lucide set of its pinned registry snapshot."
+        },
+        "href": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            },
+            {
+              "pattern": "^(?:#|/|https?://|mailto:)"
+            }
+          ],
+          "maxLength": 2000,
+          "description": "Link of the block action: #fragment, /path, http(s) URL or mailto."
+        }
+      },
+      "description": "Copy of a block by closed key. Which keys a kind renders: x-page-slots."
+    },
+    "catalogBlock": {
+      "type": "string",
+      "pattern": "^block\\.[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 80,
+      "description": "Stock catalog block asset the block was built from (block.<name>, the spec of the catalog block index). Optional (1.1.0). The host rejects a block its pinned catalog does not have."
+    },
+    "variant": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9-]*$",
+      "maxLength": 40,
+      "description": "Catalog variant of catalogBlock (block.<name>/<variant> is the catalog asset id); the host renders the registry organism with the variant's props. Optional (1.1.0). The host rejects a variant its pinned catalog does not have."
+    },
+    "propValue": {
+      "description": "A props override value (1.3.0): plain JSON (strings are safe text); the host checks it against the props schema of the block's registry item.",
+      "anyOf": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 2000
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "$ref": "#/$defs/propValue"
+          }
+        },
+        {
+          "type": "object",
+          "maxProperties": 32,
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/propValue"
+          }
+        }
+      ]
+    },
+    "props": {
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "pattern": "^(?:/(?:[A-Za-z][A-Za-z0-9_]{0,47}|[0-9]{1,2}))+$",
+        "maxLength": 200
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/propValue"
+      },
+      "description": "Props overrides of a top-level block (1.3.0, optional): JSON Pointer of a prop of the registry item its catalog variant renders (registry.buildy.tw/props/v0.json: /actions/secondary, /content/card/title, /content/features) -> value. Merged over the variant preset and the page content (copy slots still carry the text they map); the host validates the merged props against the item's props schema (x-host-checks: props_invalid). Pointers do not overlap (no key is a prefix path of another)."
+    },
+    "block1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "summary"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "summary": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "catalogBlock": {
+          "$ref": "#/$defs/catalogBlock"
+        },
+        "variant": {
+          "$ref": "#/$defs/variant"
+        },
+        "copy": {
+          "$ref": "#/$defs/copy"
+        },
+        "props": {
+          "$ref": "#/$defs/props"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block2"
+          },
+          "maxItems": 64
+        }
+      }
+    },
+    "block2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "summary"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "summary": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "catalogBlock": {
+          "$ref": "#/$defs/catalogBlock"
+        },
+        "variant": {
+          "$ref": "#/$defs/variant"
+        },
+        "copy": {
+          "$ref": "#/$defs/copy"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block3"
+          },
+          "maxItems": 64
+        }
+      }
+    },
+    "block3": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "summary"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "summary": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "catalogBlock": {
+          "$ref": "#/$defs/catalogBlock"
+        },
+        "variant": {
+          "$ref": "#/$defs/variant"
+        },
+        "copy": {
+          "$ref": "#/$defs/copy"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block4"
+          },
+          "maxItems": 64
+        }
+      }
+    },
+    "block4": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "summary"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "summary": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "catalogBlock": {
+          "$ref": "#/$defs/catalogBlock"
+        },
+        "variant": {
+          "$ref": "#/$defs/variant"
+        },
+        "copy": {
+          "$ref": "#/$defs/copy"
+        },
+        "children": {
+          "type": "array",
+          "maxItems": 0,
+          "description": "Depth 4 is the deepest level (too_deep)."
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "slug",
+        "status",
+        "title",
+        "layout",
+        "seo",
+        "locale",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 48,
+          "description": "Ordinary page slug, no query or UTM variants."
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "pending",
+            "scheduled",
+            "published",
+            "archived",
+            "trashed"
+          ],
+          "description": "Lifecycle. A new draft has status draft."
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "layout": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "version",
+            "blocks"
+          ],
+          "properties": {
+            "version": {
+              "const": 1
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/block1"
+              },
+              "maxItems": 64,
+              "description": "Blocks in render order. Code (page.svelte + one file per block) is generated from this tree."
+            }
+          }
+        },
+        "seo": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/safeText"
+                }
+              ],
+              "maxLength": 200
+            },
+            "description": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/safeText"
+                }
+              ],
+              "maxLength": 200
+            }
+          }
+        },
+        "locale": {
+          "type": "string",
+          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+          "maxLength": 16,
+          "description": "BCP 47 language of all copy."
+        },
+        "createdAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+          "maxLength": 40
+        },
+        "updatedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+          "maxLength": 40
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Where a saved spec came from. screenId is the Stock catalog screen the blocks were assembled from (null = not recorded).",
+      "properties": {
+        "screenId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "scenarioId": {
+          "enum": [
+            "dashboard",
+            "landing",
+            "website",
+            null
+          ]
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": "Catalog block labels of the screen that the host cannot render."
+        },
+        "assembler": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "family": {
+          "enum": [
+            "dashboard",
+            "landing",
+            "food-grill",
+            "restaurant",
+            "generic",
+            null
+          ],
+          "description": "1.4.0, optional, advisory: the page's screen family, derived from its composition after every operation (role majority; mixed -> generic) unless familyPinned. Never rejects a block."
+        },
+        "familyPinned": {
+          "type": "boolean",
+          "description": "1.4.0, optional: the author pinned family; the host stops deriving it until the pin is reset."
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One chat's pages in the browser store: the applied page, the pending candidate and the last proposal, each with its provenance.",
+      "properties": {
+        "applied": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastProposed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "appliedProvenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidateProvenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastProposedProvenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectedBlockId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 63
+        },
+        "revision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "store": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "pages"
+      ],
+      "description": "The browser page store blob (localStorage key buildy:v1:pages; before session buildy:v1 the key buildytech-creator-pages-v1, migrated once): pages by chat id.",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/record"
+          }
+        }
+      }
+    }
+  }
+};
+});
+
+__def("packages/page-contract/schema/page-patch.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.buildy.tw/page-patch.schema.json",
+  "title": "Page patch page-patch/v1 — edit operations on a page spec",
+  "x-page-patch-profile": "page-patch/v1",
+  "x-page-spec-version": "1.5.0",
+  "description": "An edit of a page-spec/v1 page as an ordered list of operations, applied in order to a copy of the base page; the whole patch is rejected if any operation fails. Unchanged blocks keep their content. Slot validation: set / add / replace may only write copy keys and row fields the target kind renders (page-spec x-page-slots); rows beyond the kind's limit are rejected. The result must be a valid page-spec/v1 page. baseRevision, when sent, must equal the page revision the patch was made for.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ops"
+  ],
+  "properties": {
+    "baseRevision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ops": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "items": {
+        "$ref": "#/$defs/op"
+      }
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 80,
+          "description": "Row title.",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "detail": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 200,
+          "description": "Row summary."
+        },
+        "value": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 24,
+          "description": "Row copy.value."
+        },
+        "note": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 120,
+          "description": "Row copy.note."
+        },
+        "group": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 40,
+          "description": "Row copy.eyebrow."
+        },
+        "icon": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 64,
+          "description": "Row copy.icon."
+        }
+      }
+    },
+    "op": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId",
+            "field",
+            "value"
+          ],
+          "description": "Set one slot of a block. null removes a copy key; title and summary cannot be removed.",
+          "properties": {
+            "op": {
+              "const": "set"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            },
+            "field": {
+              "enum": [
+                "title",
+                "summary",
+                "eyebrow",
+                "headline",
+                "lede",
+                "action",
+                "note",
+                "brand",
+                "contact",
+                "legal",
+                "days",
+                "address",
+                "value",
+                "badge",
+                "icon",
+                "href"
+              ]
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "allOf": [
+                    {
+                      "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+                    }
+                  ],
+                  "maxLength": 2000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId",
+            "items"
+          ],
+          "description": "Replace the rows of a list block.",
+          "properties": {
+            "op": {
+              "const": "set_items"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/item"
+              },
+              "maxItems": 12,
+              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "kind"
+          ],
+          "description": "Add a Stock block at a top-level index (default: its natural place). Optional copy and rows overlay the catalog defaults; variant picks a catalog variant of the block. catalogBlock (1.5.0, optional): the Stock catalog block to add (block.steps, block.pricing), a block of the given kind; without it the host picks the page's sample block of that kind and sets catalogBlock itself. With catalogBlock the page may hold several blocks of one kind.",
+          "properties": {
+            "op": {
+              "const": "add"
+            },
+            "kind": {
+              "enum": [
+                "nav",
+                "hero",
+                "features",
+                "menu",
+                "hours",
+                "cta",
+                "footer",
+                "pagehead",
+                "overview",
+                "metrics",
+                "chart",
+                "activity",
+                "sidenav",
+                "bottomnav"
+              ],
+              "description": "A top-level kind. The host builds the block from the page's Stock screen family; a kind the family does not have is rejected."
+            },
+            "catalogBlock": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/catalogBlock"
+            },
+            "at": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "title": {
+              "allOf": [
+                {
+                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+                }
+              ],
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "variant": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/variant"
+            },
+            "copy": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/copy"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/item"
+              },
+              "maxItems": 12,
+              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId",
+            "kind"
+          ],
+          "description": "Replace a top-level block by another Stock block in the same place. catalogBlock (1.2.0, optional): another Stock catalog block of the same kind (block.hero -> block.storehero); the host keeps the block id, kind and title, carries the text the new block renders and says which fields it dropped; variant is one of that block's variants (default: its catalog default).",
+          "properties": {
+            "op": {
+              "const": "replace"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            },
+            "kind": {
+              "enum": [
+                "nav",
+                "hero",
+                "features",
+                "menu",
+                "hours",
+                "cta",
+                "footer",
+                "pagehead",
+                "overview",
+                "metrics",
+                "chart",
+                "activity",
+                "sidenav",
+                "bottomnav"
+              ],
+              "description": "A top-level kind. The host builds the block from the page's Stock screen family; a kind the family does not have is rejected."
+            },
+            "catalogBlock": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/catalogBlock"
+            },
+            "title": {
+              "allOf": [
+                {
+                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+                }
+              ],
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "variant": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/variant"
+            },
+            "copy": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/copy"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/item"
+              },
+              "maxItems": 12,
+              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId"
+          ],
+          "description": "Remove a block and its rows.",
+          "properties": {
+            "op": {
+              "const": "remove"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId",
+            "to"
+          ],
+          "description": "Move a block to an index among its siblings.",
+          "properties": {
+            "op": {
+              "const": "move"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            },
+            "to": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "field",
+            "value"
+          ],
+          "description": "Set the page title or an SEO field.",
+          "properties": {
+            "op": {
+              "const": "set_page"
+            },
+            "field": {
+              "enum": [
+                "title",
+                "seo.title",
+                "seo.description"
+              ]
+            },
+            "value": {
+              "allOf": [
+                {
+                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+                }
+              ],
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "blockId",
+            "variant"
+          ],
+          "description": "Switch a block to another catalog variant of its catalog block (1.1.0); null returns to the catalog default. Unknown variants are rejected.",
+          "properties": {
+            "op": {
+              "const": "set_variant"
+            },
+            "blockId": {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
+            },
+            "variant": {
+              "anyOf": [
+                {
+                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/variant"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+};
+});
+
+__def("packages/page-contract/src/json-schema.ts", function (exports) {
+
+type Schema = Record<string, unknown> | boolean;
+
+const ANNOTATIONS = new Set(["$schema", "$id", "$defs", "title", "description", "default", "examples"]);
+const ASSERTIONS = new Set([
+	"$ref", "allOf", "anyOf", "oneOf", "not", "type", "enum", "const", "pattern", "minLength", "maxLength",
+	"minimum", "maximum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties",
+	"maxProperties", "propertyNames"
+]);
+
+function typeOf(value: unknown): string {
+	if (value === null) return "null";
+	if (Array.isArray(value)) return "array";
+	if (typeof value === "number") return Number.isInteger(value) ? "integer" : "number";
+	return typeof value;
+}
+
+function typeMatches(value: unknown, type: string): boolean {
+	const actual = typeOf(value);
+	return actual === type || (type === "number" && actual === "integer");
+}
+
+function equal(a: unknown, b: unknown): boolean {
+	return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function expectedOf(keyword: string, schema: Record<string, unknown>): string | undefined {
+	const has = (key: string) => schema[key] !== undefined;
+	switch (keyword) {
+		case "enum":
+			return `one of ${JSON.stringify(schema.enum)}`;
+		case "const":
+			return `exactly ${JSON.stringify(schema.const)}`;
+		case "type":
+			return `type ${Array.isArray(schema.type) ? (schema.type as string[]).join(" | ") : String(schema.type)}`;
+		case "pattern":
+			return `a string matching /${String(schema.pattern)}/`;
+		case "maxLength":
+			return `at most ${String(schema.maxLength)} characters`;
+		case "minLength":
+			return `at least ${String(schema.minLength)} characters`;
+		case "maxItems":
+			return `at most ${String(schema.maxItems)} items`;
+		case "minItems":
+			return `at least ${String(schema.minItems)} items`;
+		case "maxProperties":
+			return `at most ${String(schema.maxProperties)} keys`;
+		case "required":
+			return `the key to be present (required: ${JSON.stringify(schema.required)})`;
+		case "additionalProperties":
+			return has("properties") ? `only the keys ${JSON.stringify(Object.keys(schema.properties as object))}` : "no other keys";
+		case "minimum":
+			return `a number >= ${String(schema.minimum)}`;
+		case "maximum":
+			return `a number <= ${String(schema.maximum)}`;
+		case "propertyNames":
+			return `key names matching ${JSON.stringify((schema.propertyNames as { pattern?: string }).pattern ?? "the schema")}`;
+		default:
+			return undefined;
+	}
+}
+
+class SchemaRegistry {
+	private roots = new Map<string, Record<string, unknown>>();
+	private regex = new Map<string, RegExp>();
+
+	add(schema: Record<string, unknown>): void {
+		const id = schema.$id;
+		if (typeof id !== "string" || !id) throw new Error("schema needs an $id");
+		this.roots.set(id, schema);
+	}
+
+	/** Issues of `value` against `ref` (an $id, optionally with a #/json/pointer). Empty = valid. */
+	check(value: unknown, ref: string): SchemaIssue[] {
+		const out: SchemaIssue[] = [];
+		const [base, schema] = this.resolve(ref, "");
+		this.walk(value, schema, base, "$", out);
+		return out;
+	}
+
+	private resolve(ref: string, currentBase: string): [string, Schema] {
+		const hash = ref.indexOf("#");
+		const base = hash === 0 ? currentBase : hash > 0 ? ref.slice(0, hash) : ref;
+		const pointer = hash >= 0 ? ref.slice(hash + 1) : "";
+		const root = this.roots.get(base);
+		if (!root) throw new Error(`unknown schema ${base}`);
+		let node: unknown = root;
+		for (const raw of pointer.split("/").filter(Boolean)) {
+			const key = raw.replace(/~1/g, "/").replace(/~0/g, "~");
+			node = node && typeof node === "object" ? (node as Record<string, unknown>)[key] : undefined;
+		}
+		if (node === undefined) throw new Error(`unresolved $ref ${ref}`);
+		return [base, node as Schema];
+	}
+
+	private pattern(source: string): RegExp {
+		let re = this.regex.get(source);
+		if (!re) {
+			re = new RegExp(source, "u");
+			this.regex.set(source, re);
+		}
+		return re;
+	}
+
+	private walk(value: unknown, schema: Schema, base: string, path: string, out: SchemaIssue[]): void {
+		if (schema === true) return;
+		if (schema === false) {
+			out.push({ path, keyword: "false" });
+			return;
+		}
+		const fail = (keyword: string, at = path) => out.push({ path: at, keyword, expected: expectedOf(keyword, schema) });
+		const sub = (v: unknown, s: unknown, at: string): SchemaIssue[] => {
+			const issues: SchemaIssue[] = [];
+			this.walk(v, s as Schema, base, at, issues);
+			return issues;
+		};
+		for (const key of Object.keys(schema)) {
+			if (!ASSERTIONS.has(key) && !ANNOTATIONS.has(key) && !key.startsWith("x-")) {
+				throw new Error(`unsupported schema keyword ${key}`);
+			}
+		}
+		if (typeof schema.$ref === "string") {
+			const [refBase, target] = this.resolve(schema.$ref, base);
+			this.walk(value, target, refBase, path, out);
+		}
+		if (Array.isArray(schema.allOf)) for (const s of schema.allOf) out.push(...sub(value, s, path));
+		if (Array.isArray(schema.anyOf) && !schema.anyOf.some((s) => sub(value, s, path).length === 0)) fail("anyOf");
+		if (Array.isArray(schema.oneOf)) {
+			const branches = schema.oneOf.map((s) => sub(value, s, path));
+			const passing = branches.filter((issues) => issues.length === 0).length;
+			if (passing !== 1) {
+				// Report the issues of the closest branch so the caller gets a useful path.
+				const closest = [...branches].sort((a, b) => a.length - b.length)[0] ?? [];
+				out.push(...(passing === 0 ? closest : []), { path, keyword: "oneOf" });
+			}
+		}
+		if (schema.not !== undefined && sub(value, schema.not, path).length === 0) fail("not");
+		if (schema.type !== undefined) {
+			const types = Array.isArray(schema.type) ? schema.type : [schema.type];
+			if (!types.some((t) => typeMatches(value, String(t)))) {
+				fail("type");
+				return;
+			}
+		}
+		if (Array.isArray(schema.enum) && !schema.enum.some((e) => equal(e, value))) fail("enum");
+		if ("const" in schema && !equal(schema.const, value)) fail("const");
+		if (typeof value === "string") {
+			const length = [...value].length;
+			if (typeof schema.minLength === "number" && length < schema.minLength) fail("minLength");
+			if (typeof schema.maxLength === "number" && length > schema.maxLength) fail("maxLength");
+			if (typeof schema.pattern === "string" && !this.pattern(schema.pattern).test(value)) fail("pattern");
+		}
+		if (typeof value === "number" && typeof schema.minimum === "number" && value < schema.minimum) fail("minimum");
+		if (typeof value === "number" && typeof schema.maximum === "number" && value > schema.maximum) fail("maximum");
+		if (Array.isArray(value)) {
+			if (typeof schema.minItems === "number" && value.length < schema.minItems) fail("minItems");
+			if (typeof schema.maxItems === "number" && value.length > schema.maxItems) fail("maxItems");
+			if (schema.items !== undefined) value.forEach((item, i) => out.push(...sub(item, schema.items, `${path}[${i}]`)));
+		}
+		if (value && typeof value === "object" && !Array.isArray(value)) {
+			const obj = value as Record<string, unknown>;
+			const props = (schema.properties ?? {}) as Record<string, unknown>;
+			if (Array.isArray(schema.required)) {
+				for (const key of schema.required) if (!(String(key) in obj)) fail("required", `${path}.${String(key)}`);
+			}
+			if (typeof schema.maxProperties === "number" && Object.keys(obj).length > schema.maxProperties) fail("maxProperties");
+			if (schema.propertyNames !== undefined) {
+				for (const key of Object.keys(obj)) if (sub(key, schema.propertyNames, `${path}.${key}`).length) fail("propertyNames", `${path}.${key}`);
+			}
+			for (const [key, v] of Object.entries(obj)) {
+				if (key in props) out.push(...sub(v, props[key], `${path}.${key}`));
+				else if (schema.additionalProperties === false) fail("additionalProperties", `${path}.${key}`);
+				else if (schema.additionalProperties && typeof schema.additionalProperties === "object") {
+					out.push(...sub(v, schema.additionalProperties, `${path}.${key}`));
+				}
+			}
+		}
+	}
+}
+
+exports["SchemaRegistry"] = SchemaRegistry;
+
+});
+
+__def("packages/page-contract/src/spec.ts", function (exports) {
+const pageSpecSchema = __req("packages/page-contract/schema/page-spec.schema.json").default;
+const pagePatchSchema = __req("packages/page-contract/schema/page-patch.schema.json").default;
+const { SchemaRegistry } = __req("packages/page-contract/src/json-schema.ts");
+const { PageContractError, parseDraftPage, parsePage } = __req("packages/page-contract/src/validate.ts");
+const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
+const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
+/** ui8kit/contract commit the vendored schemas come from. */
+const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "9c687c1" } as const;
+
+const registry = new SchemaRegistry();
+registry.add(pageSpecSchema as Record<string, unknown>);
+registry.add(pagePatchSchema as Record<string, unknown>);
+
+const PAGE_SLOTS = (pageSpecSchema as { "x-page-slots": Record<PageBlockKind, PageSlot> })["x-page-slots"];
+
+/** Schema issues of a page (root of page-spec). Empty = the shape is valid; run parsePage for program checks. */
+function pageSpecIssues(input: unknown): SchemaIssue[] {
+	return registry.check(input, PAGE_SPEC_SCHEMA_URL);
+}
+
+/** Schema issues against a page-spec $def (provenance, record, store). */
+function pageSpecDefIssues(input: unknown, def: "provenance" | "record" | "store"): SchemaIssue[] {
+	return registry.check(input, `${PAGE_SPEC_SCHEMA_URL}#/$defs/${def}`);
+}
+
+function pagePatchIssues(input: unknown): SchemaIssue[] {
+	return registry.check(input, PAGE_PATCH_SCHEMA_URL);
+}
+
+/**
+ * Page spec gate: the published schema first (code page_spec_invalid with the first schema path),
+ * then parsePage for the program checks (duplicate ids, block count, size) and the normalized copy.
+ */
+function parsePageSpec(input: unknown, options: { draft?: boolean } = {}): Page {
+	const issues = pageSpecIssues(input);
+	if (issues.length) {
+		const first = issues[0]!;
+		throw new PageContractError("page_spec_invalid", first.path, `page-spec/v1 ${first.keyword} failed`);
+	}
+	return options.draft ? parseDraftPage(input) : parsePage(input);
+}
+
+exports["PAGE_SPEC_SCHEMA_URL"] = PAGE_SPEC_SCHEMA_URL;
+exports["PAGE_PATCH_SCHEMA_URL"] = PAGE_PATCH_SCHEMA_URL;
+exports["PAGE_SPEC_SCHEMA_SOURCE"] = PAGE_SPEC_SCHEMA_SOURCE;
+exports["pagePatchSchema"] = pagePatchSchema;
+exports["pageSpecSchema"] = pageSpecSchema;
+exports["PAGE_SLOTS"] = PAGE_SLOTS;
+exports["pageSpecIssues"] = pageSpecIssues;
+exports["pageSpecDefIssues"] = pageSpecDefIssues;
+exports["pagePatchIssues"] = pagePatchIssues;
+exports["parsePageSpec"] = parsePageSpec;
+
+});
+
+__def("packages/page-contract/schema/page-spec-v2.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.buildy.tw/page-spec-v2.schema.json",
+  "title": "Page spec page-spec/v2 — a page as registry items with their props",
+  "x-page-spec-profile": "page-spec/v2",
+  "x-page-spec-version": "2.0.0",
+  "description": "A BuildY page as ONE document: { version: 2, title, slug, locale, seo, blocks: [{ id, item, variant, props }] }. `item` is the registry item of `npx ui8kit add`, `props` are exactly the props of its component, `variant` names the preset of its layout axes. An agent reads it, reads the props schema of an item and writes a new version or an RFC 6902 patch (page-patch-v2.schema.json); the host validates and answers with compiler-style errors { path, expected, got }. Replaces the kind / copy / children model of page-spec/v1 (still published). After the schema, consumers run x-program-checks, then the registry checks x-host-checks.",
+  "x-program-checks": [
+    "duplicate_id",
+    "too_many_blocks",
+    "too_large",
+    "too_deep"
+  ],
+  "x-host-checks": [
+    "unknown_item",
+    "unknown_variant",
+    "no_renderer",
+    "props_invalid"
+  ],
+  "x-limits": {
+    "maxBlocks": 64,
+    "maxIdLength": 63,
+    "maxSlugLength": 48,
+    "maxTitleLength": 160,
+    "maxItemLength": 80,
+    "maxVariantLength": 40,
+    "maxTextLength": 2000,
+    "maxSeoLength": 200,
+    "maxLocaleLength": 16,
+    "maxJsonChars": 200000,
+    "maxDatetimeLength": 40,
+    "maxPropKeys": 64,
+    "maxListItems": 24,
+    "maxDepth": 8
+  },
+  "$ref": "#/$defs/page",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,62}$",
+      "maxLength": 63,
+      "description": "Lowercase ASCII id of a block, unique in the whole page (page id included; program check duplicate_id). Safe in generated code (data-block-id)."
+    },
+    "item": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 80,
+      "description": "Registry item name as used by `npx ui8kit add <item>` (hero-split, feature-grid, site-footer). The host rejects an item its registry does not have (unknown_item) or cannot render (no_renderer)."
+    },
+    "variant": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9-]*$",
+      "maxLength": 40,
+      "description": "A published variant of the item (registry.buildy.tw/variants/v0.json): a named preset of the layout axes of its props (extra, media, columns, tone). Optional: the item's default variant. The host rejects a variant the item does not have (unknown_variant)."
+    },
+    "propText": {
+      "type": "string",
+      "description": "Plain text of a prop. As safeText of page-spec/v1 (control characters, `<` `>`, dangerous URL schemes are rejected) except that `{` and `}` are allowed: registry presets carry templates such as `?paged={0}`.",
+      "pattern": "^[^<>\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]*$",
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^[\\u0000-\\u0020]*[jJ][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[dD][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[bB][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[fF][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[lL][\\u0000-\\u0020]*[eE][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^\\s*(?![hH][tT][tT][pP][sS]?://)[A-Za-z][A-Za-z0-9+.\\-]*://"
+          }
+        ]
+      },
+      "maxLength": 2000
+    },
+    "propValue": {
+      "description": "A prop value: plain JSON; strings are plain text (propText). The item's props schema (registry.buildy.tw/props/v0.json) decides what is valid for each prop (x-host-checks props_invalid).",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/propText"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "$ref": "#/$defs/propValue"
+          }
+        },
+        {
+          "type": "object",
+          "maxProperties": 64,
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/propValue"
+          }
+        }
+      ]
+    },
+    "props": {
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/propValue"
+      },
+      "description": "Exactly the props of the registry item's component (what `<Item {...props} />` receives, and what the exported code writes). Nothing else lives in a block: no copy slots, no rows, no children. A host that inserts a block without props fills the sample props of the variant (the preset of its layout axes plus the minimum the props schema requires); layout axes are props like any other."
+    },
+    "block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "item"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "item": {
+          "$ref": "#/$defs/item"
+        },
+        "variant": {
+          "$ref": "#/$defs/variant"
+        },
+        "props": {
+          "$ref": "#/$defs/props"
+        }
+      },
+      "description": "One section of the page: a registry item, the variant it was picked as and its props."
+    },
+    "seo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 200
+        },
+        "description": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 200
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "slug",
+        "title",
+        "locale",
+        "blocks"
+      ],
+      "properties": {
+        "version": {
+          "const": 2,
+          "description": "Document version: 2."
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 48,
+          "description": "Ordinary page slug, no query or UTM variants."
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "pending",
+            "scheduled",
+            "published",
+            "archived",
+            "trashed"
+          ],
+          "description": "Lifecycle (optional; a host defaults a new page to draft)."
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "locale": {
+          "type": "string",
+          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+          "maxLength": 16,
+          "description": "BCP 47 language of the page copy; follows the language the author writes in."
+        },
+        "seo": {
+          "$ref": "#/$defs/seo"
+        },
+        "createdAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+          "maxLength": 40
+        },
+        "updatedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+          "maxLength": 40
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block"
+          },
+          "maxItems": 64,
+          "description": "Sections in render order. The exported project (page file + the block files `npx ui8kit add` writes) is generated from this list."
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One chat's pages in the browser store: the applied page, the pending candidate and the last proposal (page-spec/v2 documents) with their provenance (page-spec/v1 provenance: the Stock screen the page started from and the advisory screen family, never a rule).",
+      "properties": {
+        "applied": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastProposed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "appliedProvenance": {
+          "anyOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidateProvenance": {
+          "anyOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastProposedProvenance": {
+          "anyOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectedBlockId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 63
+        },
+        "revision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    }
+  }
+};
+});
+
+__def("packages/page-contract/schema/page-patch-v2.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.buildy.tw/page-patch-v2.schema.json",
+  "title": "Page patch page-patch/v2 — RFC 6902 JSON Patch on a page-spec/v2 document",
+  "x-page-patch-profile": "page-patch/v2",
+  "x-page-spec-version": "2.0.0",
+  "description": "An edit of a page-spec/v2 document as an RFC 6902 JSON Patch: an ordered list of operations applied to a copy of the base page; one failing operation rejects the whole patch. Paths are pointers into the document (title, slug, locale, seo, blocks, blocks/<i>/props/...). The result must be a valid page-spec/v2 document; the host answers a failure with a list of { path, expected, got }. Blocks that no operation touches stay exactly as they are.",
+  "x-limits": {
+    "maxOps": 64,
+    "maxPathLength": 200
+  },
+  "type": "array",
+  "minItems": 1,
+  "maxItems": 64,
+  "items": {
+    "$ref": "#/$defs/op"
+  },
+  "$defs": {
+    "pointer": {
+      "type": "string",
+      "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+      "maxLength": 200
+    },
+    "op": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "value"
+          ],
+          "description": "Add value at path (blocks/- appends; blocks/<i> inserts before index i).",
+          "properties": {
+            "op": {
+              "const": "add"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "value": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path"
+          ],
+          "description": "Remove the value at path.",
+          "properties": {
+            "op": {
+              "const": "remove"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "value"
+          ],
+          "description": "Replace the value at path.",
+          "properties": {
+            "op": {
+              "const": "replace"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "value": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "from"
+          ],
+          "description": "Move the value at from to path (reorder blocks).",
+          "properties": {
+            "op": {
+              "const": "move"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "from"
+          ],
+          "description": "Copy the value at from to path.",
+          "properties": {
+            "op": {
+              "const": "copy"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "value"
+          ],
+          "description": "Fail the whole patch unless the value at path equals value.",
+          "properties": {
+            "op": {
+              "const": "test"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "value": {}
+          }
+        }
+      ]
+    }
+  }
+};
+});
+
+__def("packages/page-contract/src/v2.ts", function (exports) {
+const pageSpecV2Schema = __req("packages/page-contract/schema/page-spec-v2.schema.json").default;
+const pagePatchV2Schema = __req("packages/page-contract/schema/page-patch-v2.schema.json").default;
+const pageSpecSchema = __req("packages/page-contract/schema/page-spec.schema.json").default;
+const { SchemaRegistry } = __req("packages/page-contract/src/json-schema.ts");
+const { PageContractError } = __req("packages/page-contract/src/validate.ts");
+const PAGE_SPEC_V2_SCHEMA_URL = "https://schema.buildy.tw/page-spec-v2.schema.json";
+const PAGE_PATCH_V2_SCHEMA_URL = "https://schema.buildy.tw/page-patch-v2.schema.json";
+const PAGE_DOCUMENT_VERSION = 2 as const;
+
+const PAGE_V2_LIMITS = (pageSpecV2Schema as { "x-limits": { maxBlocks: number; maxJsonChars: number; maxDepth: number; maxIdLength: number; maxListItems: number; maxPropKeys: number } })["x-limits"];
+const PAGE_PATCH_V2_LIMITS = (pagePatchV2Schema as { "x-limits": { maxOps: number } })["x-limits"];
+
+const registry = new SchemaRegistry();
+registry.add(pageSpecSchema as Record<string, unknown>);
+registry.add(pageSpecV2Schema as Record<string, unknown>);
+registry.add(pagePatchV2Schema as Record<string, unknown>);
+
+function pageV2Issues(input: unknown): SchemaIssue[] {
+	return registry.check(input, PAGE_SPEC_V2_SCHEMA_URL);
+}
+
+/** Schema issues against a page-spec/v2 $def (block, props, record, ...). */
+function pageV2DefIssues(input: unknown, def: "block" | "props" | "record" | "page"): SchemaIssue[] {
+	return registry.check(input, `${PAGE_SPEC_V2_SCHEMA_URL}#/$defs/${def}`);
+}
+
+/** Schema issues of an RFC 6902 page patch. */
+function pagePatchV2Issues(input: unknown): SchemaIssue[] {
+	return registry.check(input, PAGE_PATCH_V2_SCHEMA_URL);
+}
+
+function depthOf(value: unknown, depth = 0): number {
+	if (value === null || typeof value !== "object") return depth;
+	const children = Array.isArray(value) ? value : Object.values(value as Record<string, unknown>);
+	return children.reduce<number>((max, child) => Math.max(max, depthOf(child, depth + 1)), depth);
+}
+
+/** Program checks (x-program-checks) after the schema: duplicate ids, block count, size, props depth. */
+function pageV2ProgramIssues(page: PageV2): SchemaIssue[] {
+	const out: SchemaIssue[] = [];
+	const seen = new Set<string>();
+	if (page.id) seen.add(page.id);
+	page.blocks.forEach((block, index) => {
+		if (seen.has(block.id)) out.push({ path: `$.blocks[${index}].id`, keyword: "duplicate_id", expected: "an id no other block (or the page) uses" });
+		seen.add(block.id);
+		if (block.props && depthOf(block.props) > PAGE_V2_LIMITS.maxDepth) out.push({ path: `$.blocks[${index}].props`, keyword: "too_deep", expected: `props nested at most ${PAGE_V2_LIMITS.maxDepth} levels` });
+	});
+	if (page.blocks.length > PAGE_V2_LIMITS.maxBlocks) out.push({ path: "$.blocks", keyword: "too_many_blocks", expected: `at most ${PAGE_V2_LIMITS.maxBlocks} blocks` });
+	if (JSON.stringify(page).length > PAGE_V2_LIMITS.maxJsonChars) out.push({ path: "$", keyword: "too_large", expected: `at most ${PAGE_V2_LIMITS.maxJsonChars} characters of JSON` });
+	return out;
+}
+
+/** Strict gate of a page-spec/v2 document: the published schema, then the program checks (throws PageContractError). */
+function parsePageV2(input: unknown): PageV2 {
+	const issues = pageV2Issues(input);
+	if (issues.length) throw new PageContractError("page_spec_invalid", issues[0]!.path, `page-spec/v2 ${issues[0]!.keyword} failed`);
+	const page = input as PageV2;
+	const program = pageV2ProgramIssues(page);
+	if (program.length) throw new PageContractError(program[0]!.keyword, program[0]!.path, `page-spec/v2 ${program[0]!.keyword}`);
+	return page;
+}
+
+exports["PAGE_SPEC_V2_SCHEMA_URL"] = PAGE_SPEC_V2_SCHEMA_URL;
+exports["PAGE_PATCH_V2_SCHEMA_URL"] = PAGE_PATCH_V2_SCHEMA_URL;
+exports["PAGE_DOCUMENT_VERSION"] = PAGE_DOCUMENT_VERSION;
+exports["PAGE_V2_LIMITS"] = PAGE_V2_LIMITS;
+exports["PAGE_PATCH_V2_LIMITS"] = PAGE_PATCH_V2_LIMITS;
+exports["pagePatchV2Schema"] = pagePatchV2Schema;
+exports["pageSpecV2Schema"] = pageSpecV2Schema;
+exports["pageV2Issues"] = pageV2Issues;
+exports["pageV2DefIssues"] = pageV2DefIssues;
+exports["pagePatchV2Issues"] = pagePatchV2Issues;
+exports["pageV2ProgramIssues"] = pageV2ProgramIssues;
+exports["parsePageV2"] = parsePageV2;
+
+});
+
+__def("packages/page-contract/src/index.ts", function (exports) {
+exports["PAGE_BLOCK_KINDS"] = __req("packages/page-contract/src/types.ts")["PAGE_BLOCK_KINDS"];
+exports["PAGE_CATALOG_LIMITS"] = __req("packages/page-contract/src/types.ts")["PAGE_CATALOG_LIMITS"];
+exports["PAGE_COPY_KEYS"] = __req("packages/page-contract/src/types.ts")["PAGE_COPY_KEYS"];
+exports["PAGE_LAYOUT_VERSION"] = __req("packages/page-contract/src/types.ts")["PAGE_LAYOUT_VERSION"];
+exports["PAGE_LIMITS"] = __req("packages/page-contract/src/types.ts")["PAGE_LIMITS"];
+exports["PAGE_PROPS_LIMITS"] = __req("packages/page-contract/src/types.ts")["PAGE_PROPS_LIMITS"];
+exports["PAGE_PROPS_POINTER_PATTERN"] = __req("packages/page-contract/src/types.ts")["PAGE_PROPS_POINTER_PATTERN"];
+exports["PAGE_STATUSES"] = __req("packages/page-contract/src/types.ts")["PAGE_STATUSES"];
+exports["blocksOf"] = __req("packages/page-contract/src/types.ts")["blocksOf"];
+exports["isPage"] = __req("packages/page-contract/src/validate.ts")["isPage"];
+exports["PageContractError"] = __req("packages/page-contract/src/validate.ts")["PageContractError"];
+exports["parseDraftPage"] = __req("packages/page-contract/src/validate.ts")["parseDraftPage"];
+exports["parsePage"] = __req("packages/page-contract/src/validate.ts")["parsePage"];
+exports["PAGE_PATCH_SCHEMA_URL"] = __req("packages/page-contract/src/spec.ts")["PAGE_PATCH_SCHEMA_URL"];
+exports["PAGE_SLOTS"] = __req("packages/page-contract/src/spec.ts")["PAGE_SLOTS"];
+exports["PAGE_SPEC_SCHEMA_SOURCE"] = __req("packages/page-contract/src/spec.ts")["PAGE_SPEC_SCHEMA_SOURCE"];
+exports["PAGE_SPEC_SCHEMA_URL"] = __req("packages/page-contract/src/spec.ts")["PAGE_SPEC_SCHEMA_URL"];
+exports["pagePatchIssues"] = __req("packages/page-contract/src/spec.ts")["pagePatchIssues"];
+exports["pagePatchSchema"] = __req("packages/page-contract/src/spec.ts")["pagePatchSchema"];
+exports["pageSpecDefIssues"] = __req("packages/page-contract/src/spec.ts")["pageSpecDefIssues"];
+exports["pageSpecIssues"] = __req("packages/page-contract/src/spec.ts")["pageSpecIssues"];
+exports["pageSpecSchema"] = __req("packages/page-contract/src/spec.ts")["pageSpecSchema"];
+exports["parsePageSpec"] = __req("packages/page-contract/src/spec.ts")["parsePageSpec"];
+exports["SchemaRegistry"] = __req("packages/page-contract/src/json-schema.ts")["SchemaRegistry"];
+exports["PAGE_DOCUMENT_VERSION"] = __req("packages/page-contract/src/v2.ts")["PAGE_DOCUMENT_VERSION"];
+exports["PAGE_PATCH_V2_LIMITS"] = __req("packages/page-contract/src/v2.ts")["PAGE_PATCH_V2_LIMITS"];
+exports["PAGE_PATCH_V2_SCHEMA_URL"] = __req("packages/page-contract/src/v2.ts")["PAGE_PATCH_V2_SCHEMA_URL"];
+exports["PAGE_SPEC_V2_SCHEMA_URL"] = __req("packages/page-contract/src/v2.ts")["PAGE_SPEC_V2_SCHEMA_URL"];
+exports["PAGE_V2_LIMITS"] = __req("packages/page-contract/src/v2.ts")["PAGE_V2_LIMITS"];
+exports["pagePatchV2Issues"] = __req("packages/page-contract/src/v2.ts")["pagePatchV2Issues"];
+exports["pagePatchV2Schema"] = __req("packages/page-contract/src/v2.ts")["pagePatchV2Schema"];
+exports["pageV2DefIssues"] = __req("packages/page-contract/src/v2.ts")["pageV2DefIssues"];
+exports["pageV2Issues"] = __req("packages/page-contract/src/v2.ts")["pageV2Issues"];
+exports["pageV2ProgramIssues"] = __req("packages/page-contract/src/v2.ts")["pageV2ProgramIssues"];
+exports["pageSpecV2Schema"] = __req("packages/page-contract/src/v2.ts")["pageSpecV2Schema"];
+exports["parsePageV2"] = __req("packages/page-contract/src/v2.ts")["parsePageV2"];
+
+
 
 });
 
@@ -29034,7 +29142,6 @@ exports["RUN_BUDGET"] = RUN_BUDGET;
 });
 
 __def("packages/builder-core/src/catalog/fingerprint.ts", function (exports) {
-const { PAGE_BLOCK_KINDS } = __req("packages/page-contract/src/index.ts");
 const { POLICY_VERSION } = __req("packages/builder-core/src/policy.ts");
 const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
 const { SEARCH_INDEX_SOURCES } = __req("packages/builder-core/src/catalog/text-search.ts");
@@ -29065,7 +29172,7 @@ function contractFingerprint(): string {
 		.map((key) => `${key}=${catalogSnapshot.rendererMap[key]}`);
 	cached = `cf1-${fnv1a64(
 		JSON.stringify({
-			kinds: PAGE_BLOCK_KINDS,
+			kinds: catalogSnapshot.rendererKinds,
 			rendererMap,
 			snapshot: catalogSnapshot.sourceDigest,
 			index: SEARCH_INDEX_SOURCES,

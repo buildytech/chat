@@ -8,8 +8,10 @@
  *                                      4. catalog/coverage.json, snapshot.json, search-index.json (derived from 3 only)
  *                                      5. catalog/snapshot.lock.json (pins, sha256 per input and output), then --check
  *   npm run snapshot -- --skip-cli   same without step 1 (registry/ already current)
- *   npm run snapshot:derive          offline: rewrite the derived artifacts from stock-registry.v0.json + policy
- *   npm run snapshot:check           offline: lock matches every file, graph valid, derived artifacts byte-identical
+ *   npm run snapshot:derive          offline: rewrite EVERY derived artifact (coverage, snapshot, search-index from stock-registry.v0.json
+ *                                      + policy; sources, props from the pinned registry files) and the lock
+ *   npm run snapshot:check           offline: lock matches every file, graph valid, every derived artifact byte-identical to a
+ *                                      fresh derivation (ADR 0039)
  *
  * Generated files are never edited by hand; BuildY policy lives only in catalog/policy.v0.json.
  */
@@ -17,7 +19,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildGraph, coverage, deriveSearchIndex, deriveSnapshot, serialize, sha256, validateGraph, validatePolicy } from "./lib/catalog-graph.mjs";
+import { derived, driftOf } from "./lib/catalog-artifacts.mjs";
+import { buildGraph, serialize, sha256, validateGraph } from "./lib/catalog-graph.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const path = (p) => join(ROOT, p);
@@ -26,23 +29,13 @@ const POLICY = "catalog/policy.v0.json";
 const GRAPH = "catalog/stock-registry.v0.json";
 const LOCK = "catalog/snapshot.lock.json";
 const COVERAGE = "catalog/coverage.json";
-const SNAPSHOT = "packages/builder-core/src/catalog/snapshot.json";
-const SEARCH = "packages/builder-core/src/catalog/search-index.json";
 const VARIANTS = "registry/variants.v0.json";
 const PROPS = "registry/props.v0.json";
 const REGISTRY_SNAPSHOT = "registry/snapshot.json";
-const PAGE_TYPES = "packages/page-contract/src/types.ts";
 
 const read = (p) => readFileSync(path(p), "utf8");
 const readJson = (p) => JSON.parse(read(p));
 const pretty = (value) => `${JSON.stringify(value, null, "\t")}\n`;
-
-/** The Page DTO block kinds, read from the contract source (the policy may only name these). */
-function pageBlockKinds() {
-	const match = /PAGE_BLOCK_KINDS\s*=\s*\[([^\]]*)\]/.exec(read(PAGE_TYPES));
-	if (!match) throw new Error(`${PAGE_TYPES}: PAGE_BLOCK_KINDS not found`);
-	return [...match[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-}
 
 async function fetchText(url) {
 	const res = await fetch(url);
@@ -58,17 +51,6 @@ async function commitRelation(repo, base, head) {
 	const res = await fetch(`https://api.github.com/repos/${repo}/compare/${base}...${head}`, { headers: { accept: "application/vnd.github+json" } });
 	if (!res.ok) throw new Error(`compare ${base}...${head}: HTTP ${res.status}`);
 	return (await res.json()).status;
-}
-
-/** Derived artifacts of a graph (exact bytes). Policy problems fail the run. */
-function derived(graph, policy) {
-	const problems = validatePolicy(graph, policy, pageBlockKinds());
-	if (problems.length) throw new Error(`${POLICY}:\n  ${problems.join("\n  ")}`);
-	return {
-		[COVERAGE]: serialize(coverage(graph, policy), 3),
-		[SNAPSHOT]: `${JSON.stringify(deriveSnapshot(graph, policy), null, 2)}\n`,
-		[SEARCH]: `${serialize(deriveSearchIndex(graph, policy), 0).trimEnd()}\n`
-	};
 }
 
 function lockOf(config, graph, graphText, outputs) {
@@ -166,7 +148,7 @@ async function snapshot() {
 	if (graphProblems.length) throw new Error(`graph invalid:\n  ${graphProblems.slice(0, 40).join("\n  ")}`);
 	const graphText = serialize(graph, 3);
 	writeFileSync(path(GRAPH), graphText);
-	const outputs = derived(graph, readJson(POLICY));
+	const outputs = derived(ROOT, graph, readJson(POLICY));
 	for (const [p, text] of Object.entries(outputs)) writeFileSync(path(p), text);
 	writeFileSync(path(LOCK), pretty(lockOf(config, graph, graphText, outputs)));
 	report(graph, JSON.parse(outputs[COVERAGE]));
@@ -185,7 +167,7 @@ function derive() {
 	const config = readJson(CONFIG);
 	const graphText = read(GRAPH);
 	const graph = JSON.parse(graphText);
-	const outputs = derived(graph, readJson(POLICY));
+	const outputs = derived(ROOT, graph, readJson(POLICY));
 	for (const [p, text] of Object.entries(outputs)) writeFileSync(path(p), text);
 	writeFileSync(path(LOCK), pretty(lockOf(config, graph, graphText, outputs)));
 	report(graph, JSON.parse(outputs[COVERAGE]));
@@ -217,7 +199,7 @@ export function check() {
 	if (serialize(graph, 3) !== read(GRAPH)) fail(`${GRAPH} is not in canonical form`);
 	for (const problem of validateGraph(graph, readJson(PROPS)).slice(0, 40)) fail(`${GRAPH}: ${problem}`);
 	try {
-		for (const [p, text] of Object.entries(derived(graph, readJson(POLICY)))) if (read(p) !== text) fail(`${p} is stale (npm run snapshot:derive)`);
+		for (const p of driftOf(ROOT, graph, readJson(POLICY))) fail(`${p} is stale (npm run snapshot:derive)`);
 	} catch (err) {
 		fail(String(err.message ?? err));
 	}

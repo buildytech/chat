@@ -7,7 +7,7 @@
 	},
 	"policy": {
 		"path": "catalog/policy.v0.json",
-		"sha256": "267299e67599af0d33e52ab3239ae24f6b362a12120d31cc10891fb5584b30a9"
+		"sha256": "35b12eec24c0b50ba59da5085749a6b20f7c96828dcf4f7ab85a213bec860092"
 	},
 	"codegenX": {
 		"repo": "codegen-x/ui8kit",
@@ -102,10 +102,16 @@
 			"sha256": "ab0183b03e28e14a9aa5d4f3862b52c29ae2406fb0c9cc2f354b8fecb0766b09"
 		},
 		"packages/builder-core/src/catalog/snapshot.json": {
-			"sha256": "a4b16baaff6f29545835e99ccac75ce45aad37fefdb432324ed2691191b57e7f"
+			"sha256": "9206c5df8b09701c7c0f488a304f2a70bc21cb7135466220c8999b92abd131a1"
 		},
 		"packages/builder-core/src/catalog/search-index.json": {
 			"sha256": "5e0c33a673601a0edb470c63f7fdfeb9ca5f2c5b45949081e56aed2afe3cdf01"
+		},
+		"packages/builder-core/src/catalog/sources.json": {
+			"sha256": "6059e343a61388a0c56e6c61f1485bf233f8b044c2f467703d9d03322be33366"
+		},
+		"packages/builder-core/src/catalog/props.json": {
+			"sha256": "eb52d3ece929d586e213062e97c71298146c385b85c8d1bb0aa160878a6ccf63"
 		}
 	}
 }

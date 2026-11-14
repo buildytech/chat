@@ -1,4 +1,3 @@
-import { PAGE_BLOCK_KINDS } from "@buildytech/page-contract";
 import { POLICY_VERSION } from "../policy.ts";
 import { catalogSnapshot } from "./snapshot.ts";
 import { SEARCH_INDEX_SOURCES } from "./text-search.ts";
@@ -31,7 +30,7 @@ export function contractFingerprint(): string {
 		.map((key) => `${key}=${catalogSnapshot.rendererMap[key]}`);
 	cached = `cf1-${fnv1a64(
 		JSON.stringify({
-			kinds: PAGE_BLOCK_KINDS,
+			kinds: catalogSnapshot.rendererKinds,
 			rendererMap,
 			snapshot: catalogSnapshot.sourceDigest,
 			index: SEARCH_INDEX_SOURCES,

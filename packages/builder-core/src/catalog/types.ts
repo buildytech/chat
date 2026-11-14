@@ -52,6 +52,8 @@ export type CatalogBlockIndexEntry = {
 	available: boolean;
 	rendererKind: string | null;
 	rendererCompatible: boolean;
+	/** Informational role of page chrome (header: navigation / footer): generated from catalog/policy.v0.json kindRoles, never a placement rule (ADR 0037). */
+	role?: "header" | "footer" | null;
 	/** Job facet values of the block's variants (Stock tags). */
 	jobs?: string[];
 };
