@@ -4,6 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
@@ -44,6 +45,9 @@ test("flag: VITE_MODULE_CHAT is on by default and off for 0 / false / off / no i
 	assert.match(web("modules/index.ts"), /if \(__MODULE_CHAT__\) registerModule\(\(await import\("\.\/chat"\)\)\.chatModule\)/, "the one named import is dynamic and under the build-time flag");
 	assert.match(web("hooks.client.ts"), /await loadModules\(\)/);
 	assert.ok(existsSync(join(root, "apps/chat-web/src/routes/build/+page.svelte")), "/build is a route of the core, in every build");
+	// The route lived untracked behind the `build/` ignore rule once: staging (a clean checkout) had no /build.
+	const tracked = spawnSync("git", ["ls-files", "--error-unmatch", "apps/chat-web/src/routes/build/+page.svelte"], { cwd: root });
+	assert.equal(tracked.status, 0, "the /build route file is tracked by git (not hidden by .gitignore)");
 	assert.doesNotMatch(web("routes/build/+page.svelte"), /__MODULE_CHAT__|modules\//, "the /build route does not depend on a module");
 });
 
