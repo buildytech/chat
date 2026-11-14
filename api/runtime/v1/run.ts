@@ -27497,7 +27497,7 @@ const { PageContractError, parseDraftPage, parsePage } = __req("packages/page-co
 const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
 const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
 /** ui8kit/contract commit the vendored schemas come from. */
-const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "9c687c1" } as const;
+const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "fda5f32" } as const;
 
 const registry = new SchemaRegistry();
 registry.add(pageSpecSchema as Record<string, unknown>);

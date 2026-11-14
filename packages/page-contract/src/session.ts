@@ -1,7 +1,7 @@
 /**
  * Session profile buildy:v1, published by @ui8kit/contract (https://schema.buildy.tw/session.schema.json): a portable
- * BuildY session file (chats, messages, Ask / Build mode, each chat's page-spec/v1 record with its revision and
- * revision history, catalog pins). Vendored in ../schema (byte-identical to the contract commit of
+ * BuildY session file (sessions: a project with its page record, revision and revision history, and an optional chat
+ * extension with messages and Ask / Build mode since 1.9.0; catalog pins). Vendored in ../schema (byte-identical to the contract commit of
  * PAGE_SPEC_SCHEMA_SOURCE; `npm run schema:check` compares it with the live URL). The browser stores validate their
  * chats and page records against the same $defs at load.
  */
@@ -60,13 +60,20 @@ export function sessionChatProgramIssues(session: { pageRevision?: number | null
 }
 
 /** Program checks of a session file after the schema (x-program-checks of session.schema.json). */
-export function sessionProgramIssues(doc: { selectedSessionId?: string | null; sessions: { id: string; pageRevision?: number | null; page?: { revision?: number | null } | null; history?: { revision: number }[] }[] }): ProgramIssue[] {
+export function sessionProgramIssues(doc: { selectedSessionId?: string | null; sessions: { id: string; projectId?: string; pageRevision?: number | null; page?: { revision?: number | null } | null; history?: { revision: number }[] }[] }): ProgramIssue[] {
 	const out: ProgramIssue[] = [];
 	const seen = new Set<string>();
+	const pageOfProject = new Set<string>();
 	doc.sessions.forEach((s, i) => {
 		if (seen.has(s.id)) out.push({ path: `$.sessions[${i}].id`, keyword: "duplicate_session_id" });
 		seen.add(s.id);
 		out.push(...sessionChatProgramIssues(s, `$.sessions[${i}]`));
+		// session 1.9.0: the page record belongs to the project; two sessions of one project may not both carry it.
+		if (s.page) {
+			const project = s.projectId ?? s.id;
+			if (pageOfProject.has(project)) out.push({ path: `$.sessions[${i}].page`, keyword: "duplicate_project_page" });
+			pageOfProject.add(project);
+		}
 	});
 	if (doc.selectedSessionId && !seen.has(doc.selectedSessionId)) out.push({ path: "$.selectedSessionId", keyword: "selected_session_unknown" });
 	return out;

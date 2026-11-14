@@ -25,6 +25,7 @@ import {
 import {
 	buildSessionFile,
 	parseSessionFile,
+	projectIdOf,
 	reconcileChatRevision,
 	recordRevision,
 	splitSessionFile
@@ -393,4 +394,52 @@ test("page store and chat store are wired: applyCandidate and replaceVisiblePage
 	assert.match(chats, /onPageRevision\(\(event\) =>/);
 	assert.match(chats, /recordRevision\(/);
 	assert.match(chats, /reconcileChatRevision\(/);
+});
+
+// ---- session 1.9.0: a project without a chat, projectId (ADR 0040) --------------------------------------------------
+
+test("session 1.9.0: a project with a page and no chat (no messages) is a valid session and round-trips through export and import", () => {
+	const page = landing();
+	const project = { id: "session-p", title: "Coffee house", updatedAt: NOW };
+	assert.deepEqual(sessionDefIssues(project, "session"), []);
+	const file = buildSessionFile({ chats: [project], pages: { "session-p": { applied: page, candidate: null, selectedBlockId: null, revision: 1 } }, selectedSessionId: "session-p", app, pins, now: NOW });
+	assert.deepEqual(sessionFileIssues(file), []);
+	assert.equal("messages" in file.sessions[0]!, false, "no chat: no messages key is invented");
+	const parsed = parseSessionFile(JSON.stringify(file));
+	assert.ok(parsed.ok, JSON.stringify(parsed));
+	// The first import normalizes the page record (empty provenance is written out); from then on the file is a fixed point.
+	const reexport = (f: ReturnType<typeof buildSessionFile>) => {
+		const back = parseSessionFile(JSON.stringify(f));
+		assert.ok(back.ok, JSON.stringify(back));
+		return buildSessionFile({ ...splitInput(back.file), selectedSessionId: "session-p", app, pins, now: NOW });
+	};
+	const second = reexport(file);
+	assert.equal(JSON.stringify(reexport(second)), JSON.stringify(second), "import then export is identical");
+	assert.equal("messages" in second.sessions[0]!, false);
+});
+
+function splitInput(file: ReturnType<typeof buildSessionFile>) {
+	const { chats, pages } = splitSessionFile(file);
+	return { chats, pages };
+}
+
+test("session 1.9.0: page records follow the project id; two sessions of one project may not both carry the page", () => {
+	const page = landing();
+	const record = { applied: page, candidate: null, selectedBlockId: null, revision: 1 };
+	const file = buildSessionFile({ chats: [chat("session-chat", { projectId: "project-1" })], pages: { "project-1": record }, selectedSessionId: null, app, pins, now: NOW });
+	assert.equal(file.sessions[0]!.page?.revision, 1, "the page is looked up by projectId, not by the session id");
+	assert.deepEqual(Object.keys(splitSessionFile(file).pages), ["project-1"]);
+	const twin = { ...file.sessions[0]!, id: "session-chat-2" };
+	const dup = parseSessionFile({ ...file, sessions: [file.sessions[0]!, twin] });
+	assert.ok(!dup.ok && dup.code === "program_invalid" && dup.issues.some((i) => i.keyword === "duplicate_project_page"));
+	const sharing = parseSessionFile({ ...file, sessions: [file.sessions[0]!, { ...twin, page: null }] });
+	assert.ok(sharing.ok, "a second chat of the project without its own page copy is fine");
+});
+
+test("session 1.9.0: every file without projectId (1.0.0 to 1.8.0) loads unchanged: the project id is the session id", () => {
+	const page = landing();
+	const file = buildSessionFile({ chats: [chat("session-a")], pages: { "session-a": { applied: page, candidate: null, selectedBlockId: null, revision: 1 } }, selectedSessionId: null, app, pins, now: NOW });
+	assert.equal("projectId" in file.sessions[0]!, false);
+	assert.deepEqual(Object.keys(splitSessionFile(file).pages), ["session-a"]);
+	assert.equal(projectIdOf(file.sessions[0]!), "session-a");
 });

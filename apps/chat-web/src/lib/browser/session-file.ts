@@ -23,9 +23,16 @@ export type SessionApp = { name: string; version: string; host: "browser" | "des
 export type SessionPrefs = { layout?: Record<string, number | boolean> };
 export type SessionSettings = { theme?: "light" | "dark"; selectedModelId?: string; previewHideServiceLabels?: boolean };
 
-/** A chat as the chat store keeps it, plus its revision history (the page record lives in the page store). */
+/** The project a stored session works on: its `projectId`, else its own id (every file before session 1.9.0). */
+export function projectIdOf(chat: { id: string; projectId?: string }): string {
+	return chat.projectId ?? chat.id;
+}
+
+/** A session as the stores keep it: the project part, plus the optional chat extension (the page record lives in the page store). */
 export type StoredChat = {
 	id: string;
+	/** session 1.9.0: the project of the session (its page record is keyed by it); absent: `id`. */
+	projectId?: string;
 	pageRevision?: number | null;
 	pageId?: string;
 	history?: SessionRevisionEntry[];
@@ -93,7 +100,7 @@ export function buildSessionFile(input: {
 	now?: string;
 }): SessionFile {
 	const sessions = input.chats.map((chat) => {
-		const page = fileRecord(input.pages[chat.id]);
+		const page = fileRecord(input.pages[projectIdOf(chat)]);
 		const synced = reconcileChatRevision(chat, page ?? null);
 		return plain({ ...synced, page });
 	});
@@ -129,13 +136,13 @@ export function parseSessionFile(input: unknown): ParsedSessionFile {
 	return { ok: true, file };
 }
 
-/** Split a checked file into what the chat store and the page store keep. */
+/** Split a checked file into what the session store and the page store keep (page records are keyed by project id). */
 export function splitSessionFile(file: SessionFile): { chats: StoredChat[]; pages: Record<string, StoredPageRecord> } {
 	const chats: StoredChat[] = [];
 	const pages: Record<string, StoredPageRecord> = {};
 	for (const { page, ...chat } of file.sessions) {
 		chats.push(chat as StoredChat);
-		if (page) pages[chat.id] = page;
+		if (page) pages[projectIdOf(chat)] = page;
 	}
 	return { chats, pages };
 }
