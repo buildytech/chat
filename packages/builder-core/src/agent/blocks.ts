@@ -45,7 +45,7 @@ export function propsOutline(item: string): string[] | null {
 export function itemIndex(): string[] {
 	return allItems().map((item) => {
 		const info = itemInfo(item)!;
-		return `${item} (${info.title}; ${info.variants.join("|")}${info.edge === "top" ? "; header" : info.edge === "bottom" ? "; footer" : ""})`;
+		return `${item} (${info.title}; ${info.variants.join("|")}${info.role === "header" ? "; header" : info.role === "footer" ? "; footer" : ""})`;
 	});
 }
 
@@ -117,7 +117,7 @@ export function readBlock(id: unknown, variant?: unknown): BlockRead {
 		item,
 		title: info.title,
 		install: `npx ui8kit add ${item} --framework svelte`,
-		role: info.edge === "top" ? "header" : info.edge === "bottom" ? "footer" : "section",
+		role: info.role ?? "section",
 		defaultVariant: info.defaultVariant,
 		variants: info.variants,
 		variantSets,

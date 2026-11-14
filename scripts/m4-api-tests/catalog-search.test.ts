@@ -61,7 +61,7 @@ test("zero-hit query returns nearest catalog terms and the vocabulary for one re
 	assert.ok(es.items.length > 0, "facet labels in other locales come from the catalog, not from code");
 });
 
-test("property: every Stock screen starts a page the gate accepts, or is reported as not renderable; edge items are never doubled", () => {
+test("property: every Stock screen starts a page the gate accepts, or is reported as not renderable; the same screen twice is valid too", () => {
 	let started = 0;
 	for (const screen of catalogSnapshot.screens) {
 		const r = addScreen(emptyPage({ title: "Page", locale: "ru", now: "2026-11-13T12:00:00.000Z" }), screen.screenId);
@@ -73,7 +73,7 @@ test("property: every Stock screen starts a page the gate accepts, or is reporte
 		const gate = checkPageDoc(r.page);
 		assert.ok(gate.ok, `${screen.screenId}: ${JSON.stringify(!gate.ok && gate.issues.slice(0, 2))}`);
 		started += 1;
-		// A second screen on the same page: still valid, one header and one footer.
+		// A second screen on the same page: still valid (a second header and footer are allowed, ADR 0037).
 		const twice = addScreen(r.page, screen.screenId);
 		if (twice.ok) assert.ok(checkPageDoc(twice.page).ok, `${screen.screenId} twice`);
 	}

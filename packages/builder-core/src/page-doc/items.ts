@@ -2,7 +2,7 @@
  * Registry items as the page document (page-spec/v2, ADR 0034) names them: `item` = the registry item of
  * `npx ui8kit add`. Everything here is read from the pinned registry data (sources.json, props.json) and the catalog
  * snapshot; nothing is hand-written. The header / footer role of an item comes from the catalog's renderer-kind map of
- * its Stock block (registry metadata), never from the page.
+ * its Stock block (registry metadata), never from the page; it is informational (ADR 0037).
  */
 import { catalogSources } from "../catalog/sources.ts";
 import { catalogEntryBySpec } from "../catalog/sources.ts";
@@ -10,9 +10,9 @@ import { rendererKindForLabel } from "../catalog/renderer-kind.ts";
 import { hasPropsSchema } from "../catalog/props-schema.ts";
 import type { PageBlockKind } from "@buildytech/page-contract";
 
-/** Page chrome that stays at the top (header, side navigation) or at the bottom (footer, bottom navigation): registry roles. */
-function chromeEdge(kind: string): "top" | "bottom" | null {
-	return kind === "nav" || kind === "sidenav" ? "top" : kind === "footer" || kind === "bottomnav" ? "bottom" : null;
+/** Informational role of page chrome (header, side navigation / footer, bottom navigation): registry metadata, never a placement rule. */
+function chromeRole(kind: string): "header" | "footer" | null {
+	return kind === "nav" || kind === "sidenav" ? "header" : kind === "footer" || kind === "bottomnav" ? "footer" : null;
 }
 
 export type ItemInfo = {
@@ -25,8 +25,9 @@ export type ItemInfo = {
 	variants: string[];
 	/** Renderer kind of its Stock block (registry metadata): a ranking hint for the Blocks feed, never a rule. */
 	kind: PageBlockKind | null;
-	/** "top": header-like (first on the page); "bottom": footer-like (last); null: a section. */
-	edge: "top" | "bottom" | null;
+	/** "header" / "footer": the registry role of the item (a label for the Blocks feed and the agent's vocabulary); null: a section.
+	 *  Informational only (ADR 0037): no position or count rule follows from it, a page may hold any number of them anywhere. */
+	role: "header" | "footer" | null;
 };
 
 const CACHE = new Map<string, ItemInfo | null>();
@@ -47,7 +48,7 @@ export function itemInfo(item: string): ItemInfo | null {
 			defaultVariant: block.defaultVariant,
 			variants: Object.keys(block.variants),
 			kind,
-			edge: kind ? chromeEdge(kind) : null
+			role: kind ? chromeRole(kind) : null
 		};
 	}
 	CACHE.set(item, info);

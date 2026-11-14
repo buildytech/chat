@@ -1,6 +1,7 @@
 # ADR 0027: The screen family is advisory; feed availability is a property of the card
 
 Status: accepted (2026-11-11). Owner bug t147u, design t149u, bug t150u.
+Amended 2026-11-14: the hard-rule list names header first / footer last; ADR 0037 removed those two.
 
 ## Context
 

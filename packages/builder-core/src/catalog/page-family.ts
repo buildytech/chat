@@ -1,8 +1,8 @@
 /**
  * Screen family of a page (ADR 0027, kept by ADR 0034 as a ranking hint only). Advisory: derived from the page's
  * composition when it is read (nothing is stored on the page or the record), it ranks the Blocks feed, picks where new sections take their Stock sample
- * and tells Ask what kind of page this is. It never rejects a block; the hard rules stay header first / footer last
- * (addSlotCheck), a renderer exists and the props schema passes.
+ * and tells Ask what kind of page this is. It never rejects a block; the hard rules are a renderer exists and the props schema passes
+ * (header / footer have no position or count rule, ADR 0037).
  */
 import type { BlockV2, PageBlockKind } from "@buildytech/page-contract";
 import { itemInfo } from "../page-doc/items.ts";

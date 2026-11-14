@@ -1,7 +1,7 @@
 /**
  * The one gate of a page-spec/v2 document (ADR 0034): the published schema, the program checks, then the registry
- * checks (item exists and renders, variant is published, props pass the item's props schema, header-like items first
- * and footer-like items last). A failure is a list of compiler-style `{ path, code, expected, got }` that name where
+ * checks (item exists and renders, variant is published, props pass the item's props schema; no position or count rule
+ * for header-like and footer-like items, ADR 0037). A failure is a list of compiler-style `{ path, code, expected, got }` that name where
  * (a JSON Pointer into the document), what the registry wanted and what was written, so an agent fixes its own document.
  */
 import { closestIconNames } from "../icon-name.ts";
@@ -93,16 +93,6 @@ export function registryIssues(page: PageV2): DocIssue[] {
 				got: issue.keyword === "required" ? undefined : issue.value
 			});
 		}
-	});
-	// Header-like items first, footer-like items last (role from the registry metadata of the item).
-	let top = 0;
-	while (top < page.blocks.length && itemInfo(page.blocks[top]!.item)?.edge === "top") top += 1;
-	let bottom = page.blocks.length;
-	while (bottom > top && itemInfo(page.blocks[bottom - 1]!.item)?.edge === "bottom") bottom -= 1;
-	page.blocks.forEach((block, index) => {
-		const edge = itemInfo(block.item)?.edge;
-		if (edge === "top" && index >= top) out.push({ path: `/blocks/${index}`, code: "header_not_first", expected: "header-like items (site-header, side navigation) before every section", got: block.item });
-		if (edge === "bottom" && index < bottom) out.push({ path: `/blocks/${index}`, code: "footer_not_last", expected: "footer-like items (footer, bottom navigation) after every section", got: block.item });
 	});
 	return out;
 }

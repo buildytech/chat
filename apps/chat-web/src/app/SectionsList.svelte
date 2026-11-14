@@ -37,7 +37,7 @@ import { ArrowDown, ArrowUp, GripVertical, Redo2, Trash2, Undo2 } from "$lib/she
 	let issue = $state<string | null>(null);
 	let drag = $state<{ id: string; from: number; to: number; pointer: number; refusal: string | null } | null>(null);
 	/** Codes of the header / footer position rules (moves and drops say them the same way). */
-	const SLOT_CODES = new Set(["index_out_of_range", "above_header", "below_footer", "header_top", "footer_end"]);
+	const SLOT_CODES = new Set(["index_out_of_range"]);
 	const listEl = () => document.querySelector<HTMLElement>('[data-slot="sections-list"]');
 
 	const titleOf = (block: PageBlock) => itemInfo(block.item)?.title ?? block.item;

@@ -13,7 +13,7 @@ import { feedDrag } from "./drag.svelte";
 export function dropRefusal(at: number): string | null {
 	const item = feedDrag.item;
 	if (!item) return null;
-	// A screen: its sections take the slot; header / footer go to their edge and ones the page has are skipped.
+	// A screen: its sections take the slot in the screen's order (header / footer included, nothing is skipped for being a second one).
 	if (item.type === "screen") return item.supported ? null : t("feed.why.screen_not_renderable");
 	const check = inspector.canAdd(item.spec, item.variant);
 	if (!check.ok) return t(`feed.why.${check.code}`).replace("{role}", item.role ?? "");

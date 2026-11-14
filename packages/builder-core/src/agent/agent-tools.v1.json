@@ -118,7 +118,7 @@
    ],
    "descriptionByMode": {
     "ask": "Write a proposal for the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). Nothing is applied: the author applies the proposal in Build with one click. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again.",
-    "build": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it (page-spec/v2 schema, each block's props against the registry props schema, header-like items first, footer-like last) and returns the diff; the author applies it with Apply. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again."
+    "build": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it (page-spec/v2 schema, each block's props against the registry props schema, no position or count rule for header or footer) and returns the diff; the author applies it with Apply. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again."
    },
    "description": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it and returns the diff or [{ path, code, expected, got }].",
    "parameters": {

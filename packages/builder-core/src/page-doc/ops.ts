@@ -194,7 +194,6 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 			return done(writePage(page, { patch: [{ op: "move", from: `/blocks/${index}`, path: `/blocks/${input.to}` }] }), block.id, "move");
 		}
 		case "duplicate": {
-			if (itemInfo(block.item)?.edge) return fail("edge_item", "A header or footer is on the page once.");
 			const id = freshBlockId(block.item, new Set(page.blocks.map((entry) => entry.id)));
 			const copy: BlockV2 = { ...cloneJson(block), id };
 			if (copy.props && typeof copy.props.id === "string") copy.props = { ...copy.props, id };
@@ -322,7 +321,7 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 	}
 }
 
-/** Drop a Stock screen into a page: its renderable sections as adds at slot `at` (default: the end); one result, one undo step. */
+/** Drop a Stock screen into a page: its renderable sections as adds at slot `at` (default: the end), in the screen's order; one result, one undo step. */
 export function addScreen(page: PageV2, screenId: string, at?: number): (Extract<OpResult, { ok: true }> & { added: string[]; skipped: string[] }) | Extract<OpResult, { ok: false }> {
 	const { items, missing } = screenItems(screenId);
 	const skipped = [...missing];
@@ -333,13 +332,7 @@ export function addScreen(page: PageV2, screenId: string, at?: number): (Extract
 	let first: Extract<OpResult, { ok: false }> | null = null;
 	let last: Extract<OpResult, { ok: true }> | null = null;
 	for (const entry of items) {
-		const edge = itemInfo(entry.item)?.edge ?? null;
-		if (edge && next.blocks.some((block) => itemInfo(block.item)?.edge === edge)) {
-			skipped.push(entry.item);
-			continue;
-		}
-		const target = edge === "top" ? 0 : edge === "bottom" ? next.blocks.length : slot;
-		const result = applyOp(next, { op: "add", item: entry.item, variant: entry.variant, at: target });
+		const result = applyOp(next, { op: "add", item: entry.item, variant: entry.variant, at: slot });
 		if (!result.ok) {
 			first ??= result;
 			skipped.push(entry.item);
@@ -348,8 +341,7 @@ export function addScreen(page: PageV2, screenId: string, at?: number): (Extract
 		next = result.page;
 		last = result;
 		added.push(result.blockId);
-		if (edge === "top") slot += 1;
-		else if (!edge) slot = target + 1;
+		slot += 1;
 	}
 	if (!last) return first ?? (fail("nothing_added", `No section of ${screenId} fits this page.`) as Extract<OpResult, { ok: false }>);
 	return { ...last, page: next, blockId: added[0]!, op: "insert", added, skipped };

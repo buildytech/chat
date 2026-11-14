@@ -54,11 +54,12 @@ test("the gate names every problem as { path, code, expected, got }", () => {
 	bad.blocks[1]!.props = { ...bad.blocks[1]!.props, tone: "neon" };
 	bad.blocks[2]!.variant = "carousel";
 	bad.blocks[3]!.item = "no-such-item";
-	[bad.blocks[0], bad.blocks[7]] = [bad.blocks[7]!, bad.blocks[0]!];
+	[bad.blocks[0], bad.blocks[7]] = [bad.blocks[7]!, bad.blocks[0]!]; // header and footer swapped: still valid (ADR 0037)
 	const gate = checkPageDoc(bad);
 	assert.ok(!gate.ok);
 	const codes = new Set(gate.issues.map((issue) => issue.code));
-	for (const code of ["props_invalid", "unknown_variant", "unknown_item", "header_not_first", "footer_not_last"]) assert.ok(codes.has(code), `${code} in ${[...codes]}`);
+	for (const code of ["props_invalid", "unknown_variant", "unknown_item"]) assert.ok(codes.has(code), `${code} in ${[...codes]}`);
+	for (const code of ["header_not_first", "footer_not_last"]) assert.ok(!codes.has(code), `${code} is no check any more`);
 	for (const issue of gate.issues) {
 		assert.match(issue.path, /^\/(blocks\/\d+.*)?$/);
 		assert.ok(issue.expected !== undefined, JSON.stringify(issue));

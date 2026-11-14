@@ -12195,9 +12195,7 @@ __def("packages/page-contract/schema/page-spec-v2.schema.json", function (export
     "unknown_item",
     "unknown_variant",
     "no_renderer",
-    "props_invalid",
-    "header_not_first",
-    "footer_not_last"
+    "props_invalid"
   ],
   "x-limits": {
     "maxBlocks": 64,
@@ -27067,8 +27065,8 @@ const { catalogSources } = __req("packages/builder-core/src/catalog/sources.ts")
 const { catalogEntryBySpec } = __req("packages/builder-core/src/catalog/sources.ts");
 const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/renderer-kind.ts");
 const { hasPropsSchema } = __req("packages/builder-core/src/catalog/props-schema.ts");
-function chromeEdge(kind: string): "top" | "bottom" | null {
-	return kind === "nav" || kind === "sidenav" ? "top" : kind === "footer" || kind === "bottomnav" ? "bottom" : null;
+function chromeRole(kind: string): "header" | "footer" | null {
+	return kind === "nav" || kind === "sidenav" ? "header" : kind === "footer" || kind === "bottomnav" ? "footer" : null;
 }
 
 const CACHE = new Map<string, ItemInfo | null>();
@@ -27089,7 +27087,7 @@ function itemInfo(item: string): ItemInfo | null {
 			defaultVariant: block.defaultVariant,
 			variants: Object.keys(block.variants),
 			kind,
-			edge: kind ? chromeEdge(kind) : null
+			role: kind ? chromeRole(kind) : null
 		};
 	}
 	CACHE.set(item, info);
@@ -28343,7 +28341,7 @@ __def("packages/builder-core/src/agent/agent-tools.v1.json", function (exports) 
    ],
    "descriptionByMode": {
     "ask": "Write a proposal for the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). Nothing is applied: the author applies the proposal in Build with one click. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again.",
-    "build": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it (page-spec/v2 schema, each block's props against the registry props schema, header-like items first, footer-like last) and returns the diff; the author applies it with Apply. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again."
+    "build": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it (page-spec/v2 schema, each block's props against the registry props schema, no position or count rule for header or footer) and returns the diff; the author applies it with Apply. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again."
    },
    "description": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it and returns the diff or [{ path, code, expected, got }].",
    "parameters": {
@@ -29696,16 +29694,6 @@ function registryIssues(page: PageV2): DocIssue[] {
 			});
 		}
 	});
-	// Header-like items first, footer-like items last (role from the registry metadata of the item).
-	let top = 0;
-	while (top < page.blocks.length && itemInfo(page.blocks[top]!.item)?.edge === "top") top += 1;
-	let bottom = page.blocks.length;
-	while (bottom > top && itemInfo(page.blocks[bottom - 1]!.item)?.edge === "bottom") bottom -= 1;
-	page.blocks.forEach((block, index) => {
-		const edge = itemInfo(block.item)?.edge;
-		if (edge === "top" && index >= top) out.push({ path: `/blocks/${index}`, code: "header_not_first", expected: "header-like items (site-header, side navigation) before every section", got: block.item });
-		if (edge === "bottom" && index < bottom) out.push({ path: `/blocks/${index}`, code: "footer_not_last", expected: "footer-like items (footer, bottom navigation) after every section", got: block.item });
-	});
 	return out;
 }
 
@@ -30036,50 +30024,39 @@ exports["writePage"] = writePage;
 
 __def("packages/builder-core/src/page-doc/slots.ts", function (exports) {
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
-const edgeOf = (block: Pick<BlockV2, "item">) => itemInfo(block.item)?.edge ?? null;
+const roleOf = (block: Pick<BlockV2, "item">) => itemInfo(block.item)?.role ?? null;
 
-/** Which edge a registry item keeps to: "top" (header-like), "bottom" (footer-like), or null (a section). */
-function itemEdge(item: string): "top" | "bottom" | null {
-	return itemInfo(item)?.edge ?? null;
+/** The informational registry role of an item: "header", "footer", or null (a section). */
+function itemRole(item: string): "header" | "footer" | null {
+	return itemInfo(item)?.role ?? null;
 }
 
-/** Whether a new item may go to slot `at` (0 = before the first block, length = after the last). */
-function addSlotCheck(blocks: Pick<BlockV2, "item">[], item: string, at: number): SlotCheck {
-	if (!Number.isInteger(at) || at < 0 || at > blocks.length) return { ok: false, code: "index_out_of_range", message: `A section goes to slot 0..${blocks.length}.` };
-	let leading = 0;
-	while (leading < blocks.length && edgeOf(blocks[leading]!) === "top") leading += 1;
-	let trailing = blocks.length;
-	while (trailing > leading && edgeOf(blocks[trailing - 1]!) === "bottom") trailing -= 1;
-	const edge = itemEdge(item);
-	if (edge === "top") return at <= leading ? { ok: true } : { ok: false, code: "header_top", message: "A header goes at the top of the page." };
-	if (edge === "bottom") return at >= trailing ? { ok: true } : { ok: false, code: "footer_end", message: "A footer goes at the end of the page." };
-	if (at < leading) return { ok: false, code: "above_header", message: "Sections go below the header." };
-	if (at > trailing) return { ok: false, code: "below_footer", message: "Sections go above the footer." };
+/** Whether slot `at` exists (0 = before the first block, length = after the last). */
+function addSlotCheck(blocks: Pick<BlockV2, "item">[], _item: string, at: number): SlotCheck {
+	if (!Number.isInteger(at) || at < 0 || at > blocks.length) return { ok: false, code: "index_out_of_range", message: `A block goes to slot 0..${blocks.length}.` };
 	return { ok: true };
 }
 
-/** The same rules for a block that moves from `from` to final index `to`. */
+/** Whether a block may move from `from` to final index `to`: the index must exist. */
 function moveSlotCheck(blocks: Pick<BlockV2, "item">[], from: number, to: number): SlotCheck {
-	const moving = blocks[from];
-	if (!moving || !Number.isInteger(to) || to < 0 || to >= blocks.length) return { ok: false, code: "index_out_of_range", message: `A section moves to 1..${blocks.length}.` };
-	return addSlotCheck(
-		blocks.filter((_, index) => index !== from),
-		moving.item,
-		to
-	);
+	if (!blocks[from] || !Number.isInteger(to) || to < 0 || to >= blocks.length) return { ok: false, code: "index_out_of_range", message: `A block moves to 0..${blocks.length - 1}.` };
+	return { ok: true };
 }
 
-/** Where a new item goes when nobody said: header-like first, footer-like last, a section before the trailing footer run. */
+/**
+ * Where a new item goes when nobody said (a default, not a rule; an explicit slot is always honoured): a header-like item
+ * at the start, a footer-like one at the end, any other section before the footers that close the page.
+ */
 function naturalIndex(blocks: Pick<BlockV2, "item">[], item: string): number {
-	const edge = itemEdge(item);
-	if (edge === "top") return 0;
-	if (edge === "bottom") return blocks.length;
+	const role = itemRole(item);
+	if (role === "header") return 0;
+	if (role === "footer") return blocks.length;
 	let end = blocks.length;
-	while (end > 0 && edgeOf(blocks[end - 1]!) === "bottom") end -= 1;
+	while (end > 0 && roleOf(blocks[end - 1]!) === "footer") end -= 1;
 	return end;
 }
 
-exports["itemEdge"] = itemEdge;
+exports["itemRole"] = itemRole;
 exports["addSlotCheck"] = addSlotCheck;
 exports["moveSlotCheck"] = moveSlotCheck;
 exports["naturalIndex"] = naturalIndex;
@@ -31303,7 +31280,6 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 			return done(writePage(page, { patch: [{ op: "move", from: `/blocks/${index}`, path: `/blocks/${input.to}` }] }), block.id, "move");
 		}
 		case "duplicate": {
-			if (itemInfo(block.item)?.edge) return fail("edge_item", "A header or footer is on the page once.");
 			const id = freshBlockId(block.item, new Set(page.blocks.map((entry) => entry.id)));
 			const copy: BlockV2 = { ...cloneJson(block), id };
 			if (copy.props && typeof copy.props.id === "string") copy.props = { ...copy.props, id };
@@ -31431,7 +31407,7 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 	}
 }
 
-/** Drop a Stock screen into a page: its renderable sections as adds at slot `at` (default: the end); one result, one undo step. */
+/** Drop a Stock screen into a page: its renderable sections as adds at slot `at` (default: the end), in the screen's order; one result, one undo step. */
 function addScreen(page: PageV2, screenId: string, at?: number): (Extract<OpResult, { ok: true }> & { added: string[]; skipped: string[] }) | Extract<OpResult, { ok: false }> {
 	const { items, missing } = screenItems(screenId);
 	const skipped = [...missing];
@@ -31442,13 +31418,7 @@ function addScreen(page: PageV2, screenId: string, at?: number): (Extract<OpResu
 	let first: Extract<OpResult, { ok: false }> | null = null;
 	let last: Extract<OpResult, { ok: true }> | null = null;
 	for (const entry of items) {
-		const edge = itemInfo(entry.item)?.edge ?? null;
-		if (edge && next.blocks.some((block) => itemInfo(block.item)?.edge === edge)) {
-			skipped.push(entry.item);
-			continue;
-		}
-		const target = edge === "top" ? 0 : edge === "bottom" ? next.blocks.length : slot;
-		const result = applyOp(next, { op: "add", item: entry.item, variant: entry.variant, at: target });
+		const result = applyOp(next, { op: "add", item: entry.item, variant: entry.variant, at: slot });
 		if (!result.ok) {
 			first ??= result;
 			skipped.push(entry.item);
@@ -31457,8 +31427,7 @@ function addScreen(page: PageV2, screenId: string, at?: number): (Extract<OpResu
 		next = result.page;
 		last = result;
 		added.push(result.blockId);
-		if (edge === "top") slot += 1;
-		else if (!edge) slot = target + 1;
+		slot += 1;
 	}
 	if (!last) return first ?? (fail("nothing_added", `No section of ${screenId} fits this page.`) as Extract<OpResult, { ok: false }>);
 	return { ...last, page: next, blockId: added[0]!, op: "insert", added, skipped };
@@ -31495,7 +31464,7 @@ exports["freshBlockId"] = __req("packages/builder-core/src/page-doc/write.ts")["
 exports["normalizeBlocks"] = __req("packages/builder-core/src/page-doc/write.ts")["normalizeBlocks"];
 exports["writePage"] = __req("packages/builder-core/src/page-doc/write.ts")["writePage"];
 exports["addSlotCheck"] = __req("packages/builder-core/src/page-doc/slots.ts")["addSlotCheck"];
-exports["itemEdge"] = __req("packages/builder-core/src/page-doc/slots.ts")["itemEdge"];
+exports["itemRole"] = __req("packages/builder-core/src/page-doc/slots.ts")["itemRole"];
 exports["moveSlotCheck"] = __req("packages/builder-core/src/page-doc/slots.ts")["moveSlotCheck"];
 exports["naturalIndex"] = __req("packages/builder-core/src/page-doc/slots.ts")["naturalIndex"];
 exports["DEFAULT_START_SCREEN"] = __req("packages/builder-core/src/page-doc/start.ts")["DEFAULT_START_SCREEN"];
@@ -31561,7 +31530,7 @@ function propsOutline(item: string): string[] | null {
 function itemIndex(): string[] {
 	return allItems().map((item) => {
 		const info = itemInfo(item)!;
-		return `${item} (${info.title}; ${info.variants.join("|")}${info.edge === "top" ? "; header" : info.edge === "bottom" ? "; footer" : ""})`;
+		return `${item} (${info.title}; ${info.variants.join("|")}${info.role === "header" ? "; header" : info.role === "footer" ? "; footer" : ""})`;
 	});
 }
 
@@ -31609,7 +31578,7 @@ function readBlock(id: unknown, variant?: unknown): BlockRead {
 		item,
 		title: info.title,
 		install: `npx ui8kit add ${item} --framework svelte`,
-		role: info.edge === "top" ? "header" : info.edge === "bottom" ? "footer" : "section",
+		role: info.role ?? "section",
 		defaultVariant: info.defaultVariant,
 		variants: info.variants,
 		variantSets,
@@ -32131,9 +32100,9 @@ installPropsGate();
 const SYSTEM_COMMON = [
 	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
 	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
-	"- item is a registry item (npx ui8kit add <item>); itemIndex lists every item with its variants (header / footer roles marked). variant is one of the item's variants.",
+	"- item is a registry item (npx ui8kit add <item>); itemIndex lists every item with its variants (header / footer roles are marked as information only). variant is one of the item's variants.",
 	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field; an icon is a real Lucide icon name in kebab-case: an unknown name is rejected with its path and the nearest real names, pick one of those.",
-	"- Hard rules only: header-like items first, footer-like items last, every block's props pass the item's props schema. Everything else is your design decision: pick, replace, add, remove and reorder blocks as the request needs. Screens from search_catalog are hints, never constraints.",
+	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision, header and footer included (the roles in itemIndex are information, not rules: a banner may stand above a header, a page may hold several headers, a footer may stand anywhere): pick, replace, add, remove and reorder blocks as the request needs. Screens from search_catalog are hints, never constraints.",
 	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
 	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
 	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",

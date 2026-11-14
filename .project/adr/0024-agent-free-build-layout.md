@@ -2,6 +2,7 @@
 
 Status: accepted (2026-11-11), step A shipped. Owner approval: t137u with the layout widget. Supersedes the column
 part of ADR 0017 (nav | chat | preview | inspector) for Build; ADR 0017's splitters, rails, shortcuts and prefs stay.
+Amended 2026-11-14: the slot / position rules of this ADR (`addSlotCheck` / `moveSlotCheck` refusals, header first, footer last, one each) are removed by ADR 0037.
 
 ## Context
 

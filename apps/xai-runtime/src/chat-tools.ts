@@ -1,7 +1,7 @@
 /**
  * The agent turn on xAI chat completions (ADR 0034). One loop for Ask and Build: the model reads the page document and the
  * registry (get_page, get_block, search_catalog) and writes with one tool, write_page (a whole page or an RFC 6902 patch).
- * The host gates every write (page-spec/v2 schema, registry props schema, header first / footer last, selection scope,
+ * The host gates every write (page-spec/v2 schema, registry props schema, selection scope,
  * collection) and answers with the diff or a list of { path, code, expected, got }; the model fixes its own document. The
  * loop stops after two identical error lists. There is no local repair, no operation taxonomy, no phrase recognition.
  */
@@ -38,9 +38,9 @@ installPropsGate();
 const SYSTEM_COMMON = [
 	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
 	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
-	"- item is a registry item (npx ui8kit add <item>); itemIndex lists every item with its variants (header / footer roles marked). variant is one of the item's variants.",
+	"- item is a registry item (npx ui8kit add <item>); itemIndex lists every item with its variants (header / footer roles are marked as information only). variant is one of the item's variants.",
 	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field; an icon is a real Lucide icon name in kebab-case: an unknown name is rejected with its path and the nearest real names, pick one of those.",
-	"- Hard rules only: header-like items first, footer-like items last, every block's props pass the item's props schema. Everything else is your design decision: pick, replace, add, remove and reorder blocks as the request needs. Screens from search_catalog are hints, never constraints.",
+	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision, header and footer included (the roles in itemIndex are information, not rules: a banner may stand above a header, a page may hold several headers, a footer may stand anywhere): pick, replace, add, remove and reorder blocks as the request needs. Screens from search_catalog are hints, never constraints.",
 	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
 	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
 	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",

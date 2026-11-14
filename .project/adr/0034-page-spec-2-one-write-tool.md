@@ -1,6 +1,7 @@
 # ADR 0034: page-spec 2.0, a page is a document of registry blocks, and one write tool
 
 Status: accepted, 2026-11-13. Replaces the page model of ADR 0010 / 0013 / 0020 / 0022 / 0023 / 0024 / 0027 / 0030 / 0031 / 0033 (page-spec 1.x: kinds, copy slots, props overrides, plan ops). Kept: the props gate (0010), the catalog snapshot (0012), the inspector UI (0014 / 0032), the Stock search (0024), the advisory family as a feed hint (0027), the session standard (0015), the ZIP export 1:1 with `npx ui8kit add` (0008, 0016).
+Amended 2026-11-14: the hard rule "a header is first and a footer last" and the host checks `header_not_first` / `footer_not_last` are removed by ADR 0037.
 
 ## What went wrong
 

@@ -121,9 +121,9 @@ test("ADR 0013/0034: every supported non-dashboard screen starts a page of all i
 		const started = core.addScreen(core.emptyPage({ title: "Start", locale: "en", now: "2026-11-10T00:00:00.000Z" }), screen.screenId);
 		assert.ok(started.ok, `${screen.screenId}: ${JSON.stringify(!started.ok && started)}`);
 		if (!started.ok) continue;
-		// One header and one footer per page: a second header-like or footer-like block of the screen is reported as skipped.
-		assert.equal(started.page.blocks.length + started.skipped.length, shown.items.length, screen.screenId);
-		assert.deepEqual(started.page.blocks.map((block) => block.item), shown.items.map((entry) => entry.item).filter((_, index) => !started.skipped.includes(String(index)) && !started.skipped.includes(shown.items[index]!.item)), screen.screenId);
+		// Every section of the screen is added in screen order, header and footer included (ADR 0037: no count rule).
+		assert.equal(started.skipped.length, 0, screen.screenId);
+		assert.deepEqual(started.page.blocks.map((block) => block.item), shown.items.map((entry) => entry.item), screen.screenId);
 		assert.ok(core.checkPageDoc(started.page).ok, screen.screenId);
 		for (const block of started.page.blocks) {
 			// A new block carries the registry sample props: structure only, no invented copy.

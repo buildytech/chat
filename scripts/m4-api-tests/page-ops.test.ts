@@ -1,8 +1,8 @@
 /**
  * Page operations (ADR 0034): the one set of edits the inspector, the Sections list, the Blocks feed and drag and drop run.
  * Every operation is a write_page patch on the page document, so a hand edit and an agent edit pass the same gate; the base
- * page is never modified, an operation that changes nothing returns the same page, and the slot rules hold (header first,
- * footer last, content between).
+ * page is never modified, an operation that changes nothing returns the same page, and any block may stand at any slot
+ * (no position or count rule for header / footer, ADR 0037).
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -19,6 +19,7 @@ import {
 	moveSlotCheck,
 	naturalIndex,
 	renderBlock,
+	screenItems,
 	type InspectorField,
 	type PageOp
 } from "../../packages/builder-core/src/index.ts";
@@ -39,21 +40,59 @@ const run = (page: PageV2, op: PageOp) => {
 	return r;
 };
 
-test("slots: header on top, footer at the end, content between; moves keep the runs", () => {
+test("slots: only the slot's existence is checked; the header / footer role is information (ADR 0037)", () => {
 	const page = landing();
 	const items = page.blocks.map((block) => block.item);
-	assert.equal(itemInfo(items[0]!)?.edge, "top");
-	assert.equal(itemInfo(items.at(-1)!)?.edge, "bottom");
+	assert.equal(itemInfo(items[0]!)?.role, "header");
+	assert.equal(itemInfo(items.at(-1)!)?.role, "footer");
 	const last = page.blocks.length - 1;
-	assert.equal(addSlotCheck(page.blocks, "feature-grid", 0).ok, false, "a section above the header");
-	assert.equal(addSlotCheck(page.blocks, "feature-grid", page.blocks.length).ok, false, "a section below the footer");
-	assert.equal(addSlotCheck(page.blocks, "feature-grid", 2).ok, true);
-	assert.equal(addSlotCheck(page.blocks, "nav-bar", 3).ok, false, "a header only at the top");
-	assert.equal(moveSlotCheck(page.blocks, 1, 0).ok, false, "a section above the header");
-	assert.equal(moveSlotCheck(page.blocks, 1, last).ok, false, "a section below the footer");
-	assert.equal(moveSlotCheck(page.blocks, 1, 2).ok, true);
-	assert.equal(moveSlotCheck(page.blocks, last, 1).ok, false, "the footer stays last");
-	assert.equal(naturalIndex(page.blocks, "feature-grid"), last, "a section without a slot lands before the footer");
+	assert.equal(addSlotCheck(page.blocks, "feature-grid", 0).ok, true, "a section above the header");
+	assert.equal(addSlotCheck(page.blocks, "feature-grid", page.blocks.length).ok, true, "a section below the footer");
+	assert.equal(addSlotCheck(page.blocks, "nav-bar", 3).ok, true, "a header in the middle");
+	assert.equal(addSlotCheck(page.blocks, "site-footer", 0).ok, true, "a footer at the top");
+	const out = addSlotCheck(page.blocks, "feature-grid", page.blocks.length + 1);
+	assert.ok(!out.ok && out.code === "index_out_of_range");
+	assert.equal(moveSlotCheck(page.blocks, 1, 0).ok, true);
+	assert.equal(moveSlotCheck(page.blocks, 1, last).ok, true);
+	assert.equal(moveSlotCheck(page.blocks, last, 1).ok, true, "the footer may leave the end");
+	assert.equal(moveSlotCheck(page.blocks, 0, last + 1).ok, false);
+	// a default for an add without a slot, never a rule
+	assert.equal(naturalIndex(page.blocks, "feature-grid"), last, "a section without a slot lands before the closing footer");
+	assert.equal(naturalIndex(page.blocks, "nav-bar"), 0);
+});
+
+test("free composition: a banner above the header, several headers, a footer in the middle, every one valid and kept by the gate", () => {
+	const page = landing();
+	const header = page.blocks[0]!;
+	// a banner (a section) above the header
+	const banner = run(page, { op: "add", item: "cta-band", variant: "card", at: 0 });
+	assert.ok(banner.ok, JSON.stringify(banner));
+	assert.equal(banner.page.blocks[0]!.item, "cta-band");
+	assert.equal(banner.page.blocks[1]!.id, header.id);
+	// a second header, right under the first
+	const second = run(banner.page, { op: "add", item: header.item, variant: header.variant, at: 2 });
+	assert.ok(second.ok, JSON.stringify(second));
+	assert.equal(second.page.blocks.filter((b) => itemInfo(b.item)?.role === "header").length, 2);
+	// a header copy (duplicate), a footer dragged to the middle, a section after the last footer
+	const dup = run(second.page, { op: "duplicate", blockId: header.id });
+	assert.ok(dup.ok, JSON.stringify(dup));
+	const footerId = dup.page.blocks.at(-1)!.id;
+	const mid = run(dup.page, { op: "move", blockId: footerId, to: 3 });
+	assert.ok(mid.ok, JSON.stringify(mid));
+	assert.equal(mid.page.blocks[3]!.id, footerId);
+	const tail = run(mid.page, { op: "add", item: "feature-grid", variant: "grid", at: mid.page.blocks.length });
+	assert.ok(tail.ok, JSON.stringify(tail));
+	assert.equal(tail.page.blocks.at(-1)!.item, "feature-grid");
+	// the gate raises no position or count code for any of it, and a whole-document write passes too
+	assert.ok(checkPageDoc(tail.page).ok);
+	const reversed: PageV2 = { ...tail.page, blocks: [...tail.page.blocks].reverse() };
+	assert.ok(checkPageDoc(reversed).ok, "footer first, header last");
+	const written = writePage(page, { page: reversed });
+	assert.ok(written.ok, JSON.stringify(written));
+	// the roles are only a label: footer-like items first, headers last, nothing is reported
+	for (const code of ["header_not_first", "footer_not_last", "above_header", "below_footer", "edge_item"]) {
+		assert.ok(!JSON.stringify(checkPageDoc(reversed)).includes(code), code);
+	}
 });
 
 test("set, set_variant, reset, move, duplicate, remove, replace: one write each, gate-valid, one history entry", () => {
@@ -85,13 +124,13 @@ test("set, set_variant, reset, move, duplicate, remove, replace: one write each,
 	const moved = run(page, { op: "move", blockId: page.blocks[2]!.id, to: 3 });
 	assert.ok(moved.ok, JSON.stringify(moved));
 	assert.equal(moved.page.blocks[3]!.id, page.blocks[2]!.id);
-	assert.ok(!run(page, { op: "move", blockId: page.blocks[2]!.id, to: 0 }).ok, "above the header");
+	assert.ok(run(page, { op: "move", blockId: page.blocks[2]!.id, to: 0 }).ok, "above the header is allowed");
 
 	const copy = run(page, { op: "duplicate", blockId: page.blocks[2]!.id });
 	assert.ok(copy.ok, JSON.stringify(copy));
 	assert.equal(copy.page.blocks.length, page.blocks.length + 1);
 	assert.equal(new Set(copy.page.blocks.map((b) => b.id)).size, copy.page.blocks.length);
-	assert.ok(!run(page, { op: "duplicate", blockId: page.blocks[0]!.id }).ok, "one header per page");
+	assert.ok(run(page, { op: "duplicate", blockId: page.blocks[0]!.id }).ok, "a header may be duplicated");
 
 	const removed = run(page, { op: "remove", blockId: page.blocks[2]!.id });
 	assert.ok(removed.ok);
@@ -139,21 +178,24 @@ test("list rows: add (registry row shape), duplicate, up, down, remove", () => {
 	assert.equal(count(), start + 1, "add + duplicate - remove");
 });
 
-test("a screen dropped on a page adds its sections in one result; a second header or footer is skipped", () => {
+test("a screen dropped on a page adds all its sections in screen order in one result; nothing is skipped for being a second header or footer", () => {
 	const page = landing();
-	const r = run(page, { op: "add", item: "feature-grid", variant: "grid", at: 2 });
-	assert.ok(r.ok);
+	const shown = screenItems("screen.theme-marketing-landing/teams");
 	const screen = addScreen(page, "screen.theme-marketing-landing/teams", 2);
 	assert.ok(screen.ok, JSON.stringify(screen));
 	if (screen.ok) {
-		assert.ok(screen.added.length >= 1);
+		assert.equal(screen.added.length, shown.items.length);
+		assert.deepEqual(screen.skipped, shown.missing);
+		assert.deepEqual(screen.page.blocks.slice(2, 2 + screen.added.length).map((b) => b.item), shown.items.map((entry) => entry.item));
 		assert.ok(checkPageDoc(screen.page).ok);
-		assert.equal(screen.page.blocks.filter((b) => itemInfo(b.item)?.edge === "top").length, 1);
-		assert.equal(screen.page.blocks.filter((b) => itemInfo(b.item)?.edge === "bottom").length, 1);
+		const headers = (items: readonly string[]) => items.filter((item) => itemInfo(item)?.role === "header").length;
+		assert.equal(headers(screen.page.blocks.map((b) => b.item)), headers(page.blocks.map((b) => b.item)) + headers(shown.items.map((entry) => entry.item)), "a second header comes with the screen");
 	}
-	const refused = run(page, { op: "add", item: "feature-grid", variant: "grid", at: 0 });
-	assert.ok(!refused.ok);
-	if (!refused.ok) assert.equal(refused.code, "above_header");
+	const top = run(page, { op: "add", item: "feature-grid", variant: "grid", at: 0 });
+	assert.ok(top.ok, "a section above the header");
+	const bad = run(page, { op: "add", item: "feature-grid", variant: "grid", at: page.blocks.length + 1 });
+	assert.ok(!bad.ok);
+	if (!bad.ok) assert.equal(bad.code, "index_out_of_range");
 });
 
 test("the inspector model lists exactly the props of the registry item, with the values the block renders", () => {

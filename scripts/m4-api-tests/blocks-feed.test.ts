@@ -82,7 +82,7 @@ test("Blocks feed add: after the selected section or at the end, every gate, no 
 	assert.equal(new Set(after.page.blocks.map((block) => block.id)).size, after.page.blocks.length, "ids stay unique");
 	const end = applyOp(page, { op: "add", item: "feature-grid", variant: "grid" });
 	assert.ok(end.ok);
-	assert.ok(end.page.blocks.some((block) => block.id === end.blockId) && checkPageDoc(end.page).ok, "the block is in and header first / footer last still hold");
+	assert.ok(end.page.blocks.some((block) => block.id === end.blockId) && checkPageDoc(end.page).ok, "the block is in and the page is valid");
 	assert.equal(JSON.stringify(page), before, "the base page is never modified");
 	// The reasons the feed shows on a disabled "+": the registry has no renderer for the block, or no such variant.
 	const reason = (spec: string, variant: string | null = null) => {
