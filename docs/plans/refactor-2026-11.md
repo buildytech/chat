@@ -1,6 +1,6 @@
 # Plan: refactor 2026-11 (one block source, project/chat split, chat as a module, quality gate)
 
-Status: accepted by the owner (2026-11-14); audit done; item 3 done ([b545857](https://github.com/buildytech/chat/commit/b545857), ADR 0038); next: item 1.
+Status: accepted by the owner (2026-11-14); audit done; item 3 done ([b545857](https://github.com/buildytech/chat/commit/b545857), ADR 0038); item 1 done ([f69bb81](https://github.com/buildytech/chat/commit/f69bb81), [ec9e4a9](https://github.com/buildytech/chat/commit/ec9e4a9), ADR 0039); next: item 2.
 
 Authority: owner decision of 2026-11-14 ("all proposals accepted"). Follow `AGENTS.md`, the ADRs in `.project/adr/` (0034 page-spec v2, 0035 render probe, 0036 map editor, 0037 free composition) and the gate below. Every item that changes a rule or a contract gets its own ADR.
 
@@ -33,13 +33,13 @@ Status: done (36 defects: 8 S1, 11 S2, 17 S3). Fixed since: B-04, B-05, half of 
 Goal: one source for block knowledge, Stock plus `props/v0.json`. The stock registry graph (`catalog/stock-registry.v0.json`) and the agent item index are derived from it, with no hand-kept duplicates (audit B-01, B-02).
 
 Acceptance:
-- [ ] One generator reads the pinned sources and writes every derived artifact; the six stores listed in B-02 are either generated from it or deleted.
-- [ ] Block role and kind are derived (no `pageKindOfBlock` map in `catalog/policy.v0.json`, no `PAGE_BLOCK_KINDS` list, no `chromeRole` function); roles stay informational (ADR 0037).
-- [ ] `npm run snapshot:check` proves that every derived file is byte-identical to a fresh derivation.
-- [ ] A test fails when an item exists in one artifact and not in another.
-- [ ] Inspector coverage unchanged (526/532 or better); the agent item list and the Blocks feed show the same items as before.
+- [x] One generator reads the pinned sources and writes every derived artifact; the six stores listed in B-02 are either generated from it or deleted. (`scripts/lib/catalog-artifacts.mjs`; `snapshot:derive` writes coverage, snapshot, search index, `sources.json`, `props.json` and the lock; `registry:sources` and `catalog:index` removed.)
+- [x] Block role and kind are derived: the role is generated from `policy.kindRoles` into `snapshot.json`, the renderer kinds from `pageKindOfBlock`; `chromeRole`, `policy.pageKinds` and the second kind set are gone; roles stay informational (ADR 0037). Two limits, both decided in ADR 0039: `pageKindOfBlock` and `kindRoles` remain the one hand-written classification (Stock and `props/v0.json` carry no header / footer fact), and `PAGE_BLOCK_KINDS` stays as the v1 contract enum until item 4 removes the v1 model.
+- [x] `npm run snapshot:check` proves that every derived file is byte-identical to a fresh derivation.
+- [x] A test fails when an item exists in one artifact and not in another (`scripts/m4-api-tests/catalog-artifacts.test.ts`, also fails on drift of any single file).
+- [x] Inspector coverage unchanged (526/532); the agent item list and the Blocks feed show the same items and the same 7 header / footer roles as before.
 
-Status: todo.
+Status: done ([f69bb81](https://github.com/buildytech/chat/commit/f69bb81) re-pin, [ec9e4a9](https://github.com/buildytech/chat/commit/ec9e4a9) generator and roles, ADR 0039; staging READY and smoke-checked).
 
 ## 2. Session split: Project vs `ext.chat`
 
@@ -122,7 +122,7 @@ Status: todo.
 
 ## 7. Open product items (kept, not part of the refactor)
 
-- [ ] Stale buildy digest pin in Stock: pull XGenBot `3cc9dce` first, then re-pin (`catalog/snapshot.config.json` still pins `afc826c`; Stock `buildy.v0.json` pins `inspectorDigest` b4631259017067e9, chat coverage has 2d545339e3f81ca9; audit B-03).
+- [x] Stale buildy digest pin in Stock: Stock `buildy.v0.json` re-pinned in [9eeabca](https://github.com/codegen-x/ui8kit/commit/9eeabca), chat pin refreshed in [f69bb81](https://github.com/buildytech/chat/commit/f69bb81) (audit B-03).
 - [ ] Currency and minor units upstream (in the contract and Stock; no local workaround).
 - [ ] Preview error alert contrast.
 - [ ] JSON-as-text failure (a model answers with JSON as plain text instead of calling the tool).
