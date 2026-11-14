@@ -16,8 +16,6 @@ export {
 	applyAskProposal,
 	getChatMode,
 	setChatMode,
-	getChatSkin,
-	setChatSkin,
 	getRuntimeStatus,
 	getSelectedSession,
 	getChatCollection,

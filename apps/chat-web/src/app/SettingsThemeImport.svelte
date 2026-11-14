@@ -16,7 +16,7 @@ import { Check, Download, FileUp, Trash2, Upload } from "$lib/shell-icons";
 	import Input from "$registry/kit/ui/input/Input.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import { getChatSkin, setChatSkin } from "$lib/chat-core";
+	import { getProjectSkin, setProjectSkin } from "$lib/project";
 	import { CUSTOM_SKIN_ID, type ThemeIssue } from "$lib/theme/custom-skin";
 	import { customSkin } from "$lib/theme/custom-skin.svelte";
 
@@ -26,7 +26,7 @@ import { Check, Download, FileUp, Trash2, Upload } from "$lib/shell-icons";
 	let note = $state("");
 	let issues = $state.raw<ThemeIssue[]>([]);
 	const config = $derived(customSkin.config);
-	const inUse = $derived(getChatSkin() === CUSTOM_SKIN_ID);
+	const inUse = $derived(getProjectSkin() === CUSTOM_SKIN_ID);
 
 	function issueText(issue: ThemeIssue): string {
 		return t(`themeImport.issue.${issue.code}`)
@@ -72,7 +72,7 @@ import { Check, Download, FileUp, Trash2, Upload } from "$lib/shell-icons";
 	}
 
 	function onRemove() {
-		if (inUse) setChatSkin(null);
+		if (inUse) setProjectSkin(null);
 		customSkin.remove();
 		issues = [];
 		note = t("themeImport.removed");
@@ -90,7 +90,7 @@ import { Check, Download, FileUp, Trash2, Upload } from "$lib/shell-icons";
 			</Text>
 		</Group>
 		<Group class="gap-2">
-			<Button class={ACTION} data-action="custom-skin-use" disabled={inUse} onclick={() => setChatSkin(CUSTOM_SKIN_ID)}>
+			<Button class={ACTION} data-action="custom-skin-use" disabled={inUse} onclick={() => setProjectSkin(CUSTOM_SKIN_ID)}>
 				{inUse ? t("themeImport.inUse") : t("themeImport.use")}
 			</Button>
 			<Button class={ACTION} data-action="custom-skin-export" onclick={onExport}>

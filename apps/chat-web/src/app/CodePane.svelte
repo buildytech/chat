@@ -12,7 +12,7 @@ import { ChevronLeft, Copy, FileCode, Files, X } from "$lib/shell-icons";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import { getChatSkin } from "$lib/chat-core";
+	import { getProjectSkin } from "$lib/project";
 	import {
 		blocksOf,
 		getCurrentPage, getPageRevision,
@@ -28,7 +28,7 @@ import { ChevronLeft, Copy, FileCode, Files, X } from "$lib/shell-icons";
 
 	const page = $derived(getCurrentPage());
 	const savedRevision = $derived(getPageRevision());
-	const pack = $derived(page ? packFilesFromPage(page, packSkinOptions(getChatSkin())) : []);
+	const pack = $derived(page ? packFilesFromPage(page, packSkinOptions(getProjectSkin())) : []);
 
 	let openFolders = $state<Record<string, boolean>>({ "src/sections": true });
 

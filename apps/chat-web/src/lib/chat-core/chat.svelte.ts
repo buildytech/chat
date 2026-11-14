@@ -8,7 +8,7 @@ import { t } from "../i18n/dictionary";
 import { getPersistError } from "../browser/persist";
 import { hydrateSessionContext } from "../browser/onboarding.svelte";
 import { noteMigration } from "../browser/storage-v1.ts";
-import { createProject, deleteAllProjects, deleteProject, getProjectSkin, getSelectedProject, getProjects, hydrateProjects, listProjects, putProject, registerProjectNormalizer, saveProjects, selectProject, sessionToSelectFromUrl, setProjectSkin } from "../project/store.svelte.ts";
+import { createProject, deleteAllProjects, deleteProject, getSelectedProject, getProjects, hydrateProjects, listProjects, putProject, registerProjectNormalizer, saveProjects, selectProject, sessionToSelectFromUrl } from "../project/store.svelte.ts";
 import type { Project } from "../project/types.ts";
 import { chatModeOf } from "./modes";
 import { normalizeChatExt, projectOfView, viewOf } from "./view";
@@ -77,10 +77,6 @@ export function setChatMode(mode: AgentMode): void {
 	if (!session || session.mode === mode) return;
 	commitSession({ ...session, mode });
 }
-
-/** Skin of the selected project's page (session `skin`): a skin id of the pinned registry, or null for the default theme. */
-export const getChatSkin = getProjectSkin;
-export const setChatSkin = setProjectSkin;
 
 export function getRuntimeStatus(): CreatorRuntimeStatus {
 	const persist = getPersistError();

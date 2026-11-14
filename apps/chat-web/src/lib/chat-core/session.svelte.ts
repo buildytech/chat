@@ -3,7 +3,7 @@
  * chat.svelte (view, mode, selection), turn / send (a turn), proposal-flow (Apply, Discard, host proposals),
  * intake (collections), transfer (session file), gates (write gates).
  */
-export { abortInflightRun, applySessionFromUrl, createSession, createdInThisTab, deleteAllSessions, deleteSession, getChatMode, getChatSkin, getRuntimeStatus, getSelectedSession, hydrateSessions, listSessions, selectSession, setChatMode, setChatSkin } from "./chat.svelte";
+export { abortInflightRun, applySessionFromUrl, createSession, createdInThisTab, deleteAllSessions, deleteSession, getChatMode, getRuntimeStatus, getSelectedSession, hydrateSessions, listSessions, selectSession, setChatMode } from "./chat.svelte";
 export { loadPropsGate } from "./gates";
 export { retryLastFailed, sendMessage } from "./send";
 export { applyAskProposal, applyProposal, applyVariantFromAsk, discardProposal, startEmptyPageInChat, startPageFromScreen, type AskApplyResult } from "./proposal-flow";

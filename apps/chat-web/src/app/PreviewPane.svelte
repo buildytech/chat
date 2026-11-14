@@ -17,11 +17,10 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	import {
 		applyProposal,
 		discardProposal,
-		getChatSkin,
 		getSelectedSession,
 		proposalStatus,
-		setChatSkin,
 	} from "$lib/chat-core";
+	import { getProjectSkin, setProjectSkin } from "$lib/project";
 	import { applySkin, forcedPreviewMode, skins } from "$lib/theme/skins";
 	import { customSkin } from "$lib/theme/custom-skin.svelte";
 	import { CUSTOM_SKIN_ID } from "$lib/theme/custom-skin";
@@ -142,7 +141,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 
 	// Skin of this chat's page (session `skin`, registry item theme-<skin>): on the preview document only, as in the ZIP.
 	const skinOptions = skins();
-	const skin = $derived(getChatSkin());
+	const skin = $derived(getProjectSkin());
 	// The imported theme (Settings > Theme import) is one more option, "Custom Skin"; it renders on the frame only.
 	const custom = $derived(customSkin.config);
 	const skinValue = $derived(skin === CUSTOM_SKIN_ID && !custom ? "" : (skin ?? ""));
@@ -154,7 +153,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	});
 
 	function onSkin(event: Event) {
-		setChatSkin((event.currentTarget as HTMLSelectElement).value || null);
+		setProjectSkin((event.currentTarget as HTMLSelectElement).value || null);
 	}
 
 	// Stage size (the frame scales down to fit; its CSS width stays the device width).
