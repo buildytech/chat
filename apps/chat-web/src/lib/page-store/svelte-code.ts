@@ -3,7 +3,7 @@
  * `src`): the page is src/App.svelte composing one src/sections/<block-id>.svelte per page block, and every section is a
  * UI8Kit registry block (src/blocks/<item>.svelte) with its props (ADR 0034: the block's `props`, exactly). The registry files themselves come from the pinned snapshot (registry/svelte), never from here.
  */
-import { itemInfo, registryClosure, registryItemClosure, registryItemFiles, registrySkin, renderBlock, skinItem, type BlockRender } from "@buildytech/builder-core";
+import { itemInfo, registryClosure, registryItemClosure, registrySkin, renderBlock, skinItem, type BlockRender } from "@buildytech/builder-core";
 import type { BlockV2, PageV2 } from "@buildytech/page-contract";
 
 /** CLI install root of the exported project (ui8kit.config.json `dir`, the CLI default). */

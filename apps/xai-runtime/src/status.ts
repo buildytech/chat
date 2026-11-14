@@ -26,21 +26,8 @@ export type XaiRuntimeStatus = {
 };
 
 async function sdkPresent(): Promise<{ openaiProvider: boolean; ai: boolean }> {
-	let openaiProvider = false;
-	let ai = false;
-	try {
-		await import("@ai-sdk/openai");
-		openaiProvider = true;
-	} catch {
-		openaiProvider = false;
-	}
-	try {
-		await import("ai");
-		ai = true;
-	} catch {
-		ai = false;
-	}
-	return { openaiProvider, ai };
+	const present = (load: () => Promise<unknown>) => load().then(() => true, () => false);
+	return { openaiProvider: await present(() => import("@ai-sdk/openai")), ai: await present(() => import("ai")) };
 }
 
 export async function runtimeStatus(env: EnvMap = readEnv()): Promise<XaiRuntimeStatus> {
@@ -66,7 +53,7 @@ export async function runtimeStatus(env: EnvMap = readEnv()): Promise<XaiRuntime
 		discoverCode = discovered.code;
 	}
 
-	let code = "xai_api_key_missing";
+	let code: string;
 	if (leaks.length) code = "public_secret_forbidden";
 	else if (!key.present) code = "xai_api_key_missing";
 	else if (shared && !basicRequired) code = "basic_auth_required_before_shared_bind";

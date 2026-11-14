@@ -45,7 +45,7 @@ export function planTurn(brief: string, mode: AgentMode): TurnPlan {
 	const collection = mode === "build" ? collectionRequest(session?.collection) : null;
 	const empty = blankPage(getSelectedProject());
 	let base = shownBase ?? empty;
-	let shown: PageV2 = shownBase ?? empty;
+	const shown: PageV2 = shownBase ?? empty;
 	if (!shownBase && collection) {
 		const bounds = collectionBounds(collection);
 		const draft = bounds ? collectionDraft(bounds, { title: session?.collection?.title ?? t("page.untitled"), locale: null }) : null;

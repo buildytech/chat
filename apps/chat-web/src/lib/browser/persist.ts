@@ -302,7 +302,7 @@ export function loadPagesBlob(): PagesBlobV1 {
 	if (!store) return emptyBlob();
 	const raw = store.getItem(PAGES_KEY);
 	if (raw == null) return emptyBlob();
-	let parsed: PagesBlobV1 | null = null;
+	let parsed: PagesBlobV1 | null;
 	try {
 		parsed = JSON.parse(raw) as PagesBlobV1;
 	} catch {

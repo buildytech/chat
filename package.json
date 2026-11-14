@@ -18,7 +18,7 @@
     "build": "npm run build --workspace=@buildytech/chat-web",
     "bundle:runtime": "node scripts/bundle-vercel-runtime.mjs && node scripts/build-render-bundle.mjs",
     "test": "npm run test --workspace=@buildytech/page-contract && npm run test:unit",
-    "check": "npm run check --workspace=@buildytech/chat-web",
+    "check": "npm run typecheck && npm run lint && npm run lint:ratchet && npm run lint:ui8px && npm run check --workspace=@buildytech/chat-web",
     "verify": "npm test && npm run check && npm run build && npm run modules:check:trace",
     "modules:check": "node scripts/check-modules.mjs",
     "modules:check:trace": "node scripts/check-modules.mjs --no-trace",
@@ -33,7 +33,11 @@
     "registry:snapshot": "node scripts/registry-snapshot.mjs",
     "registry:check": "node scripts/registry-snapshot.mjs --check",
     "test:api": "node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts --test scripts/m4-api-tests/*.test.ts",
-    "test:unit": "node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts --test scripts/m4-api-tests/map.test.ts scripts/m4-api-tests/page-doc.test.ts scripts/m4-api-tests/gateway.retry.test.ts scripts/m4-api-tests/session-url.test.ts scripts/m4-api-tests/creator-shell.test.ts scripts/m4-api-tests/mode.test.ts scripts/m4-api-tests/no-wordpress-runtime.test.ts scripts/m4-api-tests/model-switch.test.ts scripts/m4-api-tests/usage.test.ts scripts/m4-api-tests/vercel-protect.test.ts scripts/m4-api-tests/persist.test.ts scripts/m4-api-tests/svelte-code.test.ts scripts/m4-api-tests/proposal-state.test.ts scripts/m4-api-tests/registry-render.test.ts scripts/m4-api-tests/preview-window.test.ts scripts/m4-api-tests/catalog-snapshot.test.ts scripts/m4-api-tests/catalog-artifacts.test.ts scripts/m4-api-tests/inspector.test.ts scripts/m4-api-tests/session-store.test.ts scripts/m4-api-tests/project-split.test.ts scripts/m4-api-tests/layout-prefs.test.ts scripts/m4-api-tests/collection-intake.test.ts scripts/m4-api-tests/view-map.test.ts scripts/m4-api-tests/blocks-feed.test.ts scripts/m4-api-tests/custom-skin.test.ts scripts/m4-api-tests/ui-skin.test.ts scripts/m4-api-tests/page-agent.test.ts scripts/m4-api-tests/food-agent.test.ts scripts/m4-api-tests/page-ops.test.ts scripts/m4-api-tests/page-ui.test.ts scripts/m4-api-tests/page-migration.test.ts scripts/m4-api-tests/agent-tools.test.ts scripts/m4-api-tests/catalog-search.test.ts scripts/m4-api-tests/registry-sources.test.ts scripts/m4-api-tests/runtime-bundle.test.ts scripts/m4-api-tests/render-probe.test.ts scripts/m4-api-tests/render-probe-callers.test.ts scripts/m4-api-tests/render-items.test.ts scripts/m4-api-tests/render-recovery.test.ts scripts/m4-api-tests/inspector-widgets.test.ts scripts/m4-api-tests/modules.test.ts"
+    "test:unit": "node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts --test scripts/m4-api-tests/map.test.ts scripts/m4-api-tests/page-doc.test.ts scripts/m4-api-tests/gateway.retry.test.ts scripts/m4-api-tests/session-url.test.ts scripts/m4-api-tests/creator-shell.test.ts scripts/m4-api-tests/mode.test.ts scripts/m4-api-tests/no-wordpress-runtime.test.ts scripts/m4-api-tests/model-switch.test.ts scripts/m4-api-tests/usage.test.ts scripts/m4-api-tests/vercel-protect.test.ts scripts/m4-api-tests/persist.test.ts scripts/m4-api-tests/svelte-code.test.ts scripts/m4-api-tests/proposal-state.test.ts scripts/m4-api-tests/registry-render.test.ts scripts/m4-api-tests/preview-window.test.ts scripts/m4-api-tests/catalog-snapshot.test.ts scripts/m4-api-tests/catalog-artifacts.test.ts scripts/m4-api-tests/inspector.test.ts scripts/m4-api-tests/session-store.test.ts scripts/m4-api-tests/project-split.test.ts scripts/m4-api-tests/layout-prefs.test.ts scripts/m4-api-tests/collection-intake.test.ts scripts/m4-api-tests/view-map.test.ts scripts/m4-api-tests/blocks-feed.test.ts scripts/m4-api-tests/custom-skin.test.ts scripts/m4-api-tests/ui-skin.test.ts scripts/m4-api-tests/page-agent.test.ts scripts/m4-api-tests/food-agent.test.ts scripts/m4-api-tests/page-ops.test.ts scripts/m4-api-tests/page-ui.test.ts scripts/m4-api-tests/page-migration.test.ts scripts/m4-api-tests/agent-tools.test.ts scripts/m4-api-tests/catalog-search.test.ts scripts/m4-api-tests/registry-sources.test.ts scripts/m4-api-tests/runtime-bundle.test.ts scripts/m4-api-tests/render-probe.test.ts scripts/m4-api-tests/render-probe-callers.test.ts scripts/m4-api-tests/render-items.test.ts scripts/m4-api-tests/render-recovery.test.ts scripts/m4-api-tests/inspector-widgets.test.ts scripts/m4-api-tests/modules.test.ts scripts/m4-api-tests/gate.test.ts",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "lint": "eslint packages apps",
+    "lint:ratchet": "node scripts/check-ratchet.mjs",
+    "lint:ui8px": "node scripts/ui8px-extract.mjs"
   },
   "engines": {
     "node": "22.x"
@@ -42,6 +46,15 @@
     "esbuild@0.28.2": true
   },
   "devDependencies": {
-    "playwright-core": "^1.65.1"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import-x": "^4.18.1",
+    "eslint-plugin-svelte": "^3.24.1",
+    "fast-check": "^4.10.2",
+    "globals": "^17.14.0",
+    "playwright-core": "^1.65.1",
+    "typescript-eslint": "^8.72.2",
+    "ui8px": "^0.2.5"
   }
 }

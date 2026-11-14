@@ -2,7 +2,6 @@
 	import { onMount } from "svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
-	import { t } from "$lib/i18n/dictionary";
 	import { shortcutFor } from "$lib/layout/shortcuts";
 	import type { ProjectSummary } from "$lib/project";
 	import { creatorLayout } from "$lib/creator-layout.svelte";

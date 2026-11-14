@@ -34,7 +34,7 @@ async function getJson(path: string, apiKey: string, signal: AbortSignal): Promi
 		headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
 		signal
 	});
-	let payload: unknown = null;
+	let payload: unknown;
 	try {
 		payload = await res.json();
 	} catch {

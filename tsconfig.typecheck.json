@@ -1,0 +1,6 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": { "strict": true, "noUnusedLocals": true, "noUnusedParameters": true, "noFallthroughCasesInSwitch": true, "lib": ["ES2023", "DOM"], "noEmit": true },
+	"include": ["packages/*/src/**/*.ts", "apps/xai-runtime/src/**/*.ts", "api/**/*.ts"],
+	"exclude": ["**/*.test.ts", "**/node_modules/**"]
+}

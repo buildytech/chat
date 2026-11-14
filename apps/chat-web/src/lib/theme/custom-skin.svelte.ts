@@ -16,7 +16,7 @@ function load(): ThemeConfig | null {
 	return null;
 }
 
-let config = $state.raw<ThemeConfig | null>(typeof localStorage === "undefined" ? null : load());
+let config = $state.raw<ThemeConfig | null>(browserStorage() ? load() : null);
 
 export const customSkin = {
 	get config(): ThemeConfig | null {

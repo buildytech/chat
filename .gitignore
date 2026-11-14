@@ -28,3 +28,5 @@ tmp/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+.ui8px/reports/
+.ui8px/telemetry/

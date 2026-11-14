@@ -24,10 +24,12 @@ const spec = read("../fixtures/conformance-cases.json");
 const PROGRAM = new Set<string>((pageSpecSchema as { "x-program-checks": string[] })["x-program-checks"]);
 
 type Seg = string | number;
-function applyCase(c: any): any {
+/** Conformance cases are untyped JSON edited by path: the type is what `JSON.parse` returns. */
+type Json = ReturnType<typeof JSON.parse>;
+function applyCase(c: Json): Json {
 	const doc = structuredClone(fixture);
 	for (const op of c.set ?? []) {
-		let cur: any = doc;
+		let cur: Json = doc;
 		for (const seg of (op.path as Seg[]).slice(0, -1)) cur = cur[seg];
 		cur[op.path.at(-1)] = op.value;
 	}
@@ -37,7 +39,7 @@ function applyCase(c: any): any {
 		doc.layout.blocks.push({ id: `block-extra-${i}`, kind: "feature", title: "Extra", summary: "Padding block for the count limit." });
 	}
 	if (c.nestDepth) {
-		const nest = (d: number): any => ({ id: `block-d${d}`, kind: "feature", title: "Nested", summary: "Depth probe.", ...(d > 1 ? { children: [nest(d - 1)] } : {}) });
+		const nest = (d: number): Json => ({ id: `block-d${d}`, kind: "feature", title: "Nested", summary: "Depth probe.", ...(d > 1 ? { children: [nest(d - 1)] } : {}) });
 		doc.layout.blocks = [nest(c.nestDepth)];
 	}
 	return doc;

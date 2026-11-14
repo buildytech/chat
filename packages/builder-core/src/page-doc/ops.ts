@@ -284,7 +284,7 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 			if (!Array.isArray(rows)) return fail("not_a_list", `${input.pointer} is not a list.`, input.pointer);
 			const row = input.row ?? rows.length - 1;
 			const list = [...rows];
-			let name: OpName = "replace";
+			let name: OpName;
 			const shape = pointerInfo(block.item, input.pointer);
 			const max = Math.min(shape?.maxItems ?? MAX_ROWS, MAX_ROWS);
 			if ((input.action === "add" || input.action === "duplicate") && list.length >= max) return fail("max_rows", `${input.pointer} holds at most ${max} entries.`, input.pointer);

@@ -30500,7 +30500,7 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 			if (!Array.isArray(rows)) return fail("not_a_list", `${input.pointer} is not a list.`, input.pointer);
 			const row = input.row ?? rows.length - 1;
 			const list = [...rows];
-			let name: OpName = "replace";
+			let name: OpName;
 			const shape = pointerInfo(block.item, input.pointer);
 			const max = Math.min(shape?.maxItems ?? MAX_ROWS, MAX_ROWS);
 			if ((input.action === "add" || input.action === "duplicate") && list.length >= max) return fail("max_rows", `${input.pointer} holds at most ${max} entries.`, input.pointer);
@@ -32549,7 +32549,7 @@ async function getJson(path: string, apiKey: string, signal: AbortSignal): Promi
 		headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
 		signal
 	});
-	let payload: unknown = null;
+	let payload: unknown;
 	try {
 		payload = await res.json();
 	} catch {
@@ -32637,21 +32637,8 @@ __def("apps/xai-runtime/src/status.ts", function (exports) {
 const { CANDIDATE_CHAT_MODEL, PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, RUNTIME_AUTH_ENV, XAI_RUNTIME_NOTES, XAI_SECRET_ENV, hasPublicSecretLeak, isSharedPublicSurface, readBasicAuthConfig, readEnv, readXaiKeyState } = __req("packages/chat-agent/src/index.ts");
 const { discoverAccountModels } = __req("apps/xai-runtime/src/discover.ts");
 async function sdkPresent(): Promise<{ openaiProvider: boolean; ai: boolean }> {
-	let openaiProvider = false;
-	let ai = false;
-	try {
-		await import("@ai-sdk/openai");
-		openaiProvider = true;
-	} catch {
-		openaiProvider = false;
-	}
-	try {
-		await import("ai");
-		ai = true;
-	} catch {
-		ai = false;
-	}
-	return { openaiProvider, ai };
+	const present = (load: () => Promise<unknown>) => load().then(() => true, () => false);
+	return { openaiProvider: await present(() => import("@ai-sdk/openai")), ai: await present(() => import("ai")) };
 }
 
 async function runtimeStatus(env: EnvMap = readEnv()): Promise<XaiRuntimeStatus> {
@@ -32677,7 +32664,7 @@ async function runtimeStatus(env: EnvMap = readEnv()): Promise<XaiRuntimeStatus>
 		discoverCode = discovered.code;
 	}
 
-	let code = "xai_api_key_missing";
+	let code: string;
 	if (leaks.length) code = "public_secret_forbidden";
 	else if (!key.present) code = "xai_api_key_missing";
 	else if (shared && !basicRequired) code = "basic_auth_required_before_shared_bind";

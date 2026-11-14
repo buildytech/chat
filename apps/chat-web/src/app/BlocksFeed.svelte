@@ -6,7 +6,6 @@
 -->
 <script lang="ts">
 import { Columns2, Rows3, ChevronLeft, ChevronRight } from "$lib/shell-icons";
-	import { previewSettings } from "$lib/browser/preview-settings.svelte";
  import Block from "$registry/compose/Block.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
 	import Button from "$registry/compose/Button.svelte";
@@ -42,7 +41,7 @@ import { Columns2, Rows3, ChevronLeft, ChevronRight } from "$lib/shell-icons";
 	);
 
 	function pick(key: keyof FeedFilters) {
-		return (event: Event) => feed.setFilter(key, ((event.currentTarget as HTMLSelectElement).value || null) as never);
+		return (event: Event) => feed.setFilter(key, ((event.currentTarget as HTMLSelectElement).value || null) as FeedFilters[typeof key]);
 	}
 
 	async function add(item: StockSearchItem) {
