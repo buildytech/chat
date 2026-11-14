@@ -6,7 +6,7 @@
  * have none) and the schema decides which props are money (props-schema.ts: a number named like the registry's money names beside
  * a `currency` prop). Hosts that are not the model (the Inspector, the client gate, export) use the stored document as it is.
  */
-import type { BlockV2, PageV2 } from "@buildytech/page-contract";
+import type { PageV2 } from "@buildytech/page-contract";
 import { toMajor, toMinor } from "../catalog/money.ts";
 import { propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
 
