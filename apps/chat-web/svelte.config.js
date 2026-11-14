@@ -6,6 +6,9 @@ const config = {
 	preprocess: vitePreprocess(),
 	kit: {
 		adapter: adapter({
+			// BUILDY_BUILD_DIR: a second build (the chat-off no-trace check) beside the default one.
+			pages: process.env.BUILDY_BUILD_DIR || 'build',
+			assets: process.env.BUILDY_BUILD_DIR || 'build',
 			fallback: '200.html',
 			strict: false
 		}),
