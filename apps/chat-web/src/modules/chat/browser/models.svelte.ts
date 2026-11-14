@@ -1,7 +1,9 @@
 import { DEFAULT_CHAT_MODEL_ID, GROK_CHAT_MODELS, getChatModel, modelRunsToolLoop, type GrokChatModelId } from "@buildytech/chat-agent";
-import { STORAGE_KEYS, readKey, writeKey } from "../../../lib/browser/storage-v1.ts";
+import { readKey, registerLegacyKey, writeKey } from "../../../lib/browser/storage-v1.ts";
 
-const STORE_KEY = STORAGE_KEYS.selectedModelId;
+/** The chat's own key in the buildy:v1 space (a session file carries it as settings.selectedModelId). */
+const STORE_KEY = "buildy:v1:selectedModelId";
+registerLegacyKey("buildy.chat.selectedModelId", STORE_KEY);
 
 function readStored(): GrokChatModelId {
 	try {

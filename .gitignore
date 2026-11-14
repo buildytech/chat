@@ -2,7 +2,6 @@ node_modules/
 .cache/
 dist/
 build/
-!apps/chat-web/src/routes/build/
 .svelte-kit/
 .vite/
 .turbo/
@@ -14,6 +13,7 @@ coverage/
 !.env.example
 apps/chat-web/.svelte-kit/
 apps/chat-web/build/
+apps/chat-web/build-nochat/
 api/runtime/_render/
 apps/chat-web/static/render/
 api/runtime/_t/

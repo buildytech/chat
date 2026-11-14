@@ -30,12 +30,12 @@ test("/preview renders registry blocks only: no chat UI, no labels, read-only pa
 	assert.ok(existsSync(new URL("../../apps/chat-web/src/routes/preview/+page.svelte", import.meta.url)));
 	const route = web("routes/preview/+page.svelte");
 	assert.match(route, /preview-frame\.css/);
-	assert.doesNotMatch(route, /app\.css|ChatApp/);
+	assert.doesNotMatch(route, /app\.css|BuilderApp/);
 	const view = web("app/StandalonePreview.svelte");
 	assert.match(view, /<PreviewBlock \{block\} clean standalone \/>/);
 	assert.match(view, /readPreviewPage/);
 	assert.match(view, /theme\.init\(\)/);
-	assert.doesNotMatch(view, /bindProject|ChatSidebar|ChatComposer|session\.svelte/);
+	assert.doesNotMatch(view, /bindProject|ProjectSidebar|ChatComposer|session\.svelte/);
 	// Chat CSS stays with the chat route, so the standalone window gets the kit theme alone.
 	assert.doesNotMatch(web("routes/+layout.svelte"), /import\s+"[^"]*app\.css"/);
 	assert.match(web("routes/+page.svelte"), /app\.css/);
@@ -45,11 +45,13 @@ test("clean mode hides service labels in Preview, keeps Apply / Discard", () => 
 	const pane = web("app/PreviewPane.svelte");
 	assert.match(pane, /previewSettings\.hideServiceLabels/);
 	assert.match(pane, /\{#if unapplied \|\| !clean\}/);
-	assert.match(pane, /\{:else if appliedLabel && !clean\}/);
+	assert.match(pane, /<ModuleSlot name="preview\.review"/, "Apply / Discard are the chat module's, in a slot");
+	const review = web("modules/chat/ui/ProposalReview.svelte");
+	assert.match(review, /\{:else if appliedLabel && !clean\}/);
 	const block = web("app/PreviewBlock.svelte");
 	assert.match(block, /\{#if !clean\}\s*<Group[\s\S]*data-slot="block-provenance"/);
 	assert.match(web("app/PreviewFrame.svelte"), /clean=\{previewSettings\.hideServiceLabels\}/);
-	const sidebar = web("app/ChatSidebar.svelte");
+	const sidebar = web("app/ProjectSidebar.svelte");
 	assert.match(sidebar, /\$registry\/compose\/Checkbox\.svelte/);
 	assert.match(sidebar, /settings\.hidePreviewLabels/);
 	for (const locale of ["en", "ru"]) {

@@ -16,7 +16,8 @@ import { SquareRoundedLetterB, ChevronDown, ChevronUp, Circle, X, Search, Settin
 	import { theme } from "$lib/theme/theme.svelte";
 	import { THEME_PREFS } from "$lib/theme/theme-pref";
 	import { cn } from "$registry/utils/cn";
-	import { deleteAllSessions, type SessionSummary } from "$modules/chat/core";
+	import { removeAllProjects } from "$lib/modules/workspace.svelte";
+	import type { ProjectSummary } from "$lib/project";
 	import ConfirmDialog from "./ConfirmDialog.svelte";
 	import SettingsSessionFile from "./SettingsSessionFile.svelte";
 	import SettingsThemeImport from "./SettingsThemeImport.svelte";
@@ -34,7 +35,7 @@ import { SquareRoundedLetterB, ChevronDown, ChevronUp, Circle, X, Search, Settin
 	};
 
 	let {
-		sessions,
+		projects,
 		selectedId,
 		onNew,
 		onSelect,
@@ -43,7 +44,7 @@ import { SquareRoundedLetterB, ChevronDown, ChevronUp, Circle, X, Search, Settin
 		collapsed = false,
 		canDelete = false,
 	}: {
-		sessions: SessionSummary[];
+		projects: ProjectSummary[];
 		selectedId: string | null;
 		onNew: () => void | Promise<void>;
 		onSelect: (id: string) => void | Promise<void>;
@@ -66,8 +67,8 @@ import { SquareRoundedLetterB, ChevronDown, ChevronUp, Circle, X, Search, Settin
 
 	const visibleSessions = $derived.by(() => {
 		const needle = searchDraft.trim().toLowerCase();
-		if (!needle) return sessions;
-		return sessions.filter(
+		if (!needle) return projects;
+		return projects.filter(
 			(session) => session.title.toLowerCase().includes(needle) || session.id.toLowerCase().includes(needle),
 		);
 	});
@@ -129,14 +130,14 @@ import { SquareRoundedLetterB, ChevronDown, ChevronUp, Circle, X, Search, Settin
 		}
 	}
 
-	function requestDelete(session: SessionSummary) {
+	function requestDelete(session: ProjectSummary) {
 		pendingDelete = { kind: "one", id: session.id, title: session.title };
 	}
 
 	function confirmPendingDelete() {
 		if (!pendingDelete) return;
 		if (pendingDelete.kind === "all") {
-			deleteAllSessions();
+			removeAllProjects();
 			storageNote = t("sidebar.cleared");
 		} else {
 			onDelete(pendingDelete.id);

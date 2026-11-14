@@ -7,9 +7,12 @@ import { readFileSync, readdirSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
-import { docOfProject, projectOfDoc } from "../../apps/chat-web/src/lib/project/doc.ts";
+import { docOfProject, projectOfDoc, registerProjectExtension } from "../../apps/chat-web/src/lib/project/doc.ts";
 import { bySavedAt, draftPageId, newProject, withApplied, withExt, withSkin, withoutCollectionItem } from "../../apps/chat-web/src/lib/project/transitions.ts";
-import { normalizeChatExt, projectOfView, viewOf } from "../../apps/chat-web/src/modules/chat/core/view.ts";
+import { CHAT_EXTENSION_KEYS, normalizeChatExt, projectOfView, viewOf } from "../../apps/chat-web/src/modules/chat/core/view.ts";
+
+// The chat module registers its keys when it loads; this file tests the project with it loaded (modules.test.ts: without).
+registerProjectExtension("chat", CHAT_EXTENSION_KEYS);
 
 const NOW = "2026-11-10T12:00:00.000Z";
 const lib = (path: string) => fileURLToPath(new URL(`../../apps/chat-web/src/lib/${path}`, import.meta.url));

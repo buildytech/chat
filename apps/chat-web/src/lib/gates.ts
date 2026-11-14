@@ -17,7 +17,7 @@ function importPropsGate(): Promise<unknown> {
 	return propsChunk;
 }
 function importRenderProbe(): Promise<unknown> {
-	probeChunk ??= Promise.all([import("../../../lib/preview/render-probe"), import("$app/paths")]).then(([probe, paths]) => probe.loadRenderProbe(`${paths.base}${probe.RENDER_BUNDLE_PATH}`)).catch((err) => {
+	probeChunk ??= Promise.all([import("./preview/render-probe"), import("$app/paths")]).then(([probe, paths]) => probe.loadRenderProbe(`${paths.base}${probe.RENDER_BUNDLE_PATH}`)).catch((err) => {
 		probeChunk = null;
 		throw err;
 	});

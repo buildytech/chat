@@ -8,10 +8,10 @@ import type { PageV2 } from "@buildytech/page-contract";
 import { t } from "../../../lib/i18n/dictionary";
 import { hydrateSessionContext, getScreenId } from "../browser/onboarding.svelte.ts";
 import { getEditBase, getPageRevision, setCandidatePage } from "../../../lib/page-store";
-import { applyPending, discardPending, getSelectedProject, startEmptyProject } from "../../../lib/project/store.svelte.ts";
+import { applyPending, discardPending, getSelectedProject } from "../../../lib/project/store.svelte.ts";
 import { draftPageId } from "../../../lib/project/transitions.ts";
 import { commitSession, createSession, getSelectedSession, setChatMode } from "./chat.svelte.ts";
-import { loadPropsGate } from "./gates";
+import { loadPropsGate } from "../../../lib/gates";
 import { isPendingProposal, markPendingProposals, withProposalStatus } from "./proposals";
 import { blankPage, diffKey, newProposalState, nowIso, provenanceFor, shownPageOf, uid } from "./turn";
 import type { ChatMessage, ChatProposalState, ChatSession } from "./types";
@@ -71,19 +71,6 @@ export async function startPageFromScreen(screenId: string): Promise<Started> {
 	);
 	if (!applyProposal()) return { ok: false, code: "not_applied", message: "The page did not apply." };
 	return { ok: true };
-}
-
-/**
- * Empty start: the first "+" or drop on a chat with no page. The selected chat (a new one when none is selected)
- * switches to Build and gets an empty page (no sections), with no model call and no chat message; the caller adds the
- * section right after, so the page and the section are one undo step.
- */
-export function startEmptyPageInChat(screenId: string | null = null): boolean {
-	if (!getSelectedProject()) void createSession();
-	if (!startEmptyProject(screenId)) return false;
-	setChatMode("build");
-	hydrateSessionContext({ scenarioId: null, screenId });
-	return true;
 }
 
 /**

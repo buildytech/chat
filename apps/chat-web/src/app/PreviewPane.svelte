@@ -14,13 +14,8 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import {
-		applyProposal,
-		discardProposal,
-		getSelectedSession,
-		proposalStatus,
-	} from "$modules/chat/core";
-	import { getProjectSkin, setProjectSkin } from "$lib/project";
+	import ModuleSlot from "./ModuleSlot.svelte";
+	import { getProjectSkin, getSelectedProject, setProjectSkin } from "$lib/project";
 	import { applySkin, forcedPreviewMode, skins } from "$lib/theme/skins";
 	import { customSkin } from "$lib/theme/custom-skin.svelte";
 	import { CUSTOM_SKIN_ID } from "$lib/theme/custom-skin";
@@ -48,23 +43,8 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	const page = $derived(getCurrentPage());
 	const savedRevision = $derived(getPageRevision());
 	const unapplied = $derived(hasUnappliedProposal());
-	const appliedLabel = $derived.by(() => {
-		const last = getSelectedSession()
-			?.messages.slice()
-			.reverse()
-			.find((message) => message.proposal);
-		return last?.proposal && proposalStatus(last.proposal) === "applied" && !unapplied ? t("proposal.applied") : "";
-	});
 	const blocks = $derived(page ? blocksOf(page) : []);
 	const slugUrl = $derived(page ? `/${page.slug}` : "/");
-	const lastProposal = $derived.by(() => {
-		return (
-			getSelectedSession()
-				?.messages.slice()
-				.reverse()
-				.find((message) => message.proposal)?.proposal ?? null
-		);
-	});
 	const provenance = $derived(getCurrentProvenance());
 	const screenId = $derived(provenance?.screenId ?? "");
 	const missingLabels = $derived((provenance?.missing ?? []).join(", "));
@@ -265,7 +245,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	// the applied page) with the registry blocks and kit theme, no chat UI and no service labels.
 	function openNew() {
 		window.open(
-			previewWindowUrl(getSelectedSession()?.id ?? getBoundProjectId(), base, page?.slug),
+			previewWindowUrl(getSelectedProject()?.id ?? getBoundProjectId(), base, page?.slug),
 			"_blank",
 			"noopener",
 		);
@@ -387,29 +367,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 			data-slot="preview-status"
 			data-clean={clean ? "true" : undefined}
 		>
-			{#if unapplied}
-				<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-2 py-2">
-					<Text tag="span" class="text-xs text-muted-foreground">{t("proposal.notApplied")}</Text>
-					<Group class="gap-2">
-						<Button
-							class="rounded bg-foreground px-3 py-2 text-sm text-background hover:bg-foreground/90"
-							onclick={() => applyProposal()}
-						>
-							<Text tag="span">{t("proposal.apply")}</Text>
-						</Button>
-						<Button
-							class="rounded border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
-							onclick={() => discardProposal()}
-						>
-							<Text tag="span">{t("proposal.discard")}</Text>
-						</Button>
-					</Group>
-				</Group>
-			{:else if appliedLabel && !clean}
-				<Group class="items-center justify-between gap-2 rounded border border-border bg-muted px-2 py-2">
-					<Text tag="span" class="text-xs text-muted-foreground">{appliedLabel}</Text>
-				</Group>
-			{/if}
+			<ModuleSlot name="preview.review" props={{}} />
 			{#key reloadKey}
 				{#if !clean}
 					<Text tag="p" class="text-xs text-muted-foreground">{t("preview.runtime")}</Text>

@@ -97,14 +97,11 @@
 
 /* --- radii: concentric scopes ------------------------------------------------------------------------------------- */
 /* cards with 8px padding: 12 outside, 4 inside (thumbnail, row actions) */
-:is([data-slot="feed-card"], [data-slot="stock-card"], #composer-model-list, #composer-mode-list) { --radius: 12px; }
-:is([data-slot="feed-card"], [data-slot="stock-card"], #composer-model-list, #composer-mode-list) * { --radius: 4px; }
+:is([data-slot="feed-card"], [data-slot="stock-card"]) { --radius: 12px; }
+:is([data-slot="feed-card"], [data-slot="stock-card"]) * { --radius: 4px; }
 /* rows and regions with 4px padding: 12 outside, 8 inside */
 :is([data-slot="sections-list"] > li, [data-slot="settings-region"]) { --radius: 12px; }
 :is([data-slot="sections-list"] > li, [data-slot="settings-region"]) * { --radius: 8px; }
-/* One composer surface: 16 outside, 8px padding and 8px controls inside. */
-[data-slot="composer-surface"] { --radius: 16px; }
-[data-slot="composer-surface"] * { --radius: 8px; }
 dialog { --radius: 16px; }
 dialog * { --radius: 8px; }
 
@@ -115,11 +112,7 @@ dialog * { --radius: 8px; }
 
 /* --- shadows: floating layers and a hovered card ------------------------------------------------------------------- */
 :is([data-slot="feed-card"], [data-slot="stock-card"]):hover { box-shadow: var(--ui-shadow-contact); background: var(--ui-raised); }
-:is([data-slot="inspector-slideover"], #composer-model-list, #composer-mode-list, dialog[open]) { box-shadow: var(--ui-shadow-float); }
-[data-slot="composer-surface"] { box-shadow: var(--ui-shadow-contact); }
-[data-slot="composer-surface"]:has(:focus-visible) { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
-/* The surrounding input surface owns the boundary and focus; no nested field ring. */
-#composer:focus-visible { box-shadow: none; outline: none; }
+:is([data-slot="inspector-slideover"], dialog[open]) { box-shadow: var(--ui-shadow-float); }
 
 /* --- focus: a visible 2px ring at 3:1 on every surface (the kit's 15% halo is too faint on the dark ladder); text
    fields keep their own ring (ring-ring / inset ring) and the caret, so they get no second outline ------------------ */
@@ -162,6 +155,3 @@ select.pr-2 { padding-inline-end: 1.5rem; }
 	font-family: "Google Sans", var(--font-sans);
 }
 
-/* Grow the prompt with its content while keeping long messages scrollable.
-   The id beats a text-* utility, so the size lives here: 12px, one step under text-sm. */
-#composer { font-size: 0.75rem; line-height: 1rem; field-sizing: content; max-height: max(4rem, calc(100dvh - 16rem)); }

@@ -4,11 +4,10 @@
 	import Group from "$registry/compose/Group.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { shortcutFor } from "$lib/layout/shortcuts";
-	import type { ChatSession, CreatorRuntimeStatus, SessionSummary } from "$modules/chat/core";
-	import type { GrokChatModel, SessionUsage } from "@buildytech/chat-agent";
+	import type { ProjectSummary } from "$lib/project";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
-	import ChatColumn from "./ChatColumn.svelte";
-	import ChatDrawer from "./ChatDrawer.svelte";
+	import LeftPanel from "./LeftPanel.svelte";
+	import NavDrawer from "./NavDrawer.svelte";
 	import CreatorTabs from "./CreatorTabs.svelte";
 	import CreatorTopBar from "./CreatorTopBar.svelte";
 	import PaneSplitter from "./PaneSplitter.svelte";
@@ -17,44 +16,20 @@
 
 	let {
 		sidebarOpen,
-		sessions,
-		selected,
+		projects,
 		selectedId,
-		busy,
 		onNew,
 		onSelect,
 		onDelete,
-		onSend,
-		onCancel,
-		onAddModel,
-		onSelectModel,
-		onApply,
-		onDiscard,
-		chatModels = [],
-		selectedModelId = "",
-		sessionUsage = null,
 		onToggleSidebar,
-		onCloseSidebar,
-		runtime
+		onCloseSidebar
 	}: {
 		sidebarOpen: boolean;
-		sessions: SessionSummary[];
-		selected: ChatSession | null;
+		projects: ProjectSummary[];
 		selectedId: string | null;
-		busy: boolean;
-		runtime: CreatorRuntimeStatus;
 		onNew: () => void | Promise<void>;
 		onSelect: (id: string) => void | Promise<void>;
 		onDelete: (id: string) => void;
-		onSend: (text: string) => void | Promise<void>;
-		onCancel?: () => void;
-		onAddModel?: () => void;
-		onSelectModel?: (id: string) => void;
-		onApply?: () => void;
-		onDiscard?: () => void;
-		chatModels?: readonly GrokChatModel[];
-		selectedModelId?: string;
-		sessionUsage?: SessionUsage | null;
 		onToggleSidebar: () => void;
 		onCloseSidebar: () => void;
 	} = $props();
@@ -121,15 +96,14 @@
 	data-chat-hidden={chatHidden ? "true" : "false"}
 >
 	<Group class="relative min-h-0 flex-1 items-stretch">
-		<ChatDrawer
+		<NavDrawer
 			open={sidebarOpen}
 			collapsed={columns && sidebarCollapsed}
-			{sessions}
+			{projects}
 			{selectedId}
 			{onNew}
 			{onSelect}
 			{onDelete}
-			canDelete={runtime.canDelete}
 			onClose={onCloseSidebar}
 		/>
 		{#if columns && !sidebarCollapsed}
@@ -141,22 +115,7 @@
 				onToggleSidebar={handleNavToggle}
 			/>
 			<Group class="min-h-0 min-w-0 flex-1 items-stretch max-lg:flex-col">
-				<ChatColumn
-					session={selected}
-					{busy}
-					{onSend}
-					{onCancel}
-					{onAddModel}
-					{onSelectModel}
-					{onApply}
-					{onDiscard}
-					{chatModels}
-					{selectedModelId}
-					{sessionUsage}
-					runtimeStatus={runtime}
-					visible={mobileSurface === "chat"}
-					{chatHidden}
-				/>
+				<LeftPanel visible={mobileSurface === "chat"} {chatHidden} />
 				{#if !chatHidden}
 					<PaneSplitter pane="chat" controls="creator-chat-column" class="border-r border-border max-lg:hidden" />
 				{/if}

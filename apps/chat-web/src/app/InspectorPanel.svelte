@@ -21,7 +21,7 @@ import { ArrowDown, ArrowUp, Copy, Redo2, RotateCcw, Trash2, SlidersHorizontal, 
 	import Summary from "$registry/compose/Summary.svelte";
 	import Text from "$registry/compose/Text.svelte";
 	import { inspectorModel } from "@buildytech/builder-core";
-	import { loadPropsGate } from "$modules/chat/core";
+	import { loadPropsGate } from "$lib/gates";
 	import { t } from "$lib/i18n/dictionary";
 	import { partitionFields, type FieldHandlers } from "$lib/inspector/fields";
 	import { inspector } from "$lib/inspector/inspector.svelte";

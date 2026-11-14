@@ -8,12 +8,13 @@ import { catalogProvenance } from "@buildytech/builder-core";
 import { SESSION_FORMAT, SESSION_SCHEMA_URL } from "@buildytech/page-contract/session";
 import snapshotConfig from "../../../../../catalog/snapshot.config.json";
 import chatPackage from "../../../package.json";
-import { exportSessions, importSessions, openCollectionFile, type CollectionIntake, type ImportResult } from "../../modules/chat/core";
-import { isCollectionDoc } from "@buildytech/page-contract/collection";
+import { emit, fileKinds, sessionSettingsModules } from "../modules/registry.svelte.ts";
+import { openProject } from "../modules/workspace.svelte.ts";
+import type { ModuleImportResult } from "../modules/types.ts";
+import { exportProjects, importProjects, type ImportResult } from "../project/file.svelte.ts";
 import { theme } from "../theme/theme.svelte";
 import { migrationReport, type MigrationHits } from "./migration-counters.ts";
 import { browserStorage } from "./storage-v1.ts";
-import { getSelectedModelId, setSelectedModelId } from "../../modules/chat/browser/models.svelte.ts";
 import { creatorLayout } from "../creator-layout.svelte";
 import { previewSettings } from "./preview-settings.svelte";
 import type { SessionApp, SessionFile, SessionPins, SessionSettings } from "./session-file.ts";
@@ -24,8 +25,8 @@ export type BuildyApi = {
 	readonly format: typeof SESSION_FORMAT;
 	readonly schema: string;
 	export(options?: { download?: boolean }): SessionFile;
-	/** A session file buildy:v1, or a Stock collection buildy-collection:v1 (opened in a new Build chat). */
-	import(json: unknown): Promise<ImportResult | CollectionIntake>;
+	/** A session file buildy:v1, or a file a loaded module opens (the chat: a Stock collection buildy-collection:v1 in a new Build chat). */
+	import(json: unknown): Promise<ImportResult | ModuleImportResult>;
 	/** Hits of the old-data paths in this browser since this build first ran (refactor plan item 4: a migration goes only when every browser shows zero). */
 	migrationReport(): MigrationHits;
 };
@@ -52,14 +53,14 @@ export function sessionPins(): SessionPins {
 function settings(): SessionSettings {
 	return {
 		theme: theme.mode,
-		selectedModelId: getSelectedModelId(),
-		previewHideServiceLabels: previewSettings.hideServiceLabels
+		previewHideServiceLabels: previewSettings.hideServiceLabels,
+		...Object.assign({}, ...sessionSettingsModules().map((m) => m.read()))
 	};
 }
 
 function applySettings(input: SessionSettings | undefined): void {
 	if (!input) return;
-	if (input.selectedModelId) setSelectedModelId(input.selectedModelId);
+	for (const module of sessionSettingsModules()) module.apply(input);
 	if (typeof input.previewHideServiceLabels === "boolean") previewSettings.setHideServiceLabels(input.previewHideServiceLabels);
 	if (input.theme) theme.setPref(input.theme);
 }
@@ -79,14 +80,15 @@ function download(file: SessionFile): void {
 
 /** The session file of this browser; `download` also saves it as a .json file (Settings > Export, `buildy.export()`). */
 export function exportSessionFile(options?: { download?: boolean }): SessionFile {
-	const file = exportSessions({ app: app(), pins: sessionPins(), settings: settings(), prefs: { layout: { ...creatorLayout.layout } } });
+	const file = exportProjects({ app: app(), pins: sessionPins(), settings: settings(), prefs: { layout: { ...creatorLayout.layout } } });
 	if (options?.download) download(file);
 	return file;
 }
 
 /** Check and load a session file (Settings > Import, `buildy.import(json)`); a failing file changes nothing. */
 export async function importSessionFile(json: unknown): Promise<ImportResult> {
-	const result = await importSessions(json);
+	const result = importProjects(json, () => emit("beforeProjectChange"));
+	if (result.ok && result.selected) await openProject(result.selected, { history: "replace" });
 	if (result.ok) {
 		const parsed = typeof json === "string" ? (JSON.parse(json) as SessionFile) : (json as SessionFile);
 		applySettings(parsed.settings);
@@ -107,13 +109,14 @@ function parsedJson(json: unknown): unknown {
 }
 
 /**
- * Settings > Import and `buildy.import(json)`: the reader is picked by `format`. A Stock collection
- * (buildy-collection:v1, the file Stock downloads when a link would be too long) opens in a new Build chat with the
- * same checks as an Open in BuildY link; everything else is read as a session file.
+ * Settings > Import and `buildy.import(json)`: the reader is picked by `format`. A file a loaded module claims (the
+ * chat: a Stock collection buildy-collection:v1, which opens in a new Build chat with the same checks as an Open in
+ * BuildY link) goes to that module; everything else is read as a session file.
  */
-export async function importFile(json: unknown): Promise<ImportResult | CollectionIntake> {
+export async function importFile(json: unknown): Promise<ImportResult | ModuleImportResult> {
 	const parsed = parsedJson(json);
-	if (isCollectionDoc(parsed)) return openCollectionFile(parsed);
+	const kind = fileKinds().find((candidate) => candidate.detect(parsed));
+	if (kind) return kind.open(parsed);
 	return importSessionFile(json);
 }
 

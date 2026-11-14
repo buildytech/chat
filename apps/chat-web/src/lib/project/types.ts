@@ -25,6 +25,8 @@ export type Project = {
 	/** Revisions of the applied page, oldest first (ADR 0015). Last entry <= pageRevision. */
 	history?: SessionRevisionEntry[];
 	collection?: ProjectCollection;
+	/** Document keys no loaded module claims, carried through load and save untouched. */
+	extra?: Readonly<Record<string, unknown>>;
 	ext: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
 };
 

@@ -5,8 +5,11 @@
  */
 import { STORAGE_KEYS, type StorageLike } from "../browser/storage-v1.ts";
 
-export const LEFT_TABS = ["blocks", "sections", "chat"] as const;
-export type LeftTab = (typeof LEFT_TABS)[number];
+/** The tabs of the left panel the core owns; a loaded module adds its own (an id, remembered like these). */
+export const CORE_LEFT_TABS = ["blocks", "sections"] as const;
+export type LeftTab = string;
+/** The longest tab id kept from storage (an unknown id is shown as Blocks until a module that owns it is loaded). */
+const TAB_ID = /^[a-z][a-z0-9-]{0,31}$/;
 export type FeedColumns = 1 | 2;
 export type FeedPrefs = { tab: LeftTab; columns: FeedColumns; inspector: boolean };
 
@@ -16,12 +19,12 @@ export const FEED_PAGE_SIZE = 8;
 export const defaultFeedPrefs = (): FeedPrefs => ({ tab: "blocks", columns: 2, inspector: false });
 
 /**
- * The tab a chat opens on (ADR 0024, empty start): an empty chat (no page, no messages) always lands on Blocks; a
+ * The tab a project opens on (ADR 0024, empty start): an empty project (no page, no content from a module) always lands on Blocks; a
  * remembered Sections with no page has nothing to show, so Blocks too; otherwise the remembered tab.
  */
-export function landingTab(remembered: LeftTab, chat: { hasPage: boolean; hasMessages: boolean }): LeftTab {
-	if (!chat.hasPage && !chat.hasMessages) return "blocks";
-	if (remembered === "sections" && !chat.hasPage) return "blocks";
+export function landingTab(remembered: LeftTab, project: { hasPage: boolean; hasMessages: boolean }): LeftTab {
+	if (!project.hasPage && !project.hasMessages) return "blocks";
+	if (remembered === "sections" && !project.hasPage) return "blocks";
 	return remembered;
 }
 
@@ -30,7 +33,7 @@ export function parseFeedPrefs(input: unknown): FeedPrefs {
 	const rec = input && typeof input === "object" ? (input as Record<string, unknown>) : {};
 	const base = defaultFeedPrefs();
 	return {
-		tab: LEFT_TABS.includes(rec.tab as LeftTab) ? (rec.tab as LeftTab) : base.tab,
+		tab: typeof rec.tab === "string" && TAB_ID.test(rec.tab) ? rec.tab : base.tab,
 		columns: rec.columns === 1 || rec.columns === 2 ? rec.columns : base.columns,
 		inspector: rec.inspector === true
 	};

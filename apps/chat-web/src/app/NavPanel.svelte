@@ -1,18 +1,18 @@
 <script lang="ts">
-	import type { SessionSummary } from "$modules/chat/core";
-	import ChatSidebar from "./ChatSidebar.svelte";
+	import type { ProjectSummary } from "$lib/project";
+	import ProjectSidebar from "./ProjectSidebar.svelte";
 
 	let {
-		sessions,
+		projects,
 		selectedId,
 		onNew,
 		onSelect,
 		onDelete,
 		onClose,
 		collapsed = false,
-		canDelete = false,
+		canDelete = true,
 	}: {
-		sessions: SessionSummary[];
+		projects: ProjectSummary[];
 		selectedId: string | null;
 		onNew: () => void | Promise<void>;
 		onSelect: (id: string) => void | Promise<void>;
@@ -23,4 +23,4 @@
 	} = $props();
 </script>
 
-<ChatSidebar {sessions} {selectedId} {onNew} {onSelect} {onDelete} {onClose} {collapsed} {canDelete} />
+<ProjectSidebar {projects} {selectedId} {onNew} {onSelect} {onDelete} {onClose} {collapsed} {canDelete} />

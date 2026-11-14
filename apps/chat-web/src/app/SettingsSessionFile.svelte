@@ -31,10 +31,8 @@ import { Download, Upload } from "$lib/shell-icons";
 		input.value = "";
 		if (!file) return;
 		const result = await importFile(await file.text());
-		if (result.ok && "sessionId" in result) {
-			note = t("settings.collectionOpened").replace("{count}", String(result.items));
-		} else if (!result.ok && !("issues" in result)) {
-			note = result.message;
+		if ("note" in result) {
+			note = result.note;
 		} else if (result.ok) {
 			note = t("settings.imported")
 				.replace("{added}", String(result.added.length))

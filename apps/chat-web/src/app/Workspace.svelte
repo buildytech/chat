@@ -2,7 +2,7 @@
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import { cn } from "$registry/utils/cn";
-	import { getChatMode } from "$modules/chat/core";
+	import { editorMode } from "$lib/modules/registry.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
 	import CodePane from "./CodePane.svelte";
@@ -19,8 +19,8 @@
 		ontogglechat?: () => void;
 	} = $props();
 
-	// Ask / Build controls the model tools; the manual editor stays available in either mode.
-	const build = $derived(getChatMode() === "build");
+	// A module's Ask / Build switch controls the model tools; the manual editor stays available in either mode.
+	const build = $derived(editorMode() === "build");
 
 	// The slide-over is non-modal: Escape closes it unless something else (a menu, the composer) took the key.
 	function onWindowKey(event: KeyboardEvent) {

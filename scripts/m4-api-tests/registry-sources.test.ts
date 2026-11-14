@@ -169,7 +169,9 @@ test("CSS: theme and tokens only from the registry tree; the chat declares no co
 	// ADR 0026: the chat UI skin is the one place that maps the shell's own tones and radius onto the kit names
 	// (styles/chat-skin.css, plus the app @theme radius in app.css); the preview frame never loads either.
 	const SKIN = join(ROOT, "apps/chat-web/src/styles/chat-skin.css");
-	for (const file of walk(join(ROOT, "apps/chat-web/src")).filter((path) => path.endsWith(".css") && path !== SKIN)) {
+	// The chat module's part of the skin (composer radii and shadows, ADR 0041) lives with the module so it is not in a chat-off bundle.
+	const MODULE_SKIN = join(ROOT, "apps/chat-web/src/modules/chat/chat.css");
+	for (const file of walk(join(ROOT, "apps/chat-web/src")).filter((path) => path.endsWith(".css") && path !== SKIN && path !== MODULE_SKIN)) {
 		const css = readFileSync(file, "utf8");
 		const checked = file.replace(/\\/g, "/").endsWith("/app.css") ? css.replace(/@theme(?: inline)? \{[^}]*\}/g, (block) => block.replace(/--radius[a-z0-9-]*:[^;]*;/g, "")) : css;
 		assert.doesNotMatch(checked, /--(background|foreground|primary|border|radius)\s*:/, `${file} redeclares a registry token`);
@@ -190,7 +192,7 @@ test("layout: lib holds only logic (no .svelte), no chat-owned 'compose' path, n
 		const text = readFileSync(join(src, file), "utf8");
 		for (const [, spec] of text.matchAll(/from "([^"]+\.svelte)"/g)) {
 			// $lib/x.svelte names a runes module (x.svelte.ts): lib holds no components (asserted above).
-			assert.ok(["$registry/", "$lib/", "$modules/", "./", "../app/", "../../app/", "../../../app/", "../ui/", "../modules/"].some((prefix) => spec!.startsWith(prefix)), `${file} imports ${spec}`);
+			assert.ok(["$registry/", "$lib/", "$modules/", "./", "../app/", "../../app/", "../../../app/", "../ui/"].some((prefix) => spec!.startsWith(prefix)), `${file} imports ${spec}`);
 		}
 	}
 });

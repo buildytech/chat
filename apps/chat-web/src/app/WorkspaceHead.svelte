@@ -1,9 +1,10 @@
 <!--
-  Workspace head (ADR 0017): one 40px tool bar. Left: chat column toggle (Ctrl+B) and the Preview / Code switch;
+  Workspace head (ADR 0017): one 40px tool bar. Left: left panel toggle (Ctrl+B) and the Preview / Code switch;
   right: the inspector toggle (Ctrl+I) and preview-only focus (Ctrl+\). Download ZIP lives on the project bar.
 -->
 <script lang="ts">
 	import Box from "$registry/kit/ui/box/Box.svelte";
+	import { leftSurface } from "$lib/modules/registry.svelte";
 import { Maximize2, Minimize2, PanelLeft, PanelRight } from "$lib/shell-icons";
 	import Button from "$registry/compose/Button.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -26,6 +27,7 @@ import { Maximize2, Minimize2, PanelLeft, PanelRight } from "$lib/shell-icons";
 		ontoggleinspector?: () => void;
 	} = $props();
 
+	const names = $derived(leftSurface());
 	const chatOpen = $derived(!creatorLayout.collapsed("chat"));
 	const focus = $derived(creatorLayout.focus);
 </script>
@@ -42,8 +44,8 @@ import { Maximize2, Minimize2, PanelLeft, PanelRight } from "$lib/shell-icons";
 		layout="icon"
 		variant="ghost"
 		class="max-lg:hidden"
-		aria-label={chatOpen ? t("workspace.hideChat") : t("workspace.showChat")}
-		title={`${chatOpen ? t("workspace.hideChat") : t("workspace.showChat")} (Ctrl+B)`}
+		aria-label={chatOpen ? t(names.hideKey) : t(names.showKey)}
+		title={`${chatOpen ? t(names.hideKey) : t(names.showKey)} (Ctrl+B)`}
 		expanded={chatOpen}
 		aria-controls="creator-chat-column"
 		data-action="chat-toggle"

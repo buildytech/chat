@@ -1,5 +1,6 @@
 <script lang="ts">
-import { MessageSquare, PanelLeft } from "$lib/shell-icons";
+import { Blocks, PanelLeft } from "$lib/shell-icons";
+	import { leftSurface } from "$lib/modules/registry.svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";
@@ -15,6 +16,9 @@ import { MessageSquare, PanelLeft } from "$lib/shell-icons";
 		surface: "chat" | "workspace";
 		onSelect: (surface: "chat" | "workspace") => void;
 	} = $props();
+
+	const names = $derived(leftSurface());
+	const LeftIcon = $derived(names.icon ?? Blocks);
 </script>
 
 <Block
@@ -34,8 +38,8 @@ import { MessageSquare, PanelLeft } from "$lib/shell-icons";
 			aria-controls="creator-chat-column"
 			onclick={() => onSelect("chat")}
 		>
-			<Icon size="sm"><MessageSquare /></Icon>
-			<Text tag="span">{t("shell.tabChat")}</Text>
+			<Icon size="sm"><LeftIcon /></Icon>
+			<Text tag="span">{t(names.tabKey)}</Text>
 		</Button>
 		<Button
 			class={cn(

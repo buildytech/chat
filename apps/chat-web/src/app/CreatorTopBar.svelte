@@ -5,7 +5,7 @@ import { FolderArchive, PanelLeftOpen, PanelLeftClose } from "$lib/shell-icons";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import { getProjectSkin } from "$lib/project";
+	import { getProjectSkin, getSelectedProject } from "$lib/project";
 	import { downloadPageZip, getCurrentPage } from "$lib/page-store";
 	import { packSkinOptions } from "$lib/theme/custom-skin.svelte";
 
@@ -18,7 +18,7 @@ import { FolderArchive, PanelLeftOpen, PanelLeftClose } from "$lib/shell-icons";
 	} = $props();
 
 	const page = $derived(getCurrentPage());
-	const pageTitle = $derived(page?.title?.trim() ? page.title : t("thread.untitled"));
+	const pageTitle = $derived(page?.title?.trim() ? page.title : getSelectedProject()?.title?.trim() || t("page.untitled"));
 
 	function onDownloadZip() {
 		if (!page) return;

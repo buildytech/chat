@@ -13,12 +13,12 @@ const source = (file: string) => {
 };
 /** The chat modules and the project store (the former chat-core/session.svelte.ts, ADR 0040), one text. */
 const sessionCore = () =>
-	["modules/chat/core/chat.svelte.ts", "modules/chat/core/send.ts", "modules/chat/core/proposal-flow.ts", "lib/project/store.svelte.ts"]
+	["modules/chat/core/chat.svelte.ts", "modules/chat/core/send.ts", "modules/chat/core/proposal-flow.ts", "lib/project/store.svelte.ts", "lib/modules/workspace.svelte.ts"]
 		.map((file) => src(file))
 		.join("\n");
 
 test("desktop panes never combine global hidden with responsive flex", () => {
-	for (const name of ["Workspace", "ChatColumn", "ChatDrawer"]) {
+	for (const name of ["Workspace", "LeftPanel", "NavDrawer"]) {
 		const s = source(name);
 		assert.doesNotMatch(s, /: "hidden"/);
 		assert.match(s, /max-lg:hidden/);
@@ -66,11 +66,11 @@ test("Escape closes the model menu and Ctrl+K searches saved chats", () => {
 	assert.match(composer, /getElementById\("composer-model-trigger"\)\?\.focus/);
 	assert.doesNotMatch(composer, /composer\.add"/);
 	assert.match(composer, /composer\.addModel/);
-	const sidebar = source("ChatSidebar");
+	const sidebar = source("ProjectSidebar");
 	assert.match(sidebar, /sidebar-chat-search/);
 	assert.match(sidebar, /ctrlKey/);
 	assert.match(sidebar, /key === "Escape"/);
-	assert.match(sidebar, /deleteAllSessions/);
+	assert.match(sidebar, /removeAllProjects/);
 	assert.doesNotMatch(sidebar, /setSelectedModelId/);
 	assert.doesNotMatch(sidebar, /data-action="theme-toggle"/);
 	assert.match(sidebar, /ConfirmDialog/);
@@ -120,15 +120,17 @@ test("Stock search lives on the Blocks feed; the chat home does not pick screens
 test("local session delete is enabled and removes pages", () => {
 	const s = sessionCore();
 	assert.match(s, /canDeleteSessions: true/);
-	assert.match(s, /export function deleteSession/);
-	assert.match(s, /export function deleteAllSessions/);
+	assert.match(s, /export const deleteSession = removeProject/);
+	assert.match(s, /export const deleteAllSessions = removeAllProjects/);
+	assert.match(s, /export function removeProject/);
+	assert.match(s, /export function removeAllProjects/);
 	assert.match(s, /deleteProjectPage/);
 	assert.match(s, /clearPagesBlob/);
 });
 
 test("narrow viewport uses Creator tabs, not only the preview device frame", () => {
 	assert.match(source("CreatorTabs"), /lg:hidden/);
-	assert.match(source("ChatColumn"), /max-lg:hidden/);
+	assert.match(source("LeftPanel"), /max-lg:hidden/);
 	assert.match(source("Workspace"), /max-lg:hidden/);
 	assert.match(source("CreatorShell"), /mobileSurface/);
 	assert.doesNotMatch(source("CreatorTopBar"), /shell\.publish/);

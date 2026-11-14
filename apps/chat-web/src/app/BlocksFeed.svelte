@@ -24,7 +24,8 @@ import { Columns2, Rows3, ChevronLeft, ChevronRight } from "$lib/shell-icons";
 	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { canvas } from "$lib/inspector/canvas.svelte";
 	import { getCurrentPage } from "$lib/page-store";
-	import { createSession, getSelectedSession, startPageFromScreen } from "$modules/chat/core";
+	import { startPageHook, projectHasActivity } from "$lib/modules/registry.svelte";
+	import { createWorkspaceProject, getWorkspaceProject } from "$lib/modules/workspace.svelte";
 	import type { StockSearchItem } from "@buildytech/builder-core";
 	import FeedCard from "./FeedCard.svelte";
 	import { feedDrag } from "$lib/feed/drag.svelte";
@@ -56,9 +57,9 @@ import { Columns2, Rows3, ChevronLeft, ChevronRight } from "$lib/shell-icons";
 	async function startFromSections(
 		screenId: string,
 	): Promise<{ ok: true } | { ok: false; code: string; message: string }> {
-		// A fresh chat when this one already has a page or messages, as Start page does: nothing is overwritten.
-		const session = getSelectedSession();
-		if (!session || session.messages.length || getCurrentPage()) await createSession();
+		// A fresh project when this one already has a page or content from a module, as Start page does: nothing is overwritten.
+		const project = getWorkspaceProject();
+		if (!project || projectHasActivity(project) || getCurrentPage()) createWorkspaceProject();
 		const added = await inspector.addScreen(screenId);
 		if (!added.ok) return added;
 		canvas.requestReveal(added.blockId);
@@ -69,9 +70,11 @@ import { Columns2, Rows3, ChevronLeft, ChevronRight } from "$lib/shell-icons";
 		if (starting) return;
 		starting = item.id;
 		try {
-			let done = await startPageFromScreen(item.id);
+			// A module may start the page its own way (the chat records the start as a proposal); without one the sections go in directly.
+			const hook = startPageHook();
+			let done = hook ? await hook(item.id) : null;
 			// t150u: a screen with sections this version cannot render starts from the ones it can (listed, not invented).
-			if (!done.ok && done.code !== "unknown_screen") done = await startFromSections(item.id);
+			if (!done || (!done.ok && done.code !== "unknown_screen")) done = await startFromSections(item.id);
 			feedDrag.status = done.ok
 				? { ok: true, text: t("feed.started").replace("{title}", item.title) }
 				: { ok: false, text: t("feed.startFailed").replace("{message}", done.message) };

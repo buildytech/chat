@@ -2,7 +2,8 @@ import type { ServerResponse } from 'node:http';
 import type { Socket } from 'node:net';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig, type ProxyOptions } from 'vite';
+import { defineConfig, loadEnv, type ProxyOptions } from 'vite';
+import { moduleEnabled } from './module-flags';
 import pkg from './package.json' with { type: 'json' };
 
 const xaiRuntime =
@@ -63,19 +64,25 @@ const runtimeProxy: ProxyOptions = {
 // Session files (ADR 0015) name the app version and, on Vercel, the commit the build came from.
 const commit = (typeof process !== 'undefined' && process.env?.VERCEL_GIT_COMMIT_SHA?.trim()) || '';
 
-export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
-	define: {
-		__BUILDY_APP_VERSION__: JSON.stringify(pkg.version),
-		__BUILDY_APP_COMMIT__: JSON.stringify(commit)
-	},
-	server: {
-		host: '127.0.0.1',
-		port: 5173,
-		strictPort: true,
-		proxy: { '/runtime': runtimeProxy }
-	},
-	preview: {
-		proxy: { '/runtime': runtimeProxy }
-	}
+export default defineConfig(({ mode }) => {
+	// ADR 0041: VITE_MODULE_CHAT=0 builds the page builder without the chat module (default on); the process env wins over .env files.
+	const env = loadEnv(mode, process.cwd(), 'VITE_');
+	const chat = moduleEnabled(process.env.VITE_MODULE_CHAT ?? env.VITE_MODULE_CHAT);
+	// The live-model runtime belongs to the chat: without it there is nothing to proxy.
+	const proxy = chat ? { '/runtime': runtimeProxy } : undefined;
+	return {
+		plugins: [tailwindcss(), sveltekit()],
+		define: {
+			__BUILDY_APP_VERSION__: JSON.stringify(pkg.version),
+			__BUILDY_APP_COMMIT__: JSON.stringify(commit),
+			__MODULE_CHAT__: JSON.stringify(chat)
+		},
+		server: {
+			host: '127.0.0.1',
+			port: 5173,
+			strictPort: true,
+			proxy
+		},
+		preview: { proxy }
+	};
 });

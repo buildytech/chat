@@ -4,7 +4,7 @@ import { t } from "../../../lib/i18n/dictionary";
 import { getSelectedModelId } from "../browser/models.svelte.ts";
 import { chatModeOf } from "./modes";
 import { bumpEpoch, abortInflight, commitSession, createSession, currentEpoch, getSelectedSession, run, startRun } from "./chat.svelte.ts";
-import { loadPropsGate } from "./gates";
+import { loadPropsGate } from "../../../lib/gates";
 import { markPendingProposals } from "./proposals";
 import { localizedRunError, nowIso, replyMessage, runRecord, runTurn, runtimeNoteFor, sessionUsageFrom, uid } from "./turn";
 import type { ChatMessage, ChatSession } from "./types";

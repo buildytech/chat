@@ -9,6 +9,8 @@ import type { Project } from "../../../lib/project/types.ts";
 import { legacyProposalCount, migrateSessionProposals } from "./proposals.ts";
 import type { ChatMessage, ChatSession } from "./types.ts";
 
+/** The keys of the session document that are the chat's (`ext.chat`); the project store carries them untouched. */
+export const CHAT_EXTENSION_KEYS = ["mode", "selectedModelId", "usage", "messages"] as const;
 export type ChatPayload = { messages?: ChatMessage[]; mode?: AgentMode; selectedModelId?: string; usage?: ChatSession["usage"] };
 export const chatOf = (project: Project): ChatPayload | undefined => project.ext.chat as ChatPayload | undefined;
 const views = new WeakMap<Project, ChatSession>();

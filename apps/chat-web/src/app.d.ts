@@ -1,4 +1,7 @@
 declare global {
+	/** Build-time module flags (vite.config.ts define, ADR 0041): false folds the module and its dynamic import out of the bundle. */
+	const __MODULE_CHAT__: boolean;
+
 	namespace App {
 		// interface Error {}
 		// interface Locals {}

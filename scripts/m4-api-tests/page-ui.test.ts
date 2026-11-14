@@ -31,8 +31,8 @@ test("drag UI: host drop layer over the preview iframe, Sections list drop, '+' 
 	const sections = web("app/SectionsList.svelte");
 	assert.match(sections, /ondrop=\{onFeedDrop\}/);
 	assert.match(sections, /dropAt\(target\.slot\)/);
-	const column = web("app/ChatColumn.svelte");
-	assert.match(column, /ondragenter=\{\(\) => springOpen\(name\)\}/, "resting a drag on the Sections tab opens it");
+	const column = web("app/LeftPanel.svelte");
+	assert.match(column, /ondragenter=\{\(\) => springOpen\(item\.id\)\}/, "resting a drag on the Sections tab opens it");
 	for (const source of [overlay, drop, sections, card]) assert.doesNotMatch(source, /sendMessage|runtime\/v1|runXaiProposal/);
 });
 
@@ -68,7 +68,7 @@ test("Sections: refused moves and drops say the reason; feed drops show 'Insert 
 });
 
 test("Sections tab UI: accessible sortable list, every action through inspector.run, no model call", () => {
-	assert.match(web("app/ChatColumn.svelte"), /<SectionsList \/>/);
+	assert.match(web("app/LeftPanel.svelte"), /<SectionsList \/>/);
 	const ui = web("app/SectionsList.svelte");
 	assert.match(ui, /tag="ul"[^>]*aria-label=\{t\("sections\.list"\)\}[^>]*aria-describedby="sections-help"/);
 	assert.match(ui, /role="status" aria-live="assertive"/);
@@ -94,7 +94,7 @@ test("Build opens on Blocks: an empty chat always, a remembered tab only when it
 	assert.equal(landingTab("chat", { hasPage: false, hasMessages: true }), "chat");
 	assert.equal(landingTab("sections", { hasPage: true, hasMessages: false }), "sections");
 	assert.equal(landingTab("chat", { hasPage: true, hasMessages: true }), "chat");
-	const column = web("app/ChatColumn.svelte");
+	const column = web("app/LeftPanel.svelte");
 	assert.match(column, /feed\.land\(landingTab\(feed\.savedTab/);
 	const feed = web("lib/feed/feed.svelte.ts");
 	assert.match(feed, /land\(next: LeftTab\): void/);
@@ -102,10 +102,11 @@ test("Build opens on Blocks: an empty chat always, a remembered tab only when it
 
 test("UI: the first '+' or drop starts the page, the preview shows the empty drop zone, no 'No page yet' refusal", () => {
 	const inspector = web("lib/inspector/inspector.svelte.ts");
-	assert.match(inspector, /!getCurrentPage\(\) && !startEmptyPageInChat\(\)/);
+	assert.match(inspector, /!getCurrentPage\(\) && !startEmptyPage\(\)/);
 	assert.doesNotMatch(inspector, /There is no page yet\./);
-	const session = web("modules/chat/core/proposal-flow.ts");
-	assert.match(session, /export function startEmptyPageInChat\(screenId: string \| null = null\): boolean/);
+	const workspace = web("lib/modules/workspace.svelte.ts");
+	assert.match(workspace, /export function startEmptyPage\(screenId: string \| null = null\): boolean/);
+	assert.match(workspace, /emit\("pageStarted", screenId\)/, "a module (the chat switches to Build) is told through the hook");
 	const store = web("lib/page-store/mock.svelte.ts");
 	assert.match(store, /export function startEmptyPage\(page: (?:Page|PageV2), provenance: StoredPageProvenance\): boolean/);
 	const frame = web("app/PreviewFrame.svelte");

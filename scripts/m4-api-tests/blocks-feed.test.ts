@@ -109,7 +109,8 @@ test("feed prefs: tab and 1 / 2 columns persist; the page size does not depend o
 	assert.deepEqual(parseFeedPrefs({ columns: 1 }), { tab: "blocks", columns: 1, inspector: false }, "keep an explicit one-column preference");
 	assert.equal(loadFeedPrefs(null).columns, 2, "a new browser starts with two columns");
 	assert.deepEqual(parseFeedPrefs({ tab: "blocks", columns: 2 }), { tab: "blocks", columns: 2, inspector: false });
-	assert.deepEqual(parseFeedPrefs({ tab: "x", columns: 3 }), defaultFeedPrefs());
+	assert.deepEqual(parseFeedPrefs({ tab: "Not a tab!", columns: 3 }), defaultFeedPrefs());
+	assert.equal(parseFeedPrefs({ tab: "chat" }).tab, "chat", "a module's tab id is remembered; the feed shows Blocks while that module is off");
 	const mem = new Map<string, string>();
 	const store = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v), removeItem: (k: string) => void mem.delete(k) };
 	assert.equal(saveFeedPrefs(store, { tab: "sections", columns: 2, inspector: true }), true);
@@ -121,13 +122,15 @@ test("feed prefs: tab and 1 / 2 columns persist; the page size does not depend o
 	assert.doesNotMatch(feedSource, /columns\s*\*\s*|pageSize: feed\.columns/);
 });
 
-test("Build is two areas: left panel tabs (Blocks / Sections / Chat), inspector as a slide-over on the preview", () => {
-	const column = web("app/ChatColumn.svelte");
+test("Build is two areas: left panel tabs (Blocks / Sections, plus the tabs of loaded modules), inspector as a slide-over on the preview", () => {
+	const column = web("app/LeftPanel.svelte");
 	assert.match(column, /role="tablist"/);
-	for (const name of ["blocks", "sections", "chat"]) assert.match(column, new RegExp(`id="left-panel-${name}" role="tabpanel"[^>]*hidden=\\{tab !== "${name}"\\}`));
+	for (const name of ["blocks", "sections"]) assert.match(column, new RegExp(`id="left-panel-${name}" role="tabpanel"[^>]*hidden=\\{tab !== "${name}"\\}`));
+	assert.match(column, /id=\{`left-panel-\$\{item\.id\}`\}[^>]*hidden=\{tab !== item\.id\}/, "a module tab's panel is mounted too, hidden while another tab is open");
+	assert.match(column, /moduleTabs\(\)/);
 	assert.match(column, /<BlocksFeed \/>/);
 	assert.match(column, /<SectionsList \/>/);
-	assert.match(column, /<ChatThread/);
+	assert.doesNotMatch(column, /ChatThread|modules\/chat/, "the left panel knows no module by name");
 	assert.match(web("lib/creator-layout.svelte.ts"), /const inspectorColumn = \(\) => false;/);
 	assert.match(web("app/Workspace.svelte"), /<Group align="stretch" class="relative min-h-0 flex-1 gap-0" data-slot="build-editor"/);
 	const card = web("app/FeedCard.svelte");

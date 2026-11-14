@@ -6,9 +6,8 @@
   generated viewMap (ADR 0021) and focuses it in the inspector; the block DOM itself gets no attribute.
 -->
 <script lang="ts">
-	import Button from "$registry/kit/ui/button/Button.svelte";
- import { blockScope } from "$modules/chat/core/block-scope.svelte.ts";
- import { getSelectedSession, loadPropsGate } from "$modules/chat/core";
+	import ModuleSlot from "./ModuleSlot.svelte";
+ import { loadPropsGate } from "$lib/gates";
  import type { Component } from "svelte";
 	import Alert from "$registry/compose/Alert.svelte";
 	import Block from "$registry/compose/Block.svelte";
@@ -90,9 +89,7 @@
 			{/if}
 		</Text>
  <Text tag="span" class="text-xs text-muted-foreground">{block.id}</Text>
- <Button size="sm" variant="ghost" pressed={blockScope.ids(getSelectedSession()?.id).includes(block.id)} onclick={(event: MouseEvent) => { event.stopPropagation(); const session = getSelectedSession(); if (session) blockScope.toggle(session.id, block.id); }}>
- {t(blockScope.ids(getSelectedSession()?.id).includes(block.id) ? "scope.remove" : "scope.add")}
- </Button>
+  <ModuleSlot name="block.actions" props={{ blockId: block.id }} />
 	</Group>
 	{/if}
 	{#if render && load}

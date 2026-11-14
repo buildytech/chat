@@ -7,7 +7,8 @@
  */
 import { addScreen, applyOp, checkAdd, deriveFamily, inspectorValue, type AddCheck, type InspectorField, type OpResult, type PageFamily, type PageOp } from "@buildytech/builder-core";
 import type { PageV2 } from "@buildytech/page-contract";
-import { loadPropsGate, startEmptyPageInChat } from "../../modules/chat/core";
+import { loadPropsGate } from "../gates";
+import { startEmptyPage } from "../modules/workspace.svelte.ts";
 import { getBoundProjectId, getCurrentPage, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
 import { commitChange } from "../page-store/revision";
 import type { FieldIssue } from "./fields";
@@ -168,11 +169,11 @@ export const inspector = {
 		} catch {
 			return { ok: false, code: "props_gate_unavailable", message: "Validation could not load. Retry adding the block or screen." };
 		}
-		if (bound !== getBoundProjectId()) return { ok: false, code: "page_changed", message: "The selected chat changed while validation loaded. Retry in this chat." };
+		if (bound !== getBoundProjectId()) return { ok: false, code: "page_changed", message: "The selected project changed while validation loaded. Retry in this project." };
 		const check = checkAdd(spec, variant);
 		if (!check.ok) return { ok: false, code: check.code, message: check.message };
 		// Empty start: no page yet. The chat gets an empty page first, with no history step, so the section is the one undo step.
-		if (!getCurrentPage() && !startEmptyPageInChat()) return { ok: false, code: "not_started", message: "The empty page could not be started." };
+		if (!getCurrentPage() && !startEmptyPage()) return { ok: false, code: "not_started", message: "The empty page could not be started." };
 		const page = getCurrentPage();
 		if (!page) return { ok: false, code: "not_started", message: "The empty page could not be started." };
 		historyFor(page).seal();
@@ -197,9 +198,9 @@ export const inspector = {
 		} catch {
 			return { ok: false, code: "props_gate_unavailable", message: "Validation could not load. Retry adding the block or screen." };
 		}
-		if (bound !== getBoundProjectId()) return { ok: false, code: "page_changed", message: "The selected chat changed while validation loaded. Retry in this chat." };
+		if (bound !== getBoundProjectId()) return { ok: false, code: "page_changed", message: "The selected project changed while validation loaded. Retry in this project." };
 		let page = getCurrentPage();
-		if (!page && !startEmptyPageInChat(screenId)) return { ok: false, code: "not_started", message: "The empty page could not be started." };
+		if (!page && !startEmptyPage(screenId)) return { ok: false, code: "not_started", message: "The empty page could not be started." };
 		page = getCurrentPage();
 		if (!page) return { ok: false, code: "not_started", message: "The empty page could not be started." };
 		historyFor(page).seal();

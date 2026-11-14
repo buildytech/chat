@@ -15,7 +15,7 @@ Open `http://127.0.0.1:5173`. Mock ChatCore (localStorage) is the default. Prote
 npm run build
 ```
 
-Creator shell (ADR-0003): AppNav (~248px) | ChatColumn (`w-80`) | Workspace (BlockTree + Preview/Code). Below `lg`, Chat | Page tabs. ChatCore: `src/lib/chat-core`. Agent Gateway / cursor-sdk are not wired (ADR-0004).
+Creator shell (ADR-0003): NavPanel (~248px) | LeftPanel (`w-80`) | Workspace (BlockTree + Preview/Code). Below `lg`, Chat | Page tabs. ChatCore: `src/lib/chat-core`. Agent Gateway / cursor-sdk are not wired (ADR-0004).
 
 ## UI8Kit
 

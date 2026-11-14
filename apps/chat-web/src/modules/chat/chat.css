@@ -1,0 +1,20 @@
+/*
+ * The chat module's part of the app skin (styles/chat-skin.css keeps the shell's): the composer, its pickers and their
+ * concentric radii, shadows and focus. Imported by modules/chat/index.ts, so it is in the bundle only with the chat on.
+ */
+/* Picker lists are cards: 12 outside, 4 inside. */
+:is(#composer-model-list, #composer-mode-list) { --radius: 12px; }
+:is(#composer-model-list, #composer-mode-list) * { --radius: 4px; }
+/* One composer surface: 16 outside, 8px padding and 8px controls inside. */
+[data-slot="composer-surface"] { --radius: 16px; }
+[data-slot="composer-surface"] * { --radius: 8px; }
+/* Shadows on floating layers (the pickers, the composer) and a visible focus ring on the composer surface. */
+:is(#composer-model-list, #composer-mode-list) { box-shadow: var(--ui-shadow-float); }
+[data-slot="composer-surface"] { box-shadow: var(--ui-shadow-contact); }
+[data-slot="composer-surface"]:has(:focus-visible) { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
+/* The surrounding input surface owns the boundary and focus; no nested field ring. */
+#composer:focus-visible { box-shadow: none; outline: none; }
+
+/* Grow the prompt with its content while keeping long messages scrollable.
+   The id beats a text-* utility, so the size lives here: 12px, one step under text-sm. */
+#composer { font-size: 0.75rem; line-height: 1rem; field-sizing: content; max-height: max(4rem, calc(100dvh - 16rem)); }

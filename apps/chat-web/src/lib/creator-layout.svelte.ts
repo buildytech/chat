@@ -3,7 +3,7 @@
  * widths that fit it. Rules live in `layout/prefs.ts` (pure, tested); this module holds the state and persists it.
  */
 import { STORAGE_KEYS, browserStorage } from "./browser/storage-v1.ts";
-import { getChatMode } from "../modules/chat/core";
+import { editorMode } from "./modules/registry.svelte.ts";
 import { loadLayout, saveLayout } from "./layout/prefs-store.ts";
 import {
 	collapsedKey,
@@ -80,7 +80,7 @@ function createCreatorLayout() {
 		},
 		/** Widths as rendered now (stored wishes fitted to the viewport; rails for collapsed panels). */
 		get widths() {
-			return fitWidths({ viewport, layout, inspector: getChatMode() === "build" && view === "preview" && inspectorColumn(), columns: columns() });
+			return fitWidths({ viewport, layout, inspector: editorMode() === "build" && view === "preview" && inspectorColumn(), columns: columns() });
 		},
 		setViewport(width: number) {
 			viewport = Math.round(width);

@@ -11,8 +11,6 @@ export {
 	discardProposal,
 	applyVariantFromAsk,
 	startPageFromScreen,
-	startEmptyPageInChat,
-	createdInThisTab,
 	applyAskProposal,
 	getChatMode,
 	setChatMode,
@@ -23,17 +21,13 @@ export {
 	openCollectionParam,
 	openCollectionFile,
 	applySessionFromUrl,
-	exportSessions,
 	hydrateSessions,
-	importSessions,
 	listSessions,
-	loadPropsGate,
 	retryLastFailed,
 	selectSession,
 	sendMessage,
 	type AskApplyResult,
-	type CollectionIntake,
-	type ImportResult
+	type CollectionIntake
 } from "./session.svelte.ts";
 export { collectionItemDetail, collectionItemName, collectionNote, type ChatCollection } from "./collection";
 export { chatModeOf, turnOutcome, DEFAULT_CHAT_MODE } from "./modes";

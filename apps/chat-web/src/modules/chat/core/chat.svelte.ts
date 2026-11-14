@@ -7,11 +7,12 @@ import type { AgentMode } from "@buildytech/chat-agent";
 import { t } from "../../../lib/i18n/dictionary";
 import { getPersistError } from "../../../lib/browser/persist";
 import { hydrateSessionContext } from "../browser/onboarding.svelte.ts";
-import { noteMigration } from "../../../lib/browser/storage-v1.ts";
-import { createProject, deleteAllProjects, deleteProject, getSelectedProject, getProjects, hydrateProjects, listProjects, putProject, registerProjectNormalizer, saveProjects, selectProject, sessionToSelectFromUrl } from "../../../lib/project/store.svelte.ts";
+import { getSelectedProject, getProjects, listProjects, putProject, saveProjects } from "../../../lib/project/store.svelte.ts";
+import { applyUrlSelection, createWorkspaceProject, openProject, removeAllProjects, removeProject, startWorkspace } from "../../../lib/modules/workspace.svelte.ts";
+import type { ProjectOpenedEvent } from "../../../lib/modules/types.ts";
 import type { Project } from "../../../lib/project/types.ts";
 import { chatModeOf } from "./modes";
-import { normalizeChatExt, projectOfView, viewOf } from "./view";
+import { projectOfView, viewOf } from "./view";
 import type { ChatSession, CreatorRuntimeStatus, ServerCapabilities, SessionSummary } from "./types";
 
 /** Run state shared by the chat modules. `lastRequestId` and `lastFailedText` stay null until a transport sets them. */
@@ -25,7 +26,7 @@ export const run = $state({
 	/** Mode picked before the chat exists (home composer); the first send stores it on the new chat. */
 	pendingMode: "build" as AgentMode
 });
-const control = { epoch: 0, inflight: null as AbortController | null, hydrated: false, hydrating: false };
+const control = { epoch: 0, inflight: null as AbortController | null };
 
 export const currentEpoch = (): number => control.epoch;
 export const bumpEpoch = (): number => ++control.epoch;
@@ -42,9 +43,6 @@ export function startRun(controller: AbortController): () => void {
 }
 
 // ---- the chat view of a project --------------------------------------------------------------------------------
-
-/** Old proposal shape (applied boolean only) -> status, on every load and import; each rewrite is counted for migrationReport. */
-registerProjectNormalizer(normalizeChatExt(noteMigration));
 
 export function getSelectedSession(): ChatSession | null {
 	const project = getSelectedProject();
@@ -89,6 +87,7 @@ export function abortInflightRun(): void {
 }
 
 // ---- selection ----------------------------------------------------------------------------------------------
+// The project operations (open, new, delete, URL) are the workspace controller's (core); the chat answers its hooks.
 
 const notFound = (id: string): string => t("runtime.sessionNotFound").replace("{id}", id);
 
@@ -97,62 +96,35 @@ export function restoreWorkspace(project: Project | null): void {
 	hydrateSessionContext({ scenarioId: project?.scenarioId ?? null, screenId: project?.screenId ?? null });
 }
 
-/** Load the projects from this browser. Safe for onMount, not for $derived. */
-export async function hydrateSessions(): Promise<void> {
-	if (control.hydrated || control.hydrating) return;
-	control.hydrating = true;
-	bumpEpoch();
-	try {
-		run.connectionMode = "mock";
-		// Live Grok is probed on Send (runConstructor), not while the SPA boots.
-		run.capabilities = { runtime: "xai-grok", mode: "localStorage", liveModel: false, tools: [], note: "runtime.liveOnSend" };
-		const { missing } = hydrateProjects();
-		restoreWorkspace(getSelectedProject());
-		if (missing) run.lastError = notFound(missing);
-		control.hydrated = true;
-	} finally {
-		control.hydrating = false;
-	}
-}
-
-export async function selectSession(id: string, opts?: { history?: "push" | "replace" | "none" }): Promise<void> {
+/** Hook: the selected project is about to change; a run of the old one stops and its late results are dropped. */
+export function beforeProjectChange(): void {
 	abortInflight();
 	bumpEpoch();
-	const project = selectProject(id, opts);
-	restoreWorkspace(project);
-	run.lastError = project ? null : notFound(id);
 }
 
-/** Chats created in this tab (not restored from storage): the left panel keeps its tab for a chat made in place. */
-const createdHere = new Set<string>();
-export const createdInThisTab = (id: string | null | undefined): boolean => Boolean(id && createdHere.has(id));
+/** Hook: the selected project changed; the workspace context follows it and a missing project is said. */
+export function projectOpened(event: ProjectOpenedEvent): void {
+	restoreWorkspace(event.project);
+	if (event.reason === "select" || event.reason === "delete") run.lastError = event.missing ? notFound(event.missing) : null;
+	else if (event.reason === "hydrate" && event.missing) run.lastError = notFound(event.missing);
+}
+
+/** Hook: the projects are about to load (the home state of the chat). */
+export function beforeHydrate(): void {
+	bumpEpoch();
+	run.connectionMode = "mock";
+	// Live Grok is probed on Send (runConstructor), not while the SPA boots.
+	run.capabilities = { runtime: "xai-grok", mode: "localStorage", liveModel: false, tools: [], note: "runtime.liveOnSend" };
+}
+
+/** Load the projects from this browser. Safe for onMount, not for $derived. */
+export const hydrateSessions = startWorkspace;
+
+export const selectSession = openProject;
+export const applySessionFromUrl = applyUrlSelection;
+export const deleteSession = removeProject;
+export const deleteAllSessions = removeAllProjects;
 
 export async function createSession(): Promise<ChatSession> {
-	abortInflight();
-	const project = createProject({ title: t("thread.untitled"), ext: { chat: { messages: [], mode: run.pendingMode } } });
-	createdHere.add(project.id);
-	restoreWorkspace(null);
-	return viewOf(project);
-}
-
-/** Apply the current URL ?session= (popstate / shared deep-link). */
-export async function applySessionFromUrl(): Promise<void> {
-	const id = sessionToSelectFromUrl();
-	if (id) await selectSession(id, { history: "none" });
-}
-
-/** Browser-local delete. Removes the chat and its pages from this browser. */
-export function deleteSession(id: string): void {
-	abortInflight();
-	run.lastError = null;
-	const wasSelected = getSelectedProject()?.id === id;
-	const next = deleteProject(id);
-	if (wasSelected) restoreWorkspace(next);
-}
-
-export function deleteAllSessions(): void {
-	abortInflight();
-	run.lastError = null;
-	deleteAllProjects();
-	restoreWorkspace(null);
+	return viewOf(createWorkspaceProject());
 }

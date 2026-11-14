@@ -126,7 +126,7 @@ test("there is one probe closure: runtime, coverage script and browser call prob
 	}
 	assert.match(script, /probeOutcome/);
 	assert.match(browser, /empty: "allow"/);
-	assert.match(read("apps/chat-web/src/modules/chat/core/gates.ts"), /loadRenderProbe/);
+	assert.match(read("apps/chat-web/src/lib/gates.ts"), /loadRenderProbe/);
 });
 
 test("turn-start: the page is probed once per turn and the result serves the prompt and the nudge", () => {

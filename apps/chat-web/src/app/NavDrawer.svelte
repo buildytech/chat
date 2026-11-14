@@ -5,23 +5,23 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import type { SessionSummary } from "$modules/chat/core";
-	import AppNav from "./AppNav.svelte";
+	import type { ProjectSummary } from "$lib/project";
+	import NavPanel from "./NavPanel.svelte";
 
 	let {
 		open,
 		collapsed = false,
-		sessions,
+		projects,
 		selectedId,
 		onNew,
 		onSelect,
 		onDelete,
-		canDelete = false,
+		canDelete = true,
 		onClose,
 	}: {
 		open: boolean;
 		collapsed?: boolean;
-		sessions: SessionSummary[];
+		projects: ProjectSummary[];
 		selectedId: string | null;
 		onNew: () => void | Promise<void>;
 		onSelect: (id: string) => void | Promise<void>;
@@ -56,7 +56,7 @@
 		"lg:flex",
 	)}
 >
-	<AppNav {sessions} {selectedId} {onNew} {onSelect} {onDelete} onClose={closeDrawer} {collapsed} {canDelete} />
+	<NavPanel {projects} {selectedId} {onNew} {onSelect} {onDelete} onClose={closeDrawer} {collapsed} {canDelete} />
 </Block>
 {#if open}
 	<Button class="absolute inset-0 z-10 bg-foreground/20 lg:hidden" aria-label={t("sidebar.close")} onclick={closeDrawer}>

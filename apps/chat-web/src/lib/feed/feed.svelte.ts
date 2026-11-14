@@ -7,7 +7,8 @@
 import { deriveFamily, familyKinds, stockSearch, type StockSearchResult, type StockSearchType } from "@buildytech/builder-core";
 import { getCurrentPage } from "../page-store/index.ts";
 import { browserStorage } from "../browser/storage-v1.ts";
-import { FEED_PAGE_SIZE, loadFeedPrefs, saveFeedPrefs, type FeedColumns, type FeedPrefs, type LeftTab } from "./prefs.ts";
+import { moduleTabs } from "../modules/registry.svelte.ts";
+import { CORE_LEFT_TABS, FEED_PAGE_SIZE, loadFeedPrefs, saveFeedPrefs, type FeedColumns, type FeedPrefs, type LeftTab } from "./prefs.ts";
 
 export type FeedFilters = { type: StockSearchType | null; role: string | null; spec: string | null; site: string | null; variant: string | null };
 
@@ -16,14 +17,16 @@ function createFeed() {
 	let q = $state("");
 	let filters = $state<FeedFilters>({ type: "block", role: null, spec: null, site: null, variant: null });
 	let page = $state(1);
-	/** The tab shown for this chat when it differs from the remembered one (landingTab); never saved. */
+	/** The tab shown for this project when it differs from the remembered one (landingTab); never saved. */
 	let landed = $state<LeftTab | null>(null);
 
 	const persist = () => saveFeedPrefs(browserStorage(), prefs);
 
 	return {
 		get tab(): LeftTab {
-			return landed ?? prefs.tab;
+			// A remembered tab of a module that is not loaded (chat off) shows Blocks.
+			const shown = landed ?? prefs.tab;
+			return (CORE_LEFT_TABS as readonly string[]).includes(shown) || moduleTabs().some((m) => m.id === shown) ? shown : "blocks";
 		},
 		/** The author's choice: shown and remembered. */
 		set tab(next: LeftTab) {
@@ -35,7 +38,7 @@ function createFeed() {
 		get savedTab(): LeftTab {
 			return prefs.tab;
 		},
-		/** Show `next` for the chat just opened without changing the remembered choice. */
+		/** Show `next` for the project just opened without changing the remembered choice. */
 		land(next: LeftTab): void {
 			landed = next === prefs.tab ? null : next;
 		},

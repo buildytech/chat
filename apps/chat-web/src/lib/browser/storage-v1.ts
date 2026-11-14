@@ -15,7 +15,6 @@ export const STORAGE_KEYS = {
 	sessions: "buildy:v1:sessions",
 	pages: "buildy:v1:pages",
 	selectedSessionId: "buildy:v1:selectedSessionId",
-	selectedModelId: "buildy:v1:selectedModelId",
 	/** Before ADR 0017; moved once into prefs.layout by creator-layout.svelte.ts. */
 	layout: "buildy:v1:layout",
 	/** Layout preferences (ADR 0017): `{ layout }`, session file `prefs`. */
@@ -35,15 +34,19 @@ export const STORAGE_KEYS = {
 	quarantine: "buildy:v1:quarantine"
 } as const;
 
-/** Keys of earlier builds and the buildy:v1 key each one moves to. */
+/** Keys of earlier builds and the buildy:v1 key each one moves to (a module adds its own with `registerLegacyKey`, before the first storage access). */
 export const LEGACY_STORAGE_KEYS: Record<string, string> = {
 	"buildytech-chat-sessions": STORAGE_KEYS.sessions,
 	"buildytech-creator-pages-v1": STORAGE_KEYS.pages,
 	"buildy.creator.selectedSessionId": STORAGE_KEYS.selectedSessionId,
-	"buildy.chat.selectedModelId": STORAGE_KEYS.selectedModelId,
 	"buildy.creator.layout": STORAGE_KEYS.layout,
 	"buildytech-chat-theme": STORAGE_KEYS.theme
 };
+
+/** A module's key of an earlier build moves to its buildy:v1 key with the others (the loader registers modules before the first storage access). */
+export function registerLegacyKey(legacy: string, current: string): void {
+	LEGACY_STORAGE_KEYS[legacy] = current;
+}
 
 export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
