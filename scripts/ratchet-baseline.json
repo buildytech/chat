@@ -1,8 +1,11 @@
 {
-	"ui8pxGrid": 30,
+	"ui8pxGrid": 26,
 	"asUnknownAs": 16,
 	"asNever": 1,
-	"asType": 366,
+	"asType": 365,
 	"directLocalStorage": 2,
-	"eslintWarnings": 16
+	"eslintWarnings": 16,
+	"unusedI18nKeys": 0,
+	"deadFiles": 0,
+	"unusedExports": 207
 }

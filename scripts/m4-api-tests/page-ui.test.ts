@@ -132,10 +132,6 @@ test("cards: the Stock thumbnail is full-bleed (no padding around it) and home S
 	const feedCard = web("app/FeedCard.svelte");
 	assert.match(feedCard, /<StockMediaCard\s+tag="li"/);
 	assert.doesNotMatch(feedCard, /p-2", columns === 1/);
-	const stock = web("app/StockCard.svelte");
-	assert.match(stock, /<StockMediaCard tag="article"/);
-	assert.match(stock, /class="truncate font-mono text-xs text-muted-foreground" title=\{screen\.screenId\}/, "the id is one truncated line");
-	assert.doesNotMatch(stock, /break-all/);
 	const home = web("modules/chat/ui/HomeOnboarding.svelte");
 	assert.doesNotMatch(home, /data-slot="stock-grid"|selectScenario|attachScreen/);
 	const ask = web("modules/chat/ui/AskBlockCards.svelte");
