@@ -1,6 +1,6 @@
 # Plan: refactor 2026-11 (one block source, project/chat split, chat as a module, quality gate)
 
-Status: accepted by the owner (2026-11-14); audit done, implementation not started.
+Status: accepted by the owner (2026-11-14); audit done; item 3 done ([b545857](https://github.com/buildytech/chat/commit/b545857), ADR 0038); next: item 1.
 
 Authority: owner decision of 2026-11-14 ("all proposals accepted"). Follow `AGENTS.md`, the ADRs in `.project/adr/` (0034 page-spec v2, 0035 render probe, 0036 map editor, 0037 free composition) and the gate below. Every item that changes a rule or a contract gets its own ADR.
 
@@ -26,7 +26,7 @@ Acceptance:
 - [x] Counts by criterion and severity; measured facts (cycles, casts, dead code, i18n, sizes, coupling points).
 - [x] No code changed by the audit.
 
-Status: done (36 defects: 8 S1, 11 S2, 17 S3).
+Status: done (36 defects: 8 S1, 11 S2, 17 S3). Fixed since: B-04, B-05, half of D-04 (item 3).
 
 ## 1. Single block source
 
@@ -59,13 +59,14 @@ Status: todo.
 Goal: one render-probe function shared by write-time, turn-start and the coverage script, and installed wherever pages are written, the browser included (audit B-04, B-05).
 
 Acceptance:
-- [ ] One exported `renderProbe` (compiled registry blocks, `render` to `body`) used by `xai-runtime`, `scripts/inspector-coverage.mjs` and the browser preview/Inspector path.
-- [ ] No second copy of the render closure in `apps/xai-runtime/src/http.ts` or the scripts.
-- [ ] A browser write (Inspector edit, drag and drop, feed add) of a block that does not render is rejected with `render_failed` / `render_empty`, as on the server.
-- [ ] `renderProblems(page)` is computed once per turn step.
-- [ ] Tests: the probe module is the only place that calls the registry `render`; write-time, turn-start and coverage give the same verdict on a fixed fixture page.
+- [x] One exported `probeFromModule` (compiled registry blocks, `render` to `body`) used by `xai-runtime`, `scripts/inspector-coverage.mjs`, the test helpers and the browser; `probeOutcome` is the one classifier.
+- [x] No second copy of the render closure in `apps/xai-runtime/src/http.ts`, the scripts or the tests (a test greps for it).
+- [x] A browser write (Inspector edit, drag and drop, feed add) that makes a component throw is rejected with `render_failed` and the prop path, as on the server: the page is unchanged, the field keeps the typed text and shows the error. Decision (ADR 0038): a block that only renders nothing is accepted in the browser (31 registry variants are placeholders: nav bars, footers, FAQ) and the preview keeps its per-block notice; the agent host still rejects it.
+- [x] `renderProblems(page)` is computed once per turn step.
+- [x] Tests: `render-probe-callers.test.ts` (shared probe, empty policy, write-time, browser Inspector edit and feed add, same verdict for write-time / turn-start / coverage, one closure in runtime / script / browser, one `renderProblems` per turn); coverage unchanged at 526/532 (only the digest line moved).
+- [x] Live check: staging, an Inspector edit that makes `dish-showcase` throw shows the field error state with the page unchanged; a feed add of a placeholder block is accepted.
 
-Status: todo (first implementation step).
+Status: done ([b545857](https://github.com/buildytech/chat/commit/b545857)). Known follow-up: the browser pays one 255 KB gzipped request for `render/blocks.mjs` on first use; revisit if item 5 (chat as a module) changes what loads when.
 
 ## 4. Remove the old persist migrations
 
@@ -110,7 +111,7 @@ Acceptance (gate part, done before item 4):
 - [ ] ESLint (flat config): `no-explicit-any`, `import/no-cycle`, package boundaries (`apps -> packages`, `ports -> page-contract` only), svelte plugin, unused exports, `max-lines` warning at 300 and `max-lines-per-function` at 80; wired into `npm run check` (audit D-01).
 - [ ] `typecheck` script: `tsc --strict` over `packages/*` and `apps/xai-runtime` (0 errors today, D-02); `svelte-check` stays for chat-web.
 - [ ] `ui8px` lint for UI files in the same command.
-- [ ] A ratchet for `as unknown as` / `as never` / `as Type` counts (baseline 10 / 2 / about 297, D-03 to D-05) that may only go down.
+- [ ] A ratchet for `as unknown as` / `as never` / `as Type` counts (baseline 10 / 1 / about 296, D-03 to D-05) that may only go down.
 - [ ] Fuzz test of `applyOp` and the gate (fast-check or equal): valid in, valid out, undo restores the page (audit E-01).
 - [ ] Export snapshot test against `npx ui8kit add` for a fixed page (audit E-02).
 - [ ] i18n unused-key check (B-11) and dead-file check (B-08, B-09, B-10) in the gate.
