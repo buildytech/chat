@@ -1,0 +1,18 @@
+# Secret scanning (npm run secrets:check): the default gitleaks rules plus the reviewed false positives below.
+# A new hit is a failure; review it, rotate the credential if it is real, and only then allow a path here with the reason.
+title = "buildytech/chat"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "reviewed 2026-11-14: content hashes (sha256 of source files) of the registry lock, not credentials"
+paths = ['''registry/svelte/ui8kit\.lock\.json''']
+
+[[allowlists]]
+description = "reviewed 2026-11-14: a fake canary key that the logs-without-secrets test plants to prove it never reaches a log"
+paths = ['''scripts/m4-api-tests/logs-secrets\.test\.ts''']
+
+[[allowlists]]
+description = "reviewed 2026-11-14: throwaway local dev credentials of two removed e2e scripts (127.0.0.1 only, never a deployed value)"
+paths = ['''scripts/m7-(dual-site-isolation|http-e2e)\.sh''']

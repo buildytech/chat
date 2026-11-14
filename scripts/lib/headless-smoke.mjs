@@ -53,6 +53,7 @@ export async function headlessSmoke({ dir, chat }) {
 		const docs = () => pg.evaluate(() => { const k = Object.keys(localStorage).find((x) => /sessions/.test(x) && !/quarantine|migration/.test(x)); return { sessions: k ? JSON.parse(localStorage.getItem(k) || "[]") : [], keys: Object.keys(localStorage) }; });
 		const frameOf = async () => { let fr = await (await pg.$("iframe"))?.contentFrame(); for (let i = 0; i < 20 && (!fr || !(await fr.$("[data-block-id]"))); i++) { await sleep(800); fr = await (await pg.$("iframe"))?.contentFrame(); } return fr; };
 		// brand: βuildγ in both builds, never a product name of ours that is not the brand
+		ok("page policy: CSP meta with a script hash and no inline script", /script-src 'self' 'unsafe-eval' 'sha256-[A-Za-z0-9+\/=]+'(?:;|$)/.test((await pg.locator('meta[http-equiv="content-security-policy"]').getAttribute("content").catch(() => "")) ?? ""));
 		ok("document title is the brand", (await pg.title()) === DOCUMENT_TITLE, await pg.title());
 		const brandWord = await pg.locator('[data-slot="brand-word"]').first().innerText().catch(() => "");
 		ok("sidebar brand is the brand", brandWord.trim() === BRAND, brandWord);
