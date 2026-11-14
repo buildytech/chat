@@ -1,6 +1,6 @@
 # Plan: refactor 2026-11 (one block source, project/chat split, chat as a module, quality gate)
 
-Status: accepted by the owner (2026-11-14); audit done; item 3 done ([b545857](https://github.com/buildytech/chat/commit/b545857), ADR 0038); item 1 done ([f69bb81](https://github.com/buildytech/chat/commit/f69bb81), [ec9e4a9](https://github.com/buildytech/chat/commit/ec9e4a9), ADR 0039); next: item 2.
+Status: accepted by the owner (2026-11-14); audit done; item 3 done ([b545857](https://github.com/buildytech/chat/commit/b545857), ADR 0038); item 1 done ([f69bb81](https://github.com/buildytech/chat/commit/f69bb81), [ec9e4a9](https://github.com/buildytech/chat/commit/ec9e4a9), ADR 0039); item 2 done ([95383f4](https://github.com/buildytech/chat/commit/95383f4), [4e4063c](https://github.com/buildytech/chat/commit/4e4063c), contract [fda5f32](https://github.com/ui8kit/contract/commit/fda5f32), ADR 0040); next: item 5 (item 4 waits for the `migrationReport` criterion).
 
 Authority: owner decision of 2026-11-14 ("all proposals accepted"). Follow `AGENTS.md`, the ADRs in `.project/adr/` (0034 page-spec v2, 0035 render probe, 0036 map editor, 0037 free composition) and the gate below. Every item that changes a rule or a contract gets its own ADR.
 
@@ -46,13 +46,13 @@ Status: done ([f69bb81](https://github.com/buildytech/chat/commit/f69bb81) re-pi
 Goal: a Project (page, skin, edit history) exists without a chat. Chat messages are an extension (`ext.chat`), and `messages` is optional in the contract (audit A-01, A-02, A-04, A-05, C-01).
 
 Acceptance:
-- [ ] A Project store owns the page, candidate/applied state, skin, selection and edit history; it does not import chat code.
-- [ ] A chat session references a project id; the page blob is keyed by project id.
-- [ ] `messages` is optional in the session profile; the contract change is released in `ui8kit/contract` first (page-spec/session version bump) and `packages/page-contract` follows.
-- [ ] `session.svelte.ts` is split (target under 300 lines per file); pure transitions (proposal state, page replacement, import) are plain functions with unit tests.
-- [ ] Loading, exporting and importing a session file work for old files (until item 4) and for files without messages.
+- [x] A Project store owns the page, candidate/applied state, skin, selection and edit history; it does not import chat code. (`lib/project/store.svelte.ts`; a test scans the imports of `lib/project`. The page and candidate state itself stays in `page-store`, which the project store binds, applies and discards.)
+- [x] A chat session references a project id; the page blob is keyed by project id. (`Project.projectId`, `bindProject`, `readProjectPage`; the chat is a view of the project, `chat-core/view.ts`.)
+- [x] `messages` is optional in the session profile; the contract change is released in `ui8kit/contract` first (session 1.9.0: `messages` optional, `projectId`, `duplicate_project_page`) and `packages/page-contract` follows ([c2aa2cb](https://github.com/buildytech/chat/commit/c2aa2cb)).
+- [x] `session.svelte.ts` is split (target under 300 lines per file): the largest file is `turn.ts` at 251 lines and `session.svelte.ts` is a 13-line facade; a test enforces 300. Pure transitions (`project/doc`, `project/transitions`, `chat-core/view`, the proposal normalizer, `proposals`) are plain functions with unit tests (`project-split.test.ts`). The send path and the proposal flow stay in the module-level-rune files and are covered by source-structure tests and the staging smoke.
+- [x] Loading, exporting and importing a session file work for old files (until item 4) and for files without messages (`session-store.test.ts`, `project-split.test.ts`; the stored document of a project is byte-identical to what the previous app version wrote).
 
-Status: todo.
+Status: done ([95383f4](https://github.com/buildytech/chat/commit/95383f4) split, [4e4063c](https://github.com/buildytech/chat/commit/4e4063c) skin to the project store, [a84dff1](https://github.com/buildytech/chat/commit/a84dff1) migration counters, [c2aa2cb](https://github.com/buildytech/chat/commit/c2aa2cb) contract 1.9.0; ADR 0040; staging READY and smoke-checked). Left for later items: the Inspector still reaches `startEmptyPageInChat` through chat-core (A-05, item 5), the Blocks feed and chips still import `chat-core` (A-03, item 5).
 
 ## 3. One render probe
 
