@@ -43,7 +43,7 @@ function valueAt(data: unknown, pointer: string): unknown {
 }
 
 /** Ajv errors -> one issue per pointer, the most specific keyword first, reference-shape branches dropped. */
-export function propsIssues(errors: readonly ErrorObject[], data: unknown): PropsIssue[] {
+function propsIssues(errors: readonly ErrorObject[], data: unknown): PropsIssue[] {
 	const best = new Map<string, ErrorObject>();
 	for (const error of errors) {
 		if (error.keyword === "anyOf" || error.keyword === "oneOf" || insideRefShape(error)) continue;

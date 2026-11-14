@@ -2,14 +2,14 @@ import en from "./en.json";
 import ru from "./ru.json";
 import { uiLocale } from "./locale.svelte.ts";
 
-export type MessageKey = keyof typeof en.messages;
+type MessageKey = keyof typeof en.messages;
 
 const catalogs = {
 	en: { ...en.messages } as Record<string, string>,
 	ru: { ...ru.messages } as Record<string, string>
 };
 
-export type MessageSet = { en: Record<string, string>; ru: Record<string, string> };
+type MessageSet = { en: Record<string, string>; ru: Record<string, string> };
 
 /**
  * A module adds its own messages (keys it owns, never a core key) and may word core keys its own way (`overrides`: the

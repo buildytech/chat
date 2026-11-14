@@ -50,7 +50,7 @@ export function itemIndex(): string[] {
 }
 
 /** An item by its registry name, Stock spec (`block.features`), or Stock label (`features`). */
-export function resolveItem(id: unknown): string | null {
+function resolveItem(id: unknown): string | null {
 	const raw = String(id ?? "").trim();
 	if (!raw) return null;
 	if (itemInfo(raw)) return raw;
@@ -73,7 +73,7 @@ export function askBlockCards(ids: readonly unknown[] | undefined): AskBlockCard
 	return out;
 }
 
-export type BlockReadOk = {
+type BlockReadOk = {
 	ok: true;
 	item: string;
 	title: string;
@@ -92,9 +92,9 @@ export type BlockReadOk = {
 	thumb?: string | null;
 };
 
-export type BlockReadUnknown = { ok: false; code: "unknown_item"; message: string; near: string[] };
+type BlockReadUnknown = { ok: false; code: "unknown_item"; message: string; near: string[] };
 
-export type BlockRead = BlockReadOk | BlockReadUnknown;
+type BlockRead = BlockReadOk | BlockReadUnknown;
 
 /** get_block: one registry item as the agent needs it to write its props. */
 export function readBlock(id: unknown, variant?: unknown): BlockRead {

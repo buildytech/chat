@@ -14,7 +14,7 @@ let probeReady: Promise<void> | null = null;
  * (the Vercel bundle: ../_render/blocks.mjs; server.ts: the same file in the repo). Without the module every write fails with
  * `render_probe_unavailable`: a page is never accepted on a check that did not run.
  */
-export function ensureRenderProbe(): Promise<void> {
+function ensureRenderProbe(): Promise<void> {
 	probeReady ??= (async () => {
 		try {
 			const loader = (globalThis as { __buildyRenderLoader?: () => Promise<RenderModule> }).__buildyRenderLoader;

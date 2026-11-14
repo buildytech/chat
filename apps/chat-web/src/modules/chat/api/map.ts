@@ -1,7 +1,7 @@
-import type { ChatMessage, ChatSession, SessionSummary } from "../core/types.ts";
-import type { ServerMessage, ServerSession } from "./gateway.ts";
+import type { ChatMessage } from "../core/types.ts";
+import type { ServerMessage } from "./gateway.ts";
 
-export type SavedArtifact = {
+type SavedArtifact = {
 	kind: "saved_page";
 	pageId: string;
 	slug: string;
@@ -56,22 +56,3 @@ export function mapMessages(server: ServerMessage[]): ChatMessage[] {
 	return out;
 }
 
-export function mapSessionSummary(s: ServerSession): SessionSummary {
-	return {
-		id: s.id,
-		title: s.title?.trim() ? s.title : "New chat",
-		updatedAt: s.updatedAt
-	};
-}
-
-export function mapSession(s: ServerSession, messages: ServerMessage[]): ChatSession {
-	return {
-		id: s.id,
-		title: s.title?.trim() ? s.title : "New chat",
-		updatedAt: s.updatedAt,
-		pageId: s.pageId,
-		pageBound: s.pageBound,
-		pageRevision: s.pageRevision,
-		messages: mapMessages(messages)
-	};
-}

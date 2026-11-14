@@ -28,7 +28,7 @@ export function applyProposal(): boolean {
 export type Started = { ok: true } | { ok: false; code: string; message: string };
 
 /** One Build proposal the host made itself (no model call): the candidate, its messages, then Apply. */
-export function recordHostProposal(session: ChatSession, requestText: string, replyText: string, page: PageV2, diff: DiffEntry[], opts: { origin?: ChatProposalState["origin"]; screenId?: string | null; baseRevision: number; title?: string }): void {
+function recordHostProposal(session: ChatSession, requestText: string, replyText: string, page: PageV2, diff: DiffEntry[], opts: { origin?: ChatProposalState["origin"]; screenId?: string | null; baseRevision: number; title?: string }): void {
 	setCandidatePage(page, provenanceFor(opts.screenId ?? null));
 	const request: ChatMessage = { id: uid("msg"), role: "user", text: requestText, createdAt: nowIso(), mode: "build" };
 	const reply: ChatMessage = {

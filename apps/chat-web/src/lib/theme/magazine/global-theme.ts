@@ -19,16 +19,14 @@
 import { RADII, SKIN_IDS, THEME_FONT_IDS, themeHeadingWeight } from "./ids.ts";
 import { cleanPalette, CONTRAST_LEVELS, HARMONIES, paletteStyle, type Palette } from "./palette.ts";
 import { cleanHeadingWeight, cleanScale, cleanTracking, cleanWeight, cleanWidth, FONT_SCALES, FONT_WEIGHTS, TRACKINGS, typeStyle, widthAxis } from "./type.ts";
-import { cleanTokens, DENSITIES, DENSITY_ELEMENTS, DENSITY_VARS, ELEMENT_SLOT, ELEMENTS, setToken, SHADOW_ELEMENTS, SHADOWS, tokenAttrs, tokenStyle, type Density, type Tokens } from "./design.ts";
+import { cleanTokens, DENSITIES, DENSITY_ELEMENTS, DENSITY_VARS, ELEMENT_SLOT, ELEMENTS, SHADOW_ELEMENTS, SHADOWS, tokenAttrs, tokenStyle, type Tokens } from "./design.ts";
 
 /** palette: the custom colours of the colour wheel (palette.ts), with the skin's neutrals tinted by it; absent: the skin's own colours.
  *  fontScale: every text size in % (type.ts; absent: 100%); fontWidth: the font's Width axis in % (only for a font that has one;
  *  absent: the font's own width) */
-export type GlobalTheme = { skin: string | null; font: string | null; headingFont: string | null; radius: number | null; tokens: Tokens; palette?: Palette; fontScale?: number; fontWidth?: number; fontWeight?: number; headingWeight?: number; tracking?: number };
-export const NO_THEME: GlobalTheme = { skin: null, font: null, headingFont: null, radius: null, tokens: {} };
-
+type GlobalTheme = { skin: string | null; font: string | null; headingFont: string | null; radius: number | null; tokens: Tokens; palette?: Palette; fontScale?: number; fontWidth?: number; fontWeight?: number; headingWeight?: number; tracking?: number };
 /** a theme from anything (storage, JSON): unknown values become null, unknown tokens are dropped */
-export function cleanTheme(v: unknown): GlobalTheme {
+function cleanTheme(v: unknown): GlobalTheme {
   const o = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
   const skin = typeof o.skin === "string" && (SKIN_IDS as readonly string[]).includes(o.skin) ? o.skin : null;
   const font = typeof o.font === "string" && (THEME_FONT_IDS as readonly string[]).includes(o.font) ? o.font : null;
@@ -40,40 +38,8 @@ export function cleanTheme(v: unknown): GlobalTheme {
   return { skin, font, headingFont, radius, tokens: cleanTokens(o.tokens), ...(palette ? { palette } : {}), ...(fontScale !== null ? { fontScale } : {}), ...(fontWidth !== null ? { fontWidth } : {}), ...(fontWeight !== null ? { fontWeight } : {}), ...(headingWeight !== null ? { headingWeight } : {}), ...(tracking !== null ? { tracking } : {}) };
 }
 
-/** a patch merged into a theme (every controller's setTheme): choosing a skin (any patch naming `skin`) returns to that skin's own
- *  colours, so it drops a custom palette unless the patch sets one itself; one rule for every view that picks a skin. Likewise
- *  choosing a font drops the width (each font has its own axis, or none); the scale stays. Undefined fields are removed. */
-export function patchTheme(t: GlobalTheme, patch: Partial<GlobalTheme>): GlobalTheme {
-  const next: GlobalTheme = { ...t, ...patch };
-  if ("skin" in patch && !("palette" in patch)) delete next.palette;
-  if ("font" in patch && !("fontWidth" in patch)) delete next.fontWidth;
-  for (const k of ["palette", "fontScale", "fontWidth", "fontWeight", "headingWeight", "tracking"] as const) if (next[k] === undefined) delete next[k];
-  return next;
-}
-
 export const isDefault = (t: GlobalTheme): boolean => t.skin === null && t.font === null && t.headingFont === null && t.radius === null && Object.keys(t.tokens).length === 0 && !t.palette && t.fontScale === undefined && t.fontWidth === undefined && t.fontWeight === undefined && t.headingWeight === undefined && t.tracking === undefined;
 
-/** localStorage, or null where there is none or it is blocked (reading the property itself throws then) */
-const local = (): Storage | null => { try { return typeof localStorage === "undefined" ? null : localStorage; } catch { return null; } };
-
-/** the theme saved under `key` (the app's own storage key) */
-export function readTheme(key: string, store: Pick<Storage, "getItem"> | null = local()): GlobalTheme {
-  try { const raw = store?.getItem(key); return raw ? cleanTheme((JSON.parse(raw) as { theme?: unknown }).theme) : NO_THEME; } catch { return NO_THEME; }
-}
-/** save the theme under `key`; the default theme is not stored (the key is removed) */
-export function writeTheme(key: string, t: GlobalTheme, store: Pick<Storage, "setItem" | "removeItem"> | null = local()): void {
-  try { if (isDefault(t)) store?.removeItem(key); else store?.setItem(key, JSON.stringify({ v: 1, theme: cleanTheme(t) })); } catch { /* storage blocked: this visit only */ }
-}
-
-/** one density for every element that has one ("default" clears them) */
-export function setDensity(tokens: Tokens, d: Density): Tokens {
-  return DENSITY_ELEMENTS.reduce((t, e) => setToken(t, "density-" + e, d === "default" ? null : d), tokens);
-}
-/** the density shared by every element, or null when they differ */
-export function densityOf(tokens: Tokens): Density | null {
-  const v = DENSITY_ELEMENTS.map((e) => (tokens["density-" + e] as Density | undefined) ?? "default");
-  return v.every((x) => x === v[0]) ? v[0]! : null;
-}
 export { DENSITIES };
 
 /** the CSS variables of the root: radius, the body and heading fonts, the per-element tokens, the custom palette's
@@ -95,10 +61,10 @@ export function rootAttrs(t: GlobalTheme): Record<string, string> {
 
 // ---- the schema of every setting (one entry per field of the model) ----
 
-export const MODES = ["light", "dark"] as const;
+const MODES = ["light", "dark"] as const;
 export type Mode = (typeof MODES)[number];
-export type FieldGroup = "site" | "radius" | "density" | "shadow";
-export type FieldValue = string | number;
+type FieldGroup = "site" | "radius" | "density" | "shadow";
+type FieldValue = string | number;
 /** one setting: its id (the token key for per-element ones), its allowed values, where it is kept and what "not set" means */
 export type Field = {
   id: string;
@@ -117,7 +83,7 @@ export type Field = {
   css?: readonly string[];
 };
 
-export const FIELDS: readonly Field[] = [
+const FIELDS: readonly Field[] = [
   { id: "mode", group: "site", values: MODES, nullable: false, unset: null, store: "mode" },
   { id: "skin", group: "site", values: SKIN_IDS, nullable: true, unset: null, store: "theme" },
   { id: "font", group: "site", values: THEME_FONT_IDS, nullable: true, unset: null, store: "theme" },
@@ -127,42 +93,14 @@ export const FIELDS: readonly Field[] = [
   ...DENSITY_ELEMENTS.map((e): Field => ({ id: "density-" + e, group: "density", element: e, values: DENSITIES, nullable: false, unset: "default", store: "tokens", slot: ELEMENT_SLOT[e], css: DENSITY_VARS[e] })),
   ...SHADOW_ELEMENTS.map((e): Field => ({ id: "shadow-" + e, group: "shadow", element: e, values: SHADOWS, nullable: true, unset: null, store: "tokens", slot: ELEMENT_SLOT[e], css: ["--shadow-" + e] })),
 ];
-export const FIELD_IDS: readonly string[] = FIELDS.map((f) => f.id);
 export const fieldOf = (id: string): Field | undefined => FIELDS.find((f) => f.id === id);
 
 /** the whole state the views show: the theme and the app's mode */
-export type ThemeState = { mode: Mode; theme: GlobalTheme };
-
-/** the value of one field (the field's `unset` when the theme does not set it) */
-export function fieldValue(s: ThemeState, id: string): FieldValue | null {
-  const f = fieldOf(id);
-  if (!f) return null;
-  if (f.store === "mode") return s.mode;
-  if (f.store === "theme") return s.theme[id as "skin" | "font" | "headingFont" | "radius" | "fontWeight" | "headingWeight" | "tracking"] ?? f.unset;
-  return s.theme.tokens[id] ?? f.unset;
-}
-
-/** set one field of the theme (mode is the app's, not the theme's: the controller handles it); an unknown value clears the field */
-export function setThemeField(t: GlobalTheme, id: string, v: FieldValue | null): GlobalTheme {
-  const f = fieldOf(id);
-  if (!f || f.store === "mode") return t;
-  const value = v !== null && f.values.includes(v) ? v : null;
-  if (f.store === "theme") return cleanTheme(patchTheme(t, { [id]: value }));
-  return { ...t, tokens: setToken(t.tokens, id, value) };
-}
+type ThemeState = { mode: Mode; theme: GlobalTheme };
 
 // ---- the views: the same fields, each view its own controls ----
 
-/** sheet: the narrow Theme panel (selects, compact); design: the Design system panel of the Theme sheet (radio groups) */
-export type ThemeView = "sheet" | "design";
 export type Control = "radio" | "select";
-const CONTROL: Record<ThemeView, (f: Field) => Control> = {
-  sheet: (f) => (f.id === "mode" || f.id === "radius" ? "radio" : "select"),
-  design: (f) => (f.id === "skin" || f.id === "font" || f.id === "headingFont" ? "select" : "radio"),
-};
-/** every field of the model, in order, with the control a view renders for it: both views cover every field */
-export const viewFields = (view: ThemeView): Array<{ field: Field; control: Control }> => FIELDS.map((field) => ({ field, control: CONTROL[view](field) }));
-
 // ---- export / import: one config with every field (the future external API reads and writes this) ----
 
 export const CONFIG_FORMAT = "magazine-theme";

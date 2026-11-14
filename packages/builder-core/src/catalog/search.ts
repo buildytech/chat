@@ -12,7 +12,7 @@ export function facetVocabulary(): CatalogSnapshotVocab {
 
 type CatalogSnapshotVocab = (typeof catalogSnapshot)["facetVocabulary"];
 
-export function isFacetValue(facet: "site" | "section" | "job" | "type", value: string): boolean {
+function isFacetValue(facet: "site" | "section" | "job" | "type", value: string): boolean {
 	return catalogSnapshot.facetVocabulary[facet].includes(value);
 }
 
@@ -195,8 +195,8 @@ export function getScreenById(screenId: string): CatalogScreen | null {
 }
 
 
-export type FacetName = "site" | "section" | "job" | "industry" | "blocks";
-export const FACET_NAMES: readonly FacetName[] = ["site", "section", "job", "industry", "blocks"];
+type FacetName = "site" | "section" | "job" | "industry" | "blocks";
+const FACET_NAMES: readonly FacetName[] = ["site", "section", "job", "industry", "blocks"];
 
 /** Facet tree for drill-down: per facet, how many renderable screens each value adds to the rest of the filter. */
 export type FacetTree = Record<FacetName, Array<{ value: string; count: number }>>;

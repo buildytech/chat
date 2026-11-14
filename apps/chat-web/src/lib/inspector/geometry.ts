@@ -6,7 +6,7 @@
 import type { BlockV2 } from "@buildytech/page-contract";
 
 /** The wrapper attribute of a page block in the preview (its value is the block id). */
-export const BLOCK_ID_ATTR = "data-block-id";
+const BLOCK_ID_ATTR = "data-block-id";
 
 export type CanvasRect = { x: number; y: number; width: number; height: number };
 

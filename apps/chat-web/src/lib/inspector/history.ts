@@ -3,7 +3,7 @@
  * (edits with the same key extend the open step) until the step is sealed (blur, another field, an operation, undo).
  * Pure, no Svelte; the store holds one instance per chat.
  */
-export type HistoryStep<T> = { before: T; after: T; key: string | null };
+type HistoryStep<T> = { before: T; after: T; key: string | null };
 
 export class EditHistory<T> {
 	private past: HistoryStep<T>[] = [];

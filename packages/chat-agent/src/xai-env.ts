@@ -9,17 +9,6 @@ export const RUNTIME_AUTH_ENV = ["BUILDY_RUNTIME_BASIC_AUTH_USER", "BUILDY_RUNTI
 
 export const XAI_BASE_URL = "https://api.x.ai/v1";
 
-/** Parent-box evidence 2026-11-08. Runtime still re-lists the account. Not a live claim without a key. */
-export const PARENT_VERIFIED_MODEL_IDS = [
-	"grok-4.20-0309-non-reasoning",
-	"grok-4.20-0309-reasoning",
-	"grok-4.20-multi-agent-0309",
-	"grok-4.7",
-	"grok-build-0.1",
-	"grok-imagine-image",
-	"grok-imagine-image-2.0"
-] as const;
-
 export const PARENT_VERIFIED_CHAT_IDS = [
 	"grok-4.20-0309-non-reasoning",
 	"grok-4.20-0309-reasoning",
@@ -44,7 +33,7 @@ export const XAI_RUNTIME_NOTES = {
 	toolCalling: "Parent 2026-11-08: bounded Chat Completions tool-protocol test on grok-4.20-0309-non-reasoning succeeded (2 steps, HTTP 200, tool calls, no retries, usage 393+434=827). That test used synthetic TEST blocks and artificial search_blocks(section)/propose_page tools, not this app's Stock catalog or search_catalog/get_block_details/propose_layout. Protocol support is proven. Page assembly is not proven. Do not treat the fixture miss (section=hero vs job=hero, empty blocks) as a production catalog bug."
 } as const;
 
-export type XaiKeyState =
+type XaiKeyState =
 	| { present: false; source: null; code: "xai_api_key_missing" }
 	| { present: true; source: "XAI_API_KEY"; code: "xai_api_key_present" };
 
@@ -83,8 +72,3 @@ export function classifyDiscoveredModels(ids: string[]): {
 	return { chatIds, imageIds, otherIds, candidate };
 }
 
-/** Status-page default only. Never substitute this for a selected chat run. */
-export function pickChatModel(discoveredChatIds: string[]): string | null {
-	if (discoveredChatIds.includes(CANDIDATE_CHAT_MODEL)) return CANDIDATE_CHAT_MODEL;
-	return discoveredChatIds[0] ?? null;
-}

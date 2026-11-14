@@ -10,17 +10,15 @@
 import { FONT_WIDTH, type FontId, type WidthAxis } from "./ids.ts";
 
 export const FONT_SCALES = [80, 85, 90, 95, 100, 105, 110, 115, 120] as const;
-export const SCALE_STEP = 5;
-export const DEFAULT_SCALE = 100;
+const DEFAULT_SCALE = 100;
 
 export const FONT_WEIGHTS = [300, 400, 500, 600, 700] as const;
-export const DEFAULT_FONT_WEIGHT = 400;
+const DEFAULT_FONT_WEIGHT = 400;
 export const TRACKINGS = [-0.05, -0.025, 0, 0.025, 0.05, 0.075, 0.1] as const;
-export const TRACKING_STEP = 0.025;
-export const DEFAULT_TRACKING = 0;
+const DEFAULT_TRACKING = 0;
 
 /** Tailwind's type scale (tailwindcss/theme.css --text-*, rem); the test reads the file, so it cannot drift */
-export const TEXT_SIZES = {
+const TEXT_SIZES = {
   xs: 0.75, sm: 0.875, base: 1, lg: 1.125, xl: 1.25, "2xl": 1.5, "3xl": 1.875, "4xl": 2.25, "5xl": 3, "6xl": 3.75, "7xl": 4.5, "8xl": 6, "9xl": 8,
 } as const;
 

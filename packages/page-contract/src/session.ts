@@ -13,11 +13,9 @@ import { addCollectionSchema } from "./collection.ts";
 
 export const SESSION_SCHEMA_URL = "https://schema.buildy.tw/session.schema.json";
 export const SESSION_FORMAT = "buildy:v1" as const;
-export const SESSION_REVISION_CAUSES = ["apply", "edit", "undo", "redo"] as const;
-export type SessionRevisionCause = (typeof SESSION_REVISION_CAUSES)[number];
+export type SessionRevisionCause = "apply" | "edit" | "undo" | "redo";
 /** What a revision did (session 1.6.0): one field, a variant, a section or row added / moved / removed / inserted / replaced; 1.7.0: set_family (the screen family changed, ADR 0027). */
-export const SESSION_REVISION_OPS = ["set_field", "set_variant", "add", "move", "remove", "insert", "replace", "set_family"] as const;
-export type SessionRevisionOp = (typeof SESSION_REVISION_OPS)[number];
+export type SessionRevisionOp = "set_field" | "set_variant" | "add" | "move" | "remove" | "insert" | "replace" | "set_family";
 /** `path` (1.6.0): JSON Pointer of the field or row in the block's render props; never a value. */
 export type SessionRevisionEntry = { revision: number; at: string; cause: SessionRevisionCause; pageId?: string; blockId?: string; op?: SessionRevisionOp; path?: string };
 export const SESSION_MAX_HISTORY = (sessionSchema as { "x-limits": { maxHistory: number } })["x-limits"].maxHistory;
@@ -43,7 +41,7 @@ export function sessionDefIssues(input: unknown, def: "session" | "message" | "r
 type ProgramIssue = { path: string; keyword: string };
 
 /** Program checks of one chat (x-program-checks): page revision and history agree with the page record. */
-export function sessionChatProgramIssues(session: { pageRevision?: number | null; page?: { revision?: number | null } | null; history?: { revision: number }[] }, path = "$"): ProgramIssue[] {
+function sessionChatProgramIssues(session: { pageRevision?: number | null; page?: { revision?: number | null } | null; history?: { revision: number }[] }, path = "$"): ProgramIssue[] {
 	const out: ProgramIssue[] = [];
 	const pageRevision = session.page ? (session.page.revision ?? null) : undefined;
 	if (pageRevision !== undefined && (session.pageRevision ?? null) !== pageRevision) out.push({ path: `${path}.pageRevision`, keyword: "page_revision_mismatch" });

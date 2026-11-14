@@ -29,7 +29,7 @@ export const run = $state({
 const control = { epoch: 0, inflight: null as AbortController | null };
 
 export const currentEpoch = (): number => control.epoch;
-export const bumpEpoch = (): number => ++control.epoch;
+const bumpEpoch = (): number => ++control.epoch;
 export function abortInflight(): void {
 	control.inflight?.abort();
 	control.inflight = null;
@@ -50,7 +50,7 @@ export function getSelectedSession(): ChatSession | null {
 }
 
 /** Put a chat view back into its project (memory only). `commitSession` also saves. */
-export function putSession(view: ChatSession): void {
+function putSession(view: ChatSession): void {
 	putProject(projectOfView(view, getProjects().find((p) => p.id === view.id) ?? null), { save: false });
 }
 export function commitSession(view: ChatSession): void {
@@ -92,7 +92,7 @@ export function abortInflightRun(): void {
 const notFound = (id: string): string => t("runtime.sessionNotFound").replace("{id}", id);
 
 /** The scenario and screen of the selected project become the workspace context. */
-export function restoreWorkspace(project: Project | null): void {
+function restoreWorkspace(project: Project | null): void {
 	hydrateSessionContext({ scenarioId: project?.scenarioId ?? null, screenId: project?.screenId ?? null });
 }
 

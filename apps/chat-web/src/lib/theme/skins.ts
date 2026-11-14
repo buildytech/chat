@@ -23,7 +23,7 @@ function loaderFor(file: string): (() => Promise<string>) | null {
 }
 
 /** theme-base + the skin's CSS, or "" for the default theme (or a skin the snapshot does not carry). */
-export async function skinCss(id: string | null): Promise<string> {
+async function skinCss(id: string | null): Promise<string> {
 	const skin = registrySkin(id);
 	if (!skin) return "";
 	const parts = await Promise.all([...registrySkinBaseCss(), skin.file].map((file) => loaderFor(file)?.() ?? Promise.resolve("")));

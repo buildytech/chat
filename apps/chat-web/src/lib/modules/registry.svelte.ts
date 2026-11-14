@@ -19,8 +19,6 @@ export function registerModule(module: BuilderModule): void {
 	modules = [...modules, module];
 }
 
-export const loadedModules = (): readonly BuilderModule[] => modules;
-export const hasModule = (id: string): boolean => modules.some((m) => m.id === id);
 export const moduleTabs = (): readonly ModuleTab[] => modules.flatMap((m) => m.tabs ?? []);
 export const slotComponents = <N extends SlotName>(name: N): Component<SlotProps[N]>[] => modules.flatMap((m) => (m.slots?.[name] ? [m.slots[name] as Component<SlotProps[N]>] : []));
 const CORE_LEFT_SURFACE = { icon: null, tabKey: "shell.tabPanel", regionKey: "shell.leftPanel", hideKey: "workspace.hidePanel", showKey: "workspace.showPanel" } as const;

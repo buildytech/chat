@@ -1,6 +1,6 @@
 /** Provider usage. Unknown is the string "unknown", never 0, for cancelled/error paths. */
 
-export type TokenCount = number | "unknown";
+type TokenCount = number | "unknown";
 
 export type StepUsage = {
 	promptTokens: TokenCount;
@@ -40,13 +40,13 @@ export type SessionUsage = {
 	cost: CostUnavailable;
 };
 
-export type CostUnavailable = {
+type CostUnavailable = {
 	available: false;
 	reason: "no_official_current_rates_in_repo";
 	note: "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used.";
 };
 
-export type CostEstimate = {
+type CostEstimate = {
 	available: true;
 	kind: "estimated";
 	currency: "USD";

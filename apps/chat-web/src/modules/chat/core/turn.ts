@@ -32,14 +32,14 @@ export function shownPageOf(): PageV2 | null {
 	return getEditBase()?.page ?? null;
 }
 
-export type TurnPlan = { request: Omit<TurnRequest, "modelId">; base: PageV2; shown: PageV2 };
+type TurnPlan = { request: Omit<TurnRequest, "modelId">; base: PageV2; shown: PageV2 };
 
 /**
  * What a turn starts from (ADR 0034). The agent edits the page the author sees. A chat with no page starts from an empty
  * page, or, in a collection chat, from the draft of the collection (its first screen and required blocks) with the
  * empty page as what the author sees, so the diff reads as additions.
  */
-export function planTurn(brief: string, mode: AgentMode): TurnPlan {
+function planTurn(brief: string, mode: AgentMode): TurnPlan {
 	const session = getSelectedSession();
 	const shownBase = shownPageOf();
 	const collection = mode === "build" ? collectionRequest(session?.collection) : null;
@@ -101,7 +101,7 @@ export function runRecord(opts: {
 	};
 }
 
-export type TurnOutcome = {
+type TurnOutcome = {
 	result: XaiRunResponse | { ok: false; code: string; message: string };
 	plan: TurnPlan;
 	status: Awaited<ReturnType<typeof fetchXaiStatus>>;
@@ -188,7 +188,7 @@ export const diffKey = (diff: readonly unknown[]): string => JSON.stringify(diff
  * The proposal of a reply, checked again here against the page the author sees (never trusted as sent): the same write
  * gate (`writePage`, props gate loaded), the same selection scope, and the diff recomputed from the two documents.
  */
-export function checkedProposal(plan: TurnPlan, raw: { page: unknown }): { ok: true; page: PageV2; diff: DiffEntry[]; warnings: string[] } | { ok: false; code: string; message: string } {
+function checkedProposal(plan: TurnPlan, raw: { page: unknown }): { ok: true; page: PageV2; diff: DiffEntry[]; warnings: string[] } | { ok: false; code: string; message: string } {
 	const written = writePage(plan.base, { page: raw.page });
 	if (!written.ok) {
 		const first = written.issues[0];

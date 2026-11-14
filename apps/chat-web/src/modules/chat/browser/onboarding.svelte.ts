@@ -21,14 +21,6 @@ export function getScreenId(): string | null {
 	return screenId;
 }
 
-export function getFocused(): boolean {
-	return focused;
-}
-
-export function getComposing(): boolean {
-	return composing;
-}
-
 export function getModelOpen(): boolean {
 	return modelOpen;
 }
@@ -60,10 +52,6 @@ export function rotatePlaceholder(hidden: boolean, reducedMotion: boolean): void
 	placeholderIndex = (placeholderIndex + 1) % list.length;
 }
 
-export function resetPlaceholders(): void {
-	placeholderIndex = 0;
-}
-
 export function sendBrief(draft: string): { ok: true; brief: string } | { ok: false; code: string } {
 	const text = draft.trim();
 	if (!text) return { ok: false, code: "empty_brief" };
@@ -71,15 +59,6 @@ export function sendBrief(draft: string): { ok: true; brief: string } | { ok: fa
 }
 
 export const ROTATION_MS = PLACEHOLDER_ROTATION_MS;
-
-export function resetOnboarding(): void {
-	scenarioId = null;
-	screenId = null;
-	placeholderIndex = 0;
-	focused = false;
-	composing = false;
-	modelOpen = false;
-}
 
 export function hydrateSessionContext(ctx: { scenarioId?: ScenarioId | null; screenId?: string | null }): void {
 	scenarioId = ctx.scenarioId ?? null;

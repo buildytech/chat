@@ -57,7 +57,7 @@ export function sendBlockedByScreen(screen: CatalogScreen | null): boolean {
 	return !compat.compatible && !compat.partial;
 }
 
-export type ScreenSupport = {
+type ScreenSupport = {
 	mappedKinds: string[];
 	missing: string[];
 	mapped: number;

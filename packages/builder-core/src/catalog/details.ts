@@ -3,11 +3,11 @@ import { catalogProvenance, catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, getBlockIndexByCatalogId } from "./compatibility.ts";
 import { rendererKindForLabel } from "./renderer-kind.ts";
 import { getScreenById } from "./search.ts";
-import { blockVariantSummary, catalogSourceFor, catalogVariantsFor, variantProps } from "./sources.ts";
+import { catalogSourceFor, catalogVariantsFor, variantProps } from "./sources.ts";
 import { blockAssetUrl, blockThumbUrl, stockSearchUrl } from "./provenance.ts";
 import { LUCIDE_ICON_HINT, propsSummaryFor } from "./props-schema.ts";
 
-export type BlockDetails = {
+type BlockDetails = {
 	id: string;
 	spec: string;
 	title: string;
@@ -36,7 +36,7 @@ export type BlockDetails = {
 	};
 };
 
-export type BlockDetailsError = {
+type BlockDetailsError = {
 	ok: false;
 	code: "unknown_block" | "unknown_variant" | "unknown_target";
 	id: string;
@@ -173,24 +173,6 @@ export function askBlockCard(id: string): AskBlockCard | null {
 				["spec", entry.spec]
 			]),
 		thumb: blockThumbUrl(entry.spec, source?.defaultVariant)
-	};
-}
-
-/**
- * get_block (Ask mode): the card plus every variant as the props that set it apart from the default and the row and
- * text fields of the published props schema. No icon list (get_block_details has it for Build).
- */
-export function getAskBlock(id: string): ({ ok: true } & AskBlockCard & { variantCount: number; variantProps?: Record<string, string>; [key: string]: unknown }) | { ok: false; code: "unknown_block"; id: string } {
-	const card = askBlockCard(id);
-	if (!card) return { ok: false, code: "unknown_block", id: String(id ?? "") };
-	const summary = blockVariantSummary(card.spec);
-	const { kind: _kind, registryItem: _item, defaultVariant: _default, variants, ...schema } = summary ?? ({} as Record<string, unknown>);
-	return {
-		ok: true,
-		...card,
-		variantCount: card.variants.length,
-		...(variants ? { variantProps: variants as Record<string, string> } : {}),
-		...schema
 	};
 }
 

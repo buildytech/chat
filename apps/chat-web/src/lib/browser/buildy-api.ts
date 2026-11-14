@@ -19,7 +19,7 @@ import type { SessionApp, SessionFile, SessionPins, SessionSettings } from "./se
 declare const __BUILDY_APP_COMMIT__: string;
 declare const __BUILDY_PINS__: Pick<SessionPins, "stock" | "registry">;
 
-export type BuildyApi = {
+type BuildyApi = {
 	readonly format: typeof SESSION_FORMAT;
 	readonly schema: string;
 	export(options?: { download?: boolean }): SessionFile;
@@ -38,7 +38,7 @@ function app(): SessionApp {
 }
 
 /** Pins of this build: the Stock content commit and the registry source commit (catalog/snapshot.config.json). */
-export function sessionPins(): SessionPins {
+function sessionPins(): SessionPins {
 	return {
 		...__BUILDY_PINS__,
 		catalogDigest: catalogProvenance().sourceDigest
@@ -81,7 +81,7 @@ export function exportSessionFile(options?: { download?: boolean }): SessionFile
 }
 
 /** Check and load a session file (Settings > Import, `buildy.import(json)`); a failing file changes nothing. */
-export async function importSessionFile(json: unknown): Promise<ImportResult> {
+async function importSessionFile(json: unknown): Promise<ImportResult> {
 	const result = importProjects(json, () => emit("beforeProjectChange"));
 	if (result.ok && result.selected) await openProject(result.selected, { history: "replace" });
 	if (result.ok) {

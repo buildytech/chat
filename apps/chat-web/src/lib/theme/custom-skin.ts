@@ -15,7 +15,7 @@ export { CONFIG_FORMAT, CONFIG_VERSION, type ThemeConfig };
 /** The value of the chat's skin selector (session `skin`) that means "the imported theme". */
 export const CUSTOM_SKIN_ID = "custom";
 
-export type ThemeIssueCode = "not_json" | "not_object" | "format" | "version" | "unknown_key" | "invalid_value" | "required" | "not_kept";
+type ThemeIssueCode = "not_json" | "not_object" | "format" | "version" | "unknown_key" | "invalid_value" | "required" | "not_kept";
 /** One reason an input is not a magazine-theme v2 config: `path` is a JSON Pointer (`/tokens/radius-card`). */
 export type ThemeIssue = { code: ThemeIssueCode; path: string; allowed?: string[] };
 export type ThemeImport = { ok: true; config: ThemeConfig; text: string } | { ok: false; issues: ThemeIssue[] };
@@ -139,7 +139,7 @@ export const CUSTOM_SKIN_BASE_CSS = `/* Custom Skin base rules, as Stock's app.c
 }
 `;
 
-export const googleFontUrl = (spec: string): string => `https://fonts.googleapis.com/css2?family=${spec}&display=swap`;
+const googleFontUrl = (spec: string): string => `https://fonts.googleapis.com/css2?family=${spec}&display=swap`;
 
 export function renderCustomSkin(config: ThemeConfig): CustomSkinRender {
 	const read = fromConfig(config);

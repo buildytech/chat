@@ -9,8 +9,8 @@ import type { BlockV2, PageV2 } from "@buildytech/page-contract";
 /** CLI install root of the exported project (ui8kit.config.json `dir`, the CLI default). */
 export const INSTALL_ROOT = "src";
 export const APP_FILE = `${INSTALL_ROOT}/App.svelte`;
-export const SECTIONS_DIR = `${INSTALL_ROOT}/sections`;
-export type SourceFile = { path: string; content: string };
+const SECTIONS_DIR = `${INSTALL_ROOT}/sections`;
+type SourceFile = { path: string; content: string };
 
 function identFromBlockId(id: string): string {
 	const cleaned = id.replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");

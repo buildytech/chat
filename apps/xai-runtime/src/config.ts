@@ -9,7 +9,7 @@ import type { EnvMap } from "@buildytech/chat-agent";
 /** The process environment, read once at the entry point. */
 export const runtimeEnv = (): EnvMap => process.env;
 
-export type ServerConfig = { bind: string; port: number };
+type ServerConfig = { bind: string; port: number };
 
 /** Where the local Node server listens; loopback unless BUILDY_RUNTIME_BIND says otherwise (then Basic Auth is required). */
 export function readServerConfig(env: EnvMap): ServerConfig {

@@ -13,11 +13,11 @@ import { STORAGE_KEYS, browserStorage, quarantine, type StorageLike } from "./st
 
 export const SESSIONS_KEY = STORAGE_KEYS.sessions;
 export const PAGES_KEY = STORAGE_KEYS.pages;
-export const PAGES_VERSION = 1 as const;
+const PAGES_VERSION = 1 as const;
 
-export type PersistErrorCode = "unavailable" | "quota" | "corrupt";
+type PersistErrorCode = "unavailable" | "quota" | "corrupt";
 
-export type PersistError = {
+type PersistError = {
 	code: PersistErrorCode;
 	message: string;
 };

@@ -2,7 +2,7 @@
  * Layout shortcuts (ADR 0017): Ctrl/Cmd+B chat column, Ctrl/Cmd+I inspector, Ctrl/Cmd+\ preview-only focus.
  * Not inside the code editor (CodeMirror binds Mod-i) and never with Alt (keyboard layouts type characters with it).
  */
-export type ShortcutAction = "side" | "inspector" | "focus";
+type ShortcutAction = "side" | "inspector" | "focus";
 
 type KeyLike = Pick<KeyboardEvent, "key" | "code" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey"> & { target?: EventTarget | null };
 

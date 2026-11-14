@@ -80,7 +80,7 @@ export function scopeIssues(diff: DiffEntry[], scope: readonly string[] | undefi
 	return out;
 }
 
-export type WriteToolResult =
+type WriteToolResult =
 	| { ok: true; page: PageV2; proposal: PageProposal; payload: Record<string, unknown> }
 	| { ok: false; code: string; message: string; issues: DocIssue[] };
 

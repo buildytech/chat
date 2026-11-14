@@ -3,7 +3,7 @@
  * `/build` alias. The payload is read once and removed from the address with history.replaceState before anything
  * else touches the URL, so a reload never imports twice and the payload never lands in a saved session or log.
  */
-export const COLLECTION_PARAM = "collection";
+const COLLECTION_PARAM = "collection";
 
 /** The `?collection=` payload of `href`, and the same address without it (path, other params and hash kept). */
 export function splitCollectionParam(href: string): { payload: string | null; next: string } {

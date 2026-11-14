@@ -71,14 +71,14 @@ export function modelUnavailableCode(model: GrokChatModel | null | undefined): s
 
 export const DEFAULT_CHAT_MODEL_ID: GrokChatModelId = CANDIDATE_CHAT_MODEL;
 
-export type ModelResolveOk = {
+type ModelResolveOk = {
 	ok: true;
 	modelId: GrokChatModelId;
 	label: string;
 	live: boolean;
 };
 
-export type ModelResolveError = {
+type ModelResolveError = {
 	ok: false;
 	code:
 		| "missing_model_id"
@@ -186,7 +186,7 @@ export function assertNoFallback(requestedId: string, executedId: string): Model
 }
 
 /** A POST /v1/run body mapped onto one exact chat model and a trusted turn context (ADR 0034). */
-export type ChatRunRequest = {
+type ChatRunRequest = {
 	modelId: GrokChatModelId;
 	label: string;
 	live: boolean;

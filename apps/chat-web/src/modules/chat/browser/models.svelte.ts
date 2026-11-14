@@ -21,11 +21,6 @@ export function listChatModels() {
 	return GROK_CHAT_MODELS;
 }
 
-/** Selector state per model: disabled models stay visible with an honest reason. */
-export function isChatModelAvailable(id: string): boolean {
-	return modelRunsToolLoop(getChatModel(id));
-}
-
 export function getSelectedModelId(): GrokChatModelId {
 	return selectedModelId;
 }

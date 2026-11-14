@@ -11,9 +11,9 @@ import { blockLabelVocabulary, vocabularyValues } from "@buildytech/builder-core
 export const AGENT_MODES = ["ask", "build"] as const;
 export type AgentMode = (typeof AGENT_MODES)[number];
 
-export type JsonSchemaObject = Record<string, unknown>;
+type JsonSchemaObject = Record<string, unknown>;
 
-export type AgentToolDefinition = {
+type AgentToolDefinition = {
 	name: string;
 	modes: AgentMode[];
 	description: string;
@@ -21,7 +21,7 @@ export type AgentToolDefinition = {
 	parameters: JsonSchemaObject;
 };
 
-export type AgentToolsDocument = {
+type AgentToolsDocument = {
 	format: "buildy-agent-tools";
 	version: number;
 	description: string;
@@ -38,7 +38,7 @@ export function isAgentMode(value: unknown): value is AgentMode {
 }
 
 /** Value lists named by `x-buildy-enum`: generated from the pinned catalog and the page contract, never typed here. */
-export function agentEnumSource(name: string): string[] {
+function agentEnumSource(name: string): string[] {
 	switch (name) {
 		case "catalog.site":
 			return [...facetVocabulary().site];
@@ -56,7 +56,7 @@ export function agentEnumSource(name: string): string[] {
 }
 
 /** Fill `x-buildy-enum` markers and drop every `x-*` keyword: a plain JSON Schema the provider accepts. */
-export function resolveAgentSchema<T>(node: T): T {
+function resolveAgentSchema<T>(node: T): T {
 	if (Array.isArray(node)) return node.map((item) => resolveAgentSchema(item)) as T;
 	if (typeof node !== "object" || node === null) return node;
 	const out: Record<string, unknown> = {};
@@ -71,7 +71,7 @@ export function resolveAgentSchema<T>(node: T): T {
 	return out as T;
 }
 
-export function agentTool(name: string): AgentToolDefinition | null {
+function agentTool(name: string): AgentToolDefinition | null {
 	return agentToolsDocument.tools.find((tool) => tool.name === name) ?? null;
 }
 
@@ -85,13 +85,13 @@ export function toolOffersMode(name: string, mode: AgentMode): boolean {
 }
 
 /** Resolved parameters (object schema) of one tool. */
-export function agentToolParameters(name: string): JsonSchemaObject {
+function agentToolParameters(name: string): JsonSchemaObject {
 	const tool = agentTool(name);
 	if (!tool) throw new Error(`agent-tools: unknown tool ${name}`);
 	return resolveAgentSchema(tool.parameters);
 }
 
-export type OpenAiFunctionTool = {
+type OpenAiFunctionTool = {
 	type: "function";
 	function: { name: string; description: string; parameters: JsonSchemaObject };
 };

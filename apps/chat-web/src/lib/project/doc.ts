@@ -7,7 +7,7 @@
 import type { Project } from "./types.ts";
 
 /** Keys of the session schema that belong to the project, in schema order. */
-export const PROJECT_KEYS = ["title", "createdAt", "updatedAt", "scenarioId", "screenId", "pageId", "pageBound", "pageRevision", "skin", "collection", "history"] as const;
+const PROJECT_KEYS = ["title", "createdAt", "updatedAt", "scenarioId", "screenId", "pageId", "pageBound", "pageRevision", "skin", "collection", "history"] as const;
 
 /**
  * Flat session keys older documents (before 1.10.0) kept for a module: a module that registers them gets the keys it

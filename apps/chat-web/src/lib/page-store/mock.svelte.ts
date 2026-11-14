@@ -36,7 +36,7 @@ export type RevisionEvent = {
 };
 
 /** What an inspector change did, for the history entry of its revision (session 1.6.0). */
-export type RevisionMeta = { op?: SessionRevisionOp; path?: string };
+type RevisionMeta = { op?: SessionRevisionOp; path?: string };
 let revisionListener: ((event: RevisionEvent) => void) | null = null;
 
 export function onPageRevision(listener: ((event: RevisionEvent) => void) | null): void {

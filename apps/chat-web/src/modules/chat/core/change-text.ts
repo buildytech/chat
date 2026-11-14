@@ -7,7 +7,7 @@ import { itemInfo, type DiffEntry } from "@buildytech/builder-core";
 
 type T = (key: string) => string;
 
-export type DiffRowKind = "added" | "removed" | "moved" | "changed" | "page";
+type DiffRowKind = "added" | "removed" | "moved" | "changed" | "page";
 export type DiffRow = { kind: DiffRowKind; id: string | null; text: string };
 
 const name = (entry: DiffEntry): string => {

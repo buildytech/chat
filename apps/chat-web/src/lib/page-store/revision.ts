@@ -8,7 +8,7 @@ import type { SessionRevisionCause } from "@buildytech/page-contract/session";
 
 export type VisibleChange = "edit" | "extend" | "undo" | "redo";
 
-export type RevisionStep = { revision: number | null; cause: SessionRevisionCause | null };
+type RevisionStep = { revision: number | null; cause: SessionRevisionCause | null };
 
 /** Revision after a change of the visible page. `onApplied` false: the change hit a pending proposal (no revision). */
 export function nextRevision(current: number | null, change: VisibleChange, onApplied: boolean): RevisionStep {

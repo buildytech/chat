@@ -36,7 +36,7 @@ export type LayoutPrefs = {
 	focus: boolean;
 };
 
-export type PrefsBlob = { layout: LayoutPrefs };
+type PrefsBlob = { layout: LayoutPrefs };
 
 const WIDTH_KEY: Record<Pane, keyof LayoutPrefs> = {
 	nav: "navWidth",
@@ -78,7 +78,6 @@ export function clampSize(pane: Pane, value: unknown): number {
 	return Math.min(range.max, Math.max(range.min, Math.round(n)));
 }
 
-export const sizeKey = (pane: Pane): keyof LayoutPrefs => WIDTH_KEY[pane];
 export const collapsedKey = (panel: Panel): keyof LayoutPrefs => COLLAPSED_KEY[panel];
 
 export function sizeOf(layout: LayoutPrefs, pane: Pane): number {
@@ -130,7 +129,7 @@ export function parsePrefsText(text: string | null): PrefsBlob | null {
 	}
 }
 
-export type FitInput = {
+type FitInput = {
 	viewport: number;
 	layout: LayoutPrefs;
 	/** Build shows the inspector column; Ask and Code do not. */
@@ -139,7 +138,7 @@ export type FitInput = {
 	columns: boolean;
 };
 
-export type FitWidths = { nav: number; side: number; inspector: number; preview: number };
+type FitWidths = { nav: number; side: number; inspector: number; preview: number };
 
 /**
  * The widths the shell renders at this viewport. Stored sizes are wishes: when the canvas would get less than

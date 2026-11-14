@@ -13,17 +13,17 @@ import { screenItems } from "@buildytech/builder-core";
 import { pageForModel, renderProblems } from "@buildytech/builder-core";
 import { ALLOWED_TOOLS, RUN_BUDGET, type AllowedTool } from "@buildytech/builder-core";
 
-export type ToolCall = { name: string; arguments?: Record<string, unknown> };
-export type ToolHost = { mode?: AgentMode; page?: PageV2 | null };
-export type ToolOutcome =
+type ToolCall = { name: string; arguments?: Record<string, unknown> };
+type ToolHost = { mode?: AgentMode; page?: PageV2 | null };
+type ToolOutcome =
 	| { ok: true; name: AllowedTool; result: unknown }
 	| { ok: false; code: string; message: string; result?: unknown; path?: string };
 
-export function isAllowedTool(name: string): name is AllowedTool {
+function isAllowedTool(name: string): name is AllowedTool {
 	return (ALLOWED_TOOLS as readonly string[]).includes(name);
 }
 
-export type CompactSearchItem = {
+type CompactSearchItem = {
 	screenId: string;
 	title: string;
 	subtitle: string;
@@ -57,7 +57,7 @@ function combinations<T>(items: readonly T[], size: number): T[][] {
 }
 
 /** No renderable screen for the exact filter: drop the fewest facets until screens match and say which were dropped. */
-export function searchRelaxed(query: SearchQuery): { result: SearchResult; dropped: string[] } | null {
+function searchRelaxed(query: SearchQuery): { result: SearchResult; dropped: string[] } | null {
 	const present = RELAX_ORDER.filter((facet) => {
 		const value = query[facet];
 		return Array.isArray(value) ? value.length > 0 : Boolean(value);
@@ -92,7 +92,7 @@ export type CompactSearchPayload = {
 	facets?: FacetTree;
 };
 
-export function compactSearchResult(result: SearchResult): CompactSearchPayload {
+function compactSearchResult(result: SearchResult): CompactSearchPayload {
 	return {
 		query: result.query,
 		page: result.page,

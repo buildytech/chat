@@ -42,8 +42,6 @@ const PLACEHOLDER_ICON = "circle-dot";
 const STRING_DEFAULTS: Record<string, string> = { currency: "USD", locale: "en", href: "#", id: "item" };
 
 export const propsDigest: string = props.digest;
-export const propsRegistry: string = props.registry;
-
 export function propsItems(): string[] {
 	return Object.keys(props.items);
 }
@@ -300,7 +298,7 @@ function schemaAt(item: string, pointer: string): JsonSchema | null {
 	return node;
 }
 
-export type PointerInfo = {
+type PointerInfo = {
 	/** What the prop is: an object with fields, a list, a free-form map (`additionalProperties`), or a plain value. */
 	kind: "object" | "array" | "map" | "scalar";
 	/** The prop is required by its parent object (a list row is). */

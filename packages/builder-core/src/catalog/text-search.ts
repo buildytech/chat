@@ -34,9 +34,7 @@ for (const [screenId, packed] of Object.entries(index.screens)) {
 const allTerms = index.terms;
 
 export const SEARCH_INDEX_SOURCES = index.sources;
-export const SEARCH_INDEX_PINNED_COMMIT = index.pinnedCommit;
-
-export function queryTokens(q: string): string[] {
+function queryTokens(q: string): string[] {
 	return [
 		...new Set(
 			String(q ?? "")
@@ -59,7 +57,7 @@ function termScore(token: string, terms: Map<string, number>): number {
 	return best;
 }
 
-export type TextScore = { score: number; matched: string[] };
+type TextScore = { score: number; matched: string[] };
 
 /** Score every indexed screen for a free-text query. Screens with no matching token are omitted. */
 export function scoreScreens(q: string): { scores: Map<string, TextScore>; tokens: string[]; unmatched: string[] } {

@@ -7,16 +7,12 @@
 import collectionSchema from "../schema/collection.schema.json" with { type: "json" };
 import { SchemaRegistry, type SchemaIssue } from "./json-schema.ts";
 
-export const COLLECTION_SCHEMA_URL = "https://schema.buildy.tw/collection.schema.json";
-export const COLLECTION_FORMAT = "buildy-collection:v1" as const;
-/** Longest Open in BuildY link Stock sends; above it Stock offers the file instead (intake spec section 1). */
-export const COLLECTION_MAX_LINK = 8000;
+const COLLECTION_SCHEMA_URL = "https://schema.buildy.tw/collection.schema.json";
+const COLLECTION_FORMAT = "buildy-collection:v1" as const;
 /** Most decoded bytes the chat accepts from `?collection=` (intake spec section 2). */
 export const COLLECTION_MAX_BYTES = 65536;
-export const COLLECTION_LIMITS = (collectionSchema as { "x-limits": { maxItems: number; maxTitleLength: number; maxNoteLength: number } })["x-limits"];
-
-export type CollectionScreenItem = { kind: "screen"; id: string; title?: string; note?: string };
-export type CollectionBlockItem = { kind: "block"; id: string; variant?: string; registry?: string; title?: string; note?: string };
+type CollectionScreenItem = { kind: "screen"; id: string; title?: string; note?: string };
+type CollectionBlockItem = { kind: "block"; id: string; variant?: string; registry?: string; title?: string; note?: string };
 export type CollectionItem = CollectionScreenItem | CollectionBlockItem;
 export type CollectionDoc = {
 	$schema?: string;
@@ -47,12 +43,12 @@ export function collectionIssues(input: unknown): SchemaIssue[] {
 }
 
 /** The Stock asset id of an item: the screen id, or `block.<name>/<variant>` (`block.<name>` without a variant). */
-export function collectionAssetId(item: CollectionItem): string {
+function collectionAssetId(item: CollectionItem): string {
 	return item.kind === "block" && item.variant ? `${item.id}/${item.variant}` : item.id;
 }
 
 /** x-program-checks after the schema: `empty_collection`, `duplicate_item` (same kind, id and variant). */
-export function collectionProgramIssues(doc: Pick<CollectionDoc, "items">): SchemaIssue[] {
+function collectionProgramIssues(doc: Pick<CollectionDoc, "items">): SchemaIssue[] {
 	const out: SchemaIssue[] = [];
 	if (!doc.items.length) out.push({ path: "$.items", keyword: "empty_collection" });
 	const seen = new Set<string>();

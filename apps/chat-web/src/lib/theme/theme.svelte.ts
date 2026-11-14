@@ -4,7 +4,7 @@ import { parseThemePref, resolveThemeMode, type ThemeMode, type ThemePref } from
 /** The resolved mode (session file `settings.theme`, read by /preview). */
 export const THEME_KEY = STORAGE_KEYS.theme;
 /** The choice in Settings (ADR 0026): system | dark | light, default system. */
-export const THEME_PREF_KEY = STORAGE_KEYS.themePref;
+const THEME_PREF_KEY = STORAGE_KEYS.themePref;
 
 const QUERY = "(prefers-color-scheme: dark)";
 
@@ -22,7 +22,7 @@ function apply(mode: ThemeMode) {
 	writeKey(THEME_KEY, mode);
 }
 
-export function createTheme() {
+function createTheme() {
 	let pref = $state<ThemePref>("system");
 	let mode = $state<ThemeMode>("light");
 	let listening = false;

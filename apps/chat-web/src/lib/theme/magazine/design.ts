@@ -18,8 +18,7 @@ export const SHADOWS = ["none", "sm", "md"] as const;
  */
 export const ELEMENT_SLOT = { badge: "badge", button: "button", card: "card", alert: "alert", media: "media-frame" } as const satisfies Record<(typeof ELEMENTS)[number], string>;
 export const DENSITY_VARS = { badge: ["--pad-badge", "--h-badge"], button: ["--pad-button", "--h-button"], card: ["--pad-card"], alert: ["--pad-alert", "--min-alert"] } as const satisfies Record<(typeof DENSITY_ELEMENTS)[number], readonly string[]>;
-export type Density = (typeof DENSITIES)[number];
-export type Shadow = (typeof SHADOWS)[number];
+type Shadow = (typeof SHADOWS)[number];
 /** `radius-card`: 16, `density-button`: "comfortable", `shadow-card`: "sm" (only changed keys; absent = the style's own) */
 export type Tokens = Record<string, number | string>;
 
@@ -44,13 +43,6 @@ export function cleanTokens(t: unknown): Tokens {
     if (valid(k, v)) out[k] = v as number | string;
   }
   return out;
-}
-
-/** set one key; null (or density "default") removes it, so the map holds only what differs */
-export function setToken(t: Tokens, key: string, value: number | string | null): Tokens {
-  const next = { ...t };
-  delete next[key];
-  return value === null ? cleanTokens(next) : cleanTokens({ ...next, [key]: value });
 }
 
 /** the CSS variables of the tokens, for the `style` attribute of a wrapper (`--radius-card:16px;--shadow-card:var(--shadow-sm)`) */

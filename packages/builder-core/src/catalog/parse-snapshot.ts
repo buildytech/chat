@@ -6,7 +6,7 @@ import type {
 	CatalogSnapshot
 } from "./types.ts";
 
-export function catalogSnapshotInvalid(message: string): Error {
+function catalogSnapshotInvalid(message: string): Error {
 	return Object.assign(new Error(message), { code: "catalog_snapshot_invalid" });
 }
 

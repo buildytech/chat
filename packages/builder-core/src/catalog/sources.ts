@@ -91,14 +91,7 @@ export function catalogVariantsFor(catalogBlock: string): string[] {
 	return [...new Set([...(entry?.variants ?? []), ...Object.keys(source?.variants ?? {})])];
 }
 
-/** Available catalog blocks that render as `kind` and have `variant` (catalog data only, pinned snapshot order). */
-export function catalogBlocksWithVariant(kind: PageBlockKind, variant: string): string[] {
-	return catalogSnapshot.blockIndex
-		.filter((entry) => entry.available && rendererKindForLabel(entry.blockId) === kind && catalogVariantsFor(entry.spec).includes(variant))
-		.map((entry) => entry.spec);
-}
-
-export type CatalogChoiceError = { ok: false; code: "unknown_catalog_block" | "catalog_block_kind_mismatch" | "unknown_variant"; message: string };
+type CatalogChoiceError = { ok: false; code: "unknown_catalog_block" | "catalog_block_kind_mismatch" | "unknown_variant"; message: string };
 
 /**
  * Normalize and check a catalog block + variant for a block of `kind`. `catalogBlock` may be a spec

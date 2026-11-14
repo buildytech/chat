@@ -2,7 +2,7 @@
  * The creator shell layout (ADR 0017): pane sizes and collapsed states from `buildy:v1:prefs`, the viewport, and the
  * widths that fit it. Rules live in `layout/prefs.ts` (pure, tested); this module holds the state and persists it.
  */
-import { STORAGE_KEYS, browserStorage } from "./browser/storage-v1.ts";
+import { browserStorage } from "./browser/storage-v1.ts";
 import { editorMode } from "./modules/registry.svelte.ts";
 import { loadLayout, saveLayout } from "./layout/prefs-store.ts";
 import {
@@ -19,9 +19,8 @@ import {
 	type Panel
 } from "./layout/prefs.ts";
 
-export const PREFS_KEY = STORAGE_KEYS.prefs;
 /** Breakpoints of the shell: columns from lg (the left panel is a tab below). INSPECTOR_COLUMN_MIN now only sizes the Code file tree (ADR 0024: the inspector is a slide-over at every width). */
-export const COLUMNS_MIN = 1024;
+const COLUMNS_MIN = 1024;
 export const INSPECTOR_COLUMN_MIN = 768;
 
 export type CreatorLayoutPane = Pane;

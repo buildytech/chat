@@ -56,27 +56,6 @@ export type CatalogRefs = {
 	blocks: CatalogBlockRef[];
 };
 
-export type CatalogValidationError = {
-	ok: false;
-	code:
-		| "catalog_digest_mismatch"
-		| "catalog_screen_unknown"
-		| "catalog_block_unknown"
-		| "catalog_block_not_in_screen"
-		| "catalog_child_kind_invalid"
-		| "catalog_ref_mismatch"
-		| "unknown_catalog_block"
-		| "catalog_block_kind_mismatch"
-		| "unknown_variant"
-		| "variant_without_catalog_block"
-		| "props_invalid"
-		| "props_gate_unavailable";
-	message: string;
-	path?: string;
-	/** props_invalid: what the published props schema rejected, in the block's own prop names. */
-	issues?: PropsIssue[];
-};
-
 /** One problem of the merged props of a registry block, as the published props schema reports it. */
 export type PropsIssue = {
 	/** JSON Pointer into the block props, e.g. /features/2/icon. */
@@ -142,21 +121,6 @@ export const FAMILY_HOME_SCREENS = [
 	"screen.theme-restaurant-house/home",
 	"screen.theme-dashboard-console/home"
 ] as const;
-
-/** The Stock label of `kind` in the screen's family, else in the first screen family that has it (null: none has). */
-export function kindSourceFor(screen: CatalogScreen | null, kind: PageBlockKind): { label: string; screenId: string } | null {
-	const own = screen ? familyLabelForKind(screen, kind) : null;
-	if (own) return own;
-	const seen = new Set<string>(screen ? [screen.spec] : []);
-	const order = [...FAMILY_HOME_SCREENS.map((id) => getScreenById(id)).filter((row): row is CatalogScreen => row !== null), ...catalogSnapshot.screens];
-	for (const row of order) {
-		if (seen.has(row.spec)) continue;
-		seen.add(row.spec);
-		const found = familyLabelForKind(row, kind);
-		if (found && getBlockIndex(found.label)?.available) return found;
-	}
-	return null;
-}
 
 function enc(value: string): string {
 	return encodeURIComponent(value).replace(/%2C/gi, ",");

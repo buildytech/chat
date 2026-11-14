@@ -10,13 +10,9 @@ export const SKIN_IDS = [
   "sky", "modern-minimal", "violet-bloom", "t3-chat", "bubblegum", "doom-64", "amber-minimal", "supabase",
   "kodama-grove", "perpetuity", "cosmic-night", "claude", "mocha-mousse", "neo-brutalism", "notebook", "rose",
 ] as const;
-export type SkinId = (typeof SKIN_IDS)[number];
-
 /** corner radius in px, written to --radius */
 export const RADII = [0, 4, 8, 12, 16] as const;
-export type Radius = (typeof RADII)[number];
-
-export const FONT_IDS = [
+const FONT_IDS = [
   "inter", "roboto", "manrope", "montserrat", "rubik", "nunito", "ibm-plex-sans", "golos-text", "onest", "open-sans", "istok-web",
 ] as const;
 export type FontId = (typeof FONT_IDS)[number];
@@ -29,7 +25,7 @@ export const FONT_WIDTH: Partial<Record<FontId, WidthAxis>> = {
   "ibm-plex-sans": { min: 75, max: 100, default: 100 },
 };
 
-export const GOOGLE_FONTS: Record<string, { family: string; google: string; headingWeight?: number }> = {
+const GOOGLE_FONTS: Record<string, { family: string; google: string; headingWeight?: number }> = {
   "andika": { family: "Andika", google: "Andika:wght@400;700" },
   "architects-daughter": { family: "Architects Daughter", google: "Architects+Daughter:wght@400" },
   "comfortaa": { family: "Comfortaa", google: "Comfortaa:wght@400;500;600;700" },
@@ -60,7 +56,7 @@ export const GOOGLE_FONTS: Record<string, { family: string; google: string; head
 export const THEME_FONT_IDS = [...new Set([...FONT_IDS, ...Object.keys(GOOGLE_FONTS)])] as const;
 
 /** the taste fonts Stock self-hosts and that GOOGLE_FONTS does not list: the same faces from Google Fonts here */
-export const SELF_HOSTED: Record<string, { family: string; google: string }> = {
+const SELF_HOSTED: Record<string, { family: string; google: string }> = {
   "roboto": { family: "Roboto", google: "Roboto:wdth,wght@75..100,300..700" },
   "manrope": { family: "Manrope", google: "Manrope:wght@300;400;500;600;700" },
   "montserrat": { family: "Montserrat", google: "Montserrat:wght@300;400;500;600;700" },

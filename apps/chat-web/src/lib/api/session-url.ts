@@ -3,7 +3,7 @@
  * Preserves other query flags. Browser-only writes are no-ops on SSR.
  */
 
-export type SessionSelection =
+type SessionSelection =
 	| { kind: "ok"; id: string; source: "url" | "persisted" | "first" }
 	| { kind: "missing"; requested: string }
 	| { kind: "none" };
@@ -45,7 +45,7 @@ export function resolveSessionSelection(input: {
 	return { kind: "none" };
 }
 
-export type SyncSessionQueryOpts = {
+type SyncSessionQueryOpts = {
 	/** replaceState (hydrate) vs pushState (user navigation for back/forward) */
 	mode?: "replace" | "push";
 	/** Absolute or relative href to mutate; defaults to window.location.href */

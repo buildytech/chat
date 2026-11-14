@@ -35,10 +35,3 @@ export function safeErrorMessage(err: unknown, secrets: readonly string[] = []):
 	return { code, message };
 }
 
-export function assertNoSecret(payload: unknown, canary: string): void {
-	if (!canary) return;
-	const blob = JSON.stringify(payload);
-	if (blob.includes(canary)) {
-		throw Object.assign(new Error("secret_leaked"), { code: "secret_leaked" });
-	}
-}

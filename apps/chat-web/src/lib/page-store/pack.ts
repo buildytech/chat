@@ -250,7 +250,7 @@ export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}):
 }
 
 /** ui8kit.lock.json of `init` + `add <items>`: the snapshot lock restricted to those items (same format and order). */
-export function lockFor(fullLock: string, items: readonly string[]): string {
+function lockFor(fullLock: string, items: readonly string[]): string {
 	const lock = JSON.parse(fullLock) as { items: Record<string, { name: string }> } & Record<string, unknown>;
 	const keep = new Set(items);
 	const picked = Object.fromEntries(Object.entries(lock.items).filter(([, item]) => keep.has(item.name)));

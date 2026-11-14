@@ -39,7 +39,7 @@ export type StoredChat = {
 	[key: string]: unknown;
 };
 
-export type SessionFileChat = StoredChat & { page: StoredPageRecord | null };
+type SessionFileChat = StoredChat & { page: StoredPageRecord | null };
 
 export type SessionFile = {
 	$schema: string;
@@ -53,7 +53,7 @@ export type SessionFile = {
 	prefs?: SessionPrefs;
 };
 
-export type SessionFileIssue = { path: string; keyword: string };
+type SessionFileIssue = { path: string; keyword: string };
 export type ParsedSessionFile =
 	| { ok: true; file: SessionFile }
 	| { ok: false; code: "invalid_json" | "schema_invalid" | "program_invalid" | "page_v1_unsupported"; issues: SessionFileIssue[] };

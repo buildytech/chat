@@ -45,7 +45,7 @@ function silentFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Resp
 }
 
 
-export type LiveTurnMeta = {
+type LiveTurnMeta = {
 	runId: string;
 	path: "chat-completions";
 	modelId: string;
@@ -370,7 +370,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${trace.steps} step${trace.steps === 1 ? "" : "s"}.` }, meta };
 }
 
-export type TurnResult = AgentReply | AgentFailure;
+type TurnResult = AgentReply | AgentFailure;
 
 export async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
 	try {

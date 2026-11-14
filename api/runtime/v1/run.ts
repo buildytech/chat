@@ -21,6 +21,9 @@ __def("apps/xai-runtime/src/config.ts", function (exports) {
 
 const runtimeEnv = (): EnvMap => process.env;
 
+type ServerConfig = { bind: string; port: number };
+
+/** Where the local Node server listens; loopback unless BUILDY_RUNTIME_BIND says otherwise (then Basic Auth is required). */
 function readServerConfig(env: EnvMap): ServerConfig {
 	const port = Number(env.BUILDY_RUNTIME_PORT || 18100);
 	return { bind: env.BUILDY_RUNTIME_BIND?.trim() || "127.0.0.1", port: Number.isInteger(port) && port > 0 && port < 65536 ? port : 18100 };
@@ -10114,7 +10117,6 @@ function parseCatalogSnapshot(value: unknown): CatalogSnapshot {
 	};
 }
 
-exports["catalogSnapshotInvalid"] = catalogSnapshotInvalid;
 exports["parseCatalogSnapshot"] = parseCatalogSnapshot;
 
 });
@@ -23778,8 +23780,6 @@ const PLACEHOLDER_ICON = "circle-dot";
 const STRING_DEFAULTS: Record<string, string> = { currency: "USD", locale: "en", href: "#", id: "item" };
 
 const propsDigest: string = props.digest;
-const propsRegistry: string = props.registry;
-
 function propsItems(): string[] {
 	return Object.keys(props.items);
 }
@@ -23989,6 +23989,18 @@ function schemaAt(item: string, pointer: string): JsonSchema | null {
 	return node;
 }
 
+type PointerInfo = {
+	/** What the prop is: an object with fields, a list, a free-form map (`additionalProperties`), or a plain value. */
+	kind: "object" | "array" | "map" | "scalar";
+	/** The prop is required by its parent object (a list row is). */
+	required: boolean;
+	minItems?: number;
+	maxItems?: number;
+	/** map: the pattern its keys must match. */
+	keyPattern?: string;
+};
+
+/** What the schema says about a prop pointer (`/filter/tabs`, `/features/2/icon`), or null when the path is not in the schema. */
 function pointerInfo(item: string, pointer: string): PointerInfo | null {
 	const schema = props.items[item]?.schema;
 	if (!schema) return null;
@@ -24230,7 +24242,6 @@ function propsSummaryFor(item: string): Record<string, string> | null {
 }
 
 exports["propsDigest"] = propsDigest;
-exports["propsRegistry"] = propsRegistry;
 exports["propsItems"] = propsItems;
 exports["hasPropsSchema"] = hasPropsSchema;
 exports["propsSchemaFor"] = propsSchemaFor;
@@ -24295,13 +24306,12 @@ function catalogVariantsFor(catalogBlock: string): string[] {
 	return [...new Set([...(entry?.variants ?? []), ...Object.keys(source?.variants ?? {})])];
 }
 
-/** Available catalog blocks that render as `kind` and have `variant` (catalog data only, pinned snapshot order). */
-function catalogBlocksWithVariant(kind: PageBlockKind, variant: string): string[] {
-	return catalogSnapshot.blockIndex
-		.filter((entry) => entry.available && rendererKindForLabel(entry.blockId) === kind && catalogVariantsFor(entry.spec).includes(variant))
-		.map((entry) => entry.spec);
-}
+type CatalogChoiceError = { ok: false; code: "unknown_catalog_block" | "catalog_block_kind_mismatch" | "unknown_variant"; message: string };
 
+/**
+ * Normalize and check a catalog block + variant for a block of `kind`. `catalogBlock` may be a spec
+ * (`block.features`), a catalog label (`features`) or an asset id (`block.features/grid`, which also names the variant).
+ */
 function resolveCatalogChoice(input: {
 	kind: PageBlockKind;
 	catalogBlock?: string | null;
@@ -24414,7 +24424,6 @@ exports["catalogSources"] = catalogSources;
 exports["catalogSourceFor"] = catalogSourceFor;
 exports["catalogEntryBySpec"] = catalogEntryBySpec;
 exports["catalogVariantsFor"] = catalogVariantsFor;
-exports["catalogBlocksWithVariant"] = catalogBlocksWithVariant;
 exports["resolveCatalogChoice"] = resolveCatalogChoice;
 exports["variantProps"] = variantProps;
 exports["modelCatalogSources"] = modelCatalogSources;
@@ -24535,6 +24544,22 @@ function sendBlockedByScreen(screen: CatalogScreen | null): boolean {
 	return !compat.compatible && !compat.partial;
 }
 
+type ScreenSupport = {
+	mappedKinds: string[];
+	missing: string[];
+	mapped: number;
+	missingCount: number;
+	/** Body (region `area`) Stock blocks that render. */
+	body: number;
+	supported: boolean;
+	score: number;
+};
+
+/**
+ * Browser-renderable coverage. supported means every Stock block of the screen renders (frame and body) and the body
+ * has at least one block that is not app-shell chrome: nothing on the screen is dropped silently. A screen with a
+ * missing block is not supported; the Build reply names what it would drop.
+ */
 function screenSupport(screen: CatalogScreen): ScreenSupport {
 	const compat = compatibilityFor(screen);
 	const mappedKinds = [...new Set(compat.mapped.map((row) => row.rendererKind))];
@@ -24612,8 +24637,6 @@ for (const [screenId, packed] of Object.entries(index.screens)) {
 const allTerms = index.terms;
 
 const SEARCH_INDEX_SOURCES = index.sources;
-const SEARCH_INDEX_PINNED_COMMIT = index.pinnedCommit;
-
 function queryTokens(q: string): string[] {
 	return [
 		...new Set(
@@ -24637,6 +24660,9 @@ function termScore(token: string, terms: Map<string, number>): number {
 	return best;
 }
 
+type TextScore = { score: number; matched: string[] };
+
+/** Score every indexed screen for a free-text query. Screens with no matching token are omitted. */
 function scoreScreens(q: string): { scores: Map<string, TextScore>; tokens: string[]; unmatched: string[] } {
 	const tokens = queryTokens(q);
 	const scores = new Map<string, TextScore>();
@@ -24706,8 +24732,6 @@ function blockLabelVocabulary(): string[] {
 }
 
 exports["SEARCH_INDEX_SOURCES"] = SEARCH_INDEX_SOURCES;
-exports["SEARCH_INDEX_PINNED_COMMIT"] = SEARCH_INDEX_PINNED_COMMIT;
-exports["queryTokens"] = queryTokens;
 exports["scoreScreens"] = scoreScreens;
 exports["nearestTerms"] = nearestTerms;
 exports["searchVocabulary"] = searchVocabulary;
@@ -24912,6 +24936,7 @@ function getScreenById(screenId: string): CatalogScreen | null {
 }
 
 
+type FacetName = "site" | "section" | "job" | "industry" | "blocks";
 const FACET_NAMES: FacetName[] = ["site", "section", "job", "industry", "blocks"];
 
 /** Facet tree for drill-down: per facet, how many renderable screens each value adds to the rest of the filter. */
@@ -24939,14 +24964,12 @@ function facetTree(query: CatalogFacetFilter = {}, limit = 12): FacetTree {
 
 exports["DEFAULT_PAGE_SIZE"] = DEFAULT_PAGE_SIZE;
 exports["facetVocabulary"] = facetVocabulary;
-exports["isFacetValue"] = isFacetValue;
 exports["assertFacetValue"] = assertFacetValue;
 exports["misplacedFacet"] = misplacedFacet;
 exports["filterScreens"] = filterScreens;
 exports["searchCatalog"] = searchCatalog;
 exports["paginateScreens"] = paginateScreens;
 exports["getScreenById"] = getScreenById;
-exports["FACET_NAMES"] = FACET_NAMES;
 exports["facetTree"] = facetTree;
 
 });
@@ -25009,21 +25032,6 @@ const FAMILY_HOME_SCREENS = [
 	"screen.theme-restaurant-house/home",
 	"screen.theme-dashboard-console/home"
 ] as const;
-
-/** The Stock label of `kind` in the screen's family, else in the first screen family that has it (null: none has). */
-function kindSourceFor(screen: CatalogScreen | null, kind: PageBlockKind): { label: string; screenId: string } | null {
-	const own = screen ? familyLabelForKind(screen, kind) : null;
-	if (own) return own;
-	const seen = new Set<string>(screen ? [screen.spec] : []);
-	const order = [...FAMILY_HOME_SCREENS.map((id) => getScreenById(id)).filter((row): row is CatalogScreen => row !== null), ...catalogSnapshot.screens];
-	for (const row of order) {
-		if (seen.has(row.spec)) continue;
-		seen.add(row.spec);
-		const found = familyLabelForKind(row, kind);
-		if (found && getBlockIndex(found.label)?.available) return found;
-	}
-	return null;
-}
 
 function enc(value: string): string {
 	return encodeURIComponent(value).replace(/%2C/gi, ",");
@@ -25095,7 +25103,6 @@ exports["validateItemProps"] = validateItemProps;
 exports["screenFamily"] = screenFamily;
 exports["familyLabelForKind"] = familyLabelForKind;
 exports["FAMILY_HOME_SCREENS"] = FAMILY_HOME_SCREENS;
-exports["kindSourceFor"] = kindSourceFor;
 exports["stockAssetUrl"] = stockAssetUrl;
 exports["stockThumbUrl"] = stockThumbUrl;
 exports["stockVariantOf"] = stockVariantOf;
@@ -27163,9 +27170,46 @@ const { catalogProvenance, catalogSnapshot } = __req("packages/builder-core/src/
 const { getBlockIndex, getBlockIndexByCatalogId } = __req("packages/builder-core/src/catalog/compatibility.ts");
 const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/renderer-kind.ts");
 const { getScreenById } = __req("packages/builder-core/src/catalog/search.ts");
-const { blockVariantSummary, catalogSourceFor, catalogVariantsFor, variantProps } = __req("packages/builder-core/src/catalog/sources.ts");
+const { catalogSourceFor, catalogVariantsFor, variantProps } = __req("packages/builder-core/src/catalog/sources.ts");
 const { blockAssetUrl, blockThumbUrl, stockSearchUrl } = __req("packages/builder-core/src/catalog/provenance.ts");
 const { LUCIDE_ICON_HINT, propsSummaryFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
+type BlockDetails = {
+	id: string;
+	spec: string;
+	title: string;
+	variants: string[];
+	catalogIds: string[];
+	rendererKind: PageBlockKind | null;
+	rendererCompatible: boolean;
+	provenance: ReturnType<typeof catalogProvenance>;
+	inspected: true;
+	/** The variant asked for (by name or catalog asset id), validated and kept. */
+	variant?: string;
+	/** Pinned registry organism of this catalog block (page-spec 1.1.0), when the snapshot has one. */
+	registry?: {
+		item: string;
+		install: string;
+		organism: string;
+		defaultVariant: string;
+		/** Organism props of the selected (or default) variant. */
+		variantProps: Record<string, unknown>;
+		/** page-spec slot -> organism prop. */
+		slots: unknown;
+		/** How copy.icon / items[].icon are named: any Lucide kebab-case name, checked against the props schema's enum. */
+		icons: string;
+		/** Rows, text props, events and slots from the published props schema. */
+		schema: Record<string, string>;
+	};
+};
+
+type BlockDetailsError = {
+	ok: false;
+	code: "unknown_block" | "unknown_variant" | "unknown_target";
+	id: string;
+	variant?: string;
+	target?: string;
+};
+
 const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
 
 function getBlockDetails(input: {
@@ -27283,24 +27327,6 @@ function askBlockCard(id: string): AskBlockCard | null {
 	};
 }
 
-/**
- * get_block (Ask mode): the card plus every variant as the props that set it apart from the default and the row and
- * text fields of the published props schema. No icon list (get_block_details has it for Build).
- */
-function getAskBlock(id: string): ({ ok: true } & AskBlockCard & { variantCount: number; variantProps?: Record<string, string>; [key: string]: unknown }) | { ok: false; code: "unknown_block"; id: string } {
-	const card = askBlockCard(id);
-	if (!card) return { ok: false, code: "unknown_block", id: String(id ?? "") };
-	const summary = blockVariantSummary(card.spec);
-	const { kind: _kind, registryItem: _item, defaultVariant: _default, variants, ...schema } = summary ?? ({} as Record<string, unknown>);
-	return {
-		ok: true,
-		...card,
-		variantCount: card.variants.length,
-		...(variants ? { variantProps: variants as Record<string, string> } : {}),
-		...schema
-	};
-}
-
 function screenCanonicalJson(screenId: string): { json: unknown; bytes: number } | null {
 	const screen = getScreenById(screenId);
 	if (!screen) return null;
@@ -27317,7 +27343,6 @@ function screenCanonicalJson(screenId: string): { json: unknown; bytes: number }
 
 exports["getBlockDetails"] = getBlockDetails;
 exports["askBlockCard"] = askBlockCard;
-exports["getAskBlock"] = getAskBlock;
 exports["screenCanonicalJson"] = screenCanonicalJson;
 exports["catalogSnapshot"] = catalogSnapshot;
 
@@ -29863,6 +29888,25 @@ const raw = __req("packages/chat-agent/src/agent/agent-tools.v1.json").default;
 const { facetVocabulary } = __req("packages/builder-core/src/index.ts");
 const { blockLabelVocabulary, vocabularyValues } = __req("packages/builder-core/src/index.ts");
 const AGENT_MODES = ["ask", "build"] as const;
+type JsonSchemaObject = Record<string, unknown>;
+
+type AgentToolDefinition = {
+	name: string;
+	modes: AgentMode[];
+	description: string;
+	descriptionByMode?: Partial<Record<AgentMode, string>>;
+	parameters: JsonSchemaObject;
+};
+
+type AgentToolsDocument = {
+	format: "buildy-agent-tools";
+	version: number;
+	description: string;
+	modes: Record<AgentMode, { description: string; toolChoice: "auto" }>;
+	enumSources: Record<string, string>;
+	tools: AgentToolDefinition[];
+};
+
 const agentToolsDocument = raw as unknown as AgentToolsDocument;
 const AGENT_TOOLS_VERSION = `${agentToolsDocument.format}/${agentToolsDocument.version}`;
 
@@ -29924,6 +29968,11 @@ function agentToolParameters(name: string): JsonSchemaObject {
 	return resolveAgentSchema(tool.parameters);
 }
 
+type OpenAiFunctionTool = {
+	type: "function";
+	function: { name: string; description: string; parameters: JsonSchemaObject };
+};
+
 const RESOLVED = new Map<string, OpenAiFunctionTool[]>();
 
 /** OpenAI-compatible tool list of a mode (optionally narrowed to `only`). Cached per mode and subset. */
@@ -29958,12 +30007,8 @@ exports["AGENT_MODES"] = AGENT_MODES;
 exports["agentToolsDocument"] = agentToolsDocument;
 exports["AGENT_TOOLS_VERSION"] = AGENT_TOOLS_VERSION;
 exports["isAgentMode"] = isAgentMode;
-exports["agentEnumSource"] = agentEnumSource;
-exports["resolveAgentSchema"] = resolveAgentSchema;
-exports["agentTool"] = agentTool;
 exports["agentToolNames"] = agentToolNames;
 exports["toolOffersMode"] = toolOffersMode;
-exports["agentToolParameters"] = agentToolParameters;
 exports["agentOpenAiTools"] = agentOpenAiTools;
 exports["catalogToolParameterSchema"] = catalogToolParameterSchema;
 
@@ -30039,6 +30084,30 @@ function askBlockCards(ids: unknown[] | undefined): AskBlockCard[] {
 	return out;
 }
 
+type BlockReadOk = {
+	ok: true;
+	item: string;
+	title: string;
+	install: string;
+	role: "header" | "footer" | "section";
+	defaultVariant: string;
+	variants: string[];
+	/** What each variant sets apart from the default (layout axes). */
+	variantSets: Record<string, string>;
+	/** The props of the item: names, kinds, enums, rows. Write exactly these. */
+	props: string[];
+	/** What a new block of the default variant starts with (no invented copy). */
+	sample: Record<string, unknown>;
+	icons: string;
+	stockUrl?: string | null;
+	thumb?: string | null;
+};
+
+type BlockReadUnknown = { ok: false; code: "unknown_item"; message: string; near: string[] };
+
+type BlockRead = BlockReadOk | BlockReadUnknown;
+
+/** get_block: one registry item as the agent needs it to write its props. */
 function readBlock(id: unknown, variant?: unknown): BlockRead {
 	const item = resolveItem(id);
 	const info = item ? itemInfo(item) : null;
@@ -30074,7 +30143,6 @@ function readBlock(id: unknown, variant?: unknown): BlockRead {
 
 exports["propsOutline"] = propsOutline;
 exports["itemIndex"] = itemIndex;
-exports["resolveItem"] = resolveItem;
 exports["askBlockCards"] = askBlockCards;
 exports["readBlock"] = readBlock;
 
@@ -30088,9 +30156,28 @@ const { readBlock } = __req("packages/chat-agent/src/agent/blocks.ts");
 const { screenItems } = __req("packages/builder-core/src/index.ts");
 const { pageForModel, renderProblems } = __req("packages/builder-core/src/index.ts");
 const { ALLOWED_TOOLS, RUN_BUDGET } = __req("packages/builder-core/src/index.ts");
+type ToolCall = { name: string; arguments?: Record<string, unknown> };
+type ToolHost = { mode?: AgentMode; page?: PageV2 | null };
+type ToolOutcome =
+	| { ok: true; name: AllowedTool; result: unknown }
+	| { ok: false; code: string; message: string; result?: unknown; path?: string };
+
 function isAllowedTool(name: string): name is AllowedTool {
 	return (ALLOWED_TOOLS as string[]).includes(name);
 }
+
+type CompactSearchItem = {
+	screenId: string;
+	title: string;
+	subtitle: string;
+	/** The screen's sections as registry items: a starting point for the page, never a constraint. */
+	sections: Array<{ item: string; variant: string }>;
+	labels: { site: string[]; section: string[]; job: string[]; blocks: string[] };
+	score?: number;
+	matched?: string[];
+	via?: string;
+	missingBlocks?: string[];
+};
 
 function compactItem(item: SearchResult["items"][number]): CompactSearchItem {
 	return {
@@ -30209,9 +30296,6 @@ function executeCatalogTool(call: ToolCall, host: ToolHost = {}): ToolOutcome {
 	return { ok: false, code: "not_a_read_tool", message: `${call.name} is handled by the turn, not by the catalog tools.` };
 }
 
-exports["isAllowedTool"] = isAllowedTool;
-exports["searchRelaxed"] = searchRelaxed;
-exports["compactSearchResult"] = compactSearchResult;
 exports["executeCatalogTool"] = executeCatalogTool;
 
 });
@@ -30250,6 +30334,11 @@ function scopeIssues(diff: DiffEntry[], scope: string[] | undefined): DocIssue[]
 	return out;
 }
 
+type WriteToolResult =
+	| { ok: true; page: PageV2; proposal: PageProposal; payload: Record<string, unknown> }
+	| { ok: false; code: string; message: string; issues: DocIssue[] };
+
+/** write_page: `args` is { page } or { patch }. `working` is the page the write applies to (the base, or the last write of this turn). */
 function runWriteTool(ctx: TurnContext, working: PageV2, args: Record<string, unknown>, options: { now?: string } = {}): WriteToolResult {
 	// The model writes money in major units (650); the document stores minor units (65000): converted before the gate (money-view.ts).
 	const input: WriteInput = writeInputFromModel(working, args);
@@ -30313,17 +30402,6 @@ const RUNTIME_AUTH_ENV = ["BUILDY_RUNTIME_BASIC_AUTH_USER", "BUILDY_RUNTIME_BASI
 
 const XAI_BASE_URL = "https://api.x.ai/v1";
 
-/** Parent-box evidence 2026-11-08. Runtime still re-lists the account. Not a live claim without a key. */
-const PARENT_VERIFIED_MODEL_IDS = [
-	"grok-4.20-0309-non-reasoning",
-	"grok-4.20-0309-reasoning",
-	"grok-4.20-multi-agent-0309",
-	"grok-4.7",
-	"grok-build-0.1",
-	"grok-imagine-image",
-	"grok-imagine-image-2.0"
-] as const;
-
 const PARENT_VERIFIED_CHAT_IDS = [
 	"grok-4.20-0309-non-reasoning",
 	"grok-4.20-0309-reasoning",
@@ -30347,6 +30425,10 @@ const XAI_RUNTIME_NOTES = {
 	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",
 	toolCalling: "Parent 2026-11-08: bounded Chat Completions tool-protocol test on grok-4.20-0309-non-reasoning succeeded (2 steps, HTTP 200, tool calls, no retries, usage 393+434=827). That test used synthetic TEST blocks and artificial search_blocks(section)/propose_page tools, not this app's Stock catalog or search_catalog/get_block_details/propose_layout. Protocol support is proven. Page assembly is not proven. Do not treat the fixture miss (section=hero vs job=hero, empty blocks) as a production catalog bug."
 } as const;
+
+type XaiKeyState =
+	| { present: false; source: null; code: "xai_api_key_missing" }
+	| { present: true; source: "XAI_API_KEY"; code: "xai_api_key_present" };
 
 function readXaiKeyState(env?: EnvMap): XaiKeyState {
 	const bag = readEnv(env);
@@ -30383,16 +30465,10 @@ function classifyDiscoveredModels(ids: string[]): {
 	return { chatIds, imageIds, otherIds, candidate };
 }
 
-/** Status-page default only. Never substitute this for a selected chat run. */
-function pickChatModel(discoveredChatIds: string[]): string | null {
-	if (discoveredChatIds.includes(CANDIDATE_CHAT_MODEL)) return CANDIDATE_CHAT_MODEL;
-	return discoveredChatIds[0] ?? null;
-}
 
 exports["XAI_SECRET_ENV"] = XAI_SECRET_ENV;
 exports["RUNTIME_AUTH_ENV"] = RUNTIME_AUTH_ENV;
 exports["XAI_BASE_URL"] = XAI_BASE_URL;
-exports["PARENT_VERIFIED_MODEL_IDS"] = PARENT_VERIFIED_MODEL_IDS;
 exports["PARENT_VERIFIED_CHAT_IDS"] = PARENT_VERIFIED_CHAT_IDS;
 exports["PARENT_VERIFIED_IMAGE_IDS"] = PARENT_VERIFIED_IMAGE_IDS;
 exports["CANDIDATE_CHAT_MODEL"] = CANDIDATE_CHAT_MODEL;
@@ -30400,7 +30476,6 @@ exports["XAI_RUNTIME_NOTES"] = XAI_RUNTIME_NOTES;
 exports["readXaiKeyState"] = readXaiKeyState;
 exports["hasPublicSecretLeak"] = hasPublicSecretLeak;
 exports["classifyDiscoveredModels"] = classifyDiscoveredModels;
-exports["pickChatModel"] = pickChatModel;
 
 });
 
@@ -30467,6 +30542,27 @@ function modelUnavailableCode(model: GrokChatModel | null | undefined): string |
 }
 
 const DEFAULT_CHAT_MODEL_ID: GrokChatModelId = CANDIDATE_CHAT_MODEL;
+
+type ModelResolveOk = {
+	ok: true;
+	modelId: GrokChatModelId;
+	label: string;
+	live: boolean;
+};
+
+type ModelResolveError = {
+	ok: false;
+	code:
+		| "missing_model_id"
+		| "image_model_not_for_chat"
+		| "unknown_chat_model"
+		| "model_not_enabled_on_account"
+		| "model_tools_unavailable"
+		| "model_too_slow"
+		| "silent_fallback_forbidden";
+	message: string;
+	requestedId: string;
+};
 
 function getChatModel(id: string): GrokChatModel | null {
 	return GROK_CHAT_MODELS.find((m) => m.id === id) ?? null;
@@ -30562,6 +30658,27 @@ function assertNoFallback(requestedId: string, executedId: string): ModelResolve
 }
 
 /** A POST /v1/run body mapped onto one exact chat model and a trusted turn context (ADR 0034). */
+type ChatRunRequest = {
+	modelId: GrokChatModelId;
+	label: string;
+	live: boolean;
+	brief: string;
+	/** Chat mode the author picked in the composer (Ask never applies). Missing or unknown means build. */
+	mode: AgentMode;
+	/** The page document the agent starts from (applied page, pending proposal, or empty / draft page). */
+	currentPage?: PageV2;
+	/** The page the author sees when `currentPage` is a host draft (collection intake). */
+	shownPage?: PageV2;
+	/** Stock screen the author named as a ranking hint. */
+	screenId: string | null;
+	expectedRevision: number;
+	/** Selected blocks: the agent edits only those. */
+	scopeBlockIds?: string[];
+	conversation: Array<{ role: "user" | "assistant"; text: string }>;
+	/** Stock collection bounds of the chat: the request's collection items the pinned snapshot has (null: none). */
+	collection: CollectionBounds | null;
+};
+
 function parsePageDoc(raw: unknown): PageV2 | undefined {
 	if (raw == null) return undefined;
 	try {
@@ -30632,6 +30749,25 @@ exports["mapChatRunRequest"] = mapChatRunRequest;
 });
 
 __def("packages/chat-agent/src/usage.ts", function (exports) {
+
+type TokenCount = number | "unknown";
+
+type CostUnavailable = {
+	available: false;
+	reason: "no_official_current_rates_in_repo";
+	note: "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used.";
+};
+
+type CostEstimate = {
+	available: true;
+	kind: "estimated";
+	currency: "USD";
+	amount: number;
+	modelId: string;
+	source: string;
+	asOf: string;
+	vsBilled: "estimated_not_billed";
+};
 
 const COST_UNAVAILABLE: CostUnavailable = {
 	available: false,
@@ -30944,14 +31080,11 @@ function stripRuntimePrefix(pathname: string): string {
 
 exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = VERCEL_HOBBY_SAFE_MAX_DURATION_SEC;
 exports["VERCEL_RUN_MAX_DURATION_SEC"] = VERCEL_RUN_MAX_DURATION_SEC;
-exports["RUN_BUDGET_SHARED_MS"] = RUN_BUDGET_SHARED_MS;
-exports["RUN_BUDGET_LOCAL_MS"] = RUN_BUDGET_LOCAL_MS;
 exports["isLoopbackBind"] = isLoopbackBind;
 exports["isSharedPublicSurface"] = isSharedPublicSurface;
 exports["readBasicAuthConfig"] = readBasicAuthConfig;
 exports["timingSafeEqualString"] = timingSafeEqualString;
 exports["authorizeBasic"] = authorizeBasic;
-exports["unauthorizedResponse"] = unauthorizedResponse;
 exports["gateRequest"] = gateRequest;
 exports["basicAuthorizationHeader"] = basicAuthorizationHeader;
 exports["clampRunBudgetMs"] = clampRunBudgetMs;
@@ -30998,18 +31131,10 @@ function safeErrorMessage(err: unknown, secrets: string[] = []): { code: string;
 	return { code, message };
 }
 
-function assertNoSecret(payload: unknown, canary: string): void {
-	if (!canary) return;
-	const blob = JSON.stringify(payload);
-	if (blob.includes(canary)) {
-		throw Object.assign(new Error("secret_leaked"), { code: "secret_leaked" });
-	}
-}
 
 exports["redactValue"] = redactValue;
 exports["secretValues"] = secretValues;
 exports["safeErrorMessage"] = safeErrorMessage;
-exports["assertNoSecret"] = assertNoSecret;
 
 });
 
@@ -31149,7 +31274,6 @@ function installPropsGate(): void {
 
 installPropsGate();
 
-exports["propsIssues"] = propsIssues;
 exports["validateRegistryProps"] = validateRegistryProps;
 exports["installPropsGate"] = installPropsGate;
 
@@ -31192,6 +31316,21 @@ function silentFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Resp
 	return fetch(input, init);
 }
 
+
+type LiveTurnMeta = {
+	runId: string;
+	path: "chat-completions";
+	modelId: string;
+	requestedModelId: string;
+	toolCallingWorked: boolean;
+	steps: number;
+	toolsCalled: string[];
+	usage: RunUsage;
+	/** HTTP status of a failed provider request (status only; never the body). */
+	providerStatus?: number;
+	/** Wall time of the failed provider request in ms. */
+	providerMs?: number;
+};
 
 function newRunId(): string {
 	return `xai-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -31503,6 +31642,8 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${trace.steps} step${trace.steps === 1 ? "" : "s"}.` }, meta };
 }
 
+type TurnResult = AgentReply | AgentFailure;
+
 async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
 	try {
 		return await agentLoop(apiKey, modelId, ctx, signal);
@@ -31528,6 +31669,18 @@ exports["runXaiCatalogTurn"] = runXaiCatalogTurn;
 
 __def("apps/xai-runtime/src/discover.ts", function (exports) {
 const { CANDIDATE_CHAT_MODEL, XAI_BASE_URL, classifyDiscoveredModels, readEnv, readXaiKeyState, redactValue } = __req("packages/chat-agent/src/index.ts");
+type DiscoveredModels = {
+	ok: boolean;
+	code: string;
+	ids: string[];
+	chatIds: string[];
+	imageIds: string[];
+	candidate: string | null;
+	languageModelCount: number | null;
+	imageModelCount: number | null;
+	toolCallingProven: false;
+};
+
 function idsFromPayload(payload: unknown): string[] {
 	if (!payload || typeof payload !== "object") return [];
 	const rec = payload as Record<string, unknown>;
@@ -31637,6 +31790,30 @@ exports["discoverAccountModels"] = discoverAccountModels;
 __def("apps/xai-runtime/src/status.ts", function (exports) {
 const { CANDIDATE_CHAT_MODEL, PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, RUNTIME_AUTH_ENV, XAI_RUNTIME_NOTES, XAI_SECRET_ENV, hasPublicSecretLeak, isSharedPublicSurface, readBasicAuthConfig, readEnv, readXaiKeyState } = __req("packages/chat-agent/src/index.ts");
 const { discoverAccountModels } = __req("apps/xai-runtime/src/discover.ts");
+type XaiRuntimeStatus = {
+	runtime: "xai-grok";
+	ready: boolean;
+	/** Capability: this host can run a live Grok turn. Not a per-turn tool proof. */
+	liveModel: boolean;
+	code: string;
+	key: { present: boolean; source: string | null };
+	auth: { basicRequired: boolean; loopbackOnly: boolean };
+	models: {
+		listed: boolean;
+		chatIds: string[];
+		imageIds: string[];
+		candidate: string | null;
+		/** Status never claims a tool loop. Proven per /v1/run. */
+		toolCallingProven: boolean;
+		parentVerifiedChat: string[];
+		parentVerifiedImage: string[];
+	};
+	sdk: { openaiProvider: boolean; ai: boolean };
+	notes: typeof XAI_RUNTIME_NOTES;
+	envNames: { xai: string[]; basicAuth: string[] };
+	publicSecretLeak: string[];
+};
+
 async function sdkPresent(): Promise<{ openaiProvider: boolean; ai: boolean }> {
 	const present = (load: () => Promise<unknown>) => load().then(() => true, () => false);
 	return { openaiProvider: await present(() => import("@ai-sdk/openai")), ai: await present(() => import("ai")) };
@@ -31949,7 +32126,6 @@ async function handleRuntimeFetch(
 	}
 }
 
-exports["ensureRenderProbe"] = ensureRenderProbe;
 exports["handleRuntimeFetch"] = handleRuntimeFetch;
 
 });

@@ -5,7 +5,7 @@
 import { STORAGE_KEYS, readKey, writeKey } from "../browser/storage-v1.ts";
 import { parseLocale, type UiLocale } from "./locale-pref.ts";
 
-export const LOCALE_KEY = STORAGE_KEYS.locale;
+const LOCALE_KEY = STORAGE_KEYS.locale;
 
 function apply(lang: UiLocale) {
 	if (typeof document === "undefined") return;

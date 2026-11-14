@@ -37,7 +37,7 @@ export function fieldElement(doc: Document, block: PageBlock, pointer: string): 
 }
 
 /** The inspector control of a field: its input, or the fieldset of an object / list / row. */
-export function inspectorControl(doc: Document, blockId: string, pointer: string): HTMLElement | null {
+function inspectorControl(doc: Document, blockId: string, pointer: string): HTMLElement | null {
 	const scope = doc.querySelector(`[data-slot="inspector"]${blockSelector(blockId)}`) ?? doc;
 	const byId = doc.getElementById(fieldDomId(blockId, pointer));
 	if (byId && (scope === doc || scope.contains(byId))) return byId;

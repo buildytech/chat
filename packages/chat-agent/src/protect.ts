@@ -16,8 +16,8 @@ export const VERCEL_HOBBY_SAFE_MAX_DURATION_SEC = 60;
  */
 export const VERCEL_RUN_MAX_DURATION_SEC = 300;
 /** The run aborts itself before the platform kills it, so the client gets a clean timeout code. */
-export const RUN_BUDGET_SHARED_MS = (VERCEL_RUN_MAX_DURATION_SEC - 15) * 1000;
-export const RUN_BUDGET_LOCAL_MS = 240_000;
+const RUN_BUDGET_SHARED_MS = (VERCEL_RUN_MAX_DURATION_SEC - 15) * 1000;
+const RUN_BUDGET_LOCAL_MS = 240_000;
 
 export function isLoopbackBind(bind: string | undefined): boolean {
 	const value = (bind ?? "127.0.0.1").trim();
@@ -94,7 +94,7 @@ export function authorizeBasic(
 	return { ok: true };
 }
 
-export function unauthorizedResponse(
+function unauthorizedResponse(
 	code: "unauthorized" | "basic_auth_required_before_shared_bind" = "unauthorized"
 ): Response {
 	const message =

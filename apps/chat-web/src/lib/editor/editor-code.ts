@@ -25,7 +25,7 @@ import { json } from "@codemirror/lang-json";
 import { tagHighlighter, tags as t } from "@lezer/highlight";
 
 /** Lezer tag → CSS class (cm-syn-*). The class → colour-role mapping is in editor.css. */
-export const editorHighlighter = tagHighlighter([
+const editorHighlighter = tagHighlighter([
 	{
 		tag: [
 			t.keyword,
@@ -232,7 +232,7 @@ const codeLayout = ViewPlugin.fromClass(
 	{ decorations: (v) => v.decorations }
 );
 
-export type EditorCodeOptions = {
+type EditorCodeOptions = {
 	editable?: boolean;
 	language?: "json" | "svelte";
 };

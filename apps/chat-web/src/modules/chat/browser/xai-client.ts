@@ -2,7 +2,7 @@ import type { AgentFailure, AgentMode, AgentReply, RunUsage } from "@buildytech/
 import type { PageV2 } from "@buildytech/page-contract";
 import { contractFingerprint } from "@buildytech/chat-agent";
 
-export type XaiClientStatus = {
+type XaiClientStatus = {
 	runtime: string;
 	ready: boolean;
 	liveModel: boolean;
@@ -105,7 +105,7 @@ async function readRuntimeBody(res: Response): Promise<RuntimeBody> {
 }
 
 /** Map a non-runtime failure to a stable code. 504 / FUNCTION_INVOCATION_TIMEOUT means the host timed out. */
-export function platformCode(status: number, code?: string): string {
+function platformCode(status: number, code?: string): string {
 	if (status === 504 || /TIMEOUT/i.test(code ?? "")) return "runtime_timeout";
 	if (status === 404) return "xai_runtime_unreachable";
 	return "runtime_platform_error";

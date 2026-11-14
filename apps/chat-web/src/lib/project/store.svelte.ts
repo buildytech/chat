@@ -43,7 +43,7 @@ export function putProject(next: Project, opts: { save?: boolean } = {}): void {
 }
 
 /** Every project of storage, each with its pageRevision equal to the page store's (the source of truth). */
-export function loadProjects(): Project[] {
+function loadProjects(): Project[] {
 	const parsed = loadSessionsJson();
 	if (!Array.isArray(parsed)) return [];
 	const pages = loadPagesBlob().pages;
@@ -58,7 +58,7 @@ export function loadProjects(): Project[] {
 	return list;
 }
 
-export function rememberSelection(id: string | null): void {
+function rememberSelection(id: string | null): void {
 	selectedId = id;
 	writeKey(SELECTED_KEY, id);
 }
@@ -70,7 +70,7 @@ export function replaceProjects(next: Project[]): void {
 	save();
 }
 
-export type Hydrated = { selected: string | null; missing: string | null };
+type Hydrated = { selected: string | null; missing: string | null };
 
 /** Load the projects, pick the selection (URL, then the remembered id, then the newest) and bind the page store to it. */
 export function hydrateProjects(): Hydrated {
