@@ -4,7 +4,8 @@
  * export call this one function (`renderBlock`); there is no copy slot, row or children mapping any more.
  */
 import { cloneJson, type BlockV2, type PropValueV2 } from "@buildytech/page-contract";
-import { fillProps, humanizeName, propShapeFor, propsEventsFor, propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
+import { fillProps, humanizeName } from "../catalog/props-fill.ts";
+import { propShapeFor, propsEventsFor, propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { variantPreset } from "../catalog/organism.ts";
 import { itemInfo } from "./items.ts";
 

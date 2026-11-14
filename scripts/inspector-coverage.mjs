@@ -35,7 +35,7 @@ const bundle = await import(pathToFileURL(BUNDLE).href);
 const probe = probeFromModule(bundle);
 
 const sha = (text) => createHash("sha256").update(text).digest("hex").slice(0, 16);
-const inspectorFiles = ["packages/builder-core/src/catalog/props-schema.ts", "packages/builder-core/src/page-doc/inspect.ts", "packages/builder-core/src/page-doc/ops.ts", "apps/chat-web/src/app/InspectorFields.svelte", "apps/chat-web/src/lib/inspector/inspector.svelte.ts", "apps/chat-web/src/lib/inspector/fields.ts"];
+const inspectorFiles = ["packages/builder-core/src/catalog/props-schema.ts", "packages/builder-core/src/page-doc/inspect.ts", "packages/builder-core/src/page-doc/ops.ts", "packages/builder-core/src/page-doc/ops-core.ts", "packages/builder-core/src/page-doc/ops-rows.ts", "apps/chat-web/src/app/InspectorFields.svelte", "apps/chat-web/src/lib/inspector/inspector.svelte.ts", "apps/chat-web/src/lib/inspector/fields.ts"];
 const inspectorDigest = sha(inspectorFiles.map((f) => readFileSync(join(repo, f), "utf8")).join("\n--\n"));
 const config = JSON.parse(readFileSync(join(repo, "catalog", "snapshot.config.json"), "utf8"));
 

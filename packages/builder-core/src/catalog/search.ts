@@ -61,10 +61,9 @@ function ownerSuggestions(): SearchResult["suggested"] {
 	];
 }
 
-export function searchCatalog(query: SearchQuery = {}): SearchResult {
-	const vocabulary = facetVocabulary();
-	const pageSize = query.pageSize ?? DEFAULT_PAGE_SIZE;
+type Hit = CatalogScreen & { score?: number; matched?: string[]; via?: string; missingBlocks?: string[] };
 
+function unknownFacetResult(query: SearchQuery, vocabulary: SearchResult["vocabulary"], pageSize: number): SearchResult | null {
 	for (const facet of ["site", "section", "job"] as const) {
 		const value = query[facet];
 		if (!value) continue;
@@ -88,7 +87,10 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 			misplaced: swap ? { used: facet, value, tryFacet: swap.tryFacet } : undefined
 		};
 	}
+	return null;
+}
 
+function unknownTermResult(query: SearchQuery, vocabulary: SearchResult["vocabulary"], pageSize: number): SearchResult | null {
 	const unknownBlocks = (query.blocks ?? []).filter((label) => !blockLabelVocabulary().includes(label));
 	const unknownIndustry = query.industry && !vocabularyValues("industry").includes(query.industry) ? [query.industry] : [];
 	if (unknownBlocks.length || unknownIndustry.length) {
@@ -108,8 +110,38 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 			nearest: nearestTerms([value.toLowerCase()])
 		};
 	}
+	return null;
+}
 
-	type Hit = CatalogScreen & { score?: number; matched?: string[]; via?: string; missingBlocks?: string[] };
+/** A matching screen we cannot render points at renderable screens of the same Stock family; those first, with what cannot render. */
+function renderableFirst(items: Hit[], base: CatalogScreen[], wanted: string[], coverage: (screen: CatalogScreen) => number): { items: Hit[]; unrenderable: SearchResult["unrenderable"] } {
+	const unsupported = items.filter((screen) => !screenSupport(screen).supported);
+	const supported = items.filter((screen) => screenSupport(screen).supported);
+	for (const miss of unsupported) {
+		for (const sibling of catalogSnapshot.screens) {
+			if (sibling.spec !== miss.spec || sibling.screenId === miss.screenId) continue;
+			if (!screenSupport(sibling).supported || supported.some((s) => s.screenId === sibling.screenId)) continue;
+			if (!base.some((s) => s.screenId === sibling.screenId)) continue;
+			const missingBlocks = wanted.filter((label) => !sibling.labels.blocks.includes(label));
+			supported.push({
+				...sibling,
+				score: (miss.score ?? 0) * 0.8,
+				matched: miss.matched,
+				via: miss.screenId,
+				...(missingBlocks.length ? { missingBlocks } : {})
+			});
+		}
+	}
+	supported.sort((a, b) => coverage(b) - coverage(a) || (b.score ?? 0) - (a.score ?? 0) || compareScreenSupport(a, b));
+	return { items: supported, unrenderable: unsupported.slice(0, 4).map((screen) => ({ screenId: screen.screenId, missing: screenSupport(screen).missing })) };
+}
+
+export function searchCatalog(query: SearchQuery = {}): SearchResult {
+	const vocabulary = facetVocabulary();
+	const pageSize = query.pageSize ?? DEFAULT_PAGE_SIZE;
+	const early = unknownFacetResult(query, vocabulary, pageSize) ?? unknownTermResult(query, vocabulary, pageSize);
+	if (early) return early;
+
 	// blocks is a soft facet: rank by how many requested block labels a screen has (all first),
 	// and say which are missing, so an over-specified list still returns the closest screens.
 	const wanted = query.blocks ?? [];
@@ -132,27 +164,9 @@ export function searchCatalog(query: SearchQuery = {}): SearchResult {
 	}
 	let unrenderable: SearchResult["unrenderable"];
 	if (query.supportedOnly) {
-		const unsupported = items.filter((screen) => !screenSupport(screen).supported);
-		const supported = items.filter((screen) => screenSupport(screen).supported);
-		// A matching screen we cannot render points at renderable screens of the same Stock family.
-		for (const miss of unsupported) {
-			for (const sibling of catalogSnapshot.screens) {
-				if (sibling.spec !== miss.spec || sibling.screenId === miss.screenId) continue;
-				if (!screenSupport(sibling).supported || supported.some((s) => s.screenId === sibling.screenId)) continue;
-				if (!base.some((s) => s.screenId === sibling.screenId)) continue;
-				const missingBlocks = wanted.filter((label) => !sibling.labels.blocks.includes(label));
-				supported.push({
-					...sibling,
-					score: (miss.score ?? 0) * 0.8,
-					matched: miss.matched,
-					via: miss.screenId,
-					...(missingBlocks.length ? { missingBlocks } : {})
-				});
-			}
-		}
-		supported.sort((a, b) => coverage(b) - coverage(a) || (b.score ?? 0) - (a.score ?? 0) || compareScreenSupport(a, b));
-		unrenderable = unsupported.slice(0, 4).map((screen) => ({ screenId: screen.screenId, missing: screenSupport(screen).missing }));
-		items = supported;
+		const result = renderableFirst(items, base, wanted, coverage);
+		unrenderable = result.unrenderable;
+		items = result.items;
 	}
 	const total = items.length;
 	const pageCount = total === 0 ? 1 : Math.ceil(total / pageSize);

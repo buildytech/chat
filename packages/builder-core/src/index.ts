@@ -65,14 +65,8 @@ export {
 } from "./catalog/organism.ts";
 export { SAMPLE_MINOR, isMoneyName, minorDigits, toMajor, toMinor } from "./catalog/money.ts";
 export {
-	coerceEnumValue,
-	fillProps,
 	hasPropsSchema,
 	lucideIcons,
-	mapKeyIssue,
-	PAGE_KEY_PATTERN,
-	newPropsListValue,
-	newPropsMapValue,
 	LUCIDE_ICON_HINT,
 	propShapeFor,
 	propsDigest,
@@ -87,6 +81,7 @@ export {
 	type PropShape,
 	type PropsFieldNode
 } from "./catalog/props-schema.ts";
+export { PAGE_KEY_PATTERN, coerceEnumValue, fillProps, mapKeyIssue, newPropsListValue, newPropsMapValue } from "./catalog/props-fill.ts";
 export {
 	fieldAtElement,
 	listRows,
