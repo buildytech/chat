@@ -3,7 +3,6 @@
  * widths that fit it. Rules live in `layout/prefs.ts` (pure, tested); this module holds the state and persists it.
  */
 import { browserStorage } from "./browser/storage-v1.ts";
-import { editorMode } from "./modules/registry.svelte.ts";
 import { loadLayout, saveLayout } from "./layout/prefs-store.ts";
 import {
 	collapsedKey,
@@ -24,6 +23,13 @@ const COLUMNS_MIN = 1024;
 export const INSPECTOR_COLUMN_MIN = 768;
 
 export type CreatorLayoutPane = Pane;
+
+/** The body carries the drag state (cursor and selection rules in CSS). */
+function markResizing(on: boolean, axis: "x" | "y"): void {
+	if (typeof document === "undefined") return;
+	document.body.classList.toggle("creator-resizing", on);
+	document.body.dataset.resizeAxis = axis;
+}
 
 function createCreatorLayout() {
 	let layout = $state<LayoutPrefs>(loadLayout(browserStorage()));
@@ -54,9 +60,6 @@ function createCreatorLayout() {
 	}
 
 	const columns = () => viewport >= COLUMNS_MIN;
-	// ADR 0024: Build is two areas (left panel | preview). The inspector is no longer a third column at any width; it
-	// opens as a slide-over on the preview (the Workspace sheet), the shape step D of the plan refines.
-	const inspectorColumn = () => false;
 
 	return {
 		get layout() {
@@ -74,12 +77,9 @@ function createCreatorLayout() {
 		get columns() {
 			return columns();
 		},
-		get inspectorColumn() {
-			return inspectorColumn();
-		},
-		/** Widths as rendered now (stored wishes fitted to the viewport; rails for collapsed panels). */
+		/** Widths as rendered now (stored wishes fitted to the viewport; rails for collapsed panels). ADR 0024: the inspector is a slide-over, never a third column. */
 		get widths() {
-			return fitWidths({ viewport, layout, inspector: editorMode() === "build" && view === "preview" && inspectorColumn(), columns: columns() });
+			return fitWidths({ viewport, layout, inspector: false, columns: columns() });
 		},
 		setViewport(width: number) {
 			viewport = Math.round(width);
@@ -97,35 +97,27 @@ function createCreatorLayout() {
 		setSize(pane: Pane, value: number, save = true) {
 			set(withSize(layout, pane, value), save);
 		},
-		resetSize(pane: Pane) {
-			set(withSize(layout, pane, PANE_RANGE[pane].default));
-		},
+		resetSize: (pane: Pane) => set(withSize(layout, pane, PANE_RANGE[pane].default)),
 		save: persist,
 		collapsed(panel: Panel): boolean {
 			return isCollapsed(layout, panel);
 		},
 		setCollapsed,
 		toggle,
-		toggleFocus() {
-			set({ ...layout, focus: !layout.focus });
-		},
+		toggleFocus: () => set({ ...layout, focus: !layout.focus }),
 		/** Whole layout from a session file (`prefs.layout`), clamped. */
 		replace(input: unknown) {
 			set(parseLayout(input));
 		},
 		setResizing(next: boolean, axis: "x" | "y" = "x") {
 			resizing = next;
-			if (typeof document === "undefined") return;
-			document.body.classList.toggle("creator-resizing", next);
-			document.body.dataset.resizeAxis = axis;
+			markResizing(next, axis);
 		},
 		// Code view file tree (kept names for CodePane).
 		get treeCollapsed() {
 			return layout[collapsedKey("tree")] as boolean;
 		},
-		toggleTree() {
-			toggle("tree");
-		}
+		toggleTree: () => toggle("tree")
 	};
 }
 

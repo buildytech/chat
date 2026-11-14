@@ -31285,6 +31285,76 @@ exports["contractFingerprint"] = __req("packages/chat-agent/src/fingerprint.ts")
 
 });
 
+__def("apps/xai-runtime/src/chat-prompts.ts", function (exports) {
+const { collectionPromptContext, pageForModel } = __req("packages/builder-core/src/index.ts");
+const { itemIndex, propsOutline } = __req("packages/chat-agent/src/index.ts");
+const SYSTEM_COMMON = [
+	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
+	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
+	"- item is a registry item (npx ui8kit add <item>); itemIndex lists every item with its variants (header / footer roles are marked as information only). variant is one of the item's variants.",
+	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field; an icon is a real Lucide icon name in kebab-case: an unknown name is rejected with its path and the nearest real names, pick one of those.",
+	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision, header and footer included (the roles in itemIndex are information, not rules: a banner may stand above a header, a page may hold several headers, a footer may stand anywhere): pick, replace, add, remove and reorder blocks as the request needs. Screens from search_catalog are hints, never constraints.",
+	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
+	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
+	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",
+	"- scope.blockIds, when present, are the blocks the author selected: edit only those (props, variant, item). Do not change page fields, other blocks, or the order.",
+	"- currency is an ISO 4217 code (RUB, USD, EUR), never a symbol such as ₽ or $.",
+	"- Write content when asked. A fictional product is fine when the author says so; never present invented facts as real ones when the author gave real ones.",
+	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why."
+].join("\n");
+
+const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: every step is a tool call. Read with the catalog tools, then change the page with write_page: the whole document goes into the call, never into the text. The turn ends when write_page is accepted. If the request needs no change, write the current page back unchanged.`;
+
+const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page and the catalog. Answer questions in text. When your answer recommends changes to the page, call write_page once with exactly those changes: it becomes a proposal the author can apply in Build with one click (nothing is applied by Ask). Do not write when you only explain.`;
+
+const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
+
+/** The page document the model reads: without host-managed fields. */
+function pageView(page: PageV2): Record<string, unknown> {
+	const view: Record<string, unknown> = { ...pageForModel(page) };
+	for (const key of HOST_FIELDS) delete view[key];
+	return view;
+}
+
+function userPrompt(ctx: TurnContext, problems: ReturnType<typeof renderProblems>): string {
+	const items = [...new Set(ctx.page.blocks.map((block) => block.item))];
+	const outlines = Object.fromEntries(items.map((item) => [item, propsOutline(item)]).filter(([, lines]) => lines));
+	return JSON.stringify({
+		request: ctx.brief,
+		...(ctx.conversation?.length ? { conversation: ctx.conversation } : {}),
+		page: pageView(ctx.page),
+		...(problems.length ? { renderProblems: problems, renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
+		...(ctx.scopeBlockIds?.length ? { scope: { blockIds: ctx.scopeBlockIds } } : {}),
+		...(ctx.screenId ? { screenHint: ctx.screenId } : {}),
+		...(ctx.collection ? { collection: collectionPromptContext(ctx.collection) } : {}),
+		propsOfBlocksOnPage: outlines,
+		itemIndex: itemIndex()
+	});
+}
+
+/**
+ * Sent once when a turn that is expected to change the page ends without an accepted write (ADR 0035). Program text, no phrase
+ * recognition. In Build the request that follows forces write_page (tool_choice), so the text says the document goes into the
+ * call and is never printed; Ask keeps the way out of saying plainly that the page does not change.
+ */
+function nudgeText(ctx: TurnContext, problems: number): string {
+	const build = ctx.mode === "build";
+	return [
+		"Host notice: nothing on the page has changed in this turn (no write_page was accepted).",
+		problems > 0 ? "The page has blocks that do not render; they are listed in renderProblems (get_page shows them)." : ctx.scopeBlockIds?.length ? "Blocks are selected for this edit." : "",
+		build
+			? "Call write_page with the page document now; the document goes into the call, do not print it in the text. Do not report a change that write_page did not accept."
+			: "Call write_page now with the change, or say plainly that you are not changing the page and why. Do not report a change that write_page did not accept."
+	].filter(Boolean).join(" ");
+}
+
+exports["SYSTEM_BUILD"] = SYSTEM_BUILD;
+exports["SYSTEM_ASK"] = SYSTEM_ASK;
+exports["userPrompt"] = userPrompt;
+exports["nudgeText"] = nudgeText;
+
+});
+
 __def("packages/builder-core/src/catalog/props-gate.ts", function (exports) {
 const Ajv2020 = __ext_ajv2020;
 const { propsSchemaFor, refShapeDefs } = __req("packages/builder-core/src/catalog/props-schema.ts");
@@ -31364,29 +31434,11 @@ exports["installPropsGate"] = installPropsGate;
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { RUN_BUDGET, collectionPromptContext, itemInfo, pageForModel, renderProblems } = __req("packages/builder-core/src/index.ts");
-const { XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, itemIndex, propsOutline, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
+const { RUN_BUDGET, itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
+const { XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
+const { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } = __req("apps/xai-runtime/src/chat-prompts.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
-
-const SYSTEM_COMMON = [
-	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
-	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
-	"- item is a registry item (npx ui8kit add <item>); itemIndex lists every item with its variants (header / footer roles are marked as information only). variant is one of the item's variants.",
-	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field; an icon is a real Lucide icon name in kebab-case: an unknown name is rejected with its path and the nearest real names, pick one of those.",
-	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision, header and footer included (the roles in itemIndex are information, not rules: a banner may stand above a header, a page may hold several headers, a footer may stand anywhere): pick, replace, add, remove and reorder blocks as the request needs. Screens from search_catalog are hints, never constraints.",
-	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
-	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
-	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",
-	"- scope.blockIds, when present, are the blocks the author selected: edit only those (props, variant, item). Do not change page fields, other blocks, or the order.",
-	"- currency is an ISO 4217 code (RUB, USD, EUR), never a symbol such as ₽ or $.",
-	"- Write content when asked. A fictional product is fine when the author says so; never present invented facts as real ones when the author gave real ones.",
-	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why."
-].join("\n");
-
-const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: every step is a tool call. Read with the catalog tools, then change the page with write_page: the whole document goes into the call, never into the text. The turn ends when write_page is accepted. If the request needs no change, write the current page back unchanged.`;
-
-const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page and the catalog. Answer questions in text. When your answer recommends changes to the page, call write_page once with exactly those changes: it becomes a proposal the author can apply in Build with one click (nothing is applied by Ask). Do not write when you only explain.`;
 
 type ChatMessage = {
 	role: "system" | "user" | "assistant" | "tool";
@@ -31548,47 +31600,6 @@ function modelText(message: ChatMessage): string {
 }
 
 
-const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
-
-/** The page document the model reads: without host-managed fields. */
-function pageView(page: PageV2): Record<string, unknown> {
-	const view: Record<string, unknown> = { ...pageForModel(page) };
-	for (const key of HOST_FIELDS) delete view[key];
-	return view;
-}
-
-function userPrompt(ctx: TurnContext, problems: ReturnType<typeof renderProblems>): string {
-	const items = [...new Set(ctx.page.blocks.map((block) => block.item))];
-	const outlines = Object.fromEntries(items.map((item) => [item, propsOutline(item)]).filter(([, lines]) => lines));
-	return JSON.stringify({
-		request: ctx.brief,
-		...(ctx.conversation?.length ? { conversation: ctx.conversation } : {}),
-		page: pageView(ctx.page),
-		...(problems.length ? { renderProblems: problems, renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
-		...(ctx.scopeBlockIds?.length ? { scope: { blockIds: ctx.scopeBlockIds } } : {}),
-		...(ctx.screenId ? { screenHint: ctx.screenId } : {}),
-		...(ctx.collection ? { collection: collectionPromptContext(ctx.collection) } : {}),
-		propsOfBlocksOnPage: outlines,
-		itemIndex: itemIndex()
-	});
-}
-
-/**
- * Sent once when a turn that is expected to change the page ends without an accepted write (ADR 0035). Program text, no phrase
- * recognition. In Build the request that follows forces write_page (tool_choice), so the text says the document goes into the
- * call and is never printed; Ask keeps the way out of saying plainly that the page does not change.
- */
-function nudgeText(ctx: TurnContext, problems: number): string {
-	const build = ctx.mode === "build";
-	return [
-		"Host notice: nothing on the page has changed in this turn (no write_page was accepted).",
-		problems > 0 ? "The page has blocks that do not render; they are listed in renderProblems (get_page shows them)." : ctx.scopeBlockIds?.length ? "Blocks are selected for this edit." : "",
-		build
-			? "Call write_page with the page document now; the document goes into the call, do not print it in the text. Do not report a change that write_page did not accept."
-			: "Call write_page now with the change, or say plainly that you are not changing the page and why. Do not report a change that write_page did not accept."
-	].filter(Boolean).join(" ");
-}
-
 /** The request after the nudge: Build forces the write_page call (Ask stays on auto). */
 const FORCE_WRITE = { type: "function", function: { name: "write_page" } } as const;
 
@@ -31601,6 +31612,51 @@ function signature(issues: Array<{ path: string; code: string; got?: unknown }>)
 
 type TurnResultOut = { result: AgentReply | AgentFailure; meta: LiveTurnMeta };
 
+type IssueSet = { signature: string; issues: Array<{ path: string; code: string; expected: string; got?: unknown }>; message: string };
+
+/** What the loop has so far: the working page, the last accepted proposal, the last failed write, the catalog blocks read. */
+type LoopState = { working: PageV2; proposal: PageProposal | null; lastIssues: IssueSet | null; stuck: IssueSet | null; blocks: string[]; accepted: boolean };
+
+type ToolCall = NonNullable<ChatMessage["tool_calls"]>[number];
+
+/** One tool call of a step: the write (accepted, or the issue list and the stuck check) or a catalog read; the answer for the model. */
+function runToolCall(ctx: TurnContext, state: LoopState, name: string, args: Record<string, unknown>): unknown {
+	if (name === "write_page") {
+		const written = runWriteTool(ctx, state.working, args);
+		if (written.ok) {
+			state.working = written.page;
+			state.proposal = written.proposal;
+			state.accepted = true;
+			state.lastIssues = null;
+			return written.payload;
+		}
+		const sig = signature(written.issues);
+		if (state.lastIssues?.signature === sig) state.stuck = { signature: sig, issues: written.issues, message: written.message };
+		state.lastIssues = { signature: sig, issues: written.issues, message: written.message };
+		return { ok: false, code: written.code, message: written.message, issues: written.issues };
+	}
+	const outcome = executeCatalogTool({ name, arguments: args }, { mode: ctx.mode, page: state.working });
+	if (!outcome.ok) return { ok: false, code: outcome.code, message: outcome.message, ...(outcome.result ? { result: outcome.result } : {}) };
+	if (name === "get_block") {
+		const info = itemInfo(String((outcome.result as { item?: unknown }).item ?? ""));
+		if (info) state.blocks.push(info.spec);
+	}
+	return outcome.result;
+}
+
+/** The result of a finished loop: the proposal, a stuck or invalid write, the text answer, or no answer. */
+function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: number, meta: LiveTurnMeta): TurnResultOut {
+	const { stuck, proposal, lastIssues } = state;
+	if (stuck) {
+		const shown = stuck.issues.slice(0, 3).map((issue) => `${issue.path} ${issue.code}`).join("; ");
+		return { result: { ok: false, code: "write_stuck", message: `The page was not written: the agent sent the same invalid page twice (${shown}). Nothing changed.`, issues: stuck.issues }, meta };
+	}
+	if (proposal && proposal.diff.length > 0) return { result: agentReply(ctx.mode, text, state.blocks, proposal), meta };
+	if (lastIssues) return { result: { ok: false, code: "write_invalid", message: lastIssues.message, issues: lastIssues.issues }, meta };
+	if (text) return { result: agentReply(ctx.mode, text, state.blocks), meta };
+	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${steps} step${steps === 1 ? "" : "s"}.` }, meta };
+}
+
 async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal): Promise<TurnResultOut> {
 	const trace = { runId: newRunId(), steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
@@ -31611,14 +31667,9 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 		{ role: "user", content: userPrompt(ctx, problems) }
 	];
 	const tools = agentOpenAiTools(ctx.mode);
-	let working: PageV2 = ctx.page;
-	let proposal: PageProposal | null = null;
+	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false };
 	let text = "";
-	const blocks: string[] = [];
-	type IssueSet = { signature: string; issues: Array<{ path: string; code: string; expected: string; got?: unknown }>; message: string };
-	let lastIssues = null as IssueSet | null;
-	let stuck = null as IssueSet | null;
-	const finish = (): TurnResultOut["meta"] => {
+	const finish = (): LiveTurnMeta => {
 		// Complete when every request reported its usage; incomplete only for a request that did not (it was always marked incomplete before).
 		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, stepUsage.length < trace.steps ? { incomplete: "error" } : undefined) : unknownUsage("error", trace.steps);
 		return turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId);
@@ -31633,22 +31684,20 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 	const expectsChange = open > 0 || build;
 	let nudged = false;
 	let forceNamed = false;
-	const changed = () => Boolean(proposal && proposal.diff.length > 0);
-	while (trace.steps < BUDGET.maxSteps && !stuck) {
+	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
+	const request = (toolChoice: Parameters<typeof providerStep>[0]["toolChoice"]) => providerStep({ apiKey, modelId, messages, tools, toolChoice, maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
+	while (trace.steps < BUDGET.maxSteps && !state.stuck) {
 		trace.steps += 1;
 		endedOnCalls = false;
-		const choice = forceNamed ? FORCE_WRITE : build ? "required" : "auto";
-		let step = await providerStep({ apiKey, modelId, messages, tools, toolChoice: choice, maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
+		let step = await request(forceNamed ? FORCE_WRITE : build ? "required" : "auto");
 		// A model that refuses the named function gets "required".
-		if (forceNamed && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) {
-			step = await providerStep({ apiKey, modelId, messages, tools, toolChoice: "required", maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
-		}
+		if (forceNamed && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) step = await request("required");
 		forceNamed = false;
 		if (!step.ok) return { result: step.result, meta: step.meta };
 		const message = step.message;
 		const said = modelText(message);
 		if (said) text = said;
-		const calls = message.tool_calls ?? [];
+		const calls: ToolCall[] = message.tool_calls ?? [];
 		if (calls.length === 0) {
 			if (expectsChange && !nudged && !changed() && trace.steps < BUDGET.maxSteps) {
 				nudged = true;
@@ -31661,69 +31710,27 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 		endedOnCalls = true;
 		trace.toolCallingWorked = true;
 		messages.push({ role: "assistant", content: message.content ?? null, tool_calls: calls });
-		let accepted = false;
+		state.accepted = false;
 		for (const call of calls) {
 			const name = call.function?.name ?? "";
 			trace.toolsCalled.push(name);
-			const args = parseArgs(call.function?.arguments);
-			let reply: unknown;
-			if (name === "write_page") {
-				const written = runWriteTool(ctx, working, args);
-				if (written.ok) {
-					working = written.page;
-					proposal = written.proposal;
-					accepted = true;
-					lastIssues = null;
-					reply = written.payload;
-				} else {
-					const sig = signature(written.issues);
-					reply = { ok: false, code: written.code, message: written.message, issues: written.issues };
-					if (lastIssues?.signature === sig) stuck = { signature: sig, issues: written.issues, message: written.message };
-					lastIssues = { signature: sig, issues: written.issues, message: written.message };
-				}
-			} else {
-				const outcome = executeCatalogTool({ name, arguments: args }, { mode: ctx.mode, page: working });
-				if (outcome.ok) {
-					reply = outcome.result;
-					if (name === "get_block") {
-						const info = itemInfo(String((outcome.result as { item?: unknown }).item ?? ""));
-						if (info) blocks.push(info.spec);
-					}
-				} else reply = { ok: false, code: outcome.code, message: outcome.message, ...(outcome.result ? { result: outcome.result } : {}) };
-			}
+			const reply = runToolCall(ctx, state, name, parseArgs(call.function?.arguments));
 			messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
 		}
 		// Build ends with the accepted write.
 		// The text beside the call is not an answer (a model may print the document there): the host shows the diff card and the status.
-		if (build && accepted) {
+		if (build && state.accepted) {
 			text = "";
 			endedOnCalls = false;
 			break;
 		}
 	}
-	if (endedOnCalls && !stuck && !changed()) {
+	if (endedOnCalls && !state.stuck && !changed()) {
 		// The step budget ended on tool calls: one more request, no tools, so the model answers with what it read.
-		const last = await providerStep({ apiKey, modelId, messages, tools, toolChoice: "none", maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
+		const last = await request("none");
 		if (last.ok) text = modelText(last.message) || text;
 	}
-	const meta = finish();
-	if (stuck) {
-		return {
-			result: {
-				ok: false,
-				code: "write_stuck",
-				message: `The page was not written: the agent sent the same invalid page twice (${stuck.issues.slice(0, 3).map((issue) => `${issue.path} ${issue.code}`).join("; ")}). Nothing changed.`,
-				issues: stuck.issues
-			},
-			meta
-		};
-	}
-	if (proposal && changed()) return { result: agentReply(ctx.mode, text, blocks, proposal), meta };
-	if (lastIssues) {
-		return { result: { ok: false, code: "write_invalid", message: lastIssues.message, issues: lastIssues.issues }, meta };
-	}
-	if (text) return { result: agentReply(ctx.mode, text, blocks), meta };
-	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${trace.steps} step${trace.steps === 1 ? "" : "s"}.` }, meta };
+	return loopResult(ctx, state, text, trace.steps, finish());
 }
 
 type TurnResult = AgentReply | AgentFailure;
@@ -32028,17 +32035,165 @@ function combinedAbort(request: Request, ms: number): AbortSignal {
 	return timeout;
 }
 
-async function handleRuntimeFetch(
-	request: Request,
-	env: EnvMap = readEnv(),
-	opts: { surface: "vercel" | "node" } = { surface: "node" }
-): Promise<Response> {
+type RunMeta = Awaited<ReturnType<typeof runXaiCatalogTurn>>["meta"];
+type RunSurface = { surface: "vercel" | "node" };
+
+/** The sanitized log line of one finished run: counts and codes only. */
+function logRun(surface: RunSurface["surface"], mode: unknown, checked: { ok: boolean; code?: string; proposal?: unknown }, meta: RunMeta, live: boolean): void {
+	logSanitizedRun({
+		event: "xai_run",
+		surface,
+		runId: meta.runId,
+		ok: checked.ok,
+		code: checked.ok ? "ok" : checked.code,
+		mode,
+		reply: checked.ok ? (checked.proposal ? "proposal" : "text") : "error",
+		path: meta.path,
+		modelId: meta.modelId,
+		liveModel: live,
+		liveXai: live,
+		toolCallingProven: meta.toolCallingWorked,
+		steps: meta.steps,
+		...(meta.providerStatus ? { providerStatus: meta.providerStatus, providerMs: meta.providerMs ?? null } : {}),
+		tools: toolCounts(meta.toolsCalled),
+		usage: {
+			reportedBy: meta.usage.reportedBy,
+			aggregation: meta.usage.aggregation ?? null,
+			status: meta.usage.status,
+			steps: meta.usage.steps,
+			promptTokens: meta.usage.promptTokens,
+			completionTokens: meta.usage.completionTokens,
+			totalTokens: meta.usage.totalTokens,
+			cachedTokens: meta.usage.cachedTokens ?? null,
+			lastPromptTokens: meta.usage.lastStep?.promptTokens ?? null,
+			lastCompletionTokens: meta.usage.lastStep?.completionTokens ?? null
+		}
+	});
+}
+
+/** The JSON body of a request, or the refusal that answers it (too large, not JSON). */
+async function readRunBody(request: Request): Promise<{ body: Record<string, unknown> } | { refusal: Response }> {
+	const raw = await request.text();
+	if (raw.length > MAX_BODY) return { refusal: jsonResponse(413, { error: { code: "too_large", message: "payload too large" }, liveModel: false }) };
+	if (!raw.trim()) return { body: {} };
+	try {
+		return { body: JSON.parse(raw) as Record<string, unknown> };
+	} catch {
+		return { refusal: jsonResponse(400, { error: { code: "invalid_json", message: "invalid json" }, liveModel: false }) };
+	}
+}
+
+/** A run that the runtime cannot start (no key, not ready), as the response that says so; no provider call was made. */
+function notReadyResponse(env: EnvMap, status: Awaited<ReturnType<typeof runtimeStatus>>, modelId: string): Response | null {
+	if (!readXaiKeyState(env).present) {
+		return jsonResponse(503, {
+			error: { code: "xai_api_key_missing", message: "XAI_API_KEY is not provisioned here. No provider call was made." },
+			liveModel: false,
+			modelId
+		});
+	}
+	if (status.ready) return null;
+	return jsonResponse(503, {
+		error: { code: status.code, message: "xAI runtime is not ready. This is not a live Grok reply. No provider call was made." },
+		modelId,
+		status,
+		liveModel: false
+	});
+}
+
+type MappedRequest = Extract<ReturnType<typeof mapChatRunRequest>, { ok: true }>["request"];
+
+/** What the model turn needs from the mapped request (an empty page when none came). */
+function turnInput(req: MappedRequest): Parameters<typeof runXaiCatalogTurn>[2] {
+	return {
+		brief: req.brief,
+		mode: req.mode,
+		conversation: req.conversation,
+		page: req.currentPage ?? emptyPage({ title: "New page" }),
+		shownPage: req.shownPage ?? null,
+		expectedRevision: req.expectedRevision,
+		scopeBlockIds: req.scopeBlockIds,
+		screenId: req.screenId,
+		collection: req.collection
+	};
+}
+
+async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promise<Response> {
+	const status = await runtimeStatus(env);
+	const read = await readRunBody(request);
+	if ("refusal" in read) return read.refusal;
+	const { body } = read;
+	// Version skew: a tab built from another deploy validates with another contract and would
+	// reject proposals it cannot render. Refuse before spending a model call.
+	if (body.contract !== contractFingerprint()) {
+		const modelId = typeof body.modelId === "string" ? body.modelId : "";
+		return jsonResponse(409, {
+			ok: false,
+			code: "client_outdated",
+			message: "This tab runs an older version of the app. Reload the page to continue.",
+			modelId,
+			requestedModelId: modelId,
+			liveModel: false
+		});
+	}
+	const mapped = mapChatRunRequest(body, {
+		discoveredChatIds: status.models.listed ? status.models.chatIds : undefined,
+		allowUnlistedTrial: !status.ready
+	});
+	if (!mapped.ok) {
+		return jsonResponse(422, { ok: false, code: mapped.code, message: mapped.message, requestedId: mapped.requestedId, liveModel: false });
+	}
+	const notReady = notReadyResponse(env, status, mapped.request.modelId);
+	if (notReady) return notReady;
+	await ensureRenderProbe();
+	const ms = clampRunBudgetMs(body.abortMs, env);
+	const signal = combinedAbort(request, ms);
+	try {
+		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal);
+		const { meta } = turn;
+		// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
+		const checked =
+			!turn.result.ok && turn.result.code === "aborted" && !request.signal.aborted
+				? {
+						ok: false as const,
+						code: "runtime_timeout",
+						message: `The model did not finish within ${Math.round(ms / 1000)} s. Try again or pick a faster model. No other model was substituted.`
+					}
+				: turn.result;
+		const live = Boolean(checked.ok && (meta.toolCallingWorked || isAgentReply(checked)));
+		logRun(opts.surface, mapped.request.mode, checked, meta, live);
+		return jsonResponse(checked.ok ? 200 : 422, {
+			...checked,
+			liveModel: live,
+			liveXai: live,
+			toolCallingProven: meta.toolCallingWorked,
+			mode: mapped.request.mode,
+			runtime: "xai-grok",
+			modelId: meta.modelId,
+			requestedModelId: mapped.request.modelId,
+			path: meta.path,
+			runId: meta.runId,
+			toolsUsed: meta.toolsCalled,
+			usage: meta.usage
+		});
+	} catch (err) {
+		const safe = safeErrorMessage(err, secretValues(env));
+		const aborted = signal.aborted || safe.code === "AbortError" || safe.message.toLowerCase().includes("abort");
+		return jsonResponse(aborted ? 499 : 500, {
+			ok: false,
+			code: aborted ? "aborted" : safe.code,
+			message: aborted ? "The run was cancelled. Usage is unknown, not zero." : "The xAI chat request could not be completed. No automatic retry was sent.",
+			liveModel: false
+		});
+	}
+}
+
+async function handleRuntimeFetch(request: Request, env: EnvMap = readEnv(), opts: RunSurface = { surface: "node" }): Promise<Response> {
 	const allowLoopback = opts.surface === "node" && !isSharedPublicSurface(env);
 	const blocked = gateRequest(request, env, { allowLoopbackUnauthenticated: allowLoopback });
 	if (blocked) return blocked;
 
-	const url = new URL(request.url);
-	const path = stripRuntimePrefix(url.pathname);
+	const path = stripRuntimePrefix(new URL(request.url).pathname);
 	const method = (request.method || "GET").toUpperCase();
 
 	if (method === "OPTIONS") {
@@ -32053,156 +32208,7 @@ async function handleRuntimeFetch(
 			const status = await runtimeStatus(env);
 			return jsonResponse(status.key.present ? 200 : 503, { ...status, contract: contractFingerprint() });
 		}
-		if (method === "POST" && path === "/v1/run") {
-			const status = await runtimeStatus(env);
-			const raw = await request.text();
-			if (raw.length > MAX_BODY) {
-				return jsonResponse(413, { error: { code: "too_large", message: "payload too large" }, liveModel: false });
-			}
-			let body: Record<string, unknown> = {};
-			if (raw.trim()) {
-				try {
-					body = JSON.parse(raw) as Record<string, unknown>;
-				} catch {
-					return jsonResponse(400, { error: { code: "invalid_json", message: "invalid json" }, liveModel: false });
-				}
-			}
-			// Version skew: a tab built from another deploy validates with another contract and would
-			// reject proposals it cannot render. Refuse before spending a model call.
-			if (body.contract !== contractFingerprint()) {
-				const modelId = typeof body.modelId === "string" ? body.modelId : "";
-				return jsonResponse(409, {
-					ok: false,
-					code: "client_outdated",
-					message: "This tab runs an older version of the app. Reload the page to continue.",
-					modelId,
-					requestedModelId: modelId,
-					liveModel: false
-				});
-			}
-			const mapped = mapChatRunRequest(body, {
-				discoveredChatIds: status.models.listed ? status.models.chatIds : undefined,
-				allowUnlistedTrial: !status.ready
-			});
-			if (!mapped.ok) {
-				return jsonResponse(422, {
-					ok: false,
-					code: mapped.code,
-					message: mapped.message,
-					requestedId: mapped.requestedId,
-					liveModel: false
-				});
-			}
-			const key = readXaiKeyState(env);
-			if (!key.present) {
-				return jsonResponse(503, {
-					error: {
-						code: "xai_api_key_missing",
-						message: "XAI_API_KEY is not provisioned here. No provider call was made."
-					},
-					liveModel: false,
-					modelId: mapped.request.modelId
-				});
-			}
-			if (!status.ready) {
-				return jsonResponse(503, {
-					error: {
-						code: status.code,
-						message: "xAI runtime is not ready. This is not a live Grok reply. No provider call was made."
-					},
-					modelId: mapped.request.modelId,
-					status,
-					liveModel: false
-				});
-			}
-			await ensureRenderProbe();
-			const ms = clampRunBudgetMs(body.abortMs, env);
-			const signal = combinedAbort(request, ms);
-			try {
-				const turn = await runXaiCatalogTurn(
-					env.XAI_API_KEY!.trim(),
-					mapped.request.modelId,
-					{
-						brief: mapped.request.brief,
-						mode: mapped.request.mode,
-						conversation: mapped.request.conversation,
-						page: mapped.request.currentPage ?? emptyPage({ title: "New page" }),
-						shownPage: mapped.request.shownPage ?? null,
-						expectedRevision: mapped.request.expectedRevision,
-						scopeBlockIds: mapped.request.scopeBlockIds,
-						screenId: mapped.request.screenId,
-						collection: mapped.request.collection
-					},
-					signal
-				);
-				const { meta } = turn;
-				// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
-				const checked =
-					!turn.result.ok && turn.result.code === "aborted" && !request.signal.aborted
-						? {
-								ok: false as const,
-								code: "runtime_timeout",
-								message: `The model did not finish within ${Math.round(ms / 1000)} s. Try again or pick a faster model. No other model was substituted.`
-							}
-						: turn.result;
-				const live = Boolean(checked.ok && (meta.toolCallingWorked || isAgentReply(checked)));
-				logSanitizedRun({
-					event: "xai_run",
-					surface: opts.surface,
-					runId: meta.runId,
-					ok: checked.ok,
-					code: checked.ok ? "ok" : checked.code,
-					mode: mapped.request.mode,
-					reply: checked.ok ? (checked.proposal ? "proposal" : "text") : "error",
-					path: meta.path,
-					modelId: meta.modelId,
-					liveModel: live,
-					liveXai: live,
-					toolCallingProven: meta.toolCallingWorked,
-					steps: meta.steps,
-					...(meta.providerStatus ? { providerStatus: meta.providerStatus, providerMs: meta.providerMs ?? null } : {}),
-					tools: toolCounts(meta.toolsCalled),
-					usage: {
-						reportedBy: meta.usage.reportedBy,
-						aggregation: meta.usage.aggregation ?? null,
-						status: meta.usage.status,
-						steps: meta.usage.steps,
-						promptTokens: meta.usage.promptTokens,
-						completionTokens: meta.usage.completionTokens,
-						totalTokens: meta.usage.totalTokens,
-						cachedTokens: meta.usage.cachedTokens ?? null,
-						lastPromptTokens: meta.usage.lastStep?.promptTokens ?? null,
-						lastCompletionTokens: meta.usage.lastStep?.completionTokens ?? null
-					}
-				});
-				return jsonResponse(checked.ok ? 200 : 422, {
-					...checked,
-					liveModel: live,
-					liveXai: live,
-					toolCallingProven: meta.toolCallingWorked,
-					mode: mapped.request.mode,
-					runtime: "xai-grok",
-					modelId: meta.modelId,
-					requestedModelId: mapped.request.modelId,
-					path: meta.path,
-					runId: meta.runId,
-					toolsUsed: meta.toolsCalled,
-					usage: meta.usage
-				});
-			} catch (err) {
-				const safe = safeErrorMessage(err, secretValues(env));
-				const aborted =
-					signal.aborted || safe.code === "AbortError" || safe.message.toLowerCase().includes("abort");
-				return jsonResponse(aborted ? 499 : 500, {
-					ok: false,
-					code: aborted ? "aborted" : safe.code,
-					message: aborted
-						? "The run was cancelled. Usage is unknown, not zero."
-						: "The xAI chat request could not be completed. No automatic retry was sent.",
-					liveModel: false
-				});
-			}
-		}
+		if (method === "POST" && path === "/v1/run") return await handleRun(request, env, opts);
 		return jsonResponse(404, { error: { code: "not_found", message: "Unknown runtime path." } });
 	} catch (err) {
 		const safe = safeErrorMessage(err, secretValues(env));

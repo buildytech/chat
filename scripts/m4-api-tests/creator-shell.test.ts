@@ -26,7 +26,7 @@ test("desktop panes never combine global hidden with responsive flex", () => {
 });
 
 test("Composer lists verified Grok chat ids and sends the selected model", () => {
-	const s = source("ChatComposer");
+	const s = source("ChatComposer") + source("ComposerModelList");
 	assert.match(s, /selectedModelId/);
 	assert.match(s, /onSelectModel/);
 	assert.match(s, /chatModels/);
@@ -57,7 +57,7 @@ test("Code pane emits Svelte UI8Kit source, not Latte", () => {
 });
 
 test("Escape closes the model menu and Ctrl+K searches saved chats", () => {
-	const composer = source("ChatComposer");
+	const composer = source("ChatComposer") + source("ComposerModelList");
 	assert.match(composer, /onEscape/);
 	assert.match(composer, /svelte:window/);
 	assert.match(composer, /modelOpen = false/);
@@ -140,7 +140,7 @@ test("narrow viewport uses Creator tabs, not only the preview device frame", () 
 
 test("first send from home does not attach a picked scenario or screen", () => {
 	const s = sessionCore();
-	const send = s.slice(s.indexOf("async function sendMessageMock"), s.indexOf("const userMsg"));
-	assert.match(send, /session = await createSession\(\)/);
+	const send = s.slice(s.indexOf("async function sendMessageText"), s.indexOf("const mode = chatModeOf"));
+	assert.match(send, /\(await createSession\(\)\)/);
 	assert.doesNotMatch(send, /scenarioId: getScenarioId\(\), screenId: getScreenId\(\)/);
 });

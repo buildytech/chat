@@ -51,7 +51,7 @@ test("clean mode hides service labels in Preview, keeps Apply / Discard", () => 
 	const block = web("app/PreviewBlock.svelte");
 	assert.match(block, /\{#if !clean\}\s*<Group[\s\S]*data-slot="block-provenance"/);
 	assert.match(web("app/PreviewFrame.svelte"), /clean=\{previewSettings\.hideServiceLabels\}/);
-	const sidebar = web("app/ProjectSidebar.svelte");
+	const sidebar = web("app/ProjectSidebar.svelte") + web("app/SidebarSettings.svelte");
 	assert.match(sidebar, /\$registry\/compose\/Checkbox\.svelte/);
 	assert.match(sidebar, /settings\.hidePreviewLabels/);
 	for (const locale of ["en", "ru"]) {

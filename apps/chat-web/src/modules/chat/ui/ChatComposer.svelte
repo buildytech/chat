@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { previewSettings } from "$lib/browser/preview-settings.svelte.ts";
- import { blockScope } from "$modules/chat/core/block-scope.svelte.ts";
- import { getSelectedSession } from "$modules/chat/core";
 	import { Send, X, Check, ChevronDown } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -12,14 +9,15 @@
 	import Label from "$registry/kit/ui/label/Label.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import Textarea from "$registry/kit/ui/textarea/Textarea.svelte";
-	import Disclosure from "$registry/kit/ui/disclosure/Disclosure.svelte";
-	import Summary from "$registry/compose/Summary.svelte";
 	import CollectionChips from "./CollectionChips.svelte";
+	import ComposerDetails from "./ComposerDetails.svelte";
+	import ComposerModelList from "./ComposerModelList.svelte";
+	import ComposerScope from "./ComposerScope.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
 	import { getChatMode, setChatMode, type CreatorRuntimeStatus } from "$modules/chat/core";
 	import { AGENT_MODES } from "@buildytech/chat-agent";
-	import { formatTokens, modelRunsToolLoop, modelUnavailableCode, type GrokChatModel, type SessionUsage } from "@buildytech/chat-agent";
+	import type { GrokChatModel, SessionUsage } from "@buildytech/chat-agent";
 
 	let {
 		disabled = false,
@@ -145,17 +143,7 @@
 >
 	<Form class="relative flex flex-col gap-2" onsubmit={submit} onkeydown={onKeydown}>
 		<CollectionChips />
- {#if blockScope.ids(getSelectedSession()?.id).length}
- <Stack class="gap-1" data-slot="chat-block-scope">
- <Text tag="p" class="text-xs text-muted-foreground">{t("scope.only")}</Text>
- <Group class="flex-wrap gap-1">
- {#each blockScope.ids(getSelectedSession()?.id) as id (id)}
- <Button size="sm" variant="ghost" title={t("scope.remove")} onclick={() => { const session = getSelectedSession(); if(session) blockScope.toggle(session.id,id); }}>{id} ×</Button>
- {/each}
- <Button size="sm" variant="ghost" onclick={() => { const session = getSelectedSession(); if(session) blockScope.clear(session.id); }}>{t("scope.clear")}</Button>
- </Group>
- </Stack>
- {/if}
+		<ComposerScope />
 		<Stack align="stretch" class="gap-2 rounded border border-input bg-card p-1" data-slot="composer-surface">
 			<Label for="composer" class="sr-only">{t("composer.label")}</Label>
 			<Textarea
@@ -280,69 +268,17 @@
 			</Stack>
 		{/if}
 		{#if modelOpen}
-			<Stack
-				align="stretch"
-				id="composer-model-list"
-				class="absolute inset-x-0 bottom-full z-20 mb-2 max-h-64 gap-1 overflow-y-auto rounded bg-popover p-2"
-				role="group"
-				aria-label={t("composer.modelList")}
-			>
-				{#each chatModels as model (model.id)}
-					<Button
-						type="button"
-						class={cn(
-							"w-full rounded px-2 py-2 text-left disabled:opacity-50",
-							model.id === selectedModelId ? "bg-accent" : "hover:bg-accent",
-						)}
-						pressed={model.id === selectedModelId}
-						disabled={!modelRunsToolLoop(model)}
-						onclick={() => chooseModel(model.id)}
-					>
-						<Stack align="stretch" class="min-w-0 gap-1">
-							<Text tag="span" class="text-sm text-foreground">{model.label}</Text>
-							<Text tag="span" class="break-all font-mono text-xs text-muted-foreground">{model.id}</Text>
-							{#if !modelRunsToolLoop(model)}<Text tag="span" class="text-xs text-muted-foreground"
-									>{t(
-										modelUnavailableCode(model) === "model_too_slow"
-											? "composer.modelTooSlow"
-											: "composer.modelUnavailable",
-									)}</Text
-								>{/if}
-						</Stack>
-					</Button>
-				{/each}
-				<Button
-					type="button"
-					class="rounded px-2 py-2 text-left text-sm text-foreground hover:bg-accent"
-					onclick={() => {
-						modelOpen = false;
-						onAddModel?.();
-					}}><Text tag="span">{t("composer.addModel")}</Text></Button
-				>
-				<Text tag="p" class="px-2 text-xs text-muted-foreground">{t("composer.modelTrialHint")}</Text>
-			</Stack>
+			<ComposerModelList
+				{chatModels}
+				{selectedModelId}
+				onChoose={chooseModel}
+				onAddModel={() => {
+					modelOpen = false;
+					onAddModel?.();
+				}}
+			/>
 		{/if}
-		{#if !previewSettings.hideServiceLabels}
- <Disclosure class="group px-2" data-slot="composer-details">
-			<Summary class="w-fit gap-2 rounded py-1 text-xs text-muted-foreground">{t("composer.details")}</Summary>
-			<Stack align="stretch" class="gap-2 py-2">
-				{#if selected}<Text tag="p" class="break-all font-mono text-xs text-muted-foreground">{selected.id}</Text>{/if}
-				{#if sessionUsage}
-					<Text tag="p" class="text-xs text-muted-foreground" role="status"
-						>{t("usage.session")
-							.replace("{status}", sessionUsage.status === "incomplete" ? t("usage.incomplete") : t("usage.complete"))
-							.replace("{prompt}", formatTokens(sessionUsage.promptTokens))
-							.replace("{completion}", formatTokens(sessionUsage.completionTokens))
-							.replace("{total}", formatTokens(sessionUsage.totalTokens))
-							.replace("{runs}", String(sessionUsage.runs))}</Text
-					>
-					<Text tag="p" class="text-xs text-muted-foreground">{t("usage.noDollars")}</Text>
-				{/if}
-				{#if persistLabel}<Text tag="p" class="text-xs text-muted-foreground">{persistLabel}</Text>{/if}
-				{#if runtimeLabel}<Text tag="p" class="text-xs text-muted-foreground">{runtimeLabel}</Text>{/if}
-			</Stack>
-		</Disclosure>
- {/if}
+		<ComposerDetails {selected} {sessionUsage} {persistLabel} {runtimeLabel} />
 		{#if runtimeStatus?.error}<Text tag="p" class="px-2 text-xs text-destructive" role="status"
 				>{runtimeStatus.error}</Text
 			>{/if}

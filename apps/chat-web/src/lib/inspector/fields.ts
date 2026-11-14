@@ -76,3 +76,14 @@ export function issueText(issue: FieldIssue, t: (key: string) => string): string
 	if (issue.code === "props_invalid") return `${t("inspector.propsInvalid")} ${issue.message}`;
 	return issue.message;
 }
+
+/** A prop value as the text of a field: nothing for unset, strings as they are, anything else as JSON. */
+export function text(value: unknown): string {
+	if (value === undefined || value === null) return "";
+	return typeof value === "string" ? value : JSON.stringify(value);
+}
+
+/** The value of the input or textarea an event came from. */
+export function valueOf(event: Event): string {
+	return (event.currentTarget as HTMLInputElement | HTMLTextAreaElement).value;
+}

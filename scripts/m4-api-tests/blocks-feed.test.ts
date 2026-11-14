@@ -131,7 +131,7 @@ test("Build is two areas: left panel tabs (Blocks / Sections, plus the tabs of l
 	assert.match(column, /<BlocksFeed \/>/);
 	assert.match(column, /<SectionsList \/>/);
 	assert.doesNotMatch(column, /ChatThread|modules\/chat/, "the left panel knows no module by name");
-	assert.match(web("lib/creator-layout.svelte.ts"), /const inspectorColumn = \(\) => false;/);
+	assert.match(web("lib/creator-layout.svelte.ts"), /inspector: false/, "the inspector is a slide-over, never a column (ADR 0024)");
 	assert.match(web("app/Workspace.svelte"), /<Group align="stretch" class="relative min-h-0 flex-1 gap-0" data-slot="build-editor"/);
 	const card = web("app/FeedCard.svelte");
 	assert.match(card, /<StockMediaCard/, "full-bleed Stock thumbnail through the shared card frame");

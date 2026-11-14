@@ -58,17 +58,165 @@ function combinedAbort(request: Request, ms: number): AbortSignal {
 	return timeout;
 }
 
-export async function handleRuntimeFetch(
-	request: Request,
-	env: EnvMap = readEnv(),
-	opts: { surface: "vercel" | "node" } = { surface: "node" }
-): Promise<Response> {
+type RunMeta = Awaited<ReturnType<typeof runXaiCatalogTurn>>["meta"];
+type RunSurface = { surface: "vercel" | "node" };
+
+/** The sanitized log line of one finished run: counts and codes only. */
+function logRun(surface: RunSurface["surface"], mode: unknown, checked: { ok: boolean; code?: string; proposal?: unknown }, meta: RunMeta, live: boolean): void {
+	logSanitizedRun({
+		event: "xai_run",
+		surface,
+		runId: meta.runId,
+		ok: checked.ok,
+		code: checked.ok ? "ok" : checked.code,
+		mode,
+		reply: checked.ok ? (checked.proposal ? "proposal" : "text") : "error",
+		path: meta.path,
+		modelId: meta.modelId,
+		liveModel: live,
+		liveXai: live,
+		toolCallingProven: meta.toolCallingWorked,
+		steps: meta.steps,
+		...(meta.providerStatus ? { providerStatus: meta.providerStatus, providerMs: meta.providerMs ?? null } : {}),
+		tools: toolCounts(meta.toolsCalled),
+		usage: {
+			reportedBy: meta.usage.reportedBy,
+			aggregation: meta.usage.aggregation ?? null,
+			status: meta.usage.status,
+			steps: meta.usage.steps,
+			promptTokens: meta.usage.promptTokens,
+			completionTokens: meta.usage.completionTokens,
+			totalTokens: meta.usage.totalTokens,
+			cachedTokens: meta.usage.cachedTokens ?? null,
+			lastPromptTokens: meta.usage.lastStep?.promptTokens ?? null,
+			lastCompletionTokens: meta.usage.lastStep?.completionTokens ?? null
+		}
+	});
+}
+
+/** The JSON body of a request, or the refusal that answers it (too large, not JSON). */
+async function readRunBody(request: Request): Promise<{ body: Record<string, unknown> } | { refusal: Response }> {
+	const raw = await request.text();
+	if (raw.length > MAX_BODY) return { refusal: jsonResponse(413, { error: { code: "too_large", message: "payload too large" }, liveModel: false }) };
+	if (!raw.trim()) return { body: {} };
+	try {
+		return { body: JSON.parse(raw) as Record<string, unknown> };
+	} catch {
+		return { refusal: jsonResponse(400, { error: { code: "invalid_json", message: "invalid json" }, liveModel: false }) };
+	}
+}
+
+/** A run that the runtime cannot start (no key, not ready), as the response that says so; no provider call was made. */
+function notReadyResponse(env: EnvMap, status: Awaited<ReturnType<typeof runtimeStatus>>, modelId: string): Response | null {
+	if (!readXaiKeyState(env).present) {
+		return jsonResponse(503, {
+			error: { code: "xai_api_key_missing", message: "XAI_API_KEY is not provisioned here. No provider call was made." },
+			liveModel: false,
+			modelId
+		});
+	}
+	if (status.ready) return null;
+	return jsonResponse(503, {
+		error: { code: status.code, message: "xAI runtime is not ready. This is not a live Grok reply. No provider call was made." },
+		modelId,
+		status,
+		liveModel: false
+	});
+}
+
+type MappedRequest = Extract<ReturnType<typeof mapChatRunRequest>, { ok: true }>["request"];
+
+/** What the model turn needs from the mapped request (an empty page when none came). */
+function turnInput(req: MappedRequest): Parameters<typeof runXaiCatalogTurn>[2] {
+	return {
+		brief: req.brief,
+		mode: req.mode,
+		conversation: req.conversation,
+		page: req.currentPage ?? emptyPage({ title: "New page" }),
+		shownPage: req.shownPage ?? null,
+		expectedRevision: req.expectedRevision,
+		scopeBlockIds: req.scopeBlockIds,
+		screenId: req.screenId,
+		collection: req.collection
+	};
+}
+
+async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promise<Response> {
+	const status = await runtimeStatus(env);
+	const read = await readRunBody(request);
+	if ("refusal" in read) return read.refusal;
+	const { body } = read;
+	// Version skew: a tab built from another deploy validates with another contract and would
+	// reject proposals it cannot render. Refuse before spending a model call.
+	if (body.contract !== contractFingerprint()) {
+		const modelId = typeof body.modelId === "string" ? body.modelId : "";
+		return jsonResponse(409, {
+			ok: false,
+			code: "client_outdated",
+			message: "This tab runs an older version of the app. Reload the page to continue.",
+			modelId,
+			requestedModelId: modelId,
+			liveModel: false
+		});
+	}
+	const mapped = mapChatRunRequest(body, {
+		discoveredChatIds: status.models.listed ? status.models.chatIds : undefined,
+		allowUnlistedTrial: !status.ready
+	});
+	if (!mapped.ok) {
+		return jsonResponse(422, { ok: false, code: mapped.code, message: mapped.message, requestedId: mapped.requestedId, liveModel: false });
+	}
+	const notReady = notReadyResponse(env, status, mapped.request.modelId);
+	if (notReady) return notReady;
+	await ensureRenderProbe();
+	const ms = clampRunBudgetMs(body.abortMs, env);
+	const signal = combinedAbort(request, ms);
+	try {
+		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal);
+		const { meta } = turn;
+		// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
+		const checked =
+			!turn.result.ok && turn.result.code === "aborted" && !request.signal.aborted
+				? {
+						ok: false as const,
+						code: "runtime_timeout",
+						message: `The model did not finish within ${Math.round(ms / 1000)} s. Try again or pick a faster model. No other model was substituted.`
+					}
+				: turn.result;
+		const live = Boolean(checked.ok && (meta.toolCallingWorked || isAgentReply(checked)));
+		logRun(opts.surface, mapped.request.mode, checked, meta, live);
+		return jsonResponse(checked.ok ? 200 : 422, {
+			...checked,
+			liveModel: live,
+			liveXai: live,
+			toolCallingProven: meta.toolCallingWorked,
+			mode: mapped.request.mode,
+			runtime: "xai-grok",
+			modelId: meta.modelId,
+			requestedModelId: mapped.request.modelId,
+			path: meta.path,
+			runId: meta.runId,
+			toolsUsed: meta.toolsCalled,
+			usage: meta.usage
+		});
+	} catch (err) {
+		const safe = safeErrorMessage(err, secretValues(env));
+		const aborted = signal.aborted || safe.code === "AbortError" || safe.message.toLowerCase().includes("abort");
+		return jsonResponse(aborted ? 499 : 500, {
+			ok: false,
+			code: aborted ? "aborted" : safe.code,
+			message: aborted ? "The run was cancelled. Usage is unknown, not zero." : "The xAI chat request could not be completed. No automatic retry was sent.",
+			liveModel: false
+		});
+	}
+}
+
+export async function handleRuntimeFetch(request: Request, env: EnvMap = readEnv(), opts: RunSurface = { surface: "node" }): Promise<Response> {
 	const allowLoopback = opts.surface === "node" && !isSharedPublicSurface(env);
 	const blocked = gateRequest(request, env, { allowLoopbackUnauthenticated: allowLoopback });
 	if (blocked) return blocked;
 
-	const url = new URL(request.url);
-	const path = stripRuntimePrefix(url.pathname);
+	const path = stripRuntimePrefix(new URL(request.url).pathname);
 	const method = (request.method || "GET").toUpperCase();
 
 	if (method === "OPTIONS") {
@@ -83,156 +231,7 @@ export async function handleRuntimeFetch(
 			const status = await runtimeStatus(env);
 			return jsonResponse(status.key.present ? 200 : 503, { ...status, contract: contractFingerprint() });
 		}
-		if (method === "POST" && path === "/v1/run") {
-			const status = await runtimeStatus(env);
-			const raw = await request.text();
-			if (raw.length > MAX_BODY) {
-				return jsonResponse(413, { error: { code: "too_large", message: "payload too large" }, liveModel: false });
-			}
-			let body: Record<string, unknown> = {};
-			if (raw.trim()) {
-				try {
-					body = JSON.parse(raw) as Record<string, unknown>;
-				} catch {
-					return jsonResponse(400, { error: { code: "invalid_json", message: "invalid json" }, liveModel: false });
-				}
-			}
-			// Version skew: a tab built from another deploy validates with another contract and would
-			// reject proposals it cannot render. Refuse before spending a model call.
-			if (body.contract !== contractFingerprint()) {
-				const modelId = typeof body.modelId === "string" ? body.modelId : "";
-				return jsonResponse(409, {
-					ok: false,
-					code: "client_outdated",
-					message: "This tab runs an older version of the app. Reload the page to continue.",
-					modelId,
-					requestedModelId: modelId,
-					liveModel: false
-				});
-			}
-			const mapped = mapChatRunRequest(body, {
-				discoveredChatIds: status.models.listed ? status.models.chatIds : undefined,
-				allowUnlistedTrial: !status.ready
-			});
-			if (!mapped.ok) {
-				return jsonResponse(422, {
-					ok: false,
-					code: mapped.code,
-					message: mapped.message,
-					requestedId: mapped.requestedId,
-					liveModel: false
-				});
-			}
-			const key = readXaiKeyState(env);
-			if (!key.present) {
-				return jsonResponse(503, {
-					error: {
-						code: "xai_api_key_missing",
-						message: "XAI_API_KEY is not provisioned here. No provider call was made."
-					},
-					liveModel: false,
-					modelId: mapped.request.modelId
-				});
-			}
-			if (!status.ready) {
-				return jsonResponse(503, {
-					error: {
-						code: status.code,
-						message: "xAI runtime is not ready. This is not a live Grok reply. No provider call was made."
-					},
-					modelId: mapped.request.modelId,
-					status,
-					liveModel: false
-				});
-			}
-			await ensureRenderProbe();
-			const ms = clampRunBudgetMs(body.abortMs, env);
-			const signal = combinedAbort(request, ms);
-			try {
-				const turn = await runXaiCatalogTurn(
-					env.XAI_API_KEY!.trim(),
-					mapped.request.modelId,
-					{
-						brief: mapped.request.brief,
-						mode: mapped.request.mode,
-						conversation: mapped.request.conversation,
-						page: mapped.request.currentPage ?? emptyPage({ title: "New page" }),
-						shownPage: mapped.request.shownPage ?? null,
-						expectedRevision: mapped.request.expectedRevision,
-						scopeBlockIds: mapped.request.scopeBlockIds,
-						screenId: mapped.request.screenId,
-						collection: mapped.request.collection
-					},
-					signal
-				);
-				const { meta } = turn;
-				// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
-				const checked =
-					!turn.result.ok && turn.result.code === "aborted" && !request.signal.aborted
-						? {
-								ok: false as const,
-								code: "runtime_timeout",
-								message: `The model did not finish within ${Math.round(ms / 1000)} s. Try again or pick a faster model. No other model was substituted.`
-							}
-						: turn.result;
-				const live = Boolean(checked.ok && (meta.toolCallingWorked || isAgentReply(checked)));
-				logSanitizedRun({
-					event: "xai_run",
-					surface: opts.surface,
-					runId: meta.runId,
-					ok: checked.ok,
-					code: checked.ok ? "ok" : checked.code,
-					mode: mapped.request.mode,
-					reply: checked.ok ? (checked.proposal ? "proposal" : "text") : "error",
-					path: meta.path,
-					modelId: meta.modelId,
-					liveModel: live,
-					liveXai: live,
-					toolCallingProven: meta.toolCallingWorked,
-					steps: meta.steps,
-					...(meta.providerStatus ? { providerStatus: meta.providerStatus, providerMs: meta.providerMs ?? null } : {}),
-					tools: toolCounts(meta.toolsCalled),
-					usage: {
-						reportedBy: meta.usage.reportedBy,
-						aggregation: meta.usage.aggregation ?? null,
-						status: meta.usage.status,
-						steps: meta.usage.steps,
-						promptTokens: meta.usage.promptTokens,
-						completionTokens: meta.usage.completionTokens,
-						totalTokens: meta.usage.totalTokens,
-						cachedTokens: meta.usage.cachedTokens ?? null,
-						lastPromptTokens: meta.usage.lastStep?.promptTokens ?? null,
-						lastCompletionTokens: meta.usage.lastStep?.completionTokens ?? null
-					}
-				});
-				return jsonResponse(checked.ok ? 200 : 422, {
-					...checked,
-					liveModel: live,
-					liveXai: live,
-					toolCallingProven: meta.toolCallingWorked,
-					mode: mapped.request.mode,
-					runtime: "xai-grok",
-					modelId: meta.modelId,
-					requestedModelId: mapped.request.modelId,
-					path: meta.path,
-					runId: meta.runId,
-					toolsUsed: meta.toolsCalled,
-					usage: meta.usage
-				});
-			} catch (err) {
-				const safe = safeErrorMessage(err, secretValues(env));
-				const aborted =
-					signal.aborted || safe.code === "AbortError" || safe.message.toLowerCase().includes("abort");
-				return jsonResponse(aborted ? 499 : 500, {
-					ok: false,
-					code: aborted ? "aborted" : safe.code,
-					message: aborted
-						? "The run was cancelled. Usage is unknown, not zero."
-						: "The xAI chat request could not be completed. No automatic retry was sent.",
-					liveModel: false
-				});
-			}
-		}
+		if (method === "POST" && path === "/v1/run") return await handleRun(request, env, opts);
 		return jsonResponse(404, { error: { code: "not_found", message: "Unknown runtime path." } });
 	} catch (err) {
 		const safe = safeErrorMessage(err, secretValues(env));

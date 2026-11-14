@@ -113,7 +113,7 @@ test("locale choice: English by default, Russian is the only other stored value"
 });
 
 test("Settings: theme choice, en+ru; secondary row actions stay keyboard reachable", () => {
-	const sidebar = web("app/ProjectSidebar.svelte");
+	const sidebar = web("app/ProjectSidebar.svelte") + web("app/SidebarSettings.svelte");
 	assert.match(sidebar, /\{#each THEME_PREFS as option/);
 	assert.match(sidebar, /pressed=\{theme\.pref === option\}/);
 	assert.match(sidebar, /data-slot="recent-row"/);

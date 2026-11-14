@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { base } from "$app/paths";
-import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Tablet } from "$lib/shell-icons";
+import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 	import { mount, unmount } from "svelte";
 	import Block from "$registry/compose/Block.svelte";
 	import Box from "$registry/kit/ui/box/Box.svelte";
@@ -8,13 +8,13 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	import Stack from "$registry/compose/Stack.svelte";
 	import Button from "$registry/kit/ui/button/Button.svelte";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
-	import Input from "$registry/kit/ui/input/Input.svelte";
 	import Select from "$registry/compose/Select.svelte";
 	import SelectOption from "$registry/compose/SelectOption.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
 	import ModuleSlot from "./ModuleSlot.svelte";
+	import PreviewAddress from "./PreviewAddress.svelte";
 	import { getProjectSkin, getSelectedProject, setProjectSkin } from "$lib/project";
 	import { applySkin, forcedPreviewMode, skins } from "$lib/theme/skins";
 	import { customSkin } from "$lib/theme/custom-skin.svelte";
@@ -35,16 +35,15 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 	import { itemInfo } from "@buildytech/builder-core";
 	import PreviewFrame from "./PreviewFrame.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
-	import { pageSlug } from "$lib/browser/page-address";
 	import { previewWindowUrl } from "$lib/browser/preview-settings";
 	import { getBoundProjectId } from "$lib/page-store";
 	import { forwardShortcut } from "$lib/layout/shortcuts";
 
 	const page = $derived(getCurrentPage());
+	const currentUrl = $derived(page ? `/${page.slug}` : "/");
 	const savedRevision = $derived(getPageRevision());
 	const unapplied = $derived(hasUnappliedProposal());
 	const blocks = $derived(page ? blocksOf(page) : []);
-	const slugUrl = $derived(page ? `/${page.slug}` : "/");
 	const provenance = $derived(getCurrentProvenance());
 	const screenId = $derived(provenance?.screenId ?? "");
 	const missingLabels = $derived((provenance?.missing ?? []).join(", "));
@@ -156,82 +155,11 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 			frameDoc = null;
 		};
 	});
-	let draft = $state("");
-	let history = $state<string[]>([]);
-	let future = $state<string[]>([]);
-	let reloadKey = $state(0);
-	let spinning = $state(false);
-
-	const currentUrl = $derived(slugUrl);
-	$effect(() => {
-		getBoundProjectId();
-		const slug = page?.slug;
-		draft = slug ? "/" + slug : "/";
-	});
-
-	$effect(() => {
-		getBoundProjectId();
-		history = [];
-		future = [];
-	});
-
-	function commit(next: string) {
-		const slug = pageSlug(next);
-		if (!slug) return false;
-		const before = currentUrl;
-		if (!inspector.setSlug(slug)) return false;
-		const value = "/" + slug;
-		if (value !== before) {
-			history = [...history, before];
-			future = [];
-		}
-		draft = value;
-		return true;
-	}
-
-	function back() {
-		const prev = history.at(-1);
-		if (prev === undefined) return;
-		future = [currentUrl, ...future];
-		history = history.slice(0, -1);
-		inspector.setSlug(prev.slice(1));
-		draft = prev;
-	}
-
-	function forward() {
-		const next = future[0];
-		if (next === undefined) return;
-		history = [...history, currentUrl];
-		future = future.slice(1);
-		inspector.setSlug(next.slice(1));
-		draft = next;
-	}
-
 	function reload() {
-		spinning = true;
 		reloadKey += 1;
 		frame.reload += 1;
-		draft = currentUrl;
-		setTimeout(() => (spinning = false), 500);
 	}
-
-	function onAddressKey(event: KeyboardEvent) {
-		if (event.key === "Enter") {
-			event.preventDefault();
-			const input = event.currentTarget as HTMLInputElement;
-			if (!commit(draft)) {
-				input.setCustomValidity(t("preview.invalidAddress"));
-				input.reportValidity();
-				return;
-			}
-			input.setCustomValidity("");
-			input.blur();
-		} else if (event.key === "Escape") {
-			draft = currentUrl;
-			(event.currentTarget as HTMLInputElement).blur();
-			event.stopPropagation();
-		}
-	}
+	let reloadKey = $state(0);
 
 	const clean = $derived(previewSettings.hideServiceLabels);
 	// Canvas selection is the top-level block that holds the selected node (rows select their block).
@@ -281,52 +209,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 			{/each}
 		</Group>
 
-		<Group
-			class="min-w-0 flex-1 items-center justify-between gap-2 rounded bg-background px-2 py-0 max-md:hidden"
-			role="group"
-			aria-label={t("preview.address")}
-		>
-			<Group class="min-w-0 flex-1 items-center gap-0">
-				<Button
-					class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
-					aria-label={t("preview.back")}
-					disabled={history.length === 0}
-					onclick={back}
-				>
-					<Icon size="sm"><ArrowLeft /></Icon>
-				</Button>
-				<Button
-					class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
-					aria-label={t("preview.forward")}
-					disabled={future.length === 0}
-					onclick={forward}
-				>
-					<Icon size="sm"><ArrowRight /></Icon>
-				</Button>
-				<Text tag="span" class="shrink-0 text-xs text-muted-foreground" aria-hidden="true">{t("preview.site")}</Text>
-				<Input
-					class="min-w-0 flex-1 border-0 bg-transparent px-1 py-1 text-xs font-semibold text-foreground shadow-none outline-none"
-					value={draft || slugUrl}
-					aria-label={t("preview.address")}
-					autocomplete="off"
-					spellcheck="false"
-					oninput={(event: Event) => {
-						(event.currentTarget as HTMLInputElement).setCustomValidity("");
-						draft = (event.currentTarget as HTMLInputElement).value;
-					}}
-					onkeydown={onAddressKey}
-					onfocus={(event: FocusEvent) => (event.currentTarget as HTMLInputElement).select()}
-					onblur={() => (draft = currentUrl)}
-				/>
-			</Group>
-			<Button
-				class="inline-flex size-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-				aria-label={t("preview.reload")}
-				onclick={reload}
-			>
-				<Icon size="sm" class={spinning ? "animate-spin" : undefined}><RefreshCw /></Icon>
-			</Button>
-		</Group>
+		<PreviewAddress {currentUrl} onreload={reload} />
 
 		<Group class="shrink-0 items-center gap-2">
 			{#if skinOptions.length}

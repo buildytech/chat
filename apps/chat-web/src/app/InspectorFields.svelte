@@ -25,7 +25,8 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 	import { inspectorShown, mapKeyIssue, type InspectorField } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { canvas } from "$lib/inspector/canvas.svelte";
-	import { closestAllowed, fieldDomId, hasContent, issueText, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
+	import { closestAllowed, fieldDomId, hasContent, issueText, text, valueOf, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
+	import EntryInput from "./InspectorEntryInput.svelte";
 	import Self from "./InspectorFields.svelte";
 
 	let {
@@ -39,11 +40,6 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 		issues?: Record<string, FieldIssue>;
 		handlers: FieldHandlers;
 	} = $props();
-
-	function text(value: unknown): string {
-		if (value === undefined || value === null) return "";
-		return typeof value === "string" ? value : JSON.stringify(value);
-	}
 
 	function errorOf(field: InspectorField): string | undefined {
 		const issue = issues[field.pointer];
@@ -80,58 +76,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 		const pointer = (event.target as Element | null)?.closest("[data-pointer]")?.getAttribute("data-pointer");
 		if (pointer) canvas.selectField(blockId, pointer, "inspector");
 	}
-
-	function valueOf(event: Event): string {
-		return (event.currentTarget as HTMLInputElement | HTMLTextAreaElement).value;
-	}
 </script>
-
-{#snippet entryInput(item: InspectorField, itemId: string)}
-	{#if item.widget === "enum"}
-		<Select
-			id={itemId}
-			size="sm"
-			class="min-w-0 flex-1"
-			aria-label={item.name}
-			value={text(item.value)}
-			onchange={(event: Event) => handlers.onedit(item, (event.currentTarget as HTMLSelectElement).value, false)}
-		>
-			{#each item.options ?? [] as option (option)}
-				<SelectOption value={option}>{option}</SelectOption>
-			{/each}
-		</Select>
-	{:else if item.widget === "boolean"}
-		<Checkbox
-			id={itemId}
-			aria-label={item.name}
-			checked={item.value === true}
-			onchange={(event: Event) => handlers.onedit(item, String((event.currentTarget as HTMLInputElement).checked), false)}
-		/>
-	{:else if item.widget === "number"}
-		<Input
-			id={itemId}
-			size="sm"
-			type="number"
-			step={item.money ? "any" : undefined}
-			class="min-w-0 flex-1"
-			aria-label={item.name}
-			state={issues[item.pointer] ? "error" : undefined}
-			value={inspectorShown(item)}
-			onchange={(event: Event) => handlers.onedit(item, valueOf(event), false)}
-		/>
-	{:else}
-		<Input
-			id={itemId}
-			size="sm"
-			class="min-w-0 flex-1"
-			aria-label={item.name}
-			state={issues[item.pointer] ? "error" : undefined}
-			value={text(item.value)}
-			oninput={(event: Event) => handlers.onedit(item, valueOf(event), true)}
-			onblur={() => handlers.onseal()}
-		/>
-	{/if}
-{/snippet}
 
 <Stack align="stretch" gap="4" data-slot="inspector-fields" onfocusin={onFocus}>
 	{#each fields as field (field.pointer)}
@@ -280,7 +225,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 				{#each field.items ?? [] as item, index (item.pointer)}
 					{@const itemId = fieldDomId(blockId, item.pointer)}
 					<Group gap="2" align="center" data-pointer={item.pointer} data-slot="inspector-item">
-						{@render entryInput(item, itemId)}
+						<EntryInput {item} {itemId} {issues} {handlers} />
 						{#if handlers.onlist}
 							<Button size="sm" layout="icon" variant="ghost" aria-label={t("inspector.itemUp").replace("{n}", String(index + 1))} title={t("inspector.itemUp").replace("{n}", String(index + 1))} disabled={index === 0} data-action="item-up" onclick={() => handlers.onlist!(field.pointer, "up", index)}>
 								<ArrowUp />
@@ -340,7 +285,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 							<Text tag="p" class="text-xs font-semibold text-destructive" role="alert">{keyErrors[entry.field.pointer]}</Text>
 						{/if}
 						<Group gap="2" align="center">
-							{@render entryInput(entry.field, fieldDomId(blockId, entry.field.pointer))}
+							<EntryInput item={entry.field} itemId={fieldDomId(blockId, entry.field.pointer)} {issues} {handlers} />
 						</Group>
 						{#if issues[entry.field.pointer]}
 							<Text tag="p" class="text-xs font-semibold text-destructive" role="alert">{errorOf(entry.field)}</Text>
