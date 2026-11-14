@@ -5,7 +5,7 @@
 	"inputs": {
 		"propsDigest": "sha256:bb4ae0ac537ba08d921557046bf75ee59ea592da181dc5ba3a020ccce9b31896",
 		"registrySourceCommit": "9e57f9ccaf710eb3b50d5599e6e49355fcc32136",
-		"stockContentCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
+		"stockContentCommit": "9eeabcaca83dc5ad920c337418086eb3707d94f8",
 		"inspectorDigest": "a65bf87a4feb2787"
 	},
 	"summary": {

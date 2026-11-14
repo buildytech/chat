@@ -2,7 +2,7 @@
 	"$comment": "The one place that pins the catalog sources (ADR 0012). `npm run snapshot` reads it, fetches every input at these pins and writes catalog/stock-registry.v0.json, catalog/snapshot.lock.json, catalog/coverage.json and the runtime artifacts derived from them. Two codegen-x pins (ADR 0012 addendum): codegenX.commit is the Stock content BuildY reads; ui8kit.sourceCommit is the commit registry.buildy.tw was built from. They may differ only when the Stock commit descends from the registry commit and publishes byte-identical variants and props.",
 	"codegenX": {
 		"repo": "codegen-x/ui8kit",
-		"commit": "afc826c13dcf32dd356a694fea12905c446df2cd",
+		"commit": "9eeabcaca83dc5ad920c337418086eb3707d94f8",
 		"raw": "https://raw.githubusercontent.com",
 		"content": "apps/stock/content",
 		"files": [

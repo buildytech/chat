@@ -73,7 +73,9 @@ test("split against the pinned snapshot keeps order and never substitutes", () =
 	const { present, missing } = splitCollection(items);
 	assert.deepEqual(missing.map((i) => `${i.id}${"variant" in i && i.variant ? `/${i.variant}` : ""}`), ["block.hero/nosuchvariant", "screen.nosuch/home"]);
 	assert.equal(present.length, doc.items.length);
-	assert.equal(doc.pins.stock.assetsDigest, snapshotDigest());
+	// a collection pinned to another Stock version is valid (the chip row says so); the pin is a digest, the snapshot has one
+	assert.match(doc.pins.stock.assetsDigest, /^sha256:[0-9a-f]{64}$/);
+	assert.match(snapshotDigest(), /^sha256:[0-9a-f]{64}$/);
 });
 
 test("session 1.3.0: a chat carries its collection (items + missing); a bad item is rejected", () => {

@@ -217,7 +217,8 @@ test("production snapshot is pinned codegen-x Stock, not a synthetic TEST fixtur
 	assert.equal(raw.provider, "codegen-x");
 	assert.equal(raw.repo, "codegen-x/ui8kit");
 	assert.equal(raw.sourceArtifact, "apps/stock/content/assets.v0.json");
-	assert.equal(raw.sourceDigest, "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c");
+	// the digest is the pin of the graph (catalog/stock-registry.v0.json), not a literal that goes stale at every re-pin
+	assert.equal(raw.sourceDigest, (JSON.parse(read("catalog/stock-registry.v0.json")) as { sources: { codegenX: { assetsDigest: string } } }).sources.codegenX.assetsDigest);
 	assert.equal(raw.counts.screen, 80);
 	assert.equal(raw.screens.length, 80);
 	assert.equal(catalogSnapshot.screens.length, 80);

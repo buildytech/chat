@@ -3,9 +3,9 @@
   "schemaVersion": 1,
   "provider": "codegen-x",
   "repo": "codegen-x/ui8kit",
-  "pinnedCommit": "afc826c13dcf32dd356a694fea12905c446df2cd",
+  "pinnedCommit": "9eeabcaca83dc5ad920c337418086eb3707d94f8",
   "sourceArtifact": "apps/stock/content/assets.v0.json",
-  "sourceDigest": "sha256:7414f118658c492857c5b165fa5c1ee82e0b37d7af3db01c8fea5c2bd3ec3d3c",
+  "sourceDigest": "sha256:376518f3d74c229ae2ae791486239dcbd906aa65598ffb89d7cb8373ebc1accc",
   "sourceVersion": "0",
   "counts": {
     "screen": 80,
