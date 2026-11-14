@@ -23,9 +23,9 @@ available components: ui.buildy.tw, planned chat address: chat.buildy.tw.
 npm install
 npm run dev          # http://127.0.0.1:5173 — Browser SPA (chats + pages in this browser)
 npm test             # page-contract + unit tests (includes WP-runtime guard)
-npm run check        # svelte-check
+npm run check        # typecheck (tsc --strict) + ESLint + ratchets + dead code + ui8px grid + svelte-check (ADR 0042)
 npm run build        # static SPA
-npm run verify       # test + check + build
+npm run verify       # test + check + build + chat-off no-trace and headless smoke (ADR 0041)
 ```
 
 ChatCore saves chats and per-session applied/candidate pages in the browser. That persistence is not live Grok. Preview is a Svelte renderer of the Page DTO; Code is generated Svelte UI8Kit source, not a compiler and not Latte.
@@ -55,7 +55,7 @@ Optional protected xAI runtime (`XAI_API_KEY` server-only): `npm run start --wor
 - Chat UI refinement ([ADR 0028](.project/adr/0028-chat-ui-refinement.md), [SLO](.project/slo/chat-ui-refinement.md), [plan](docs/plans/chat-ui-refinement.md)): initial refactor implemented; [browser evidence and limits](docs/acceptance/chat-ui-refinement.md). Registry-based app composition, layered typography, a unified composer and coherent shell states keep compact density, the ADR 0024 inspector slide-over, contrast floors and preview/export isolation. Record browser evidence; do not claim owner visual acceptance from a green build alone.
 - Screen family ([ADR 0027](.project/adr/0027-advisory-screen-family.md)): advisory only; never add a family check that refuses a block with a renderer (hard rules: renderer, schemas; header / footer have no position or count rule, ADR 0037; ADR 0034 keeps it a feed hint). Feed availability is computed per card from the item and the page, never cached per result page.
 - Brands live in CodeGen-X as database records (badge + filter), not as per-brand kits or author namespaces ([ADR 0009](.project/adr/0009-brands-in-codegen-x-single-registry.md)). The published registry stays one cleaned `@ui8kit` tree; do not hard-code author URLs.
-- This repo does **not** vendor `packages/tooling` / `ui-gates`. Applicable gates here are `svelte-check`, `npm test`, `npm run build`. Do not grow UI8Kit baselines.
+- This repo does **not** vendor `packages/tooling` / `ui-gates`. Applicable gates here are `npm run verify` (ADR 0041, 0042). The ratchets in `scripts/ratchet-baseline.json` only go down: lower them with `node scripts/check-ratchet.mjs --update` / `node scripts/check-dead.mjs --update`, never raise them. Do not grow UI8Kit baselines.
 
 Svelte 5: runes (`$state` / `$derived` / `$props`). Logic-only ChatCore lives in `.svelte.ts` modules.
 
