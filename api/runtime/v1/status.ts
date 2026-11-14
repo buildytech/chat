@@ -29483,7 +29483,7 @@ function locate(doc: Json, pointer: string): { parent: Json; key: string } | Fai
 	let current = doc;
 	for (const key of keys.slice(0, -1)) {
 		if (Array.isArray(current)) {
-			if (!/^(0|[1-9]\d*)$/.test(key) || Number(key) >= current.length) return { code: "path_not_found", expected: `an existing array index (0..${current.length - 1})`, got: key };
+			if (!/^(0|[1-9]\d*)$/.test(key) || Number(key) >= current.length) return { code: "path_not_found", expected: `an existing array index (${current.length ? `0..${current.length - 1}` : "the list is empty: add a whole row at its path with /-"})`, got: key };
 			current = current[Number(key)];
 		} else if (isObject(current) && Object.hasOwn(current, key)) current = current[key];
 		else return { code: "path_not_found", expected: `an existing key (${isObject(current) ? Object.keys(current).slice(0, 12).join(", ") : "an object"})`, got: key };
@@ -29589,7 +29589,7 @@ exports["applyJsonPatch"] = applyJsonPatch;
 
 __def("packages/builder-core/src/page-doc/write.ts", function (exports) {
 const { pagePatchV2Issues } = __req("packages/page-contract/src/index.ts");
-const { propsFieldTree, propShapeFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { pointerInfo, propsFieldTree, propShapeFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { variantAxisProps, variantPreset } = __req("packages/builder-core/src/catalog/organism.ts");
 const { resolveIconName } = __req("packages/builder-core/src/icon-name.ts");
 const { diffPages } = __req("packages/builder-core/src/page-doc/diff.ts");
@@ -29712,6 +29712,38 @@ function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): void {
 	});
 }
 
+const PROPS_PATH = /^\/blocks\/(\d+)\/props(\/.+)$/;
+
+/** A patch operation whose path is not in the props schema of its block (the block of the base page at that index). */
+function unknownPropsPath(base: PageV2, path: string): boolean {
+	const hit = PROPS_PATH.exec(path);
+	const item = hit ? base.blocks[Number(hit[1])]?.item : undefined;
+	return Boolean(hit && item && itemInfo(item) && !pointerInfo(item, hit[2]!.replace(/\/-(?=\/|$)/g, "/0")));
+}
+
+/** Props the schema does not have (the gate's "has no prop X"): removed from the document, their paths returned. */
+function dropUnknownProps(doc: PageV2): string[] {
+	const dropped: string[] = [];
+	for (let round = 0; round < 4; round += 1) {
+		const gate = checkPageDoc(doc);
+		if (gate.ok) break;
+		const found = gate.issues.flatMap((issue) => {
+			const key = issue.code === "props_invalid" ? /^has no prop (\S+) \(props schema of/.exec(issue.expected)?.[1] : undefined;
+			return key === undefined ? [] : [{ path: issue.path, key }];
+		});
+		if (!found.length) break;
+		for (const { path, key } of found) {
+			let node: unknown = doc;
+			for (const part of path.split("/").slice(1)) node = isObject(node) || Array.isArray(node) ? Reflect.get(node, part.replace(/~1/g, "/").replace(/~0/g, "~")) : undefined;
+			if (isObject(node) && key in node) {
+				delete node[key];
+				dropped.push(`${path}/${key}`);
+			}
+		}
+	}
+	return dropped;
+}
+
 const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
 
 /** One write: a full document or an RFC 6902 patch against `base`; the result is gated, normalized and diffed. */
@@ -29734,8 +29766,19 @@ function writePage(base: PageV2, input: WriteInput, options: { now?: string } = 
 				}))
 			);
 		}
-		const applied = applyJsonPatch(base, ops as Array<{ op: string; path: string }>);
+		let list = ops as Array<{ op: string; path: string }>;
+		let applied = applyJsonPatch(base, list);
+		const skipped: string[] = [];
+		// An operation on a props path the schema does not have is dropped (said in the notes); every other failure rejects.
+		while (!applied.ok && applied.issues[0]!.code === "path_not_found" && unknownPropsPath(base, applied.issues[0]!.path)) {
+			const at = Number(/^ops\[(\d+)\]/.exec(applied.issues[0]!.expected)?.[1]);
+			if (!Number.isInteger(at)) break;
+			skipped.push(applied.issues[0]!.path);
+			list = list.filter((_, index) => index !== at);
+			applied = applyJsonPatch(base, list);
+		}
 		if (!applied.ok) return failure(applied.issues);
+		if (skipped.length) notes.push(`Dropped (not in the props schema of the block): ${skipped.join(", ")}.`);
 		next = applied.doc;
 	} else if (input.page !== undefined) {
 		if (!isObject(input.page)) return failure([{ path: "/", code: "schema_invalid", expected: "a page-spec/v2 document (an object)", got: typeof input.page }]);
@@ -29750,6 +29793,10 @@ function writePage(base: PageV2, input: WriteInput, options: { now?: string } = 
 		else delete (doc as Record<string, unknown>)[key];
 	}
 	if (Array.isArray(doc.blocks)) normalizeBlocks(base, doc, notes);
+	if (Array.isArray(doc.blocks)) {
+		const dropped = dropUnknownProps(doc);
+		if (dropped.length) notes.push(`Dropped (not in the props schema of the block): ${dropped.join(", ")}.`);
+	}
 	const gate = checkPageDoc(doc);
 	if (!gate.ok) return failure(gate.issues);
 	// Render probe (ADR 0035): the blocks this write adds or changes must show something in the preview (server side only).
@@ -32222,6 +32269,7 @@ const SYSTEM_COMMON = [
 	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
 	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",
 	"- scope.blockIds, when present, are the blocks the author selected: edit only those (props, variant, item). Do not change page fields, other blocks, or the order.",
+	"- currency is an ISO 4217 code (RUB, USD, EUR), never a symbol such as ₽ or $.",
 	"- Write content when asked. A fictional product is fine when the author says so; never present invented facts as real ones when the author gave real ones.",
 	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why."
 ].join("\n");

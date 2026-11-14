@@ -28,7 +28,7 @@ function locate(doc: Json, pointer: string): { parent: Json; key: string } | Fai
 	let current = doc;
 	for (const key of keys.slice(0, -1)) {
 		if (Array.isArray(current)) {
-			if (!/^(0|[1-9]\d*)$/.test(key) || Number(key) >= current.length) return { code: "path_not_found", expected: `an existing array index (0..${current.length - 1})`, got: key };
+			if (!/^(0|[1-9]\d*)$/.test(key) || Number(key) >= current.length) return { code: "path_not_found", expected: `an existing array index (${current.length ? `0..${current.length - 1}` : "the list is empty: add a whole row at its path with /-"})`, got: key };
 			current = current[Number(key)];
 		} else if (isObject(current) && Object.hasOwn(current, key)) current = current[key];
 		else return { code: "path_not_found", expected: `an existing key (${isObject(current) ? Object.keys(current).slice(0, 12).join(", ") : "an object"})`, got: key };

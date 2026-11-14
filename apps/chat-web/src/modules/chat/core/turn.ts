@@ -171,6 +171,10 @@ export function localizedRunError(code: string | undefined, message: string, mod
 	if (code === "tools_unsupported") return t("runtime.toolsUnsupported");
 	if (code === "xai_runtime_unreachable") return t("runtime.unreachable");
 	if (code === "aborted") return t("runtime.cancelled");
+	// A turn that ends without an accepted write: the status and a short reason, never the model-facing error text.
+	if (code === "write_invalid") return t("run.writeInvalid").replace("{code}", code);
+	if (code === "write_stuck") return t("run.writeStuck").replace("{code}", code);
+	if (code === "no_answer") return t("run.noAnswer").replace("{code}", code);
 	return message;
 }
 

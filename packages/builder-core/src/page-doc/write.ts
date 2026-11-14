@@ -12,7 +12,7 @@
  * answer is a list of { path, code, expected, got }. No local repair of a rejected write, no operation taxonomy.
  */
 import { pagePatchV2Issues, type BlockV2, type PageV2, type PropValueV2 } from "@buildytech/page-contract";
-import { propsFieldTree, propShapeFor, type PropsFieldNode } from "../catalog/props-schema.ts";
+import { pointerInfo, propsFieldTree, propShapeFor, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { variantAxisProps, variantPreset } from "../catalog/organism.ts";
 import { resolveIconName } from "../icon-name.ts";
 import { diffPages, type DiffEntry } from "./diff.ts";
@@ -142,6 +142,38 @@ export function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): vo
 	});
 }
 
+const PROPS_PATH = /^\/blocks\/(\d+)\/props(\/.+)$/;
+
+/** A patch operation whose path is not in the props schema of its block (the block of the base page at that index). */
+function unknownPropsPath(base: PageV2, path: string): boolean {
+	const hit = PROPS_PATH.exec(path);
+	const item = hit ? base.blocks[Number(hit[1])]?.item : undefined;
+	return Boolean(hit && item && itemInfo(item) && !pointerInfo(item, hit[2]!.replace(/\/-(?=\/|$)/g, "/0")));
+}
+
+/** Props the schema does not have (the gate's "has no prop X"): removed from the document, their paths returned. */
+function dropUnknownProps(doc: PageV2): string[] {
+	const dropped: string[] = [];
+	for (let round = 0; round < 4; round += 1) {
+		const gate = checkPageDoc(doc);
+		if (gate.ok) break;
+		const found = gate.issues.flatMap((issue) => {
+			const key = issue.code === "props_invalid" ? /^has no prop (\S+) \(props schema of/.exec(issue.expected)?.[1] : undefined;
+			return key === undefined ? [] : [{ path: issue.path, key }];
+		});
+		if (!found.length) break;
+		for (const { path, key } of found) {
+			let node: unknown = doc;
+			for (const part of path.split("/").slice(1)) node = isObject(node) || Array.isArray(node) ? Reflect.get(node, part.replace(/~1/g, "/").replace(/~0/g, "~")) : undefined;
+			if (isObject(node) && key in node) {
+				delete node[key];
+				dropped.push(`${path}/${key}`);
+			}
+		}
+	}
+	return dropped;
+}
+
 const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
 
 /** One write: a full document or an RFC 6902 patch against `base`; the result is gated, normalized and diffed. */
@@ -164,8 +196,19 @@ export function writePage(base: PageV2, input: WriteInput, options: { now?: stri
 				}))
 			);
 		}
-		const applied = applyJsonPatch(base, ops as Array<{ op: string; path: string }>);
+		let list = ops as Array<{ op: string; path: string }>;
+		let applied = applyJsonPatch(base, list);
+		const skipped: string[] = [];
+		// An operation on a props path the schema does not have is dropped (said in the notes); every other failure rejects.
+		while (!applied.ok && applied.issues[0]!.code === "path_not_found" && unknownPropsPath(base, applied.issues[0]!.path)) {
+			const at = Number(/^ops\[(\d+)\]/.exec(applied.issues[0]!.expected)?.[1]);
+			if (!Number.isInteger(at)) break;
+			skipped.push(applied.issues[0]!.path);
+			list = list.filter((_, index) => index !== at);
+			applied = applyJsonPatch(base, list);
+		}
 		if (!applied.ok) return failure(applied.issues);
+		if (skipped.length) notes.push(`Dropped (not in the props schema of the block): ${skipped.join(", ")}.`);
 		next = applied.doc;
 	} else if (input.page !== undefined) {
 		if (!isObject(input.page)) return failure([{ path: "/", code: "schema_invalid", expected: "a page-spec/v2 document (an object)", got: typeof input.page }]);
@@ -180,6 +223,10 @@ export function writePage(base: PageV2, input: WriteInput, options: { now?: stri
 		else delete (doc as Record<string, unknown>)[key];
 	}
 	if (Array.isArray(doc.blocks)) normalizeBlocks(base, doc, notes);
+	if (Array.isArray(doc.blocks)) {
+		const dropped = dropUnknownProps(doc);
+		if (dropped.length) notes.push(`Dropped (not in the props schema of the block): ${dropped.join(", ")}.`);
+	}
 	const gate = checkPageDoc(doc);
 	if (!gate.ok) return failure(gate.issues);
 	// Render probe (ADR 0035): the blocks this write adds or changes must show something in the preview (server side only).

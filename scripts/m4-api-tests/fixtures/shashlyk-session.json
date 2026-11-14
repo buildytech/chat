@@ -1,0 +1,147 @@
+{
+  "$schema": "https://schema.buildy.tw/session.schema.json",
+  "format": "buildy:v1",
+  "exportedAt": "2026-11-14T17:37:03.384Z",
+  "app": {
+    "name": "buildy-chat",
+    "version": "0.5.0",
+    "host": "browser",
+    "commit": "dea096e45f81f7821337f09d710ae064c3647e51"
+  },
+  "pins": {
+    "stock": {
+      "repo": "codegen-x/ui8kit",
+      "contentCommit": "9eeabcaca83dc5ad920c337418086eb3707d94f8"
+    },
+    "registry": {
+      "url": "https://registry.buildy.tw",
+      "sourceCommit": "9e57f9ccaf710eb3b50d5599e6e49355fcc32136"
+    },
+    "catalogDigest": "sha256:376518f3d74c229ae2ae791486239dcbd906aa65598ffb89d7cb8373ebc1accc"
+  },
+  "selectedSessionId": "session-e3525d25-ad23-47aa-a311-583deacfe0b5",
+  "sessions": [
+    {
+      "id": "session-e3525d25-ad23-47aa-a311-583deacfe0b5",
+      "title": "Для ресторана «Шашлык Машлык» нужен landing page",
+      "updatedAt": "2026-11-14T17:36:47.182Z",
+      "mode": "build",
+      "scenarioId": null,
+      "screenId": null,
+      "selectedModelId": "grok-4.20-0309-non-reasoning",
+      "usage": {
+        "status": "complete",
+        "runs": 1,
+        "incompleteRuns": 0,
+        "promptTokens": 91098,
+        "completionTokens": 4997,
+        "totalTokens": 96095,
+        "cost": {
+          "available": false,
+          "reason": "no_official_current_rates_in_repo",
+          "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+        },
+        "reasoningTokens": 0,
+        "cachedTokens": 63360
+      },
+      "messages": [
+        {
+          "id": "msg-19bde34a-55e4-4b39-b523-93da29f67f09",
+          "role": "user",
+          "text": "Для ресторана «Шашлык Машлык» нужен landing page для рекламной акции доставки блюд мангала на дом",
+          "createdAt": "2026-11-14T17:36:16.230Z",
+          "selectedModelId": "grok-4.20-0309-non-reasoning",
+          "mode": "build"
+        },
+        {
+          "id": "msg-37fccd04-2237-46c3-8fee-4b8efd274658",
+          "role": "assistant",
+          "text": "The page was not written: 1 problem, first at /blocks/2/props/dishes/0/currency (path_not_found). Nothing changed; fix the listed paths and call write_page again.",
+          "createdAt": "2026-11-14T17:36:47.182Z",
+          "run": {
+            "requestedModelId": "grok-4.20-0309-non-reasoning",
+            "modelId": "grok-4.20-0309-non-reasoning",
+            "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+            "live": false,
+            "policyVersion": "page-agent/4",
+            "modelCatalogVersion": "grok-text-5/2026-11-08",
+            "trialPolicyVersion": "page-agent/4+grok-text-5/2026-11-08",
+            "catalogDigest": "sha256:376518f3d74c229ae2ae791486239dcbd906aa65598ffb89d7cb8373ebc1accc",
+            "path": "chat-completions",
+            "tools": [
+              "search_catalog",
+              "get_block",
+              "get_block",
+              "get_block",
+              "get_block",
+              "get_block",
+              "get_block",
+              "get_block",
+              "get_block",
+              "write_page",
+              "write_page",
+              "get_page",
+              "write_page",
+              "write_page",
+              "get_page"
+            ],
+            "runId": "xai-mwgot61s-tw2yqm",
+            "usage": {
+              "status": "complete",
+              "steps": 9,
+              "promptTokens": 91098,
+              "completionTokens": 4997,
+              "totalTokens": 96095,
+              "reportedBy": "xai-provider",
+              "aggregation": "sum-of-tool-loop-requests",
+              "lastStep": {
+                "promptTokens": 13757,
+                "completionTokens": 175,
+                "totalTokens": 13932,
+                "reasoningTokens": 0,
+                "cachedTokens": 128
+              },
+              "cost": {
+                "available": false,
+                "reason": "no_official_current_rates_in_repo",
+                "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+              },
+              "reasoningTokens": 0,
+              "cachedTokens": 63360
+            }
+          }
+        }
+      ],
+      "page": {
+        "applied": null,
+        "candidate": null,
+        "appliedProvenance": null,
+        "candidateProvenance": null,
+        "selectedBlockId": null,
+        "revision": null,
+        "lastProposed": null,
+        "lastProposedProvenance": null
+      }
+    }
+  ],
+  "settings": {
+    "theme": "dark",
+    "previewHideServiceLabels": false,
+    "selectedModelId": "grok-4.20-0309-non-reasoning"
+  },
+  "prefs": {
+    "layout": {
+      "navWidth": 240,
+      "chatWidth": 320,
+      "inspectorWidth": 304,
+      "layersHeight": 200,
+      "treeWidth": 208,
+      "navCollapsed": false,
+      "chatCollapsed": false,
+      "inspectorCollapsed": false,
+      "layersCollapsed": false,
+      "treeCollapsed": false,
+      "focus": false
+    }
+  }
+}
