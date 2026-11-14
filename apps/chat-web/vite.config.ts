@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv, type ProxyOptions } from 'vite';
 import { readBuildConfig } from './config.js';
 import pkg from './package.json' with { type: 'json' };
+import pins from '../../catalog/snapshot.config.json' with { type: 'json' };
 
 // The one place the app reads its environment (config.js, 12-factor).
 const base = readBuildConfig(process.env);
@@ -75,6 +76,8 @@ export default defineConfig(({ mode }) => {
 		define: {
 			__BUILDY_APP_VERSION__: JSON.stringify(pkg.version),
 			__BUILDY_APP_COMMIT__: JSON.stringify(commit),
+			// The content pins of this build (catalog/snapshot.config.json), read here so the app imports nothing outside apps/chat-web.
+			__BUILDY_PINS__: JSON.stringify({ stock: { repo: pins.codegenX.repo, contentCommit: pins.codegenX.commit }, registry: { url: pins.ui8kit.registry, sourceCommit: pins.ui8kit.sourceCommit } }),
 			__MODULE_CHAT__: JSON.stringify(chat)
 		},
 		server: {

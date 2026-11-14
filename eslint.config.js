@@ -55,6 +55,7 @@ export default tseslint.config(
 		rules: {
 			"import-x/no-restricted-paths": ["error", { basePath: process.cwd(), zones: [
 				{ target: "./apps/chat-web/src/!(modules|hooks.client.ts)/**", from: "./apps/chat-web/src/modules", message: "The core imports no module (ADR 0041)." },
+				{ target: "./apps/chat-web/src", from: "./catalog", message: "The app imports nothing outside apps/chat-web: pins come through vite define (audit A-07)." },
 				{ target: "./apps/chat-web/src/modules/chat", from: "./apps/chat-web/src/modules/!(chat)", message: "A module imports the core, never another module." }
 			] }]
 		}

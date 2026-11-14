@@ -6,7 +6,6 @@
  */
 import { catalogProvenance } from "@buildytech/builder-core";
 import { SESSION_FORMAT, SESSION_SCHEMA_URL } from "@buildytech/page-contract/session";
-import snapshotConfig from "../../../../../catalog/snapshot.config.json";
 import chatPackage from "../../../package.json";
 import { emit, fileKinds, sessionSettingsModules } from "../modules/registry.svelte.ts";
 import { openProject } from "../modules/workspace.svelte.ts";
@@ -20,6 +19,7 @@ import { previewSettings } from "./preview-settings.svelte";
 import type { SessionApp, SessionFile, SessionPins, SessionSettings } from "./session-file.ts";
 
 declare const __BUILDY_APP_COMMIT__: string;
+declare const __BUILDY_PINS__: Pick<SessionPins, "stock" | "registry">;
 
 export type BuildyApi = {
 	readonly format: typeof SESSION_FORMAT;
@@ -44,8 +44,7 @@ function app(): SessionApp {
 /** Pins of this build: the Stock content commit and the registry source commit (catalog/snapshot.config.json). */
 export function sessionPins(): SessionPins {
 	return {
-		stock: { repo: snapshotConfig.codegenX.repo, contentCommit: snapshotConfig.codegenX.commit },
-		registry: { url: snapshotConfig.ui8kit.registry, sourceCommit: snapshotConfig.ui8kit.sourceCommit },
+		...__BUILDY_PINS__,
 		catalogDigest: catalogProvenance().sourceDigest
 	};
 }
