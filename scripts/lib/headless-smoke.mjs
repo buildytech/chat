@@ -58,13 +58,13 @@ export async function headlessSmoke({ dir, chat }) {
 		const brandWord = await pg.locator('[data-slot="brand-word"]').first().innerText().catch(() => "");
 		ok("sidebar brand is the brand", brandWord.trim() === BRAND, brandWord);
 		const everyText = await pg.evaluate(() => document.body.innerText + " " + document.title);
-		ok("no other product name in the UI", !/SI Builder|SI Chat|SI Конструктор|SI Чат/.test(everyText));
+		ok("no other product name in the UI", !/SI Builder|SI Chat|SI \u041a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0442\u043e\u0440|SI \u0427\u0430\u0442/.test(everyText));
 		const tabs = await pg.locator('[role="tablist"][data-slot="left-tabs"] [role="tab"]').allInnerTexts();
 		if (chat) ok("left panel has Blocks, Sections and Chat", tabs.length === 3 && tabs.some((t) => /chat/i.test(t)), tabs);
 		else {
 			ok("left panel has Blocks and Sections only", tabs.length === 2 && !tabs.some((t) => /chat/i.test(t)), tabs);
 			const visible = (await pg.evaluate(() => document.body.innerText + " " + [...document.querySelectorAll("[aria-label],[title],[placeholder]")].map((e) => [e.getAttribute("aria-label"), e.getAttribute("title"), e.getAttribute("placeholder")].join(" ")).join(" ") + " " + document.title)).replace(/T3 Chat/g, "");
-			ok("no chat word anywhere in the visible UI, labels or title", !/chat|чат/i.test(visible), (visible.match(/.{0,30}(chat|чат).{0,30}/i) || [])[0]);
+			ok("no chat word anywhere in the visible UI, labels or title", !/chat|\u0447\u0430\u0442/i.test(visible), (visible.match(/.{0,30}(chat|\u0447\u0430\u0442).{0,30}/i) || [])[0]);
 			ok("no composer or thread in the DOM", (await pg.locator('#composer, textarea[name="message"], [data-role="assistant"]').count()) === 0);
 		}
 		// 1. add a block from the feed
