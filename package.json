@@ -19,7 +19,7 @@
     "bundle:runtime": "node scripts/bundle-vercel-runtime.mjs && node scripts/build-render-bundle.mjs",
     "test": "npm run test --workspace=@buildytech/page-contract && npm run test:unit",
     "check": "npm run typecheck && npm run lint && npm run lint:ratchet && npm run lint:dead && npm run lint:ui8px && npm run check --workspace=@buildytech/chat-web",
-    "verify": "npm test && npm run check && npm run build && npm run modules:check:trace",
+    "verify": "npm test && npm run inspector:coverage:check && npm run check && npm run build && npm run modules:check:trace",
     "modules:check": "node scripts/check-modules.mjs",
     "modules:check:trace": "node scripts/check-modules.mjs --no-trace",
     "snapshot": "node scripts/snapshot.mjs",

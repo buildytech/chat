@@ -4,7 +4,7 @@
  * export call this one function (`renderBlock`); there is no copy slot, row or children mapping any more.
  */
 import type { BlockV2, PropValueV2 } from "@buildytech/page-contract";
-import { fillProps, propShapeFor, propsEventsFor, propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
+import { fillProps, humanizeName, propShapeFor, propsEventsFor, propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { variantPreset } from "../catalog/organism.ts";
 import { itemInfo } from "./items.ts";
 
@@ -70,6 +70,8 @@ export function sampleProps(item: string, variant: string | null | undefined, id
 }
 
 /** UI label dictionaries (`labels`, aria strings) are component chrome: reported as one path while none of their words is written. */
+/** A text the sample left as its neutral placeholder (the humanized key, "Home") is as unwritten as an empty one. */
+const unwritten = (key: string, value: unknown) => value === "" || value === humanizeName(key);
 const CHROME_OBJECTS = new Set(["labels", "aria", "a11y"]);
 
 /**
@@ -88,12 +90,12 @@ export function blankRequired(block: Pick<BlockV2, "item" | "props">, limit = 12
 			const inner = record[node.name];
 			if (CHROME_OBJECTS.has(node.name)) {
 				// The UI words of the block (button and aria labels): reported once when none of them is written.
-				const words = inner && typeof inner === "object" ? Object.values(inner as Record<string, unknown>) : [];
-				if (node.required && !words.some((word) => typeof word === "string" && word !== "")) out.push(here);
+				const words = inner && typeof inner === "object" ? Object.entries(inner as Record<string, unknown>) : [];
+				if (node.required && !words.some(([key, word]) => typeof word === "string" && !unwritten(key, word))) out.push(here);
 				continue;
 			}
 			if (node.kind === "text") {
-				if (node.required && (inner === undefined || inner === "")) out.push(here);
+				if (node.required && (inner === undefined || unwritten(node.name, inner))) out.push(here);
 			} else if (node.kind === "object") walk(inner, node.fields, here);
 			else if (node.kind === "list" && Array.isArray(inner)) inner.forEach((row, index) => walk(row, node.fields, `${here}/${index}`));
 			if (out.length >= limit) return;

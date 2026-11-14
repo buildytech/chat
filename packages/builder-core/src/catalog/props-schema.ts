@@ -458,7 +458,7 @@ function defaultFor(node: JsonSchema, name: string, depth: number, blank: boolea
 		return icons.includes(PLACEHOLDER_ICON) ? PLACEHOLDER_ICON : icons[0];
 	}
 	if (Array.isArray(value.enum)) return clone(value.enum[0]);
-	if (value.type === "string") return STRING_DEFAULTS[name] ?? (blank ? "" : humanizeName(name));
+	if (value.type === "string") return STRING_DEFAULTS[name] ?? (blank && rows === 0 ? "" : humanizeName(name));
 	if (value.type === "number" || value.type === "integer") return 0;
 	if (value.type === "boolean") return false;
 	if (value.type === "array") return rows > 0 && depth < 8 ? placeholderRows(value, name, depth, rows) : [];

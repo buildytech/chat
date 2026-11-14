@@ -97,11 +97,10 @@ test("(a) Ask: one proposal replaces logos and quotes, adds steps and pricing; A
 		"added block-pricing-tiers pricing-tiers"
 	]);
 	assert.ok(!JSON.stringify(proposal.diff).includes("no_change"));
-	// New blocks start from registry sample props: structure and the catalog title, no invented copy.
+	// New blocks start from registry sample props: structure, the catalog title and neutral placeholders (the humanized key), no invented copy.
 	for (const id of ["block-steps-list", "block-pricing-tiers"]) {
 		const block = proposal.page.blocks.find((b) => b.id === id)!;
 		assert.deepEqual(block.props, effectiveProps(block.item, block.variant, sampleProps(block.item, block.variant, id), { blank: true }));
-		assert.ok(!PLACEHOLDERS.test(JSON.stringify(block.props)), id);
 	}
 	// Apply in Build: the proposal page is the next page of the chat; the same gate accepts it in one step.
 	const applied = writePage(base, { page: proposal.page }, { now: NOW });

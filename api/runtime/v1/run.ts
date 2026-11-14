@@ -24255,7 +24255,7 @@ function defaultFor(node: JsonSchema, name: string, depth: number, blank: boolea
 		return icons.includes(PLACEHOLDER_ICON) ? PLACEHOLDER_ICON : icons[0];
 	}
 	if (Array.isArray(value.enum)) return clone(value.enum[0]);
-	if (value.type === "string") return STRING_DEFAULTS[name] ?? (blank ? "" : humanizeName(name));
+	if (value.type === "string") return STRING_DEFAULTS[name] ?? (blank && rows === 0 ? "" : humanizeName(name));
 	if (value.type === "number" || value.type === "integer") return 0;
 	if (value.type === "boolean") return false;
 	if (value.type === "array") return rows > 0 && depth < 8 ? placeholderRows(value, name, depth, rows) : [];
@@ -29127,7 +29127,7 @@ exports["diffIsEmpty"] = diffIsEmpty;
 });
 
 __def("packages/builder-core/src/page-doc/render.ts", function (exports) {
-const { fillProps, propShapeFor, propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const { fillProps, humanizeName, propShapeFor, propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { variantPreset } = __req("packages/builder-core/src/catalog/organism.ts");
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
 type Json = unknown;
@@ -29181,6 +29181,8 @@ function sampleProps(item: string, variant: string | null | undefined, id: strin
 }
 
 /** UI label dictionaries (`labels`, aria strings) are component chrome: reported as one path while none of their words is written. */
+/** A text the sample left as its neutral placeholder (the humanized key, "Home") is as unwritten as an empty one. */
+const unwritten = (key: string, value: unknown) => value === "" || value === humanizeName(key);
 const CHROME_OBJECTS = new Set(["labels", "aria", "a11y"]);
 
 /**
@@ -29199,12 +29201,12 @@ function blankRequired(block: Pick<BlockV2, "item" | "props">, limit = 12): stri
 			const inner = record[node.name];
 			if (CHROME_OBJECTS.has(node.name)) {
 				// The UI words of the block (button and aria labels): reported once when none of them is written.
-				const words = inner && typeof inner === "object" ? Object.values(inner as Record<string, unknown>) : [];
-				if (node.required && !words.some((word) => typeof word === "string" && word !== "")) out.push(here);
+				const words = inner && typeof inner === "object" ? Object.entries(inner as Record<string, unknown>) : [];
+				if (node.required && !words.some(([key, word]) => typeof word === "string" && !unwritten(key, word))) out.push(here);
 				continue;
 			}
 			if (node.kind === "text") {
-				if (node.required && (inner === undefined || inner === "")) out.push(here);
+				if (node.required && (inner === undefined || unwritten(node.name, inner))) out.push(here);
 			} else if (node.kind === "object") walk(inner, node.fields, here);
 			else if (node.kind === "list" && Array.isArray(inner)) inner.forEach((row, index) => walk(row, node.fields, `${here}/${index}`));
 			if (out.length >= limit) return;

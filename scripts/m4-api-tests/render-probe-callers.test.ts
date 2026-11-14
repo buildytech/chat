@@ -93,13 +93,11 @@ test("the browser loads the shared bundle and installs the probe: the Inspector 
 	assert.ok(applyOp(fixed, { op: "set", blockId: "dishes", pointer: "/dishes/0/currency", value: "USD" }).ok, "a valid code is accepted");
 });
 
-test("the browser accepts a Blocks feed add whose registry sample is a placeholder (renders nothing); the preview says so", () => {
-	installRenderProbe(probeFromModule(bundle), { required: true, empty: "allow" });
-	const added = applyOp(fixed, { op: "add", item: "site-footer", variant: "minimal" });
-	assert.ok(added.ok, added.ok ? "" : added.message);
+test("a Blocks feed add of every sample renders, so the agent host accepts the same add (site-footer, once blank, shows its labels)", () => {
 	installRenderProbe(probeFromModule(bundle), { required: true });
-	assert.equal(applyOp(fixed, { op: "add", item: "site-footer", variant: "minimal" }).ok, false, "the agent host still rejects it");
+	assert.ok(applyOp(fixed, { op: "add", item: "site-footer", variant: "minimal" }).ok);
 });
+
 
 test("every caller gives the same verdict: write-time, turn-start and the coverage classifier agree on the owner's page", () => {
 	const probe = probeFromModule(bundle);

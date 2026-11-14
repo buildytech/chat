@@ -1,7 +1,7 @@
 /**
  * Owner-approved (t187u): a new block's required lists start with two neutral placeholder rows (schema-valid, English,
- * ISO currency), so the 28 variants whose sample rendered nothing (empty lists) now show content. Where the block shows
- * nothing for another reason (site-footer: its whole content is blank label text) the coverage file says so.
+ * ISO currency), so the variants whose sample rendered nothing (empty lists) now show content.
+ * Required label/text strings of a sample are the humanized key ("Home"), so a labels-only block (site-footer) renders; agent writes are not filled this way.
  * Also: the chat badge says "proposal" when the message carries one.
  */
 import assert from "node:assert/strict";
@@ -28,11 +28,12 @@ test("required lists of a sample start with two rows; rows are unique, English, 
 	assert.deepEqual(dishes.map((d) => d.currency), ["USD", "USD"], "currency is an ISO code");
 });
 
-test("coverage file: the sample renders content for every combination but the site-footer (labels only, blank by design)", () => {
+test("coverage file: the sample renders content for every combination (empty labels are the humanized key)", () => {
 	const coverage = JSON.parse(read("../../catalog/inspector-coverage.json")) as { combos?: Record<string, { rendersSample?: string }>; items?: Record<string, { rendersSample?: string }> };
 	const rows = Object.entries(coverage.combos ?? coverage.items ?? {});
 	assert.ok(rows.length >= 532, `${rows.length} combinations`);
-	assert.deepEqual(rows.filter(([, row]) => row.rendersSample === "empty").map(([key]) => key).sort(), ["site-footer/centered", "site-footer/compact", "site-footer/minimal"]);
+	assert.deepEqual(rows.filter(([, row]) => row.rendersSample === "empty").map(([key]) => key).sort(), []);
+	assert.deepEqual(sampleProps("site-footer", "minimal", "b1").labels, { copyright: "Copyright", nav: "Nav", home: "Home", pricing: "Pricing" });
 });
 
 test("the chat badge says proposal when the message has one", () => {
