@@ -7,7 +7,7 @@
  *   - the base page is never modified; an op that changes nothing returns the same page object;
  *   - undo restores: stepping back through the edit history reaches the first page, stepping forward the last;
  *   - an op is deterministic (same base, same op, same result).
- * fast-check prints the shrunk op sequence and a seed on failure; re-run with FUZZ_SEED=<seed>.
+ * fast-check prints the shrunk op sequence and a seed on failure; re-run with FUZZ_SEED=<seed> (default seed is fixed, FUZZ_SEED=random explores).
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -111,7 +111,8 @@ function valueFor(field: InspectorField, s: Step): PageOp extends { op: "set"; v
 /** `updatedAt` is the clock; everything else of a result must repeat. */
 const stable = (value: unknown) => JSON.stringify(value).replace(/"updatedAt":"[^"]*"/g, '"updatedAt":"-"');
 
-const seedOption = process.env.FUZZ_SEED ? { seed: Number(process.env.FUZZ_SEED) } : {};
+// A fixed default seed keeps the gate deterministic (the coverage assertion below needs every op reached); FUZZ_SEED=<n> or FUZZ_SEED=random explores others.
+const seedOption = process.env.FUZZ_SEED === "random" ? {} : { seed: Number(process.env.FUZZ_SEED ?? 20261114) };
 const stats: Record<string, number> = {};
 const ID = /^[a-z0-9][a-z0-9-]*$/;
 
