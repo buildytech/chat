@@ -30,6 +30,7 @@ Numbering: `NNNN-kebab-title.md`. Numbers only increase; files are never renamed
 | [0038](0038-one-render-probe.md) | One render probe in every place a page is written, the browser included | Accepted |
 | [0039](0039-one-block-source.md) | One block source: one generator and one byte check for every derived artifact, roles generated from the policy | Accepted |
 | [0040](0040-session-split-project-and-chat.md) | The session is a project plus `ext.chat`: `lib/project` without chat imports, `messages` optional (session 1.9.0), page store keyed by project | Accepted |
+| [0041](0041-chat-as-optional-module.md) | The chat is an optional module behind a `BuilderModule` port; `VITE_MODULE_CHAT` folds it out of the bundle; no-trace gate | Accepted |
 
 Status values: Proposed, Accepted, Superseded, Deprecated.
 
@@ -69,3 +70,4 @@ Status values: Proposed, Accepted, Superseded, Deprecated.
 0038 makes the render probe one function (`probeFromModule`) shared by the runtime, the coverage script and the browser; the browser loads the same compiled blocks (`static/render/blocks.mjs`) and refuses a write that makes a component throw (field error, page unchanged), while a placeholder block that renders nothing is accepted there and flagged in the preview.
 0039 makes one derivation (`scripts/lib/catalog-artifacts.mjs`) write and check every derived catalog artifact (`snapshot:derive` / `snapshot:check`, five files, byte for byte), adds a drift and cross-artifact test, and generates the header / footer role into `snapshot.json` from `policy.kindRoles` (no `chromeRole`, no `policy.pageKinds`); `PAGE_BLOCK_KINDS` stays only as the v1 contract enum until plan item 4.
 0040 splits the session: `lib/project` (page, skin, collection, history, persistence; no chat imports) and `lib/chat-core` as `ext.chat` (messages, mode, model, usage); session 1.9.0 makes `messages` optional and adds `projectId`; the page store is keyed by project; storage stays byte-compatible with the previous app version.
+0041 makes the chat an optional module: `src/modules/chat` registers through a `BuilderModule` port (tabs, slots, hooks, project extension keys, message catalog with wording overrides); the core (shell, Blocks feed, Inspector, preview, project store) imports no module; agent, models and usage live in `@buildytech/chat-agent`; `VITE_MODULE_CHAT` (default on) is a build-time constant that drops the module and its dynamic import; the gate checks the import boundary, message ownership and that a chat-off build contains no chat string.

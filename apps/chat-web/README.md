@@ -15,7 +15,7 @@ Open `http://127.0.0.1:5173`. Mock ChatCore (localStorage) is the default. Prote
 npm run build
 ```
 
-Creator shell (ADR-0003): NavPanel (~248px) | LeftPanel (`w-80`) | Workspace (BlockTree + Preview/Code). Below `lg`, Chat | Page tabs. ChatCore: `src/lib/chat-core`. Agent Gateway / cursor-sdk are not wired (ADR-0004).
+Creator shell (ADR-0003): NavPanel (~248px) | LeftPanel (`w-80`: Blocks, Sections and the tabs of loaded modules) | Workspace (Preview/Code). Below `lg`, left panel | Page tabs. The chat is an optional module (ADR 0041): `src/modules/chat` registers through the `BuilderModule` port in `src/lib/modules`; `VITE_MODULE_CHAT=0` builds the page builder without it (see `.env.example`, `npm run modules:check:trace`). Agent Gateway / cursor-sdk are not wired (ADR-0004).
 
 ## UI8Kit
 

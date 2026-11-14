@@ -1,6 +1,6 @@
 # Plan: refactor 2026-11 (one block source, project/chat split, chat as a module, quality gate)
 
-Status: accepted by the owner (2026-11-14); audit done; item 3 done ([b545857](https://github.com/buildytech/chat/commit/b545857), ADR 0038); item 1 done ([f69bb81](https://github.com/buildytech/chat/commit/f69bb81), [ec9e4a9](https://github.com/buildytech/chat/commit/ec9e4a9), ADR 0039); item 2 done ([95383f4](https://github.com/buildytech/chat/commit/95383f4), [4e4063c](https://github.com/buildytech/chat/commit/4e4063c), contract [fda5f32](https://github.com/ui8kit/contract/commit/fda5f32), ADR 0040); next: item 5 (item 4 waits for the `migrationReport` criterion).
+Status: accepted by the owner (2026-11-14); audit done; item 3 done ([b545857](https://github.com/buildytech/chat/commit/b545857), ADR 0038); item 1 done ([f69bb81](https://github.com/buildytech/chat/commit/f69bb81), [ec9e4a9](https://github.com/buildytech/chat/commit/ec9e4a9), ADR 0039); item 2 done ([95383f4](https://github.com/buildytech/chat/commit/95383f4), [4e4063c](https://github.com/buildytech/chat/commit/4e4063c), contract [fda5f32](https://github.com/ui8kit/contract/commit/fda5f32), ADR 0040); item 5 done ([9d48e73](https://github.com/buildytech/chat/commit/9d48e73), [af2bf2d](https://github.com/buildytech/chat/commit/af2bf2d), [6fba14b](https://github.com/buildytech/chat/commit/6fba14b), [b86e623](https://github.com/buildytech/chat/commit/b86e623), ADR 0041); next: item 6 (the gate; item 4 waits for the `migrationReport` criterion).
 
 Authority: owner decision of 2026-11-14 ("all proposals accepted"). Follow `AGENTS.md`, the ADRs in `.project/adr/` (0034 page-spec v2, 0035 render probe, 0036 map editor, 0037 free composition) and the gate below. Every item that changes a rule or a contract gets its own ADR.
 
@@ -88,13 +88,13 @@ Status: todo (last, after the criterion is met).
 Goal: the core builds and runs with chat off (audit A-03, A-06, F-01).
 
 Acceptance:
-- [ ] `apps/chat-web/src/modules/chat` holds the chat UI and state; it registers through a `BuilderModule` interface (DIP); core imports nothing from `modules/chat`.
-- [ ] `VITE_MODULE_CHAT` (env, default on) switches the module; `.env.example` documents it.
-- [ ] With the flag off, `npm run build` passes and the app opens, edits and exports a project; the bundle has no chat code.
-- [ ] Gate "no trace": a script fails if, with the flag off, the built output or `src` outside `modules/chat` contains chat imports or chat i18n strings.
-- [ ] Agent, model and usage code leaves `builder-core` for a chat-side package (A-06).
+- [x] `apps/chat-web/src/modules/chat` holds the chat UI and state; it registers through a `BuilderModule` interface (DIP, `lib/modules/types.ts`); core imports nothing from `modules/chat` (the boundary check fails on it, and also on a module importing another or the core importing the chat-agent package).
+- [x] `VITE_MODULE_CHAT` (env, default on) switches the module; `.env.example` documents it. It is a build-time constant (`vite.config.ts` define), so the dynamic import of the module is dropped when off; the `/runtime` proxy and the `/build` alias exist only with the chat on.
+- [x] With the flag off, `npm run build` passes and the app opens, edits and exports a project; the bundle has no chat code. Checked on a local chat-off build in headless Chrome: Blocks and Sections only, no "chat" word in the UI or its labels, feed add, Inspector edit, reload, `buildy.export()` and file download, import of that file into an empty browser, no `/runtime` call, `/build` is not the builder, no page errors (21 checks); the stored and exported project have no chat keys.
+- [x] Gate "no trace": `npm run modules:check:trace` (part of `verify`) builds with the flag off and fails if any string only the chat uses is in the build (862 strings: message keys and texts, the chat's wording of core keys, the string literals of the module and of the chat-agent package; a control over the chat-on build finds 730 of them, so the check cannot pass empty). A project stored with the chat keeps them byte for byte through a load and a save with the chat off; a project made with it off gets none.
+- [x] Agent, model and usage code leaves `builder-core` for a chat-side package (A-06): `@buildytech/chat-agent` ([9d48e73](https://github.com/buildytech/chat/commit/9d48e73)).
 
-Status: todo.
+Status: done ([9d48e73](https://github.com/buildytech/chat/commit/9d48e73) chat-agent package, [af2bf2d](https://github.com/buildytech/chat/commit/af2bf2d) module move, [6fba14b](https://github.com/buildytech/chat/commit/6fba14b) port and decoupling, [b86e623](https://github.com/buildytech/chat/commit/b86e623) gate; ADR 0041; coverage 526/532). Decisions worth a review: the core wording is neutral and a chat-less build is called "SI Builder" (the chat re-words it to the current text); the session profile keys `messages`, `mode`, `usage`, `selectedModelId` and the layout pane id `chat` stay in the core as contract and prefs names (ADR 0041).
 
 ## 6. Quality criteria and the gate
 
