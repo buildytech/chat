@@ -30,6 +30,10 @@
 	// clean: no service labels (Settings, and always in the standalone preview window); standalone: no selection.
 	let { block, clean = false, standalone = false }: { block: PageBlock; clean?: boolean; standalone?: boolean } = $props();
 
+	// The preview wears the page theme, whose dark destructive is a dark red: the recipe's red text on the muted ground reads
+	// poorly there. The filled destructive pair (ground and its own foreground) is readable in every theme.
+	const failedTone = "bg-destructive text-destructive-foreground";
+
 	const render = $derived(renderBlock(block));
 	// A block that shows nothing is said, never left blank (ADR 0035): the component's own output is checked after it renders.
 	let empty = $state(false);
@@ -98,7 +102,7 @@
 				<svelte:boundary>
 					<module.default {...render.props} />
 					{#snippet failed(error)}
-						<Alert variant="destructive" data-slot="render-failed">
+						<Alert variant="destructive" class={failedTone} data-slot="render-failed">
 							{t("preview.renderFailed")}: {render.item} / {render.variant}. {error instanceof Error ? error.message.split("\n")[0] : String(error)}
 						</Alert>
 					{/snippet}
@@ -108,10 +112,10 @@
 				<Alert data-slot="render-empty">{t("preview.renderEmpty")}: {render.item} / {render.variant}</Alert>
 			{/if}
 		{:catch}
-			<Alert variant="destructive" data-slot="registry-stub">{t("preview.registryLoadFailed")}: {render.organism}</Alert>
+			<Alert variant="destructive" class={failedTone} data-slot="registry-stub">{t("preview.registryLoadFailed")}: {render.organism}</Alert>
 		{/await}
 	{:else}
-		<Alert variant="destructive" data-slot="registry-stub">
+		<Alert variant="destructive" class={failedTone} data-slot="registry-stub">
 			{t("preview.notInRegistry")}: {block.item}{block.variant ? ` / ${block.variant}` : ""}
 		</Alert>
 	{/if}

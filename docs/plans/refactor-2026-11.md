@@ -123,10 +123,10 @@ Status: done except the last line, which is a rule for later work ([6799043](htt
 ## 7. Open product items (kept, not part of the refactor)
 
 - [x] Stale buildy digest pin in Stock: Stock `buildy.v0.json` re-pinned in [9eeabca](https://github.com/codegen-x/ui8kit/commit/9eeabca), chat pin refreshed in [f69bb81](https://github.com/buildytech/chat/commit/f69bb81) (audit B-03).
-- [ ] Currency symbol upstream (`fmtMoney` hardcodes `en-US`: `RUB 650`, not `650 ₽`; codegen-x, owner deciding who). Minor units are handled chat-side by the money boundary (ADR 0046): the document keeps minor units, the model and the Inspector use major units.
-- [ ] Preview error alert contrast.
-- [ ] JSON-as-text failure (a model answers with JSON as plain text instead of calling the tool).
+- [x] Currency symbol upstream: not a defect. The owner accepted the display `RUB 650` (not `650 ₽`), so `fmtMoney` stays as generated. The minor-unit part was fixed chat-side by the money boundary ([53099b7](https://github.com/buildytech/chat/commit/53099b7), [0fb6f4e](https://github.com/buildytech/chat/commit/0fb6f4e), ADR 0046): the document keeps minor units, the model and the Inspector use major units.
+- [x] Preview error alert contrast: the render-failed, registry-load and not-in-registry alerts of `PreviewBlock.svelte` use the filled destructive pair (`bg-destructive text-destructive-foreground`, existing tokens, no new primitive) instead of the recipe's red text on the muted ground, which was dark red on dark in the dark page theme; a source test pins it (`sample-rows.test.ts`).
+- [x] JSON-as-text failure (a model answered with the document as plain text instead of calling the tool): fixed in [fac0c70](https://github.com/buildytech/chat/commit/fac0c70), [e6f02e6](https://github.com/buildytech/chat/commit/e6f02e6), [1865643](https://github.com/buildytech/chat/commit/1865643) (Build asks for a tool call on every step and ends on the first accepted `write_page`; ADR 0035 addendum).
 - [ ] Six rich-text `__html` variants: delete or rework (owner decision; the BuildY guarantee protects the frontend).
-- [ ] `addScreen` sample props for navbar and footer placeholders.
+- [x] `addScreen` sample props for navbar and footer placeholders: already fixed by the humanized sample strings of [7d678bf](https://github.com/buildytech/chat/commit/7d678bf); checked on all 80 Stock screens (170 navbar / header / footer blocks, none blank) and pinned by a test (`sample-rows.test.ts`).
 
-Status: open; each line is closed in the commit that fixes it.
+Status: open, one line left (the six rich-text `__html` variants, an owner decision); each line is closed in the commit that fixes it.

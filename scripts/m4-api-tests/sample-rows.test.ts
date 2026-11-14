@@ -7,8 +7,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
-import { checkPageDoc, emptyPage, sampleProps } from "../../packages/builder-core/src/index.ts";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { addScreen, catalogSnapshot, checkPageDoc, emptyPage, renderBlock, sampleProps, showsContent } from "../../packages/builder-core/src/index.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 
 const read = (path: string) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), "utf8");
@@ -39,4 +39,29 @@ test("coverage file: the sample renders content for every combination (empty lab
 test("the chat badge says proposal when the message has one", () => {
 	const view = read("../../apps/chat-web/src/modules/chat/ui/ChatMessage.svelte");
 	assert.match(view, /message\.mode === "ask" \? t\("ask\.answerAsk"\) : proposal \? t\("ask\.answerBuildProposal"\) : t\("ask\.answerBuild"\)/);
+});
+
+test("addScreen: every navbar / header / footer / sidebar block of every Stock screen renders its placeholders (none blank)", async () => {
+	const mod = (await import(pathToFileURL(fileURLToPath(new URL("../../api/runtime/_render/blocks.mjs", import.meta.url))).href)) as { blocks: Record<string, unknown>; render: (c: unknown, o: { props: Record<string, unknown> }) => { body: string } };
+	let chrome = 0;
+	const blank: string[] = [];
+	for (const screen of catalogSnapshot.screens) {
+		const added = addScreen(emptyPage({ title: "t", locale: "en", now: "2026-11-14T12:00:00.000Z" }), screen.screenId);
+		if (!added.ok) continue;
+		for (const block of added.page.blocks) {
+			if (!/nav|header|footer/.test(block.item)) continue;
+			const rendered = renderBlock(block);
+			if (!rendered) continue;
+			chrome += 1;
+			if (!showsContent(mod.render(mod.blocks[rendered.organism], { props: rendered.props }).body)) blank.push(`${screen.screenId}: ${block.item}`);
+		}
+	}
+	assert.ok(chrome > 100, `${chrome} chrome blocks seen`);
+	assert.deepEqual(blank, []);
+});
+
+test("the preview error alerts use the filled destructive pair (readable on the dark page theme too)", () => {
+	const view = read("../../apps/chat-web/src/app/PreviewBlock.svelte");
+	assert.match(view, /const failedTone = "bg-destructive text-destructive-foreground"/);
+	assert.equal((view.match(/variant="destructive" class=\{failedTone\}/g) ?? []).length, 3);
 });
