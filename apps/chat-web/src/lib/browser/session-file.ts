@@ -54,8 +54,10 @@ export type SessionFile = {
 };
 
 export type SessionFileIssue = { path: string; keyword: string };
+/** Old-data paths a parsed file went through (migration counters, `window.buildy.migrationReport()`). */
+export type SessionFileLegacy = { pageV1: number; proposalApplied: number };
 export type ParsedSessionFile =
-	| { ok: true; file: SessionFile }
+	| { ok: true; file: SessionFile; legacy: SessionFileLegacy }
 	| { ok: false; code: "invalid_json" | "schema_invalid" | "program_invalid"; issues: SessionFileIssue[] };
 
 /** JSON round trip: drops `undefined` and functions so the file is exactly what JSON.stringify would write. */
@@ -130,10 +132,25 @@ export function parseSessionFile(input: unknown): ParsedSessionFile {
 	}
 	const issues = sessionFileIssues(value);
 	if (issues.length) return { ok: false, code: "schema_invalid", issues: issues.slice(0, 20) };
+	const legacy = legacyOf(value as SessionFile);
 	const file = migrateSessionFile(value as SessionFile);
 	const program = sessionProgramIssues(file);
 	if (program.length) return { ok: false, code: "program_invalid", issues: program.slice(0, 20) };
-	return { ok: true, file };
+	return { ok: true, file, legacy };
+}
+
+const isV1PageDoc = (page: unknown): boolean => Boolean(page && typeof page === "object" && "layout" in page && !("blocks" in page));
+
+/** What an incoming file carries from before page-spec 2 / proposal status (counted, not changed). */
+function legacyOf(file: SessionFile): SessionFileLegacy {
+	const legacy: SessionFileLegacy = { pageV1: 0, proposalApplied: 0 };
+	for (const chat of file.sessions) {
+		const page = chat.page as { applied?: unknown; candidate?: unknown; lastProposed?: unknown } | null;
+		if (page && [page.applied, page.candidate, page.lastProposed].some(isV1PageDoc)) legacy.pageV1 += 1;
+		const messages = Array.isArray(chat.messages) ? (chat.messages as Array<{ proposal?: { status?: unknown } }>) : [];
+		legacy.proposalApplied += messages.filter((m) => m?.proposal && m.proposal.status === undefined).length;
+	}
+	return legacy;
 }
 
 /** Split a checked file into what the session store and the page store keep (page records are keyed by project id). */

@@ -10,6 +10,7 @@ import { isScenarioId, migratePageV1, type ScenarioId } from "@buildytech/builde
 import { pageV2DefIssues, type Page } from "@buildytech/page-contract";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
 import { STORAGE_KEYS, browserStorage, quarantine, type StorageLike } from "./storage-v1.ts";
+import { noteMigrationHit } from "./migration-counters.ts";
 
 export const SESSIONS_KEY = STORAGE_KEYS.sessions;
 export const PAGES_KEY = STORAGE_KEYS.pages;
@@ -239,7 +240,10 @@ export function loadSessionsJson(): unknown[] {
 	let rewrite = false;
 	list.forEach((entry, i) => {
 		const item = repairSession(entry);
-		if (item !== entry) rewrite = true;
+		if (item !== entry) {
+			rewrite = true;
+			noteMigrationHit(store, "feedScreen");
+		}
 		const issues = sessionDefIssues(item, "session");
 		if (!issues.length) {
 			valid.push(item);
@@ -312,6 +316,7 @@ export function loadPagesBlob(): PagesBlobV1 {
 	const pages: Record<string, StoredPageRecord> = {};
 	let dropped = false;
 	for (const [id, record] of Object.entries(parsed.pages)) {
+		if (record && typeof record === "object" && [record.applied, record.candidate, record.lastProposed].some(isV1Page)) noteMigrationHit(store, "pageV1");
 		const migrated = record && typeof record === "object" ? migrateStoredPageRecord(record) : null;
 		const issues = migrated ? pageV2DefIssues(JSON.parse(JSON.stringify(migrated)), "record") : [{ path: "$", keyword: "type" }];
 		if (!issues.length) {

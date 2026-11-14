@@ -108,8 +108,8 @@ import {
 	setCandidatePage,
 	startEmptyPage
 } from "../page-store";
-import { isPendingProposal, markPendingProposals, migrateSessionProposals, withProposalStatus } from "./proposals";
-import { STORAGE_KEYS, readKey, writeKey } from "../browser/storage-v1.ts";
+import { isPendingProposal, legacyProposalCount, markPendingProposals, migrateSessionProposals, withProposalStatus } from "./proposals";
+import { STORAGE_KEYS, noteMigration, readKey, writeKey } from "../browser/storage-v1.ts";
 import { chatModeOf } from "./modes";
 import type { PageV2 } from "@buildytech/page-contract";
 import type { StoredPageProvenance } from "../browser/persist";
@@ -140,6 +140,7 @@ function loadMock(): ChatSession[] {
 	if (!Array.isArray(parsed)) return [];
 	const pages = loadPagesBlob().pages;
 	let drift = false;
+	noteMigration("proposalApplied", (parsed as ChatSession[]).reduce((sum, raw) => sum + legacyProposalCount(raw.messages), 0));
 	const sessions = (parsed as ChatSession[]).map((raw) => {
 		const session = migrateSessionProposals(raw);
 		const synced = reconcileChatRevision(session, pages[session.id] ?? undefined);
@@ -1023,6 +1024,8 @@ export async function importSessions(input: unknown): Promise<ImportResult> {
 	const parsed = parseSessionFile(input);
 	if (!parsed.ok) return parsed;
 	abortInflight();
+	noteMigration("pageV1", parsed.legacy.pageV1);
+	noteMigration("proposalApplied", parsed.legacy.proposalApplied);
 	const { chats, pages } = splitSessionFile(parsed.file);
 	const incoming = new Set(chats.map((c) => c.id));
 	const replaced: string[] = [];

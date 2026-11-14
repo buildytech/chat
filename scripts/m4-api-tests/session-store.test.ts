@@ -30,6 +30,8 @@ import {
 	recordRevision,
 	splitSessionFile
 } from "../../apps/chat-web/src/lib/browser/session-file.ts";
+import { migrationReport, noteMigrationHit, startMigrationCounters } from "../../apps/chat-web/src/lib/browser/migration-counters.ts";
+import { legacyProposalCount } from "../../apps/chat-web/src/lib/chat-core/proposals.ts";
 import { commitChange, nextRevision } from "../../apps/chat-web/src/lib/page-store/revision.ts";
 import { EditHistory } from "../../apps/chat-web/src/lib/inspector/history.ts";
 import { addScreen, applyOp, emptyPage } from "../../packages/builder-core/src/index.ts";
@@ -442,4 +444,41 @@ test("session 1.9.0: every file without projectId (1.0.0 to 1.8.0) loads unchang
 	assert.equal("projectId" in file.sessions[0]!, false);
 	assert.deepEqual(Object.keys(splitSessionFile(file).pages), ["session-a"]);
 	assert.equal(projectIdOf(file.sessions[0]!), "session-a");
+});
+
+// ---- migration counters (plan item 4, shipped first) ----------------------------------------------------------------
+
+test("migration counters: each old-data path counts its hits in the marker; migrationReport reads them; the legacy marker fields stay", () => {
+	startMigrationCounters(store, () => NOW);
+	assert.deepEqual(migrationReport(store), { since: NOW, lastAt: null, counters: { pageV1: 0, feedScreen: 0, legacyKeys: 0, proposalApplied: 0 }, total: 0 });
+	noteMigrationHit(store, "pageV1", 2, () => "2026-11-14T10:00:00.000Z");
+	noteMigrationHit(store, "feedScreen", 1, () => "2026-11-14T11:00:00.000Z");
+	noteMigrationHit(store, "proposalApplied", 0);
+	const report = migrationReport(store);
+	assert.deepEqual(report.counters, { pageV1: 2, feedScreen: 1, legacyKeys: 0, proposalApplied: 0 });
+	assert.equal(report.total, 3);
+	assert.equal(report.since, NOW, "since is the first run of this build");
+	assert.equal(report.lastAt, "2026-11-14T11:00:00.000Z");
+	store.setItem("buildytech-chat-theme", "dark");
+	migrateLegacyStorage(store, () => NOW);
+	assert.equal(migrationReport(store).counters.pageV1, 2, "the legacy-key marker write keeps the counters");
+	assert.equal(JSON.parse(store.getItem(STORAGE_KEYS.migration)!).version, 1);
+	store.setItem(STORAGE_KEYS.migration, "not json");
+	assert.equal(migrationReport(store).total, 0, "a broken marker reads as zero and never throws");
+});
+
+test("migration counters: loading a v1 page record, a feed-screen proposal and an old proposal shape counts one hit each", () => {
+	const v1Page = { title: "Old", layout: { blocks: [] } };
+	store.setItem(STORAGE_KEYS.pages, JSON.stringify({ version: 1, pages: { "session-old": { applied: v1Page, candidate: null, selectedBlockId: null, revision: 1 } } }));
+	store.setItem(STORAGE_KEYS.sessions, JSON.stringify([chat("session-fs", { messages: [{ id: "m", role: "assistant", text: "x", createdAt: NOW, proposal: { applied: false, status: "pending", origin: "feed-screen", source: "s", liveModel: false, warnings: [], missing: [], title: "t" } }] })]));
+	loadSessionsJson();
+	loadPagesBlob();
+	const counters = migrationReport(store).counters;
+	assert.equal(counters.feedScreen, 1);
+	assert.equal(counters.pageV1, 1);
+	assert.equal(legacyProposalCount([{ id: "m", role: "assistant", text: "", createdAt: NOW, proposal: { applied: true, source: "s", liveModel: false, warnings: [], missing: [], title: "t" } }]), 1);
+	assert.equal(legacyProposalCount([{ id: "m", role: "assistant", text: "", createdAt: NOW, proposal: { applied: true, status: "applied", source: "s", liveModel: false, warnings: [], missing: [], title: "t" } }]), 0);
+	const parsed = parseSessionFile(JSON.stringify({ format: "buildy:v1", exportedAt: NOW, app, pins, sessions: [chat("session-o", { messages: [{ id: "m", role: "assistant", text: "x", createdAt: NOW, proposal: { applied: true, source: "s", liveModel: false, warnings: [], missing: [], title: "t" } }] })] }));
+	assert.ok(parsed.ok);
+	assert.deepEqual(parsed.legacy, { pageV1: 0, proposalApplied: 1 });
 });

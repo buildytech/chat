@@ -11,6 +11,8 @@ import chatPackage from "../../../package.json";
 import { exportSessions, importSessions, openCollectionFile, type CollectionIntake, type ImportResult } from "../chat-core";
 import { isCollectionDoc } from "@buildytech/page-contract/collection";
 import { theme } from "../theme/theme.svelte";
+import { migrationReport, type MigrationHits } from "./migration-counters.ts";
+import { browserStorage } from "./storage-v1.ts";
 import { getSelectedModelId, setSelectedModelId } from "./models.svelte";
 import { creatorLayout } from "../creator-layout.svelte";
 import { previewSettings } from "./preview-settings.svelte";
@@ -24,6 +26,8 @@ export type BuildyApi = {
 	export(options?: { download?: boolean }): SessionFile;
 	/** A session file buildy:v1, or a Stock collection buildy-collection:v1 (opened in a new Build chat). */
 	import(json: unknown): Promise<ImportResult | CollectionIntake>;
+	/** Hits of the old-data paths in this browser since this build first ran (refactor plan item 4: a migration goes only when every browser shows zero). */
+	migrationReport(): MigrationHits;
 };
 
 function app(): SessionApp {
@@ -119,7 +123,11 @@ export function installBuildyApi(): void {
 		format: SESSION_FORMAT,
 		schema: SESSION_SCHEMA_URL,
 		export: exportSessionFile,
-		import: importFile
+		import: importFile,
+		migrationReport: () => {
+			const store = browserStorage();
+			return store ? migrationReport(store) : { since: null, lastAt: null, counters: { pageV1: 0, feedScreen: 0, legacyKeys: 0, proposalApplied: 0 }, total: 0 };
+		}
 	};
 	Object.defineProperty(window, "buildy", { value: Object.freeze(api), configurable: true, enumerable: false, writable: false });
 }

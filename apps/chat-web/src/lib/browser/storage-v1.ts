@@ -9,6 +9,8 @@
  * instead of being dropped. Pure, no Svelte; works on any Storage-like object.
  */
 
+import { MIGRATION_KEY, noteMigrationHit, readMarker, startMigrationCounters } from "./migration-counters.ts";
+
 export const STORAGE_KEYS = {
 	sessions: "buildy:v1:sessions",
 	pages: "buildy:v1:pages",
@@ -29,7 +31,7 @@ export const STORAGE_KEYS = {
 	customSkin: "buildy:v1:customSkin",
 	/** Left panel tab, Blocks feed view and inspector slide-over open (ADR 0024): `{ tab, columns, inspector }`. */
 	feed: "buildy:v1:feed",
-	migration: "buildy:v1:migration",
+	migration: MIGRATION_KEY,
 	quarantine: "buildy:v1:quarantine"
 } as const;
 
@@ -108,7 +110,7 @@ export function migrateLegacyStorage(store: StorageLike, now: () => string = () 
 	}
 	if (report.moved.length || report.conflicts.length || report.same.length) {
 		try {
-			store.setItem(STORAGE_KEYS.migration, JSON.stringify({ version: 1, at: now(), ...report }));
+			store.setItem(STORAGE_KEYS.migration, JSON.stringify({ ...readMarker(store), version: 1, at: now(), ...report }));
 		} catch {
 			/* the marker is informational only */
 		}
@@ -125,11 +127,23 @@ export function browserStorage(): Storage | null {
 		const store = localStorage;
 		if (!migrated) {
 			migrated = true;
-			migrateLegacyStorage(store);
+			const report = migrateLegacyStorage(store);
+			startMigrationCounters(store);
+			noteMigrationHit(store, "legacyKeys", report.moved.length + report.conflicts.length);
 		}
 		return store;
 	} catch {
 		return null;
+	}
+}
+
+/** Count a hit of an old-data path in the migration marker (`window.buildy.migrationReport()`); never throws. */
+export function noteMigration(path: import("./migration-counters.ts").MigrationPath, n = 1): void {
+	try {
+		const store = browserStorage();
+		if (store) noteMigrationHit(store, path, n);
+	} catch {
+		/* informational only */
 	}
 }
 

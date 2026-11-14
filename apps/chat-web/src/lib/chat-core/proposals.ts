@@ -15,10 +15,16 @@ export function migrateProposal(proposal: ChatProposalState): ChatProposalState 
 	return { ...proposal, status, applied: status === "applied" };
 }
 
+/** Messages whose proposal has no `status` (only `applied`): the old shape migrateProposal rewrites (migration counter). */
+export function legacyProposalCount(messages: readonly ChatMessage[] | undefined): number {
+	return (messages ?? []).filter((message) => message.proposal && message.proposal.status === undefined).length;
+}
+
 export function migrateSessionProposals(session: ChatSession): ChatSession {
+	if (!session.messages) return session;
 	return {
 		...session,
-		messages: session.messages.map((message) =>
+		messages: (session.messages ?? []).map((message) =>
 			message.proposal ? { ...message, proposal: migrateProposal(message.proposal) } : message
 		)
 	};
