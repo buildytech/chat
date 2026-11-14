@@ -56,12 +56,12 @@ test("the brand is βuildγ in the core and no module re-words it", () => {
 	for (const lang of ["en", "ru"]) {
 		const core = JSON.parse(web(`lib/i18n/${lang}.json`)).messages as Record<string, string>;
 		assert.equal(core["sidebar.brand"], BRAND, lang);
-		assert.equal(core["app.documentTitle"], `${BRAND} — BuildYtech`, lang);
+		assert.equal(core["app.documentTitle"], `${BRAND} \u2014 BuildYtech`, lang);
 		const chat = JSON.parse(web(`modules/chat/i18n/${lang}.json`)) as { messages: Record<string, string>; overrides: Record<string, string> };
 		for (const key of ["sidebar.brand", "sidebar.brandMark", "app.documentTitle"]) {
 			assert.ok(!(key in chat.overrides) && !(key in chat.messages), `the chat does not re-word ${key} (${lang})`);
 		}
-		for (const [key, value] of Object.entries(core)) assert.doesNotMatch(value, /SI Builder|SI Chat|SI Конструктор|SI Чат/, `${lang} ${key}`);
+		for (const [key, value] of Object.entries(core)) assert.doesNotMatch(value, /SI Builder|SI Chat|SI \u041a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0442\u043e\u0440|SI \u0427\u0430\u0442/, `${lang} ${key}`);
 	}
 });
 
@@ -92,9 +92,9 @@ test("boundary rules catch what they are for (fixture tree)", () => {
 	const src = "apps/chat-web/src";
 	const catalog = (messages: Record<string, string>) => JSON.stringify({ locale: "en", messages });
 	put(`${src}/lib/i18n/en.json`, catalog({ "core.a": "A" }));
-	put(`${src}/lib/i18n/ru.json`, catalog({ "core.a": "А" }));
+	put(`${src}/lib/i18n/ru.json`, catalog({ "core.a": "\u0410" }));
 	put(`${src}/modules/chat/i18n/en.json`, JSON.stringify({ locale: "en", messages: { "chat.x": "Chat text", "core.a": "dup" }, overrides: { "core.missing": "x" } }));
-	put(`${src}/modules/chat/i18n/ru.json`, JSON.stringify({ locale: "ru", messages: { "chat.x": "Чат", "core.a": "дубль" }, overrides: { "core.missing": "x" } }));
+	put(`${src}/modules/chat/i18n/ru.json`, JSON.stringify({ locale: "ru", messages: { "chat.x": "\u0427\u0430\u0442", "core.a": "\u0434\u0443\u0431\u043b\u044c" }, overrides: { "core.missing": "x" } }));
 	put(`${src}/modules/index.ts`, 'export const load = () => import("./chat");');
 	put(`${src}/modules/chat/index.ts`, 'import other from "../other/x";\nimport "$modules/other/y";');
 	put(`${src}/modules/other/x.ts`, "export default 1;");
