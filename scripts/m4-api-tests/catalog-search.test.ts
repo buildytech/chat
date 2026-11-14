@@ -5,16 +5,8 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import {
-	catalogSnapshot,
-	addScreen,
-	checkPageDoc,
-	emptyPage,
-	executeCatalogTool,
-	screenItems,
-	screenSupport,
-	type CompactSearchPayload
-} from "../../packages/builder-core/src/index.ts";
+import { catalogSnapshot, addScreen, checkPageDoc, emptyPage, screenItems, screenSupport } from "../../packages/builder-core/src/index.ts";
+import { executeCatalogTool, type CompactSearchPayload } from "../../packages/chat-agent/src/index.ts";
 
 const LAYOUTS = "screen.theme-dashboard-console/layouts";
 
@@ -81,7 +73,8 @@ test("property: every Stock screen starts a page the gate accepts, or is reporte
 });
 
 test("search index is generated from the pinned catalog commit; contract fingerprint covers it", async () => {
-	const { SEARCH_INDEX_SOURCES, contractFingerprint } = await import("../../packages/builder-core/src/index.ts");
+	const { SEARCH_INDEX_SOURCES } = await import("../../packages/builder-core/src/index.ts");
+	const { contractFingerprint } = await import("../../packages/chat-agent/src/index.ts");
 	const sources = SEARCH_INDEX_SOURCES as { assets: { digest: string } };
 	assert.equal(sources.assets.digest, catalogSnapshot.sourceDigest);
 	assert.match(contractFingerprint(), /^cf1-[0-9a-f]{16}$/);

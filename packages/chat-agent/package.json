@@ -1,0 +1,20 @@
+{
+  "name": "@buildytech/chat-agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "The chat side of BuildY: the agent turn and its tools, model resolution, usage, xAI runtime environment and protection. The page and catalog core (@buildytech/builder-core) does not depend on it.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@buildytech/builder-core": "0.0.0",
+    "@buildytech/page-contract": "0.0.0"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --import ../builder-core/src/catalog/props-gate.ts --test ../../scripts/m4-api-tests/agent-tools.test.ts ../../scripts/m4-api-tests/usage.test.ts ../../scripts/m4-api-tests/model-switch.test.ts"
+  }
+}

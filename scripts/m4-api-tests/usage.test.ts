@@ -8,7 +8,7 @@ import {
 	formatTokens,
 	readProviderUsage,
 	unknownUsage
-} from "../../packages/builder-core/src/usage.ts";
+} from "../../packages/chat-agent/src/usage.ts";
 
 test("tool-loop sums actual steps without double-counting totals", () => {
 	const run = aggregateStepUsage([

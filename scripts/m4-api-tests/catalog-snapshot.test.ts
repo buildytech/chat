@@ -155,8 +155,9 @@ test("ADR 0012 addendum: two codegen-x pins; Stock content descends from the reg
 
 test("site type facet: a Landing and a Website search pick different screens of their own site type; every screen has one site type", async () => {
 	const core = await import("../../packages/builder-core/src/index.ts");
+	const agent = await import("../../packages/chat-agent/src/index.ts");
 	const first = (site: string) => {
-		const out = core.executeCatalogTool({ name: "search_catalog", arguments: { site } }, { mode: "build" });
+		const out = agent.executeCatalogTool({ name: "search_catalog", arguments: { site } }, { mode: "build" });
 		assert.ok(out.ok);
 		return (out.result as { items: Array<{ screenId: string }> }).items[0]!.screenId;
 	};

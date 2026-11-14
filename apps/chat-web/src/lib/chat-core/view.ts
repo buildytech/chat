@@ -4,7 +4,7 @@
  * `projectOfView` are inverse for the chat's fields, and a project with no chat stays a project with no chat until the
  * chat writes something.
  */
-import type { AgentMode } from "@buildytech/builder-core";
+import type { AgentMode } from "@buildytech/chat-agent";
 import type { Project } from "../project/types.ts";
 import { legacyProposalCount, migrateSessionProposals } from "./proposals.ts";
 import type { ChatMessage, ChatSession } from "./types.ts";

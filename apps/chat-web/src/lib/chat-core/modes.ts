@@ -3,7 +3,7 @@
  * stored per chat and never inferred from words. Ask and Build run the same agent turn and end in the same proposal
  * (ADR 0034); Ask's proposal is applied only by the card "Apply in Build", Build's by Apply.
  */
-import { isAgentMode, isAgentReply, type AgentMode, type AgentReply } from "@buildytech/builder-core";
+import { isAgentMode, isAgentReply, type AgentMode, type AgentReply } from "@buildytech/chat-agent";
 import type { ChatSession } from "./types";
 
 export const DEFAULT_CHAT_MODE: AgentMode = "build";

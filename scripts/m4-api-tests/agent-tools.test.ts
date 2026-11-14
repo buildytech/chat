@@ -5,23 +5,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import {
-	ALLOWED_TOOLS,
-	AGENT_TOOLS_VERSION,
-	agentOpenAiTools,
-	agentToolNames,
-	agentToolsDocument,
-	askBlockCards,
-	catalogToolParameterSchema,
-	contractFingerprint,
-	emptyPage,
-	executeCatalogTool,
-	facetVocabulary,
-	isAgentReply,
-	mapChatRunRequest,
-	readBlock,
-	type AgentReply
-} from "../../packages/builder-core/src/index.ts";
+import { ALLOWED_TOOLS, emptyPage, facetVocabulary } from "../../packages/builder-core/src/index.ts";
+import { AGENT_TOOLS_VERSION, agentOpenAiTools, agentToolNames, agentToolsDocument, askBlockCards, catalogToolParameterSchema, contractFingerprint, executeCatalogTool, isAgentReply, mapChatRunRequest, readBlock, type AgentReply } from "../../packages/chat-agent/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
 import { handleRuntimeFetch } from "../../apps/xai-runtime/src/http.ts";
 import { chatModeOf, turnOutcome } from "../../apps/chat-web/src/lib/chat-core/modes.ts";
@@ -38,7 +23,7 @@ function hasVendorKeyword(node: unknown): boolean {
 }
 
 test("agent-tools.v1.json is the one tool definition: four tools, both modes, plain JSON Schema after resolve", () => {
-	const raw = JSON.parse(readFileSync(new URL("../../packages/builder-core/src/agent/agent-tools.v1.json", import.meta.url), "utf8"));
+	const raw = JSON.parse(readFileSync(new URL("../../packages/chat-agent/src/agent/agent-tools.v1.json", import.meta.url), "utf8"));
 	assert.equal(raw.format, "buildy-agent-tools");
 	assert.match(AGENT_TOOLS_VERSION, /^buildy-agent-tools\/\d+$/);
 	assert.deepEqual([...ALLOWED_TOOLS].sort(), ["get_block", "get_page", "search_catalog", "write_page"]);

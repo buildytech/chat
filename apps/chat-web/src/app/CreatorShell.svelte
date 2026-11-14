@@ -5,7 +5,7 @@
 	import { t } from "$lib/i18n/dictionary";
 	import { shortcutFor } from "$lib/layout/shortcuts";
 	import type { ChatSession, CreatorRuntimeStatus, SessionSummary } from "$lib/chat-core";
-	import type { GrokChatModel, SessionUsage } from "@buildytech/builder-core";
+	import type { GrokChatModel, SessionUsage } from "@buildytech/chat-agent";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
 	import ChatColumn from "./ChatColumn.svelte";
 	import ChatDrawer from "./ChatDrawer.svelte";

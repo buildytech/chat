@@ -1,5 +1,5 @@
 /** ChatCore send: one user message, one agent turn, the reply committed to the chat. Live Grok uses `/runtime`. */
-import { agentToolNames, unknownUsage } from "@buildytech/builder-core";
+import { agentToolNames, unknownUsage } from "@buildytech/chat-agent";
 import { t } from "../i18n/dictionary";
 import { getSelectedModelId } from "../browser/models.svelte";
 import { chatModeOf } from "./modes";

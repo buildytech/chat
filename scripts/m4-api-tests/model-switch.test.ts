@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS } from "../../packages/builder-core/src/xai-env.ts";
+import { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS } from "../../packages/chat-agent/src/xai-env.ts";
 import {
 	DEFAULT_CHAT_MODEL_ID,
 	GROK_CHAT_MODELS,
@@ -9,7 +9,7 @@ import {
 	mapChatRunRequest,
 	modelRunsToolLoop,
 	resolveChatModelRequest
-} from "../../packages/builder-core/src/models.ts";
+} from "../../packages/chat-agent/src/models.ts";
 
 test("selector catalog is the five verified text ids with labels", () => {
 	assert.equal(GROK_CHAT_MODELS.length, 5);

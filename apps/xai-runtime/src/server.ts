@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { isLoopbackBind, readBasicAuthConfig } from "@buildytech/builder-core";
+import { isLoopbackBind, readBasicAuthConfig } from "@buildytech/chat-agent";
 import { handleRuntimeFetch } from "./http.ts";
 
 // Compiled registry blocks of the render probe (npm run bundle:runtime).

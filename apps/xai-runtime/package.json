@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@buildytech/builder-core": "0.0.0",
+    "@buildytech/chat-agent": "0.0.0",
     "@buildytech/page-contract": "0.0.0"
   },
   "engines": {

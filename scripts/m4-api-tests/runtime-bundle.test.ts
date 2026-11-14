@@ -8,7 +8,8 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { contractFingerprint, migratePageV1 } from "../../packages/builder-core/src/index.ts";
+import { migratePageV1 } from "../../packages/builder-core/src/index.ts";
+import { contractFingerprint } from "../../packages/chat-agent/src/index.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 // Beside api/runtime/_render, where the bundled entry finds the compiled registry blocks of the render probe (../_render/blocks.mjs).

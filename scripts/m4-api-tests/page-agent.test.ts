@@ -10,19 +10,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import {
-	addScreen,
-	allItems,
-	checkPageDoc,
-	effectiveProps,
-	emptyPage,
-	itemInfo,
-	migratePageV1,
-	sampleProps,
-	writePage,
-	type AgentReply,
-	type PageProposal
-} from "../../packages/builder-core/src/index.ts";
+import { addScreen, allItems, checkPageDoc, effectiveProps, emptyPage, itemInfo, migratePageV1, sampleProps, writePage } from "../../packages/builder-core/src/index.ts";
+import { type AgentReply, type PageProposal } from "../../packages/chat-agent/src/index.ts";
 import { validateItemProps } from "../../packages/builder-core/src/catalog/provenance.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";

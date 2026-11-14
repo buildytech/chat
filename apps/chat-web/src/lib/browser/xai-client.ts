@@ -1,6 +1,6 @@
-import type { AgentFailure, AgentMode, AgentReply, RunUsage } from "@buildytech/builder-core";
+import type { AgentFailure, AgentMode, AgentReply, RunUsage } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
-import { contractFingerprint } from "@buildytech/builder-core";
+import { contractFingerprint } from "@buildytech/chat-agent";
 
 export type XaiClientStatus = {
 	runtime: string;

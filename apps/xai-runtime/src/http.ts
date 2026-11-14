@@ -1,24 +1,9 @@
-import {
-	clampRunBudgetMs,
-	emptyPage,
-	contractFingerprint,
-	isAgentReply,
-	gateRequest,
-	installRenderProbe,
-	probeFromModule,
-	isSharedPublicSurface,
-	mapChatRunRequest,
-	readEnv,
-	readXaiKeyState,
-	safeErrorMessage,
-	stripRuntimePrefix,
-	type EnvMap,
-	type RenderModule
-} from "@buildytech/builder-core";
+import { emptyPage, installRenderProbe, probeFromModule, type RenderModule } from "@buildytech/builder-core";
+import { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, stripRuntimePrefix, type EnvMap } from "@buildytech/chat-agent";
 import { runXaiCatalogTurn } from "./chat-tools.ts";
 import { runtimeStatus } from "./status.ts";
 
-export { VERCEL_HOBBY_SAFE_MAX_DURATION_SEC } from "@buildytech/builder-core";
+export { VERCEL_HOBBY_SAFE_MAX_DURATION_SEC } from "@buildytech/chat-agent";
 
 const MAX_BODY = 256_000;
 

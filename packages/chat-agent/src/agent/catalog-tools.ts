@@ -4,14 +4,14 @@
  * tool here writes; write_page runs in the turn loop (turn.ts).
  */
 import type { PageV2 } from "@buildytech/page-contract";
-import { facetTree, searchCatalog, type FacetTree } from "../catalog/search.ts";
-import { blockLabelVocabulary, vocabularyValues } from "../catalog/text-search.ts";
-import type { SearchQuery, SearchResult } from "../catalog/types.ts";
+import { facetTree, searchCatalog, type FacetTree } from "@buildytech/builder-core";
+import { blockLabelVocabulary, vocabularyValues } from "@buildytech/builder-core";
+import type { SearchQuery, SearchResult } from "@buildytech/builder-core";
 import { toolOffersMode, type AgentMode } from "./agent-tools.ts";
 import { readBlock } from "./blocks.ts";
-import { screenItems } from "../page-doc/start.ts";
-import { renderProblems } from "../page-doc/probe.ts";
-import { ALLOWED_TOOLS, RUN_BUDGET, type AllowedTool } from "../policy.ts";
+import { screenItems } from "@buildytech/builder-core";
+import { renderProblems } from "@buildytech/builder-core";
+import { ALLOWED_TOOLS, RUN_BUDGET, type AllowedTool } from "@buildytech/builder-core";
 
 export type ToolCall = { name: string; arguments?: Record<string, unknown> };
 export type ToolHost = { mode?: AgentMode; page?: PageV2 | null };

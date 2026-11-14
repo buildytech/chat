@@ -10,7 +10,8 @@
     "apps/xai-runtime",
     "packages/page-contract",
     "packages/ports",
-    "packages/builder-core"
+    "packages/builder-core",
+    "packages/chat-agent"
   ],
   "scripts": {
     "dev": "npm run dev --workspace=@buildytech/chat-web",

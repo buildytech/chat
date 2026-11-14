@@ -1,7 +1,7 @@
-import { POLICY_VERSION } from "../policy.ts";
-import { catalogSnapshot } from "./snapshot.ts";
-import { SEARCH_INDEX_SOURCES } from "./text-search.ts";
-import { AGENT_TOOLS_VERSION } from "../agent/agent-tools.ts";
+import { POLICY_VERSION } from "@buildytech/builder-core";
+import { catalogSnapshot } from "@buildytech/builder-core";
+import { SEARCH_INDEX_SOURCES } from "@buildytech/builder-core";
+import { AGENT_TOOLS_VERSION } from "./agent/agent-tools.ts";
 
 /** FNV-1a 64-bit (BigInt-free, two 32-bit lanes). Identity check only, not security. */
 function fnv1a64(text: string): string {

@@ -13,18 +13,8 @@ import {
 	type CollectionDoc
 } from "../../packages/page-contract/src/collection.ts";
 import { sessionDefIssues } from "../../packages/page-contract/src/session.ts";
-import {
-	checkCollection,
-	collectionBounds,
-	collectionDraft,
-	collectionPromptContext,
-	emptyPage,
-	mapChatRunRequest,
-	snapshotDigest,
-	splitCollection,
-	writePage,
-	type AgentReply
-} from "../../packages/builder-core/src/index.ts";
+import { checkCollection, collectionBounds, collectionDraft, collectionPromptContext, emptyPage, snapshotDigest, splitCollection, writePage } from "../../packages/builder-core/src/index.ts";
+import { mapChatRunRequest, type AgentReply } from "../../packages/chat-agent/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
 import { splitCollectionParam } from "../../apps/chat-web/src/lib/browser/collection-intake.ts";
 import { MODEL, signal, withProvider } from "./agent-replay.ts";

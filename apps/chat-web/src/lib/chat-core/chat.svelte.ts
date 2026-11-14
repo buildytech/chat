@@ -3,7 +3,7 @@
  * selection wrappers that abort a run and reload the workspace context. The project (page, skin, collection, history,
  * persistence) lives in `../project`; the chat keeps only `project.ext.chat` (messages, mode, selected model, usage).
  */
-import type { AgentMode } from "@buildytech/builder-core";
+import type { AgentMode } from "@buildytech/chat-agent";
 import { t } from "../i18n/dictionary";
 import { getPersistError } from "../browser/persist";
 import { hydrateSessionContext } from "../browser/onboarding.svelte";

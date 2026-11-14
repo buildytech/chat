@@ -18,14 +18,8 @@
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
 	import { getChatMode, setChatMode, type CreatorRuntimeStatus } from "$lib/chat-core";
-	import { AGENT_MODES } from "@buildytech/builder-core";
-	import {
-		formatTokens,
-		modelRunsToolLoop,
-		modelUnavailableCode,
-		type GrokChatModel,
-		type SessionUsage,
-	} from "@buildytech/builder-core";
+	import { AGENT_MODES } from "@buildytech/chat-agent";
+	import { formatTokens, modelRunsToolLoop, modelUnavailableCode, type GrokChatModel, type SessionUsage } from "@buildytech/chat-agent";
 
 	let {
 		disabled = false,

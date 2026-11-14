@@ -5,30 +5,8 @@
  * collection) and answers with the diff or a list of { path, code, expected, got }; the model fixes its own document. The
  * loop stops after two identical error lists. There is no local repair, no operation taxonomy, no phrase recognition.
  */
-import {
-	RUN_BUDGET,
-	XAI_BASE_URL,
-	agentOpenAiTools,
-	agentReply,
-	aggregateStepUsage,
-	assertNoFallback,
-	executeCatalogTool,
-	itemIndex,
-	propsOutline,
-	readProviderUsage,
-	runWriteTool,
-	safeErrorMessage,
-	unknownUsage,
-	collectionPromptContext,
-	itemInfo,
-	renderProblems,
-	type AgentFailure,
-	type AgentReply,
-	type PageProposal,
-	type RunUsage,
-	type StepUsage,
-	type TurnContext
-} from "@buildytech/builder-core";
+import { RUN_BUDGET, collectionPromptContext, itemInfo, renderProblems } from "@buildytech/builder-core";
+import { XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, itemIndex, propsOutline, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage, type AgentFailure, type AgentReply, type PageProposal, type RunUsage, type StepUsage, type TurnContext } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import { installPropsGate } from "@buildytech/builder-core/props-gate";
 

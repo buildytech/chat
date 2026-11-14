@@ -12,20 +12,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import {
-	blankRequired,
-	checkPageDoc,
-	effectiveProps,
-	emptyPage,
-	executeCatalogTool,
-	itemInfo,
-	migratePageV1,
-	renderBlock,
-	sampleProps,
-	screenItems,
-	writePage,
-	type AgentReply
-} from "../../packages/builder-core/src/index.ts";
+import { blankRequired, checkPageDoc, effectiveProps, emptyPage, itemInfo, migratePageV1, renderBlock, sampleProps, screenItems, writePage } from "../../packages/builder-core/src/index.ts";
+import { executeCatalogTool, type AgentReply } from "../../packages/chat-agent/src/index.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
 import { MODEL, signal, toolNames, withProvider, type Scripted } from "./agent-replay.ts";

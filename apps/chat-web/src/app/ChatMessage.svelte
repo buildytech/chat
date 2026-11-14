@@ -13,7 +13,7 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
 	import type { ChatMessage as ChatMessageModel } from "$lib/chat-core";
-	import { formatTokens } from "@buildytech/builder-core";
+	import { formatTokens } from "@buildytech/chat-agent";
 	import CatalogRefsList from "./CatalogRefsList.svelte";
 	import MarkdownText from "./MarkdownText.svelte";
 	import AskBlockCards from "./AskBlockCards.svelte";

@@ -1,12 +1,4 @@
-import {
-	CANDIDATE_CHAT_MODEL,
-	XAI_BASE_URL,
-	classifyDiscoveredModels,
-	readEnv,
-	readXaiKeyState,
-	redactValue,
-	type EnvMap
-} from "@buildytech/builder-core";
+import { CANDIDATE_CHAT_MODEL, XAI_BASE_URL, classifyDiscoveredModels, readEnv, readXaiKeyState, redactValue, type EnvMap } from "@buildytech/chat-agent";
 
 export type DiscoveredModels = {
 	ok: boolean;

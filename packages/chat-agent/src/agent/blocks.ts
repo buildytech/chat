@@ -3,12 +3,12 @@
  * item's props schema, and the get_block result (variants, outline, sample props). All of it is derived from the pinned
  * registry data (sources.json, props.json); nothing is hand-written per block.
  */
-import { catalogEntryBySpec, catalogSourceFor } from "../catalog/sources.ts";
-import { LUCIDE_ICON_HINT, propsEventsFor, propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
-import { allItems, itemInfo, itemOfSpec } from "../page-doc/items.ts";
-import { sampleProps } from "../page-doc/render.ts";
-import { blockAssetUrl, blockThumbUrl } from "../catalog/provenance.ts";
-import { askBlockCard, type AskBlockCard } from "../catalog/details.ts";
+import { catalogEntryBySpec, catalogSourceFor } from "@buildytech/builder-core";
+import { LUCIDE_ICON_HINT, propsEventsFor, propsFieldTree, type PropsFieldNode } from "@buildytech/builder-core";
+import { allItems, itemInfo, itemOfSpec } from "@buildytech/builder-core";
+import { sampleProps } from "@buildytech/builder-core";
+import { blockAssetUrl, blockThumbUrl } from "@buildytech/builder-core";
+import { askBlockCard, type AskBlockCard } from "@buildytech/builder-core";
 
 const HIDDEN = new Set(["id", "class", "className", "landmarkLabel"]);
 

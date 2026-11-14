@@ -1,4 +1,5 @@
-import type { AgentMode, CatalogRefs, DiffEntry, RunUsage, ScenarioId, SessionUsage } from "@buildytech/builder-core";
+import type { CatalogRefs, DiffEntry, ScenarioId } from "@buildytech/builder-core";
+import type { AgentMode, RunUsage, SessionUsage } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import type { SessionRevisionEntry } from "@buildytech/page-contract/session";
 

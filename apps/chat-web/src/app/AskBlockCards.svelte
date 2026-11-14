@@ -11,7 +11,7 @@
 	import Link from "$registry/kit/ui/link/Link.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import { askBlockCards } from "@buildytech/builder-core";
+	import { askBlockCards } from "@buildytech/chat-agent";
 	import StockThumb from "./StockThumb.svelte";
 
 	// Cards are rebuilt from the bundled catalog (askBlockCards), never taken from the wire.

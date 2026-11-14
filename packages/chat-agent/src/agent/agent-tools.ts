@@ -5,8 +5,8 @@
  * contract here; every `x-*` keyword is stripped before a schema leaves the host. ADR-0011.
  */
 import raw from "./agent-tools.v1.json" with { type: "json" };
-import { facetVocabulary } from "../catalog/search.ts";
-import { blockLabelVocabulary, vocabularyValues } from "../catalog/text-search.ts";
+import { facetVocabulary } from "@buildytech/builder-core";
+import { blockLabelVocabulary, vocabularyValues } from "@buildytech/builder-core";
 
 export const AGENT_MODES = ["ask", "build"] as const;
 export type AgentMode = (typeof AGENT_MODES)[number];

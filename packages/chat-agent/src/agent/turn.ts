@@ -6,11 +6,11 @@
  */
 import type { PageV2 } from "@buildytech/page-contract";
 import type { AgentMode } from "./agent-tools.ts";
-import { checkCollection, type CollectionBounds } from "../collection.ts";
-import { diffPages, type DiffEntry } from "../page-doc/diff.ts";
-import type { DocIssue } from "../page-doc/gate.ts";
-import { writePage, type WriteInput } from "../page-doc/write.ts";
-import { blankRequired } from "../page-doc/render.ts";
+import { checkCollection, type CollectionBounds } from "@buildytech/builder-core";
+import { diffPages, type DiffEntry } from "@buildytech/builder-core";
+import type { DocIssue } from "@buildytech/builder-core";
+import { writePage, type WriteInput } from "@buildytech/builder-core";
+import { blankRequired } from "@buildytech/builder-core";
 
 export type TurnContext = {
 	brief: string;

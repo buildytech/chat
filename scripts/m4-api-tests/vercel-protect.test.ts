@@ -4,18 +4,9 @@ import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import {
-	authorizeBasic,
-	basicAuthorizationHeader,
-	clampRunBudgetMs,
-	isSharedPublicSurface,
-	stripRuntimePrefix,
-	timingSafeEqualString,
-	VERCEL_HOBBY_SAFE_MAX_DURATION_SEC,
-	VERCEL_RUN_MAX_DURATION_SEC
-} from "../../packages/builder-core/src/index.ts";
+import { authorizeBasic, basicAuthorizationHeader, clampRunBudgetMs, isSharedPublicSurface, stripRuntimePrefix, timingSafeEqualString, VERCEL_HOBBY_SAFE_MAX_DURATION_SEC, VERCEL_RUN_MAX_DURATION_SEC } from "../../packages/chat-agent/src/index.ts";
 import { handleRuntimeFetch } from "../../apps/xai-runtime/src/http.ts";
-import { contractFingerprint } from "../../packages/builder-core/src/index.ts";
+import { contractFingerprint } from "../../packages/chat-agent/src/index.ts";
 import middleware, { config as middlewareConfig } from "../../middleware.js";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "../..");

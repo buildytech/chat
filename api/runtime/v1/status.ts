@@ -28328,264 +28328,6 @@ exports["catalogSnapshot"] = catalogSnapshot;
 
 });
 
-__def("packages/builder-core/src/agent/agent-tools.v1.json", function (exports) {
-  exports.default = {
- "$schema": "https://json-schema.org/draft/2020-12/schema",
- "format": "buildy-agent-tools",
- "version": 2,
- "description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
- "modes": {
-  "ask": {
-   "description": "Conversation about the catalog and the page. Ask never changes the page: a write_page proposal is kept as a card the author applies in Build. Tool choice auto; the model's final text is the answer.",
-   "toolChoice": "auto"
-  },
-  "build": {
-   "description": "Edit the page. Tool choice auto: a text-only answer is shown and creates no proposal; a successful write_page creates one pending proposal (a diff) the author applies with Apply.",
-   "toolChoice": "auto"
-  }
- },
- "enumSources": {
-  "catalog.site": "Stock facet vocabulary: site type",
-  "catalog.section": "Stock facet vocabulary: section",
-  "catalog.job": "Stock facet vocabulary: job",
-  "catalog.industry": "Stock search vocabulary: industry",
-  "catalog.blocks": "Stock search vocabulary: block labels"
- },
- "tools": [
-  {
-   "name": "search_catalog",
-   "modes": [
-    "ask",
-    "build"
-   ],
-   "description": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Screens are ranking hints: each result lists its sections as registry items [{item, variant}] you may start from or ignore. When no renderable screen matches every facet the host drops the fewest facets and says which in relaxed. Do not repeat a search that returned items.",
-   "descriptionByMode": {
-    "ask": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored screens with their sections as registry items. Read-only."
-   },
-   "parameters": {
-    "type": "object",
-    "properties": {
-     "q": {
-      "type": "string",
-      "description": "Free text in catalog terms (English catalog words work best, e.g. sidebar, shell, kanban, pricing). Matched against Stock titles, subtitles, block names and facet labels."
-     },
-     "site": {
-      "type": "string",
-      "x-buildy-enum": "catalog.site",
-      "description": "Site type: landing (one conversion page), website (multi-page site home), app, docs, shop, blog."
-     },
-     "section": {
-      "type": "string",
-      "x-buildy-enum": "catalog.section"
-     },
-     "job": {
-      "type": "string",
-      "x-buildy-enum": "catalog.job"
-     },
-     "industry": {
-      "type": "string",
-      "x-buildy-enum": "catalog.industry"
-     },
-     "blocks": {
-      "type": "array",
-      "items": {
-       "type": "string",
-       "x-buildy-enum": "catalog.blocks"
-      },
-      "description": "Block labels every screen must contain, e.g. [\"sidenav\"] for a built-in sidebar."
-     },
-     "page": {
-      "type": "integer",
-      "minimum": 1
-     },
-     "browse": {
-      "type": "boolean",
-      "description": "true: also return facets (renderable screen counts per facet value for this filter) to drill down with another call."
-     }
-    }
-   }
-  },
-  {
-   "name": "get_block",
-   "modes": [
-    "ask",
-    "build"
-   ],
-   "description": "Read one registry item: its variants (what each sets), the props you write (names, kinds, enums, rows; ? = optional), the sample props a new block starts with, and its Stock link. item is a registry name from the item index (feature-grid), a Stock spec (block.features) or label. Read-only.",
-   "parameters": {
-    "type": "object",
-    "properties": {
-     "item": {
-      "type": "string",
-      "description": "Registry item name, Stock spec or label."
-     },
-     "variant": {
-      "type": "string",
-      "description": "Variant whose sample props to show; default variant when omitted."
-     }
-    },
-    "required": [
-     "item"
-    ]
-   }
-  },
-  {
-   "name": "get_page",
-   "modes": [
-    "ask",
-    "build"
-   ],
-   "description": "Read the page document as it is now in this turn: { version, slug, title, locale, seo, blocks:[{ id, item, variant, props }] }. props are exactly the component props. When a block throws or shows nothing in the preview, renderProblems lists it with the path of the prop to fix. Read-only.",
-   "parameters": {
-    "type": "object",
-    "properties": {}
-   }
-  },
-  {
-   "name": "write_page",
-   "modes": [
-    "ask",
-    "build"
-   ],
-   "descriptionByMode": {
-    "ask": "Write a proposal for the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). Nothing is applied: the author applies the proposal in Build with one click. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again.",
-    "build": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it (page-spec/v2 schema, each block's props against the registry props schema, no position or count rule for header or footer) and returns the diff; the author applies it with Apply. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again."
-   },
-   "description": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it and returns the diff or [{ path, code, expected, got }].",
-   "parameters": {
-    "type": "object",
-    "properties": {
-     "page": {
-      "type": "object",
-      "description": "The whole page document: { title, slug, locale, seo: { title, description }, blocks: [{ id?, item, variant?, props }] }. A block without id gets one; a new block starts from the registry sample props, then your props. locale is the ISO code of the language the author writes in.",
-      "additionalProperties": true
-     },
-     "patch": {
-      "type": "array",
-      "description": "RFC 6902 operations on the page document (add, replace, remove, move, copy, test), paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- (append).",
-      "items": {
-       "type": "object",
-       "additionalProperties": true
-      }
-     }
-    }
-   }
-  }
- ]
-};
-});
-
-__def("packages/builder-core/src/agent/agent-tools.ts", function (exports) {
-const raw = __req("packages/builder-core/src/agent/agent-tools.v1.json").default;
-const { facetVocabulary } = __req("packages/builder-core/src/catalog/search.ts");
-const { blockLabelVocabulary, vocabularyValues } = __req("packages/builder-core/src/catalog/text-search.ts");
-const AGENT_MODES = ["ask", "build"] as const;
-const agentToolsDocument = raw as unknown as AgentToolsDocument;
-const AGENT_TOOLS_VERSION = `${agentToolsDocument.format}/${agentToolsDocument.version}`;
-
-function isAgentMode(value: unknown): value is AgentMode {
-	return typeof value === "string" && (AGENT_MODES as string[]).includes(value);
-}
-
-/** Value lists named by `x-buildy-enum`: generated from the pinned catalog and the page contract, never typed here. */
-function agentEnumSource(name: string): string[] {
-	switch (name) {
-		case "catalog.site":
-			return [...facetVocabulary().site];
-		case "catalog.section":
-			return [...facetVocabulary().section];
-		case "catalog.job":
-			return [...facetVocabulary().job];
-		case "catalog.industry":
-			return vocabularyValues("industry");
-		case "catalog.blocks":
-			return blockLabelVocabulary();
-		default:
-			throw new Error(`agent-tools: unknown x-buildy-enum source ${name}`);
-	}
-}
-
-/** Fill `x-buildy-enum` markers and drop every `x-*` keyword: a plain JSON Schema the provider accepts. */
-function resolveAgentSchema<T>(node: T): T {
-	if (Array.isArray(node)) return node.map((item) => resolveAgentSchema(item)) as T;
-	if (typeof node !== "object" || node === null) return node;
-	const out: Record<string, unknown> = {};
-	for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
-		if (key === "x-buildy-enum") {
-			out.enum = agentEnumSource(String(value));
-			continue;
-		}
-		if (key.startsWith("x-")) continue;
-		out[key] = resolveAgentSchema(value);
-	}
-	return out as T;
-}
-
-function agentTool(name: string): AgentToolDefinition | null {
-	return agentToolsDocument.tools.find((tool) => tool.name === name) ?? null;
-}
-
-/** Tool names one mode offers, in file order. */
-function agentToolNames(mode: AgentMode): string[] {
-	return agentToolsDocument.tools.filter((tool) => tool.modes.includes(mode)).map((tool) => tool.name);
-}
-
-function toolOffersMode(name: string, mode: AgentMode): boolean {
-	return Boolean(agentTool(name)?.modes.includes(mode));
-}
-
-/** Resolved parameters (object schema) of one tool. */
-function agentToolParameters(name: string): JsonSchemaObject {
-	const tool = agentTool(name);
-	if (!tool) throw new Error(`agent-tools: unknown tool ${name}`);
-	return resolveAgentSchema(tool.parameters);
-}
-
-const RESOLVED = new Map<string, OpenAiFunctionTool[]>();
-
-/** OpenAI-compatible tool list of a mode (optionally narrowed to `only`). Cached per mode and subset. */
-function agentOpenAiTools(mode: AgentMode, only?: string[]): OpenAiFunctionTool[] {
-	const key = `${mode}:${only ? only.join(",") : "*"}`;
-	const hit = RESOLVED.get(key);
-	if (hit) return hit;
-	const tools = agentToolsDocument.tools
-		.filter((tool) => tool.modes.includes(mode) && (!only || only.includes(tool.name)))
-		.map((tool) => ({
-			type: "function" as const,
-			function: {
-				name: tool.name,
-				description: tool.descriptionByMode?.[mode] ?? tool.description,
-				parameters: resolveAgentSchema(tool.parameters)
-			}
-		}));
-	RESOLVED.set(key, tools);
-	return tools;
-}
-
-function properties(name: string): Record<string, unknown> {
-	return (agentToolParameters(name).properties ?? {}) as Record<string, unknown>;
-}
-
-/** search_catalog parameter properties (facet enums from the pinned catalog). */
-function catalogToolParameterSchema(): Record<string, Record<string, unknown>> {
-	return properties("search_catalog") as Record<string, Record<string, unknown>>;
-}
-
-exports["AGENT_MODES"] = AGENT_MODES;
-exports["agentToolsDocument"] = agentToolsDocument;
-exports["AGENT_TOOLS_VERSION"] = AGENT_TOOLS_VERSION;
-exports["isAgentMode"] = isAgentMode;
-exports["agentEnumSource"] = agentEnumSource;
-exports["resolveAgentSchema"] = resolveAgentSchema;
-exports["agentTool"] = agentTool;
-exports["agentToolNames"] = agentToolNames;
-exports["toolOffersMode"] = toolOffersMode;
-exports["agentToolParameters"] = agentToolParameters;
-exports["agentOpenAiTools"] = agentOpenAiTools;
-exports["catalogToolParameterSchema"] = catalogToolParameterSchema;
-
-});
-
 __def("packages/builder-core/src/catalog/props-overrides.ts", function (exports) {
 
 type Json = unknown;
@@ -29115,6 +28857,16 @@ exports["fieldAtElement"] = fieldAtElement;
 
 });
 
+__def("packages/builder-core/src/brief.ts", function (exports) {
+const { SCENARIO_IDS } = __req("packages/builder-core/src/copy.ts");
+function isScenarioId(value: unknown): value is ScenarioId {
+	return typeof value === "string" && (SCENARIO_IDS as string[]).includes(value);
+}
+
+exports["isScenarioId"] = isScenarioId;
+
+});
+
 __def("packages/builder-core/src/policy.ts", function (exports) {
 
 const POLICY_VERSION = "page-agent/4";
@@ -29138,172 +28890,6 @@ exports["MODEL_CATALOG_VERSION"] = MODEL_CATALOG_VERSION;
 exports["TRIAL_POLICY_VERSION"] = TRIAL_POLICY_VERSION;
 exports["ALLOWED_TOOLS"] = ALLOWED_TOOLS;
 exports["RUN_BUDGET"] = RUN_BUDGET;
-
-});
-
-__def("packages/builder-core/src/catalog/fingerprint.ts", function (exports) {
-const { POLICY_VERSION } = __req("packages/builder-core/src/policy.ts");
-const { catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
-const { SEARCH_INDEX_SOURCES } = __req("packages/builder-core/src/catalog/text-search.ts");
-const { AGENT_TOOLS_VERSION } = __req("packages/builder-core/src/agent/agent-tools.ts");
-function fnv1a64(text: string): string {
-	let h1 = 0x811c9dc5;
-	let h2 = 0xcbf29ce4;
-	for (let i = 0; i < text.length; i++) {
-		const c = text.charCodeAt(i);
-		h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
-		h2 = Math.imul(h2 ^ (c + 0x9e), 0x01000193) >>> 0;
-	}
-	return h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
-}
-
-let cached: string | null = null;
-
-/**
- * Identity of the page contract the browser and the runtime validate against: block kinds,
- * renderer map, Stock snapshot digest, search index sources, policy version and agent tools version. A browser tab
- * built from another deploy sends a different value and gets client_outdated instead of a
- * proposal its stale validator would reject.
- */
-function contractFingerprint(): string {
-	if (cached) return cached;
-	const rendererMap = Object.keys(catalogSnapshot.rendererMap)
-		.sort()
-		.map((key) => `${key}=${catalogSnapshot.rendererMap[key]}`);
-	cached = `cf1-${fnv1a64(
-		JSON.stringify({
-			kinds: catalogSnapshot.rendererKinds,
-			rendererMap,
-			snapshot: catalogSnapshot.sourceDigest,
-			index: SEARCH_INDEX_SOURCES,
-			policy: POLICY_VERSION,
-			tools: AGENT_TOOLS_VERSION
-		})
-	)}`;
-	return cached;
-}
-
-exports["contractFingerprint"] = contractFingerprint;
-
-});
-
-__def("packages/builder-core/src/brief.ts", function (exports) {
-const { SCENARIO_IDS } = __req("packages/builder-core/src/copy.ts");
-function isScenarioId(value: unknown): value is ScenarioId {
-	return typeof value === "string" && (SCENARIO_IDS as string[]).includes(value);
-}
-
-exports["isScenarioId"] = isScenarioId;
-
-});
-
-__def("packages/builder-core/src/env-map.ts", function (exports) {
-
-function readEnv(env?: EnvMap): EnvMap {
-	if (env) return env;
-	const g = globalThis as typeof globalThis & { process?: { env?: EnvMap } };
-	return g.process?.env ?? {};
-}
-
-exports["readEnv"] = readEnv;
-
-});
-
-__def("packages/builder-core/src/xai-env.ts", function (exports) {
-const { readEnv } = __req("packages/builder-core/src/env-map.ts");
-const XAI_SECRET_ENV = ["XAI_API_KEY"] as const;
-const RUNTIME_AUTH_ENV = ["BUILDY_RUNTIME_BASIC_AUTH_USER", "BUILDY_RUNTIME_BASIC_AUTH_PASSWORD"] as const;
-
-const XAI_BASE_URL = "https://api.x.ai/v1";
-
-/** Parent-box evidence 2026-11-08. Runtime still re-lists the account. Not a live claim without a key. */
-const PARENT_VERIFIED_MODEL_IDS = [
-	"grok-4.20-0309-non-reasoning",
-	"grok-4.20-0309-reasoning",
-	"grok-4.20-multi-agent-0309",
-	"grok-4.7",
-	"grok-build-0.1",
-	"grok-imagine-image",
-	"grok-imagine-image-2.0"
-] as const;
-
-const PARENT_VERIFIED_CHAT_IDS = [
-	"grok-4.20-0309-non-reasoning",
-	"grok-4.20-0309-reasoning",
-	"grok-4.20-multi-agent-0309",
-	"grok-4.7",
-	"grok-build-0.1"
-] as const;
-
-const PARENT_VERIFIED_IMAGE_IDS = ["grok-imagine-image", "grok-imagine-image-2.0"] as const;
-
-/** Chat Completions ping succeeded. Parent later proved tool protocol on a synthetic fixture; Stock assembly is not proven. */
-const CANDIDATE_CHAT_MODEL = "grok-4.20-0309-non-reasoning";
-
-const XAI_RUNTIME_NOTES = {
-	provider: "Official xAI REST at https://api.x.ai/v1 with Bearer XAI_API_KEY.",
-	discover: "GET /v1/models (data[]), GET /v1/language-models (models[]), GET /v1/image-generation-models (models[]). Key-scoped.",
-	chat: "POST /v1/chat/completions, stream true. Conservative app tools use createOpenAI({ name: 'xai', baseURL, apiKey }).chat(actualModelId) + streamText.",
-	responses: "AI SDK 7 xai(modelId) defaults to Responses. This app does not use that default for catalog tools. If Responses is ever chosen, store:false. No zero-retention promise.",
-	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
-	tools: "Application-executed tools only: get_page, search_catalog, get_block, write_page. Never mix hosted web_search / code_execution.",
-	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",
-	toolCalling: "Parent 2026-11-08: bounded Chat Completions tool-protocol test on grok-4.20-0309-non-reasoning succeeded (2 steps, HTTP 200, tool calls, no retries, usage 393+434=827). That test used synthetic TEST blocks and artificial search_blocks(section)/propose_page tools, not this app's Stock catalog or search_catalog/get_block_details/propose_layout. Protocol support is proven. Page assembly is not proven. Do not treat the fixture miss (section=hero vs job=hero, empty blocks) as a production catalog bug."
-} as const;
-
-function readXaiKeyState(env?: EnvMap): XaiKeyState {
-	const bag = readEnv(env);
-	if (bag.XAI_API_KEY?.trim()) {
-		return { present: true, source: "XAI_API_KEY", code: "xai_api_key_present" };
-	}
-	return { present: false, source: null, code: "xai_api_key_missing" };
-}
-
-function hasPublicSecretLeak(env?: EnvMap): string[] {
-	const bag = readEnv(env);
-	const leaks: string[] = [];
-	for (const key of Object.keys(bag)) {
-		if (/^(VITE_|PUBLIC_|NEXT_PUBLIC_)/.test(key) && /KEY|SECRET|TOKEN|PASSWORD/i.test(key) && bag[key]?.trim()) {
-			leaks.push(key);
-		}
-	}
-	return leaks;
-}
-
-function classifyDiscoveredModels(ids: string[]): {
-	chatIds: string[];
-	imageIds: string[];
-	otherIds: string[];
-	candidate: string | null;
-} {
-	const unique = [...new Set(ids.filter(Boolean))];
-	const imageIds = unique.filter((id) => /imagine|image/i.test(id));
-	const chatIds = unique.filter((id) => !imageIds.includes(id));
-	const otherIds: string[] = [];
-	const candidate = chatIds.includes(CANDIDATE_CHAT_MODEL)
-		? CANDIDATE_CHAT_MODEL
-		: (chatIds[0] ?? null);
-	return { chatIds, imageIds, otherIds, candidate };
-}
-
-/** Status-page default only. Never substitute this for a selected chat run. */
-function pickChatModel(discoveredChatIds: string[]): string | null {
-	if (discoveredChatIds.includes(CANDIDATE_CHAT_MODEL)) return CANDIDATE_CHAT_MODEL;
-	return discoveredChatIds[0] ?? null;
-}
-
-exports["XAI_SECRET_ENV"] = XAI_SECRET_ENV;
-exports["RUNTIME_AUTH_ENV"] = RUNTIME_AUTH_ENV;
-exports["XAI_BASE_URL"] = XAI_BASE_URL;
-exports["PARENT_VERIFIED_MODEL_IDS"] = PARENT_VERIFIED_MODEL_IDS;
-exports["PARENT_VERIFIED_CHAT_IDS"] = PARENT_VERIFIED_CHAT_IDS;
-exports["PARENT_VERIFIED_IMAGE_IDS"] = PARENT_VERIFIED_IMAGE_IDS;
-exports["CANDIDATE_CHAT_MODEL"] = CANDIDATE_CHAT_MODEL;
-exports["XAI_RUNTIME_NOTES"] = XAI_RUNTIME_NOTES;
-exports["readXaiKeyState"] = readXaiKeyState;
-exports["hasPublicSecretLeak"] = hasPublicSecretLeak;
-exports["classifyDiscoveredModels"] = classifyDiscoveredModels;
-exports["pickChatModel"] = pickChatModel;
 
 });
 
@@ -30383,608 +29969,6 @@ exports["collectionDraft"] = collectionDraft;
 
 });
 
-__def("packages/builder-core/src/models.ts", function (exports) {
-const { parsePageV2 } = __req("packages/page-contract/src/index.ts");
-const { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } = __req("packages/builder-core/src/xai-env.ts");
-const { isAgentMode } = __req("packages/builder-core/src/agent/agent-tools.ts");
-const { collectionBounds } = __req("packages/builder-core/src/collection.ts");
-const GROK_CHAT_MODELS = [
-	{
-		id: "grok-4.20-0309-non-reasoning",
-		label: "Grok 4.20 Non-reasoning",
-		intendedRole: "block-selection",
-		intendedRoleNote: "Owner suggestion for later: block selection. Not a technical capability claim. Not used for routing."
-	},
-	{
-		id: "grok-4.20-0309-reasoning",
-		label: "Grok 4.20 Reasoning",
-		intendedRole: "block-selection",
-		intendedRoleNote: "Owner suggestion for later: block selection. Not a technical capability claim. Not used for routing."
-	},
-	{
-		id: "grok-4.20-multi-agent-0309",
-		label: "Grok 4.20 Multi-agent",
-		intendedRole: "task-distribution",
-		intendedRoleNote: "Owner suggestion for later: task distribution. Not a technical capability claim. Not used for routing.",
-		/**
-		 * Live probe 2026-11-09: chat completions answers 400 "Multi Agent requests are not allowed
-		 * on chat completions"; the Responses API answers 400 "Client-side tools for multi-agent
-		 * models require beta access". The catalog tool loop cannot run on it.
-		 */
-		toolLoop: "unavailable",
-		unavailableCode: "multi_agent_tools_unavailable"
-	},
-	{
-		id: "grok-4.7",
-		label: "Grok 4.7",
-		intendedRole: "consulting",
-		intendedRoleNote: "Owner suggestion for later: consulting. Not a technical capability claim. Not used for routing.",
-		/**
-		 * Live runs 2026-11-09 (dashboard prompt, tool_choice "required", 285 s budget): 4 of 7 finished,
-		 * in 54-227 s; the rest failed after 169-240 s (provider error, no propose_layout, timeout).
-		 * Answers in prose on tool_choice "auto". Too slow and unreliable for the catalog tool loop.
-		 */
-		toolLoop: "unavailable",
-		unavailableCode: "model_too_slow"
-	},
-	{
-		id: "grok-build-0.1",
-		label: "Grok Build 0.1",
-		intendedRole: "assembly",
-		intendedRoleNote: "Owner suggestion for later: assembly. Not a technical capability claim. Not used for routing."
-	}
-] as const;
-
-function modelRunsToolLoop(model: GrokChatModel | null | undefined): boolean {
-	if (!model) return false;
-	return !("toolLoop" in model && model.toolLoop === "unavailable");
-}
-
-function modelUnavailableCode(model: GrokChatModel | null | undefined): string | null {
-	if (!model || modelRunsToolLoop(model)) return null;
-	return "unavailableCode" in model ? model.unavailableCode : "model_tools_unavailable";
-}
-
-const DEFAULT_CHAT_MODEL_ID: GrokChatModelId = CANDIDATE_CHAT_MODEL;
-
-function getChatModel(id: string): GrokChatModel | null {
-	return GROK_CHAT_MODELS.find((m) => m.id === id) ?? null;
-}
-
-function formatChatModelChoice(model: GrokChatModel): string {
-	return `${model.label} (${model.id})`;
-}
-
-/**
- * Map a UI selection to the backend model id.
- * Never substitutes another model. Image IDs are rejected for chat.
- * When the account list is known, the id must be in that list.
- */
-function resolveChatModelRequest(input: {
-	requestedId: string | null | undefined;
-	discoveredChatIds?: string[] | null;
-	allowUnlistedTrial?: boolean;
-}): ModelResolveOk | ModelResolveError {
-	const requestedId = String(input.requestedId ?? "").trim();
-	if (!requestedId) {
-		return {
-			ok: false,
-			code: "missing_model_id",
-			message: "Select a Grok chat model before sending.",
-			requestedId
-		};
-	}
-	if ((PARENT_VERIFIED_IMAGE_IDS as string[]).includes(requestedId) || /imagine|image/i.test(requestedId)) {
-		return {
-			ok: false,
-			code: "image_model_not_for_chat",
-			message: `${requestedId} is an image model and is not a chat choice.`,
-			requestedId
-		};
-	}
-	const catalog = getChatModel(requestedId);
-	if (!catalog) {
-		return {
-			ok: false,
-			code: "unknown_chat_model",
-			message: `${requestedId} is not one of the five verified Grok chat models.`,
-			requestedId
-		};
-	}
-	if (!modelRunsToolLoop(catalog) && modelUnavailableCode(catalog) === "model_too_slow") {
-		return {
-			ok: false,
-			code: "model_too_slow",
-			message: `${catalog.label} (${requestedId}) is disabled here: in live runs it took 1-4 minutes per page and often timed out or skipped the page tool. Pick another model. No other model was substituted.`,
-			requestedId
-		};
-	}
-	if (!modelRunsToolLoop(catalog)) {
-		return {
-			ok: false,
-			code: "model_tools_unavailable",
-			message: `${catalog.label} (${requestedId}) cannot run this app's catalog tools: xAI rejects client-side tools for multi-agent models (chat completions not allowed; the Responses API needs beta access). Pick another model. No other model was substituted.`,
-			requestedId
-		};
-	}
-	const discovered = input.discoveredChatIds;
-	if (Array.isArray(discovered)) {
-		if (!discovered.includes(requestedId)) {
-			return {
-				ok: false,
-				code: "model_not_enabled_on_account",
-				message: `${catalog.label} (${requestedId}) is not enabled on this account. No other model was substituted.`,
-				requestedId
-			};
-		}
-		return { ok: true, modelId: catalog.id, label: catalog.label, live: true };
-	}
-	if (input.allowUnlistedTrial) {
-		return { ok: true, modelId: catalog.id, label: catalog.label, live: false };
-	}
-	return {
-		ok: false,
-		code: "model_not_enabled_on_account",
-		message: `${catalog.label} (${requestedId}) cannot be used until the account model list includes it. No fallback was selected.`,
-		requestedId
-	};
-}
-
-function assertNoFallback(requestedId: string, executedId: string): ModelResolveError | null {
-	if (requestedId === executedId) return null;
-	return {
-		ok: false,
-		code: "silent_fallback_forbidden",
-		message: `Requested ${requestedId} but the run used ${executedId}. Silent model switch is not allowed.`,
-		requestedId
-	};
-}
-
-/** A POST /v1/run body mapped onto one exact chat model and a trusted turn context (ADR 0034). */
-function parsePageDoc(raw: unknown): PageV2 | undefined {
-	if (raw == null) return undefined;
-	try {
-		return parsePageV2(raw);
-	} catch {
-		return undefined;
-	}
-}
-
-/**
- * Map a POST /v1/run body onto the exact requested chat model.
- * The discovered list never replaces a missing or unavailable id.
- */
-function mapChatRunRequest(
-	body: {
-		modelId?: unknown;
-		brief?: unknown;
-		screenId?: unknown;
-		expectedRevision?: unknown;
-		currentPage?: unknown;
-		shownPage?: unknown;
-		mode?: unknown;
-		collection?: unknown;
-		scopeBlockIds?: unknown;
-		conversation?: unknown;
-	},
-	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
-): { ok: true; request: ChatRunRequest } | ModelResolveError {
-	const resolved = resolveChatModelRequest({
-		requestedId: typeof body.modelId === "string" ? body.modelId : "",
-		discoveredChatIds: opts.discoveredChatIds,
-		allowUnlistedTrial: opts.allowUnlistedTrial
-	});
-	if (!resolved.ok) return resolved;
-	return {
-		ok: true,
-		request: {
-			modelId: resolved.modelId,
-			label: resolved.label,
-			live: resolved.live,
-			brief: String(body.brief ?? ""),
-			mode: isAgentMode(body.mode) ? body.mode : "build",
-			currentPage: parsePageDoc(body.currentPage),
-			shownPage: parsePageDoc(body.shownPage),
-			screenId: typeof body.screenId === "string" && body.screenId !== "null" ? body.screenId : null,
-			expectedRevision: typeof body.expectedRevision === "number" ? body.expectedRevision : 0,
-			scopeBlockIds: Array.isArray(body.scopeBlockIds) ? [...new Set(body.scopeBlockIds.filter((id): id is string => typeof id === "string"))].slice(0, 100) : undefined,
-			conversation: Array.isArray(body.conversation)
-				? body.conversation.slice(-8).flatMap((row) => (row && typeof row === "object" && (row.role === "user" || row.role === "assistant") && typeof row.text === "string" ? [{ role: row.role as "user" | "assistant", text: row.text.slice(0, 2000) }] : []))
-				: [],
-			collection: collectionBounds(body.collection)
-		}
-	};
-}
-
-void PARENT_VERIFIED_CHAT_IDS;
-
-exports["GROK_CHAT_MODELS"] = GROK_CHAT_MODELS;
-exports["modelRunsToolLoop"] = modelRunsToolLoop;
-exports["modelUnavailableCode"] = modelUnavailableCode;
-exports["DEFAULT_CHAT_MODEL_ID"] = DEFAULT_CHAT_MODEL_ID;
-exports["getChatModel"] = getChatModel;
-exports["formatChatModelChoice"] = formatChatModelChoice;
-exports["resolveChatModelRequest"] = resolveChatModelRequest;
-exports["assertNoFallback"] = assertNoFallback;
-exports["mapChatRunRequest"] = mapChatRunRequest;
-
-});
-
-__def("packages/builder-core/src/usage.ts", function (exports) {
-
-const COST_UNAVAILABLE: CostUnavailable = {
-	available: false,
-	reason: "no_official_current_rates_in_repo",
-	note: "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
-};
-
-function unknownUsage(reason: RunUsage["incompleteReason"], steps = 0): RunUsage {
-	return {
-		status: "incomplete",
-		incompleteReason: reason,
-		steps,
-		promptTokens: "unknown",
-		completionTokens: "unknown",
-		totalTokens: "unknown",
-		reportedBy: "none",
-		cost: COST_UNAVAILABLE
-	};
-}
-
-function asCount(value: unknown): number | null {
-	if (typeof value === "number" && Number.isFinite(value) && value >= 0) return value;
-	return null;
-}
-
-/** Read one provider usage object. Missing fields stay absent; never invent 0. */
-function readProviderUsage(raw: unknown): StepUsage | null {
-	if (!raw || typeof raw !== "object") return null;
-	const u = raw as Record<string, unknown>;
-	const prompt = asCount(u.prompt_tokens ?? u.inputTokens ?? u.promptTokens);
-	const completion = asCount(u.completion_tokens ?? u.outputTokens ?? u.completionTokens);
-	const total = asCount(u.total_tokens ?? u.totalTokens);
-	if (prompt === null && completion === null && total === null) return null;
-	const details =
-		u.completion_tokens_details && typeof u.completion_tokens_details === "object"
-			? (u.completion_tokens_details as Record<string, unknown>)
-			: u.outputTokenDetails && typeof u.outputTokenDetails === "object"
-				? (u.outputTokenDetails as Record<string, unknown>)
-				: null;
-	const promptDetails =
-		u.prompt_tokens_details && typeof u.prompt_tokens_details === "object"
-			? (u.prompt_tokens_details as Record<string, unknown>)
-			: null;
-	const reasoning = asCount(details?.reasoning_tokens ?? details?.reasoningTokens);
-	const cached = asCount(promptDetails?.cached_tokens ?? promptDetails?.cacheTokens);
-	const step: StepUsage = {
-		promptTokens: prompt ?? "unknown",
-		completionTokens: completion ?? "unknown",
-		totalTokens: total ?? (prompt !== null && completion !== null ? prompt + completion : "unknown")
-	};
-	if (reasoning !== null) step.reasoningTokens = reasoning;
-	if (cached !== null) step.cachedTokens = cached;
-	return step;
-}
-
-function addCount(a: TokenCount, b: TokenCount): TokenCount {
-	if (a === "unknown" || b === "unknown") return "unknown";
-	return a + b;
-}
-
-/** Sum tool-loop steps. Uses prompt+completion per step; does not add total on top of those. */
-function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, opts?: { incomplete?: RunUsage["incompleteReason"] }): RunUsage {
-	const present = steps.filter((s): s is StepUsage => Boolean(s));
-	if (opts?.incomplete) {
-		if (present.length === 0) return unknownUsage(opts.incomplete, steps.length);
-	}
-	if (present.length === 0) {
-		return unknownUsage(opts?.incomplete ?? "error", 0);
-	}
-	let prompt: TokenCount = 0;
-	let completion: TokenCount = 0;
-	let reasoning = 0;
-	let cached = 0;
-	let sawReasoning = false;
-	let sawCached = false;
-	for (const step of present) {
-		prompt = addCount(prompt, step.promptTokens);
-		completion = addCount(completion, step.completionTokens);
-		if (typeof step.reasoningTokens === "number") {
-			sawReasoning = true;
-			reasoning += step.reasoningTokens;
-		}
-		if (typeof step.cachedTokens === "number") {
-			sawCached = true;
-			cached += step.cachedTokens;
-		}
-	}
-	const total: TokenCount =
-		prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion;
-	const last = present[present.length - 1];
-	const run: RunUsage = {
-		status: opts?.incomplete ? "incomplete" : "complete",
-		incompleteReason: opts?.incomplete,
-		steps: present.length,
-		promptTokens: prompt,
-		completionTokens: completion,
-		totalTokens: total,
-		reportedBy: "xai-provider",
-		aggregation: "sum-of-tool-loop-requests",
-		lastStep: last,
-		cost: COST_UNAVAILABLE
-	};
-	if (sawReasoning) run.reasoningTokens = reasoning;
-	if (sawCached) run.cachedTokens = cached;
-	return run;
-}
-
-function aggregateSessionUsage(runs: RunUsage[]): SessionUsage {
-	if (runs.length === 0) {
-		return {
-			status: "complete",
-			runs: 0,
-			incompleteRuns: 0,
-			promptTokens: 0,
-			completionTokens: 0,
-			totalTokens: 0,
-			cost: COST_UNAVAILABLE
-		};
-	}
-	const incompleteRuns = runs.filter((r) => r.status === "incomplete").length;
-	let prompt: TokenCount = 0;
-	let completion: TokenCount = 0;
-	let reasoning = 0;
-	let cached = 0;
-	let sawReasoning = false;
-	let sawCached = false;
-	for (const run of runs) {
-		prompt = addCount(prompt, run.promptTokens);
-		completion = addCount(completion, run.completionTokens);
-		if (typeof run.reasoningTokens === "number") {
-			sawReasoning = true;
-			reasoning += run.reasoningTokens;
-		}
-		if (typeof run.cachedTokens === "number") {
-			sawCached = true;
-			cached += run.cachedTokens;
-		}
-	}
-	const session: SessionUsage = {
-		status: incompleteRuns > 0 ? "incomplete" : "complete",
-		runs: runs.length,
-		incompleteRuns,
-		promptTokens: prompt,
-		completionTokens: completion,
-		totalTokens: prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion,
-		cost: COST_UNAVAILABLE
-	};
-	if (sawReasoning) session.reasoningTokens = reasoning;
-	if (sawCached) session.cachedTokens = cached;
-	return session;
-}
-
-/** Never invent a dollar amount. Official rates are not pinned in this repo. */
-function costForModel(_modelId: string, _usage: RunUsage): CostUnavailable {
-	return COST_UNAVAILABLE;
-}
-
-function formatTokens(value: TokenCount): string {
-	return value === "unknown" ? "UNKNOWN" : String(value);
-}
-
-exports["COST_UNAVAILABLE"] = COST_UNAVAILABLE;
-exports["unknownUsage"] = unknownUsage;
-exports["readProviderUsage"] = readProviderUsage;
-exports["aggregateStepUsage"] = aggregateStepUsage;
-exports["aggregateSessionUsage"] = aggregateSessionUsage;
-exports["costForModel"] = costForModel;
-exports["formatTokens"] = formatTokens;
-
-});
-
-__def("packages/builder-core/src/redact.ts", function (exports) {
-
-const SECRET_HEADER = /^(authorization|proxy-authorization|x-api-key|x-user-api-key|cookie|set-cookie)$/i;
-const SECRET_KEY = /(api[_-]?key|authorization|secret|token|password|credential|cursor_api_key|xai_api_key)/i;
-const BEARER = /\bBearer\s+[A-Za-z0-9._\-+/=]+/gi;
-const CANARY_HINT = /\bsk-[A-Za-z0-9]{8,}\b/g;
-
-function redactValue(value: unknown, key = ""): unknown {
-	if (SECRET_KEY.test(key) || SECRET_HEADER.test(key)) return "[redacted]";
-	if (typeof value === "string") {
-		return value.replace(BEARER, "Bearer [redacted]").replace(CANARY_HINT, "[redacted]");
-	}
-	if (Array.isArray(value)) return value.map((item) => redactValue(item));
-	if (value && typeof value === "object") {
-		const out: Record<string, unknown> = {};
-		for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-			out[k] = redactValue(v, k);
-		}
-		return out;
-	}
-	return value;
-}
-
-function safeErrorMessage(err: unknown): { code: string; message: string } {
-	const raw = err instanceof Error ? err.message : String(err);
-	const code =
-		err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string"
-			? (err as { code: string }).code
-			: "error";
-	const message = String(redactValue(raw)).slice(0, 280);
-	return { code, message };
-}
-
-function assertNoSecret(payload: unknown, canary: string): void {
-	if (!canary) return;
-	const blob = JSON.stringify(payload);
-	if (blob.includes(canary)) {
-		throw Object.assign(new Error("secret_leaked"), { code: "secret_leaked" });
-	}
-}
-
-exports["redactValue"] = redactValue;
-exports["safeErrorMessage"] = safeErrorMessage;
-exports["assertNoSecret"] = assertNoSecret;
-
-});
-
-__def("packages/builder-core/src/protect.ts", function (exports) {
-const { readEnv } = __req("packages/builder-core/src/env-map.ts");
-const VERCEL_HOBBY_SAFE_MAX_DURATION_SEC = 60;
-/**
- * /runtime/v1/run: Hobby with fluid compute allows up to 300 s. Slow reasoning models
- * (for example grok-4.7) need more than 60 s for a tool loop.
- * https://vercel.com/docs/functions/configuring-functions/duration
- */
-const VERCEL_RUN_MAX_DURATION_SEC = 300;
-/** The run aborts itself before the platform kills it, so the client gets a clean timeout code. */
-const RUN_BUDGET_SHARED_MS = (VERCEL_RUN_MAX_DURATION_SEC - 15) * 1000;
-const RUN_BUDGET_LOCAL_MS = 240_000;
-
-function isLoopbackBind(bind: string | undefined): boolean {
-	const value = (bind ?? "127.0.0.1").trim();
-	return value === "127.0.0.1" || value === "::1" || value === "localhost";
-}
-
-function isSharedPublicSurface(env?: EnvMap): boolean {
-	env = readEnv(env);
-	const vercel = env.VERCEL?.trim();
-	if (vercel === "1" || vercel === "true") return true;
-	const vercelEnv = env.VERCEL_ENV?.trim();
-	if (vercelEnv === "production" || vercelEnv === "preview" || vercelEnv === "development") return true;
-	return !isLoopbackBind(env.BUILDY_RUNTIME_BIND);
-}
-
-function readBasicAuthConfig(env?: EnvMap): {
-	user: string;
-	pass: string;
-	configured: boolean;
-} {
-	env = readEnv(env);
-	const user = env.BUILDY_RUNTIME_BASIC_AUTH_USER?.trim() ?? "";
-	const pass = env.BUILDY_RUNTIME_BASIC_AUTH_PASSWORD?.trim() ?? "";
-	return { user, pass, configured: Boolean(user && pass) };
-}
-
-function decodeBasic(authorization: string): { user: string; pass: string } | null {
-	if (!authorization.startsWith("Basic ")) return null;
-	const encoded = authorization.slice(6).trim();
-	if (!encoded) return null;
-	try {
-		const decoded = atob(encoded);
-		const idx = decoded.indexOf(":");
-		if (idx < 0) return null;
-		return { user: decoded.slice(0, idx), pass: decoded.slice(idx + 1) };
-	} catch {
-		return null;
-	}
-}
-
-/** Web-safe constant-time compare. Do not import node:crypto (browser barrel). */
-function timingSafeEqualString(left: string, right: string): boolean {
-	const encoder = new TextEncoder();
-	const a = encoder.encode(left);
-	const b = encoder.encode(right);
-	const len = Math.max(a.length, b.length, 1);
-	let diff = a.length ^ b.length;
-	for (let i = 0; i < len; i++) {
-		diff |= (a[i] ?? 0) ^ (b[i] ?? 0);
-	}
-	return diff === 0;
-}
-
-function authorizeBasic(
-	authorization: string | null | undefined,
-	env?: EnvMap,
-	opts: { allowLoopbackUnauthenticated?: boolean } = {}
-): { ok: true } | { ok: false; code: "unauthorized" | "basic_auth_required_before_shared_bind" } {
-	env = readEnv(env);
-	const shared = isSharedPublicSurface(env);
-	const { user, pass, configured } = readBasicAuthConfig(env);
-	if (!configured) {
-		const loopbackOk =
-			Boolean(opts.allowLoopbackUnauthenticated) && !shared && isLoopbackBind(env.BUILDY_RUNTIME_BIND);
-		if (loopbackOk) return { ok: true };
-		return { ok: false, code: "basic_auth_required_before_shared_bind" };
-	}
-	const parsed = decodeBasic(authorization ?? "") ?? { user: "", pass: "" };
-	const userOk = timingSafeEqualString(parsed.user, user);
-	const passOk = timingSafeEqualString(parsed.pass, pass);
-	if (!userOk || !passOk) {
-		return { ok: false, code: "unauthorized" };
-	}
-	return { ok: true };
-}
-
-function unauthorizedResponse(
-	code: "unauthorized" | "basic_auth_required_before_shared_bind" = "unauthorized"
-): Response {
-	const message =
-		code === "basic_auth_required_before_shared_bind"
-			? "Basic authentication is not configured. Public access is denied."
-			: "Basic authentication required.";
-	return new Response(JSON.stringify({ error: { code, message } }), {
-		status: 401,
-		headers: {
-			"WWW-Authenticate": 'Basic realm="buildy-constructor"',
-			"content-type": "application/json",
-			"cache-control": "no-store"
-		}
-	});
-}
-
-function gateRequest(
-	request: Request,
-	env?: EnvMap,
-	opts: { allowLoopbackUnauthenticated?: boolean } = {}
-): Response | null {
-	const result = authorizeBasic(request.headers.get("authorization"), readEnv(env), opts);
-	if (result.ok) return null;
-	return unauthorizedResponse(result.code);
-}
-
-function basicAuthorizationHeader(user: string, pass: string): string {
-	return `Basic ${btoa(`${user}:${pass}`)}`;
-}
-
-function clampRunBudgetMs(requested: unknown, env?: EnvMap): number {
-	const asked = Number(requested);
-	const cap = isSharedPublicSurface(readEnv(env)) ? RUN_BUDGET_SHARED_MS : RUN_BUDGET_LOCAL_MS;
-	const raw = Number.isFinite(asked) && asked > 0 ? asked : cap;
-	return Math.min(raw, cap);
-}
-
-function stripRuntimePrefix(pathname: string): string {
-	let path = pathname || "/";
-	for (const prefix of ["/api/runtime", "/runtime", "/api"]) {
-		if (path === prefix) return "/";
-		if (path.startsWith(`${prefix}/`)) {
-			path = path.slice(prefix.length);
-			break;
-		}
-	}
-	if (!path.startsWith("/")) path = `/${path}`;
-	return path;
-}
-
-exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = VERCEL_HOBBY_SAFE_MAX_DURATION_SEC;
-exports["VERCEL_RUN_MAX_DURATION_SEC"] = VERCEL_RUN_MAX_DURATION_SEC;
-exports["RUN_BUDGET_SHARED_MS"] = RUN_BUDGET_SHARED_MS;
-exports["RUN_BUDGET_LOCAL_MS"] = RUN_BUDGET_LOCAL_MS;
-exports["isLoopbackBind"] = isLoopbackBind;
-exports["isSharedPublicSurface"] = isSharedPublicSurface;
-exports["readBasicAuthConfig"] = readBasicAuthConfig;
-exports["timingSafeEqualString"] = timingSafeEqualString;
-exports["authorizeBasic"] = authorizeBasic;
-exports["unauthorizedResponse"] = unauthorizedResponse;
-exports["gateRequest"] = gateRequest;
-exports["basicAuthorizationHeader"] = basicAuthorizationHeader;
-exports["clampRunBudgetMs"] = clampRunBudgetMs;
-exports["stripRuntimePrefix"] = stripRuntimePrefix;
-
-});
-
 __def("packages/builder-core/src/catalog/page-family.ts", function (exports) {
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
 const { familyLabelForKind, FAMILY_HOME_SCREENS } = __req("packages/builder-core/src/catalog/provenance.ts");
@@ -31636,13 +30620,399 @@ exports["showsContent"] = __req("packages/builder-core/src/page-doc/probe.ts")["
 
 });
 
-__def("packages/builder-core/src/agent/blocks.ts", function (exports) {
-const { catalogEntryBySpec, catalogSourceFor } = __req("packages/builder-core/src/catalog/sources.ts");
-const { LUCIDE_ICON_HINT, propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
-const { allItems, itemInfo, itemOfSpec } = __req("packages/builder-core/src/page-doc/items.ts");
-const { sampleProps } = __req("packages/builder-core/src/page-doc/render.ts");
-const { blockAssetUrl, blockThumbUrl } = __req("packages/builder-core/src/catalog/provenance.ts");
-const { askBlockCard } = __req("packages/builder-core/src/catalog/details.ts");
+__def("packages/builder-core/src/index.ts", function (exports) {
+exports["SCENARIO_IDS"] = __req("packages/builder-core/src/copy.ts")["SCENARIO_IDS"];
+exports["SCENARIO_PROMPTS"] = __req("packages/builder-core/src/copy.ts")["SCENARIO_PROMPTS"];
+exports["PLACEHOLDERS"] = __req("packages/builder-core/src/copy.ts")["PLACEHOLDERS"];
+exports["PLACEHOLDER_MODES"] = __req("packages/builder-core/src/copy.ts")["PLACEHOLDER_MODES"];
+exports["PLACEHOLDER_ROTATION_MS"] = __req("packages/builder-core/src/copy.ts")["PLACEHOLDER_ROTATION_MS"];
+exports["OWNER_FILTERS"] = __req("packages/builder-core/src/copy.ts")["OWNER_FILTERS"];
+exports["catalogSnapshot"] = __req("packages/builder-core/src/catalog/snapshot.ts")["catalogSnapshot"];
+exports["catalogProvenance"] = __req("packages/builder-core/src/catalog/snapshot.ts")["catalogProvenance"];
+exports["parseCatalogSnapshot"] = __req("packages/builder-core/src/catalog/snapshot.ts")["parseCatalogSnapshot"];
+exports["paginateScreens"] = __req("packages/builder-core/src/catalog/search.ts")["paginateScreens"];
+exports["searchCatalog"] = __req("packages/builder-core/src/catalog/search.ts")["searchCatalog"];
+exports["facetTree"] = __req("packages/builder-core/src/catalog/search.ts")["facetTree"];
+exports["filterScreens"] = __req("packages/builder-core/src/catalog/search.ts")["filterScreens"];
+exports["getScreenById"] = __req("packages/builder-core/src/catalog/search.ts")["getScreenById"];
+exports["DEFAULT_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/search.ts")["DEFAULT_PAGE_SIZE"];
+exports["assertFacetValue"] = __req("packages/builder-core/src/catalog/search.ts")["assertFacetValue"];
+exports["facetVocabulary"] = __req("packages/builder-core/src/catalog/search.ts")["facetVocabulary"];
+exports["misplacedFacet"] = __req("packages/builder-core/src/catalog/search.ts")["misplacedFacet"];
+exports["stockSearch"] = __req("packages/builder-core/src/catalog/stock-search.ts")["stockSearch"];
+exports["STOCK_SEARCH_FACETS"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_FACETS"];
+exports["STOCK_SEARCH_FORMAT"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_FORMAT"];
+exports["STOCK_SEARCH_MAX_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_MAX_PAGE_SIZE"];
+exports["STOCK_SEARCH_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_PAGE_SIZE"];
+exports["compatibilityFor"] = __req("packages/builder-core/src/catalog/compatibility.ts")["compatibilityFor"];
+exports["getBlockIndex"] = __req("packages/builder-core/src/catalog/compatibility.ts")["getBlockIndex"];
+exports["sendBlockedByScreen"] = __req("packages/builder-core/src/catalog/compatibility.ts")["sendBlockedByScreen"];
+exports["screenSupport"] = __req("packages/builder-core/src/catalog/compatibility.ts")["screenSupport"];
+exports["compareScreenSupport"] = __req("packages/builder-core/src/catalog/compatibility.ts")["compareScreenSupport"];
+exports["rendererKindForLabel"] = __req("packages/builder-core/src/catalog/renderer-kind.ts")["rendererKindForLabel"];
+exports["getBlockDetails"] = __req("packages/builder-core/src/catalog/details.ts")["getBlockDetails"];
+exports["askBlockCard"] = __req("packages/builder-core/src/catalog/details.ts")["askBlockCard"];
+exports["screenCanonicalJson"] = __req("packages/builder-core/src/catalog/details.ts")["screenCanonicalJson"];
+exports["catalogEntryBySpec"] = __req("packages/builder-core/src/catalog/sources.ts")["catalogEntryBySpec"];
+exports["catalogSourceFor"] = __req("packages/builder-core/src/catalog/sources.ts")["catalogSourceFor"];
+exports["catalogSources"] = __req("packages/builder-core/src/catalog/sources.ts")["catalogSources"];
+exports["catalogVariantsFor"] = __req("packages/builder-core/src/catalog/sources.ts")["catalogVariantsFor"];
+exports["modelCatalogSources"] = __req("packages/builder-core/src/catalog/sources.ts")["modelCatalogSources"];
+exports["blockVariantSummary"] = __req("packages/builder-core/src/catalog/sources.ts")["blockVariantSummary"];
+exports["resolveCatalogChoice"] = __req("packages/builder-core/src/catalog/sources.ts")["resolveCatalogChoice"];
+exports["variantProps"] = __req("packages/builder-core/src/catalog/sources.ts")["variantProps"];
+exports["organismFor"] = __req("packages/builder-core/src/catalog/organism.ts")["organismFor"];
+exports["registryClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryClosure"];
+exports["registryItemFiles"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFiles"];
+exports["registrySkin"] = __req("packages/builder-core/src/catalog/organism.ts")["registrySkin"];
+exports["registrySkinBaseCss"] = __req("packages/builder-core/src/catalog/organism.ts")["registrySkinBaseCss"];
+exports["registrySkins"] = __req("packages/builder-core/src/catalog/organism.ts")["registrySkins"];
+exports["skinItem"] = __req("packages/builder-core/src/catalog/organism.ts")["skinItem"];
+exports["registryInitItems"] = __req("packages/builder-core/src/catalog/organism.ts")["registryInitItems"];
+exports["registryItemClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemClosure"];
+exports["registryItemFor"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFor"];
+exports["registryNpmDependencies"] = __req("packages/builder-core/src/catalog/organism.ts")["registryNpmDependencies"];
+exports["variantPreset"] = __req("packages/builder-core/src/catalog/organism.ts")["variantPreset"];
+exports["variantPresets"] = __req("packages/builder-core/src/catalog/organism.ts")["variantPresets"];
+exports["coerceEnumValue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["coerceEnumValue"];
+exports["fillProps"] = __req("packages/builder-core/src/catalog/props-schema.ts")["fillProps"];
+exports["hasPropsSchema"] = __req("packages/builder-core/src/catalog/props-schema.ts")["hasPropsSchema"];
+exports["lucideIcons"] = __req("packages/builder-core/src/catalog/props-schema.ts")["lucideIcons"];
+exports["mapKeyIssue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["mapKeyIssue"];
+exports["PAGE_KEY_PATTERN"] = __req("packages/builder-core/src/catalog/props-schema.ts")["PAGE_KEY_PATTERN"];
+exports["newPropsListValue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["newPropsListValue"];
+exports["newPropsMapValue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["newPropsMapValue"];
+exports["LUCIDE_ICON_HINT"] = __req("packages/builder-core/src/catalog/props-schema.ts")["LUCIDE_ICON_HINT"];
+exports["propShapeFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propShapeFor"];
+exports["propsDigest"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsDigest"];
+exports["propsEventsFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsEventsFor"];
+exports["propsFieldTree"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsFieldTree"];
+exports["propsItems"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsItems"];
+exports["propsSchemaFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsSchemaFor"];
+exports["propsSummaryFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsSummaryFor"];
+exports["fieldAtElement"] = __req("packages/builder-core/src/catalog/view-map.ts")["fieldAtElement"];
+exports["listRows"] = __req("packages/builder-core/src/catalog/view-map.ts")["listRows"];
+exports["locateField"] = __req("packages/builder-core/src/catalog/view-map.ts")["locateField"];
+exports["mapKey"] = __req("packages/builder-core/src/catalog/view-map.ts")["mapKey"];
+exports["mappedPointers"] = __req("packages/builder-core/src/catalog/view-map.ts")["mappedPointers"];
+exports["valueAt"] = __req("packages/builder-core/src/catalog/view-map.ts")["valueAt"];
+exports["viewMapOf"] = __req("packages/builder-core/src/catalog/view-map.ts")["viewMapOf"];
+exports["isScenarioId"] = __req("packages/builder-core/src/brief.ts")["isScenarioId"];
+exports["blockLabelVocabulary"] = __req("packages/builder-core/src/catalog/text-search.ts")["blockLabelVocabulary"];
+exports["nearestTerms"] = __req("packages/builder-core/src/catalog/text-search.ts")["nearestTerms"];
+exports["scoreScreens"] = __req("packages/builder-core/src/catalog/text-search.ts")["scoreScreens"];
+exports["searchVocabulary"] = __req("packages/builder-core/src/catalog/text-search.ts")["searchVocabulary"];
+exports["vocabularyValues"] = __req("packages/builder-core/src/catalog/text-search.ts")["vocabularyValues"];
+exports["SEARCH_INDEX_SOURCES"] = __req("packages/builder-core/src/catalog/text-search.ts")["SEARCH_INDEX_SOURCES"];
+exports["STOCK_APP_URL"] = __req("packages/builder-core/src/catalog/provenance.ts")["STOCK_APP_URL"];
+exports["familyLabelForKind"] = __req("packages/builder-core/src/catalog/provenance.ts")["familyLabelForKind"];
+exports["FAMILY_HOME_SCREENS"] = __req("packages/builder-core/src/catalog/provenance.ts")["FAMILY_HOME_SCREENS"];
+exports["screenFamily"] = __req("packages/builder-core/src/catalog/provenance.ts")["screenFamily"];
+exports["stockAssetUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["stockAssetUrl"];
+exports["stockSearchUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["stockSearchUrl"];
+exports["stockThumbUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["stockThumbUrl"];
+exports["stockVariantOf"] = __req("packages/builder-core/src/catalog/provenance.ts")["stockVariantOf"];
+exports["blockAssetUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["blockAssetUrl"];
+exports["blockThumbUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["blockThumbUrl"];
+exports["screenThumbUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["screenThumbUrl"];
+exports["setPropsValidator"] = __req("packages/builder-core/src/catalog/provenance.ts")["setPropsValidator"];
+exports["propsValidatorInstalled"] = __req("packages/builder-core/src/catalog/provenance.ts")["propsValidatorInstalled"];
+exports["ALLOWED_TOOLS"] = __req("packages/builder-core/src/policy.ts")["ALLOWED_TOOLS"];
+exports["POLICY_VERSION"] = __req("packages/builder-core/src/policy.ts")["POLICY_VERSION"];
+exports["MODEL_CATALOG_VERSION"] = __req("packages/builder-core/src/policy.ts")["MODEL_CATALOG_VERSION"];
+exports["TRIAL_POLICY_VERSION"] = __req("packages/builder-core/src/policy.ts")["TRIAL_POLICY_VERSION"];
+exports["RUN_BUDGET"] = __req("packages/builder-core/src/policy.ts")["RUN_BUDGET"];
+exports["COLLECTION_CODES"] = __req("packages/builder-core/src/collection.ts")["COLLECTION_CODES"];
+exports["checkCollection"] = __req("packages/builder-core/src/collection.ts")["checkCollection"];
+exports["collectionBounds"] = __req("packages/builder-core/src/collection.ts")["collectionBounds"];
+exports["collectionDraft"] = __req("packages/builder-core/src/collection.ts")["collectionDraft"];
+exports["collectionItemAssetId"] = __req("packages/builder-core/src/collection.ts")["collectionItemAssetId"];
+exports["collectionPromptContext"] = __req("packages/builder-core/src/collection.ts")["collectionPromptContext"];
+exports["isCollectionCode"] = __req("packages/builder-core/src/collection.ts")["isCollectionCode"];
+exports["snapshotDigest"] = __req("packages/builder-core/src/collection.ts")["snapshotDigest"];
+exports["snapshotHasItem"] = __req("packages/builder-core/src/collection.ts")["snapshotHasItem"];
+exports["splitCollection"] = __req("packages/builder-core/src/collection.ts")["splitCollection"];
+exports["resolveIconName"] = __req("packages/builder-core/src/icon-name.ts")["resolveIconName"];
+exports["iconFixWarning"] = __req("packages/builder-core/src/icon-name.ts")["iconFixWarning"];
+exports["PAGE_FAMILIES"] = __req("packages/builder-core/src/catalog/page-family.ts")["PAGE_FAMILIES"];
+exports["NAMED_FAMILIES"] = __req("packages/builder-core/src/catalog/page-family.ts")["NAMED_FAMILIES"];
+exports["isPageFamily"] = __req("packages/builder-core/src/catalog/page-family.ts")["isPageFamily"];
+exports["familyScreenId"] = __req("packages/builder-core/src/catalog/page-family.ts")["familyScreenId"];
+exports["familyOfScreen"] = __req("packages/builder-core/src/catalog/page-family.ts")["familyOfScreen"];
+exports["familiesOfKind"] = __req("packages/builder-core/src/catalog/page-family.ts")["familiesOfKind"];
+exports["familyKinds"] = __req("packages/builder-core/src/catalog/page-family.ts")["familyKinds"];
+exports["deriveFamily"] = __req("packages/builder-core/src/catalog/page-family.ts")["deriveFamily"];
+{ const __m = __req("packages/builder-core/src/page-doc/index.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+
+
+
+});
+
+__def("packages/chat-agent/src/agent/agent-tools.v1.json", function (exports) {
+  exports.default = {
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "format": "buildy-agent-tools",
+ "version": 2,
+ "description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
+ "modes": {
+  "ask": {
+   "description": "Conversation about the catalog and the page. Ask never changes the page: a write_page proposal is kept as a card the author applies in Build. Tool choice auto; the model's final text is the answer.",
+   "toolChoice": "auto"
+  },
+  "build": {
+   "description": "Edit the page. Tool choice auto: a text-only answer is shown and creates no proposal; a successful write_page creates one pending proposal (a diff) the author applies with Apply.",
+   "toolChoice": "auto"
+  }
+ },
+ "enumSources": {
+  "catalog.site": "Stock facet vocabulary: site type",
+  "catalog.section": "Stock facet vocabulary: section",
+  "catalog.job": "Stock facet vocabulary: job",
+  "catalog.industry": "Stock search vocabulary: industry",
+  "catalog.blocks": "Stock search vocabulary: block labels"
+ },
+ "tools": [
+  {
+   "name": "search_catalog",
+   "modes": [
+    "ask",
+    "build"
+   ],
+   "description": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Screens are ranking hints: each result lists its sections as registry items [{item, variant}] you may start from or ignore. When no renderable screen matches every facet the host drops the fewest facets and says which in relaxed. Do not repeat a search that returned items.",
+   "descriptionByMode": {
+    "ask": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored screens with their sections as registry items. Read-only."
+   },
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "q": {
+      "type": "string",
+      "description": "Free text in catalog terms (English catalog words work best, e.g. sidebar, shell, kanban, pricing). Matched against Stock titles, subtitles, block names and facet labels."
+     },
+     "site": {
+      "type": "string",
+      "x-buildy-enum": "catalog.site",
+      "description": "Site type: landing (one conversion page), website (multi-page site home), app, docs, shop, blog."
+     },
+     "section": {
+      "type": "string",
+      "x-buildy-enum": "catalog.section"
+     },
+     "job": {
+      "type": "string",
+      "x-buildy-enum": "catalog.job"
+     },
+     "industry": {
+      "type": "string",
+      "x-buildy-enum": "catalog.industry"
+     },
+     "blocks": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "x-buildy-enum": "catalog.blocks"
+      },
+      "description": "Block labels every screen must contain, e.g. [\"sidenav\"] for a built-in sidebar."
+     },
+     "page": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "browse": {
+      "type": "boolean",
+      "description": "true: also return facets (renderable screen counts per facet value for this filter) to drill down with another call."
+     }
+    }
+   }
+  },
+  {
+   "name": "get_block",
+   "modes": [
+    "ask",
+    "build"
+   ],
+   "description": "Read one registry item: its variants (what each sets), the props you write (names, kinds, enums, rows; ? = optional), the sample props a new block starts with, and its Stock link. item is a registry name from the item index (feature-grid), a Stock spec (block.features) or label. Read-only.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "item": {
+      "type": "string",
+      "description": "Registry item name, Stock spec or label."
+     },
+     "variant": {
+      "type": "string",
+      "description": "Variant whose sample props to show; default variant when omitted."
+     }
+    },
+    "required": [
+     "item"
+    ]
+   }
+  },
+  {
+   "name": "get_page",
+   "modes": [
+    "ask",
+    "build"
+   ],
+   "description": "Read the page document as it is now in this turn: { version, slug, title, locale, seo, blocks:[{ id, item, variant, props }] }. props are exactly the component props. When a block throws or shows nothing in the preview, renderProblems lists it with the path of the prop to fix. Read-only.",
+   "parameters": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "write_page",
+   "modes": [
+    "ask",
+    "build"
+   ],
+   "descriptionByMode": {
+    "ask": "Write a proposal for the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). Nothing is applied: the author applies the proposal in Build with one click. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again.",
+    "build": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it (page-spec/v2 schema, each block's props against the registry props schema, no position or count rule for header or footer) and returns the diff; the author applies it with Apply. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again."
+   },
+   "description": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it and returns the diff or [{ path, code, expected, got }].",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "page": {
+      "type": "object",
+      "description": "The whole page document: { title, slug, locale, seo: { title, description }, blocks: [{ id?, item, variant?, props }] }. A block without id gets one; a new block starts from the registry sample props, then your props. locale is the ISO code of the language the author writes in.",
+      "additionalProperties": true
+     },
+     "patch": {
+      "type": "array",
+      "description": "RFC 6902 operations on the page document (add, replace, remove, move, copy, test), paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- (append).",
+      "items": {
+       "type": "object",
+       "additionalProperties": true
+      }
+     }
+    }
+   }
+  }
+ ]
+};
+});
+
+__def("packages/chat-agent/src/agent/agent-tools.ts", function (exports) {
+const raw = __req("packages/chat-agent/src/agent/agent-tools.v1.json").default;
+const { facetVocabulary } = __req("packages/builder-core/src/index.ts");
+const { blockLabelVocabulary, vocabularyValues } = __req("packages/builder-core/src/index.ts");
+const AGENT_MODES = ["ask", "build"] as const;
+const agentToolsDocument = raw as unknown as AgentToolsDocument;
+const AGENT_TOOLS_VERSION = `${agentToolsDocument.format}/${agentToolsDocument.version}`;
+
+function isAgentMode(value: unknown): value is AgentMode {
+	return typeof value === "string" && (AGENT_MODES as string[]).includes(value);
+}
+
+/** Value lists named by `x-buildy-enum`: generated from the pinned catalog and the page contract, never typed here. */
+function agentEnumSource(name: string): string[] {
+	switch (name) {
+		case "catalog.site":
+			return [...facetVocabulary().site];
+		case "catalog.section":
+			return [...facetVocabulary().section];
+		case "catalog.job":
+			return [...facetVocabulary().job];
+		case "catalog.industry":
+			return vocabularyValues("industry");
+		case "catalog.blocks":
+			return blockLabelVocabulary();
+		default:
+			throw new Error(`agent-tools: unknown x-buildy-enum source ${name}`);
+	}
+}
+
+/** Fill `x-buildy-enum` markers and drop every `x-*` keyword: a plain JSON Schema the provider accepts. */
+function resolveAgentSchema<T>(node: T): T {
+	if (Array.isArray(node)) return node.map((item) => resolveAgentSchema(item)) as T;
+	if (typeof node !== "object" || node === null) return node;
+	const out: Record<string, unknown> = {};
+	for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+		if (key === "x-buildy-enum") {
+			out.enum = agentEnumSource(String(value));
+			continue;
+		}
+		if (key.startsWith("x-")) continue;
+		out[key] = resolveAgentSchema(value);
+	}
+	return out as T;
+}
+
+function agentTool(name: string): AgentToolDefinition | null {
+	return agentToolsDocument.tools.find((tool) => tool.name === name) ?? null;
+}
+
+/** Tool names one mode offers, in file order. */
+function agentToolNames(mode: AgentMode): string[] {
+	return agentToolsDocument.tools.filter((tool) => tool.modes.includes(mode)).map((tool) => tool.name);
+}
+
+function toolOffersMode(name: string, mode: AgentMode): boolean {
+	return Boolean(agentTool(name)?.modes.includes(mode));
+}
+
+/** Resolved parameters (object schema) of one tool. */
+function agentToolParameters(name: string): JsonSchemaObject {
+	const tool = agentTool(name);
+	if (!tool) throw new Error(`agent-tools: unknown tool ${name}`);
+	return resolveAgentSchema(tool.parameters);
+}
+
+const RESOLVED = new Map<string, OpenAiFunctionTool[]>();
+
+/** OpenAI-compatible tool list of a mode (optionally narrowed to `only`). Cached per mode and subset. */
+function agentOpenAiTools(mode: AgentMode, only?: string[]): OpenAiFunctionTool[] {
+	const key = `${mode}:${only ? only.join(",") : "*"}`;
+	const hit = RESOLVED.get(key);
+	if (hit) return hit;
+	const tools = agentToolsDocument.tools
+		.filter((tool) => tool.modes.includes(mode) && (!only || only.includes(tool.name)))
+		.map((tool) => ({
+			type: "function" as const,
+			function: {
+				name: tool.name,
+				description: tool.descriptionByMode?.[mode] ?? tool.description,
+				parameters: resolveAgentSchema(tool.parameters)
+			}
+		}));
+	RESOLVED.set(key, tools);
+	return tools;
+}
+
+function properties(name: string): Record<string, unknown> {
+	return (agentToolParameters(name).properties ?? {}) as Record<string, unknown>;
+}
+
+/** search_catalog parameter properties (facet enums from the pinned catalog). */
+function catalogToolParameterSchema(): Record<string, Record<string, unknown>> {
+	return properties("search_catalog") as Record<string, Record<string, unknown>>;
+}
+
+exports["AGENT_MODES"] = AGENT_MODES;
+exports["agentToolsDocument"] = agentToolsDocument;
+exports["AGENT_TOOLS_VERSION"] = AGENT_TOOLS_VERSION;
+exports["isAgentMode"] = isAgentMode;
+exports["agentEnumSource"] = agentEnumSource;
+exports["resolveAgentSchema"] = resolveAgentSchema;
+exports["agentTool"] = agentTool;
+exports["agentToolNames"] = agentToolNames;
+exports["toolOffersMode"] = toolOffersMode;
+exports["agentToolParameters"] = agentToolParameters;
+exports["agentOpenAiTools"] = agentOpenAiTools;
+exports["catalogToolParameterSchema"] = catalogToolParameterSchema;
+
+});
+
+__def("packages/chat-agent/src/agent/blocks.ts", function (exports) {
+const { catalogEntryBySpec, catalogSourceFor } = __req("packages/builder-core/src/index.ts");
+const { LUCIDE_ICON_HINT, propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/index.ts");
+const { allItems, itemInfo, itemOfSpec } = __req("packages/builder-core/src/index.ts");
+const { sampleProps } = __req("packages/builder-core/src/index.ts");
+const { blockAssetUrl, blockThumbUrl } = __req("packages/builder-core/src/index.ts");
+const { askBlockCard } = __req("packages/builder-core/src/index.ts");
 const HIDDEN = new Set(["id", "class", "className", "landmarkLabel"]);
 
 function kindText(node: PropsFieldNode): string {
@@ -31746,14 +31116,14 @@ exports["readBlock"] = readBlock;
 
 });
 
-__def("packages/builder-core/src/agent/catalog-tools.ts", function (exports) {
-const { facetTree, searchCatalog } = __req("packages/builder-core/src/catalog/search.ts");
-const { blockLabelVocabulary, vocabularyValues } = __req("packages/builder-core/src/catalog/text-search.ts");
-const { toolOffersMode } = __req("packages/builder-core/src/agent/agent-tools.ts");
-const { readBlock } = __req("packages/builder-core/src/agent/blocks.ts");
-const { screenItems } = __req("packages/builder-core/src/page-doc/start.ts");
-const { renderProblems } = __req("packages/builder-core/src/page-doc/probe.ts");
-const { ALLOWED_TOOLS, RUN_BUDGET } = __req("packages/builder-core/src/policy.ts");
+__def("packages/chat-agent/src/agent/catalog-tools.ts", function (exports) {
+const { facetTree, searchCatalog } = __req("packages/builder-core/src/index.ts");
+const { blockLabelVocabulary, vocabularyValues } = __req("packages/builder-core/src/index.ts");
+const { toolOffersMode } = __req("packages/chat-agent/src/agent/agent-tools.ts");
+const { readBlock } = __req("packages/chat-agent/src/agent/blocks.ts");
+const { screenItems } = __req("packages/builder-core/src/index.ts");
+const { renderProblems } = __req("packages/builder-core/src/index.ts");
+const { ALLOWED_TOOLS, RUN_BUDGET } = __req("packages/builder-core/src/index.ts");
 function isAllowedTool(name: string): name is AllowedTool {
 	return (ALLOWED_TOOLS as string[]).includes(name);
 }
@@ -31882,11 +31252,11 @@ exports["executeCatalogTool"] = executeCatalogTool;
 
 });
 
-__def("packages/builder-core/src/agent/turn.ts", function (exports) {
-const { checkCollection } = __req("packages/builder-core/src/collection.ts");
-const { diffPages } = __req("packages/builder-core/src/page-doc/diff.ts");
-const { writePage } = __req("packages/builder-core/src/page-doc/write.ts");
-const { blankRequired } = __req("packages/builder-core/src/page-doc/render.ts");
+__def("packages/chat-agent/src/agent/turn.ts", function (exports) {
+const { checkCollection } = __req("packages/builder-core/src/index.ts");
+const { diffPages } = __req("packages/builder-core/src/index.ts");
+const { writePage } = __req("packages/builder-core/src/index.ts");
+const { blankRequired } = __req("packages/builder-core/src/index.ts");
 function isAgentReply(value: unknown): value is AgentReply {
 	return Boolean(value && typeof value === "object" && (value as { reply?: unknown }).reply === "text" && (value as { ok?: unknown }).ok === true);
 }
@@ -31961,201 +31331,776 @@ exports["runWriteTool"] = runWriteTool;
 
 });
 
-__def("packages/builder-core/src/index.ts", function (exports) {
-exports["SCENARIO_IDS"] = __req("packages/builder-core/src/copy.ts")["SCENARIO_IDS"];
-exports["SCENARIO_PROMPTS"] = __req("packages/builder-core/src/copy.ts")["SCENARIO_PROMPTS"];
-exports["PLACEHOLDERS"] = __req("packages/builder-core/src/copy.ts")["PLACEHOLDERS"];
-exports["PLACEHOLDER_MODES"] = __req("packages/builder-core/src/copy.ts")["PLACEHOLDER_MODES"];
-exports["PLACEHOLDER_ROTATION_MS"] = __req("packages/builder-core/src/copy.ts")["PLACEHOLDER_ROTATION_MS"];
-exports["OWNER_FILTERS"] = __req("packages/builder-core/src/copy.ts")["OWNER_FILTERS"];
-exports["catalogSnapshot"] = __req("packages/builder-core/src/catalog/snapshot.ts")["catalogSnapshot"];
-exports["catalogProvenance"] = __req("packages/builder-core/src/catalog/snapshot.ts")["catalogProvenance"];
-exports["parseCatalogSnapshot"] = __req("packages/builder-core/src/catalog/snapshot.ts")["parseCatalogSnapshot"];
-exports["paginateScreens"] = __req("packages/builder-core/src/catalog/search.ts")["paginateScreens"];
-exports["searchCatalog"] = __req("packages/builder-core/src/catalog/search.ts")["searchCatalog"];
-exports["facetTree"] = __req("packages/builder-core/src/catalog/search.ts")["facetTree"];
-exports["filterScreens"] = __req("packages/builder-core/src/catalog/search.ts")["filterScreens"];
-exports["getScreenById"] = __req("packages/builder-core/src/catalog/search.ts")["getScreenById"];
-exports["DEFAULT_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/search.ts")["DEFAULT_PAGE_SIZE"];
-exports["assertFacetValue"] = __req("packages/builder-core/src/catalog/search.ts")["assertFacetValue"];
-exports["facetVocabulary"] = __req("packages/builder-core/src/catalog/search.ts")["facetVocabulary"];
-exports["misplacedFacet"] = __req("packages/builder-core/src/catalog/search.ts")["misplacedFacet"];
-exports["stockSearch"] = __req("packages/builder-core/src/catalog/stock-search.ts")["stockSearch"];
-exports["STOCK_SEARCH_FACETS"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_FACETS"];
-exports["STOCK_SEARCH_FORMAT"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_FORMAT"];
-exports["STOCK_SEARCH_MAX_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_MAX_PAGE_SIZE"];
-exports["STOCK_SEARCH_PAGE_SIZE"] = __req("packages/builder-core/src/catalog/stock-search.ts")["STOCK_SEARCH_PAGE_SIZE"];
-exports["compatibilityFor"] = __req("packages/builder-core/src/catalog/compatibility.ts")["compatibilityFor"];
-exports["getBlockIndex"] = __req("packages/builder-core/src/catalog/compatibility.ts")["getBlockIndex"];
-exports["sendBlockedByScreen"] = __req("packages/builder-core/src/catalog/compatibility.ts")["sendBlockedByScreen"];
-exports["screenSupport"] = __req("packages/builder-core/src/catalog/compatibility.ts")["screenSupport"];
-exports["compareScreenSupport"] = __req("packages/builder-core/src/catalog/compatibility.ts")["compareScreenSupport"];
-exports["rendererKindForLabel"] = __req("packages/builder-core/src/catalog/renderer-kind.ts")["rendererKindForLabel"];
-exports["getBlockDetails"] = __req("packages/builder-core/src/catalog/details.ts")["getBlockDetails"];
-exports["askBlockCard"] = __req("packages/builder-core/src/catalog/details.ts")["askBlockCard"];
-exports["screenCanonicalJson"] = __req("packages/builder-core/src/catalog/details.ts")["screenCanonicalJson"];
-exports["AGENT_MODES"] = __req("packages/builder-core/src/agent/agent-tools.ts")["AGENT_MODES"];
-exports["AGENT_TOOLS_VERSION"] = __req("packages/builder-core/src/agent/agent-tools.ts")["AGENT_TOOLS_VERSION"];
-exports["agentToolsDocument"] = __req("packages/builder-core/src/agent/agent-tools.ts")["agentToolsDocument"];
-exports["agentEnumSource"] = __req("packages/builder-core/src/agent/agent-tools.ts")["agentEnumSource"];
-exports["agentOpenAiTools"] = __req("packages/builder-core/src/agent/agent-tools.ts")["agentOpenAiTools"];
-exports["agentTool"] = __req("packages/builder-core/src/agent/agent-tools.ts")["agentTool"];
-exports["agentToolNames"] = __req("packages/builder-core/src/agent/agent-tools.ts")["agentToolNames"];
-exports["agentToolParameters"] = __req("packages/builder-core/src/agent/agent-tools.ts")["agentToolParameters"];
-exports["catalogToolParameterSchema"] = __req("packages/builder-core/src/agent/agent-tools.ts")["catalogToolParameterSchema"];
-exports["isAgentMode"] = __req("packages/builder-core/src/agent/agent-tools.ts")["isAgentMode"];
-exports["resolveAgentSchema"] = __req("packages/builder-core/src/agent/agent-tools.ts")["resolveAgentSchema"];
-exports["toolOffersMode"] = __req("packages/builder-core/src/agent/agent-tools.ts")["toolOffersMode"];
-exports["catalogEntryBySpec"] = __req("packages/builder-core/src/catalog/sources.ts")["catalogEntryBySpec"];
-exports["catalogSourceFor"] = __req("packages/builder-core/src/catalog/sources.ts")["catalogSourceFor"];
-exports["catalogSources"] = __req("packages/builder-core/src/catalog/sources.ts")["catalogSources"];
-exports["catalogVariantsFor"] = __req("packages/builder-core/src/catalog/sources.ts")["catalogVariantsFor"];
-exports["modelCatalogSources"] = __req("packages/builder-core/src/catalog/sources.ts")["modelCatalogSources"];
-exports["blockVariantSummary"] = __req("packages/builder-core/src/catalog/sources.ts")["blockVariantSummary"];
-exports["resolveCatalogChoice"] = __req("packages/builder-core/src/catalog/sources.ts")["resolveCatalogChoice"];
-exports["variantProps"] = __req("packages/builder-core/src/catalog/sources.ts")["variantProps"];
-exports["organismFor"] = __req("packages/builder-core/src/catalog/organism.ts")["organismFor"];
-exports["registryClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryClosure"];
-exports["registryItemFiles"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFiles"];
-exports["registrySkin"] = __req("packages/builder-core/src/catalog/organism.ts")["registrySkin"];
-exports["registrySkinBaseCss"] = __req("packages/builder-core/src/catalog/organism.ts")["registrySkinBaseCss"];
-exports["registrySkins"] = __req("packages/builder-core/src/catalog/organism.ts")["registrySkins"];
-exports["skinItem"] = __req("packages/builder-core/src/catalog/organism.ts")["skinItem"];
-exports["registryInitItems"] = __req("packages/builder-core/src/catalog/organism.ts")["registryInitItems"];
-exports["registryItemClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemClosure"];
-exports["registryItemFor"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFor"];
-exports["registryNpmDependencies"] = __req("packages/builder-core/src/catalog/organism.ts")["registryNpmDependencies"];
-exports["variantPreset"] = __req("packages/builder-core/src/catalog/organism.ts")["variantPreset"];
-exports["variantPresets"] = __req("packages/builder-core/src/catalog/organism.ts")["variantPresets"];
-exports["coerceEnumValue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["coerceEnumValue"];
-exports["fillProps"] = __req("packages/builder-core/src/catalog/props-schema.ts")["fillProps"];
-exports["hasPropsSchema"] = __req("packages/builder-core/src/catalog/props-schema.ts")["hasPropsSchema"];
-exports["lucideIcons"] = __req("packages/builder-core/src/catalog/props-schema.ts")["lucideIcons"];
-exports["mapKeyIssue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["mapKeyIssue"];
-exports["PAGE_KEY_PATTERN"] = __req("packages/builder-core/src/catalog/props-schema.ts")["PAGE_KEY_PATTERN"];
-exports["newPropsListValue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["newPropsListValue"];
-exports["newPropsMapValue"] = __req("packages/builder-core/src/catalog/props-schema.ts")["newPropsMapValue"];
-exports["LUCIDE_ICON_HINT"] = __req("packages/builder-core/src/catalog/props-schema.ts")["LUCIDE_ICON_HINT"];
-exports["propShapeFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propShapeFor"];
-exports["propsDigest"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsDigest"];
-exports["propsEventsFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsEventsFor"];
-exports["propsFieldTree"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsFieldTree"];
-exports["propsItems"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsItems"];
-exports["propsSchemaFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsSchemaFor"];
-exports["propsSummaryFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsSummaryFor"];
-exports["fieldAtElement"] = __req("packages/builder-core/src/catalog/view-map.ts")["fieldAtElement"];
-exports["listRows"] = __req("packages/builder-core/src/catalog/view-map.ts")["listRows"];
-exports["locateField"] = __req("packages/builder-core/src/catalog/view-map.ts")["locateField"];
-exports["mapKey"] = __req("packages/builder-core/src/catalog/view-map.ts")["mapKey"];
-exports["mappedPointers"] = __req("packages/builder-core/src/catalog/view-map.ts")["mappedPointers"];
-exports["valueAt"] = __req("packages/builder-core/src/catalog/view-map.ts")["valueAt"];
-exports["viewMapOf"] = __req("packages/builder-core/src/catalog/view-map.ts")["viewMapOf"];
-exports["contractFingerprint"] = __req("packages/builder-core/src/catalog/fingerprint.ts")["contractFingerprint"];
-exports["isScenarioId"] = __req("packages/builder-core/src/brief.ts")["isScenarioId"];
-exports["blockLabelVocabulary"] = __req("packages/builder-core/src/catalog/text-search.ts")["blockLabelVocabulary"];
-exports["nearestTerms"] = __req("packages/builder-core/src/catalog/text-search.ts")["nearestTerms"];
-exports["scoreScreens"] = __req("packages/builder-core/src/catalog/text-search.ts")["scoreScreens"];
-exports["searchVocabulary"] = __req("packages/builder-core/src/catalog/text-search.ts")["searchVocabulary"];
-exports["vocabularyValues"] = __req("packages/builder-core/src/catalog/text-search.ts")["vocabularyValues"];
-exports["SEARCH_INDEX_SOURCES"] = __req("packages/builder-core/src/catalog/text-search.ts")["SEARCH_INDEX_SOURCES"];
-exports["STOCK_APP_URL"] = __req("packages/builder-core/src/catalog/provenance.ts")["STOCK_APP_URL"];
-exports["familyLabelForKind"] = __req("packages/builder-core/src/catalog/provenance.ts")["familyLabelForKind"];
-exports["FAMILY_HOME_SCREENS"] = __req("packages/builder-core/src/catalog/provenance.ts")["FAMILY_HOME_SCREENS"];
-exports["screenFamily"] = __req("packages/builder-core/src/catalog/provenance.ts")["screenFamily"];
-exports["stockAssetUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["stockAssetUrl"];
-exports["stockSearchUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["stockSearchUrl"];
-exports["stockThumbUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["stockThumbUrl"];
-exports["stockVariantOf"] = __req("packages/builder-core/src/catalog/provenance.ts")["stockVariantOf"];
-exports["blockAssetUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["blockAssetUrl"];
-exports["blockThumbUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["blockThumbUrl"];
-exports["screenThumbUrl"] = __req("packages/builder-core/src/catalog/provenance.ts")["screenThumbUrl"];
-exports["setPropsValidator"] = __req("packages/builder-core/src/catalog/provenance.ts")["setPropsValidator"];
-exports["propsValidatorInstalled"] = __req("packages/builder-core/src/catalog/provenance.ts")["propsValidatorInstalled"];
-exports["ALLOWED_TOOLS"] = __req("packages/builder-core/src/policy.ts")["ALLOWED_TOOLS"];
-exports["POLICY_VERSION"] = __req("packages/builder-core/src/policy.ts")["POLICY_VERSION"];
-exports["MODEL_CATALOG_VERSION"] = __req("packages/builder-core/src/policy.ts")["MODEL_CATALOG_VERSION"];
-exports["TRIAL_POLICY_VERSION"] = __req("packages/builder-core/src/policy.ts")["TRIAL_POLICY_VERSION"];
-exports["RUN_BUDGET"] = __req("packages/builder-core/src/policy.ts")["RUN_BUDGET"];
-exports["GROK_CHAT_MODELS"] = __req("packages/builder-core/src/models.ts")["GROK_CHAT_MODELS"];
-exports["DEFAULT_CHAT_MODEL_ID"] = __req("packages/builder-core/src/models.ts")["DEFAULT_CHAT_MODEL_ID"];
-exports["getChatModel"] = __req("packages/builder-core/src/models.ts")["getChatModel"];
-exports["formatChatModelChoice"] = __req("packages/builder-core/src/models.ts")["formatChatModelChoice"];
-exports["modelRunsToolLoop"] = __req("packages/builder-core/src/models.ts")["modelRunsToolLoop"];
-exports["modelUnavailableCode"] = __req("packages/builder-core/src/models.ts")["modelUnavailableCode"];
-exports["resolveChatModelRequest"] = __req("packages/builder-core/src/models.ts")["resolveChatModelRequest"];
-exports["assertNoFallback"] = __req("packages/builder-core/src/models.ts")["assertNoFallback"];
-exports["mapChatRunRequest"] = __req("packages/builder-core/src/models.ts")["mapChatRunRequest"];
-exports["COST_UNAVAILABLE"] = __req("packages/builder-core/src/usage.ts")["COST_UNAVAILABLE"];
-exports["unknownUsage"] = __req("packages/builder-core/src/usage.ts")["unknownUsage"];
-exports["readProviderUsage"] = __req("packages/builder-core/src/usage.ts")["readProviderUsage"];
-exports["aggregateStepUsage"] = __req("packages/builder-core/src/usage.ts")["aggregateStepUsage"];
-exports["aggregateSessionUsage"] = __req("packages/builder-core/src/usage.ts")["aggregateSessionUsage"];
-exports["costForModel"] = __req("packages/builder-core/src/usage.ts")["costForModel"];
-exports["formatTokens"] = __req("packages/builder-core/src/usage.ts")["formatTokens"];
-exports["redactValue"] = __req("packages/builder-core/src/redact.ts")["redactValue"];
-exports["safeErrorMessage"] = __req("packages/builder-core/src/redact.ts")["safeErrorMessage"];
-exports["assertNoSecret"] = __req("packages/builder-core/src/redact.ts")["assertNoSecret"];
-exports["XAI_SECRET_ENV"] = __req("packages/builder-core/src/xai-env.ts")["XAI_SECRET_ENV"];
-exports["RUNTIME_AUTH_ENV"] = __req("packages/builder-core/src/xai-env.ts")["RUNTIME_AUTH_ENV"];
-exports["XAI_BASE_URL"] = __req("packages/builder-core/src/xai-env.ts")["XAI_BASE_URL"];
-exports["PARENT_VERIFIED_MODEL_IDS"] = __req("packages/builder-core/src/xai-env.ts")["PARENT_VERIFIED_MODEL_IDS"];
-exports["PARENT_VERIFIED_CHAT_IDS"] = __req("packages/builder-core/src/xai-env.ts")["PARENT_VERIFIED_CHAT_IDS"];
-exports["PARENT_VERIFIED_IMAGE_IDS"] = __req("packages/builder-core/src/xai-env.ts")["PARENT_VERIFIED_IMAGE_IDS"];
-exports["CANDIDATE_CHAT_MODEL"] = __req("packages/builder-core/src/xai-env.ts")["CANDIDATE_CHAT_MODEL"];
-exports["XAI_RUNTIME_NOTES"] = __req("packages/builder-core/src/xai-env.ts")["XAI_RUNTIME_NOTES"];
-exports["readXaiKeyState"] = __req("packages/builder-core/src/xai-env.ts")["readXaiKeyState"];
-exports["hasPublicSecretLeak"] = __req("packages/builder-core/src/xai-env.ts")["hasPublicSecretLeak"];
-exports["classifyDiscoveredModels"] = __req("packages/builder-core/src/xai-env.ts")["classifyDiscoveredModels"];
-exports["pickChatModel"] = __req("packages/builder-core/src/xai-env.ts")["pickChatModel"];
-exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = __req("packages/builder-core/src/protect.ts")["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"];
-exports["VERCEL_RUN_MAX_DURATION_SEC"] = __req("packages/builder-core/src/protect.ts")["VERCEL_RUN_MAX_DURATION_SEC"];
-exports["RUN_BUDGET_SHARED_MS"] = __req("packages/builder-core/src/protect.ts")["RUN_BUDGET_SHARED_MS"];
-exports["RUN_BUDGET_LOCAL_MS"] = __req("packages/builder-core/src/protect.ts")["RUN_BUDGET_LOCAL_MS"];
-exports["isLoopbackBind"] = __req("packages/builder-core/src/protect.ts")["isLoopbackBind"];
-exports["isSharedPublicSurface"] = __req("packages/builder-core/src/protect.ts")["isSharedPublicSurface"];
-exports["readBasicAuthConfig"] = __req("packages/builder-core/src/protect.ts")["readBasicAuthConfig"];
-exports["authorizeBasic"] = __req("packages/builder-core/src/protect.ts")["authorizeBasic"];
-exports["timingSafeEqualString"] = __req("packages/builder-core/src/protect.ts")["timingSafeEqualString"];
-exports["unauthorizedResponse"] = __req("packages/builder-core/src/protect.ts")["unauthorizedResponse"];
-exports["gateRequest"] = __req("packages/builder-core/src/protect.ts")["gateRequest"];
-exports["basicAuthorizationHeader"] = __req("packages/builder-core/src/protect.ts")["basicAuthorizationHeader"];
-exports["clampRunBudgetMs"] = __req("packages/builder-core/src/protect.ts")["clampRunBudgetMs"];
-exports["stripRuntimePrefix"] = __req("packages/builder-core/src/protect.ts")["stripRuntimePrefix"];
-exports["readEnv"] = __req("packages/builder-core/src/env-map.ts")["readEnv"];
-exports["COLLECTION_CODES"] = __req("packages/builder-core/src/collection.ts")["COLLECTION_CODES"];
-exports["checkCollection"] = __req("packages/builder-core/src/collection.ts")["checkCollection"];
-exports["collectionBounds"] = __req("packages/builder-core/src/collection.ts")["collectionBounds"];
-exports["collectionDraft"] = __req("packages/builder-core/src/collection.ts")["collectionDraft"];
-exports["collectionItemAssetId"] = __req("packages/builder-core/src/collection.ts")["collectionItemAssetId"];
-exports["collectionPromptContext"] = __req("packages/builder-core/src/collection.ts")["collectionPromptContext"];
-exports["isCollectionCode"] = __req("packages/builder-core/src/collection.ts")["isCollectionCode"];
-exports["snapshotDigest"] = __req("packages/builder-core/src/collection.ts")["snapshotDigest"];
-exports["snapshotHasItem"] = __req("packages/builder-core/src/collection.ts")["snapshotHasItem"];
-exports["splitCollection"] = __req("packages/builder-core/src/collection.ts")["splitCollection"];
-exports["resolveIconName"] = __req("packages/builder-core/src/icon-name.ts")["resolveIconName"];
-exports["iconFixWarning"] = __req("packages/builder-core/src/icon-name.ts")["iconFixWarning"];
-exports["PAGE_FAMILIES"] = __req("packages/builder-core/src/catalog/page-family.ts")["PAGE_FAMILIES"];
-exports["NAMED_FAMILIES"] = __req("packages/builder-core/src/catalog/page-family.ts")["NAMED_FAMILIES"];
-exports["isPageFamily"] = __req("packages/builder-core/src/catalog/page-family.ts")["isPageFamily"];
-exports["familyScreenId"] = __req("packages/builder-core/src/catalog/page-family.ts")["familyScreenId"];
-exports["familyOfScreen"] = __req("packages/builder-core/src/catalog/page-family.ts")["familyOfScreen"];
-exports["familiesOfKind"] = __req("packages/builder-core/src/catalog/page-family.ts")["familiesOfKind"];
-exports["familyKinds"] = __req("packages/builder-core/src/catalog/page-family.ts")["familyKinds"];
-exports["deriveFamily"] = __req("packages/builder-core/src/catalog/page-family.ts")["deriveFamily"];
-{ const __m = __req("packages/builder-core/src/page-doc/index.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-exports["askBlockCards"] = __req("packages/builder-core/src/agent/blocks.ts")["askBlockCards"];
-exports["itemIndex"] = __req("packages/builder-core/src/agent/blocks.ts")["itemIndex"];
-exports["propsOutline"] = __req("packages/builder-core/src/agent/blocks.ts")["propsOutline"];
-exports["readBlock"] = __req("packages/builder-core/src/agent/blocks.ts")["readBlock"];
-exports["resolveItem"] = __req("packages/builder-core/src/agent/blocks.ts")["resolveItem"];
-exports["executeCatalogTool"] = __req("packages/builder-core/src/agent/catalog-tools.ts")["executeCatalogTool"];
-exports["compactSearchResult"] = __req("packages/builder-core/src/agent/catalog-tools.ts")["compactSearchResult"];
-exports["searchRelaxed"] = __req("packages/builder-core/src/agent/catalog-tools.ts")["searchRelaxed"];
-exports["isAllowedTool"] = __req("packages/builder-core/src/agent/catalog-tools.ts")["isAllowedTool"];
-exports["agentReply"] = __req("packages/builder-core/src/agent/turn.ts")["agentReply"];
-exports["isAgentReply"] = __req("packages/builder-core/src/agent/turn.ts")["isAgentReply"];
-exports["runWriteTool"] = __req("packages/builder-core/src/agent/turn.ts")["runWriteTool"];
-exports["scopeIssues"] = __req("packages/builder-core/src/agent/turn.ts")["scopeIssues"];
+__def("packages/chat-agent/src/env-map.ts", function (exports) {
+
+function readEnv(env?: EnvMap): EnvMap {
+	if (env) return env;
+	const g = globalThis as typeof globalThis & { process?: { env?: EnvMap } };
+	return g.process?.env ?? {};
+}
+
+exports["readEnv"] = readEnv;
+
+});
+
+__def("packages/chat-agent/src/xai-env.ts", function (exports) {
+const { readEnv } = __req("packages/chat-agent/src/env-map.ts");
+const XAI_SECRET_ENV = ["XAI_API_KEY"] as const;
+const RUNTIME_AUTH_ENV = ["BUILDY_RUNTIME_BASIC_AUTH_USER", "BUILDY_RUNTIME_BASIC_AUTH_PASSWORD"] as const;
+
+const XAI_BASE_URL = "https://api.x.ai/v1";
+
+/** Parent-box evidence 2026-11-08. Runtime still re-lists the account. Not a live claim without a key. */
+const PARENT_VERIFIED_MODEL_IDS = [
+	"grok-4.20-0309-non-reasoning",
+	"grok-4.20-0309-reasoning",
+	"grok-4.20-multi-agent-0309",
+	"grok-4.7",
+	"grok-build-0.1",
+	"grok-imagine-image",
+	"grok-imagine-image-2.0"
+] as const;
+
+const PARENT_VERIFIED_CHAT_IDS = [
+	"grok-4.20-0309-non-reasoning",
+	"grok-4.20-0309-reasoning",
+	"grok-4.20-multi-agent-0309",
+	"grok-4.7",
+	"grok-build-0.1"
+] as const;
+
+const PARENT_VERIFIED_IMAGE_IDS = ["grok-imagine-image", "grok-imagine-image-2.0"] as const;
+
+/** Chat Completions ping succeeded. Parent later proved tool protocol on a synthetic fixture; Stock assembly is not proven. */
+const CANDIDATE_CHAT_MODEL = "grok-4.20-0309-non-reasoning";
+
+const XAI_RUNTIME_NOTES = {
+	provider: "Official xAI REST at https://api.x.ai/v1 with Bearer XAI_API_KEY.",
+	discover: "GET /v1/models (data[]), GET /v1/language-models (models[]), GET /v1/image-generation-models (models[]). Key-scoped.",
+	chat: "POST /v1/chat/completions, stream true. Conservative app tools use createOpenAI({ name: 'xai', baseURL, apiKey }).chat(actualModelId) + streamText.",
+	responses: "AI SDK 7 xai(modelId) defaults to Responses. This app does not use that default for catalog tools. If Responses is ever chosen, store:false. No zero-retention promise.",
+	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
+	tools: "Application-executed tools only: get_page, search_catalog, get_block, write_page. Never mix hosted web_search / code_execution.",
+	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",
+	toolCalling: "Parent 2026-11-08: bounded Chat Completions tool-protocol test on grok-4.20-0309-non-reasoning succeeded (2 steps, HTTP 200, tool calls, no retries, usage 393+434=827). That test used synthetic TEST blocks and artificial search_blocks(section)/propose_page tools, not this app's Stock catalog or search_catalog/get_block_details/propose_layout. Protocol support is proven. Page assembly is not proven. Do not treat the fixture miss (section=hero vs job=hero, empty blocks) as a production catalog bug."
+} as const;
+
+function readXaiKeyState(env?: EnvMap): XaiKeyState {
+	const bag = readEnv(env);
+	if (bag.XAI_API_KEY?.trim()) {
+		return { present: true, source: "XAI_API_KEY", code: "xai_api_key_present" };
+	}
+	return { present: false, source: null, code: "xai_api_key_missing" };
+}
+
+function hasPublicSecretLeak(env?: EnvMap): string[] {
+	const bag = readEnv(env);
+	const leaks: string[] = [];
+	for (const key of Object.keys(bag)) {
+		if (/^(VITE_|PUBLIC_|NEXT_PUBLIC_)/.test(key) && /KEY|SECRET|TOKEN|PASSWORD/i.test(key) && bag[key]?.trim()) {
+			leaks.push(key);
+		}
+	}
+	return leaks;
+}
+
+function classifyDiscoveredModels(ids: string[]): {
+	chatIds: string[];
+	imageIds: string[];
+	otherIds: string[];
+	candidate: string | null;
+} {
+	const unique = [...new Set(ids.filter(Boolean))];
+	const imageIds = unique.filter((id) => /imagine|image/i.test(id));
+	const chatIds = unique.filter((id) => !imageIds.includes(id));
+	const otherIds: string[] = [];
+	const candidate = chatIds.includes(CANDIDATE_CHAT_MODEL)
+		? CANDIDATE_CHAT_MODEL
+		: (chatIds[0] ?? null);
+	return { chatIds, imageIds, otherIds, candidate };
+}
+
+/** Status-page default only. Never substitute this for a selected chat run. */
+function pickChatModel(discoveredChatIds: string[]): string | null {
+	if (discoveredChatIds.includes(CANDIDATE_CHAT_MODEL)) return CANDIDATE_CHAT_MODEL;
+	return discoveredChatIds[0] ?? null;
+}
+
+exports["XAI_SECRET_ENV"] = XAI_SECRET_ENV;
+exports["RUNTIME_AUTH_ENV"] = RUNTIME_AUTH_ENV;
+exports["XAI_BASE_URL"] = XAI_BASE_URL;
+exports["PARENT_VERIFIED_MODEL_IDS"] = PARENT_VERIFIED_MODEL_IDS;
+exports["PARENT_VERIFIED_CHAT_IDS"] = PARENT_VERIFIED_CHAT_IDS;
+exports["PARENT_VERIFIED_IMAGE_IDS"] = PARENT_VERIFIED_IMAGE_IDS;
+exports["CANDIDATE_CHAT_MODEL"] = CANDIDATE_CHAT_MODEL;
+exports["XAI_RUNTIME_NOTES"] = XAI_RUNTIME_NOTES;
+exports["readXaiKeyState"] = readXaiKeyState;
+exports["hasPublicSecretLeak"] = hasPublicSecretLeak;
+exports["classifyDiscoveredModels"] = classifyDiscoveredModels;
+exports["pickChatModel"] = pickChatModel;
+
+});
+
+__def("packages/chat-agent/src/models.ts", function (exports) {
+const { parsePageV2 } = __req("packages/page-contract/src/index.ts");
+const { PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, CANDIDATE_CHAT_MODEL } = __req("packages/chat-agent/src/xai-env.ts");
+const { isAgentMode } = __req("packages/chat-agent/src/agent/agent-tools.ts");
+const { collectionBounds } = __req("packages/builder-core/src/index.ts");
+const GROK_CHAT_MODELS = [
+	{
+		id: "grok-4.20-0309-non-reasoning",
+		label: "Grok 4.20 Non-reasoning",
+		intendedRole: "block-selection",
+		intendedRoleNote: "Owner suggestion for later: block selection. Not a technical capability claim. Not used for routing."
+	},
+	{
+		id: "grok-4.20-0309-reasoning",
+		label: "Grok 4.20 Reasoning",
+		intendedRole: "block-selection",
+		intendedRoleNote: "Owner suggestion for later: block selection. Not a technical capability claim. Not used for routing."
+	},
+	{
+		id: "grok-4.20-multi-agent-0309",
+		label: "Grok 4.20 Multi-agent",
+		intendedRole: "task-distribution",
+		intendedRoleNote: "Owner suggestion for later: task distribution. Not a technical capability claim. Not used for routing.",
+		/**
+		 * Live probe 2026-11-09: chat completions answers 400 "Multi Agent requests are not allowed
+		 * on chat completions"; the Responses API answers 400 "Client-side tools for multi-agent
+		 * models require beta access". The catalog tool loop cannot run on it.
+		 */
+		toolLoop: "unavailable",
+		unavailableCode: "multi_agent_tools_unavailable"
+	},
+	{
+		id: "grok-4.7",
+		label: "Grok 4.7",
+		intendedRole: "consulting",
+		intendedRoleNote: "Owner suggestion for later: consulting. Not a technical capability claim. Not used for routing.",
+		/**
+		 * Live runs 2026-11-09 (dashboard prompt, tool_choice "required", 285 s budget): 4 of 7 finished,
+		 * in 54-227 s; the rest failed after 169-240 s (provider error, no propose_layout, timeout).
+		 * Answers in prose on tool_choice "auto". Too slow and unreliable for the catalog tool loop.
+		 */
+		toolLoop: "unavailable",
+		unavailableCode: "model_too_slow"
+	},
+	{
+		id: "grok-build-0.1",
+		label: "Grok Build 0.1",
+		intendedRole: "assembly",
+		intendedRoleNote: "Owner suggestion for later: assembly. Not a technical capability claim. Not used for routing."
+	}
+] as const;
+
+function modelRunsToolLoop(model: GrokChatModel | null | undefined): boolean {
+	if (!model) return false;
+	return !("toolLoop" in model && model.toolLoop === "unavailable");
+}
+
+function modelUnavailableCode(model: GrokChatModel | null | undefined): string | null {
+	if (!model || modelRunsToolLoop(model)) return null;
+	return "unavailableCode" in model ? model.unavailableCode : "model_tools_unavailable";
+}
+
+const DEFAULT_CHAT_MODEL_ID: GrokChatModelId = CANDIDATE_CHAT_MODEL;
+
+function getChatModel(id: string): GrokChatModel | null {
+	return GROK_CHAT_MODELS.find((m) => m.id === id) ?? null;
+}
+
+function formatChatModelChoice(model: GrokChatModel): string {
+	return `${model.label} (${model.id})`;
+}
+
+/**
+ * Map a UI selection to the backend model id.
+ * Never substitutes another model. Image IDs are rejected for chat.
+ * When the account list is known, the id must be in that list.
+ */
+function resolveChatModelRequest(input: {
+	requestedId: string | null | undefined;
+	discoveredChatIds?: string[] | null;
+	allowUnlistedTrial?: boolean;
+}): ModelResolveOk | ModelResolveError {
+	const requestedId = String(input.requestedId ?? "").trim();
+	if (!requestedId) {
+		return {
+			ok: false,
+			code: "missing_model_id",
+			message: "Select a Grok chat model before sending.",
+			requestedId
+		};
+	}
+	if ((PARENT_VERIFIED_IMAGE_IDS as string[]).includes(requestedId) || /imagine|image/i.test(requestedId)) {
+		return {
+			ok: false,
+			code: "image_model_not_for_chat",
+			message: `${requestedId} is an image model and is not a chat choice.`,
+			requestedId
+		};
+	}
+	const catalog = getChatModel(requestedId);
+	if (!catalog) {
+		return {
+			ok: false,
+			code: "unknown_chat_model",
+			message: `${requestedId} is not one of the five verified Grok chat models.`,
+			requestedId
+		};
+	}
+	if (!modelRunsToolLoop(catalog) && modelUnavailableCode(catalog) === "model_too_slow") {
+		return {
+			ok: false,
+			code: "model_too_slow",
+			message: `${catalog.label} (${requestedId}) is disabled here: in live runs it took 1-4 minutes per page and often timed out or skipped the page tool. Pick another model. No other model was substituted.`,
+			requestedId
+		};
+	}
+	if (!modelRunsToolLoop(catalog)) {
+		return {
+			ok: false,
+			code: "model_tools_unavailable",
+			message: `${catalog.label} (${requestedId}) cannot run this app's catalog tools: xAI rejects client-side tools for multi-agent models (chat completions not allowed; the Responses API needs beta access). Pick another model. No other model was substituted.`,
+			requestedId
+		};
+	}
+	const discovered = input.discoveredChatIds;
+	if (Array.isArray(discovered)) {
+		if (!discovered.includes(requestedId)) {
+			return {
+				ok: false,
+				code: "model_not_enabled_on_account",
+				message: `${catalog.label} (${requestedId}) is not enabled on this account. No other model was substituted.`,
+				requestedId
+			};
+		}
+		return { ok: true, modelId: catalog.id, label: catalog.label, live: true };
+	}
+	if (input.allowUnlistedTrial) {
+		return { ok: true, modelId: catalog.id, label: catalog.label, live: false };
+	}
+	return {
+		ok: false,
+		code: "model_not_enabled_on_account",
+		message: `${catalog.label} (${requestedId}) cannot be used until the account model list includes it. No fallback was selected.`,
+		requestedId
+	};
+}
+
+function assertNoFallback(requestedId: string, executedId: string): ModelResolveError | null {
+	if (requestedId === executedId) return null;
+	return {
+		ok: false,
+		code: "silent_fallback_forbidden",
+		message: `Requested ${requestedId} but the run used ${executedId}. Silent model switch is not allowed.`,
+		requestedId
+	};
+}
+
+/** A POST /v1/run body mapped onto one exact chat model and a trusted turn context (ADR 0034). */
+function parsePageDoc(raw: unknown): PageV2 | undefined {
+	if (raw == null) return undefined;
+	try {
+		return parsePageV2(raw);
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Map a POST /v1/run body onto the exact requested chat model.
+ * The discovered list never replaces a missing or unavailable id.
+ */
+function mapChatRunRequest(
+	body: {
+		modelId?: unknown;
+		brief?: unknown;
+		screenId?: unknown;
+		expectedRevision?: unknown;
+		currentPage?: unknown;
+		shownPage?: unknown;
+		mode?: unknown;
+		collection?: unknown;
+		scopeBlockIds?: unknown;
+		conversation?: unknown;
+	},
+	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
+): { ok: true; request: ChatRunRequest } | ModelResolveError {
+	const resolved = resolveChatModelRequest({
+		requestedId: typeof body.modelId === "string" ? body.modelId : "",
+		discoveredChatIds: opts.discoveredChatIds,
+		allowUnlistedTrial: opts.allowUnlistedTrial
+	});
+	if (!resolved.ok) return resolved;
+	return {
+		ok: true,
+		request: {
+			modelId: resolved.modelId,
+			label: resolved.label,
+			live: resolved.live,
+			brief: String(body.brief ?? ""),
+			mode: isAgentMode(body.mode) ? body.mode : "build",
+			currentPage: parsePageDoc(body.currentPage),
+			shownPage: parsePageDoc(body.shownPage),
+			screenId: typeof body.screenId === "string" && body.screenId !== "null" ? body.screenId : null,
+			expectedRevision: typeof body.expectedRevision === "number" ? body.expectedRevision : 0,
+			scopeBlockIds: Array.isArray(body.scopeBlockIds) ? [...new Set(body.scopeBlockIds.filter((id): id is string => typeof id === "string"))].slice(0, 100) : undefined,
+			conversation: Array.isArray(body.conversation)
+				? body.conversation.slice(-8).flatMap((row) => (row && typeof row === "object" && (row.role === "user" || row.role === "assistant") && typeof row.text === "string" ? [{ role: row.role as "user" | "assistant", text: row.text.slice(0, 2000) }] : []))
+				: [],
+			collection: collectionBounds(body.collection)
+		}
+	};
+}
+
+void PARENT_VERIFIED_CHAT_IDS;
+
+exports["GROK_CHAT_MODELS"] = GROK_CHAT_MODELS;
+exports["modelRunsToolLoop"] = modelRunsToolLoop;
+exports["modelUnavailableCode"] = modelUnavailableCode;
+exports["DEFAULT_CHAT_MODEL_ID"] = DEFAULT_CHAT_MODEL_ID;
+exports["getChatModel"] = getChatModel;
+exports["formatChatModelChoice"] = formatChatModelChoice;
+exports["resolveChatModelRequest"] = resolveChatModelRequest;
+exports["assertNoFallback"] = assertNoFallback;
+exports["mapChatRunRequest"] = mapChatRunRequest;
+
+});
+
+__def("packages/chat-agent/src/usage.ts", function (exports) {
+
+const COST_UNAVAILABLE: CostUnavailable = {
+	available: false,
+	reason: "no_official_current_rates_in_repo",
+	note: "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+};
+
+function unknownUsage(reason: RunUsage["incompleteReason"], steps = 0): RunUsage {
+	return {
+		status: "incomplete",
+		incompleteReason: reason,
+		steps,
+		promptTokens: "unknown",
+		completionTokens: "unknown",
+		totalTokens: "unknown",
+		reportedBy: "none",
+		cost: COST_UNAVAILABLE
+	};
+}
+
+function asCount(value: unknown): number | null {
+	if (typeof value === "number" && Number.isFinite(value) && value >= 0) return value;
+	return null;
+}
+
+/** Read one provider usage object. Missing fields stay absent; never invent 0. */
+function readProviderUsage(raw: unknown): StepUsage | null {
+	if (!raw || typeof raw !== "object") return null;
+	const u = raw as Record<string, unknown>;
+	const prompt = asCount(u.prompt_tokens ?? u.inputTokens ?? u.promptTokens);
+	const completion = asCount(u.completion_tokens ?? u.outputTokens ?? u.completionTokens);
+	const total = asCount(u.total_tokens ?? u.totalTokens);
+	if (prompt === null && completion === null && total === null) return null;
+	const details =
+		u.completion_tokens_details && typeof u.completion_tokens_details === "object"
+			? (u.completion_tokens_details as Record<string, unknown>)
+			: u.outputTokenDetails && typeof u.outputTokenDetails === "object"
+				? (u.outputTokenDetails as Record<string, unknown>)
+				: null;
+	const promptDetails =
+		u.prompt_tokens_details && typeof u.prompt_tokens_details === "object"
+			? (u.prompt_tokens_details as Record<string, unknown>)
+			: null;
+	const reasoning = asCount(details?.reasoning_tokens ?? details?.reasoningTokens);
+	const cached = asCount(promptDetails?.cached_tokens ?? promptDetails?.cacheTokens);
+	const step: StepUsage = {
+		promptTokens: prompt ?? "unknown",
+		completionTokens: completion ?? "unknown",
+		totalTokens: total ?? (prompt !== null && completion !== null ? prompt + completion : "unknown")
+	};
+	if (reasoning !== null) step.reasoningTokens = reasoning;
+	if (cached !== null) step.cachedTokens = cached;
+	return step;
+}
+
+function addCount(a: TokenCount, b: TokenCount): TokenCount {
+	if (a === "unknown" || b === "unknown") return "unknown";
+	return a + b;
+}
+
+/** Sum tool-loop steps. Uses prompt+completion per step; does not add total on top of those. */
+function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, opts?: { incomplete?: RunUsage["incompleteReason"] }): RunUsage {
+	const present = steps.filter((s): s is StepUsage => Boolean(s));
+	if (opts?.incomplete) {
+		if (present.length === 0) return unknownUsage(opts.incomplete, steps.length);
+	}
+	if (present.length === 0) {
+		return unknownUsage(opts?.incomplete ?? "error", 0);
+	}
+	let prompt: TokenCount = 0;
+	let completion: TokenCount = 0;
+	let reasoning = 0;
+	let cached = 0;
+	let sawReasoning = false;
+	let sawCached = false;
+	for (const step of present) {
+		prompt = addCount(prompt, step.promptTokens);
+		completion = addCount(completion, step.completionTokens);
+		if (typeof step.reasoningTokens === "number") {
+			sawReasoning = true;
+			reasoning += step.reasoningTokens;
+		}
+		if (typeof step.cachedTokens === "number") {
+			sawCached = true;
+			cached += step.cachedTokens;
+		}
+	}
+	const total: TokenCount =
+		prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion;
+	const last = present[present.length - 1];
+	const run: RunUsage = {
+		status: opts?.incomplete ? "incomplete" : "complete",
+		incompleteReason: opts?.incomplete,
+		steps: present.length,
+		promptTokens: prompt,
+		completionTokens: completion,
+		totalTokens: total,
+		reportedBy: "xai-provider",
+		aggregation: "sum-of-tool-loop-requests",
+		lastStep: last,
+		cost: COST_UNAVAILABLE
+	};
+	if (sawReasoning) run.reasoningTokens = reasoning;
+	if (sawCached) run.cachedTokens = cached;
+	return run;
+}
+
+function aggregateSessionUsage(runs: RunUsage[]): SessionUsage {
+	if (runs.length === 0) {
+		return {
+			status: "complete",
+			runs: 0,
+			incompleteRuns: 0,
+			promptTokens: 0,
+			completionTokens: 0,
+			totalTokens: 0,
+			cost: COST_UNAVAILABLE
+		};
+	}
+	const incompleteRuns = runs.filter((r) => r.status === "incomplete").length;
+	let prompt: TokenCount = 0;
+	let completion: TokenCount = 0;
+	let reasoning = 0;
+	let cached = 0;
+	let sawReasoning = false;
+	let sawCached = false;
+	for (const run of runs) {
+		prompt = addCount(prompt, run.promptTokens);
+		completion = addCount(completion, run.completionTokens);
+		if (typeof run.reasoningTokens === "number") {
+			sawReasoning = true;
+			reasoning += run.reasoningTokens;
+		}
+		if (typeof run.cachedTokens === "number") {
+			sawCached = true;
+			cached += run.cachedTokens;
+		}
+	}
+	const session: SessionUsage = {
+		status: incompleteRuns > 0 ? "incomplete" : "complete",
+		runs: runs.length,
+		incompleteRuns,
+		promptTokens: prompt,
+		completionTokens: completion,
+		totalTokens: prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion,
+		cost: COST_UNAVAILABLE
+	};
+	if (sawReasoning) session.reasoningTokens = reasoning;
+	if (sawCached) session.cachedTokens = cached;
+	return session;
+}
+
+/** Never invent a dollar amount. Official rates are not pinned in this repo. */
+function costForModel(_modelId: string, _usage: RunUsage): CostUnavailable {
+	return COST_UNAVAILABLE;
+}
+
+function formatTokens(value: TokenCount): string {
+	return value === "unknown" ? "UNKNOWN" : String(value);
+}
+
+exports["COST_UNAVAILABLE"] = COST_UNAVAILABLE;
+exports["unknownUsage"] = unknownUsage;
+exports["readProviderUsage"] = readProviderUsage;
+exports["aggregateStepUsage"] = aggregateStepUsage;
+exports["aggregateSessionUsage"] = aggregateSessionUsage;
+exports["costForModel"] = costForModel;
+exports["formatTokens"] = formatTokens;
+
+});
+
+__def("packages/chat-agent/src/protect.ts", function (exports) {
+const { readEnv } = __req("packages/chat-agent/src/env-map.ts");
+const VERCEL_HOBBY_SAFE_MAX_DURATION_SEC = 60;
+/**
+ * /runtime/v1/run: Hobby with fluid compute allows up to 300 s. Slow reasoning models
+ * (for example grok-4.7) need more than 60 s for a tool loop.
+ * https://vercel.com/docs/functions/configuring-functions/duration
+ */
+const VERCEL_RUN_MAX_DURATION_SEC = 300;
+/** The run aborts itself before the platform kills it, so the client gets a clean timeout code. */
+const RUN_BUDGET_SHARED_MS = (VERCEL_RUN_MAX_DURATION_SEC - 15) * 1000;
+const RUN_BUDGET_LOCAL_MS = 240_000;
+
+function isLoopbackBind(bind: string | undefined): boolean {
+	const value = (bind ?? "127.0.0.1").trim();
+	return value === "127.0.0.1" || value === "::1" || value === "localhost";
+}
+
+function isSharedPublicSurface(env?: EnvMap): boolean {
+	env = readEnv(env);
+	const vercel = env.VERCEL?.trim();
+	if (vercel === "1" || vercel === "true") return true;
+	const vercelEnv = env.VERCEL_ENV?.trim();
+	if (vercelEnv === "production" || vercelEnv === "preview" || vercelEnv === "development") return true;
+	return !isLoopbackBind(env.BUILDY_RUNTIME_BIND);
+}
+
+function readBasicAuthConfig(env?: EnvMap): {
+	user: string;
+	pass: string;
+	configured: boolean;
+} {
+	env = readEnv(env);
+	const user = env.BUILDY_RUNTIME_BASIC_AUTH_USER?.trim() ?? "";
+	const pass = env.BUILDY_RUNTIME_BASIC_AUTH_PASSWORD?.trim() ?? "";
+	return { user, pass, configured: Boolean(user && pass) };
+}
+
+function decodeBasic(authorization: string): { user: string; pass: string } | null {
+	if (!authorization.startsWith("Basic ")) return null;
+	const encoded = authorization.slice(6).trim();
+	if (!encoded) return null;
+	try {
+		const decoded = atob(encoded);
+		const idx = decoded.indexOf(":");
+		if (idx < 0) return null;
+		return { user: decoded.slice(0, idx), pass: decoded.slice(idx + 1) };
+	} catch {
+		return null;
+	}
+}
+
+/** Web-safe constant-time compare. Do not import node:crypto (browser barrel). */
+function timingSafeEqualString(left: string, right: string): boolean {
+	const encoder = new TextEncoder();
+	const a = encoder.encode(left);
+	const b = encoder.encode(right);
+	const len = Math.max(a.length, b.length, 1);
+	let diff = a.length ^ b.length;
+	for (let i = 0; i < len; i++) {
+		diff |= (a[i] ?? 0) ^ (b[i] ?? 0);
+	}
+	return diff === 0;
+}
+
+function authorizeBasic(
+	authorization: string | null | undefined,
+	env?: EnvMap,
+	opts: { allowLoopbackUnauthenticated?: boolean } = {}
+): { ok: true } | { ok: false; code: "unauthorized" | "basic_auth_required_before_shared_bind" } {
+	env = readEnv(env);
+	const shared = isSharedPublicSurface(env);
+	const { user, pass, configured } = readBasicAuthConfig(env);
+	if (!configured) {
+		const loopbackOk =
+			Boolean(opts.allowLoopbackUnauthenticated) && !shared && isLoopbackBind(env.BUILDY_RUNTIME_BIND);
+		if (loopbackOk) return { ok: true };
+		return { ok: false, code: "basic_auth_required_before_shared_bind" };
+	}
+	const parsed = decodeBasic(authorization ?? "") ?? { user: "", pass: "" };
+	const userOk = timingSafeEqualString(parsed.user, user);
+	const passOk = timingSafeEqualString(parsed.pass, pass);
+	if (!userOk || !passOk) {
+		return { ok: false, code: "unauthorized" };
+	}
+	return { ok: true };
+}
+
+function unauthorizedResponse(
+	code: "unauthorized" | "basic_auth_required_before_shared_bind" = "unauthorized"
+): Response {
+	const message =
+		code === "basic_auth_required_before_shared_bind"
+			? "Basic authentication is not configured. Public access is denied."
+			: "Basic authentication required.";
+	return new Response(JSON.stringify({ error: { code, message } }), {
+		status: 401,
+		headers: {
+			"WWW-Authenticate": 'Basic realm="buildy-constructor"',
+			"content-type": "application/json",
+			"cache-control": "no-store"
+		}
+	});
+}
+
+function gateRequest(
+	request: Request,
+	env?: EnvMap,
+	opts: { allowLoopbackUnauthenticated?: boolean } = {}
+): Response | null {
+	const result = authorizeBasic(request.headers.get("authorization"), readEnv(env), opts);
+	if (result.ok) return null;
+	return unauthorizedResponse(result.code);
+}
+
+function basicAuthorizationHeader(user: string, pass: string): string {
+	return `Basic ${btoa(`${user}:${pass}`)}`;
+}
+
+function clampRunBudgetMs(requested: unknown, env?: EnvMap): number {
+	const asked = Number(requested);
+	const cap = isSharedPublicSurface(readEnv(env)) ? RUN_BUDGET_SHARED_MS : RUN_BUDGET_LOCAL_MS;
+	const raw = Number.isFinite(asked) && asked > 0 ? asked : cap;
+	return Math.min(raw, cap);
+}
+
+function stripRuntimePrefix(pathname: string): string {
+	let path = pathname || "/";
+	for (const prefix of ["/api/runtime", "/runtime", "/api"]) {
+		if (path === prefix) return "/";
+		if (path.startsWith(`${prefix}/`)) {
+			path = path.slice(prefix.length);
+			break;
+		}
+	}
+	if (!path.startsWith("/")) path = `/${path}`;
+	return path;
+}
+
+exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = VERCEL_HOBBY_SAFE_MAX_DURATION_SEC;
+exports["VERCEL_RUN_MAX_DURATION_SEC"] = VERCEL_RUN_MAX_DURATION_SEC;
+exports["RUN_BUDGET_SHARED_MS"] = RUN_BUDGET_SHARED_MS;
+exports["RUN_BUDGET_LOCAL_MS"] = RUN_BUDGET_LOCAL_MS;
+exports["isLoopbackBind"] = isLoopbackBind;
+exports["isSharedPublicSurface"] = isSharedPublicSurface;
+exports["readBasicAuthConfig"] = readBasicAuthConfig;
+exports["timingSafeEqualString"] = timingSafeEqualString;
+exports["authorizeBasic"] = authorizeBasic;
+exports["unauthorizedResponse"] = unauthorizedResponse;
+exports["gateRequest"] = gateRequest;
+exports["basicAuthorizationHeader"] = basicAuthorizationHeader;
+exports["clampRunBudgetMs"] = clampRunBudgetMs;
+exports["stripRuntimePrefix"] = stripRuntimePrefix;
+
+});
+
+__def("packages/chat-agent/src/redact.ts", function (exports) {
+
+const SECRET_HEADER = /^(authorization|proxy-authorization|x-api-key|x-user-api-key|cookie|set-cookie)$/i;
+const SECRET_KEY = /(api[_-]?key|authorization|secret|token|password|credential|cursor_api_key|xai_api_key)/i;
+const BEARER = /\bBearer\s+[A-Za-z0-9._\-+/=]+/gi;
+const CANARY_HINT = /\bsk-[A-Za-z0-9]{8,}\b/g;
+
+function redactValue(value: unknown, key = ""): unknown {
+	if (SECRET_KEY.test(key) || SECRET_HEADER.test(key)) return "[redacted]";
+	if (typeof value === "string") {
+		return value.replace(BEARER, "Bearer [redacted]").replace(CANARY_HINT, "[redacted]");
+	}
+	if (Array.isArray(value)) return value.map((item) => redactValue(item));
+	if (value && typeof value === "object") {
+		const out: Record<string, unknown> = {};
+		for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+			out[k] = redactValue(v, k);
+		}
+		return out;
+	}
+	return value;
+}
+
+function safeErrorMessage(err: unknown): { code: string; message: string } {
+	const raw = err instanceof Error ? err.message : String(err);
+	const code =
+		err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string"
+			? (err as { code: string }).code
+			: "error";
+	const message = String(redactValue(raw)).slice(0, 280);
+	return { code, message };
+}
+
+function assertNoSecret(payload: unknown, canary: string): void {
+	if (!canary) return;
+	const blob = JSON.stringify(payload);
+	if (blob.includes(canary)) {
+		throw Object.assign(new Error("secret_leaked"), { code: "secret_leaked" });
+	}
+}
+
+exports["redactValue"] = redactValue;
+exports["safeErrorMessage"] = safeErrorMessage;
+exports["assertNoSecret"] = assertNoSecret;
+
+});
+
+__def("packages/chat-agent/src/fingerprint.ts", function (exports) {
+const { POLICY_VERSION } = __req("packages/builder-core/src/index.ts");
+const { catalogSnapshot } = __req("packages/builder-core/src/index.ts");
+const { SEARCH_INDEX_SOURCES } = __req("packages/builder-core/src/index.ts");
+const { AGENT_TOOLS_VERSION } = __req("packages/chat-agent/src/agent/agent-tools.ts");
+function fnv1a64(text: string): string {
+	let h1 = 0x811c9dc5;
+	let h2 = 0xcbf29ce4;
+	for (let i = 0; i < text.length; i++) {
+		const c = text.charCodeAt(i);
+		h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+		h2 = Math.imul(h2 ^ (c + 0x9e), 0x01000193) >>> 0;
+	}
+	return h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
+}
+
+let cached: string | null = null;
+
+/**
+ * Identity of the page contract the browser and the runtime validate against: block kinds,
+ * renderer map, Stock snapshot digest, search index sources, policy version and agent tools version. A browser tab
+ * built from another deploy sends a different value and gets client_outdated instead of a
+ * proposal its stale validator would reject.
+ */
+function contractFingerprint(): string {
+	if (cached) return cached;
+	const rendererMap = Object.keys(catalogSnapshot.rendererMap)
+		.sort()
+		.map((key) => `${key}=${catalogSnapshot.rendererMap[key]}`);
+	cached = `cf1-${fnv1a64(
+		JSON.stringify({
+			kinds: catalogSnapshot.rendererKinds,
+			rendererMap,
+			snapshot: catalogSnapshot.sourceDigest,
+			index: SEARCH_INDEX_SOURCES,
+			policy: POLICY_VERSION,
+			tools: AGENT_TOOLS_VERSION
+		})
+	)}`;
+	return cached;
+}
+
+exports["contractFingerprint"] = contractFingerprint;
+
+});
+
+__def("packages/chat-agent/src/index.ts", function (exports) {
+{ const __m = __req("packages/chat-agent/src/agent/agent-tools.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/agent/blocks.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/agent/catalog-tools.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/agent/turn.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/models.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/usage.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/xai-env.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/protect.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/redact.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/env-map.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+exports["contractFingerprint"] = __req("packages/chat-agent/src/fingerprint.ts")["contractFingerprint"];
 
 
 
@@ -32241,7 +32186,8 @@ exports["installPropsGate"] = installPropsGate;
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { RUN_BUDGET, XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, itemIndex, propsOutline, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage, collectionPromptContext, itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
+const { RUN_BUDGET, collectionPromptContext, itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
+const { XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, itemIndex, propsOutline, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
 
@@ -32580,7 +32526,7 @@ exports["runXaiCatalogTurn"] = runXaiCatalogTurn;
 });
 
 __def("apps/xai-runtime/src/discover.ts", function (exports) {
-const { CANDIDATE_CHAT_MODEL, XAI_BASE_URL, classifyDiscoveredModels, readEnv, readXaiKeyState, redactValue } = __req("packages/builder-core/src/index.ts");
+const { CANDIDATE_CHAT_MODEL, XAI_BASE_URL, classifyDiscoveredModels, readEnv, readXaiKeyState, redactValue } = __req("packages/chat-agent/src/index.ts");
 function idsFromPayload(payload: unknown): string[] {
 	if (!payload || typeof payload !== "object") return [];
 	const rec = payload as Record<string, unknown>;
@@ -32688,7 +32634,7 @@ exports["discoverAccountModels"] = discoverAccountModels;
 });
 
 __def("apps/xai-runtime/src/status.ts", function (exports) {
-const { CANDIDATE_CHAT_MODEL, PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, RUNTIME_AUTH_ENV, XAI_RUNTIME_NOTES, XAI_SECRET_ENV, hasPublicSecretLeak, isSharedPublicSurface, readBasicAuthConfig, readEnv, readXaiKeyState } = __req("packages/builder-core/src/index.ts");
+const { CANDIDATE_CHAT_MODEL, PARENT_VERIFIED_CHAT_IDS, PARENT_VERIFIED_IMAGE_IDS, RUNTIME_AUTH_ENV, XAI_RUNTIME_NOTES, XAI_SECRET_ENV, hasPublicSecretLeak, isSharedPublicSurface, readBasicAuthConfig, readEnv, readXaiKeyState } = __req("packages/chat-agent/src/index.ts");
 const { discoverAccountModels } = __req("apps/xai-runtime/src/discover.ts");
 async function sdkPresent(): Promise<{ openaiProvider: boolean; ai: boolean }> {
 	let openaiProvider = false;
@@ -32775,10 +32721,11 @@ exports["runtimeStatus"] = runtimeStatus;
 });
 
 __def("apps/xai-runtime/src/http.ts", function (exports) {
-const { clampRunBudgetMs, emptyPage, contractFingerprint, isAgentReply, gateRequest, installRenderProbe, probeFromModule, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, stripRuntimePrefix } = __req("packages/builder-core/src/index.ts");
+const { emptyPage, installRenderProbe, probeFromModule } = __req("packages/builder-core/src/index.ts");
+const { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, stripRuntimePrefix } = __req("packages/chat-agent/src/index.ts");
 const { runXaiCatalogTurn } = __req("apps/xai-runtime/src/chat-tools.ts");
 const { runtimeStatus } = __req("apps/xai-runtime/src/status.ts");
-exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = __req("packages/builder-core/src/index.ts")["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"];
+exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = __req("packages/chat-agent/src/index.ts")["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"];
 const MAX_BODY = 256_000;
 
 let probeReady: Promise<void> | null = null;
