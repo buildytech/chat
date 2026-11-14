@@ -11,7 +11,7 @@ export const PREVIEW_MIN = 360;
 /** Widths (px) of the vertical panes and the height of the Layers part of the inspector. */
 export const PANE_RANGE = {
 	nav: { min: 200, max: 360, default: 240 },
-	chat: { min: 264, max: 520, default: 320 },
+	side: { min: 264, max: 520, default: 320 },
 	inspector: { min: 256, max: 480, default: 304 },
 	layers: { min: 96, max: 480, default: 200 },
 	tree: { min: 144, max: 360, default: 208 }
@@ -19,16 +19,16 @@ export const PANE_RANGE = {
 
 export type Pane = keyof typeof PANE_RANGE;
 /** Side panels that collapse to a rail (`tree` is the Code view's file tree). */
-export type Panel = "nav" | "chat" | "inspector" | "layers" | "tree";
+export type Panel = "nav" | "side" | "inspector" | "layers" | "tree";
 
 export type LayoutPrefs = {
 	navWidth: number;
-	chatWidth: number;
+	sideWidth: number;
 	inspectorWidth: number;
 	layersHeight: number;
 	treeWidth: number;
 	navCollapsed: boolean;
-	chatCollapsed: boolean;
+	sideCollapsed: boolean;
 	inspectorCollapsed: boolean;
 	layersCollapsed: boolean;
 	treeCollapsed: boolean;
@@ -40,14 +40,14 @@ export type PrefsBlob = { layout: LayoutPrefs };
 
 const WIDTH_KEY: Record<Pane, keyof LayoutPrefs> = {
 	nav: "navWidth",
-	chat: "chatWidth",
+	side: "sideWidth",
 	inspector: "inspectorWidth",
 	layers: "layersHeight",
 	tree: "treeWidth"
 };
 const COLLAPSED_KEY: Record<Panel, keyof LayoutPrefs> = {
 	nav: "navCollapsed",
-	chat: "chatCollapsed",
+	side: "sideCollapsed",
 	inspector: "inspectorCollapsed",
 	layers: "layersCollapsed",
 	tree: "treeCollapsed"
@@ -57,12 +57,12 @@ const COLLAPSED_KEY: Record<Panel, keyof LayoutPrefs> = {
 export function defaultLayout(): LayoutPrefs {
 	return {
 		navWidth: PANE_RANGE.nav.default,
-		chatWidth: PANE_RANGE.chat.default,
+		sideWidth: PANE_RANGE.side.default,
 		inspectorWidth: PANE_RANGE.inspector.default,
 		layersHeight: PANE_RANGE.layers.default,
 		treeWidth: PANE_RANGE.tree.default,
 		navCollapsed: true,
-		chatCollapsed: false,
+		sideCollapsed: false,
 		inspectorCollapsed: false,
 		layersCollapsed: false,
 		treeCollapsed: false,
@@ -123,10 +123,10 @@ export function layoutFromLegacy(input: unknown): LayoutPrefs {
 	const raw = input && typeof input === "object" ? (input as Record<string, unknown>) : {};
 	return parseLayout({
 		navWidth: raw.navWidth,
-		chatWidth: raw.chatWidth,
+		sideWidth: raw.chatWidth,
 		treeWidth: raw.treeWidth,
 		...(typeof raw.sidebarCollapsed === "boolean" ? { navCollapsed: raw.sidebarCollapsed } : {}),
-		...(typeof raw.chatHidden === "boolean" ? { chatCollapsed: raw.chatHidden } : {}),
+		...(typeof raw.chatHidden === "boolean" ? { sideCollapsed: raw.chatHidden } : {}),
 		...(typeof raw.treeCollapsed === "boolean" ? { treeCollapsed: raw.treeCollapsed } : {})
 	});
 }
@@ -152,27 +152,27 @@ export type FitInput = {
 	columns: boolean;
 };
 
-export type FitWidths = { nav: number; chat: number; inspector: number; preview: number };
+export type FitWidths = { nav: number; side: number; inspector: number; preview: number };
 
 /**
  * The widths the shell renders at this viewport. Stored sizes are wishes: when the canvas would get less than
- * PREVIEW_MIN, the chat and then the inspector give up width down to their minimums (stored values are untouched, so
+ * PREVIEW_MIN, the side panel and then the inspector give up width down to their minimums (stored values are untouched, so
  * a wider window gets them back). Collapsed panels are rails.
  */
 export function fitWidths({ viewport, layout, inspector, columns }: FitInput): FitWidths {
 	const nav = !columns ? 0 : isCollapsed(layout, "nav") ? RAIL : layout.navWidth;
-	let chat = !columns ? 0 : isCollapsed(layout, "chat") ? 0 : layout.chatWidth;
+	let side = !columns ? 0 : isCollapsed(layout, "side") ? 0 : layout.sideWidth;
 	let insp = !inspector ? 0 : isCollapsed(layout, "inspector") ? RAIL : layout.inspectorWidth;
-	let over = nav + chat + insp + PREVIEW_MIN - viewport;
+	let over = nav + side + insp + PREVIEW_MIN - viewport;
 	const give = (width: number, min: number, rail: boolean) => {
 		if (over <= 0 || rail) return width;
 		const cut = Math.min(over, width - min);
 		over -= cut;
 		return width - cut;
 	};
-	chat = give(chat, PANE_RANGE.chat.min, chat === RAIL || chat === 0);
+	side = give(side, PANE_RANGE.side.min, side === RAIL || side === 0);
 	insp = give(insp, PANE_RANGE.inspector.min, insp === RAIL || insp === 0);
-	return { nav, chat, inspector: insp, preview: Math.max(0, viewport - nav - chat - insp) };
+	return { nav, side, inspector: insp, preview: Math.max(0, viewport - nav - side - insp) };
 }
 
 /** Keyboard step of a separator: 8px, 32px with Shift (the 8px layout grid). */

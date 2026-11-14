@@ -13,8 +13,8 @@ import { Blocks, PanelLeft } from "$lib/shell-icons";
 		surface,
 		onSelect
 	}: {
-		surface: "chat" | "workspace";
-		onSelect: (surface: "chat" | "workspace") => void;
+		surface: "side" | "workspace";
+		onSelect: (surface: "side" | "workspace") => void;
 	} = $props();
 
 	const names = $derived(leftSurface());
@@ -30,13 +30,13 @@ import { Blocks, PanelLeft } from "$lib/shell-icons";
 		<Button
 			class={cn(
 				"inline-flex flex-1 items-center justify-center gap-2 rounded px-3 py-2 text-sm",
-				surface === "chat"
+				surface === "side"
 					? "bg-accent text-accent-foreground"
 					: "text-muted-foreground hover:bg-accent/70"
 			)}
-			pressed={surface === "chat"}
-			aria-controls="creator-chat-column"
-			onclick={() => onSelect("chat")}
+			pressed={surface === "side"}
+			aria-controls="creator-side-column"
+			onclick={() => onSelect("side")}
 		>
 			<Icon size="sm"><LeftIcon /></Icon>
 			<Text tag="span">{t(names.tabKey)}</Text>

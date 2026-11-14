@@ -28,7 +28,7 @@ import { Maximize2, Minimize2, PanelLeft, PanelRight } from "$lib/shell-icons";
 	} = $props();
 
 	const names = $derived(leftSurface());
-	const chatOpen = $derived(!creatorLayout.collapsed("chat"));
+	const sideOpen = $derived(!creatorLayout.collapsed("side"));
 	const focus = $derived(creatorLayout.focus);
 </script>
 
@@ -44,10 +44,10 @@ import { Maximize2, Minimize2, PanelLeft, PanelRight } from "$lib/shell-icons";
 		layout="icon"
 		variant="ghost"
 		class="max-lg:hidden"
-		aria-label={chatOpen ? t(names.hideKey) : t(names.showKey)}
-		title={`${chatOpen ? t(names.hideKey) : t(names.showKey)} (Ctrl+B)`}
-		expanded={chatOpen}
-		aria-controls="creator-chat-column"
+		aria-label={sideOpen ? t(names.hideKey) : t(names.showKey)}
+		title={`${sideOpen ? t(names.hideKey) : t(names.showKey)} (Ctrl+B)`}
+		expanded={sideOpen}
+		aria-controls="creator-side-column"
 		data-action="chat-toggle"
 		onclick={ontogglechat}
 	>

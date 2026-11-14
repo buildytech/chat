@@ -33,9 +33,9 @@
 		onCloseSidebar: () => void;
 	} = $props();
 
-	let mobileSurface = $state<"chat" | "workspace">("chat");
+	let mobileSurface = $state<"side" | "workspace">("side");
 	const sidebarCollapsed = $derived(creatorLayout.collapsed("nav"));
-	const chatHidden = $derived(creatorLayout.collapsed("chat"));
+	const sideHidden = $derived(creatorLayout.collapsed("side"));
 	const columns = $derived(creatorLayout.columns);
 
 	onMount(() => {
@@ -55,10 +55,10 @@
 
 	function handleToggleChat() {
 		if (creatorLayout.columns) {
-			creatorLayout.toggle("chat");
+			creatorLayout.toggle("side");
 			return;
 		}
-		mobileSurface = mobileSurface === "chat" ? "workspace" : "chat";
+		mobileSurface = mobileSurface === "side" ? "workspace" : "side";
 	}
 
 	$effect(() => {
@@ -79,7 +79,7 @@
 		const action = shortcutFor(event);
 		if (!action) return;
 		event.preventDefault();
-		if (action === "chat") handleToggleChat();
+		if (action === "side") handleToggleChat();
 		else if (action === "inspector") handleToggleInspector();
 		else creatorLayout.toggleFocus();
 	}
@@ -92,7 +92,7 @@
 	class="fixed inset-0 flex min-h-0 flex-col bg-muted text-foreground"
 	data-pane={mobileSurface}
 	data-nav={columns && sidebarCollapsed ? "collapsed" : "expanded"}
-	data-chat-hidden={chatHidden ? "true" : "false"}
+	data-side-hidden={sideHidden ? "true" : "false"}
 >
 	<Group class="relative min-h-0 flex-1 items-stretch">
 		<NavDrawer
@@ -114,9 +114,9 @@
 				onToggleSidebar={handleNavToggle}
 			/>
 			<Group class="min-h-0 min-w-0 flex-1 items-stretch max-lg:flex-col">
-				<LeftPanel visible={mobileSurface === "chat"} {chatHidden} />
-				{#if !chatHidden}
-					<PaneSplitter pane="chat" controls="creator-chat-column" class="border-r border-border max-lg:hidden" />
+				<LeftPanel visible={mobileSurface === "side"} {sideHidden} />
+				{#if !sideHidden}
+					<PaneSplitter pane="side" controls="creator-side-column" class="border-r border-border max-lg:hidden" />
 				{/if}
 				<Workspace
 					visible={mobileSurface === "workspace"}

@@ -21,10 +21,10 @@ import { Blocks, ListTree } from "$lib/shell-icons";
 
 	let {
 		visible = true,
-		chatHidden = false
+		sideHidden = false
 	}: {
 		visible?: boolean;
-		chatHidden?: boolean;
+		sideHidden?: boolean;
 	} = $props();
 
 	// Left panel (ADR 0024): Blocks feed and Sections (the sortable page sections) share the ~320px column, with the tabs a
@@ -82,14 +82,14 @@ import { Blocks, ListTree } from "$lib/shell-icons";
 
 <Block
 	tag="section"
-	id="creator-chat-column"
+	id="creator-side-column"
 	aria-label={t(leftSurface().regionKey)}
 	class={cn(
 		"min-h-0 min-w-0 flex-col bg-background",
 		visible ? "flex flex-1" : "max-lg:hidden",
-		chatHidden ? "lg:hidden" : "lg:flex lg:flex-none lg:shrink-0"
+		sideHidden ? "lg:hidden" : "lg:flex lg:flex-none lg:shrink-0"
 	)}
-	style={creatorLayout.columns && !chatHidden ? `width: ${creatorLayout.widths.chat}px` : undefined}
+	style={creatorLayout.columns && !sideHidden ? `width: ${creatorLayout.widths.side}px` : undefined}
 >
 	<Group class="h-10 shrink-0 items-center gap-1 border-b border-border px-2" role="tablist" aria-label={t("leftPanel.tabs")} data-slot="left-tabs">
 		{#each tabs as item (item.id)}

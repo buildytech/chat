@@ -42,7 +42,7 @@ class MemoryStorage {
 test("defaults: canvas first (nav as a rail), every size inside its range", () => {
 	const layout = defaultLayout();
 	assert.equal(layout.navCollapsed, true);
-	assert.equal(layout.chatCollapsed, false);
+	assert.equal(layout.sideCollapsed, false);
 	assert.equal(layout.inspectorCollapsed, false);
 	for (const [pane, range] of Object.entries(PANE_RANGE)) {
 		assert.ok(range.min <= range.default && range.default <= range.max, pane);
@@ -51,26 +51,26 @@ test("defaults: canvas first (nav as a rail), every size inside its range", () =
 });
 
 test("resize clamping: below min, above max, fractions, NaN and strings", () => {
-	const { min, max, default: def } = PANE_RANGE.chat;
-	assert.equal(clampSize("chat", min - 100), min);
-	assert.equal(clampSize("chat", max + 100), max);
-	assert.equal(clampSize("chat", 300.4), 300);
-	assert.equal(clampSize("chat", Number.NaN), def);
-	assert.equal(clampSize("chat", "400"), def, "strings are not sizes");
+	const { min, max, default: def } = PANE_RANGE.side;
+	assert.equal(clampSize("side", min - 100), min);
+	assert.equal(clampSize("side", max + 100), max);
+	assert.equal(clampSize("side", 300.4), 300);
+	assert.equal(clampSize("side", Number.NaN), def);
+	assert.equal(clampSize("side", "400"), def, "strings are not sizes");
 	const layout = defaultLayout();
 	assert.equal(withSize(layout, "inspector", 10_000).inspectorWidth, PANE_RANGE.inspector.max);
 	assert.equal(withSize(layout, "layers", 0).layersHeight, PANE_RANGE.layers.min);
-	assert.equal(withSize(layout, "chat", layout.chatWidth), layout, "unchanged size: same object (no write)");
+	assert.equal(withSize(layout, "side", layout.sideWidth), layout, "unchanged size: same object (no write)");
 	assert.equal(keyStep(false), 8);
 	assert.equal(keyStep(true), 32);
 });
 
 test("parseLayout keeps known valid fields, clamps sizes, drops the rest", () => {
-	const parsed = parseLayout({ chatWidth: 9999, inspectorWidth: 1, focus: true, chatCollapsed: "yes", panel: 3, layersCollapsed: true });
-	assert.equal(parsed.chatWidth, PANE_RANGE.chat.max);
+	const parsed = parseLayout({ sideWidth: 9999, inspectorWidth: 1, focus: true, sideCollapsed: "yes", panel: 3, layersCollapsed: true });
+	assert.equal(parsed.sideWidth, PANE_RANGE.side.max);
 	assert.equal(parsed.inspectorWidth, PANE_RANGE.inspector.min);
 	assert.equal(parsed.focus, true);
-	assert.equal(parsed.chatCollapsed, false, "non-boolean flag ignored");
+	assert.equal(parsed.sideCollapsed, false, "non-boolean flag ignored");
 	assert.equal(parsed.layersCollapsed, true);
 	assert.ok(!("panel" in parsed));
 	for (const bad of [null, 7, "x", []]) assert.deepEqual(parseLayout(bad), defaultLayout());
@@ -78,7 +78,7 @@ test("parseLayout keeps known valid fields, clamps sizes, drops the rest", () =>
 
 test("persistence: save then load round-trips; one key buildy:v1:prefs", () => {
 	const store = new MemoryStorage();
-	let layout: LayoutPrefs = withSize(withCollapsed(defaultLayout(), "inspector", true), "chat", 400);
+	let layout: LayoutPrefs = withSize(withCollapsed(defaultLayout(), "inspector", true), "side", 400);
 	assert.equal(saveLayout(store, layout), true);
 	assert.deepEqual([...store.map.keys()], [STORAGE_KEYS.prefs]);
 	assert.deepEqual(loadLayout(store), layout);
@@ -95,10 +95,10 @@ test("migration: buildy:v1:layout moves once into prefs and is removed; unreadab
 	store.setItem(STORAGE_KEYS.layout, JSON.stringify({ navWidth: 300, chatWidth: 360, treeWidth: 220, sidebarCollapsed: false, chatHidden: true, treeCollapsed: true }));
 	const moved = loadLayout(store);
 	assert.equal(moved.navWidth, 300);
-	assert.equal(moved.chatWidth, 360);
+	assert.equal(moved.sideWidth, 360);
 	assert.equal(moved.treeWidth, 220);
 	assert.equal(moved.navCollapsed, false);
-	assert.equal(moved.chatCollapsed, true);
+	assert.equal(moved.sideCollapsed, true);
 	assert.equal(moved.treeCollapsed, true);
 	assert.equal(store.getItem(STORAGE_KEYS.layout), null, "old key removed");
 	assert.deepEqual(JSON.parse(store.getItem(STORAGE_KEYS.prefs)!).layout, moved);
@@ -116,14 +116,14 @@ test("migration: buildy:v1:layout moves once into prefs and is removed; unreadab
 test("fitWidths: stored widths at a wide window; chat then inspector give way so the canvas keeps PREVIEW_MIN", () => {
 	const layout = { ...defaultLayout(), navCollapsed: false };
 	const wide = fitWidths({ viewport: 1920, layout, inspector: true, columns: true });
-	assert.deepEqual([wide.nav, wide.chat, wide.inspector], [layout.navWidth, layout.chatWidth, layout.inspectorWidth]);
-	const tight = fitWidths({ viewport: 1024, layout: { ...layout, chatWidth: 520, inspectorWidth: 480 }, inspector: true, columns: true });
-	assert.ok(tight.chat >= PANE_RANGE.chat.min && tight.inspector >= PANE_RANGE.inspector.min);
-	assert.equal(tight.chat, PANE_RANGE.chat.min, "chat gives first");
-	assert.equal(tight.nav + tight.chat + tight.inspector + tight.preview, 1024);
+	assert.deepEqual([wide.nav, wide.side, wide.inspector], [layout.navWidth, layout.sideWidth, layout.inspectorWidth]);
+	const tight = fitWidths({ viewport: 1024, layout: { ...layout, sideWidth: 520, inspectorWidth: 480 }, inspector: true, columns: true });
+	assert.ok(tight.side >= PANE_RANGE.side.min && tight.inspector >= PANE_RANGE.inspector.min);
+	assert.equal(tight.side, PANE_RANGE.side.min, "the side panel gives first");
+	assert.equal(tight.nav + tight.side + tight.inspector + tight.preview, 1024);
 	// 1024 with the chat collapsed (Wails window): nav rail + inspector, the canvas well above the minimum.
-	const desk = fitWidths({ viewport: 1024, layout: { ...defaultLayout(), chatCollapsed: true }, inspector: true, columns: true });
-	assert.deepEqual([desk.nav, desk.chat], [RAIL, 0]);
+	const desk = fitWidths({ viewport: 1024, layout: { ...defaultLayout(), sideCollapsed: true }, inspector: true, columns: true });
+	assert.deepEqual([desk.nav, desk.side], [RAIL, 0]);
 	assert.ok(desk.preview >= 600, `preview ${desk.preview}`);
 	// Below lg nav and chat take no width; Ask has no inspector.
 	assert.equal(fitWidths({ viewport: 800, layout, inspector: false, columns: false }).preview, 800);
@@ -131,7 +131,7 @@ test("fitWidths: stored widths at a wide window; chat then inspector give way so
 
 test("focus mode collapses shell panels without forgetting the stored states", () => {
 	const layout = { ...defaultLayout(), navCollapsed: false, focus: true };
-	for (const panel of ["nav", "chat", "inspector"] as const) assert.equal(isCollapsed(layout, panel), true, panel);
+	for (const panel of ["nav", "side", "inspector"] as const) assert.equal(isCollapsed(layout, panel), true, panel);
 	assert.equal(isCollapsed(layout, "layers"), false, "inside the inspector nothing changes");
 	assert.equal(isCollapsed({ ...layout, focus: false }, "nav"), false, "stored state comes back");
 	const fit = fitWidths({ viewport: 1440, layout, inspector: true, columns: true });
@@ -140,7 +140,7 @@ test("focus mode collapses shell panels without forgetting the stored states", (
 
 test("shortcuts: Ctrl/Cmd+B, Ctrl/Cmd+I, Ctrl/Cmd+\\ by physical key; not with Alt/Shift or inside the code editor", () => {
 	const ev = (code: string, extra: Record<string, unknown> = {}) => ({ key: "", code, ctrlKey: true, metaKey: false, altKey: false, shiftKey: false, target: null, ...extra });
-	assert.equal(shortcutFor(ev("KeyB")), "chat");
+	assert.equal(shortcutFor(ev("KeyB")), "side");
 	assert.equal(shortcutFor(ev("KeyI", { ctrlKey: false, metaKey: true })), "inspector");
 	assert.equal(shortcutFor(ev("Backslash")), "focus");
 	assert.equal(shortcutFor(ev("KeyB", { ctrlKey: false })), null);
@@ -162,7 +162,7 @@ test("session file prefs (1.2.0): the stored layout is schema-valid; out-of-rang
 	};
 	assert.deepEqual(sessionFileIssues(base), [], "a file without prefs stays valid");
 	assert.deepEqual(sessionFileIssues({ ...base, prefs: { layout: defaultLayout() } }), []);
-	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { layout: { chatWidth: 1.5 } } }), []);
+	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { layout: { sideWidth: 1.5 } } }), []);
 	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { layout: { dock: "left" } } }), []);
 	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { theme: "dark" } }), []);
 });
@@ -189,9 +189,17 @@ test("shortcuts: a layout shortcut pressed inside the preview frame is re-dispat
 		assert.equal(forwardShortcut(key("KeyB"), to), false);
 		assert.equal(sent.length, 2);
 		assert.equal(prevented, 2);
-		assert.equal(shortcutFor(sent[0]!), "chat");
+		assert.equal(shortcutFor(sent[0]!), "side");
 		assert.equal(shortcutFor(sent[1]!), "focus");
 	} finally {
 		if (had === undefined) delete g.KeyboardEvent;
 	}
+});
+
+test("the left panel is `side` (session 1.10.0): stored as sideWidth / sideCollapsed; the old chatWidth is not read", () => {
+	const parsed = parseLayout({ sideWidth: 400, sideCollapsed: true, chatWidth: 500, chatCollapsed: false });
+	assert.equal(parsed.sideWidth, 400);
+	assert.equal(parsed.sideCollapsed, true);
+	assert.equal("chatWidth" in parsed || "chatCollapsed" in parsed, false);
+	assert.deepEqual(parseLayout({ chatWidth: 500 }).sideWidth, PANE_RANGE.side.default);
 });

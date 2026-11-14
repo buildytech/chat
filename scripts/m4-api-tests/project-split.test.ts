@@ -7,17 +7,18 @@ import { readFileSync, readdirSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
-import { docOfProject, projectOfDoc, registerProjectExtension } from "../../apps/chat-web/src/lib/project/doc.ts";
+import { docOfProject, projectOfDoc, registerLegacyKeys } from "../../apps/chat-web/src/lib/project/doc.ts";
 import { bySavedAt, draftPageId, newProject, withApplied, withExt, withSkin, withoutCollectionItem } from "../../apps/chat-web/src/lib/project/transitions.ts";
-import { CHAT_EXTENSION_KEYS, normalizeChatExt, projectOfView, viewOf } from "../../apps/chat-web/src/modules/chat/core/view.ts";
+import { CHAT_LEGACY_KEYS, normalizeChatExt, projectOfView, viewOf } from "../../apps/chat-web/src/modules/chat/core/view.ts";
 
 // The chat module registers its keys when it loads; this file tests the project with it loaded (modules.test.ts: without).
-registerProjectExtension("chat", CHAT_EXTENSION_KEYS);
+registerLegacyKeys("chat", CHAT_LEGACY_KEYS);
 
 const NOW = "2026-11-10T12:00:00.000Z";
 const lib = (path: string) => fileURLToPath(new URL(`../../apps/chat-web/src/lib/${path}`, import.meta.url));
 const chatCore = (path: string) => fileURLToPath(new URL(`../../apps/chat-web/src/modules/chat/core/${path}`, import.meta.url));
-const legacyDoc = {
+/** A document before session 1.10.0: the chat keys flat at the top. */
+const flatDoc = {
 	id: "session-a",
 	title: "Coffee",
 	createdAt: NOW,
@@ -35,14 +36,43 @@ const legacyDoc = {
 	messages: [{ id: "m1", role: "user", text: "hi", createdAt: NOW }],
 	history: [{ revision: 1, at: NOW, cause: "apply" }]
 };
+/** The same project as the app writes it since 1.10.0: the chat under `ext.chat`. */
+const legacyDoc = {
+	id: "session-a",
+	title: "Coffee",
+	createdAt: NOW,
+	updatedAt: NOW,
+	scenarioId: null,
+	screenId: "landing",
+	pageId: "page-a",
+	pageBound: true,
+	pageRevision: 2,
+	skin: "warm",
+	collection: { id: "c1", title: "Cafe", items: [{ kind: "screen", id: "landing" }] },
+	history: [{ revision: 1, at: NOW, cause: "apply" }],
+	ext: { chat: { mode: "build", selectedModelId: "grok-4", usage: { runs: 1 }, messages: [{ id: "m1", role: "user", text: "hi", createdAt: NOW }] } }
+};
 const noChatDoc = { id: "session-b", title: "No chat", updatedAt: NOW, pageId: "page-b", pageRevision: 1, skin: "dark" };
-const otherProjectDoc = { id: "session-c", projectId: "project-x", title: "Moved", updatedAt: NOW, messages: [] };
+const otherProjectDoc = { id: "session-c", projectId: "project-x", title: "Moved", updatedAt: NOW, ext: { chat: { messages: [] } } };
 
 test("doc: a stored document is a fixed point of project -> doc, byte for byte (legacy, no chat, projectId != id)", () => {
 	for (const doc of [legacyDoc, noChatDoc, otherProjectDoc]) {
 		assert.equal(JSON.stringify(docOfProject(projectOfDoc(doc as never))), JSON.stringify(doc));
 	}
 	assert.deepEqual(sessionDefIssues(noChatDoc, "session"), []);
+	const withChat = { id: "session-d", title: "Chat", updatedAt: NOW, ext: { chat: legacyDoc.ext.chat } };
+	for (const doc of [withChat, otherProjectDoc]) assert.deepEqual(sessionDefIssues(doc, "session"), [], "session 1.10.0: ext.chat is schema-valid");
+});
+
+test("doc: a document before 1.10.0 (flat chat keys) is read into ext.chat and written back under ext, never flat", () => {
+	const project = projectOfDoc(flatDoc as never);
+	assert.deepEqual(project.ext.chat, legacyDoc.ext.chat);
+	assert.equal(project.extra, undefined, "the flat keys are the chat's, not leftovers");
+	const written = docOfProject(project);
+	assert.equal(JSON.stringify(written), JSON.stringify(legacyDoc));
+	for (const key of ["messages", "mode", "usage", "selectedModelId"]) assert.equal(key in written, false, `${key} is not written flat`);
+	const both = projectOfDoc({ ...flatDoc, ext: { chat: { messages: [] } } } as never);
+	assert.deepEqual(both.ext.chat, { messages: [] }, "ext wins over the flat keys");
 });
 
 test("doc: the project holds no chat field; a document with no messages has no ext.chat and gets none back", () => {
@@ -70,7 +100,7 @@ test("chat view: a project with no chat shows no messages and stays without a ch
 test("chat view: project -> view -> project keeps the chat, the page fields and other extensions", () => {
 	const base = withExt(projectOfDoc(legacyDoc as never), "lab", { note: "kept" });
 	const back = projectOfView(viewOf(base), base);
-	assert.equal(JSON.stringify(docOfProject(back)), JSON.stringify(legacyDoc));
+	assert.deepEqual(docOfProject(back), { ...legacyDoc, ext: { ...legacyDoc.ext, lab: { note: "kept" } } });
 	assert.deepEqual(back.ext.lab, { note: "kept" });
 	const moved = projectOfDoc(otherProjectDoc as never);
 	assert.equal(projectOfView(viewOf(moved), moved).projectId, "project-x", "the page key is the project's, not the view's");
@@ -79,7 +109,7 @@ test("chat view: project -> view -> project keeps the chat, the page fields and 
 test("chat normalizer: the old proposal shape gets a status and is counted; no chat is left alone", () => {
 	const counts: number[] = [];
 	const normalize = normalizeChatExt((_path, n) => counts.push(n));
-	const old = projectOfDoc({ ...legacyDoc, messages: [{ id: "m", role: "assistant", text: "p", createdAt: NOW, proposal: { applied: true, source: "write_page", liveModel: false, warnings: [], missing: [], title: "T" } }] } as never);
+	const old = projectOfDoc({ ...flatDoc, messages: [{ id: "m", role: "assistant", text: "p", createdAt: NOW, proposal: { applied: true, source: "write_page", liveModel: false, warnings: [], missing: [], title: "T" } }] } as never);
 	const next = normalize(old);
 	assert.equal((next.ext.chat?.messages as { proposal: { status: string } }[])[0]!.proposal.status, "applied");
 	assert.deepEqual(counts, [1]);

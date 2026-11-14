@@ -24,15 +24,14 @@ const chatDoc = {
 	title: "Coffee",
 	createdAt: NOW,
 	updatedAt: NOW,
-	mode: "build",
-	selectedModelId: "grok-4",
 	pageId: "page-a",
 	pageRevision: 1,
 	skin: "warm",
-	usage: { runs: 1 },
-	messages: [{ id: "m1", role: "user", text: "hi", createdAt: NOW }],
-	history: [{ revision: 1, at: NOW, cause: "apply" }]
+	history: [{ revision: 1, at: NOW, cause: "apply" }],
+	ext: { chat: { mode: "build", selectedModelId: "grok-4", usage: { runs: 1 }, messages: [{ id: "m1", role: "user", text: "hi", createdAt: NOW }] } }
 };
+/** The same session as documents before session 1.10.0 wrote it: the chat keys flat. */
+const flatChatDoc = { id: "session-a", title: "Coffee", createdAt: NOW, updatedAt: NOW, mode: "build", selectedModelId: "grok-4", pageId: "page-a", pageRevision: 1, skin: "warm", usage: { runs: 1 }, messages: [{ id: "m1", role: "user", text: "hi", createdAt: NOW }], history: [{ revision: 1, at: NOW, cause: "apply" }] };
 const plainDoc = { id: "session-b", title: "Page", updatedAt: NOW, pageId: "page-b", pageRevision: 2, skin: "dark" };
 
 test("flag: VITE_MODULE_CHAT is on by default and off for 0 / false / off / no in any case", () => {
@@ -67,10 +66,13 @@ test("the brand is βuildγ in the core and no module re-words it", () => {
 
 test("chat off: a stored project keeps its chat keys untouched and a project without a chat gets none", () => {
 	const kept = projectOfDoc(chatDoc as never);
-	assert.deepEqual(kept.ext, {}, "no module claims the chat keys, so the project has no extension");
-	assert.deepEqual(Object.keys(kept.extra ?? {}).sort(), ["messages", "mode", "selectedModelId", "usage"]);
+	assert.deepEqual(Object.keys(kept.ext), ["chat"], "an extension is stored under ext by name: the core carries it without knowing it");
+	assert.equal(kept.extra, undefined);
 	for (const key of ["messages", "mode", "usage", "selectedModelId"]) assert.equal(key in kept, false, `${key} is not a project field`);
 	assert.equal(JSON.stringify(docOfProject(kept)), JSON.stringify(chatDoc), "saved back byte for byte: turning the chat off loses no stored data");
+	const flat = projectOfDoc(flatChatDoc as never);
+	assert.deepEqual(Object.keys(flat.extra ?? {}).sort(), ["messages", "mode", "selectedModelId", "usage"], "an older flat document keeps its keys as they are while no module claims them");
+	assert.deepEqual(docOfProject(flat), flatChatDoc);
 	const plain = projectOfDoc(plainDoc as never);
 	assert.equal(plain.extra, undefined);
 	const doc = docOfProject(plain);
