@@ -337,9 +337,10 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 			}
 			messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
 		}
-		// Build ends with the accepted write; the answer is the model's text beside the call, if any (the host shows the diff and the status).
+		// Build ends with the accepted write.
+		// The text beside the call is not an answer (a model may print the document there): the host shows the diff card and the status.
 		if (build && accepted) {
-			text = said;
+			text = "";
 			endedOnCalls = false;
 			break;
 		}

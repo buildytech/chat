@@ -73,11 +73,11 @@ test("replay: the printed document ends a turn; the nudge forces write_page by n
 	assert.equal(out.meta.steps, 4);
 });
 
-test("a model that follows tool_choice: reads, then write_page; accepted write ends the turn on that step", async () => {
-	const { out, seen } = await run([reads[0]!, reads[1]!, { content: "Writing it.", calls: [{ name: "write_page", arguments: { page: printed } }] }, { content: "Never asked for." }]);
+test("a model that follows tool_choice (and prints the document beside the call): reads, then write_page; accepted write ends the turn on that step", async () => {
+	const { out, seen } = await run([reads[0]!, reads[1]!, { content: PRINTED, calls: [{ name: "write_page", arguments: { page: printed } }] }, { content: "Never asked for." }]);
 	assert.deepEqual(seen.requests.map(choiceOf), ["required", "required", "required"]);
 	assert.ok(out.result.ok && out.result.proposal);
-	if (out.result.ok) assert.equal(out.result.text, "Writing it.");
+	if (out.result.ok) assert.equal(out.result.text, "", "text beside the write call is not an answer");
 });
 
 test("a plain-text answer after the forced request: no write, no proposal (the client shows the page-not-changed line)", async () => {

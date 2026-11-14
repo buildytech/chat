@@ -39,3 +39,4 @@ A step that still comes back as plain text is nudged once ("call write_page with
 request forces `{"type":"function","function":{"name":"write_page"}}` (docs.x.ai lists it under tool choice; a 400/422 falls back to
 `required`). Ask stays on `auto`. No text is parsed for a document. A write that fails validation keeps the localized
 "page not changed (code)" line. Consequence: the empty-required-text fill hint of an accepted write no longer gets a follow-up step.
+The text a model prints beside an accepted write_page call is not an answer and is dropped (live run: it printed the whole document there); the chat shows the diff card and the status.
