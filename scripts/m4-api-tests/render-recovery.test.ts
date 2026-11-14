@@ -54,7 +54,7 @@ test("Build with selected blocks and open problems: a model that claims a fix wi
 	assert.deepEqual(out.meta.toolsCalled, ["get_block", "get_block"]);
 });
 
-test("Ask with open problems is nudged too; Ask without problems and without a scope is not", async () => {
+test("Ask with open problems is nudged too (tool_choice stays auto); Ask without problems is not; Build without problems is nudged", async () => {
 	const ask = await withProvider(claim, async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: "Nothing worked", mode: "ask", page, expectedRevision: 5 }, signal()), seen }));
 	assert.equal(ask.seen.requests.length, 3);
 	const clean = JSON.parse(JSON.stringify(page).replaceAll('"currency":"\u20bd"', '"currency":"RUB"')) as PageV2;
@@ -62,7 +62,9 @@ test("Ask with open problems is nudged too; Ask without problems and without a s
 	const calm = await withProvider([{ content: "The page has nine blocks." }], async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: "What is on the page?", mode: "ask", page: clean, expectedRevision: 5 }, signal()), seen }));
 	assert.equal(calm.seen.requests.length, 1);
 	const buildClean = await withProvider([{ content: "Done." }], async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: "Say hi", mode: "build", page: clean, expectedRevision: 5 }, signal()), seen }));
-	assert.equal(buildClean.seen.requests.length, 1, "no problems and no selection: no nudge");
+	assert.equal(buildClean.seen.requests.length, 2, "Build without problems or selection is nudged too (and the next request forces write_page)");
+	assert.deepEqual(buildClean.seen.requests.map((r) => r.tool_choice), ["required", { type: "function", function: { name: "write_page" } }]);
+	assert.equal(calm.seen.requests[0]!.tool_choice, "auto", "Ask stays on auto");
 });
 
 test("a model that writes RUB: one accepted write, both blocks render, no problems left", async () => {
@@ -71,7 +73,7 @@ test("a model that writes RUB: one accepted write, both blocks render, no proble
 	const zones = (page.blocks[4]!.props as { zones: unknown[] }).zones.map((_, i) => fix(`/blocks/4/props/zones/${i}/currency`));
 	const script: Scripted[] = [{ calls: [{ name: "write_page", arguments: { patch: [...dishes, ...zones] } }] }, { content: "Currency codes are ISO now." }];
 	const { out, seen } = await withProvider(script, async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: BRIEF, mode: "build", page, expectedRevision: 5, scopeBlockIds: ["dishes", "delivery"] }, signal()), seen }));
-	assert.equal(seen.requests.length, 2, "no nudge after an accepted write");
+	assert.equal(seen.requests.length, 1, "an accepted write ends a Build turn: no nudge, no summary step");
 	assert.ok(out.result.ok);
 	if (!out.result.ok) return;
 	const proposal = out.result.proposal!;

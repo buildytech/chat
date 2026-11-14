@@ -31115,7 +31115,7 @@ const SYSTEM_COMMON = [
 	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why."
 ].join("\n");
 
-const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: change the page with write_page. If the request only asks a question, answer in text and do not write.`;
+const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: every step is a tool call. Read with the catalog tools, then change the page with write_page: the whole document goes into the call, never into the text. The turn ends when write_page is accepted. If the request needs no change, write the current page back unchanged.`;
 
 const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page and the catalog. Answer questions in text. When your answer recommends changes to the page, call write_page once with exactly those changes: it becomes a proposal the author can apply in Build with one click (nothing is applied by Ask). Do not write when you only explain.`;
 
@@ -31181,7 +31181,7 @@ async function providerStep(input: {
 	modelId: string;
 	messages: ChatMessage[];
 	tools: ReturnType<typeof agentOpenAiTools>;
-	toolChoice: "auto" | "none" | { type: "function"; function: { name: string } };
+	toolChoice: "auto" | "none" | "required" | { type: "function"; function: { name: string } };
 	maxTokens: number;
 	signal: AbortSignal;
 	stepUsage: StepUsage[];
@@ -31289,14 +31289,24 @@ function userPrompt(ctx: TurnContext, problems: ReturnType<typeof renderProblems
 	});
 }
 
-/** Sent once when a turn that has something to fix ends without an accepted write (ADR 0035). Program text, no phrase recognition. */
-function nudgeText(problems: number): string {
+/**
+ * Sent once when a turn that is expected to change the page ends without an accepted write (ADR 0035). Program text, no phrase
+ * recognition. In Build the request that follows forces write_page (tool_choice), so the text says the document goes into the
+ * call and is never printed; Ask keeps the way out of saying plainly that the page does not change.
+ */
+function nudgeText(ctx: TurnContext, problems: number): string {
+	const build = ctx.mode === "build";
 	return [
 		"Host notice: nothing on the page has changed in this turn (no write_page was accepted).",
-		problems > 0 ? "The page has blocks that do not render; they are listed in renderProblems (get_page shows them)." : "Blocks are selected for this edit.",
-		"Call write_page now with the change, or say plainly that you are not changing the page and why. Do not report a change that write_page did not accept."
-	].join(" ");
+		problems > 0 ? "The page has blocks that do not render; they are listed in renderProblems (get_page shows them)." : ctx.scopeBlockIds?.length ? "Blocks are selected for this edit." : "",
+		build
+			? "Call write_page with the page document now; the document goes into the call, do not print it in the text. Do not report a change that write_page did not accept."
+			: "Call write_page now with the change, or say plainly that you are not changing the page and why. Do not report a change that write_page did not accept."
+	].filter(Boolean).join(" ");
 }
+
+/** The request after the nudge: Build forces the write_page call (Ask stays on auto). */
+const FORCE_WRITE = { type: "function", function: { name: "write_page" } } as const;
 
 const BUDGET = { maxSteps: RUN_BUDGET.maxToolCalls, maxTokens: 8192 } as const;
 
@@ -31330,16 +31340,26 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 		return turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId);
 	};
 	let endedOnCalls = false;
-	// A turn with blocks that do not render (every block of the current page is probed here, not only the ones a write touches),
-	// or an edit scoped to selected blocks, is expected to end with an accepted write; if it does not, the model is asked once.
+	// Build asks for a tool call on every step (tool_choice "required"): the model reads with the catalog tools and ends with
+	// write_page, and the turn ends with the first accepted write (no extra model step to summarize it). If a step still comes
+	// back as plain text, the model is told once and the next request forces write_page by name. Ask stays on "auto"; Ask with
+	// blocks that do not render (every block of the current page is probed at turn start) gets the one nudge as well.
+	const build = ctx.mode === "build";
 	const open = problems.length;
-	const expectsChange = open > 0 || (ctx.mode === "build" && Boolean(ctx.scopeBlockIds?.length));
+	const expectsChange = open > 0 || build;
 	let nudged = false;
+	let forceNamed = false;
 	const changed = () => Boolean(proposal && proposal.diff.length > 0);
 	while (trace.steps < BUDGET.maxSteps && !stuck) {
 		trace.steps += 1;
 		endedOnCalls = false;
-		const step = await providerStep({ apiKey, modelId, messages, tools, toolChoice: "auto", maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
+		const choice = forceNamed ? FORCE_WRITE : build ? "required" : "auto";
+		let step = await providerStep({ apiKey, modelId, messages, tools, toolChoice: choice, maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
+		// A model that refuses the named function gets "required".
+		if (forceNamed && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) {
+			step = await providerStep({ apiKey, modelId, messages, tools, toolChoice: "required", maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
+		}
+		forceNamed = false;
 		if (!step.ok) return { result: step.result, meta: step.meta };
 		const message = step.message;
 		const said = modelText(message);
@@ -31348,7 +31368,8 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 		if (calls.length === 0) {
 			if (expectsChange && !nudged && !changed() && trace.steps < BUDGET.maxSteps) {
 				nudged = true;
-				messages.push({ role: "assistant", content: said || "" }, { role: "user", content: nudgeText(open) });
+				forceNamed = build;
+				messages.push({ role: "assistant", content: said || "" }, { role: "user", content: nudgeText(ctx, open) });
 				continue;
 			}
 			break;
@@ -31356,6 +31377,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 		endedOnCalls = true;
 		trace.toolCallingWorked = true;
 		messages.push({ role: "assistant", content: message.content ?? null, tool_calls: calls });
+		let accepted = false;
 		for (const call of calls) {
 			const name = call.function?.name ?? "";
 			trace.toolsCalled.push(name);
@@ -31366,6 +31388,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 				if (written.ok) {
 					working = written.page;
 					proposal = written.proposal;
+					accepted = true;
 					lastIssues = null;
 					reply = written.payload;
 				} else {
@@ -31385,6 +31408,12 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 				} else reply = { ok: false, code: outcome.code, message: outcome.message, ...(outcome.result ? { result: outcome.result } : {}) };
 			}
 			messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
+		}
+		// Build ends with the accepted write; the answer is the model's text beside the call, if any (the host shows the diff and the status).
+		if (build && accepted) {
+			text = said;
+			endedOnCalls = false;
+			break;
 		}
 	}
 	if (endedOnCalls && !stuck && !changed()) {
