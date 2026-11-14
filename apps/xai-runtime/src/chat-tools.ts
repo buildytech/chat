@@ -5,7 +5,7 @@
  * collection) and answers with the diff or a list of { path, code, expected, got }; the model fixes its own document. The
  * loop stops after two identical error lists. There is no local repair, no operation taxonomy, no phrase recognition.
  */
-import { RUN_BUDGET, collectionPromptContext, itemInfo, renderProblems } from "@buildytech/builder-core";
+import { RUN_BUDGET, collectionPromptContext, itemInfo, pageForModel, renderProblems } from "@buildytech/builder-core";
 import { XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, itemIndex, propsOutline, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage, type AgentFailure, type AgentReply, type PageProposal, type RunUsage, type StepUsage, type TurnContext } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import { installPropsGate } from "@buildytech/builder-core/props-gate";
@@ -196,7 +196,7 @@ const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
 
 /** The page document the model reads: without host-managed fields. */
 function pageView(page: PageV2): Record<string, unknown> {
-	const view: Record<string, unknown> = { ...page };
+	const view: Record<string, unknown> = { ...pageForModel(page) };
 	for (const key of HOST_FIELDS) delete view[key];
 	return view;
 }

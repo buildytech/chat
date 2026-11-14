@@ -112,6 +112,9 @@
 		},
 		"packages/builder-core/src/catalog/props.json": {
 			"sha256": "eb52d3ece929d586e213062e97c71298146c385b85c8d1bb0aa160878a6ccf63"
+		},
+		"packages/builder-core/src/catalog/money.json": {
+			"sha256": "9c093687a90a0087e3f680fac918b6438b38aa527ac299b4add4e4a8ac8725cc"
 		}
 	}
 }

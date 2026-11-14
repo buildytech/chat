@@ -7,6 +7,7 @@
  *   packages/builder-core/src/catalog/search-index.json     from the graph + policy
  *   packages/builder-core/src/catalog/sources.json          from the pinned registry files (registry-derive.mjs)
  *   packages/builder-core/src/catalog/props.json            from the pinned registry props (registry-derive.mjs)
+ *   packages/builder-core/src/catalog/money.json            names of the money props, read from the registry sources (registry-derive.mjs)
  */
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";

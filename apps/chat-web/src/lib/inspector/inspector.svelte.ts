@@ -5,7 +5,7 @@
  * model call: a passing edit replaces the visible page at once (persisted like any page edit), a rejected one leaves the
  * page as it was and is shown in its field.
  */
-import { addScreen, applyOp, checkAdd, deriveFamily, inspectorValue, type AddCheck, type InspectorField, type OpResult, type PageFamily, type PageOp } from "@buildytech/builder-core";
+import { addScreen, applyOp, checkAdd, deriveFamily, inspectorShown, inspectorValue, type AddCheck, type InspectorField, type OpResult, type PageFamily, type PageOp } from "@buildytech/builder-core";
 import type { PageV2 } from "@buildytech/page-contract";
 import { loadPropsGate } from "../gates";
 import { startEmptyPage } from "../modules/workspace.svelte.ts";
@@ -116,7 +116,7 @@ export const inspector = {
 		if (!page) return false;
 		historyFor(page);
 		// A committed value equal to what the block already renders adds nothing.
-		if (!typing && value === String(field.value ?? "")) {
+		if (!typing && value === (field.money ? inspectorShown(field) : String(field.value ?? ""))) {
 			setIssue(blockId, field.pointer, null);
 			history.seal();
 			return true;

@@ -9,7 +9,7 @@ import type { AgentMode } from "./agent-tools.ts";
 import { checkCollection, type CollectionBounds } from "@buildytech/builder-core";
 import { diffPages, type DiffEntry } from "@buildytech/builder-core";
 import type { DocIssue } from "@buildytech/builder-core";
-import { writePage, type WriteInput } from "@buildytech/builder-core";
+import { writeInputFromModel, writePage, type WriteInput } from "@buildytech/builder-core";
 import { blankRequired } from "@buildytech/builder-core";
 
 export type TurnContext = {
@@ -86,9 +86,8 @@ export type WriteToolResult =
 
 /** write_page: `args` is { page } or { patch }. `working` is the page the write applies to (the base, or the last write of this turn). */
 export function runWriteTool(ctx: TurnContext, working: PageV2, args: Record<string, unknown>, options: { now?: string } = {}): WriteToolResult {
-	const input: WriteInput = {};
-	if (args.page !== undefined) input.page = args.page;
-	if (args.patch !== undefined) input.patch = args.patch;
+	// The model writes money in major units (650); the document stores minor units (65000): converted before the gate (money-view.ts).
+	const input: WriteInput = writeInputFromModel(working, args);
 	const written = writePage(working, input, options);
 	if (!written.ok) return { ok: false, code: written.code, message: written.message, issues: written.issues };
 	const shown = ctx.shownPage ?? ctx.page;

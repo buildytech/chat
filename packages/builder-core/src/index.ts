@@ -63,6 +63,7 @@ export {
 	variantPresets,
 	type RegistryRender
 } from "./catalog/organism.ts";
+export { SAMPLE_MINOR, isMoneyName, minorDigits, toMajor, toMinor } from "./catalog/money.ts";
 export {
 	coerceEnumValue,
 	fillProps,

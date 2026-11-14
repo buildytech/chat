@@ -4,7 +4,7 @@
  * capture and its --check) and scripts/snapshot.mjs (the one derive / check of every catalog artifact, ADR 0039).
  */
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 export const hex = (text) => createHash("sha256").update(text).digest("hex");
@@ -12,6 +12,7 @@ export const json = (value) => `${JSON.stringify(value, null, "\t")}\n`;
 
 export const SOURCES_JSON = "packages/builder-core/src/catalog/sources.json";
 export const PROPS_JSON = "packages/builder-core/src/catalog/props.json";
+export const MONEY_JSON = "packages/builder-core/src/catalog/money.json";
 
 /** Skins (registry:theme items, `add theme-<skin>`; `add --all` leaves them out): skin id -> item, title and CSS file. */
 export function themesOf(snapshot) {
@@ -138,6 +139,52 @@ export function deriveSources({ snapshot, variants, props, lock }) {
 }
 
 /** Exact bytes of sources.json and props.json derived from the raw registry files under `root`. */
+/** The balanced text of the first argument of a call that starts at `open` (the index of its "("). */
+function firstArgument(text, open) {
+	let depth = 0;
+	for (let i = open; i < text.length; i += 1) {
+		const ch = text[i];
+		if (ch === "(" || ch === "[" || ch === "{") depth += 1;
+		else if (ch === ")" || ch === "]" || ch === "}") depth -= 1;
+		else if (ch === "," && depth === 1) return text.slice(open + 1, i);
+		if (depth === 0) return text.slice(open + 1, i);
+	}
+	return "";
+}
+
+const sourceFiles = (dir) =>
+	readdirSync(dir, { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? sourceFiles(join(dir, entry.name)) : /\.(svelte|ts)$/.test(entry.name) ? [join(dir, entry.name)] : []));
+
+/**
+ * Names of the money props of the registry (Codex v0.4: integer minor units, `fmtMoney(minor, currency)`), read from what the
+ * registry itself ships and never listed by hand: (1) the property (or bare name) a block hands to `fmtMoney` as its whole
+ * first argument, following a local `$derived` to the properties it reads; (2) a number prop whose doc comment in a generated
+ * `*.types.ts` says "minor units". A product (`price * qty`) is not a name: its factors are not money by themselves.
+ * The chat treats a number prop with one of these names that sits beside a `currency` prop as money.
+ */
+export function deriveMoneyNames(root) {
+	const names = new Set();
+	const dir = join(root, "registry/svelte/src");
+	for (const file of sourceFiles(dir)) {
+		const text = readFileSync(file, "utf8");
+		if (file.endsWith(".svelte")) {
+			for (const call of text.matchAll(/\bfmtMoney\(/g)) {
+				const arg = firstArgument(text, call.index + call[0].length - 1).trim();
+				const member = /^[\w$]+\.([\w$]+)$/.exec(arg);
+				if (member) names.add(member[1]);
+				else if (/^[\w$]+$/.test(arg)) {
+					names.add(arg);
+					const local = new RegExp(`const ${arg.replace(/\$/g, "\\$")} = \\$derived\\(([^;]*?)\\);?\\s*$`, "m").exec(text);
+					for (const read of local?.[1].matchAll(/[\w$]+\.([\w$]+)/g) ?? []) names.add(read[1]);
+				}
+			}
+		} else if (file.endsWith(".types.ts")) {
+			for (const doc of text.matchAll(/\/\*\*[^*]*minor units[^*]*\*\/\s*([\w$]+)\??:\s*number/g)) names.add(doc[1]);
+		}
+	}
+	return [...names].sort();
+}
+
 export function deriveRegistryArtifacts(root) {
 	const readJson = (p) => JSON.parse(readFileSync(join(root, p), "utf8"));
 	const props = readJson("registry/props.v0.json");
@@ -150,6 +197,7 @@ export function deriveRegistryArtifacts(root) {
 				lock: readJson("registry/svelte/ui8kit.lock.json")
 			})
 		),
-		[PROPS_JSON]: `${JSON.stringify(compactProps(props))}\n`
+		[PROPS_JSON]: `${JSON.stringify(compactProps(props))}\n`,
+		[MONEY_JSON]: json({ format: "buildy-money-names", unit: "minor", names: deriveMoneyNames(root) })
 	};
 }

@@ -123,7 +123,7 @@ Status: done except the last line, which is a rule for later work ([6799043](htt
 ## 7. Open product items (kept, not part of the refactor)
 
 - [x] Stale buildy digest pin in Stock: Stock `buildy.v0.json` re-pinned in [9eeabca](https://github.com/codegen-x/ui8kit/commit/9eeabca), chat pin refreshed in [f69bb81](https://github.com/buildytech/chat/commit/f69bb81) (audit B-03).
-- [ ] Currency and minor units upstream (in the contract and Stock; no local workaround).
+- [ ] Currency symbol upstream (`fmtMoney` hardcodes `en-US`: `RUB 650`, not `650 ₽`; codegen-x, owner deciding who). Minor units are handled chat-side by the money boundary (ADR 0046): the document keeps minor units, the model and the Inspector use major units.
 - [ ] Preview error alert contrast.
 - [ ] JSON-as-text failure (a model answers with JSON as plain text instead of calling the tool).
 - [ ] Six rich-text `__html` variants: delete or rework (owner decision; the BuildY guarantee protects the frontend).

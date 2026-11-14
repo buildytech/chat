@@ -6,7 +6,7 @@
 import { catalogEntryBySpec, catalogSourceFor } from "@buildytech/builder-core";
 import { LUCIDE_ICON_HINT, propsEventsFor, propsFieldTree, type PropsFieldNode } from "@buildytech/builder-core";
 import { allItems, itemInfo, itemOfSpec } from "@buildytech/builder-core";
-import { sampleProps } from "@buildytech/builder-core";
+import { convertProps, sampleProps } from "@buildytech/builder-core";
 import { blockAssetUrl, blockThumbUrl } from "@buildytech/builder-core";
 import { askBlockCard, type AskBlockCard } from "@buildytech/builder-core";
 
@@ -122,7 +122,8 @@ export function readBlock(id: unknown, variant?: unknown): BlockRead {
 		variants: info.variants,
 		variantSets,
 		props: propsOutline(item) ?? [],
-		sample: sampleProps(item, want, `block-${item}`),
+		// The model reads money in major units (the stored sample is in minor units).
+		sample: convertProps(item, sampleProps(item, want, `block-${item}`), "view"),
 		icons: LUCIDE_ICON_HINT,
 		stockUrl: entry ? blockAssetUrl(info.spec, want) : null,
 		thumb: entry ? blockThumbUrl(info.spec, want) : null

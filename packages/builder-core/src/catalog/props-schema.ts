@@ -8,6 +8,7 @@
  * Nothing here is hand-written block data: every name, type, enum and default comes from the published schema.
  */
 import raw from "./props.json" with { type: "json" };
+import { SAMPLE_MINOR, isMoneyName } from "./money.ts";
 
 export type JsonSchema = Record<string, unknown>;
 
@@ -225,6 +226,8 @@ export type PropsFieldNode = {
 	name: string;
 	kind: FieldKind;
 	required: boolean;
+	/** number: money in minor units (a name the registry formats with fmtMoney, beside a `currency` prop; money.ts). */
+	money?: true;
 	/** enum: the allowed values (layout axes and the like); the icon enum is lucideIcons(). */
 	enum?: string[];
 	/** enum: the schema's values as written (numbers stay numbers: `level` 1 | 2). */
@@ -247,10 +250,12 @@ function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
 	const value = valueOf(node);
 	const properties = isObject(value.properties) ? (value.properties as Record<string, JsonSchema>) : {};
 	const required = Array.isArray(value.required) ? (value.required as string[]) : [];
+	const hasCurrency = Object.entries(properties).some(([other, entry]) => other === "currency" && kindOf(entry) === "text");
 	return Object.entries(properties).map(([name, inner]) => {
 		const kind = kindOf(inner);
 		const target = valueOf(inner);
 		const out: PropsFieldNode = { name, kind, required: required.includes(name) };
+		if (kind === "number" && hasCurrency && isMoneyName(name)) out.money = true;
 		if (kind === "enum") {
 			out.enum = (target.enum as unknown[]).map(String);
 			out.enumValues = target.enum as Array<string | number | boolean | null>;
@@ -504,7 +509,9 @@ function fill(node: JsonSchema, current: unknown, depth: number, blank: boolean,
 	for (const name of required) {
 		if (current[name] !== undefined || !properties[name]) continue;
 		const fallback = defaultFor(properties[name]!, name, depth, blank, rows);
-		if (fallback !== undefined) out[name] = fallback;
+		// A money prop beside a currency starts from a sample amount in minor units (not 0: "$0"); a blank write keeps 0.
+		if (fallback === 0 && !blank && isMoneyName(name) && "currency" in properties) out[name] = SAMPLE_MINOR;
+		else if (fallback !== undefined) out[name] = fallback;
 	}
 	for (const [name, inner] of Object.entries(current)) out[name] = properties[name] ? fill(properties[name]!, inner, depth + 1, blank, rows) : inner;
 	return out;

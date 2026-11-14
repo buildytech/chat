@@ -21,7 +21,8 @@ const OUT = {
 	snapshot: "packages/builder-core/src/catalog/snapshot.json",
 	search: "packages/builder-core/src/catalog/search-index.json",
 	sources: "packages/builder-core/src/catalog/sources.json",
-	props: "packages/builder-core/src/catalog/props.json"
+	props: "packages/builder-core/src/catalog/props.json",
+	money: "packages/builder-core/src/catalog/money.json"
 };
 
 test("every derived artifact is byte-identical to a fresh derivation (in memory, no network)", () => {

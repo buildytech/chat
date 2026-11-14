@@ -7,5 +7,6 @@ export { freshBlockId, normalizeBlocks, writePage, type WriteFailure, type Write
 export { addSlotCheck, itemRole, moveSlotCheck, naturalIndex, type SlotCheck } from "./slots.ts";
 export { DEFAULT_START_SCREEN, emptyPage, screenBlocks, screenItems, type ScreenItem, type ScreenItems } from "./start.ts";
 export { addScreen, applyOp, checkAdd, setAtPointer, type AddCheck, type OpName, type OpResult, type PageOp } from "./ops.ts";
-export { inspectorModel, inspectorValue, pointerKey, type InspectorField, type InspectorModel, type InspectorWidget } from "./inspect.ts";
+export { inspectorModel, inspectorShown, inspectorValue, pointerKey, type InspectorField, type InspectorModel, type InspectorWidget } from "./inspect.ts";
 export { installRenderProbe, probeFromModule, probeOutcome, renderProbeInstalled, renderIssues, renderProblems, showsContent, type ProbeIssue, type ProbeOutcome, type ProbeResult, type RenderModule, type RenderProbe } from "./probe.ts";
+export { convertProps, pageForModel, pageFromModel, patchFromModel, writeInputFromModel } from "./money-view.ts";

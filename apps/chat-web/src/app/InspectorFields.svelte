@@ -22,7 +22,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 	import Text from "$registry/compose/Text.svelte";
 	import Textarea from "$registry/compose/Textarea.svelte";
 	import Field from "$registry/components/field.svelte";
-	import { mapKeyIssue, type InspectorField } from "@buildytech/builder-core";
+	import { inspectorShown, mapKeyIssue, type InspectorField } from "@buildytech/builder-core";
 	import { t } from "$lib/i18n/dictionary";
 	import { canvas } from "$lib/inspector/canvas.svelte";
 	import { closestAllowed, fieldDomId, hasContent, issueText, type FieldHandlers, type FieldIssue } from "$lib/inspector/fields";
@@ -112,10 +112,11 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 			id={itemId}
 			size="sm"
 			type="number"
+			step={item.money ? "any" : undefined}
 			class="min-w-0 flex-1"
 			aria-label={item.name}
 			state={issues[item.pointer] ? "error" : undefined}
-			value={text(item.value)}
+			value={inspectorShown(item)}
 			onchange={(event: Event) => handlers.onedit(item, valueOf(event), false)}
 		/>
 	{:else}
@@ -213,8 +214,10 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 					{id}
 					size="sm"
 					type="number"
-					value={text(field.value)}
+					step={field.money ? "any" : undefined}
+					value={inspectorShown(field)}
 					data-pointer={field.pointer}
+					data-money={field.money?.currency}
 					onchange={(event: Event) => handlers.onedit(field, valueOf(event), false)}
 				/>
 			</Field>
