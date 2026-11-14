@@ -24246,7 +24246,7 @@ function clone<T>(value: T): T {
 }
 
 /** The smallest valid value of a required prop: the schema default, else the first enum value, else by type. */
-function defaultFor(node: JsonSchema, name: string, depth: number, blank: boolean): unknown {
+function defaultFor(node: JsonSchema, name: string, depth: number, blank: boolean, rows = 0): unknown {
 	if (node.default !== undefined) return clone(node.default);
 	const value = valueOf(node);
 	if (value.default !== undefined) return clone(value.default);
@@ -24258,12 +24258,38 @@ function defaultFor(node: JsonSchema, name: string, depth: number, blank: boolea
 	if (value.type === "string") return STRING_DEFAULTS[name] ?? (blank ? "" : humanizeName(name));
 	if (value.type === "number" || value.type === "integer") return 0;
 	if (value.type === "boolean") return false;
-	if (value.type === "array") return [];
-	if (value.type === "object" && depth < 8) return fill(value, {}, depth + 1, blank);
+	if (value.type === "array") return rows > 0 && depth < 8 ? placeholderRows(value, name, depth, rows) : [];
+	if (value.type === "object" && depth < 8) return fill(value, {}, depth + 1, blank, rows);
 	return undefined;
 }
 
-function fill(node: JsonSchema, current: unknown, depth: number, blank: boolean): unknown {
+/**
+ * A new block's required list starts with a few neutral rows (English "Label 1", ISO currency, the neutral icon) so the
+ * block shows something; the row schema decides the shape. Nested lists inside a row stay empty.
+ */
+function placeholderRows(list: JsonSchema, name: string, depth: number, rows: number): unknown[] {
+	const count = Math.min(typeof list.maxItems === "number" ? list.maxItems : rows, Math.max(rows, typeof list.minItems === "number" ? list.minItems : 0));
+	const items = isObject(list.items) ? list.items : null;
+	const entry = items ? valueOf(items) : null;
+	const word = humanizeName(name.replace(/s$/, ""));
+	return Array.from({ length: count }, (_, index) => {
+		const n = index + 1;
+		if (!entry) return `${word} ${n}`;
+		if (entry.type === "string") return Array.isArray(entry.enum) ? entry.enum[0] : `${word} ${n}`;
+		if (entry.type !== "object") return defaultFor(items!, name, depth + 1, false);
+		const row = fill(entry, {}, depth + 1, false);
+		if (!isObject(row)) return row;
+		const properties = isObject(entry.properties) ? entry.properties : {};
+		for (const [field, value] of Object.entries(row)) {
+			const schema = properties[field];
+			if (field === "id") row[field] = `${name}-${n}`;
+			else if (typeof value === "string" && value !== "" && isObject(schema) && kindOf(schema) === "text" && STRING_DEFAULTS[field] === undefined) row[field] = `${value} ${n}`;
+		}
+		return row;
+	});
+}
+
+function fill(node: JsonSchema, current: unknown, depth: number, blank: boolean, rows = 0): unknown {
 	const value = valueOf(node);
 	if (value.type === "array" && Array.isArray(current) && isObject(value.items)) {
 		return current.map((entry) => fill(value.items as JsonSchema, entry, depth + 1, blank));
@@ -24274,10 +24300,10 @@ function fill(node: JsonSchema, current: unknown, depth: number, blank: boolean)
 	const out: Record<string, unknown> = {};
 	for (const name of required) {
 		if (current[name] !== undefined || !properties[name]) continue;
-		const fallback = defaultFor(properties[name]!, name, depth, blank);
+		const fallback = defaultFor(properties[name]!, name, depth, blank, rows);
 		if (fallback !== undefined) out[name] = fallback;
 	}
-	for (const [name, inner] of Object.entries(current)) out[name] = properties[name] ? fill(properties[name]!, inner, depth + 1, blank) : inner;
+	for (const [name, inner] of Object.entries(current)) out[name] = properties[name] ? fill(properties[name]!, inner, depth + 1, blank, rows) : inner;
 	return out;
 }
 
@@ -24286,10 +24312,10 @@ function fill(node: JsonSchema, current: unknown, depth: number, blank: boolean)
  * the first enum value, or the smallest value of the type. Values that are present are kept as they are, so the
  * validator still sees what the variant and the page content set.
  */
-function fillProps(item: string, value: Record<string, unknown>, options: { blank?: boolean } = {}): Record<string, unknown> {
+function fillProps(item: string, value: Record<string, unknown>, options: { blank?: boolean; rows?: number } = {}): Record<string, unknown> {
 	const schema = props.items[item]?.schema;
 	if (!schema) return value;
-	return fill(schema, value, 0, options.blank === true) as Record<string, unknown>;
+	return fill(schema, value, 0, options.blank === true, options.rows ?? 0) as Record<string, unknown>;
 }
 
 function kindLabel(kind: FieldKind): string {
@@ -29119,7 +29145,7 @@ function cloneJson<T>(value: T): T {
 }
 
 /** props = fill(merge(variant preset, block props)): what `<Item {...props} />` receives. */
-function effectiveProps(item: string, variant: string | null | undefined, props: Record<string, PropValueV2> | undefined, options: { blank?: boolean } = {}): Record<string, unknown> {
+function effectiveProps(item: string, variant: string | null | undefined, props: Record<string, PropValueV2> | undefined, options: { blank?: boolean; rows?: number } = {}): Record<string, unknown> {
 	const info = itemInfo(item);
 	const name = variant && info?.variants.includes(variant) ? variant : (info?.defaultVariant ?? "");
 	return fillProps(item, merge(variantPreset(item, name), cloneJson(props ?? {})) as Record<string, unknown>, options);
@@ -29134,6 +29160,8 @@ function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">): BlockR
 	return { item: block.item, variant, organism: info.organism, props: effectiveProps(block.item, variant, block.props), events, slots };
 }
 
+/** Rows a new block's required list starts with, so the block shows something. */
+const SAMPLE_ROWS = 2;
 const SAMPLE_TITLE_PROPS = ["title", "heading", "name"];
 
 /**
@@ -29149,7 +29177,7 @@ function sampleProps(item: string, variant: string | null | undefined, id: strin
 	if (shape?.props.includes("id")) seed.id = id;
 	const heading = shape?.text.find((name) => SAMPLE_TITLE_PROPS.includes(name));
 	if (heading && info) seed[heading] = info.title;
-	return effectiveProps(item, variant, seed, { blank: true }) as Record<string, PropValueV2>;
+	return effectiveProps(item, variant, seed, { blank: true, rows: SAMPLE_ROWS }) as Record<string, PropValueV2>;
 }
 
 /** UI label dictionaries (`labels`, aria strings) are component chrome: reported as one path while none of their words is written. */

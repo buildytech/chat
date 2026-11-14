@@ -125,7 +125,7 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 			{#if message.answer}
 				<Stack align="stretch" class="gap-4" data-answer={message.mode ?? "build"}>
 					<Text tag="span" class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-						{message.mode === "ask" ? t("ask.answerAsk") : t("ask.answerBuild")}
+						{message.mode === "ask" ? t("ask.answerAsk") : proposal ? t("ask.answerBuildProposal") : t("ask.answerBuild")}
 					</Text>
 					<MarkdownText source={message.text} />
 					<AskBlockCards

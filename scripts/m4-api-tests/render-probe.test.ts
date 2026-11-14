@@ -42,8 +42,8 @@ test("with ISO currency codes the same page is accepted and no block is blank", 
 	assert.ok(r.ok, JSON.stringify(issuesOf(r)));
 });
 
-test("a block that renders nothing is rejected (sample props of faq-split: no items), with the empty lists named", () => {
-	const r = writePage(emptyPage({ title: "x", now: NOW }), { patch: [{ op: "add", path: "/blocks/-", value: { item: "faq-split", variant: "headSplit" } }] }, { now: NOW });
+test("a block that renders nothing is rejected (faq-split written with empty lists), with the empty lists named", () => {
+	const r = writePage(emptyPage({ title: "x", now: NOW }), { patch: [{ op: "add", path: "/blocks/-", value: { item: "faq-split", variant: "headSplit", props: { items: [], channels: [], topics: [] } } }] }, { now: NOW });
 	assert.equal(r.ok, false);
 	const issue = issuesOf(r)[0]!;
 	assert.equal(issue.code, "render_empty");

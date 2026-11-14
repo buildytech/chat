@@ -95,10 +95,10 @@ test("the browser loads the shared bundle and installs the probe: the Inspector 
 
 test("the browser accepts a Blocks feed add whose registry sample is a placeholder (renders nothing); the preview says so", () => {
 	installRenderProbe(probeFromModule(bundle), { required: true, empty: "allow" });
-	const added = applyOp(fixed, { op: "add", item: "faq-split", variant: "headSplit" });
+	const added = applyOp(fixed, { op: "add", item: "site-footer", variant: "minimal" });
 	assert.ok(added.ok, added.ok ? "" : added.message);
 	installRenderProbe(probeFromModule(bundle), { required: true });
-	assert.equal(applyOp(fixed, { op: "add", item: "faq-split", variant: "headSplit" }).ok, false, "the agent host still rejects it");
+	assert.equal(applyOp(fixed, { op: "add", item: "site-footer", variant: "minimal" }).ok, false, "the agent host still rejects it");
 });
 
 test("every caller gives the same verdict: write-time, turn-start and the coverage classifier agree on the owner's page", () => {

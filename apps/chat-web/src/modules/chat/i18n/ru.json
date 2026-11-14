@@ -111,6 +111,7 @@
 		"composer.mode.build.hint": "Build: создать или изменить страницу. Изменения приходят предложениями, которые вы применяете.",
 		"composer.placeholderAsk": "Спросите о блоках, вариантах или странице…",
 		"ask.answerAsk": "Ask · ответ",
+		"ask.answerBuildProposal": "Build · предложение",
 		"ask.answerBuild": "Build · ответ без предложения",
 		"ask.cards": "Блоки каталога в этом ответе",
 		"ask.openStock": "Stock",

@@ -111,6 +111,7 @@
 		"composer.mode.build.hint": "Build: create or edit the page. Changes arrive as proposals you apply.",
 		"composer.placeholderAsk": "Ask about blocks, variants or the page…",
 		"ask.answerAsk": "Ask · answer",
+		"ask.answerBuildProposal": "Build · proposal",
 		"ask.answerBuild": "Build · answer, no proposal",
 		"ask.cards": "Catalog blocks in this answer",
 		"ask.openStock": "Stock",

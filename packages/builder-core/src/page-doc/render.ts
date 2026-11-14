@@ -34,7 +34,7 @@ export function cloneJson<T>(value: T): T {
 }
 
 /** props = fill(merge(variant preset, block props)): what `<Item {...props} />` receives. */
-export function effectiveProps(item: string, variant: string | null | undefined, props: Record<string, PropValueV2> | undefined, options: { blank?: boolean } = {}): Record<string, unknown> {
+export function effectiveProps(item: string, variant: string | null | undefined, props: Record<string, PropValueV2> | undefined, options: { blank?: boolean; rows?: number } = {}): Record<string, unknown> {
 	const info = itemInfo(item);
 	const name = variant && info?.variants.includes(variant) ? variant : (info?.defaultVariant ?? "");
 	return fillProps(item, merge(variantPreset(item, name), cloneJson(props ?? {})) as Record<string, unknown>, options);
@@ -49,6 +49,8 @@ export function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">):
 	return { item: block.item, variant, organism: info.organism, props: effectiveProps(block.item, variant, block.props), events, slots };
 }
 
+/** Rows a new block's required list starts with, so the block shows something. */
+const SAMPLE_ROWS = 2;
 const SAMPLE_TITLE_PROPS = ["title", "heading", "name"];
 
 /**
@@ -64,7 +66,7 @@ export function sampleProps(item: string, variant: string | null | undefined, id
 	if (shape?.props.includes("id")) seed.id = id;
 	const heading = shape?.text.find((name) => SAMPLE_TITLE_PROPS.includes(name));
 	if (heading && info) seed[heading] = info.title;
-	return effectiveProps(item, variant, seed, { blank: true }) as Record<string, PropValueV2>;
+	return effectiveProps(item, variant, seed, { blank: true, rows: SAMPLE_ROWS }) as Record<string, PropValueV2>;
 }
 
 /** UI label dictionaries (`labels`, aria strings) are component chrome: reported as one path while none of their words is written. */

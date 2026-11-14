@@ -64,13 +64,18 @@ test("real errors still reject: a wrong type, a missing row", () => {
 	(wrongType.blocks[2]!.props as { dishes: unknown[] }).dishes = [{ ...ROW, price: "cheap" }];
 	const typed = writePage(base, { page: wrongType });
 	assert.equal(typed.ok, false);
-	// currency is in the schema, but the list is empty: a real error, and it says how to add a row
-	const missing = writePage(base, { patch: [{ op: "add", path: "/blocks/2/props/dishes/0/currency", value: "RUB" }] });
+	// currency is in the schema, but the row does not exist: a real error
+	const missing = writePage(base, { patch: [{ op: "add", path: "/blocks/2/props/dishes/9/currency", value: "RUB" }] });
 	assert.equal(missing.ok, false);
 	if (!missing.ok) {
 		assert.equal(missing.issues[0]!.code, "path_not_found");
-		assert.match(missing.issues[0]!.expected, /the list is empty: add a whole row at its path with \/-/);
 	}
+	// an empty list (as in the Shashlyk session) says how to add a row
+	const emptied = structuredClone(base);
+	(emptied.blocks[2]!.props as { dishes: unknown[] }).dishes = [];
+	const none = writePage(emptied, { patch: [{ op: "add", path: "/blocks/2/props/dishes/0/currency", value: "RUB" }] });
+	assert.equal(none.ok, false);
+	if (!none.ok) assert.match(none.issues[0]!.expected, /the list is empty: add a whole row at its path with \/-/);
 });
 
 test("the live turn: a write with an unknown prop is accepted, the model is told what was dropped, no error text", async () => {
