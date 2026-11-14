@@ -11,7 +11,7 @@ import {
 	sessionProgramIssues,
 	type SessionRevisionEntry
 } from "@buildytech/page-contract/session";
-import { migrateStoredPageRecord, type StoredPageRecord } from "./persist.ts";
+import { isV1Page, normalizePageRecord, type StoredPageRecord } from "./persist.ts";
 
 export type SessionPins = {
 	stock: { repo: string; contentCommit: string };
@@ -54,11 +54,9 @@ export type SessionFile = {
 };
 
 export type SessionFileIssue = { path: string; keyword: string };
-/** Old-data paths a parsed file went through (migration counters, `window.buildy.migrationReport()`). */
-export type SessionFileLegacy = { pageV1: number; proposalApplied: number };
 export type ParsedSessionFile =
-	| { ok: true; file: SessionFile; legacy: SessionFileLegacy }
-	| { ok: false; code: "invalid_json" | "schema_invalid" | "program_invalid"; issues: SessionFileIssue[] };
+	| { ok: true; file: SessionFile }
+	| { ok: false; code: "invalid_json" | "schema_invalid" | "program_invalid" | "page_v1_unsupported"; issues: SessionFileIssue[] };
 
 /** JSON round trip: drops `undefined` and functions so the file is exactly what JSON.stringify would write. */
 function plain<T>(value: T): T {
@@ -132,25 +130,22 @@ export function parseSessionFile(input: unknown): ParsedSessionFile {
 	}
 	const issues = sessionFileIssues(value);
 	if (issues.length) return { ok: false, code: "schema_invalid", issues: issues.slice(0, 20) };
-	const legacy = legacyOf(value as SessionFile);
-	const file = migrateSessionFile(value as SessionFile);
+	const old = v1PageIssues(value as SessionFile);
+	if (old.length) return { ok: false, code: "page_v1_unsupported", issues: old.slice(0, 20) };
+	const file = normalizeSessionFile(value as SessionFile);
 	const program = sessionProgramIssues(file);
 	if (program.length) return { ok: false, code: "program_invalid", issues: program.slice(0, 20) };
-	return { ok: true, file, legacy };
+	return { ok: true, file };
 }
 
-const isV1PageDoc = (page: unknown): boolean => Boolean(page && typeof page === "object" && "layout" in page && !("blocks" in page));
-
-/** What an incoming file carries from before page-spec 2 / proposal status (counted, not changed). */
-function legacyOf(file: SessionFile): SessionFileLegacy {
-	const legacy: SessionFileLegacy = { pageV1: 0, proposalApplied: 0 };
-	for (const chat of file.sessions) {
-		const page = chat.page as { applied?: unknown; candidate?: unknown; lastProposed?: unknown } | null;
-		if (page && [page.applied, page.candidate, page.lastProposed].some(isV1PageDoc)) legacy.pageV1 += 1;
-		const messages = Array.isArray(chat.messages) ? (chat.messages as Array<{ proposal?: { status?: unknown } }>) : [];
-		legacy.proposalApplied += messages.filter((m) => m?.proposal && m.proposal.status === undefined).length;
-	}
-	return legacy;
+/** Pages in the retired page-spec/v1 format (ADR 0045): the file is refused, nothing is read from it. */
+function v1PageIssues(file: SessionFile): SessionFileIssue[] {
+	const out: SessionFileIssue[] = [];
+	file.sessions.forEach((chat, i) => {
+		const page = chat.page as Record<string, unknown> | null;
+		for (const slot of ["applied", "candidate", "lastProposed"]) if (page && isV1Page(page[slot])) out.push({ path: `$.sessions[${i}].page.${slot}`, keyword: "page_v1_unsupported" });
+	});
+	return out;
 }
 
 /** Split a checked file into what the session store and the page store keep (page records are keyed by project id). */
@@ -164,10 +159,7 @@ export function splitSessionFile(file: SessionFile): { chats: StoredChat[]; page
 	return { chats, pages };
 }
 
-/**
- * A session file with every page record at page-spec/v2 (ADR 0034): 1.x pages are migrated block by block (same registry
- * item, variant and props the preview rendered), v2 pages stay as they are. Chats, history and settings are untouched.
- */
-export function migrateSessionFile(file: SessionFile): SessionFile {
-	return plain({ ...file, sessions: file.sessions.map((chat) => ({ ...chat, page: chat.page ? migrateStoredPageRecord(chat.page) : null })) });
+/** A session file with the sibling provenance of every page record complete; chats, history and settings are untouched. */
+function normalizeSessionFile(file: SessionFile): SessionFile {
+	return plain({ ...file, sessions: file.sessions.map((chat) => ({ ...chat, page: chat.page ? normalizePageRecord(chat.page) : null })) });
 }

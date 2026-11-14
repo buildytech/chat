@@ -118,19 +118,6 @@ export function parseLayout(input: unknown): LayoutPrefs {
 	return out;
 }
 
-/** The layout of the previous key `buildy:v1:layout` (navWidth, chatWidth, treeWidth, sidebarCollapsed, chatHidden, treeCollapsed). */
-export function layoutFromLegacy(input: unknown): LayoutPrefs {
-	const raw = input && typeof input === "object" ? (input as Record<string, unknown>) : {};
-	return parseLayout({
-		navWidth: raw.navWidth,
-		sideWidth: raw.chatWidth,
-		treeWidth: raw.treeWidth,
-		...(typeof raw.sidebarCollapsed === "boolean" ? { navCollapsed: raw.sidebarCollapsed } : {}),
-		...(typeof raw.chatHidden === "boolean" ? { sideCollapsed: raw.chatHidden } : {}),
-		...(typeof raw.treeCollapsed === "boolean" ? { treeCollapsed: raw.treeCollapsed } : {})
-	});
-}
-
 /** Stored text -> prefs; null when absent or unreadable (the caller quarantines unreadable text). */
 export function parsePrefsText(text: string | null): PrefsBlob | null {
 	if (text == null) return null;

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { mapMessages, parseServerPage } from "../../apps/chat-web/src/modules/chat/api/map.ts";
+import { mapMessages } from "../../apps/chat-web/src/modules/chat/api/map.ts";
 import type { ServerMessage } from "../../apps/chat-web/src/modules/chat/api/gateway.ts";
 
 describe("mapMessages", () => {
@@ -31,11 +31,5 @@ describe("mapMessages", () => {
 		assert.equal(mapped.length, 2);
 		assert.equal(mapped[1]?.artifacts?.[0]?.kind, "saved_page");
 		assert.equal(mapped[1]?.artifacts?.[0]?.slug, "home");
-	});
-});
-
-describe("parseServerPage", () => {
-	it("returns null for malformed DTO", () => {
-		assert.equal(parseServerPage({ id: "x" }), null);
 	});
 });

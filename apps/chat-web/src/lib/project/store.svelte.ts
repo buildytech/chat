@@ -23,13 +23,6 @@ let selectedId = $state<string | null>(null);
 /** Skin picked before the project exists (home composer): the next created project wears it. */
 let pendingSkin = $state<string | null>(null);
 
-/** Extension modules register a normalizer for their `ext` payload (old shapes); applied on every load and import. */
-const normalizers: Array<(project: Project) => Project> = [];
-export function registerProjectNormalizer(fn: (project: Project) => Project): void {
-	normalizers.push(fn);
-}
-export const normalizeProject = (project: Project): Project => normalizers.reduce((acc, fn) => fn(acc), project);
-
 export const getProjects = (): readonly Project[] => projects;
 export const getProject = (id: string | null | undefined): Project | null => (id ? (projects.find((p) => p.id === id) ?? null) : null);
 export const getSelectedProjectId = (): string | null => selectedId;
@@ -49,14 +42,14 @@ export function putProject(next: Project, opts: { save?: boolean } = {}): void {
 	if (opts.save !== false) save();
 }
 
-/** Every project of storage, each normalized and with its pageRevision equal to the page store's (the source of truth). */
+/** Every project of storage, each with its pageRevision equal to the page store's (the source of truth). */
 export function loadProjects(): Project[] {
 	const parsed = loadSessionsJson();
 	if (!Array.isArray(parsed)) return [];
 	const pages = loadPagesBlob().pages;
 	let drift = false;
 	const list = (parsed as SessionDoc[]).map((doc) => {
-		const project = normalizeProject(projectOfDoc(doc));
+		const project = projectOfDoc(doc);
 		const synced = reconcileChatRevision(project as unknown as StoredChat, pages[project.projectId] ?? undefined) as unknown as Project;
 		if (synced !== project) drift = true;
 		return synced;

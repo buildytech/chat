@@ -90,19 +90,11 @@ test("persistence: save then load round-trips; one key buildy:v1:prefs", () => {
 	assert.equal(loadLayout(null).navCollapsed, true, "no storage: defaults");
 });
 
-test("migration: buildy:v1:layout moves once into prefs and is removed; unreadable prefs are quarantined", () => {
+test("the previous key buildy:v1:layout is not read (storage-v1 sets it aside); unreadable prefs are quarantined", () => {
 	const store = new MemoryStorage();
-	store.setItem(STORAGE_KEYS.layout, JSON.stringify({ navWidth: 300, chatWidth: 360, treeWidth: 220, sidebarCollapsed: false, chatHidden: true, treeCollapsed: true }));
-	const moved = loadLayout(store);
-	assert.equal(moved.navWidth, 300);
-	assert.equal(moved.sideWidth, 360);
-	assert.equal(moved.treeWidth, 220);
-	assert.equal(moved.navCollapsed, false);
-	assert.equal(moved.sideCollapsed, true);
-	assert.equal(moved.treeCollapsed, true);
-	assert.equal(store.getItem(STORAGE_KEYS.layout), null, "old key removed");
-	assert.deepEqual(JSON.parse(store.getItem(STORAGE_KEYS.prefs)!).layout, moved);
-	assert.deepEqual(loadLayout(store), moved, "idempotent");
+	store.setItem("buildy:v1:layout", JSON.stringify({ navWidth: 300, chatWidth: 360 }));
+	assert.deepEqual(loadLayout(store), defaultLayout(), "an old key is no source of the layout");
+	assert.notEqual(store.getItem("buildy:v1:layout"), null, "loadLayout leaves the key to storage-v1");
 
 	const broken = new MemoryStorage();
 	broken.setItem(STORAGE_KEYS.prefs, "{not json");

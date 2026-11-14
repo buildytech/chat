@@ -12,7 +12,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { blankRequired, checkPageDoc, effectiveProps, emptyPage, itemInfo, migratePageV1, renderBlock, sampleProps, screenItems, writePage } from "../../packages/builder-core/src/index.ts";
+import { blankRequired, checkPageDoc, effectiveProps, emptyPage, itemInfo, renderBlock, sampleProps, screenItems, writePage } from "../../packages/builder-core/src/index.ts";
 import { executeCatalogTool, type AgentReply } from "../../packages/chat-agent/src/index.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
@@ -31,9 +31,7 @@ const FOOD_ITEM = /dish|menu|order|grill|combo|delivery/;
 const FILL_INS = /"(?:Value|By line|Role|Company|Handle|Time|Hint|Label|Title|Text)"|Closing band|Contact facts are not invented|no data in the draft|\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445/;
 
 const foodPage = (): PageV2 => {
-	const r = migratePageV1(session.sessions[0].page.applied);
-	assert.deepEqual(r.skipped, []);
-	return r.page;
+	return JSON.parse(read("./fixtures/food-applied-v2.json")) as PageV2;
 };
 const newPage = (): PageV2 => emptyPage({ title: "New page", locale: "en", now: NOW });
 

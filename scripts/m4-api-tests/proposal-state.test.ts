@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
 	markPendingProposals,
-	migrateProposal,
 	proposalStatus,
 	isPendingProposal
 } from "../../apps/chat-web/src/modules/chat/core/proposals.ts";
@@ -32,15 +31,11 @@ function message(id: string, state?: ChatProposalState): ChatMessage {
 	};
 }
 
-test("legacy applied boolean migrates without inventing discarded", () => {
+test("a proposal with only the applied boolean reads as applied or pending, never discarded", () => {
 	assert.equal(proposalStatus({ applied: true }), "applied");
 	assert.equal(proposalStatus({ applied: false }), "pending");
-	const migrated = migrateProposal(proposal({ applied: true, status: undefined }));
-	assert.equal(migrated.status, "applied");
-	assert.equal(migrated.applied, true);
-	const pending = migrateProposal(proposal({ applied: false, status: undefined }));
-	assert.equal(pending.status, "pending");
-	assert.equal(isPendingProposal(pending), true);
+	assert.equal(isPendingProposal(proposal({ applied: false, status: undefined })), true);
+	assert.equal(isPendingProposal(proposal({ applied: true, status: undefined })), false);
 });
 
 test("discard and apply only touch the current pending proposal", () => {
@@ -55,9 +50,7 @@ test("discard and apply only touch the current pending proposal", () => {
 	assert.equal(isPendingProposal(discarded[1]!.proposal!), false);
 
 	const json = JSON.stringify(discarded);
-	const reloaded = (JSON.parse(json) as ChatMessage[]).map((row) =>
-		row.proposal ? { ...row, proposal: migrateProposal(row.proposal) } : row
-	);
+	const reloaded = JSON.parse(json) as ChatMessage[];
 	assert.equal(reloaded[1]?.proposal?.status, "discarded");
 	assert.equal(isPendingProposal(reloaded[1]!.proposal!), false);
 });

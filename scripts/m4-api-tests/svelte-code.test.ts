@@ -12,7 +12,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { type PageV2 } from "../../packages/page-contract/src/index.ts";
-import { addScreen, catalogSnapshot, emptyPage, migratePageV1, registrySkins, screenSupport, writePage } from "../../packages/builder-core/src/index.ts";
+import { addScreen, catalogSnapshot, emptyPage, registrySkins, screenSupport, writePage } from "../../packages/builder-core/src/index.ts";
 import { APP_FILE, registryItemsOf, svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
 import {
 	buildStoreZip,
@@ -29,7 +29,7 @@ const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const SNAPSHOT = path.join(ROOT, "registry/svelte");
 const NOW = "2026-11-09T00:00:00.000Z";
 /** The owner's fitness page (13.11), migrated 1.x -> 2.0: 8 registry blocks. */
-const fixture = migratePageV1(JSON.parse(readFileSync(path.join(ROOT, "scripts/m4-api-tests/fixtures/fitness-session-3933dbf.json"), "utf8")).sessions[0].page.applied).page;
+const fixture = JSON.parse(readFileSync(path.join(ROOT, "scripts/m4-api-tests/fixtures/fitness-applied-v2.json"), "utf8")) as PageV2;
 const SCENARIOS = ["dashboard", "landing", "website"] as const;
 
 /** Node stand-in for the browser's import.meta.glob reader: the pinned CLI snapshot on disk. */

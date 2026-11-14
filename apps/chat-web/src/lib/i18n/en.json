@@ -134,6 +134,7 @@
 		"settings.import": "Import",
 		"settings.exported": "Exported {count} projects.",
 		"settings.imported": "Imported: {added} added, {replaced} replaced.",
+		"settings.importOldPage": "Not imported: the file holds a page in the retired page-spec/v1 format ({path}), which this version no longer opens. A copy is in quarantine; the file and your projects are unchanged.",
 		"settings.importFailed": "Not imported ({code} at {path}). Nothing changed.",
 		"settings.quarantine": "Quarantine ({count})",
 		"settings.quarantineEmpty": "Nothing quarantined.",

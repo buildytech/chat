@@ -25092,7 +25092,7 @@ function propsValidatorInstalled(): boolean {
 
 /** Issues of the props of one registry item; null while no validator is installed (the gate is fail-closed). */
 function validateItemProps(item: string, props: Record<string, unknown>): PropsIssue[] | null {
-	return PROPS_VALIDATOR ? PROPS_VALIDATOR({ item, props } as OrganismRender) : null;
+	return PROPS_VALIDATOR ? PROPS_VALIDATOR({ item, props } as RegistryRender) : null;
 }
 
 /** Sibling Stock screens sharing the spec (theme family), selected screen first. */
@@ -25101,25 +25101,6 @@ function screenFamily(screen: CatalogScreen): CatalogScreen[] {
 		.filter((row) => row.spec === screen.spec && row.screenId !== screen.screenId)
 		.sort((a, b) => a.order - b.order);
 	return [screen, ...siblings];
-}
-
-/**
- * Catalog source of top-level blocks (page-spec 1.1.0): a block without catalogBlock gets the Stock catalog block of
- * its kind in the screen family; a block whose catalog block has a pinned registry organism gets the catalog default
- * variant when none is set. Explicit values (the model's, the author's) are kept; validateCatalogProvenance checks them.
- */
-function attachCatalogSources(blocks: PageBlock[], screen: CatalogScreen | null): PageBlock[] {
-	return blocks.map((node) => {
-		let next = node;
-		if (!next.catalogBlock && screen) {
-			const found = kindSourceFor(screen, next.kind);
-			const entry = found ? getBlockIndex(found.label) : null;
-			if (entry?.available) next = { ...next, catalogBlock: entry.spec };
-		}
-		const source = catalogSourceFor(next.catalogBlock);
-		if (source && !next.variant) next = { ...next, variant: source.defaultVariant };
-		return next;
-	});
 }
 
 /** Stock label for a renderer kind in the screen, else in its spec family. */
@@ -25229,7 +25210,6 @@ exports["setPropsValidator"] = setPropsValidator;
 exports["propsValidatorInstalled"] = propsValidatorInstalled;
 exports["validateItemProps"] = validateItemProps;
 exports["screenFamily"] = screenFamily;
-exports["attachCatalogSources"] = attachCatalogSources;
 exports["familyLabelForKind"] = familyLabelForKind;
 exports["FAMILY_HOME_SCREENS"] = FAMILY_HOME_SCREENS;
 exports["kindSourceFor"] = kindSourceFor;
@@ -25529,9 +25509,6 @@ exports["stockSearch"] = stockSearch;
 
 __def("packages/page-contract/src/types.ts", function (exports) {
 
-const PAGE_LAYOUT_VERSION = 1 as const;
-
-/** Closed allowlist from implemented Preview components (PreviewBlock / PreviewItem). */
 const PAGE_BLOCK_KINDS = [
 	"nav",
 	"nav-link",
@@ -25554,439 +25531,689 @@ const PAGE_BLOCK_KINDS = [
 	"bottomnav"
 ] as const;
 
-const PAGE_COPY_KEYS = [
-	"eyebrow",
-	"headline",
-	"lede",
-	"action",
-	"note",
-	"brand",
-	"contact",
-	"legal",
-	"days",
-	"address",
-	"value",
-	"badge",
-	"icon",
-	"href"
-] as const;
 
-const PAGE_STATUSES = [
-	"draft",
-	"pending",
-	"scheduled",
-	"published",
-	"archived",
-	"trashed"
-] as const;
-
-const PAGE_LIMITS = {
-	maxBlocks: 64,
-	maxDepth: 4,
-	maxIdLength: 63,
-	maxSlugLength: 48,
-	maxTitleLength: 160,
-	maxSummaryLength: 500,
-	maxCopyLength: 2000,
-	maxSeoLength: 200,
-	maxLocaleLength: 16,
-	maxJsonChars: 65_536
-} as const;
-
-/** Lengths of the page-spec 1.1.0 catalog fields (catalogBlock, variant, copy.icon). */
-const PAGE_CATALOG_LIMITS = {
-	maxCatalogBlockLength: 80,
-	maxVariantLength: 40,
-	maxIconLength: 64
-} as const;
-
-const PAGE_PROPS_LIMITS = { maxEntries: 64, maxPointerLength: 200, maxListItems: 24, maxObjectKeys: 32 } as const;
-const PAGE_PROPS_POINTER_PATTERN = /^(?:\/(?:[A-Za-z][A-Za-z0-9_]{0,47}|[0-9]{1,2}))+$/;
-
-function blocksOf(page: Page): PageBlock[] {
-	return page.layout.blocks;
-}
-
-exports["PAGE_LAYOUT_VERSION"] = PAGE_LAYOUT_VERSION;
 exports["PAGE_BLOCK_KINDS"] = PAGE_BLOCK_KINDS;
-exports["PAGE_COPY_KEYS"] = PAGE_COPY_KEYS;
-exports["PAGE_STATUSES"] = PAGE_STATUSES;
-exports["PAGE_LIMITS"] = PAGE_LIMITS;
-exports["PAGE_CATALOG_LIMITS"] = PAGE_CATALOG_LIMITS;
-exports["PAGE_PROPS_LIMITS"] = PAGE_PROPS_LIMITS;
-exports["PAGE_PROPS_POINTER_PATTERN"] = PAGE_PROPS_POINTER_PATTERN;
-exports["blocksOf"] = blocksOf;
 
 });
 
-__def("packages/page-contract/src/validate.ts", function (exports) {
-const { PAGE_BLOCK_KINDS, PAGE_CATALOG_LIMITS, PAGE_COPY_KEYS, PAGE_LAYOUT_VERSION, PAGE_LIMITS, PAGE_PROPS_LIMITS, PAGE_PROPS_POINTER_PATTERN, PAGE_STATUSES } = __req("packages/page-contract/src/types.ts");
-class PageContractError extends Error {
-	code: string;
-	path: string;
+__def("packages/page-contract/src/json-schema.ts", function (exports) {
 
-	constructor(code: string, path: string, message: string) {
-		super(`${code} at ${path}: ${message}`);
-		this.name = "PageContractError";
-		this.code = code;
-		this.path = path;
-	}
-}
+type Schema = Record<string, unknown> | boolean;
 
-const PAGE_KEYS = new Set([
-	"id",
-	"slug",
-	"status",
-	"title",
-	"layout",
-	"seo",
-	"locale",
-	"createdAt",
-	"updatedAt"
+const ANNOTATIONS = new Set(["$schema", "$id", "$defs", "title", "description", "default", "examples"]);
+const ASSERTIONS = new Set([
+	"$ref", "allOf", "anyOf", "oneOf", "not", "type", "enum", "const", "pattern", "minLength", "maxLength",
+	"minimum", "maximum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties",
+	"maxProperties", "propertyNames"
 ]);
-const LAYOUT_KEYS = new Set(["version", "blocks"]);
-const BLOCK_KEYS = new Set(["id", "kind", "title", "summary", "catalogBlock", "variant", "copy", "props", "children"]);
-const PROP_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9_]{0,47}$/;
-const SEO_KEYS = new Set(["title", "description"]);
-const COPY_KEY_SET = new Set<string>(PAGE_COPY_KEYS);
-const KIND_SET = new Set<string>(PAGE_BLOCK_KINDS);
-const STATUS_SET = new Set<string>(PAGE_STATUSES);
 
-const ID_PATTERN = /^[a-z][a-z0-9-]{0,62}$/;
-const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const LOCALE_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
-const DATETIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/;
-const ALLOWED_URL_SCHEMES = new Set(["http:", "https:", "mailto:"]);
-const DANGEROUS_URL_SCHEMES = ["javascript:", "data:", "vbscript:", "file:"] as const;
-const MARKUP_PATTERN = /[<>{}]|<\?/;
-const URL_SHAPED_AT_START = /^[a-z][a-z0-9+.-]*:\/\//;
-const CATALOG_BLOCK_PATTERN = /^block\.[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const VARIANT_PATTERN = /^[A-Za-z][A-Za-z0-9-]*$/;
-const ICON_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const HREF_PATTERN = /^(?:#|\/|https?:\/\/|mailto:)/;
-
-function fail(code: string, path: string, message: string): never {
-	throw new PageContractError(code, path, message);
+function typeOf(value: unknown): string {
+	if (value === null) return "null";
+	if (Array.isArray(value)) return "array";
+	if (typeof value === "number") return Number.isInteger(value) ? "integer" : "number";
+	return typeof value;
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-	if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
-	const proto = Object.getPrototypeOf(value);
-	return proto === Object.prototype || proto === null;
+function typeMatches(value: unknown, type: string): boolean {
+	const actual = typeOf(value);
+	return actual === type || (type === "number" && actual === "integer");
 }
 
-function asObject(value: unknown, path: string): Record<string, unknown> {
-	if (!isPlainObject(value)) fail("invalid_type", path, "expected object");
-	return value;
+function equal(a: unknown, b: unknown): boolean {
+	return JSON.stringify(a) === JSON.stringify(b);
 }
 
-function assertOnlyKeys(obj: Record<string, unknown>, allowed: ReadonlySet<string>, path: string): void {
-	for (const key of Object.keys(obj)) {
-		if (!allowed.has(key)) fail("unexpected_key", path, `unexpected key "${key}"`);
+function expectedOf(keyword: string, schema: Record<string, unknown>): string | undefined {
+	const has = (key: string) => schema[key] !== undefined;
+	switch (keyword) {
+		case "enum":
+			return `one of ${JSON.stringify(schema.enum)}`;
+		case "const":
+			return `exactly ${JSON.stringify(schema.const)}`;
+		case "type":
+			return `type ${Array.isArray(schema.type) ? (schema.type as string[]).join(" | ") : String(schema.type)}`;
+		case "pattern":
+			return `a string matching /${String(schema.pattern)}/`;
+		case "maxLength":
+			return `at most ${String(schema.maxLength)} characters`;
+		case "minLength":
+			return `at least ${String(schema.minLength)} characters`;
+		case "maxItems":
+			return `at most ${String(schema.maxItems)} items`;
+		case "minItems":
+			return `at least ${String(schema.minItems)} items`;
+		case "maxProperties":
+			return `at most ${String(schema.maxProperties)} keys`;
+		case "required":
+			return `the key to be present (required: ${JSON.stringify(schema.required)})`;
+		case "additionalProperties":
+			return has("properties") ? `only the keys ${JSON.stringify(Object.keys(schema.properties as object))}` : "no other keys";
+		case "minimum":
+			return `a number >= ${String(schema.minimum)}`;
+		case "maximum":
+			return `a number <= ${String(schema.maximum)}`;
+		case "propertyNames":
+			return `key names matching ${JSON.stringify((schema.propertyNames as { pattern?: string }).pattern ?? "the schema")}`;
+		default:
+			return undefined;
 	}
 }
 
-function requirePresent(obj: Record<string, unknown>, key: string, path: string): unknown {
-	if (!(key in obj)) fail("missing_field", path, `missing "${key}"`);
-	return obj[key];
-}
+class SchemaRegistry {
+	private roots = new Map<string, Record<string, unknown>>();
+	private regex = new Map<string, RegExp>();
 
-function asString(value: unknown, path: string): string {
-	if (typeof value !== "string") fail("invalid_type", path, "expected string");
-	return value;
-}
-
-function assertPlainText(value: string, path: string): void {
-	if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(value)) {
-		fail("unsafe_text", path, "control characters are not allowed");
+	add(schema: Record<string, unknown>): void {
+		const id = schema.$id;
+		if (typeof id !== "string" || !id) throw new Error("schema needs an $id");
+		this.roots.set(id, schema);
 	}
-	if (MARKUP_PATTERN.test(value)) {
-		fail("unsafe_text", path, "markup or template syntax is not allowed");
-	}
-}
 
-/**
- * Injection: reject javascript/data/vbscript/file even when whitespace is used to hide the scheme.
- * URL-shaped values: scheme + "://" (http/https only) or mailto:. Prose with a colon is not a URL.
- */
-function assertSafeUrlPolicy(value: string, path: string): void {
-	const collapsed = value.replace(/[\u0000-\u0020]/g, "").toLowerCase();
-	for (const scheme of DANGEROUS_URL_SCHEMES) {
-		if (collapsed.startsWith(scheme)) {
-			fail("unsafe_url", path, `scheme "${scheme}" is not allowed`);
+	/** Issues of `value` against `ref` (an $id, optionally with a #/json/pointer). Empty = valid. */
+	check(value: unknown, ref: string): SchemaIssue[] {
+		const out: SchemaIssue[] = [];
+		const [base, schema] = this.resolve(ref, "");
+		this.walk(value, schema, base, "$", out);
+		return out;
+	}
+
+	private resolve(ref: string, currentBase: string): [string, Schema] {
+		const hash = ref.indexOf("#");
+		const base = hash === 0 ? currentBase : hash > 0 ? ref.slice(0, hash) : ref;
+		const pointer = hash >= 0 ? ref.slice(hash + 1) : "";
+		const root = this.roots.get(base);
+		if (!root) throw new Error(`unknown schema ${base}`);
+		let node: unknown = root;
+		for (const raw of pointer.split("/").filter(Boolean)) {
+			const key = raw.replace(/~1/g, "/").replace(/~0/g, "~");
+			node = node && typeof node === "object" ? (node as Record<string, unknown>)[key] : undefined;
+		}
+		if (node === undefined) throw new Error(`unresolved $ref ${ref}`);
+		return [base, node as Schema];
+	}
+
+	private pattern(source: string): RegExp {
+		let re = this.regex.get(source);
+		if (!re) {
+			re = new RegExp(source, "u");
+			this.regex.set(source, re);
+		}
+		return re;
+	}
+
+	private walk(value: unknown, schema: Schema, base: string, path: string, out: SchemaIssue[]): void {
+		if (schema === true) return;
+		if (schema === false) {
+			out.push({ path, keyword: "false" });
+			return;
+		}
+		const fail = (keyword: string, at = path) => out.push({ path: at, keyword, expected: expectedOf(keyword, schema) });
+		const sub = (v: unknown, s: unknown, at: string): SchemaIssue[] => {
+			const issues: SchemaIssue[] = [];
+			this.walk(v, s as Schema, base, at, issues);
+			return issues;
+		};
+		for (const key of Object.keys(schema)) {
+			if (!ASSERTIONS.has(key) && !ANNOTATIONS.has(key) && !key.startsWith("x-")) {
+				throw new Error(`unsupported schema keyword ${key}`);
+			}
+		}
+		if (typeof schema.$ref === "string") {
+			const [refBase, target] = this.resolve(schema.$ref, base);
+			this.walk(value, target, refBase, path, out);
+		}
+		if (Array.isArray(schema.allOf)) for (const s of schema.allOf) out.push(...sub(value, s, path));
+		if (Array.isArray(schema.anyOf) && !schema.anyOf.some((s) => sub(value, s, path).length === 0)) fail("anyOf");
+		if (Array.isArray(schema.oneOf)) {
+			const branches = schema.oneOf.map((s) => sub(value, s, path));
+			const passing = branches.filter((issues) => issues.length === 0).length;
+			if (passing !== 1) {
+				// Report the issues of the closest branch so the caller gets a useful path.
+				const closest = [...branches].sort((a, b) => a.length - b.length)[0] ?? [];
+				out.push(...(passing === 0 ? closest : []), { path, keyword: "oneOf" });
+			}
+		}
+		if (schema.not !== undefined && sub(value, schema.not, path).length === 0) fail("not");
+		if (schema.type !== undefined) {
+			const types = Array.isArray(schema.type) ? schema.type : [schema.type];
+			if (!types.some((t) => typeMatches(value, String(t)))) {
+				fail("type");
+				return;
+			}
+		}
+		if (Array.isArray(schema.enum) && !schema.enum.some((e) => equal(e, value))) fail("enum");
+		if ("const" in schema && !equal(schema.const, value)) fail("const");
+		if (typeof value === "string") {
+			const length = [...value].length;
+			if (typeof schema.minLength === "number" && length < schema.minLength) fail("minLength");
+			if (typeof schema.maxLength === "number" && length > schema.maxLength) fail("maxLength");
+			if (typeof schema.pattern === "string" && !this.pattern(schema.pattern).test(value)) fail("pattern");
+		}
+		if (typeof value === "number" && typeof schema.minimum === "number" && value < schema.minimum) fail("minimum");
+		if (typeof value === "number" && typeof schema.maximum === "number" && value > schema.maximum) fail("maximum");
+		if (Array.isArray(value)) {
+			if (typeof schema.minItems === "number" && value.length < schema.minItems) fail("minItems");
+			if (typeof schema.maxItems === "number" && value.length > schema.maxItems) fail("maxItems");
+			if (schema.items !== undefined) value.forEach((item, i) => out.push(...sub(item, schema.items, `${path}[${i}]`)));
+		}
+		if (value && typeof value === "object" && !Array.isArray(value)) {
+			const obj = value as Record<string, unknown>;
+			const props = (schema.properties ?? {}) as Record<string, unknown>;
+			if (Array.isArray(schema.required)) {
+				for (const key of schema.required) if (!(String(key) in obj)) fail("required", `${path}.${String(key)}`);
+			}
+			if (typeof schema.maxProperties === "number" && Object.keys(obj).length > schema.maxProperties) fail("maxProperties");
+			if (schema.propertyNames !== undefined) {
+				for (const key of Object.keys(obj)) if (sub(key, schema.propertyNames, `${path}.${key}`).length) fail("propertyNames", `${path}.${key}`);
+			}
+			for (const [key, v] of Object.entries(obj)) {
+				if (key in props) out.push(...sub(v, props[key], `${path}.${key}`));
+				else if (schema.additionalProperties === false) fail("additionalProperties", `${path}.${key}`);
+				else if (schema.additionalProperties && typeof schema.additionalProperties === "object") {
+					out.push(...sub(v, schema.additionalProperties, `${path}.${key}`));
+				}
+			}
 		}
 	}
-	const trimmed = value.trim().toLowerCase();
-	if (trimmed.startsWith("mailto:")) return;
-	const urlShaped = URL_SHAPED_AT_START.exec(trimmed);
-	if (!urlShaped) return;
-	const scheme = urlShaped[0].slice(0, -2);
-	if (!ALLOWED_URL_SCHEMES.has(scheme)) {
-		fail("unsafe_url", path, `scheme "${scheme}" is not allowed`);
-	}
 }
 
-function parseBoundedText(
-	value: unknown,
-	path: string,
-	maxLength: number,
-	options: { required?: boolean; pattern?: RegExp; patternCode?: string } = {}
-): string {
-	const text = asString(value, path);
-	if (options.required && text.trim() === "") {
-		fail("empty_required", path, "must be non-empty");
-	}
-	if (text.length > maxLength) fail("too_long", path, `exceeds ${maxLength} characters`);
-	assertPlainText(text, path);
-	assertSafeUrlPolicy(text, path);
-	if (options.pattern && !options.pattern.test(text)) {
-		fail(options.patternCode ?? "invalid_type", path, "value does not match required pattern");
-	}
-	return text;
-}
+exports["SchemaRegistry"] = SchemaRegistry;
 
-function parseId(value: unknown, path: string, seen: Set<string>): string {
-	const id = parseBoundedText(value, path, PAGE_LIMITS.maxIdLength, {
-		required: true,
-		pattern: ID_PATTERN,
-		patternCode: "invalid_id"
-	});
-	if (seen.has(id)) fail("duplicate_id", path, `duplicate id "${id}"`);
-	seen.add(id);
-	return id;
-}
+});
 
-function parseCopy(value: unknown, path: string): PageBlockCopy {
-	const obj = asObject(value, path);
-	assertOnlyKeys(obj, COPY_KEY_SET, path);
-	const copy: PageBlockCopy = {};
-	for (const key of PAGE_COPY_KEYS) {
-		if (!(key in obj)) continue;
-		if (key === "icon") {
-			copy.icon = parseBoundedText(obj.icon, `${path}.icon`, PAGE_CATALOG_LIMITS.maxIconLength, { pattern: ICON_PATTERN, patternCode: "invalid_icon" });
-		} else if (key === "href") {
-			copy.href = parseBoundedText(obj.href, `${path}.href`, PAGE_LIMITS.maxCopyLength, { pattern: HREF_PATTERN, patternCode: "invalid_href" });
-		} else {
-			copy[key] = parseBoundedText(obj[key], `${path}.${key}`, PAGE_LIMITS.maxCopyLength);
-		}
-	}
-	return copy;
-}
+__def("packages/page-contract/schema/page-spec-v2.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.buildy.tw/page-spec-v2.schema.json",
+  "title": "Page spec page-spec/v2 — a page as registry items with their props",
+  "x-page-spec-profile": "page-spec/v2",
+  "x-page-spec-version": "2.0.0",
+  "description": "A BuildY page as ONE document: { version: 2, title, slug, locale, seo, blocks: [{ id, item, variant, props }] }. `item` is the registry item of `npx ui8kit add`, `props` are exactly the props of its component, `variant` names the preset of its layout axes. An agent reads it, reads the props schema of an item and writes a new version or an RFC 6902 patch (page-patch-v2.schema.json); the host validates and answers with compiler-style errors { path, expected, got }. Replaces the kind / copy / children model of page-spec/v1 (still published). After the schema, consumers run x-program-checks, then the registry checks x-host-checks.",
+  "x-program-checks": [
+    "duplicate_id",
+    "too_many_blocks",
+    "too_large",
+    "too_deep"
+  ],
+  "x-host-checks": [
+    "unknown_item",
+    "unknown_variant",
+    "no_renderer",
+    "props_invalid"
+  ],
+  "x-limits": {
+    "maxBlocks": 64,
+    "maxIdLength": 63,
+    "maxSlugLength": 48,
+    "maxTitleLength": 160,
+    "maxItemLength": 80,
+    "maxVariantLength": 40,
+    "maxTextLength": 2000,
+    "maxSeoLength": 200,
+    "maxLocaleLength": 16,
+    "maxJsonChars": 200000,
+    "maxDatetimeLength": 40,
+    "maxPropKeys": 64,
+    "maxListItems": 24,
+    "maxDepth": 8
+  },
+  "$ref": "#/$defs/page",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,62}$",
+      "maxLength": 63,
+      "description": "Lowercase ASCII id of a block, unique in the whole page (page id included; program check duplicate_id). Safe in generated code (data-block-id)."
+    },
+    "item": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 80,
+      "description": "Registry item name as used by `npx ui8kit add <item>` (hero-split, feature-grid, site-footer). The host rejects an item its registry does not have (unknown_item) or cannot render (no_renderer)."
+    },
+    "variant": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9-]*$",
+      "maxLength": 40,
+      "description": "A published variant of the item (registry.buildy.tw/variants/v0.json): a named preset of the layout axes of its props (extra, media, columns, tone). Optional: the item's default variant. The host rejects a variant the item does not have (unknown_variant)."
+    },
+    "propText": {
+      "type": "string",
+      "description": "Plain text of a prop. As safeText of page-spec/v1 (control characters, `<` `>`, dangerous URL schemes are rejected) except that `{` and `}` are allowed: registry presets carry templates such as `?paged={0}`.",
+      "pattern": "^[^<>\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]*$",
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^[\\u0000-\\u0020]*[jJ][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[dD][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[bB][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^[\\u0000-\\u0020]*[fF][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[lL][\\u0000-\\u0020]*[eE][\\u0000-\\u0020]*:"
+          },
+          {
+            "pattern": "^\\s*(?![hH][tT][tT][pP][sS]?://)[A-Za-z][A-Za-z0-9+.\\-]*://"
+          }
+        ]
+      },
+      "maxLength": 2000
+    },
+    "propValue": {
+      "description": "A prop value: plain JSON; strings are plain text (propText). The item's props schema (registry.buildy.tw/props/v0.json) decides what is valid for each prop (x-host-checks props_invalid).",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/propText"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "$ref": "#/$defs/propValue"
+          }
+        },
+        {
+          "type": "object",
+          "maxProperties": 64,
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/propValue"
+          }
+        }
+      ]
+    },
+    "props": {
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/propValue"
+      },
+      "description": "Exactly the props of the registry item's component (what `<Item {...props} />` receives, and what the exported code writes). Nothing else lives in a block: no copy slots, no rows, no children. A host that inserts a block without props fills the sample props of the variant (the preset of its layout axes plus the minimum the props schema requires); layout axes are props like any other."
+    },
+    "block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "item"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "item": {
+          "$ref": "#/$defs/item"
+        },
+        "variant": {
+          "$ref": "#/$defs/variant"
+        },
+        "props": {
+          "$ref": "#/$defs/props"
+        }
+      },
+      "description": "One section of the page: a registry item, the variant it was picked as and its props."
+    },
+    "seo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 200
+        },
+        "description": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 200
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "slug",
+        "title",
+        "locale",
+        "blocks"
+      ],
+      "properties": {
+        "version": {
+          "const": 2,
+          "description": "Document version: 2."
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "minLength": 1,
+          "maxLength": 48,
+          "description": "Ordinary page slug, no query or UTM variants."
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "pending",
+            "scheduled",
+            "published",
+            "archived",
+            "trashed"
+          ],
+          "description": "Lifecycle (optional; a host defaults a new page to draft)."
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
+            }
+          ],
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "locale": {
+          "type": "string",
+          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+          "maxLength": 16,
+          "description": "BCP 47 language of the page copy; follows the language the author writes in."
+        },
+        "seo": {
+          "$ref": "#/$defs/seo"
+        },
+        "createdAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+          "maxLength": 40
+        },
+        "updatedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+          "maxLength": 40
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block"
+          },
+          "maxItems": 64,
+          "description": "Sections in render order. The exported project (page file + the block files `npx ui8kit add` writes) is generated from this list."
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One chat's pages in the browser store: the applied page, the pending candidate and the last proposal (page-spec/v2 documents) with their provenance (page-spec/v1 provenance: the Stock screen the page started from and the advisory screen family, never a rule).",
+      "properties": {
+        "applied": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastProposed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/page"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "appliedProvenance": {
+          "anyOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidateProvenance": {
+          "anyOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastProposedProvenance": {
+          "anyOf": [
+            {
+              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectedBlockId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 63
+        },
+        "revision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    }
+  }
+};
+});
 
-function parsePropValue(value: unknown, path: string, depth: number): PagePropValue {
-	if (depth > 8) fail("too_deep", path, "props value nested deeper than 8");
-	if (value === null || typeof value === "boolean") return value;
-	if (typeof value === "number") {
-		if (!Number.isFinite(value)) fail("invalid_type", path, "expected a finite number");
-		return value;
-	}
-	if (typeof value === "string") return parseBoundedText(value, path, PAGE_LIMITS.maxCopyLength);
-	if (Array.isArray(value)) {
-		if (value.length > PAGE_PROPS_LIMITS.maxListItems) fail("too_many_items", path, `more than ${PAGE_PROPS_LIMITS.maxListItems} items`);
-		return value.map((item, index) => parsePropValue(item, `${path}[${index}]`, depth + 1));
-	}
-	const obj = asObject(value, path);
-	const keys = Object.keys(obj);
-	if (keys.length > PAGE_PROPS_LIMITS.maxObjectKeys) fail("too_many_keys", path, `more than ${PAGE_PROPS_LIMITS.maxObjectKeys} keys`);
-	const out: Record<string, PagePropValue> = {};
-	for (const key of keys) {
-		if (!PROP_KEY_PATTERN.test(key)) fail("invalid_prop_key", `${path}.${key}`, "not a prop name");
-		out[key] = parsePropValue(obj[key], `${path}.${key}`, depth + 1);
-	}
-	return out;
-}
-
-/** page-spec 1.3.0 block props: pointer -> plain JSON (the props schema of the registry item is a host check). */
-function parseProps(value: unknown, path: string): Record<string, PagePropValue> {
-	const obj = asObject(value, path);
-	const keys = Object.keys(obj);
-	if (keys.length > PAGE_PROPS_LIMITS.maxEntries) fail("too_many_keys", path, `more than ${PAGE_PROPS_LIMITS.maxEntries} overrides`);
-	const out: Record<string, PagePropValue> = {};
-	for (const key of keys) {
-		if (key.length > PAGE_PROPS_LIMITS.maxPointerLength || !PAGE_PROPS_POINTER_PATTERN.test(key)) fail("invalid_props_pointer", `${path}.${key}`, "not a props JSON Pointer");
-		out[key] = parsePropValue(obj[key], `${path}["${key}"]`, 1);
-	}
-	return out;
-}
-
-function parseBlock(
-	value: unknown,
-	path: string,
-	depth: number,
-	seen: Set<string>,
-	counts: { blocks: number }
-): PageBlock {
-	if (depth > PAGE_LIMITS.maxDepth) {
-		fail("too_deep", path, `tree deeper than ${PAGE_LIMITS.maxDepth}`);
-	}
-	counts.blocks += 1;
-	if (counts.blocks > PAGE_LIMITS.maxBlocks) {
-		fail("too_many_blocks", path, `more than ${PAGE_LIMITS.maxBlocks} blocks`);
-	}
-
-	const obj = asObject(value, path);
-	assertOnlyKeys(obj, BLOCK_KEYS, path);
-
-	const id = parseId(requirePresent(obj, "id", path), `${path}.id`, seen);
-	const kindRaw = asString(requirePresent(obj, "kind", path), `${path}.kind`);
-	if (!KIND_SET.has(kindRaw)) {
-		fail("unsupported_kind", `${path}.kind`, `unsupported block kind "${kindRaw}"`);
-	}
-	const kind = kindRaw as PageBlockKind;
-	const title = parseBoundedText(requirePresent(obj, "title", path), `${path}.title`, PAGE_LIMITS.maxTitleLength, {
-		required: true
-	});
-	const summary = parseBoundedText(
-		requirePresent(obj, "summary", path),
-		`${path}.summary`,
-		PAGE_LIMITS.maxSummaryLength,
-		{ required: true }
-	);
-
-	const block: PageBlock = { id, kind, title, summary };
-
-	if ("catalogBlock" in obj) {
-		block.catalogBlock = parseBoundedText(obj.catalogBlock, `${path}.catalogBlock`, PAGE_CATALOG_LIMITS.maxCatalogBlockLength, {
-			required: true,
-			pattern: CATALOG_BLOCK_PATTERN,
-			patternCode: "invalid_catalog_block"
-		});
-	}
-	if ("variant" in obj) {
-		block.variant = parseBoundedText(obj.variant, `${path}.variant`, PAGE_CATALOG_LIMITS.maxVariantLength, {
-			required: true,
-			pattern: VARIANT_PATTERN,
-			patternCode: "invalid_variant"
-		});
-	}
-	if ("copy" in obj) {
-		block.copy = parseCopy(obj.copy, `${path}.copy`);
-	}
-	if ("props" in obj) {
-		if (depth !== 1) fail("unexpected_key", path, 'unexpected key "props" (top-level blocks only)');
-		block.props = parseProps(obj.props, `${path}.props`);
-	}
-	if ("children" in obj) {
-		if (!Array.isArray(obj.children)) fail("invalid_type", `${path}.children`, "expected array");
-		block.children = obj.children.map((child, index) =>
-			parseBlock(child, `${path}.children[${index}]`, depth + 1, seen, counts)
-		);
-	}
-	return block;
-}
-
-function parseSeo(value: unknown, path: string): PageSeo {
-	const obj = asObject(value, path);
-	assertOnlyKeys(obj, SEO_KEYS, path);
-	const seo: PageSeo = {};
-	if ("title" in obj) {
-		seo.title = parseBoundedText(obj.title, `${path}.title`, PAGE_LIMITS.maxSeoLength);
-	}
-	if ("description" in obj) {
-		seo.description = parseBoundedText(obj.description, `${path}.description`, PAGE_LIMITS.maxSeoLength);
-	}
-	return seo;
-}
-
-function parseLayout(value: unknown, path: string, seen: Set<string>): PageLayout {
-	const obj = asObject(value, path);
-	assertOnlyKeys(obj, LAYOUT_KEYS, path);
-	const version = requirePresent(obj, "version", path);
-	if (typeof version !== "number" || !Number.isInteger(version)) {
-		fail("invalid_type", `${path}.version`, "expected integer");
-	}
-	if (version !== PAGE_LAYOUT_VERSION) {
-		fail("unsupported_version", `${path}.version`, `unsupported layout.version ${String(version)}`);
-	}
-	const blocksRaw = requirePresent(obj, "blocks", path);
-	if (!Array.isArray(blocksRaw)) fail("invalid_type", `${path}.blocks`, "expected array");
-	const counts = { blocks: 0 };
-	const blocks = blocksRaw.map((block, index) =>
-		parseBlock(block, `${path}.blocks[${index}]`, 1, seen, counts)
-	);
-	return { version: PAGE_LAYOUT_VERSION, blocks };
-}
-
-/**
- * Strict runtime parse of an unknown Store / adapter payload into Page.
- * Reconstructs a plain object so unknown keys cannot leak through.
- */
-function parsePage(input: unknown): Page {
-	if (typeof input === "string" && input.length > PAGE_LIMITS.maxJsonChars) {
-		fail("too_large", "$", "payload exceeds size limit");
-	}
-	let encoded: string;
-	try {
-		encoded = JSON.stringify(input);
-	} catch {
-		fail("invalid_type", "$", "value is not JSON-serializable");
-	}
-	if (encoded.length > PAGE_LIMITS.maxJsonChars) {
-		fail("too_large", "$", "payload exceeds size limit");
-	}
-
-	const obj = asObject(input, "$");
-	assertOnlyKeys(obj, PAGE_KEYS, "$");
-
-	const seen = new Set<string>();
-	const id = parseId(requirePresent(obj, "id", "$"), "id", seen);
-	const slug = parseBoundedText(requirePresent(obj, "slug", "$"), "slug", PAGE_LIMITS.maxSlugLength, {
-		required: true,
-		pattern: SLUG_PATTERN,
-		patternCode: "invalid_slug"
-	});
-	const statusRaw = asString(requirePresent(obj, "status", "$"), "status");
-	if (!STATUS_SET.has(statusRaw)) {
-		fail("invalid_status", "status", `unsupported status "${statusRaw}"`);
-	}
-	const status = statusRaw as PageStatus;
-	const title = parseBoundedText(requirePresent(obj, "title", "$"), "title", PAGE_LIMITS.maxTitleLength, {
-		required: true
-	});
-	const layout = parseLayout(requirePresent(obj, "layout", "$"), "layout", seen);
-	const seo = parseSeo(requirePresent(obj, "seo", "$"), "seo");
-	const locale = parseBoundedText(requirePresent(obj, "locale", "$"), "locale", PAGE_LIMITS.maxLocaleLength, {
-		required: true,
-		pattern: LOCALE_PATTERN,
-		patternCode: "invalid_locale"
-	});
-	const createdAt = parseBoundedText(requirePresent(obj, "createdAt", "$"), "createdAt", 40, {
-		required: true,
-		pattern: DATETIME_PATTERN,
-		patternCode: "invalid_datetime"
-	});
-	const updatedAt = parseBoundedText(requirePresent(obj, "updatedAt", "$"), "updatedAt", 40, {
-		required: true,
-		pattern: DATETIME_PATTERN,
-		patternCode: "invalid_datetime"
-	});
-
-	return { id, slug, status, title, layout, seo, locale, createdAt, updatedAt };
-}
-
-/** Ordinary draft creation: same Page contract, status must be draft. */
-function parseDraftPage(input: unknown): Page {
-	const page = parsePage(input);
-	if (page.status !== "draft") {
-		fail("invalid_status", "status", 'ordinary draft creation requires status "draft"');
-	}
-	return page;
-}
-
-function isPage(input: unknown): input is Page {
-	try {
-		parsePage(input);
-		return true;
-	} catch {
-		return false;
-	}
-}
-
-exports["PageContractError"] = PageContractError;
-exports["parsePage"] = parsePage;
-exports["parseDraftPage"] = parseDraftPage;
-exports["isPage"] = isPage;
-
+__def("packages/page-contract/schema/page-patch-v2.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.buildy.tw/page-patch-v2.schema.json",
+  "title": "Page patch page-patch/v2 — RFC 6902 JSON Patch on a page-spec/v2 document",
+  "x-page-patch-profile": "page-patch/v2",
+  "x-page-spec-version": "2.0.0",
+  "description": "An edit of a page-spec/v2 document as an RFC 6902 JSON Patch: an ordered list of operations applied to a copy of the base page; one failing operation rejects the whole patch. Paths are pointers into the document (title, slug, locale, seo, blocks, blocks/<i>/props/...). The result must be a valid page-spec/v2 document; the host answers a failure with a list of { path, expected, got }. Blocks that no operation touches stay exactly as they are.",
+  "x-limits": {
+    "maxOps": 64,
+    "maxPathLength": 200
+  },
+  "type": "array",
+  "minItems": 1,
+  "maxItems": 64,
+  "items": {
+    "$ref": "#/$defs/op"
+  },
+  "$defs": {
+    "pointer": {
+      "type": "string",
+      "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+      "maxLength": 200
+    },
+    "op": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "value"
+          ],
+          "description": "Add value at path (blocks/- appends; blocks/<i> inserts before index i).",
+          "properties": {
+            "op": {
+              "const": "add"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "value": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path"
+          ],
+          "description": "Remove the value at path.",
+          "properties": {
+            "op": {
+              "const": "remove"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "value"
+          ],
+          "description": "Replace the value at path.",
+          "properties": {
+            "op": {
+              "const": "replace"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "value": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "from"
+          ],
+          "description": "Move the value at from to path (reorder blocks).",
+          "properties": {
+            "op": {
+              "const": "move"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "from"
+          ],
+          "description": "Copy the value at from to path.",
+          "properties": {
+            "op": {
+              "const": "copy"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "path",
+            "value"
+          ],
+          "description": "Fail the whole patch unless the value at path equals value.",
+          "properties": {
+            "op": {
+              "const": "test"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
+              "maxLength": 200
+            },
+            "value": {}
+          }
+        }
+      ]
+    }
+  }
+};
 });
 
 __def("packages/page-contract/schema/page-spec.schema.json", function (exports) {
@@ -26936,1156 +27163,23 @@ __def("packages/page-contract/schema/page-spec.schema.json", function (exports) 
 };
 });
 
-__def("packages/page-contract/schema/page-patch.schema.json", function (exports) {
-  exports.default = {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.buildy.tw/page-patch.schema.json",
-  "title": "Page patch page-patch/v1 — edit operations on a page spec",
-  "x-page-patch-profile": "page-patch/v1",
-  "x-page-spec-version": "1.5.0",
-  "description": "An edit of a page-spec/v1 page as an ordered list of operations, applied in order to a copy of the base page; the whole patch is rejected if any operation fails. Unchanged blocks keep their content. Slot validation: set / add / replace may only write copy keys and row fields the target kind renders (page-spec x-page-slots); rows beyond the kind's limit are rejected. The result must be a valid page-spec/v1 page. baseRevision, when sent, must equal the page revision the patch was made for.",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "ops"
-  ],
-  "properties": {
-    "baseRevision": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "ops": {
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 24,
-      "items": {
-        "$ref": "#/$defs/op"
-      }
-    }
-  },
-  "$defs": {
-    "item": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "label"
-      ],
-      "properties": {
-        "label": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 80,
-          "description": "Row title.",
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "detail": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 200,
-          "description": "Row summary."
-        },
-        "value": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 24,
-          "description": "Row copy.value."
-        },
-        "note": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 120,
-          "description": "Row copy.note."
-        },
-        "group": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 40,
-          "description": "Row copy.eyebrow."
-        },
-        "icon": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 64,
-          "description": "Row copy.icon."
-        }
-      }
-    },
-    "op": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId",
-            "field",
-            "value"
-          ],
-          "description": "Set one slot of a block. null removes a copy key; title and summary cannot be removed.",
-          "properties": {
-            "op": {
-              "const": "set"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            },
-            "field": {
-              "enum": [
-                "title",
-                "summary",
-                "eyebrow",
-                "headline",
-                "lede",
-                "action",
-                "note",
-                "brand",
-                "contact",
-                "legal",
-                "days",
-                "address",
-                "value",
-                "badge",
-                "icon",
-                "href"
-              ]
-            },
-            "value": {
-              "anyOf": [
-                {
-                  "allOf": [
-                    {
-                      "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-                    }
-                  ],
-                  "maxLength": 2000
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId",
-            "items"
-          ],
-          "description": "Replace the rows of a list block.",
-          "properties": {
-            "op": {
-              "const": "set_items"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            },
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/item"
-              },
-              "maxItems": 12,
-              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "kind"
-          ],
-          "description": "Add a Stock block at a top-level index (default: its natural place). Optional copy and rows overlay the catalog defaults; variant picks a catalog variant of the block. catalogBlock (1.5.0, optional): the Stock catalog block to add (block.steps, block.pricing), a block of the given kind; without it the host picks the page's sample block of that kind and sets catalogBlock itself. With catalogBlock the page may hold several blocks of one kind.",
-          "properties": {
-            "op": {
-              "const": "add"
-            },
-            "kind": {
-              "enum": [
-                "nav",
-                "hero",
-                "features",
-                "menu",
-                "hours",
-                "cta",
-                "footer",
-                "pagehead",
-                "overview",
-                "metrics",
-                "chart",
-                "activity",
-                "sidenav",
-                "bottomnav"
-              ],
-              "description": "A top-level kind. The host builds the block from the page's Stock screen family; a kind the family does not have is rejected."
-            },
-            "catalogBlock": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/catalogBlock"
-            },
-            "at": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "title": {
-              "allOf": [
-                {
-                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-                }
-              ],
-              "maxLength": 160,
-              "minLength": 1,
-              "pattern": "\\S"
-            },
-            "variant": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/variant"
-            },
-            "copy": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/copy"
-            },
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/item"
-              },
-              "maxItems": 12,
-              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId",
-            "kind"
-          ],
-          "description": "Replace a top-level block by another Stock block in the same place. catalogBlock (1.2.0, optional): another Stock catalog block of the same kind (block.hero -> block.storehero); the host keeps the block id, kind and title, carries the text the new block renders and says which fields it dropped; variant is one of that block's variants (default: its catalog default).",
-          "properties": {
-            "op": {
-              "const": "replace"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            },
-            "kind": {
-              "enum": [
-                "nav",
-                "hero",
-                "features",
-                "menu",
-                "hours",
-                "cta",
-                "footer",
-                "pagehead",
-                "overview",
-                "metrics",
-                "chart",
-                "activity",
-                "sidenav",
-                "bottomnav"
-              ],
-              "description": "A top-level kind. The host builds the block from the page's Stock screen family; a kind the family does not have is rejected."
-            },
-            "catalogBlock": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/catalogBlock"
-            },
-            "title": {
-              "allOf": [
-                {
-                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-                }
-              ],
-              "maxLength": 160,
-              "minLength": 1,
-              "pattern": "\\S"
-            },
-            "variant": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/variant"
-            },
-            "copy": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/copy"
-            },
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/item"
-              },
-              "maxItems": 12,
-              "description": "Rows of a list block, replacing its rows. Row kind, limit and fields per kind: page-spec x-page-slots."
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId"
-          ],
-          "description": "Remove a block and its rows.",
-          "properties": {
-            "op": {
-              "const": "remove"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId",
-            "to"
-          ],
-          "description": "Move a block to an index among its siblings.",
-          "properties": {
-            "op": {
-              "const": "move"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            },
-            "to": {
-              "type": "integer",
-              "minimum": 0
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "field",
-            "value"
-          ],
-          "description": "Set the page title or an SEO field.",
-          "properties": {
-            "op": {
-              "const": "set_page"
-            },
-            "field": {
-              "enum": [
-                "title",
-                "seo.title",
-                "seo.description"
-              ]
-            },
-            "value": {
-              "allOf": [
-                {
-                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-                }
-              ],
-              "maxLength": 160,
-              "minLength": 1,
-              "pattern": "\\S"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "blockId",
-            "variant"
-          ],
-          "description": "Switch a block to another catalog variant of its catalog block (1.1.0); null returns to the catalog default. Unknown variants are rejected.",
-          "properties": {
-            "op": {
-              "const": "set_variant"
-            },
-            "blockId": {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/id"
-            },
-            "variant": {
-              "anyOf": [
-                {
-                  "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/variant"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    }
-  }
-};
-});
-
-__def("packages/page-contract/src/json-schema.ts", function (exports) {
-
-type Schema = Record<string, unknown> | boolean;
-
-const ANNOTATIONS = new Set(["$schema", "$id", "$defs", "title", "description", "default", "examples"]);
-const ASSERTIONS = new Set([
-	"$ref", "allOf", "anyOf", "oneOf", "not", "type", "enum", "const", "pattern", "minLength", "maxLength",
-	"minimum", "maximum", "minItems", "maxItems", "items", "properties", "required", "additionalProperties",
-	"maxProperties", "propertyNames"
-]);
-
-function typeOf(value: unknown): string {
-	if (value === null) return "null";
-	if (Array.isArray(value)) return "array";
-	if (typeof value === "number") return Number.isInteger(value) ? "integer" : "number";
-	return typeof value;
-}
-
-function typeMatches(value: unknown, type: string): boolean {
-	const actual = typeOf(value);
-	return actual === type || (type === "number" && actual === "integer");
-}
-
-function equal(a: unknown, b: unknown): boolean {
-	return JSON.stringify(a) === JSON.stringify(b);
-}
-
-function expectedOf(keyword: string, schema: Record<string, unknown>): string | undefined {
-	const has = (key: string) => schema[key] !== undefined;
-	switch (keyword) {
-		case "enum":
-			return `one of ${JSON.stringify(schema.enum)}`;
-		case "const":
-			return `exactly ${JSON.stringify(schema.const)}`;
-		case "type":
-			return `type ${Array.isArray(schema.type) ? (schema.type as string[]).join(" | ") : String(schema.type)}`;
-		case "pattern":
-			return `a string matching /${String(schema.pattern)}/`;
-		case "maxLength":
-			return `at most ${String(schema.maxLength)} characters`;
-		case "minLength":
-			return `at least ${String(schema.minLength)} characters`;
-		case "maxItems":
-			return `at most ${String(schema.maxItems)} items`;
-		case "minItems":
-			return `at least ${String(schema.minItems)} items`;
-		case "maxProperties":
-			return `at most ${String(schema.maxProperties)} keys`;
-		case "required":
-			return `the key to be present (required: ${JSON.stringify(schema.required)})`;
-		case "additionalProperties":
-			return has("properties") ? `only the keys ${JSON.stringify(Object.keys(schema.properties as object))}` : "no other keys";
-		case "minimum":
-			return `a number >= ${String(schema.minimum)}`;
-		case "maximum":
-			return `a number <= ${String(schema.maximum)}`;
-		case "propertyNames":
-			return `key names matching ${JSON.stringify((schema.propertyNames as { pattern?: string }).pattern ?? "the schema")}`;
-		default:
-			return undefined;
-	}
-}
-
-class SchemaRegistry {
-	private roots = new Map<string, Record<string, unknown>>();
-	private regex = new Map<string, RegExp>();
-
-	add(schema: Record<string, unknown>): void {
-		const id = schema.$id;
-		if (typeof id !== "string" || !id) throw new Error("schema needs an $id");
-		this.roots.set(id, schema);
-	}
-
-	/** Issues of `value` against `ref` (an $id, optionally with a #/json/pointer). Empty = valid. */
-	check(value: unknown, ref: string): SchemaIssue[] {
-		const out: SchemaIssue[] = [];
-		const [base, schema] = this.resolve(ref, "");
-		this.walk(value, schema, base, "$", out);
-		return out;
-	}
-
-	private resolve(ref: string, currentBase: string): [string, Schema] {
-		const hash = ref.indexOf("#");
-		const base = hash === 0 ? currentBase : hash > 0 ? ref.slice(0, hash) : ref;
-		const pointer = hash >= 0 ? ref.slice(hash + 1) : "";
-		const root = this.roots.get(base);
-		if (!root) throw new Error(`unknown schema ${base}`);
-		let node: unknown = root;
-		for (const raw of pointer.split("/").filter(Boolean)) {
-			const key = raw.replace(/~1/g, "/").replace(/~0/g, "~");
-			node = node && typeof node === "object" ? (node as Record<string, unknown>)[key] : undefined;
-		}
-		if (node === undefined) throw new Error(`unresolved $ref ${ref}`);
-		return [base, node as Schema];
-	}
-
-	private pattern(source: string): RegExp {
-		let re = this.regex.get(source);
-		if (!re) {
-			re = new RegExp(source, "u");
-			this.regex.set(source, re);
-		}
-		return re;
-	}
-
-	private walk(value: unknown, schema: Schema, base: string, path: string, out: SchemaIssue[]): void {
-		if (schema === true) return;
-		if (schema === false) {
-			out.push({ path, keyword: "false" });
-			return;
-		}
-		const fail = (keyword: string, at = path) => out.push({ path: at, keyword, expected: expectedOf(keyword, schema) });
-		const sub = (v: unknown, s: unknown, at: string): SchemaIssue[] => {
-			const issues: SchemaIssue[] = [];
-			this.walk(v, s as Schema, base, at, issues);
-			return issues;
-		};
-		for (const key of Object.keys(schema)) {
-			if (!ASSERTIONS.has(key) && !ANNOTATIONS.has(key) && !key.startsWith("x-")) {
-				throw new Error(`unsupported schema keyword ${key}`);
-			}
-		}
-		if (typeof schema.$ref === "string") {
-			const [refBase, target] = this.resolve(schema.$ref, base);
-			this.walk(value, target, refBase, path, out);
-		}
-		if (Array.isArray(schema.allOf)) for (const s of schema.allOf) out.push(...sub(value, s, path));
-		if (Array.isArray(schema.anyOf) && !schema.anyOf.some((s) => sub(value, s, path).length === 0)) fail("anyOf");
-		if (Array.isArray(schema.oneOf)) {
-			const branches = schema.oneOf.map((s) => sub(value, s, path));
-			const passing = branches.filter((issues) => issues.length === 0).length;
-			if (passing !== 1) {
-				// Report the issues of the closest branch so the caller gets a useful path.
-				const closest = [...branches].sort((a, b) => a.length - b.length)[0] ?? [];
-				out.push(...(passing === 0 ? closest : []), { path, keyword: "oneOf" });
-			}
-		}
-		if (schema.not !== undefined && sub(value, schema.not, path).length === 0) fail("not");
-		if (schema.type !== undefined) {
-			const types = Array.isArray(schema.type) ? schema.type : [schema.type];
-			if (!types.some((t) => typeMatches(value, String(t)))) {
-				fail("type");
-				return;
-			}
-		}
-		if (Array.isArray(schema.enum) && !schema.enum.some((e) => equal(e, value))) fail("enum");
-		if ("const" in schema && !equal(schema.const, value)) fail("const");
-		if (typeof value === "string") {
-			const length = [...value].length;
-			if (typeof schema.minLength === "number" && length < schema.minLength) fail("minLength");
-			if (typeof schema.maxLength === "number" && length > schema.maxLength) fail("maxLength");
-			if (typeof schema.pattern === "string" && !this.pattern(schema.pattern).test(value)) fail("pattern");
-		}
-		if (typeof value === "number" && typeof schema.minimum === "number" && value < schema.minimum) fail("minimum");
-		if (typeof value === "number" && typeof schema.maximum === "number" && value > schema.maximum) fail("maximum");
-		if (Array.isArray(value)) {
-			if (typeof schema.minItems === "number" && value.length < schema.minItems) fail("minItems");
-			if (typeof schema.maxItems === "number" && value.length > schema.maxItems) fail("maxItems");
-			if (schema.items !== undefined) value.forEach((item, i) => out.push(...sub(item, schema.items, `${path}[${i}]`)));
-		}
-		if (value && typeof value === "object" && !Array.isArray(value)) {
-			const obj = value as Record<string, unknown>;
-			const props = (schema.properties ?? {}) as Record<string, unknown>;
-			if (Array.isArray(schema.required)) {
-				for (const key of schema.required) if (!(String(key) in obj)) fail("required", `${path}.${String(key)}`);
-			}
-			if (typeof schema.maxProperties === "number" && Object.keys(obj).length > schema.maxProperties) fail("maxProperties");
-			if (schema.propertyNames !== undefined) {
-				for (const key of Object.keys(obj)) if (sub(key, schema.propertyNames, `${path}.${key}`).length) fail("propertyNames", `${path}.${key}`);
-			}
-			for (const [key, v] of Object.entries(obj)) {
-				if (key in props) out.push(...sub(v, props[key], `${path}.${key}`));
-				else if (schema.additionalProperties === false) fail("additionalProperties", `${path}.${key}`);
-				else if (schema.additionalProperties && typeof schema.additionalProperties === "object") {
-					out.push(...sub(v, schema.additionalProperties, `${path}.${key}`));
-				}
-			}
-		}
-	}
-}
-
-exports["SchemaRegistry"] = SchemaRegistry;
-
-});
-
-__def("packages/page-contract/src/spec.ts", function (exports) {
-const pageSpecSchema = __req("packages/page-contract/schema/page-spec.schema.json").default;
-const pagePatchSchema = __req("packages/page-contract/schema/page-patch.schema.json").default;
-const { SchemaRegistry } = __req("packages/page-contract/src/json-schema.ts");
-const { PageContractError, parseDraftPage, parsePage } = __req("packages/page-contract/src/validate.ts");
-const PAGE_SPEC_SCHEMA_URL = "https://schema.buildy.tw/page-spec.schema.json";
-const PAGE_PATCH_SCHEMA_URL = "https://schema.buildy.tw/page-patch.schema.json";
-/** ui8kit/contract commit the vendored schemas come from. */
-const PAGE_SPEC_SCHEMA_SOURCE = { repo: "ui8kit/contract", commit: "fda5f32" } as const;
-
-const registry = new SchemaRegistry();
-registry.add(pageSpecSchema as Record<string, unknown>);
-registry.add(pagePatchSchema as Record<string, unknown>);
-
-const PAGE_SLOTS = (pageSpecSchema as { "x-page-slots": Record<PageBlockKind, PageSlot> })["x-page-slots"];
-
-/** Schema issues of a page (root of page-spec). Empty = the shape is valid; run parsePage for program checks. */
-function pageSpecIssues(input: unknown): SchemaIssue[] {
-	return registry.check(input, PAGE_SPEC_SCHEMA_URL);
-}
-
-/** Schema issues against a page-spec $def (provenance, record, store). */
-function pageSpecDefIssues(input: unknown, def: "provenance" | "record" | "store"): SchemaIssue[] {
-	return registry.check(input, `${PAGE_SPEC_SCHEMA_URL}#/$defs/${def}`);
-}
-
-function pagePatchIssues(input: unknown): SchemaIssue[] {
-	return registry.check(input, PAGE_PATCH_SCHEMA_URL);
-}
-
-/**
- * Page spec gate: the published schema first (code page_spec_invalid with the first schema path),
- * then parsePage for the program checks (duplicate ids, block count, size) and the normalized copy.
- */
-function parsePageSpec(input: unknown, options: { draft?: boolean } = {}): Page {
-	const issues = pageSpecIssues(input);
-	if (issues.length) {
-		const first = issues[0]!;
-		throw new PageContractError("page_spec_invalid", first.path, `page-spec/v1 ${first.keyword} failed`);
-	}
-	return options.draft ? parseDraftPage(input) : parsePage(input);
-}
-
-exports["PAGE_SPEC_SCHEMA_URL"] = PAGE_SPEC_SCHEMA_URL;
-exports["PAGE_PATCH_SCHEMA_URL"] = PAGE_PATCH_SCHEMA_URL;
-exports["PAGE_SPEC_SCHEMA_SOURCE"] = PAGE_SPEC_SCHEMA_SOURCE;
-exports["pagePatchSchema"] = pagePatchSchema;
-exports["pageSpecSchema"] = pageSpecSchema;
-exports["PAGE_SLOTS"] = PAGE_SLOTS;
-exports["pageSpecIssues"] = pageSpecIssues;
-exports["pageSpecDefIssues"] = pageSpecDefIssues;
-exports["pagePatchIssues"] = pagePatchIssues;
-exports["parsePageSpec"] = parsePageSpec;
-
-});
-
-__def("packages/page-contract/schema/page-spec-v2.schema.json", function (exports) {
-  exports.default = {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.buildy.tw/page-spec-v2.schema.json",
-  "title": "Page spec page-spec/v2 — a page as registry items with their props",
-  "x-page-spec-profile": "page-spec/v2",
-  "x-page-spec-version": "2.0.0",
-  "description": "A BuildY page as ONE document: { version: 2, title, slug, locale, seo, blocks: [{ id, item, variant, props }] }. `item` is the registry item of `npx ui8kit add`, `props` are exactly the props of its component, `variant` names the preset of its layout axes. An agent reads it, reads the props schema of an item and writes a new version or an RFC 6902 patch (page-patch-v2.schema.json); the host validates and answers with compiler-style errors { path, expected, got }. Replaces the kind / copy / children model of page-spec/v1 (still published). After the schema, consumers run x-program-checks, then the registry checks x-host-checks.",
-  "x-program-checks": [
-    "duplicate_id",
-    "too_many_blocks",
-    "too_large",
-    "too_deep"
-  ],
-  "x-host-checks": [
-    "unknown_item",
-    "unknown_variant",
-    "no_renderer",
-    "props_invalid"
-  ],
-  "x-limits": {
-    "maxBlocks": 64,
-    "maxIdLength": 63,
-    "maxSlugLength": 48,
-    "maxTitleLength": 160,
-    "maxItemLength": 80,
-    "maxVariantLength": 40,
-    "maxTextLength": 2000,
-    "maxSeoLength": 200,
-    "maxLocaleLength": 16,
-    "maxJsonChars": 200000,
-    "maxDatetimeLength": 40,
-    "maxPropKeys": 64,
-    "maxListItems": 24,
-    "maxDepth": 8
-  },
-  "$ref": "#/$defs/page",
-  "$defs": {
-    "id": {
-      "type": "string",
-      "pattern": "^[a-z][a-z0-9-]{0,62}$",
-      "maxLength": 63,
-      "description": "Lowercase ASCII id of a block, unique in the whole page (page id included; program check duplicate_id). Safe in generated code (data-block-id)."
-    },
-    "item": {
-      "type": "string",
-      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-      "maxLength": 80,
-      "description": "Registry item name as used by `npx ui8kit add <item>` (hero-split, feature-grid, site-footer). The host rejects an item its registry does not have (unknown_item) or cannot render (no_renderer)."
-    },
-    "variant": {
-      "type": "string",
-      "pattern": "^[A-Za-z][A-Za-z0-9-]*$",
-      "maxLength": 40,
-      "description": "A published variant of the item (registry.buildy.tw/variants/v0.json): a named preset of the layout axes of its props (extra, media, columns, tone). Optional: the item's default variant. The host rejects a variant the item does not have (unknown_variant)."
-    },
-    "propText": {
-      "type": "string",
-      "description": "Plain text of a prop. As safeText of page-spec/v1 (control characters, `<` `>`, dangerous URL schemes are rejected) except that `{` and `}` are allowed: registry presets carry templates such as `?paged={0}`.",
-      "pattern": "^[^<>\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]*$",
-      "not": {
-        "anyOf": [
-          {
-            "pattern": "^[\\u0000-\\u0020]*[jJ][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^[\\u0000-\\u0020]*[dD][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*[aA][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^[\\u0000-\\u0020]*[vV][\\u0000-\\u0020]*[bB][\\u0000-\\u0020]*[sS][\\u0000-\\u0020]*[cC][\\u0000-\\u0020]*[rR][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[pP][\\u0000-\\u0020]*[tT][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^[\\u0000-\\u0020]*[fF][\\u0000-\\u0020]*[iI][\\u0000-\\u0020]*[lL][\\u0000-\\u0020]*[eE][\\u0000-\\u0020]*:"
-          },
-          {
-            "pattern": "^\\s*(?![hH][tT][tT][pP][sS]?://)[A-Za-z][A-Za-z0-9+.\\-]*://"
-          }
-        ]
-      },
-      "maxLength": 2000
-    },
-    "propValue": {
-      "description": "A prop value: plain JSON; strings are plain text (propText). The item's props schema (registry.buildy.tw/props/v0.json) decides what is valid for each prop (x-host-checks props_invalid).",
-      "anyOf": [
-        {
-          "$ref": "#/$defs/propText"
-        },
-        {
-          "type": "number"
-        },
-        {
-          "type": "boolean"
-        },
-        {
-          "type": "null"
-        },
-        {
-          "type": "array",
-          "maxItems": 24,
-          "items": {
-            "$ref": "#/$defs/propValue"
-          }
-        },
-        {
-          "type": "object",
-          "maxProperties": 64,
-          "propertyNames": {
-            "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
-          },
-          "additionalProperties": {
-            "$ref": "#/$defs/propValue"
-          }
-        }
-      ]
-    },
-    "props": {
-      "type": "object",
-      "maxProperties": 64,
-      "propertyNames": {
-        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$"
-      },
-      "additionalProperties": {
-        "$ref": "#/$defs/propValue"
-      },
-      "description": "Exactly the props of the registry item's component (what `<Item {...props} />` receives, and what the exported code writes). Nothing else lives in a block: no copy slots, no rows, no children. A host that inserts a block without props fills the sample props of the variant (the preset of its layout axes plus the minimum the props schema requires); layout axes are props like any other."
-    },
-    "block": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "item"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "item": {
-          "$ref": "#/$defs/item"
-        },
-        "variant": {
-          "$ref": "#/$defs/variant"
-        },
-        "props": {
-          "$ref": "#/$defs/props"
-        }
-      },
-      "description": "One section of the page: a registry item, the variant it was picked as and its props."
-    },
-    "seo": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "title": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 200
-        },
-        "description": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 200
-        }
-      }
-    },
-    "page": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "version",
-        "slug",
-        "title",
-        "locale",
-        "blocks"
-      ],
-      "properties": {
-        "version": {
-          "const": 2,
-          "description": "Document version: 2."
-        },
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "slug": {
-          "type": "string",
-          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          "minLength": 1,
-          "maxLength": 48,
-          "description": "Ordinary page slug, no query or UTM variants."
-        },
-        "status": {
-          "enum": [
-            "draft",
-            "pending",
-            "scheduled",
-            "published",
-            "archived",
-            "trashed"
-          ],
-          "description": "Lifecycle (optional; a host defaults a new page to draft)."
-        },
-        "title": {
-          "allOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/safeText"
-            }
-          ],
-          "maxLength": 160,
-          "minLength": 1,
-          "pattern": "\\S"
-        },
-        "locale": {
-          "type": "string",
-          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
-          "maxLength": 16,
-          "description": "BCP 47 language of the page copy; follows the language the author writes in."
-        },
-        "seo": {
-          "$ref": "#/$defs/seo"
-        },
-        "createdAt": {
-          "type": "string",
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-          "maxLength": 40
-        },
-        "updatedAt": {
-          "type": "string",
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-          "maxLength": 40
-        },
-        "blocks": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/block"
-          },
-          "maxItems": 64,
-          "description": "Sections in render order. The exported project (page file + the block files `npx ui8kit add` writes) is generated from this list."
-        }
-      }
-    },
-    "record": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "One chat's pages in the browser store: the applied page, the pending candidate and the last proposal (page-spec/v2 documents) with their provenance (page-spec/v1 provenance: the Stock screen the page started from and the advisory screen family, never a rule).",
-      "properties": {
-        "applied": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/page"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "candidate": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/page"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "lastProposed": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/page"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "appliedProvenance": {
-          "anyOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "candidateProvenance": {
-          "anyOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "lastProposedProvenance": {
-          "anyOf": [
-            {
-              "$ref": "https://schema.buildy.tw/page-spec.schema.json#/$defs/provenance"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "selectedBlockId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "maxLength": 63
-        },
-        "revision": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "minimum": 0
-        }
-      }
-    }
-  }
-};
-});
-
-__def("packages/page-contract/schema/page-patch-v2.schema.json", function (exports) {
-  exports.default = {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schema.buildy.tw/page-patch-v2.schema.json",
-  "title": "Page patch page-patch/v2 — RFC 6902 JSON Patch on a page-spec/v2 document",
-  "x-page-patch-profile": "page-patch/v2",
-  "x-page-spec-version": "2.0.0",
-  "description": "An edit of a page-spec/v2 document as an RFC 6902 JSON Patch: an ordered list of operations applied to a copy of the base page; one failing operation rejects the whole patch. Paths are pointers into the document (title, slug, locale, seo, blocks, blocks/<i>/props/...). The result must be a valid page-spec/v2 document; the host answers a failure with a list of { path, expected, got }. Blocks that no operation touches stay exactly as they are.",
-  "x-limits": {
-    "maxOps": 64,
-    "maxPathLength": 200
-  },
-  "type": "array",
-  "minItems": 1,
-  "maxItems": 64,
-  "items": {
-    "$ref": "#/$defs/op"
-  },
-  "$defs": {
-    "pointer": {
-      "type": "string",
-      "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-      "maxLength": 200
-    },
-    "op": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path",
-            "value"
-          ],
-          "description": "Add value at path (blocks/- appends; blocks/<i> inserts before index i).",
-          "properties": {
-            "op": {
-              "const": "add"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            },
-            "value": {}
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path"
-          ],
-          "description": "Remove the value at path.",
-          "properties": {
-            "op": {
-              "const": "remove"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path",
-            "value"
-          ],
-          "description": "Replace the value at path.",
-          "properties": {
-            "op": {
-              "const": "replace"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            },
-            "value": {}
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path",
-            "from"
-          ],
-          "description": "Move the value at from to path (reorder blocks).",
-          "properties": {
-            "op": {
-              "const": "move"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            },
-            "from": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path",
-            "from"
-          ],
-          "description": "Copy the value at from to path.",
-          "properties": {
-            "op": {
-              "const": "copy"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            },
-            "from": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "op",
-            "path",
-            "value"
-          ],
-          "description": "Fail the whole patch unless the value at path equals value.",
-          "properties": {
-            "op": {
-              "const": "test"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^/(?:title|slug|locale|seo(?:/(?:title|description))?|blocks(?:/(?:[0-9]{1,2}|-)(?:/(?:id|item|variant|props(?:/[^/]{1,48}){0,12}))?)?)$",
-              "maxLength": 200
-            },
-            "value": {}
-          }
-        }
-      ]
-    }
-  }
-};
-});
-
 __def("packages/page-contract/src/v2.ts", function (exports) {
 const pageSpecV2Schema = __req("packages/page-contract/schema/page-spec-v2.schema.json").default;
 const pagePatchV2Schema = __req("packages/page-contract/schema/page-patch-v2.schema.json").default;
 const pageSpecSchema = __req("packages/page-contract/schema/page-spec.schema.json").default;
 const { SchemaRegistry } = __req("packages/page-contract/src/json-schema.ts");
-const { PageContractError } = __req("packages/page-contract/src/validate.ts");
+class PageContractError extends Error {
+	code: string;
+	path: string;
+
+	constructor(code: string, path: string, message: string) {
+		super(`${code} at ${path}: ${message}`);
+		this.name = "PageContractError";
+		this.code = code;
+		this.path = path;
+	}
+}
+
 const PAGE_SPEC_V2_SCHEMA_URL = "https://schema.buildy.tw/page-spec-v2.schema.json";
 const PAGE_PATCH_V2_SCHEMA_URL = "https://schema.buildy.tw/page-patch-v2.schema.json";
 const PAGE_DOCUMENT_VERSION = 2 as const;
@@ -28143,6 +27237,7 @@ function parsePageV2(input: unknown): PageV2 {
 	return page;
 }
 
+exports["PageContractError"] = PageContractError;
 exports["PAGE_SPEC_V2_SCHEMA_URL"] = PAGE_SPEC_V2_SCHEMA_URL;
 exports["PAGE_PATCH_V2_SCHEMA_URL"] = PAGE_PATCH_V2_SCHEMA_URL;
 exports["PAGE_DOCUMENT_VERSION"] = PAGE_DOCUMENT_VERSION;
@@ -28160,29 +27255,8 @@ exports["parsePageV2"] = parsePageV2;
 
 __def("packages/page-contract/src/index.ts", function (exports) {
 exports["PAGE_BLOCK_KINDS"] = __req("packages/page-contract/src/types.ts")["PAGE_BLOCK_KINDS"];
-exports["PAGE_CATALOG_LIMITS"] = __req("packages/page-contract/src/types.ts")["PAGE_CATALOG_LIMITS"];
-exports["PAGE_COPY_KEYS"] = __req("packages/page-contract/src/types.ts")["PAGE_COPY_KEYS"];
-exports["PAGE_LAYOUT_VERSION"] = __req("packages/page-contract/src/types.ts")["PAGE_LAYOUT_VERSION"];
-exports["PAGE_LIMITS"] = __req("packages/page-contract/src/types.ts")["PAGE_LIMITS"];
-exports["PAGE_PROPS_LIMITS"] = __req("packages/page-contract/src/types.ts")["PAGE_PROPS_LIMITS"];
-exports["PAGE_PROPS_POINTER_PATTERN"] = __req("packages/page-contract/src/types.ts")["PAGE_PROPS_POINTER_PATTERN"];
-exports["PAGE_STATUSES"] = __req("packages/page-contract/src/types.ts")["PAGE_STATUSES"];
-exports["blocksOf"] = __req("packages/page-contract/src/types.ts")["blocksOf"];
-exports["isPage"] = __req("packages/page-contract/src/validate.ts")["isPage"];
-exports["PageContractError"] = __req("packages/page-contract/src/validate.ts")["PageContractError"];
-exports["parseDraftPage"] = __req("packages/page-contract/src/validate.ts")["parseDraftPage"];
-exports["parsePage"] = __req("packages/page-contract/src/validate.ts")["parsePage"];
-exports["PAGE_PATCH_SCHEMA_URL"] = __req("packages/page-contract/src/spec.ts")["PAGE_PATCH_SCHEMA_URL"];
-exports["PAGE_SLOTS"] = __req("packages/page-contract/src/spec.ts")["PAGE_SLOTS"];
-exports["PAGE_SPEC_SCHEMA_SOURCE"] = __req("packages/page-contract/src/spec.ts")["PAGE_SPEC_SCHEMA_SOURCE"];
-exports["PAGE_SPEC_SCHEMA_URL"] = __req("packages/page-contract/src/spec.ts")["PAGE_SPEC_SCHEMA_URL"];
-exports["pagePatchIssues"] = __req("packages/page-contract/src/spec.ts")["pagePatchIssues"];
-exports["pagePatchSchema"] = __req("packages/page-contract/src/spec.ts")["pagePatchSchema"];
-exports["pageSpecDefIssues"] = __req("packages/page-contract/src/spec.ts")["pageSpecDefIssues"];
-exports["pageSpecIssues"] = __req("packages/page-contract/src/spec.ts")["pageSpecIssues"];
-exports["pageSpecSchema"] = __req("packages/page-contract/src/spec.ts")["pageSpecSchema"];
-exports["parsePageSpec"] = __req("packages/page-contract/src/spec.ts")["parsePageSpec"];
 exports["SchemaRegistry"] = __req("packages/page-contract/src/json-schema.ts")["SchemaRegistry"];
+exports["PageContractError"] = __req("packages/page-contract/src/v2.ts")["PageContractError"];
 exports["PAGE_DOCUMENT_VERSION"] = __req("packages/page-contract/src/v2.ts")["PAGE_DOCUMENT_VERSION"];
 exports["PAGE_PATCH_V2_LIMITS"] = __req("packages/page-contract/src/v2.ts")["PAGE_PATCH_V2_LIMITS"];
 exports["PAGE_PATCH_V2_SCHEMA_URL"] = __req("packages/page-contract/src/v2.ts")["PAGE_PATCH_V2_SCHEMA_URL"];
@@ -28201,7 +27275,7 @@ exports["parsePageV2"] = __req("packages/page-contract/src/v2.ts")["parsePageV2"
 });
 
 __def("packages/builder-core/src/catalog/details.ts", function (exports) {
-const { PAGE_BLOCK_KINDS, PAGE_COPY_KEYS } = __req("packages/page-contract/src/index.ts");
+const { PAGE_BLOCK_KINDS } = __req("packages/page-contract/src/index.ts");
 const { catalogProvenance, catalogSnapshot } = __req("packages/builder-core/src/catalog/snapshot.ts");
 const { getBlockIndex, getBlockIndexByCatalogId } = __req("packages/builder-core/src/catalog/compatibility.ts");
 const { rendererKindForLabel } = __req("packages/builder-core/src/catalog/renderer-kind.ts");
@@ -28241,7 +27315,6 @@ function getBlockDetails(input: {
 			catalogIds: [],
 			rendererKind: id as PageBlockKind,
 			rendererCompatible: true,
-			copyKeys: PAGE_COPY_KEYS,
 			provenance: catalogProvenance(),
 			inspected: true
 		};
@@ -28269,7 +27342,6 @@ function getBlockDetails(input: {
 		catalogIds: entry.catalogIds,
 		rendererKind: kind,
 		rendererCompatible: Boolean(kind),
-		copyKeys: kind ? PAGE_COPY_KEYS : [],
 		provenance: catalogProvenance(),
 		inspected: true,
 		...(requested ? { variant: requested } : {}),
@@ -28368,70 +27440,11 @@ exports["catalogSnapshot"] = catalogSnapshot;
 
 });
 
-__def("packages/builder-core/src/catalog/props-overrides.ts", function (exports) {
-
-type Json = unknown;
-function isObject(value: Json): value is Record<string, Json> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/** `/content/features/0/title` -> ["content", "features", "0", "title"] (RFC 6901 unescaped). */
-function pointerParts(pointer: string): string[] {
-	return pointer.split("/").slice(1).map((part) => part.replace(/~1/g, "/").replace(/~0/g, "~"));
-}
-
-function clone<T>(value: T): T {
-	return value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T);
-}
-
-/** A copy of `target` with `value` at `parts` (missing objects / arrays are created; undefined removes the key). */
-function setAt(target: Json, parts: string[], value: Json): Json {
-	if (!parts.length) return clone(value);
-	const [head, ...rest] = parts as [string, ...string[]];
-	const index = /^\d+$/.test(head) ? Number(head) : null;
-	if (Array.isArray(target) || (index !== null && !isObject(target))) {
-		const list = Array.isArray(target) ? [...target] : [];
-		const at = index ?? list.length;
-		if (rest.length === 0 && value === undefined) list.splice(at, 1);
-		else list[at] = setAt(list[at], rest, value);
-		return list;
-	}
-	const obj: Record<string, Json> = isObject(target) ? { ...target } : {};
-	if (rest.length === 0 && value === undefined) delete obj[head];
-	else obj[head] = setAt(obj[head], rest, value);
-	return obj;
-}
-
-function valueAtPointer(data: Json, pointer: string): Json {
-	let current = data;
-	for (const part of pointerParts(pointer)) {
-		if (current === null || typeof current !== "object") return undefined;
-		current = (current as Record<string, Json>)[part];
-	}
-	return current;
-}
-
-/** Overrides merged over the rendered props, shortest pointer first (an override of a list, then fields inside it). */
-function applyPropsOverrides(base: Record<string, unknown>, overrides: PropsOverrides | undefined): Record<string, unknown> {
-	if (!overrides) return base;
-	let out: Json = base;
-	for (const pointer of Object.keys(overrides).sort((a, b) => a.length - b.length)) out = setAt(out, pointerParts(pointer), overrides[pointer]);
-	return out as Record<string, unknown>;
-}
-
-exports["pointerParts"] = pointerParts;
-exports["setAt"] = setAt;
-exports["valueAtPointer"] = valueAtPointer;
-exports["applyPropsOverrides"] = applyPropsOverrides;
-
-});
-
 __def("packages/builder-core/src/catalog/organism.ts", function (exports) {
 const raw = __req("packages/builder-core/src/catalog/sources.json").default;
-const { fillProps, propShapeFor, propsEventsFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
-const { applyPropsOverrides } = __req("packages/builder-core/src/catalog/props-overrides.ts");
 const sources = raw as unknown as CatalogSources;
 
+/** What the props gate checks: a registry item and its render props. */
 type Json = unknown;
 
 function isObject(value: Json): value is Record<string, Json> {
@@ -28455,126 +27468,6 @@ function withoutRefs(value: Json): Json {
 	return out;
 }
 
-function merge(base: Json, over: Json): Json {
-	if (!isObject(base) || !isObject(over)) return over === undefined ? base : over;
-	const out: Record<string, Json> = { ...base };
-	for (const [key, value] of Object.entries(over)) out[key] = merge(base[key], value);
-	return out;
-}
-
-/** Page copy keys (page-spec) -> registry prop names that carry the same text. */
-const COPY_FIELDS: Record<string, keyof NonNullable<PageBlock["copy"]>> = {
-	eyebrow: "eyebrow",
-	kicker: "eyebrow",
-	overline: "eyebrow",
-	badge: "badge",
-	brand: "brand",
-	note: "note",
-	legal: "legal",
-	copyright: "legal",
-	contact: "contact",
-	address: "address",
-	days: "days",
-	value: "value"
-};
-const LABEL_FIELDS = new Set(["label", "name", "text", "title"]);
-const TITLE = new Set(["title", "heading", "name", "label", "question", "author", "brand"]);
-const TEXT = new Set(["text", "lead", "summary", "description", "subtitle", "intro", "excerpt", "body", "answer", "quote", "note", "hint", "tagline"]);
-const ACTION_LABEL = new Set(["label", "cta", "text"]);
-
-type Origins = Record<string, string>;
-
-function record(child: PageBlock, at: string, list: PropShape["lists"][string], origins: Origins, base: string): Record<string, Json> {
-	const row: Record<string, Json> = {};
-	const title = child.copy?.headline ?? child.title;
-	const text = child.copy?.lede ?? child.summary;
-	const set = (field: string, value: Json, from: string) => {
-		row[field] = value;
-		origins[`${base}/${field}`] = `${at}.${from}`;
-	};
-	for (const [field, kind] of Object.entries(list.record)) {
-		if (field === "icon" && kind === "icon") {
-			// Kept as written; the props gate checks it against the contract's Lucide enum.
-			if (child.copy?.icon !== undefined) set("icon", child.copy.icon, "copy.icon");
-			continue;
-		}
-		if (kind !== "text") continue;
-		if (field === "id") set("id", child.id, "id");
-		else if (TITLE.has(field) && title) set(field, title, child.copy?.headline ? "copy.headline" : "title");
-		else if (TEXT.has(field) && text) set(field, text, child.copy?.lede ? "copy.lede" : "summary");
-		else if (field === "href" && child.copy?.href) set("href", child.copy.href, "copy.href");
-		else if (COPY_FIELDS[field] && child.copy?.[COPY_FIELDS[field]!]) set(field, child.copy[COPY_FIELDS[field]!]!, `copy.${COPY_FIELDS[field]}`);
-	}
-	return row;
-}
-
-/** Page content in the block's own prop names (text goes only to text props of the schema, never to an enum axis). */
-function content(block: PageBlock, shape: PropShape, origins: Origins): Record<string, Json> {
-	const out: Record<string, Json> = {};
-	const set = (prop: string, value: Json, from: string) => {
-		out[prop] = value;
-		origins[`/${prop}`] = from;
-	};
-	const text = new Set(shape.text);
-	if (text.has("id")) set("id", block.id, "id");
-	// v1 pages: edits landed in copy (headline / lede); copy wins over the block title / summary.
-	const heading = block.copy?.headline ?? block.title;
-	const lede = block.copy?.lede ?? block.summary;
-	const title = shape.text.find((prop) => TITLE.has(prop) && prop !== "brand");
-	if (title && heading) set(title, heading, block.copy?.headline ? "copy.headline" : "title");
-	const lead = shape.text.find((prop) => TEXT.has(prop));
-	if (lead && lede) set(lead, lede, block.copy?.lede ? "copy.lede" : "summary");
-	for (const prop of shape.props) {
-		const key = COPY_FIELDS[prop];
-		const value = key ? block.copy?.[key] : undefined;
-		if (!value || prop in out) continue;
-		if (text.has(prop)) set(prop, value, `copy.${key}`);
-		else if (shape.objects[prop]) {
-			const field = Object.entries(shape.objects[prop]!).find(([name, kind]) => LABEL_FIELDS.has(name) && kind === "text")?.[0];
-			if (field) {
-				out[prop] = { [field]: value };
-				origins[`/${prop}/${field}`] = `copy.${key}`;
-			}
-		}
-	}
-	// Chrome labels (site-header / app bars): `labels.brand` carries the page brand.
-	if (block.copy?.brand && shape.objects.labels?.brand === "text") {
-		out.labels = { brand: block.copy.brand };
-		origins["/labels/brand"] = "copy.brand";
-	}
-	const children = block.children ?? [];
-	const lists = Object.entries(shape.lists).sort(([, a], [, b]) => Number(b.required) - Number(a.required));
-	// No rows: the block's empty state (`empty`, or `labels.empty`) says so in the page's words (its lede / summary).
-	if (!children.length && lists.length && lede) {
-		if (text.has("empty") && !("empty" in out)) set("empty", lede, block.copy?.lede ? "copy.lede" : "summary");
-		else if (shape.objects.labels?.empty === "text") {
-			out.labels = { ...(out.labels as Record<string, Json> | undefined), empty: lede };
-			origins["/labels/empty"] = block.copy?.lede ? "copy.lede" : "summary";
-		}
-	}
-	if (children.length && lists.length) {
-		const [name, list] = lists[0]!;
-		out[name] = children.map((child, index) => {
-			origins[`/${name}/${index}`] = `children[${index}]`;
-			return record(child, `children[${index}]`, list, origins, `/${name}/${index}`);
-		});
-	}
-	const action = block.copy?.action;
-	if (action) {
-		for (const name of ["action", "actions", "cta"]) {
-			const fields = shape.objects[name];
-			if (!fields) continue;
-			const label = Object.keys(fields).find((field) => ACTION_LABEL.has(field) && fields[field] === "text");
-			if (!label) continue;
-			out[name] = { [label]: action, ...(fields.href ? { href: block.copy?.href || "#" } : {}) };
-			origins[`/${name}/${label}`] = "copy.action";
-			if (fields.href) origins[`/${name}/href`] = "copy.href";
-			break;
-		}
-	}
-	return out;
-}
-
 /** The registry item and variant of a catalog block (`block.features` + `grid`), or null when the registry has none. */
 function registryItemFor(catalogBlock: string | undefined | null, variant?: string | null): { item: string; variant: string } | null {
 	if (!catalogBlock) return null;
@@ -28583,24 +27476,6 @@ function registryItemFor(catalogBlock: string | undefined | null, variant?: stri
 		if (hit) return hit;
 	}
 	return sources.specs[catalogBlock] ?? null;
-}
-
-/** The registry block and its props for a page block, or null when the block has no registry item (stub). */
-function organismFor(block: PageBlock): OrganismRender | null {
-	const hit = registryItemFor(block.catalogBlock, block.variant);
-	if (!hit || !block.catalogBlock) return null;
-	const source = sources.blocks[hit.item]!;
-	const shape = propShapeFor(hit.item);
-	if (!shape) return null;
-	const origins: Origins = {};
-	const merged = merge(withoutRefs(source.variants[hit.variant]), content(block, shape, origins)) as Record<string, unknown>;
-	const overrides = Object.keys(block.props ?? {});
-	for (const pointer of overrides) {
-		for (const key of Object.keys(origins)) if (key === pointer || key.startsWith(`${pointer}/`)) delete origins[key];
-	}
-	const props = fillProps(hit.item, applyPropsOverrides(merged, block.props));
-	const { events, slots } = propsEventsFor(hit.item);
-	return { catalogBlock: block.catalogBlock, item: hit.item, organism: source.organism, variant: hit.variant, props, origins, overrides, events, slots };
 }
 
 /** The published props of a variant without dictionary refs: what the variant itself sets (axes, sample literals). */
@@ -28693,7 +27568,6 @@ function registryItemClosure(items: string[]): string[] {
 }
 
 exports["registryItemFor"] = registryItemFor;
-exports["organismFor"] = organismFor;
 exports["variantPreset"] = variantPreset;
 exports["variantPresets"] = variantPresets;
 exports["variantAxisProps"] = variantAxisProps;
@@ -30154,66 +29028,6 @@ exports["familyKinds"] = familyKinds;
 
 });
 
-__def("packages/builder-core/src/page-doc/migrate.ts", function (exports) {
-const { organismFor } = __req("packages/builder-core/src/catalog/organism.ts");
-const { humanizeName } = __req("packages/builder-core/src/catalog/props-schema.ts");
-const V1_SERVICE_TEXT = /^(?:Closing band\.|Contact facts are not invented|No data in this draft|\u0412 \u044d\u0442\u043e\u043c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445)/i;
-
-/**
- * v1 rendered a required text it had no content for as the humanized prop name ("Value", "By line", "Role"): the migrated
- * block keeps what the author's content says and clears those fill-ins, so the renderer shows nothing instead of a label
- * that reads as data. Stats rows of 1.x kept the figure in the row summary (`hint`): it is the value.
- */
-function healV1Props(item: string, value: unknown): unknown {
-	return heal(item, value);
-}
-
-function heal(item: string, value: unknown, key = ""): unknown {
-	if (typeof value === "string") return value === humanizeName(key) || V1_SERVICE_TEXT.test(value) ? "" : value;
-	if (Array.isArray(value)) return value.map((entry) => heal(item, entry, key));
-	if (value && typeof value === "object") {
-		const out: Record<string, unknown> = {};
-		for (const [name, inner] of Object.entries(value)) out[name] = heal(item, inner, name);
-		if (item === "stats-band" && "hint" in out && "value" in out && out.value === "" && typeof out.hint === "string" && out.hint !== "") {
-			out.value = out.hint;
-			out.hint = "";
-		}
-		return out;
-	}
-	return value;
-}
-
-function migratePageV1(page: Page): MigrationResult {
-	const skipped: MigrationResult["skipped"] = [];
-	const blocks: BlockV2[] = [];
-	for (const node of page.layout.blocks) {
-		const render = organismFor(node);
-		if (!render) {
-			skipped.push({ id: node.id, kind: node.kind, reason: "no registry block" });
-			continue;
-		}
-		blocks.push({ id: node.id, item: render.item, variant: render.variant, props: heal(render.item, JSON.parse(JSON.stringify(render.props))) as Record<string, PropValueV2> });
-	}
-	const out: PageV2 = {
-		version: 2,
-		id: page.id,
-		slug: page.slug,
-		status: page.status,
-		title: page.title,
-		locale: page.locale,
-		seo: { ...page.seo },
-		createdAt: page.createdAt,
-		updatedAt: page.updatedAt,
-		blocks
-	};
-	return { page: out, skipped };
-}
-
-exports["healV1Props"] = healV1Props;
-exports["migratePageV1"] = migratePageV1;
-
-});
-
 __def("packages/builder-core/src/page-doc/inspect.ts", function (exports) {
 const { propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
@@ -30679,8 +29493,6 @@ exports["applyJsonPatch"] = __req("packages/builder-core/src/page-doc/jsonpatch.
 exports["changedPointers"] = __req("packages/builder-core/src/page-doc/diff.ts")["changedPointers"];
 exports["diffIsEmpty"] = __req("packages/builder-core/src/page-doc/diff.ts")["diffIsEmpty"];
 exports["diffPages"] = __req("packages/builder-core/src/page-doc/diff.ts")["diffPages"];
-exports["healV1Props"] = __req("packages/builder-core/src/page-doc/migrate.ts")["healV1Props"];
-exports["migratePageV1"] = __req("packages/builder-core/src/page-doc/migrate.ts")["migratePageV1"];
 exports["freshBlockId"] = __req("packages/builder-core/src/page-doc/write.ts")["freshBlockId"];
 exports["normalizeBlocks"] = __req("packages/builder-core/src/page-doc/write.ts")["normalizeBlocks"];
 exports["writePage"] = __req("packages/builder-core/src/page-doc/write.ts")["writePage"];
@@ -30752,7 +29564,6 @@ exports["modelCatalogSources"] = __req("packages/builder-core/src/catalog/source
 exports["blockVariantSummary"] = __req("packages/builder-core/src/catalog/sources.ts")["blockVariantSummary"];
 exports["resolveCatalogChoice"] = __req("packages/builder-core/src/catalog/sources.ts")["resolveCatalogChoice"];
 exports["variantProps"] = __req("packages/builder-core/src/catalog/sources.ts")["variantProps"];
-exports["organismFor"] = __req("packages/builder-core/src/catalog/organism.ts")["organismFor"];
 exports["registryClosure"] = __req("packages/builder-core/src/catalog/organism.ts")["registryClosure"];
 exports["registryItemFiles"] = __req("packages/builder-core/src/catalog/organism.ts")["registryItemFiles"];
 exports["registrySkin"] = __req("packages/builder-core/src/catalog/organism.ts")["registrySkin"];
@@ -32264,7 +31075,7 @@ function propsIssues(errors: ErrorObject[], data: unknown): PropsIssue[] {
 }
 
 /** Issues of the merged props of one registry block; [] when they match the published schema. */
-function validateRegistryProps(render: Pick<OrganismRender, "item" | "props">): PropsIssue[] {
+function validateRegistryProps(render: RegistryRender): PropsIssue[] {
 	const validate = validatorFor(render.item);
 	if (!validate) return [{ pointer: "", keyword: "schema", message: `registry item ${render.item} has no published props schema` }];
 	if (validate(render.props)) return [];

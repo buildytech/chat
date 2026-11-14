@@ -1,4 +1,4 @@
-import type { ChatMessage, ChatProposalState, ChatSession, ProposalStatus } from "./types";
+import type { ChatMessage, ChatProposalState, ProposalStatus } from "./types";
 
 export type { ProposalStatus };
 
@@ -7,27 +7,6 @@ const STATUSES: readonly ProposalStatus[] = ["pending", "applied", "discarded", 
 export function proposalStatus(proposal: Pick<ChatProposalState, "applied" | "status">): ProposalStatus {
 	if (proposal.status && STATUSES.includes(proposal.status)) return proposal.status;
 	return proposal.applied ? "applied" : "pending";
-}
-
-/** Legacy blobs only had applied:boolean. Neutral: applied true → applied, else pending. */
-export function migrateProposal(proposal: ChatProposalState): ChatProposalState {
-	const status = proposalStatus(proposal);
-	return { ...proposal, status, applied: status === "applied" };
-}
-
-/** Messages whose proposal has no `status` (only `applied`): the old shape migrateProposal rewrites (migration counter). */
-export function legacyProposalCount(messages: readonly ChatMessage[] | undefined): number {
-	return (messages ?? []).filter((message) => message.proposal && message.proposal.status === undefined).length;
-}
-
-export function migrateSessionProposals(session: ChatSession): ChatSession {
-	if (!session.messages) return session;
-	return {
-		...session,
-		messages: (session.messages ?? []).map((message) =>
-			message.proposal ? { ...message, proposal: migrateProposal(message.proposal) } : message
-		)
-	};
 }
 
 export function isPendingProposal(proposal: Pick<ChatProposalState, "applied" | "status">): boolean {

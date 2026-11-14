@@ -1,0 +1,15 @@
+{
+	"version": 2,
+	"id": "page-home",
+	"slug": "home",
+	"status": "draft",
+	"title": "North Harbor Kitchen",
+	"locale": "en",
+	"seo": {
+		"title": "North Harbor Kitchen",
+		"description": "Ordinary restaurant landing with a unique slug."
+	},
+	"createdAt": "2026-11-06T00:00:00.000Z",
+	"updatedAt": "2026-11-06T00:00:00.000Z",
+	"blocks": []
+}

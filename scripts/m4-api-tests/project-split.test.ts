@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
 import { docOfProject, projectOfDoc, registerLegacyKeys } from "../../apps/chat-web/src/lib/project/doc.ts";
 import { bySavedAt, draftPageId, newProject, withApplied, withExt, withSkin, withoutCollectionItem } from "../../apps/chat-web/src/lib/project/transitions.ts";
-import { CHAT_LEGACY_KEYS, normalizeChatExt, projectOfView, viewOf } from "../../apps/chat-web/src/modules/chat/core/view.ts";
+import { CHAT_LEGACY_KEYS, projectOfView, viewOf } from "../../apps/chat-web/src/modules/chat/core/view.ts";
 
 // The chat module registers its keys when it loads; this file tests the project with it loaded (modules.test.ts: without).
 registerLegacyKeys("chat", CHAT_LEGACY_KEYS);
@@ -104,18 +104,6 @@ test("chat view: project -> view -> project keeps the chat, the page fields and 
 	assert.deepEqual(back.ext.lab, { note: "kept" });
 	const moved = projectOfDoc(otherProjectDoc as never);
 	assert.equal(projectOfView(viewOf(moved), moved).projectId, "project-x", "the page key is the project's, not the view's");
-});
-
-test("chat normalizer: the old proposal shape gets a status and is counted; no chat is left alone", () => {
-	const counts: number[] = [];
-	const normalize = normalizeChatExt((_path, n) => counts.push(n));
-	const old = projectOfDoc({ ...flatDoc, messages: [{ id: "m", role: "assistant", text: "p", createdAt: NOW, proposal: { applied: true, source: "write_page", liveModel: false, warnings: [], missing: [], title: "T" } }] } as never);
-	const next = normalize(old);
-	assert.equal((next.ext.chat?.messages as { proposal: { status: string } }[])[0]!.proposal.status, "applied");
-	assert.deepEqual(counts, [1]);
-	const bare = projectOfDoc(noChatDoc as never);
-	assert.equal(normalize(bare), bare);
-	assert.deepEqual(counts, [1]);
 });
 
 test("transitions: pure, each returns a new project and leaves the old one alone", () => {

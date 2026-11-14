@@ -8,7 +8,6 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { migratePageV1 } from "../../packages/builder-core/src/index.ts";
 import { contractFingerprint } from "../../packages/chat-agent/src/index.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -19,8 +18,7 @@ if (!existsSync(join(ROOT, "api", "runtime", "_render", "blocks.mjs"))) execFile
 execFileSync("npx", ["esbuild", "api/runtime/v1/run.ts", "--format=esm", "--platform=node", "--log-level=error", `--outdir=${OUT}`], { cwd: ROOT, stdio: "pipe" });
 const entry = (await import(pathToFileURL(join(OUT, "run.js")).href)) as { default: { fetch(request: Request): Promise<Response> } };
 
-const fitness = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/fitness-session-3933dbf.json"), "utf8"));
-const page = migratePageV1(fitness.sessions[0].page.applied).page;
+const page = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/fitness-applied-v2.json"), "utf8"));
 const MODELS = ["grok-4.20-0309-reasoning", "grok-4.20-0309-non-reasoning"];
 
 type Scripted = { content?: string; calls?: Array<{ name: string; arguments: Record<string, unknown> }> };

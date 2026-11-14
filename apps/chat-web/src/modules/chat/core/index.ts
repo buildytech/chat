@@ -32,7 +32,7 @@ export {
 export { collectionItemDetail, collectionItemName, collectionNote, type ChatCollection } from "./collection";
 export { chatModeOf, turnOutcome, DEFAULT_CHAT_MODE } from "./modes";
 export { parseMarkdown, parseInline, type MdBlock, type MdInline } from "./markdown";
-export { isPendingProposal, proposalStatus, markPendingProposals, migrateProposal, migrateSessionProposals } from "./proposals";
+export { isPendingProposal, proposalStatus, markPendingProposals } from "./proposals";
 export type {
 	ChatArtifact,
 	ChatMessage,

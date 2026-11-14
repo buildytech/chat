@@ -1,16 +1,15 @@
 /**
  * Browser-local persistence for chats and per-session pages under the buildy:v1 key space (ADR 0015): chats in
- * `buildy:v1:sessions`, page records in `buildy:v1:pages` (page-spec/v2 store blob; a 1.x record is migrated to 2.0 when
- * it is read). Both are validated at load against the session profile buildy:v1 (`session.schema.json#/$defs/session`)
- * and page-spec/v2 (`page-spec-v2.schema.json#/$defs/record`); a value
- * that fails goes to quarantine (`buildy:v1:quarantine`) with its reason and the rest loads. Nothing is dropped silently.
+ * `buildy:v1:sessions`, page records in `buildy:v1:pages` (page-spec/v2 store blob). Both are validated at load against the session profile buildy:v1
+ * (`session.schema.json#/$defs/session`) and page-spec/v2 (`page-spec-v2.schema.json#/$defs/record`); a value that fails
+ * goes to quarantine (`buildy:v1:quarantine`) with its reason and the rest loads. Nothing is dropped silently. A page-spec/v1
+ * record (ADR 0045: the migration is gone) is quarantined as `page_v1_unsupported`, like any other value this build cannot read.
  */
 
-import { isScenarioId, migratePageV1, type ScenarioId } from "@buildytech/builder-core";
-import { pageV2DefIssues, type Page } from "@buildytech/page-contract";
+import { isScenarioId, type ScenarioId } from "@buildytech/builder-core";
+import { pageV2DefIssues } from "@buildytech/page-contract";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
 import { STORAGE_KEYS, browserStorage, quarantine, type StorageLike } from "./storage-v1.ts";
-import { noteMigrationHit } from "./migration-counters.ts";
 
 export const SESSIONS_KEY = STORAGE_KEYS.sessions;
 export const PAGES_KEY = STORAGE_KEYS.pages;
@@ -45,8 +44,6 @@ export type StoredPageRecord = {
 	lastProposedProvenance?: StoredPageProvenance | null;
 };
 
-const STOCK_NOTE = /^Stock screen (screen\.[A-Za-z0-9._/-]+)$/;
-
 function recordedId(value: unknown): string | null {
 	if (typeof value !== "string") return null;
 	const trimmed = value.trim();
@@ -54,52 +51,22 @@ function recordedId(value: unknown): string | null {
 	return trimmed;
 }
 
-function inferScreenIdFromUnknown(page: unknown): string | null {
-	if (!page || typeof page !== "object") return null;
-	const layout = (page as { layout?: { blocks?: unknown } }).layout;
-	const stack = Array.isArray(layout?.blocks) ? [...layout.blocks] : [];
-	while (stack.length) {
-		const node = stack.pop();
-		if (!node || typeof node !== "object") continue;
-		const rec = node as { copy?: { note?: unknown }; children?: unknown };
-		const note = rec.copy?.note;
-		if (typeof note === "string") {
-			const hit = note.match(STOCK_NOTE);
-			if (hit?.[1]) return hit[1];
-		}
-		if (Array.isArray(rec.children)) stack.push(...rec.children);
-	}
-	return null;
-}
-
 function normalizeProvenance(raw: unknown, page: unknown): StoredPageProvenance | null {
 	if (page == null && raw == null) return null;
 	const rec = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : null;
 	return {
-		screenId: recordedId(rec?.screenId) ?? inferScreenIdFromUnknown(page),
+		screenId: recordedId(rec?.screenId),
 		scenarioId: isScenarioId(rec?.scenarioId) ? rec.scenarioId : null,
 		missing: Array.isArray(rec?.missing) ? rec.missing.filter((row): row is string => typeof row === "string") : [],
 		assembler: typeof rec?.assembler === "string" ? rec.assembler : undefined
 	};
 }
 
-const isV1Page = (page: unknown): page is Page => Boolean(page && typeof page === "object" && "layout" in page && !("blocks" in page));
+/** A page-spec/v1 page document (`layout`, no `blocks`): this build reads v2 only. */
+export const isV1Page = (page: unknown): boolean => Boolean(page && typeof page === "object" && "layout" in page && !("blocks" in page));
 
-/** A page-spec/v1 page as a page-spec/v2 document (ADR 0034); a v2 page, null and anything else as they are. */
-export function pageToV2(page: unknown): unknown {
-	if (!isV1Page(page)) return page ?? null;
-	try {
-		return migratePageV1(page).page;
-	} catch {
-		return null;
-	}
-}
-
-/**
- * Old blobs stored page-spec/v1 pages (and, older still, pages without sibling provenance): every page of the record is
- * migrated to page-spec/v2 and the Stock id of an old CTA note is kept as the screen hint.
- */
-export function migrateStoredPageRecord(record: StoredPageRecord): StoredPageRecord {
+/** The sibling provenance of every page of a stored record, complete (screen id, scenario id, missing, assembler). */
+export function normalizePageRecord(record: StoredPageRecord): StoredPageRecord {
 	const appliedProvenance = normalizeProvenance(record.appliedProvenance, record.applied);
 	const candidateProvenance = record.candidate
 		? (normalizeProvenance(record.candidateProvenance, record.candidate) ?? appliedProvenance)
@@ -109,11 +76,8 @@ export function migrateStoredPageRecord(record: StoredPageRecord): StoredPageRec
 		: null;
 	return {
 		...record,
-		applied: pageToV2(record.applied),
-		candidate: pageToV2(record.candidate),
 		appliedProvenance,
 		candidateProvenance,
-		lastProposed: pageToV2(record.lastProposed),
 		lastProposedProvenance
 	};
 }
@@ -239,11 +203,7 @@ export function loadSessionsJson(): unknown[] {
 	const valid: unknown[] = [];
 	let rewrite = false;
 	list.forEach((entry, i) => {
-		const item = repairSession(entry);
-		if (item !== entry) {
-			rewrite = true;
-			noteMigrationHit(store, "feedScreen");
-		}
+		const item = entry;
 		const issues = sessionDefIssues(item, "session");
 		if (!issues.length) {
 			valid.push(item);
@@ -256,24 +216,6 @@ export function loadSessionsJson(): unknown[] {
 	if (rewrite) writeRaw(store, SESSIONS_KEY, JSON.stringify(valid));
 	else trusted.set(SESSIONS_KEY, raw);
 	return valid;
-}
-
-/**
- * Known fixes applied before validation. 2026-11-11 (one day on staging): "Start page from this screen" wrote
- * `proposal.origin: "feed-screen"`, which the session schema does not allow; the field is dropped (the proposal is
- * an ordinary program proposal) so those chats load instead of going to quarantine. Identity when nothing changes.
- */
-export function repairSession(item: unknown): unknown {
-	const rec = item as { messages?: Array<{ proposal?: { origin?: unknown } }> } | null;
-	if (!rec || !Array.isArray(rec.messages) || !rec.messages.some((m) => m?.proposal?.origin === "feed-screen")) return item;
-	return {
-		...rec,
-		messages: rec.messages.map((m) => {
-			if (m?.proposal?.origin !== "feed-screen") return m;
-			const { origin: _origin, ...proposal } = m.proposal;
-			return { ...m, proposal };
-		})
-	};
 }
 
 function writeRaw(store: StorageLike, key: string, value: string): void {
@@ -294,7 +236,7 @@ function emptyBlob(): PagesBlobV1 {
 }
 
 /**
- * The page store blob. Each chat's record is migrated to page-spec/v2 and validated against
+ * The page store blob. Each project's record is validated against
  * page-spec-v2.schema.json#/$defs/record; a record that fails goes to quarantine and the blob is rewritten without it.
  */
 export function loadPagesBlob(): PagesBlobV1 {
@@ -316,15 +258,15 @@ export function loadPagesBlob(): PagesBlobV1 {
 	const pages: Record<string, StoredPageRecord> = {};
 	let dropped = false;
 	for (const [id, record] of Object.entries(parsed.pages)) {
-		if (record && typeof record === "object" && [record.applied, record.candidate, record.lastProposed].some(isV1Page)) noteMigrationHit(store, "pageV1");
-		const migrated = record && typeof record === "object" ? migrateStoredPageRecord(record) : null;
-		const issues = migrated ? pageV2DefIssues(JSON.parse(JSON.stringify(migrated)), "record") : [{ path: "$", keyword: "type" }];
+		const migrated = record && typeof record === "object" ? normalizePageRecord(record) : null;
+		const v1 = Boolean(record && typeof record === "object" && [record.applied, record.candidate, record.lastProposed].some(isV1Page));
+		const issues = v1 ? [{ path: "$", keyword: "page_v1_unsupported" }] : migrated ? pageV2DefIssues(JSON.parse(JSON.stringify(migrated)), "record") : [{ path: "$", keyword: "type" }];
 		if (!issues.length) {
 			pages[id] = migrated!;
 			continue;
 		}
 		const first = issues[0]!;
-		if (keepAside(store, PAGES_KEY, `page_record_invalid:${first.keyword}`, JSON.stringify(record), `$.pages.${id}${first.path.slice(1)}`)) dropped = true;
+		if (keepAside(store, PAGES_KEY, first.keyword === "page_v1_unsupported" ? "page_v1_unsupported" : `page_record_invalid:${first.keyword}`, JSON.stringify(record), `$.pages.${id}${first.path.slice(1)}`)) dropped = true;
 		else pages[id] = record;
 	}
 	if (dropped) writeRaw(store, PAGES_KEY, JSON.stringify({ version: PAGES_VERSION, pages }));
@@ -349,7 +291,7 @@ export function writeAllProjectPages(records: Record<string, StoredPageRecord>):
 export function readProjectPage(projectId: string): StoredPageRecord | null {
 	const rec = loadPagesBlob().pages[projectId];
 	if (!rec) return null;
-	return migrateStoredPageRecord(rec);
+	return normalizePageRecord(rec);
 }
 
 export function writeProjectPage(projectId: string, record: StoredPageRecord): boolean {

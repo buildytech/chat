@@ -3,7 +3,6 @@ export { blankRequired, cloneJson, effectiveProps, renderBlock, sampleProps, typ
 export { checkPageDoc, pointerOfSchemaPath, registryIssues, valueAtPointer, type DocGate, type DocIssue } from "./gate.ts";
 export { applyJsonPatch, type PatchOpLike } from "./jsonpatch.ts";
 export { changedPointers, diffIsEmpty, diffPages, type DiffEntry } from "./diff.ts";
-export { healV1Props, migratePageV1, type MigrationResult } from "./migrate.ts";
 export { freshBlockId, normalizeBlocks, writePage, type WriteFailure, type WriteInput, type WriteOk, type WriteResult } from "./write.ts";
 export { addSlotCheck, itemRole, moveSlotCheck, naturalIndex, type SlotCheck } from "./slots.ts";
 export { DEFAULT_START_SCREEN, emptyPage, screenBlocks, screenItems, type ScreenItem, type ScreenItems } from "./start.ts";

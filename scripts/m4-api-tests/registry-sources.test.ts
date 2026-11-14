@@ -15,7 +15,7 @@ import { installPropsGate, validateRegistryProps } from "../../packages/builder-
 
 const {
 	blockAssetUrl, blockThumbUrl, catalogSnapshot, catalogSourceFor, catalogSources, lucideIcons, propsDigest, propsEventsFor, propsSchemaFor,
-	organismFor, parseCatalogSnapshot, registryItemFor, screenThumbUrl, setPropsValidator, stockThumbUrl, stockVariantOf, variantProps
+	parseCatalogSnapshot, registryItemFor, screenThumbUrl, setPropsValidator, stockThumbUrl, stockVariantOf, variantProps
 } = core as Record<string, any>;
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
@@ -54,25 +54,19 @@ test("compact props.json rebuilds every published item schema exactly; every var
 	for (const item of Object.keys(catalogSources.blocks)) assert.ok(propsSchemaFor(item), `${item} has no props schema`);
 });
 
-test("every catalog variant renders props the published schema accepts (variant presets are partial; the merge is validated)", () => {
-	const rows = [1, 2, 3].map((i) => ({ id: `row-${i}`, kind: "feature", title: `Row ${i}`, summary: "Row text", copy: { icon: lucideIcons()[i]!, href: "#row" } }));
+test("every catalog variant has sample props the published schema accepts (variant presets are partial; the merge is validated)", () => {
 	let checked = 0;
-	for (const [asset, hit] of Object.entries(catalogSources.assets)) {
-		const catalogBlock = asset.slice(0, asset.indexOf("/"));
-		for (const children of [[], rows]) {
-			const block = { id: "block-1", kind: "hero", title: "Title", summary: "Lede", catalogBlock, variant: hit.variant, copy: { action: "Go", href: "#go", eyebrow: "Eyebrow", badge: "New", brand: "Brand" }, children };
-			const render = organismFor(block as never)!;
-			assert.ok(render, asset);
-			assert.deepEqual(validateRegistryProps(render), [], `${asset}: ${JSON.stringify(validateRegistryProps(render))}`);
-			checked += 1;
-		}
+	for (const [asset, hit] of Object.entries(catalogSources.assets) as Array<[string, { item: string; variant: string }]>) {
+		const props = core.sampleProps(hit.item, hit.variant, "block-1");
+		assert.deepEqual(validateRegistryProps({ item: hit.item, props }), [], `${asset}: ${JSON.stringify(validateRegistryProps({ item: hit.item, props }))}`);
+		checked += 1;
 	}
-	assert.ok(checked >= 1000, `${checked}`);
+	assert.ok(checked >= 500, `${checked}`);
 });
 
 test("schema gate fails: an enum axis, an unknown prop and a wrong type are reported with pointer and allowed values", () => {
-	const block = { id: "block-f", kind: "features", title: "Features", summary: "Lede", catalogBlock: "block.features", variant: "grid" };
-	const render = organismFor(block as never)!;
+	const hit = registryItemFor("block.features", "grid")!;
+	const render = { item: hit.item, props: core.sampleProps(hit.item, hit.variant, "block-f") as Record<string, unknown> };
 	assert.deepEqual(validateRegistryProps(render), []);
 	const axis = validateRegistryProps({ ...render, props: { ...render.props, layout: "mosaic" } });
 	assert.equal(axis[0]?.pointer, "/layout");
@@ -105,9 +99,10 @@ test("events and slots stay next to the schema: never data props, wired by the h
 	assert.deepEqual(propsEventsFor("pricing-card"), { events: ["select"], slots: ["footer"] });
 	const schema = propsSchemaFor("dish-card") as { properties: Record<string, unknown> };
 	assert.equal("onadd" in schema.properties, false);
-	const render = organismFor({ id: "block-dish", kind: "dish", title: "Soup", summary: "Hot", catalogBlock: "block.dish", variant: "vertical" } as never);
-	if (render) {
-		assert.deepEqual(render.events, ["add"]);
+	const hit = registryItemFor("block.dish", "vertical");
+	if (hit) {
+		const render = { item: hit.item, props: core.sampleProps(hit.item, hit.variant, "block-dish") as Record<string, unknown> };
+		assert.deepEqual(propsEventsFor(hit.item).events, ["add"]);
 		assert.equal("onadd" in render.props, false);
 		assert.deepEqual(validateRegistryProps(render), []);
 	}

@@ -10,9 +10,8 @@ import {
 	loadSessionsJson,
 	clearPagesBlob,
 	deleteProjectPage,
-	migrateStoredPageRecord,
+	normalizePageRecord,
 	readProjectPage,
-	repairSession,
 	saveSessionsJson,
 	writeProjectPage
 } from "../../apps/chat-web/src/lib/browser/persist.ts";
@@ -113,45 +112,30 @@ test("QA can delete a session's pages or clear the pages blob", () => {
 	assert.equal(loadPagesBlob().version, 1);
 });
 
-test("old saved pages migrate Stock provenance from CTA note, else none attached", () => {
-	const withNote = migrateStoredPageRecord({
-		applied: {
-			id: "page-a",
-			layout: { version: 1, blocks: [{ id: "block-cta", kind: "cta", title: "CTA", summary: "", copy: { note: "Stock screen screen.site/home" } }] }
-		},
-		candidate: null,
-		selectedBlockId: null,
-		revision: 1
-	});
-	assert.equal(withNote.appliedProvenance?.screenId, "screen.site/home");
-	const blank = migrateStoredPageRecord({
-		applied: { id: "page-b", layout: { version: 1, blocks: [{ id: "block-hero", kind: "hero", title: "Hero", summary: "" }] } },
-		candidate: null,
-		selectedBlockId: null,
-		revision: 1
-	});
+test("the sibling provenance of a stored record is complete; an unknown scenario id is dropped", () => {
+	const blank = normalizePageRecord({ applied: { id: "page-b", blocks: [] }, candidate: null, selectedBlockId: null, revision: 1 });
 	assert.equal(blank.appliedProvenance?.screenId, null);
-	assert.equal(blank.appliedProvenance?.screenId ?? "none attached", "none attached");
-	const junk = migrateStoredPageRecord(
-		JSON.parse(
-			JSON.stringify({
-				applied: { id: "page-c" },
-				candidate: null,
-				appliedProvenance: { screenId: "screen.site/home", scenarioId: "wordpress", missing: [] },
-				selectedBlockId: null,
-				revision: 1
-			})
-		)
+	const junk = normalizePageRecord(
+		JSON.parse(JSON.stringify({ applied: { id: "page-c" }, candidate: null, appliedProvenance: { screenId: "screen.site/home", scenarioId: "wordpress", missing: [] }, selectedBlockId: null, revision: 1 }))
 	);
 	assert.equal(junk.appliedProvenance?.scenarioId, null);
-	const landing = migrateStoredPageRecord({
-		applied: { id: "page-d" },
-		candidate: null,
-		appliedProvenance: { screenId: "screen.site/home", scenarioId: "landing", missing: [] },
-		selectedBlockId: null,
-		revision: 1
-	});
+	assert.equal(junk.appliedProvenance?.screenId, "screen.site/home");
+	const landing = normalizePageRecord({ applied: { id: "page-d" }, candidate: null, appliedProvenance: { screenId: "screen.site/home", scenarioId: "landing", missing: [] }, selectedBlockId: null, revision: 1 });
 	assert.equal(landing.appliedProvenance?.scenarioId, "landing");
+});
+
+test("a stored page-spec/v1 record is quarantined as page_v1_unsupported, the rest of the blob loads (ADR 0045)", () => {
+	const v2 = { applied: { version: 2, id: "page-ok", slug: "ok", status: "draft", title: "Ok", locale: "en", seo: { title: "Ok", description: "Ok" }, createdAt: "2026-11-14T00:00:00.000Z", updatedAt: "2026-11-14T00:00:00.000Z", blocks: [] }, candidate: null, selectedBlockId: null, revision: 1 };
+	const v1 = { applied: { id: "page-old", layout: { version: 1, blocks: [] } }, candidate: null, selectedBlockId: null, revision: 1 };
+	memory.setItem(PAGES_KEY, JSON.stringify({ version: 1, pages: { "session-ok": v2, "session-old": v1 } }));
+	const blob = loadPagesBlob();
+	assert.deepEqual(Object.keys(blob.pages), ["session-ok"]);
+	assert.equal(getPersistError()?.code, "corrupt");
+	const quarantined = JSON.parse(memory.getItem("buildy:v1:quarantine")!) as Array<{ reason: string; raw: string; path?: string }>;
+	assert.equal(quarantined.length, 1);
+	assert.equal(quarantined[0]!.reason, "page_v1_unsupported");
+	assert.equal(quarantined[0]!.path, "$.pages.session-old");
+	assert.deepEqual(JSON.parse(quarantined[0]!.raw), v1, "the whole record is kept, nothing dropped silently");
 });
 
 test("quota errors are truthful and leave the last good blob", () => {
@@ -199,13 +183,13 @@ test("a session from 'Start page from this screen' is schema-valid and survives 
 	assert.equal(memory.getItem("buildy:v1:quarantine"), null);
 });
 
-test("chats saved with the retired origin 'feed-screen' are repaired on load, not quarantined", () => {
-	memory.setItem(SESSIONS_KEY, JSON.stringify([screenChat("feed-screen")]));
-	const loaded = loadSessionsJson();
-	assert.deepEqual(loaded, [screenChat()], "the origin field is dropped, everything else kept");
-	assert.equal(getPersistError(), null);
-	assert.equal(memory.getItem("buildy:v1:quarantine"), null);
-	assert.deepEqual(JSON.parse(memory.getItem(SESSIONS_KEY)!), [screenChat()], "the repaired list is written back");
-	const ask = screenChat("ask-plan");
-	assert.equal(repairSession(ask), ask, "valid origins are left alone (identity)");
+test("chats saved with the retired origin 'feed-screen' are quarantined, not repaired (ADR 0045)", () => {
+	memory.setItem(SESSIONS_KEY, JSON.stringify([screenChat("feed-screen"), screenChat("ask-plan")].map((c, i) => ({ ...c, id: `session-${i}` }))));
+	const loaded = loadSessionsJson() as Array<{ id: string }>;
+	assert.deepEqual(loaded.map((c) => c.id), ["session-1"], "the valid chat loads");
+	assert.equal(getPersistError()?.code, "corrupt");
+	const quarantined = JSON.parse(memory.getItem("buildy:v1:quarantine")!) as Array<{ reason: string; raw: string }>;
+	assert.equal(quarantined.length, 1);
+	assert.match(quarantined[0]!.reason, /^session_invalid:/);
+	assert.equal((JSON.parse(quarantined[0]!.raw) as { id: string }).id, "session-0", "the refused chat is kept whole");
 });

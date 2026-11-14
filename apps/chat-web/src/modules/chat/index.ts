@@ -6,7 +6,6 @@
 import "./chat.css";
 import { isCollectionDoc } from "@buildytech/page-contract/collection";
 import { MessageSquare } from "$lib/shell-icons";
-import { noteMigration } from "$lib/browser/storage-v1.ts";
 import { t } from "$lib/i18n/dictionary";
 import type { BuilderModule } from "$lib/modules/types";
 import enMessages from "./i18n/en.json";
@@ -17,7 +16,7 @@ import { hydrateSessionContext } from "./browser/onboarding.svelte.ts";
 import { beforeHydrate, beforeProjectChange, getChatMode, projectOpened, run, setChatMode } from "./core/chat.svelte.ts";
 import { openCollectionFile, openCollectionParam } from "./core/intake";
 import { startPageFromScreen } from "./core/proposal-flow";
-import { CHAT_LEGACY_KEYS, chatOf, normalizeChatExt } from "./core/view";
+import { CHAT_LEGACY_KEYS, chatOf } from "./core/view";
 import BlockScopeAction from "./ui/BlockScopeAction.svelte";
 import ChatPanel from "./ui/ChatPanel.svelte";
 import ProposalReview from "./ui/ProposalReview.svelte";
@@ -27,8 +26,6 @@ export const chatModule: BuilderModule = {
 	messages: { en: enMessages.messages, ru: ruMessages.messages },
 	messageOverrides: { en: enMessages.overrides, ru: ruMessages.overrides },
 	legacyKeys: CHAT_LEGACY_KEYS,
-	// Old proposal shape (applied boolean only) -> status, on every load and import; each rewrite is counted for migrationReport.
-	normalizeProject: normalizeChatExt(noteMigration),
 	newProject: () => ({ title: t("thread.untitled"), ext: { chat: { messages: [], mode: run.pendingMode } } }),
 	tabs: [{ id: "chat", labelKey: "leftPanel.chat", icon: MessageSquare, panel: ChatPanel }],
 	leftSurface: { icon: MessageSquare, tabKey: "shell.tabChat", regionKey: "shell.chatColumn", hideKey: "workspace.hideChat", showKey: "workspace.showChat" },

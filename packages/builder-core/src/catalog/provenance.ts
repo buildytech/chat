@@ -1,11 +1,11 @@
-import type { PageBlock, PageBlockKind } from "@buildytech/page-contract";
+import type { PageBlockKind } from "@buildytech/page-contract";
 import { catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, screenSlots } from "./compatibility.ts";
 import { rendererKindForLabel } from "./renderer-kind.ts";
 import { getScreenById } from "./search.ts";
 import type { CatalogScreen } from "./types.ts";
 import { catalogSourceFor } from "./sources.ts";
-import type { OrganismRender } from "./organism.ts";
+import type { RegistryRender } from "./organism.ts";
 
 /**
  * Program-level catalog provenance (deterministic code, never the model).
@@ -90,7 +90,7 @@ export type PropsIssue = {
 };
 
 /** Validates the merged props of a registry block against its published schema (props-gate.ts installs it). */
-export type PropsValidator = (render: OrganismRender) => PropsIssue[];
+export type PropsValidator = (render: RegistryRender) => PropsIssue[];
 
 let PROPS_VALIDATOR: PropsValidator | null = null;
 
@@ -108,7 +108,7 @@ export function propsValidatorInstalled(): boolean {
 
 /** Issues of the props of one registry item; null while no validator is installed (the gate is fail-closed). */
 export function validateItemProps(item: string, props: Record<string, unknown>): PropsIssue[] | null {
-	return PROPS_VALIDATOR ? PROPS_VALIDATOR({ item, props } as OrganismRender) : null;
+	return PROPS_VALIDATOR ? PROPS_VALIDATOR({ item, props } as RegistryRender) : null;
 }
 
 /** Sibling Stock screens sharing the spec (theme family), selected screen first. */
@@ -117,25 +117,6 @@ export function screenFamily(screen: CatalogScreen): CatalogScreen[] {
 		.filter((row) => row.spec === screen.spec && row.screenId !== screen.screenId)
 		.sort((a, b) => a.order - b.order);
 	return [screen, ...siblings];
-}
-
-/**
- * Catalog source of top-level blocks (page-spec 1.1.0): a block without catalogBlock gets the Stock catalog block of
- * its kind in the screen family; a block whose catalog block has a pinned registry organism gets the catalog default
- * variant when none is set. Explicit values (the model's, the author's) are kept; validateCatalogProvenance checks them.
- */
-export function attachCatalogSources(blocks: PageBlock[], screen: CatalogScreen | null): PageBlock[] {
-	return blocks.map((node) => {
-		let next = node;
-		if (!next.catalogBlock && screen) {
-			const found = kindSourceFor(screen, next.kind);
-			const entry = found ? getBlockIndex(found.label) : null;
-			if (entry?.available) next = { ...next, catalogBlock: entry.spec };
-		}
-		const source = catalogSourceFor(next.catalogBlock);
-		if (source && !next.variant) next = { ...next, variant: source.defaultVariant };
-		return next;
-	});
 }
 
 /** Stock label for a renderer kind in the screen, else in its spec family. */

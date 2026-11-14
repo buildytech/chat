@@ -39,7 +39,8 @@ import { Download, Upload } from "$lib/shell-icons";
 				.replace("{replaced}", String(result.replaced.length));
 		} else {
 			const first = result.issues[0];
-			note = t("settings.importFailed").replace("{code}", result.code).replace("{path}", first ? first.path : "$");
+			if (result.code === "page_v1_unsupported") note = t("settings.importOldPage").replace("{path}", first ? first.path : "$");
+			else note = t("settings.importFailed").replace("{code}", result.code).replace("{path}", first ? first.path : "$");
 		}
 		entries = browserQuarantine();
 	}

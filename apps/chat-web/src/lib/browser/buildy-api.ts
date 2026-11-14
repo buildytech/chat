@@ -12,8 +12,6 @@ import { openProject } from "../modules/workspace.svelte.ts";
 import type { ModuleImportResult } from "../modules/types.ts";
 import { exportProjects, importProjects, type ImportResult } from "../project/file.svelte.ts";
 import { theme } from "../theme/theme.svelte";
-import { migrationReport, type MigrationHits } from "./migration-counters.ts";
-import { browserStorage } from "./storage-v1.ts";
 import { creatorLayout } from "../creator-layout.svelte";
 import { previewSettings } from "./preview-settings.svelte";
 import type { SessionApp, SessionFile, SessionPins, SessionSettings } from "./session-file.ts";
@@ -27,8 +25,6 @@ export type BuildyApi = {
 	export(options?: { download?: boolean }): SessionFile;
 	/** A session file buildy:v1, or a file a loaded module opens (the chat: a Stock collection buildy-collection:v1 in a new Build chat). */
 	import(json: unknown): Promise<ImportResult | ModuleImportResult>;
-	/** Hits of the old-data paths in this browser since this build first ran (refactor plan item 4: a migration goes only when every browser shows zero). */
-	migrationReport(): MigrationHits;
 };
 
 function app(): SessionApp {
@@ -125,11 +121,7 @@ export function installBuildyApi(): void {
 		format: SESSION_FORMAT,
 		schema: SESSION_SCHEMA_URL,
 		export: exportSessionFile,
-		import: importFile,
-		migrationReport: () => {
-			const store = browserStorage();
-			return store ? migrationReport(store) : { since: null, lastAt: null, counters: { pageV1: 0, feedScreen: 0, legacyKeys: 0, proposalApplied: 0 }, total: 0 };
-		}
+		import: importFile
 	};
 	Object.defineProperty(window, "buildy", { value: Object.freeze(api), configurable: true, enumerable: false, writable: false });
 }

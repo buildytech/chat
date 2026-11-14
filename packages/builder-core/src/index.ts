@@ -48,7 +48,6 @@ export {
 	type CatalogSources
 } from "./catalog/sources.ts";
 export {
-	organismFor,
 	registryClosure,
 	registryItemFiles,
 	registrySkin,
@@ -62,7 +61,7 @@ export {
 	registryNpmDependencies,
 	variantPreset,
 	variantPresets,
-	type OrganismRender
+	type RegistryRender
 } from "./catalog/organism.ts";
 export {
 	coerceEnumValue,

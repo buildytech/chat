@@ -60,8 +60,6 @@ export default tseslint.config(
 			] }]
 		}
 	},
-	// The validator strips control characters from untrusted text on purpose.
-	{ files: ["packages/page-contract/src/validate.ts"], rules: { "no-control-regex": "off" } },
 	// Tests and scripts: size limits do not apply.
 	{ files: ["**/*.test.ts", "scripts/**"], rules: { "max-lines": "off", "max-lines-per-function": "off" } }
 );

@@ -6,18 +6,18 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { migratePageV1, registrySkins } from "../../packages/builder-core/src/index.ts";
+import { registrySkins } from "../../packages/builder-core/src/index.ts";
 import { configText, CUSTOM_SKIN_BASE_CSS, CUSTOM_SKIN_ID, importThemeConfig, parseCustomSkinSlot, renderCustomSkin, serializeCustomSkinSlot } from "../../apps/chat-web/src/lib/theme/custom-skin.ts";
 import { SKIN_IDS } from "../../apps/chat-web/src/lib/theme/magazine/ids.ts";
 import { CUSTOM_SKIN_CSS, packFilesFromPage, THEME_FILE } from "../../apps/chat-web/src/lib/page-store/pack.ts";
-import { parsePage } from "../../packages/page-contract/src/index.ts";
+import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 // @ts-expect-error plain ESM script without types
 import { build as buildNeutrals } from "../skin-neutrals.mjs";
 
 const root = (path: string) => new URL(`../../${path}`, import.meta.url);
 const web = (path: string) => readFileSync(root(`apps/chat-web/src/${path}`), "utf8");
 const STOCK = readFileSync(new URL("./fixtures/stock-theme-export.json", import.meta.url), "utf8");
-const fixturePage = migratePageV1(parsePage(JSON.parse(readFileSync(root("packages/page-contract/fixtures/north-harbor-kitchen.json"), "utf8")))).page;
+const fixturePage = JSON.parse(readFileSync(root("scripts/m4-api-tests/fixtures/north-harbor-v2.json"), "utf8")) as PageV2;
 
 test("import: a real Stock export passes and exports back byte for byte", () => {
 	const r = importThemeConfig(STOCK);

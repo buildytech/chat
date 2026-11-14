@@ -1,6 +1,6 @@
 # Plan: refactor 2026-11 (one block source, project/chat split, chat as a module, quality gate)
 
-Status: accepted by the owner (2026-11-14); audit done; item 3 done ([b545857](https://github.com/buildytech/chat/commit/b545857), ADR 0038); item 1 done ([f69bb81](https://github.com/buildytech/chat/commit/f69bb81), [ec9e4a9](https://github.com/buildytech/chat/commit/ec9e4a9), ADR 0039); item 2 done ([95383f4](https://github.com/buildytech/chat/commit/95383f4), [4e4063c](https://github.com/buildytech/chat/commit/4e4063c), contract [fda5f32](https://github.com/ui8kit/contract/commit/fda5f32), ADR 0040); item 6 gate part done ([6799043](https://github.com/buildytech/chat/commit/6799043), [b3ea302](https://github.com/buildytech/chat/commit/b3ea302), [02c8080](https://github.com/buildytech/chat/commit/02c8080), [f9b562d](https://github.com/buildytech/chat/commit/f9b562d), [d23ccff](https://github.com/buildytech/chat/commit/d23ccff), ADR 0042); item 5 done ([9d48e73](https://github.com/buildytech/chat/commit/9d48e73), [af2bf2d](https://github.com/buildytech/chat/commit/af2bf2d), [6fba14b](https://github.com/buildytech/chat/commit/6fba14b), [b86e623](https://github.com/buildytech/chat/commit/b86e623), ADR 0041); next: item 4 once the owner gives the `migrationReport` numbers, then item 7 (product tails).
+Status: accepted by the owner (2026-11-14); audit done; item 3 done ([b545857](https://github.com/buildytech/chat/commit/b545857), ADR 0038); item 1 done ([f69bb81](https://github.com/buildytech/chat/commit/f69bb81), [ec9e4a9](https://github.com/buildytech/chat/commit/ec9e4a9), ADR 0039); item 2 done ([95383f4](https://github.com/buildytech/chat/commit/95383f4), [4e4063c](https://github.com/buildytech/chat/commit/4e4063c), contract [fda5f32](https://github.com/ui8kit/contract/commit/fda5f32), ADR 0040); item 6 gate part done ([6799043](https://github.com/buildytech/chat/commit/6799043), [b3ea302](https://github.com/buildytech/chat/commit/b3ea302), [02c8080](https://github.com/buildytech/chat/commit/02c8080), [f9b562d](https://github.com/buildytech/chat/commit/f9b562d), [d23ccff](https://github.com/buildytech/chat/commit/d23ccff), ADR 0042); item 5 done ([9d48e73](https://github.com/buildytech/chat/commit/9d48e73), [af2bf2d](https://github.com/buildytech/chat/commit/af2bf2d), [6fba14b](https://github.com/buildytech/chat/commit/6fba14b), [b86e623](https://github.com/buildytech/chat/commit/b86e623), ADR 0041); item 4 done (ADR 0045); next: item 7 (product tails).
 
 Authority: owner decision of 2026-11-14 ("all proposals accepted"). Follow `AGENTS.md`, the ADRs in `.project/adr/` (0034 page-spec v2, 0035 render probe, 0036 map editor, 0037 free composition) and the gate below. Every item that changes a rule or a contract gets its own ADR.
 
@@ -72,16 +72,16 @@ Status: done ([b545857](https://github.com/buildytech/chat/commit/b545857)). Kno
 
 Goal: delete the page-spec v1 and `feed-screen` migrations (and the other old-data paths) once staging has no old sessions (audit B-06).
 
-How to know (browser data is local, so the server cannot see it): the migration marker `buildy:v1:migration` gets hit counters per path (`pageV1`, `feedScreen`, `legacyKeys`, `proposalApplied`, `lastAt`), and `window.buildy.migrationReport()` prints them. The owner and the team open staging once and report the counters. Removal starts when every reported browser shows zero hits since the counters shipped and the owner confirms.
+Removal criterion (recorded 2026-11-14): the owner is the only user with data from before page-spec/v2, his `window.buildy.migrationReport()` was all zeros (`pageV1`, `feedScreen`, `legacyKeys`, `proposalApplied`), and he confirmed the removal (t190u). The counters are removed with the code.
 
 Acceptance:
-- [ ] Counters and `migrationReport()` shipped first, as its own commit, with a test.
-- [ ] Removal criterion recorded in this file with the date and the reported browsers.
-- [ ] Removed: `migratePageV1` and `page-doc/migrate.ts`, `catalog/props-overrides.ts`, the v1 model in `page-contract` (`types.ts`, `validate.ts`, `spec.ts`) where nothing else uses it, `LEGACY_STORAGE_KEYS` and `migrateLegacyStorage`, the `feed-screen` strip, `migrateProposal`, `migrateSessionFile`.
-- [ ] An old file or blob that still arrives is rejected with a clear message and goes to quarantine (nothing is dropped silently).
-- [ ] Tests for the migrations are deleted with the code; coverage and gate stay green.
+- [x] Counters and `migrationReport()` shipped first, as their own commit, with a test ([a84dff1](https://github.com/buildytech/chat/commit/a84dff1)); removed again with the paths they counted.
+- [x] Removal criterion recorded in this file with the date and the reported browser.
+- [x] Removed: `migratePageV1` and `page-doc/migrate.ts`, `catalog/props-overrides.ts` and the v1 mapper `organismFor`, `LEGACY_STORAGE_KEYS` and `migrateLegacyStorage`, `layoutFromLegacy`, the `feed-screen` strip, `migrateProposal`, `migrateSessionFile`, the v1 model of `page-contract` (`validate.ts`, `spec.ts`, the v1 types; the renderer kind list stays). Kept on purpose: `proposalStatus` for a proposal with only `applied`, and the chat's `legacyKeys` read (ADR 0044), both because the published contract still allows them.
+- [x] An old file or blob that still arrives is refused with a clear message and goes to quarantine (nothing is dropped silently): v1 page records and refused chats at load, v1 pages in an import file (message in Settings, a copy in quarantine), old storage keys.
+- [x] Tests for the migrations are deleted with the code; the v1 fixtures of other tests are page-spec/v2 fixtures; coverage 526/532 and the gate stay green.
 
-Status: todo (last, after the criterion is met).
+Status: done (ADR 0045; commit links in the report of 2026-11-14).
 
 ## 5. Chat as an optional module
 

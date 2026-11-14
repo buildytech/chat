@@ -1,5 +1,5 @@
 /**
- * Session standard (ADR 0015): the buildy:v1 key space and its one-time migration, schema validation at load with
+ * Session standard (ADR 0015): the buildy:v1 key space and the old keys it sets aside (ADR 0045), schema validation at load with
  * quarantine, the portable session file buildy:v1 (export / import checks, Lab shape), and page revisions (one per
  * committed edit, coalesced typing = one revision = one undo step, session.pageRevision in sync, unchanged = no-op).
  */
@@ -9,10 +9,9 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-	LEGACY_STORAGE_KEYS,
 	STORAGE_KEYS,
-	migrateLegacyStorage,
 	quarantine,
+	quarantineOldKeys,
 	readQuarantine
 } from "../../apps/chat-web/src/lib/browser/storage-v1.ts";
 import {
@@ -30,8 +29,6 @@ import {
 	recordRevision,
 	splitSessionFile
 } from "../../apps/chat-web/src/lib/browser/session-file.ts";
-import { migrationReport, noteMigrationHit, startMigrationCounters } from "../../apps/chat-web/src/lib/browser/migration-counters.ts";
-import { legacyProposalCount } from "../../apps/chat-web/src/modules/chat/core/proposals.ts";
 import { commitChange, nextRevision } from "../../apps/chat-web/src/lib/page-store/revision.ts";
 import { EditHistory } from "../../apps/chat-web/src/lib/inspector/history.ts";
 import { addScreen, applyOp, emptyPage } from "../../packages/builder-core/src/index.ts";
@@ -104,45 +101,27 @@ const app = { name: "buildy-chat", version: "0.0.0", host: "browser" as const };
 
 // ---- buildy:v1 key space and the one-time migration ---------------------------------------------------------------
 
-test("migration: every legacy key moves to buildy:v1 unchanged, the legacy key is removed, a marker is written", () => {
+const OLD_KEYS = ["buildytech-chat-sessions", "buildytech-creator-pages-v1", "buildy.creator.selectedSessionId", "buildy.creator.layout", "buildytech-chat-theme", "buildy:v1:layout"];
+
+test("old keys (ADR 0045): each value goes to quarantine as old_storage_key, then its key is removed; nothing is read from them", () => {
 	const values: Record<string, string> = {};
-	for (const legacy of Object.keys(LEGACY_STORAGE_KEYS)) {
-		values[legacy] = JSON.stringify({ from: legacy });
-		store.setItem(legacy, values[legacy]!);
+	for (const old of OLD_KEYS) {
+		values[old] = JSON.stringify({ from: old });
+		store.setItem(old, values[old]!);
 	}
-	const report = migrateLegacyStorage(store, () => NOW);
-	assert.deepEqual(report.moved.sort(), Object.keys(LEGACY_STORAGE_KEYS).sort());
-	for (const [legacy, next] of Object.entries(LEGACY_STORAGE_KEYS)) {
-		assert.equal(store.getItem(legacy), null, legacy);
-		assert.equal(store.getItem(next), values[legacy], next);
-		assert.ok(next.startsWith("buildy:v1:"));
-	}
-	assert.equal(JSON.parse(store.getItem(STORAGE_KEYS.migration)!).version, 1);
+	store.setItem("buildy:v1:migration", JSON.stringify({ counters: { pageV1: 0 } }));
+	assert.deepEqual(quarantineOldKeys(store), OLD_KEYS);
+	for (const old of OLD_KEYS) assert.equal(store.getItem(old), null, old);
+	assert.equal(store.getItem("buildy:v1:migration"), null, "the retired counter marker is dropped");
+	assert.deepEqual(readQuarantine(store).map((q) => [q.key, q.reason, q.raw]), OLD_KEYS.map((old) => [old, "old_storage_key", values[old]]));
+	assert.deepEqual(quarantineOldKeys(store), [], "once: a second run finds nothing");
+	for (const key of [STORAGE_KEYS.sessions, STORAGE_KEYS.pages, STORAGE_KEYS.theme]) assert.equal(store.getItem(key), null, `${key} is not filled from an old key`);
 });
 
-test("migration is idempotent: a second run writes nothing", () => {
-	store.setItem("buildytech-chat-sessions", "[]");
-	store.setItem("buildytech-chat-theme", "dark");
-	migrateLegacyStorage(store, () => NOW);
-	const after = store.snapshot();
-	const again = migrateLegacyStorage(store, () => "2030-01-01T00:00:00.000Z");
-	assert.deepEqual(again, { moved: [], same: [], conflicts: [], failed: [] });
-	assert.deepEqual(store.snapshot(), after);
-});
-
-test("migration never loses data: a conflicting legacy value goes to quarantine, a refused write keeps the legacy key", () => {
-	store.setItem(STORAGE_KEYS.theme, "light");
-	store.setItem("buildytech-chat-theme", "dark");
-	const conflict = migrateLegacyStorage(store, () => NOW);
-	assert.deepEqual(conflict.conflicts, ["buildytech-chat-theme"]);
-	assert.equal(store.getItem(STORAGE_KEYS.theme), "light", "the buildy:v1 value wins");
-	assert.deepEqual(readQuarantine(store).map((q) => [q.key, q.reason, q.raw]), [["buildytech-chat-theme", "legacy_conflict", "dark"]]);
-
-	store.map.clear();
+test("old keys never lose data: a refused quarantine write keeps the key for the next load", () => {
 	store.setItem("buildytech-chat-sessions", "[1]");
-	store.refuse.add(STORAGE_KEYS.sessions);
-	const refused = migrateLegacyStorage(store, () => NOW);
-	assert.deepEqual(refused.failed, ["buildytech-chat-sessions"]);
+	store.refuse.add(STORAGE_KEYS.quarantine);
+	assert.deepEqual(quarantineOldKeys(store), []);
 	assert.equal(store.getItem("buildytech-chat-sessions"), "[1]", "retried on the next load");
 });
 
@@ -160,7 +139,7 @@ test("app source reads and writes only buildy:v1 keys (legacy names live in stor
 	for (const file of files) {
 		if (file.endsWith("storage-v1.ts")) continue;
 		const text = readFileSync(file, "utf8");
-		for (const legacy of Object.keys(LEGACY_STORAGE_KEYS)) assert.ok(!text.includes(`"${legacy}"`), `${file} uses ${legacy}`);
+		for (const old of OLD_KEYS) assert.ok(!text.includes(`"${old}"`), `${file} uses ${old}`);
 		assert.doesNotMatch(text, /localStorage\.(get|set|remove)Item/, `${file} bypasses storage-v1`);
 	}
 });
@@ -446,39 +425,18 @@ test("session 1.9.0: every file without projectId (1.0.0 to 1.8.0) loads unchang
 	assert.equal(projectIdOf(file.sessions[0]!), "session-a");
 });
 
-// ---- migration counters (plan item 4, shipped first) ----------------------------------------------------------------
+// ---- the retired page-spec/v1 format is refused, never converted (ADR 0045) --------------------------------------------
 
-test("migration counters: each old-data path counts its hits in the marker; migrationReport reads them; the legacy marker fields stay", () => {
-	startMigrationCounters(store, () => NOW);
-	assert.deepEqual(migrationReport(store), { since: NOW, lastAt: null, counters: { pageV1: 0, feedScreen: 0, legacyKeys: 0, proposalApplied: 0 }, total: 0 });
-	noteMigrationHit(store, "pageV1", 2, () => "2026-11-14T10:00:00.000Z");
-	noteMigrationHit(store, "feedScreen", 1, () => "2026-11-14T11:00:00.000Z");
-	noteMigrationHit(store, "proposalApplied", 0);
-	const report = migrationReport(store);
-	assert.deepEqual(report.counters, { pageV1: 2, feedScreen: 1, legacyKeys: 0, proposalApplied: 0 });
-	assert.equal(report.total, 3);
-	assert.equal(report.since, NOW, "since is the first run of this build");
-	assert.equal(report.lastAt, "2026-11-14T11:00:00.000Z");
-	store.setItem("buildytech-chat-theme", "dark");
-	migrateLegacyStorage(store, () => NOW);
-	assert.equal(migrationReport(store).counters.pageV1, 2, "the legacy-key marker write keeps the counters");
-	assert.equal(JSON.parse(store.getItem(STORAGE_KEYS.migration)!).version, 1);
-	store.setItem(STORAGE_KEYS.migration, "not json");
-	assert.equal(migrationReport(store).total, 0, "a broken marker reads as zero and never throws");
-});
-
-test("migration counters: loading a v1 page record, a feed-screen proposal and an old proposal shape counts one hit each", () => {
-	const v1Page = { title: "Old", layout: { blocks: [] } };
-	store.setItem(STORAGE_KEYS.pages, JSON.stringify({ version: 1, pages: { "session-old": { applied: v1Page, candidate: null, selectedBlockId: null, revision: 1 } } }));
-	store.setItem(STORAGE_KEYS.sessions, JSON.stringify([chat("session-fs", { messages: [{ id: "m", role: "assistant", text: "x", createdAt: NOW, proposal: { applied: false, status: "pending", origin: "feed-screen", source: "s", liveModel: false, warnings: [], missing: [], title: "t" } }] })]));
-	loadSessionsJson();
-	loadPagesBlob();
-	const counters = migrationReport(store).counters;
-	assert.equal(counters.feedScreen, 1);
-	assert.equal(counters.pageV1, 1);
-	assert.equal(legacyProposalCount([{ id: "m", role: "assistant", text: "", createdAt: NOW, proposal: { applied: true, source: "s", liveModel: false, warnings: [], missing: [], title: "t" } }]), 1);
-	assert.equal(legacyProposalCount([{ id: "m", role: "assistant", text: "", createdAt: NOW, proposal: { applied: true, status: "applied", source: "s", liveModel: false, warnings: [], missing: [], title: "t" } }]), 0);
-	const parsed = parseSessionFile(JSON.stringify({ format: "buildy:v1", exportedAt: NOW, app, pins, sessions: [chat("session-o", { messages: [{ id: "m", role: "assistant", text: "x", createdAt: NOW, proposal: { applied: true, source: "s", liveModel: false, warnings: [], missing: [], title: "t" } }] })] }));
-	assert.ok(parsed.ok);
-	assert.deepEqual(parsed.legacy, { pageV1: 0, proposalApplied: 1 });
+test("a session file with a page-spec/v1 page is refused as page_v1_unsupported with the path; v2 files still parse", () => {
+	const v1Page = { id: "page-old", slug: "old", status: "draft", title: "Old", locale: "en", seo: { title: "Old", description: "Old" }, createdAt: NOW, updatedAt: NOW, layout: { version: 1, blocks: [] } };
+	const record = { applied: v1Page, candidate: null, selectedBlockId: null, revision: 1 };
+	const refused = parseSessionFile(JSON.stringify({ format: "buildy:v1", exportedAt: NOW, app, pins, sessions: [chat("session-o", { page: record, pageRevision: 1 })] }));
+	assert.equal(refused.ok, false);
+	if (!refused.ok) {
+		assert.equal(refused.code, "page_v1_unsupported");
+		assert.deepEqual(refused.issues, [{ path: "$.sessions[0].page.applied", keyword: "page_v1_unsupported" }]);
+	}
+	const page = landing();
+	const ok = parseSessionFile(JSON.stringify({ format: "buildy:v1", exportedAt: NOW, app, pins, sessions: [chat("session-n", { page: { applied: page, candidate: null, selectedBlockId: null, revision: 1 }, pageRevision: 1 })] }));
+	assert.ok(ok.ok);
 });

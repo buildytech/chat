@@ -1,0 +1,314 @@
+{
+  "version": 2,
+  "id": "page-draft",
+  "slug": "home",
+  "status": "draft",
+  "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+  "locale": "en",
+  "seo": {
+    "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430",
+    "description": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 draft. Not published. Catalog blocks only."
+  },
+  "createdAt": "2026-11-13T11:04:44.429Z",
+  "updatedAt": "2026-11-13T16:00:50.752Z",
+  "blocks": [
+    {
+      "id": "block-nav",
+      "item": "nav-bar",
+      "variant": "inline",
+      "props": {
+        "search": {
+          "label": "",
+          "shortcut": ""
+        },
+        "layout": "inline",
+        "over": "none",
+        "actions": {
+          "mode": "cta"
+        },
+        "tone": "default",
+        "label": "Header",
+        "brand": "FitForge",
+        "links": [
+          {
+            "icon": "circle-dot",
+            "id": "block-nav-item-1",
+            "name": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438"
+          },
+          {
+            "icon": "circle-dot",
+            "id": "block-nav-item-2",
+            "name": "\u041a\u0430\u043a \u044d\u0442\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442"
+          },
+          {
+            "icon": "circle-dot",
+            "id": "block-nav-item-3",
+            "name": "\u0426\u0435\u043d\u044b"
+          },
+          {
+            "icon": "circle-dot",
+            "id": "block-nav-item-4",
+            "name": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "block-hero",
+      "item": "hero-split",
+      "variant": "quoteStats",
+      "props": {
+        "content": {
+          "stats": [],
+          "features": [],
+          "people": [],
+          "plans": [],
+          "proof": "",
+          "card": {
+            "title": "",
+            "text": "",
+            "icon": "circle-dot"
+          }
+        },
+        "extra": "quote",
+        "media": "card",
+        "mediaSide": "end",
+        "tone": "default",
+        "id": "block-hero",
+        "title": "\u0421\u0442\u0430\u043d\u044c \u0441\u0438\u043b\u044c\u043d\u0435\u0435 \u0441 FitForge",
+        "lead": "\u0422\u0440\u0435\u043a\u0438\u043d\u0433 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a, \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u043f\u043b\u0430\u043d\u044b \u0438 \u043c\u043e\u0442\u0438\u0432\u0430\u0446\u0438\u043e\u043d\u043d\u043e\u0435 \u0441\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e. \u041d\u0430\u0447\u043d\u0438 \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e \u0441\u0435\u0433\u043e\u0434\u043d\u044f.",
+        "actions": {
+          "cta": "\u041d\u0430\u0447\u0430\u0442\u044c \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e",
+          "href": "#"
+        }
+      }
+    },
+    {
+      "id": "block-features",
+      "item": "feature-grid",
+      "variant": "grid",
+      "props": {
+        "layout": "grid",
+        "cols": "1-3",
+        "item": "card",
+        "mediaSide": "end",
+        "tone": "default",
+        "density": "default",
+        "id": "block-features",
+        "title": "Why this page",
+        "features": [
+          {
+            "id": "block-features-item-1",
+            "title": "\u041f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0435 \u043f\u043b\u0430\u043d\u044b",
+            "text": "\u0418\u0418-\u043f\u043e\u0434\u043e\u0431\u0440\u0430\u043d\u043d\u044b\u0435 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043a\u0438 \u043f\u043e\u0434 \u0442\u0432\u043e\u0438 \u0446\u0435\u043b\u0438",
+            "icon": "target"
+          },
+          {
+            "id": "block-features-item-2",
+            "title": "\u0422\u0440\u0435\u043a\u0438\u043d\u0433 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441\u0430",
+            "text": "\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439 \u0432\u0435\u0441, reps \u0438 \u0444\u043e\u0442\u043e",
+            "icon": "chart-bar"
+          },
+          {
+            "id": "block-features-item-3",
+            "title": "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e",
+            "text": "\u041c\u043e\u0442\u0438\u0432\u0438\u0440\u0443\u0439 \u0438 \u0441\u043e\u0440\u0435\u0432\u043d\u0443\u0439\u0441\u044f \u0441 \u0434\u0440\u0443\u0437\u044c\u044f\u043c\u0438",
+            "icon": "users"
+          }
+        ],
+        "action": {
+          "label": "\u0423\u0437\u043d\u0430\u0442\u044c \u0431\u043e\u043b\u044c\u0448\u0435",
+          "href": "#"
+        }
+      }
+    },
+    {
+      "id": "block-features-2",
+      "item": "stats-band",
+      "variant": "plain4",
+      "props": {
+        "cols": "4",
+        "layout": "row",
+        "surface": "none",
+        "item": "plain",
+        "align": "center",
+        "tone": "default",
+        "density": "default",
+        "id": "block-features-2",
+        "title": "Why this page",
+        "stats": [
+          {
+            "value": "State the product in the author's words, not invented claims.",
+            "icon": "circle-dot",
+            "id": "block-feature-offer-2",
+            "label": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 offer",
+            "hint": ""
+          },
+          {
+            "value": "Testimonials and logos wait for verified facts.",
+            "icon": "circle-dot",
+            "id": "block-feature-proof-2",
+            "label": "Evidence",
+            "hint": ""
+          },
+          {
+            "value": "A single next step. No checkout in this draft.",
+            "icon": "circle-dot",
+            "id": "block-feature-action-2",
+            "label": "One action",
+            "hint": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "block-features-3",
+      "item": "steps-list",
+      "variant": "row",
+      "props": {
+        "layout": "row",
+        "marker": "number",
+        "align": "start",
+        "tone": "default",
+        "density": "default",
+        "id": "block-features-3",
+        "title": "Why this page",
+        "steps": [
+          {
+            "icon": "circle-dot",
+            "id": "block-feature-offer-3",
+            "title": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 offer",
+            "text": "State the product in the author's words, not invented claims."
+          },
+          {
+            "icon": "circle-dot",
+            "id": "block-feature-proof-3",
+            "title": "Evidence",
+            "text": "Testimonials and logos wait for verified facts."
+          },
+          {
+            "icon": "circle-dot",
+            "id": "block-feature-action-3",
+            "title": "One action",
+            "text": "A single next step. No checkout in this draft."
+          }
+        ]
+      }
+    },
+    {
+      "id": "block-features-4",
+      "item": "pricing-tiers",
+      "variant": "grid",
+      "props": {
+        "labels": {
+          "popular": "",
+          "perMonth": "",
+          "seats": "",
+          "storage": "",
+          "cta": "",
+          "free": "",
+          "perYear": "",
+          "empty": ""
+        },
+        "billingLabels": {
+          "label": "",
+          "monthly": "",
+          "annual": "",
+          "save": ""
+        },
+        "layout": "grid",
+        "cols": "1-3",
+        "emphasis": "auto",
+        "billing": "off",
+        "tone": "default",
+        "density": "default",
+        "id": "block-features-4",
+        "title": "Why this page",
+        "plans": [
+          {
+            "price": 0,
+            "currency": "USD",
+            "seats": 0,
+            "storage": 0,
+            "highlighted": false,
+            "features": [],
+            "yearly": 0,
+            "id": "block-feature-offer-4",
+            "name": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 offer",
+            "tagline": "State the product in the author's words, not invented claims."
+          },
+          {
+            "price": 0,
+            "currency": "USD",
+            "seats": 0,
+            "storage": 0,
+            "highlighted": false,
+            "features": [],
+            "yearly": 0,
+            "id": "block-feature-proof-4",
+            "name": "Evidence",
+            "tagline": "Testimonials and logos wait for verified facts."
+          },
+          {
+            "price": 0,
+            "currency": "USD",
+            "seats": 0,
+            "storage": 0,
+            "highlighted": false,
+            "features": [],
+            "yearly": 0,
+            "id": "block-feature-action-4",
+            "name": "One action",
+            "tagline": "A single next step. No checkout in this draft."
+          }
+        ]
+      }
+    },
+    {
+      "id": "block-cta",
+      "item": "cta-proof",
+      "variant": "splitStats",
+      "props": {
+        "content": {
+          "logos": [],
+          "features": [],
+          "stats": [],
+          "zones": []
+        },
+        "layout": "split",
+        "proof": "stats",
+        "mediaSide": "end",
+        "tone": "default",
+        "id": "block-cta",
+        "title": "Next step",
+        "lead": "\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 next step. Not published. Ask the author for the real call to action.",
+        "note": "Stock screen screen.theme-marketing-landing/teams",
+        "actions": {
+          "cta": "Contact",
+          "href": "#"
+        }
+      }
+    },
+    {
+      "id": "block-footer",
+      "item": "sitemap-footer",
+      "variant": "columns",
+      "props": {
+        "brand": "",
+        "groups": [],
+        "layout": "columns",
+        "signup": {
+          "mode": "none"
+        },
+        "status": {
+          "mode": "none"
+        },
+        "density": "default",
+        "id": "block-footer",
+        "label": "Footer",
+        "tagline": "",
+        "copyright": "Draft in this browser. Not a live site."
+      }
+    }
+  ]
+}

@@ -77,9 +77,9 @@ export async function headlessSmoke({ dir, chat }) {
 		let d = await docs();
 		const s1 = d.sessions[0] || {};
 		ok("a project is stored with its page", d.sessions.length === 1 && s1.pageRevision >= 1, Object.keys(s1));
-		if (chat) ok("the stored project keeps its chat", Array.isArray(s1.messages), Object.keys(s1));
+		if (chat) ok("the stored project keeps its chat", Array.isArray(s1.ext?.chat?.messages) && !("messages" in s1), Object.keys(s1));
 		else {
-			ok("the stored project has no chat keys", !CHAT_KEYS.some((k) => k in s1), Object.keys(s1));
+			ok("the stored project has no chat keys", !CHAT_KEYS.some((k) => k in s1) && !s1.ext?.chat, Object.keys(s1));
 			ok("no chat storage key", !d.keys.some((k) => /selectedModelId/.test(k)), d.keys);
 		}
 		// 2. edit in the Inspector

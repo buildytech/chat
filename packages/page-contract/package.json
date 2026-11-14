@@ -9,10 +9,6 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./session": "./src/session.ts",
-		"./collection": "./src/collection.ts",
-		"./fixtures/north-harbor-kitchen.json": "./fixtures/north-harbor-kitchen.json"
-	},
-	"scripts": {
-		"test": "node --experimental-strip-types --test src/validate.test.ts src/spec.test.ts"
+		"./collection": "./src/collection.ts"
 	}
 }

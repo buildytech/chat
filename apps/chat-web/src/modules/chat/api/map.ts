@@ -1,6 +1,5 @@
-import { parsePage, type Page } from "@buildytech/page-contract";
 import type { ChatMessage, ChatSession, SessionSummary } from "../core/types.ts";
-import type { ServerMessage, ServerSession, TurnResponse } from "./gateway.ts";
+import type { ServerMessage, ServerSession } from "./gateway.ts";
 
 export type SavedArtifact = {
 	kind: "saved_page";
@@ -75,18 +74,4 @@ export function mapSession(s: ServerSession, messages: ServerMessage[]): ChatSes
 		pageRevision: s.pageRevision,
 		messages: mapMessages(messages)
 	};
-}
-
-export function parseServerPage(raw: unknown): Page | null {
-	if (raw == null) return null;
-	try {
-		return parsePage(raw);
-	} catch {
-		return null;
-	}
-}
-
-export function pageFromTurn(turn: TurnResponse): Page | null {
-	if (!turn.page?.page) return null;
-	return parseServerPage(turn.page.page);
 }

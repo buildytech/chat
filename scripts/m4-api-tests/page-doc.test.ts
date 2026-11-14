@@ -1,6 +1,5 @@
 /**
- * page-spec/v2 in the chat (ADR 0034): the 1.x -> 2.0 migration on the owner's fitness session (lossless: every block
- * renders the same props as before), the one gate, RFC 6902 patches, the diff, sample props for new blocks.
+ * page-spec/v2 in the chat (ADR 0034): the one gate, RFC 6902 patches, the diff, sample props for new blocks.
  */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -11,42 +10,15 @@ import {
 	applyJsonPatch,
 	checkPageDoc,
 	diffPages,
-	healV1Props,
-	migratePageV1,
-	organismFor,
 	renderBlock,
 	sampleProps,
 	writePage
 } from "../../packages/builder-core/src/index.ts";
 
-const session = JSON.parse(readFileSync(fileURLToPath(new URL("./fixtures/fitness-session-3933dbf.json", import.meta.url)), "utf8"));
-const record = session.sessions[0].page;
+const applied = JSON.parse(readFileSync(fileURLToPath(new URL("./fixtures/fitness-applied-v2.json", import.meta.url)), "utf8")) as PageV2;
 
-function migrated(slot: "applied" | "candidate" | "lastProposed"): PageV2 {
-	const r = migratePageV1(record[slot]);
-	assert.deepEqual(r.skipped, []);
-	return r.page;
-}
-
-test("the fitness session migrates 1.x -> 2.0 losslessly: same item, variant and props for every block", () => {
-	for (const slot of ["applied", "candidate", "lastProposed"] as const) {
-		const v1 = record[slot];
-		const v2 = migrated(slot);
-		assert.equal(v2.blocks.length, v1.layout.blocks.length);
-		assert.deepEqual(pageV2Issues(v2), [], slot);
-		assert.ok(checkPageDoc(v2).ok, slot);
-		v1.layout.blocks.forEach((block: never, index: number) => {
-			const was = organismFor(block);
-			const now = renderBlock(v2.blocks[index]!);
-			assert.ok(was && now);
-			assert.equal(now.item, was.item);
-			assert.equal(now.variant, was.variant);
-			assert.deepEqual(now.props, healV1Props(was.item, was.props), "same props; the fill-ins of v1 (\"Value\", \"By line\") and its service texts are cleared");
-		});
-		assert.equal(v2.title, v1.title);
-		assert.equal(parsePageV2(JSON.parse(JSON.stringify(v2))).blocks.length, v2.blocks.length);
-	}
-});
+/** The owner's fitness page at revision 3 (8 blocks) as a page-spec/v2 document. */
+const migrated = (_slot: "applied"): PageV2 => structuredClone(applied);
 
 test("the gate names every problem as { path, code, expected, got }", () => {
 	const page = migrated("applied");

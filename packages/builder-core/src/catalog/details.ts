@@ -1,4 +1,4 @@
-import { PAGE_BLOCK_KINDS, PAGE_COPY_KEYS, type PageBlockKind } from "@buildytech/page-contract";
+import { PAGE_BLOCK_KINDS, type PageBlockKind } from "@buildytech/page-contract";
 import { catalogProvenance, catalogSnapshot } from "./snapshot.ts";
 import { getBlockIndex, getBlockIndexByCatalogId } from "./compatibility.ts";
 import { rendererKindForLabel } from "./renderer-kind.ts";
@@ -15,7 +15,6 @@ export type BlockDetails = {
 	catalogIds: string[];
 	rendererKind: PageBlockKind | null;
 	rendererCompatible: boolean;
-	copyKeys: readonly string[];
 	provenance: ReturnType<typeof catalogProvenance>;
 	inspected: true;
 	/** The variant asked for (by name or catalog asset id), validated and kept. */
@@ -77,7 +76,6 @@ export function getBlockDetails(input: {
 			catalogIds: [],
 			rendererKind: id as PageBlockKind,
 			rendererCompatible: true,
-			copyKeys: PAGE_COPY_KEYS,
 			provenance: catalogProvenance(),
 			inspected: true
 		};
@@ -105,7 +103,6 @@ export function getBlockDetails(input: {
 		catalogIds: entry.catalogIds,
 		rendererKind: kind,
 		rendererCompatible: Boolean(kind),
-		copyKeys: kind ? PAGE_COPY_KEYS : [],
 		provenance: catalogProvenance(),
 		inspected: true,
 		...(requested ? { variant: requested } : {}),

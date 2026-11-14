@@ -11,7 +11,18 @@ import pageSpecV2Schema from "../schema/page-spec-v2.schema.json" with { type: "
 import pagePatchV2Schema from "../schema/page-patch-v2.schema.json" with { type: "json" };
 import pageSpecSchema from "../schema/page-spec.schema.json" with { type: "json" };
 import { SchemaRegistry, type SchemaIssue } from "./json-schema.ts";
-import { PageContractError } from "./validate.ts";
+
+export class PageContractError extends Error {
+	readonly code: string;
+	readonly path: string;
+
+	constructor(code: string, path: string, message: string) {
+		super(`${code} at ${path}: ${message}`);
+		this.name = "PageContractError";
+		this.code = code;
+		this.path = path;
+	}
+}
 
 export const PAGE_SPEC_V2_SCHEMA_URL = "https://schema.buildy.tw/page-spec-v2.schema.json";
 export const PAGE_PATCH_V2_SCHEMA_URL = "https://schema.buildy.tw/page-patch-v2.schema.json";

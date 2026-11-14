@@ -134,6 +134,7 @@
 		"settings.import": "Импорт",
 		"settings.exported": "Экспортировано проектов: {count}",
 		"settings.imported": "Импорт: добавлено {added}, заменено {replaced}.",
+		"settings.importOldPage": "Не импортировано: в файле страница в снятом формате page-spec/v1 ({path}), эта версия его больше не открывает. Копия лежит в карантине; файл и ваши проекты не изменены.",
 		"settings.importFailed": "Не импортировано ({code} в {path}). Ничего не изменено.",
 		"settings.quarantine": "Карантин ({count})",
 		"settings.quarantineEmpty": "В карантине пусто.",

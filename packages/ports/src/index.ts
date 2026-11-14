@@ -2,9 +2,12 @@
  * CMS-agnostic ports. Host adapters implement these.
  * apps/chat-web talks to ports over HTTP or the local mock, never to CMS internals.
  */
-import type { Page, PageSummary } from "@buildytech/page-contract";
+import type { PageV2 as Page } from "@buildytech/page-contract";
 
-export type { Page, PageSummary } from "@buildytech/page-contract";
+export type { PageV2 as Page } from "@buildytech/page-contract";
+
+/** A row of the page list. */
+export type PageSummary = Pick<Page, "id" | "slug" | "title" | "locale" | "status" | "updatedAt">;
 
 /** List pages in the shared Page Store. */
 export interface CatalogPort {

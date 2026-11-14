@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { addScreen, allItems, checkPageDoc, effectiveProps, emptyPage, itemInfo, migratePageV1, sampleProps, writePage } from "../../packages/builder-core/src/index.ts";
+import { addScreen, allItems, checkPageDoc, effectiveProps, emptyPage, itemInfo, sampleProps, writePage } from "../../packages/builder-core/src/index.ts";
 import { type AgentReply, type PageProposal } from "../../packages/chat-agent/src/index.ts";
 import { validateItemProps } from "../../packages/builder-core/src/catalog/provenance.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
@@ -36,9 +36,7 @@ function teamsPage(): PageV2 {
 
 /** The owner's page at revision 3 (8 blocks), migrated 1.x -> 2.0. */
 function fitnessPage(): PageV2 {
-	const { page, skipped } = migratePageV1(session.sessions[0].page.applied);
-	assert.deepEqual(skipped, []);
-	return page;
+	return JSON.parse(readFileSync(here("fitness-applied-v2.json"), "utf8")) as PageV2;
 }
 
 const PLACEHOLDERS = /Why this page|Stock screen|not invented|Not published|Draft in this browser|Not a live site|Catalog blocks only|State the product in the author|Testimonials and logos wait|\u041d\u043e\u0432\u0430\u044f \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430|"(?:Cta|Proof|Title|Text|Label|Value|Hint|Brand)"/;

@@ -15,7 +15,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
-import { addScreen, catalogSnapshot, emptyPage, migratePageV1, registrySkins, screenSupport } from "../../packages/builder-core/src/index.ts";
+import { addScreen, catalogSnapshot, emptyPage, registrySkins, screenSupport } from "../../packages/builder-core/src/index.ts";
 import { CLI_CONFIG, CLI_LOCK, packZipFiles } from "../../apps/chat-web/src/lib/page-store/pack.ts";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
@@ -27,7 +27,7 @@ const LIVE = process.env.UI8KIT_LIVE === "1";
 
 const read = async (paths: string[]) => Object.fromEntries(paths.map((file) => [file, readFileSync(path.join(SNAPSHOT, file), "utf8")]));
 const sha = (text: string) => createHash("sha256").update(text.replace(/\r\n/g, "\n")).digest("hex");
-const fitness = migratePageV1(JSON.parse(readFileSync(path.join(ROOT, "scripts/m4-api-tests/fixtures/fitness-session-3933dbf.json"), "utf8")).sessions[0].page.applied).page;
+const fitness = JSON.parse(readFileSync(path.join(ROOT, "scripts/m4-api-tests/fixtures/fitness-applied-v2.json"), "utf8")) as PageV2;
 
 function screenPage(kind: "dashboard" | "landing"): PageV2 {
 	const screen = catalogSnapshot.screens.find((entry) => screenSupport(entry).supported && (kind === "dashboard" ? entry.labels.section.includes("dashboard") : entry.labels.site.includes(kind) && !entry.labels.section.includes("dashboard")));

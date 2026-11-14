@@ -11,7 +11,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import type { ErrorObject, ValidateFunction } from "ajv";
 import { propsSchemaFor, refShapeDefs } from "./props-schema.ts";
 import { setPropsValidator, type PropsIssue } from "./provenance.ts";
-import type { OrganismRender } from "./organism.ts";
+import type { RegistryRender } from "./organism.ts";
 
 const ajv = new Ajv2020({ strict: true, allErrors: true });
 const compiled = new Map<string, ValidateFunction>();
@@ -69,7 +69,7 @@ export function propsIssues(errors: readonly ErrorObject[], data: unknown): Prop
 }
 
 /** Issues of the merged props of one registry block; [] when they match the published schema. */
-export function validateRegistryProps(render: Pick<OrganismRender, "item" | "props">): PropsIssue[] {
+export function validateRegistryProps(render: RegistryRender): PropsIssue[] {
 	const validate = validatorFor(render.item);
 	if (!validate) return [{ pointer: "", keyword: "schema", message: `registry item ${render.item} has no published props schema` }];
 	if (validate(render.props)) return [];

@@ -4,9 +4,8 @@
  */
 import { SESSIONS_KEY, deleteProjectPage, quarantineValue, readProjectPage, writeAllProjectPages, type StoredPageRecord } from "../browser/persist";
 import { buildSessionFile, parseSessionFile, splitSessionFile, type ParsedSessionFile, type SessionApp, type SessionFile, type SessionPins, type SessionPrefs, type SessionSettings, type StoredChat } from "../browser/session-file";
-import { noteMigration } from "../browser/storage-v1.ts";
 import { docOfProject, projectOfDoc, type SessionDoc } from "./doc.ts";
-import { getProjects, getSelectedProjectId, normalizeProject, replaceProjects, saveProjects } from "./store.svelte.ts";
+import { getProjects, getSelectedProjectId, replaceProjects, saveProjects } from "./store.svelte.ts";
 import type { Project } from "./types.ts";
 
 export type ImportResult =
@@ -30,8 +29,11 @@ export function exportProjects(meta: { app: SessionApp; pins: SessionPins; setti
  */
 export function importProjects(input: unknown, beforeWrite?: () => void): ImportResult {
 	const parsed = parseSessionFile(input);
-	if (!parsed.ok) return parsed;
-	noteMigration("pageV1", parsed.legacy.pageV1);
+	if (!parsed.ok) {
+		// A file in a format this build no longer reads is kept aside as well as refused (the file itself is untouched on disk).
+		if (parsed.code === "page_v1_unsupported") quarantineValue(SESSIONS_KEY, "page_v1_unsupported", typeof input === "string" ? input : JSON.stringify(input));
+		return parsed;
+	}
 	const { chats, pages } = splitSessionFile(parsed.file);
 	const incoming = new Set(chats.map((c) => c.id));
 	const replaced: string[] = [];
@@ -44,7 +46,7 @@ export function importProjects(input: unknown, beforeWrite?: () => void): Import
 		replaced.push(project.id);
 	}
 	beforeWrite?.();
-	const imported: Project[] = (chats as unknown as SessionDoc[]).map((doc) => normalizeProject(projectOfDoc(doc)));
+	const imported: Project[] = (chats as unknown as SessionDoc[]).map((doc) => projectOfDoc(doc));
 	const kept = getProjects().filter((p) => !incoming.has(p.id));
 	replaceProjects([...imported, ...kept]);
 	// A page record is keyed by the project id; a file without one for a project drops the local record.

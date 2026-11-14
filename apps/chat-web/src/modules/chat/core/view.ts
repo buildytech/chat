@@ -6,7 +6,6 @@
  */
 import type { AgentMode } from "@buildytech/chat-agent";
 import type { Project } from "../../../lib/project/types.ts";
-import { legacyProposalCount, migrateSessionProposals } from "./proposals.ts";
 import type { ChatMessage, ChatSession } from "./types.ts";
 
 /** The flat session keys of documents before session 1.10.0 that are the chat's; read into `ext.chat`, never written. */
@@ -35,16 +34,4 @@ export function projectOfView(view: ChatSession, prev: Project | null): Project 
 	const hasChat = Boolean(prev?.ext.chat) || messages.length > 0 || mode !== undefined || selectedModelId !== undefined || usage !== undefined;
 	const chat = { ...(mode ? { mode } : {}), ...(selectedModelId ? { selectedModelId } : {}), ...(usage ? { usage } : {}), messages };
 	return { ...fields, projectId: prev?.projectId ?? projectId ?? view.id, ext: hasChat ? { ...kept, chat } : kept } as Project;
-}
-
-
-/** The normalizer of `ext.chat` for the project store: old proposal shape -> status. `count` receives each rewrite count. */
-export function normalizeChatExt(count: (path: "proposalApplied", n: number) => void): (project: Project) => Project {
-	return (project) => {
-		const messages = chatOf(project)?.messages;
-		if (!messages) return project;
-		count("proposalApplied", legacyProposalCount(messages));
-		const migrated = migrateSessionProposals({ messages } as ChatSession);
-		return { ...project, ext: { ...project.ext, chat: { ...chatOf(project)!, messages: migrated.messages } } };
-	};
 }
