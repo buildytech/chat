@@ -4,7 +4,7 @@
 	import Group from "$registry/compose/Group.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { shortcutFor } from "$lib/layout/shortcuts";
-	import type { ChatSession, CreatorRuntimeStatus, SessionSummary } from "$lib/chat-core";
+	import type { ChatSession, CreatorRuntimeStatus, SessionSummary } from "$modules/chat/core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/chat-agent";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
 	import ChatColumn from "./ChatColumn.svelte";

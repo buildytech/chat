@@ -19,7 +19,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, Monitor, RefreshCw, Smartphone, Ta
 		discardProposal,
 		getSelectedSession,
 		proposalStatus,
-	} from "$lib/chat-core";
+	} from "$modules/chat/core";
 	import { getProjectSkin, setProjectSkin } from "$lib/project";
 	import { applySkin, forcedPreviewMode, skins } from "$lib/theme/skins";
 	import { customSkin } from "$lib/theme/custom-skin.svelte";

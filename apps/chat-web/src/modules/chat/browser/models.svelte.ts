@@ -1,5 +1,5 @@
 import { DEFAULT_CHAT_MODEL_ID, GROK_CHAT_MODELS, getChatModel, modelRunsToolLoop, type GrokChatModelId } from "@buildytech/chat-agent";
-import { STORAGE_KEYS, readKey, writeKey } from "./storage-v1.ts";
+import { STORAGE_KEYS, readKey, writeKey } from "../../../lib/browser/storage-v1.ts";
 
 const STORE_KEY = STORAGE_KEYS.selectedModelId;
 

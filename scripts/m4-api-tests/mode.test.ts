@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { isLiveSessionMode, isMockMode } from "../../apps/chat-web/src/lib/api/mode.ts";
+import { isLiveSessionMode, isMockMode } from "../../apps/chat-web/src/modules/chat/api/mode.ts";
 
 describe("transport mode", () => {
 	it("defaults to mock without live=1", () => {

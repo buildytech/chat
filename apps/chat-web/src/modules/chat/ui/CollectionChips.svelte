@@ -11,9 +11,9 @@ import { Layers, X } from "$lib/shell-icons";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import Link from "$registry/kit/ui/link/Link.svelte";
-	import { collectionItemDetail, collectionItemName, collectionNote, getChatCollection, removeCollectionItem } from "$lib/chat-core";
+	import { collectionItemDetail, collectionItemName, collectionNote, getChatCollection, removeCollectionItem } from "$modules/chat/core";
 	import { blockAssetUrl, blockThumbUrl, screenThumbUrl, stockAssetUrl } from "@buildytech/builder-core";
-	import StockThumb from "./StockThumb.svelte";
+	import StockThumb from "../../../app/StockThumb.svelte";
 	import type { CollectionItem } from "@buildytech/page-contract/collection";
 
 	// Stock picture and asset page of a chip: the screen, or the block's variant (its default when any variant is allowed)

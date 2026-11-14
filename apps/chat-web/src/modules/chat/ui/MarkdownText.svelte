@@ -4,7 +4,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import Title from "$registry/compose/Title.svelte";
-	import { parseMarkdown, type MdInline } from "$lib/chat-core/markdown";
+	import { parseMarkdown, type MdInline } from "$modules/chat/core/markdown";
 
 	// Model Markdown parsed into tokens and rendered with kit primitives: never HTML, links only http(s).
 	let { source }: { source: string } = $props();

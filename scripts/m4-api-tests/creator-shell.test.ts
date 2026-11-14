@@ -2,12 +2,19 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
-const source = (file: string) =>
-	readFileSync(new URL(`../../apps/chat-web/src/app/${file}.svelte`, import.meta.url), "utf8");
+const src = (path: string) => readFileSync(new URL(`../../apps/chat-web/src/${path}`, import.meta.url), "utf8");
+/** A shell component (src/app) or, when the chat module owns it, its UI (src/modules/chat/ui). */
+const source = (file: string) => {
+	try {
+		return src(`app/${file}.svelte`);
+	} catch {
+		return src(`modules/chat/ui/${file}.svelte`);
+	}
+};
 /** The chat modules and the project store (the former chat-core/session.svelte.ts, ADR 0040), one text. */
 const sessionCore = () =>
-	["chat-core/chat.svelte.ts", "chat-core/send.ts", "chat-core/proposal-flow.ts", "project/store.svelte.ts"]
-		.map((file) => readFileSync(new URL(`../../apps/chat-web/src/lib/${file}`, import.meta.url), "utf8"))
+	["modules/chat/core/chat.svelte.ts", "modules/chat/core/send.ts", "modules/chat/core/proposal-flow.ts", "lib/project/store.svelte.ts"]
+		.map((file) => src(file))
 		.join("\n");
 
 test("desktop panes never combine global hidden with responsive flex", () => {

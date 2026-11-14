@@ -7,7 +7,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import Title from "$registry/compose/Title.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import CodeEditor from "./editor/CodeEditor.svelte";
+	import CodeEditor from "../../../app/editor/CodeEditor.svelte";
 
 	let {
 		title,

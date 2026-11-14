@@ -24,7 +24,7 @@ import { Columns2, Rows3, ChevronLeft, ChevronRight } from "$lib/shell-icons";
 	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { canvas } from "$lib/inspector/canvas.svelte";
 	import { getCurrentPage } from "$lib/page-store";
-	import { createSession, getSelectedSession, startPageFromScreen } from "$lib/chat-core";
+	import { createSession, getSelectedSession, startPageFromScreen } from "$modules/chat/core";
 	import type { StockSearchItem } from "@buildytech/builder-core";
 	import FeedCard from "./FeedCard.svelte";
 	import { feedDrag } from "$lib/feed/drag.svelte";

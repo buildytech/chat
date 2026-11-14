@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { previewSettings } from "$lib/browser/preview-settings.svelte";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte.ts";
 	import { ExternalLink } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -12,7 +12,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { askBlockCards } from "@buildytech/chat-agent";
-	import StockThumb from "./StockThumb.svelte";
+	import StockThumb from "../../../app/StockThumb.svelte";
 
 	// Cards are rebuilt from the bundled catalog (askBlockCards), never taken from the wire.
 	let { blocks, onApplyVariant }: { blocks: string[]; onApplyVariant?: (spec: string, variant: string) => void } = $props();

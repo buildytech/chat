@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { mapMessages, parseServerPage } from "../../apps/chat-web/src/lib/api/map.ts";
-import type { ServerMessage } from "../../apps/chat-web/src/lib/api/gateway.ts";
+import { mapMessages, parseServerPage } from "../../apps/chat-web/src/modules/chat/api/map.ts";
+import type { ServerMessage } from "../../apps/chat-web/src/modules/chat/api/gateway.ts";
 
 describe("mapMessages", () => {
 	it("does not invent artifacts without save_page tool", () => {

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { previewSettings } from "$lib/browser/preview-settings.svelte";
- import { blockScope } from "$lib/chat-core/block-scope.svelte";
- import { getSelectedSession } from "$lib/chat-core";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte.ts";
+ import { blockScope } from "$modules/chat/core/block-scope.svelte.ts";
+ import { getSelectedSession } from "$modules/chat/core";
 	import { Send, X, Check, ChevronDown } from "$lib/shell-icons";
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
@@ -17,7 +17,7 @@
 	import CollectionChips from "./CollectionChips.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import { getChatMode, setChatMode, type CreatorRuntimeStatus } from "$lib/chat-core";
+	import { getChatMode, setChatMode, type CreatorRuntimeStatus } from "$modules/chat/core";
 	import { AGENT_MODES } from "@buildytech/chat-agent";
 	import { formatTokens, modelRunsToolLoop, modelUnavailableCode, type GrokChatModel, type SessionUsage } from "@buildytech/chat-agent";
 

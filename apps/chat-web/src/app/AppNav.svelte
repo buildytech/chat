@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { SessionSummary } from "$lib/chat-core";
+	import type { SessionSummary } from "$modules/chat/core";
 	import ChatSidebar from "./ChatSidebar.svelte";
 
 	let {

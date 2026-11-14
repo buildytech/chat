@@ -15,8 +15,8 @@
 		sendBrief,
 		setComposing,
 		setFocused
-	} from "$lib/browser/onboarding.svelte";
-	import type { CreatorRuntimeStatus } from "$lib/chat-core";
+	} from "$modules/chat/browser/onboarding.svelte.ts";
+	import type { CreatorRuntimeStatus } from "$modules/chat/core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/chat-agent";
 	import ChatComposer from "./ChatComposer.svelte";
 	import AddModelDialog from "./AddModelDialog.svelte";

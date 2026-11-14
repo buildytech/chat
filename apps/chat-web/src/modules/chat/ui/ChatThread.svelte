@@ -2,7 +2,7 @@
 	import Block from "$registry/compose/Block.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import type { ChatSession, CreatorRuntimeStatus } from "$lib/chat-core";
+	import type { ChatSession, CreatorRuntimeStatus } from "$modules/chat/core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/chat-agent";
 	import ChatComposer from "./ChatComposer.svelte";
 	import ChatMessage from "./ChatMessage.svelte";

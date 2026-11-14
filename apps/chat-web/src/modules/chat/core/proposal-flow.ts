@@ -5,12 +5,12 @@
  */
 import { addScreen, applyOp, diffPages, emptyPage, getScreenById, itemOfSpec, writePage, type DiffEntry } from "@buildytech/builder-core";
 import type { PageV2 } from "@buildytech/page-contract";
-import { t } from "../i18n/dictionary";
-import { hydrateSessionContext, getScreenId } from "../browser/onboarding.svelte";
-import { getEditBase, getPageRevision, setCandidatePage } from "../page-store";
-import { applyPending, discardPending, getSelectedProject, startEmptyProject } from "../project/store.svelte.ts";
-import { draftPageId } from "../project/transitions.ts";
-import { commitSession, createSession, getSelectedSession, setChatMode } from "./chat.svelte";
+import { t } from "../../../lib/i18n/dictionary";
+import { hydrateSessionContext, getScreenId } from "../browser/onboarding.svelte.ts";
+import { getEditBase, getPageRevision, setCandidatePage } from "../../../lib/page-store";
+import { applyPending, discardPending, getSelectedProject, startEmptyProject } from "../../../lib/project/store.svelte.ts";
+import { draftPageId } from "../../../lib/project/transitions.ts";
+import { commitSession, createSession, getSelectedSession, setChatMode } from "./chat.svelte.ts";
 import { loadPropsGate } from "./gates";
 import { isPendingProposal, markPendingProposals, withProposalStatus } from "./proposals";
 import { blankPage, diffKey, newProposalState, nowIso, provenanceFor, shownPageOf, uid } from "./turn";

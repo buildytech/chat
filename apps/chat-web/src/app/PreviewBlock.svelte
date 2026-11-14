@@ -7,8 +7,8 @@
 -->
 <script lang="ts">
 	import Button from "$registry/kit/ui/button/Button.svelte";
- import { blockScope } from "$lib/chat-core/block-scope.svelte";
- import { getSelectedSession, loadPropsGate } from "$lib/chat-core";
+ import { blockScope } from "$modules/chat/core/block-scope.svelte.ts";
+ import { getSelectedSession, loadPropsGate } from "$modules/chat/core";
  import type { Component } from "svelte";
 	import Alert from "$registry/compose/Alert.svelte";
 	import Block from "$registry/compose/Block.svelte";

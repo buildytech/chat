@@ -5,7 +5,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import type { SessionSummary } from "$lib/chat-core";
+	import type { SessionSummary } from "$modules/chat/core";
 	import AppNav from "./AppNav.svelte";
 
 	let {

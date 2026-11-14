@@ -16,7 +16,7 @@ import { sessionDefIssues } from "../../packages/page-contract/src/session.ts";
 import { checkCollection, collectionBounds, collectionDraft, collectionPromptContext, emptyPage, snapshotDigest, splitCollection, writePage } from "../../packages/builder-core/src/index.ts";
 import { mapChatRunRequest, type AgentReply } from "../../packages/chat-agent/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
-import { splitCollectionParam } from "../../apps/chat-web/src/lib/browser/collection-intake.ts";
+import { splitCollectionParam } from "../../apps/chat-web/src/modules/chat/browser/collection-intake.ts";
 import { MODEL, signal, withProvider } from "./agent-replay.ts";
 
 const fixture = (name: string) => JSON.parse(readFileSync(new URL(`../../packages/page-contract/fixtures/collection/${name}.json`, import.meta.url), "utf8")) as CollectionDoc;

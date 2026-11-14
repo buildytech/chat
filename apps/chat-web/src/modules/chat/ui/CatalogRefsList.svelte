@@ -11,7 +11,7 @@ import { Copy, Check, ExternalLink } from "$lib/shell-icons";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { blockAssetUrl, blockThumbUrl, screenThumbUrl, type CatalogFilters, type CatalogRefs } from "@buildytech/builder-core";
-	import StockThumb from "./StockThumb.svelte";
+	import StockThumb from "../../../app/StockThumb.svelte";
 
 	let { refs, demo = false }: { refs: CatalogRefs; demo?: boolean } = $props();
 

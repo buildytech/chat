@@ -11,7 +11,9 @@ const config = {
 		}),
 		alias: {
 			// The UI8Kit registry tree exactly as `npx ui8kit init` + `add` writes it (docs/adr/0001).
-			$registry: '../../registry/svelte/src'
+			$registry: '../../registry/svelte/src',
+			// Optional builder modules (src/modules/<name>); core code reaches them only through lib/modules (ADR 0041).
+			$modules: 'src/modules'
 		}
 	}
 };

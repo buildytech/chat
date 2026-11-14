@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$lib/shell-icons";
-	import { previewSettings } from "$lib/browser/preview-settings.svelte";
+	import { previewSettings } from "$lib/browser/preview-settings.svelte.ts";
  import Block from "$registry/compose/Block.svelte";
 	import Disclosure from "$registry/kit/ui/disclosure/Disclosure.svelte";
 	import Summary from "$registry/compose/Summary.svelte";
@@ -12,13 +12,13 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import type { ChatMessage as ChatMessageModel } from "$lib/chat-core";
+	import type { ChatMessage as ChatMessageModel } from "$modules/chat/core";
 	import { formatTokens } from "@buildytech/chat-agent";
 	import CatalogRefsList from "./CatalogRefsList.svelte";
 	import MarkdownText from "./MarkdownText.svelte";
 	import AskBlockCards from "./AskBlockCards.svelte";
 	import ProposalDiff from "./ProposalDiff.svelte";
-	import { applyVariantFromAsk } from "$lib/chat-core";
+	import { applyVariantFromAsk } from "$modules/chat/core";
 
 	let {
 		message,

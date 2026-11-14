@@ -31,7 +31,7 @@ import {
 	splitSessionFile
 } from "../../apps/chat-web/src/lib/browser/session-file.ts";
 import { migrationReport, noteMigrationHit, startMigrationCounters } from "../../apps/chat-web/src/lib/browser/migration-counters.ts";
-import { legacyProposalCount } from "../../apps/chat-web/src/lib/chat-core/proposals.ts";
+import { legacyProposalCount } from "../../apps/chat-web/src/modules/chat/core/proposals.ts";
 import { commitChange, nextRevision } from "../../apps/chat-web/src/lib/page-store/revision.ts";
 import { EditHistory } from "../../apps/chat-web/src/lib/inspector/history.ts";
 import { addScreen, applyOp, emptyPage } from "../../packages/builder-core/src/index.ts";

@@ -12,8 +12,8 @@
 	import Stack from "$registry/compose/Stack.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
-	import { diffRows } from "$lib/chat-core/change-text";
-	import { applyAskProposal, applyProposal, discardProposal, isPendingProposal, proposalStatus, type ChatMessage } from "$lib/chat-core";
+	import { diffRows } from "$modules/chat/core/change-text";
+	import { applyAskProposal, applyProposal, discardProposal, isPendingProposal, proposalStatus, type ChatMessage } from "$modules/chat/core";
 
 	let { message, onApply, onDiscard }: { message: ChatMessage; onApply?: () => void; onDiscard?: () => void } = $props();
 

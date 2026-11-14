@@ -16,7 +16,7 @@ import { SquareRoundedLetterB, ChevronDown, ChevronUp, Circle, X, Search, Settin
 	import { theme } from "$lib/theme/theme.svelte";
 	import { THEME_PREFS } from "$lib/theme/theme-pref";
 	import { cn } from "$registry/utils/cn";
-	import { deleteAllSessions, type SessionSummary } from "$lib/chat-core";
+	import { deleteAllSessions, type SessionSummary } from "$modules/chat/core";
 	import ConfirmDialog from "./ConfirmDialog.svelte";
 	import SettingsSessionFile from "./SettingsSessionFile.svelte";
 	import SettingsThemeImport from "./SettingsThemeImport.svelte";

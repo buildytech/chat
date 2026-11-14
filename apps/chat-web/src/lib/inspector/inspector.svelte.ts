@@ -7,7 +7,7 @@
  */
 import { addScreen, applyOp, checkAdd, deriveFamily, inspectorValue, type AddCheck, type InspectorField, type OpResult, type PageFamily, type PageOp } from "@buildytech/builder-core";
 import type { PageV2 } from "@buildytech/page-contract";
-import { loadPropsGate, startEmptyPageInChat } from "../chat-core";
+import { loadPropsGate, startEmptyPageInChat } from "../../modules/chat/core";
 import { getBoundProjectId, getCurrentPage, getSelectedBlockId, replaceVisiblePage, selectBlock } from "../page-store";
 import { commitChange } from "../page-store/revision";
 import type { FieldIssue } from "./fields";

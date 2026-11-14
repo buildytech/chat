@@ -2,7 +2,7 @@
 	import Block from "$registry/compose/Block.svelte";
 	import Group from "$registry/compose/Group.svelte";
 	import { cn } from "$registry/utils/cn";
-	import { getChatMode } from "$lib/chat-core";
+	import { getChatMode } from "$modules/chat/core";
 	import { t } from "$lib/i18n/dictionary";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
 	import CodePane from "./CodePane.svelte";

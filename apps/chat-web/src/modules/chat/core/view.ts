@@ -5,7 +5,7 @@
  * chat writes something.
  */
 import type { AgentMode } from "@buildytech/chat-agent";
-import type { Project } from "../project/types.ts";
+import type { Project } from "../../../lib/project/types.ts";
 import { legacyProposalCount, migrateSessionProposals } from "./proposals.ts";
 import type { ChatMessage, ChatSession } from "./types.ts";
 

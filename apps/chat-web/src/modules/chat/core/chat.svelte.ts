@@ -4,12 +4,12 @@
  * persistence) lives in `../project`; the chat keeps only `project.ext.chat` (messages, mode, selected model, usage).
  */
 import type { AgentMode } from "@buildytech/chat-agent";
-import { t } from "../i18n/dictionary";
-import { getPersistError } from "../browser/persist";
-import { hydrateSessionContext } from "../browser/onboarding.svelte";
-import { noteMigration } from "../browser/storage-v1.ts";
-import { createProject, deleteAllProjects, deleteProject, getSelectedProject, getProjects, hydrateProjects, listProjects, putProject, registerProjectNormalizer, saveProjects, selectProject, sessionToSelectFromUrl } from "../project/store.svelte.ts";
-import type { Project } from "../project/types.ts";
+import { t } from "../../../lib/i18n/dictionary";
+import { getPersistError } from "../../../lib/browser/persist";
+import { hydrateSessionContext } from "../browser/onboarding.svelte.ts";
+import { noteMigration } from "../../../lib/browser/storage-v1.ts";
+import { createProject, deleteAllProjects, deleteProject, getSelectedProject, getProjects, hydrateProjects, listProjects, putProject, registerProjectNormalizer, saveProjects, selectProject, sessionToSelectFromUrl } from "../../../lib/project/store.svelte.ts";
+import type { Project } from "../../../lib/project/types.ts";
 import { chatModeOf } from "./modes";
 import { normalizeChatExt, projectOfView, viewOf } from "./view";
 import type { ChatSession, CreatorRuntimeStatus, ServerCapabilities, SessionSummary } from "./types";

@@ -1,5 +1,5 @@
 import { parsePage, type Page } from "@buildytech/page-contract";
-import type { ChatMessage, ChatSession, SessionSummary } from "../chat-core/types.ts";
+import type { ChatMessage, ChatSession, SessionSummary } from "../core/types.ts";
 import type { ServerMessage, ServerSession, TurnResponse } from "./gateway.ts";
 
 export type SavedArtifact = {

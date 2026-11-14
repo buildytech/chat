@@ -104,7 +104,7 @@ test("UI: the first '+' or drop starts the page, the preview shows the empty dro
 	const inspector = web("lib/inspector/inspector.svelte.ts");
 	assert.match(inspector, /!getCurrentPage\(\) && !startEmptyPageInChat\(\)/);
 	assert.doesNotMatch(inspector, /There is no page yet\./);
-	const session = web("lib/chat-core/proposal-flow.ts");
+	const session = web("modules/chat/core/proposal-flow.ts");
 	assert.match(session, /export function startEmptyPageInChat\(screenId: string \| null = null\): boolean/);
 	const store = web("lib/page-store/mock.svelte.ts");
 	assert.match(store, /export function startEmptyPage\(page: (?:Page|PageV2), provenance: StoredPageProvenance\): boolean/);
@@ -135,8 +135,8 @@ test("cards: the Stock thumbnail is full-bleed (no padding around it) and home S
 	assert.match(stock, /<StockMediaCard tag="article"/);
 	assert.match(stock, /class="truncate font-mono text-xs text-muted-foreground" title=\{screen\.screenId\}/, "the id is one truncated line");
 	assert.doesNotMatch(stock, /break-all/);
-	const home = web("app/HomeOnboarding.svelte");
+	const home = web("modules/chat/ui/HomeOnboarding.svelte");
 	assert.doesNotMatch(home, /data-slot="stock-grid"|selectScenario|attachScreen/);
-	const ask = web("app/AskBlockCards.svelte");
+	const ask = web("modules/chat/ui/AskBlockCards.svelte");
 	assert.match(ask, /<StockThumb src=\{card\.thumb\} title=\{card\.title\} bleed class="w-full border-b" \/>/);
 });

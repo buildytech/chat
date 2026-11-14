@@ -1,7 +1,7 @@
 /** Export and import of the session file for the chat: the project module does the file, the chat aborts a run and selects. */
-import { exportProjects, importProjects, type ImportResult } from "../project/file.svelte.ts";
-import type { SessionApp, SessionFile, SessionPins, SessionPrefs, SessionSettings } from "../browser/session-file";
-import { abortInflight, selectSession } from "./chat.svelte";
+import { exportProjects, importProjects, type ImportResult } from "../../../lib/project/file.svelte.ts";
+import type { SessionApp, SessionFile, SessionPins, SessionPrefs, SessionSettings } from "../../../lib/browser/session-file";
+import { abortInflight, selectSession } from "./chat.svelte.ts";
 
 export type { ImportResult };
 

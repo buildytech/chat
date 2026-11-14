@@ -9,8 +9,8 @@ import { ALLOWED_TOOLS, emptyPage, facetVocabulary } from "../../packages/builde
 import { AGENT_TOOLS_VERSION, agentOpenAiTools, agentToolNames, agentToolsDocument, askBlockCards, catalogToolParameterSchema, contractFingerprint, executeCatalogTool, isAgentReply, mapChatRunRequest, readBlock, type AgentReply } from "../../packages/chat-agent/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
 import { handleRuntimeFetch } from "../../apps/xai-runtime/src/http.ts";
-import { chatModeOf, turnOutcome } from "../../apps/chat-web/src/lib/chat-core/modes.ts";
-import { parseMarkdown, parseInline } from "../../apps/chat-web/src/lib/chat-core/markdown.ts";
+import { chatModeOf, turnOutcome } from "../../apps/chat-web/src/modules/chat/core/modes.ts";
+import { parseMarkdown, parseInline } from "../../apps/chat-web/src/modules/chat/core/markdown.ts";
 import { MODEL, signal, toolNames, withProvider, type Scripted } from "./agent-replay.ts";
 
 const BRIEF = "Just talk, do not change the page: list the Features blocks you would use and explain.";
@@ -136,7 +136,7 @@ test("chat mode is kept per chat; default Build; the mode is never inferred from
 	assert.equal(chatModeOf({ mode: "ask" }, "build"), "ask");
 	assert.equal(chatModeOf({ mode: undefined }, "ask"), "ask");
 	assert.equal(chatModeOf({ mode: "chat" as never }), "build");
-	const source = ["chat.svelte.ts", "send.ts", "turn.ts", "proposal-flow.ts"].map((f) => readFileSync(new URL(`../../apps/chat-web/src/lib/chat-core/${f}`, import.meta.url), "utf8")).join("\n");
+	const source = ["chat.svelte.ts", "send.ts", "turn.ts", "proposal-flow.ts"].map((f) => readFileSync(new URL(`../../apps/chat-web/src/modules/chat/core/${f}`, import.meta.url), "utf8")).join("\n");
 	assert.doesNotMatch(source, /isClearPageCommand|looksLike|detectIntent|parseAskProse/);
 });
 

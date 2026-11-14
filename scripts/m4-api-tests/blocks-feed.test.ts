@@ -62,7 +62,7 @@ test("stockSearch type=screen scopes by section; the chat home no longer lists s
 	assert.ok(scoped.total > 0 && scoped.items.every((item) => item.type === "screen"));
 	const ids = new Set(catalogSnapshot.screens.filter((s) => s.labels.section.includes("dashboard")).map((s) => s.screenId));
 	assert.ok(scoped.items.every((item) => ids.has(item.id)));
-	assert.doesNotMatch(web("lib/browser/onboarding.svelte.ts"), /stockSearch|selectScenario|attachScreen/);
+	assert.doesNotMatch(web("modules/chat/browser/onboarding.svelte.ts"), /stockSearch|selectScenario|attachScreen/);
 	assert.match(web("lib/feed/feed.svelte.ts"), /stockSearch\(\{ q, \.\.\.filters, page, pageSize: FEED_PAGE_SIZE, boostRoles/);
 });
 

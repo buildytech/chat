@@ -1,9 +1,9 @@
 /** ChatCore send: one user message, one agent turn, the reply committed to the chat. Live Grok uses `/runtime`. */
 import { agentToolNames, unknownUsage } from "@buildytech/chat-agent";
-import { t } from "../i18n/dictionary";
-import { getSelectedModelId } from "../browser/models.svelte";
+import { t } from "../../../lib/i18n/dictionary";
+import { getSelectedModelId } from "../browser/models.svelte.ts";
 import { chatModeOf } from "./modes";
-import { bumpEpoch, abortInflight, commitSession, createSession, currentEpoch, getSelectedSession, run, startRun } from "./chat.svelte";
+import { bumpEpoch, abortInflight, commitSession, createSession, currentEpoch, getSelectedSession, run, startRun } from "./chat.svelte.ts";
 import { loadPropsGate } from "./gates";
 import { markPendingProposals } from "./proposals";
 import { localizedRunError, nowIso, replyMessage, runRecord, runTurn, runtimeNoteFor, sessionUsageFrom, uid } from "./turn";

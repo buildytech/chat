@@ -14,10 +14,10 @@
 		openCollectionParam,
 		selectSession,
 		sendMessage
-	} from "$lib/chat-core";
-	import { getSelectedModelId, listChatModels, setSelectedModelId } from "$lib/browser/models.svelte";
+	} from "$modules/chat/core";
+	import { getSelectedModelId, listChatModels, setSelectedModelId } from "$modules/chat/browser/models.svelte.ts";
 	import { installBuildyApi } from "$lib/browser/buildy-api";
-	import { takeCollectionParam } from "$lib/browser/collection-intake";
+	import { takeCollectionParam } from "$modules/chat/browser/collection-intake";
 	import { t } from "$lib/i18n/dictionary";
 	import { theme } from "$lib/theme/theme.svelte";
 	import CreatorShell from "./CreatorShell.svelte";

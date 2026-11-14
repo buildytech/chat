@@ -9,10 +9,11 @@ import { fileURLToPath } from "node:url";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
 import { docOfProject, projectOfDoc } from "../../apps/chat-web/src/lib/project/doc.ts";
 import { bySavedAt, draftPageId, newProject, withApplied, withExt, withSkin, withoutCollectionItem } from "../../apps/chat-web/src/lib/project/transitions.ts";
-import { normalizeChatExt, projectOfView, viewOf } from "../../apps/chat-web/src/lib/chat-core/view.ts";
+import { normalizeChatExt, projectOfView, viewOf } from "../../apps/chat-web/src/modules/chat/core/view.ts";
 
 const NOW = "2026-11-10T12:00:00.000Z";
 const lib = (path: string) => fileURLToPath(new URL(`../../apps/chat-web/src/lib/${path}`, import.meta.url));
+const chatCore = (path: string) => fileURLToPath(new URL(`../../apps/chat-web/src/modules/chat/core/${path}`, import.meta.url));
 const legacyDoc = {
 	id: "session-a",
 	title: "Coffee",
@@ -103,7 +104,10 @@ test("transitions: pure, each returns a new project and leaves the old one alone
 	assert.ok([applied, project].sort(bySavedAt)[0] === applied, "newest first");
 });
 
-const sources = (dir: string) => readdirSync(lib(dir)).filter((f) => /\.ts$/.test(f)).map((f) => ({ dir, f, text: readFileSync(lib(`${dir}/${f}`), "utf8") }));
+const sources = (dir: string) => {
+	const path = dir === "chat-core" ? chatCore : lib;
+	return readdirSync(path(dir === "chat-core" ? "" : dir)).filter((f) => /\.ts$/.test(f)).map((f) => ({ dir, f, text: readFileSync(path(dir === "chat-core" ? f : `${dir}/${f}`), "utf8") }));
+};
 
 test("structure: the project module imports no chat code", () => {
 	for (const { f, text } of sources("project")) {
@@ -116,7 +120,7 @@ test("structure: no file of the chat or project modules grows past 300 lines; se
 	for (const { dir, f, text } of [...sources("chat-core"), ...sources("project")]) {
 		assert.ok(text.split("\n").length <= 300, `${dir}/${f} is ${text.split("\n").length} lines`);
 	}
-	const facade = readFileSync(lib("chat-core/session.svelte.ts"), "utf8");
+	const facade = readFileSync(chatCore("session.svelte.ts"), "utf8");
 	assert.ok(facade.split("\n").length < 40);
 	assert.doesNotMatch(facade, /\$state|function /);
 });

@@ -1,11 +1,11 @@
 /** Open a Stock collection (link or file) as a new Build chat: the collection is a project record, the chat is its first message surface. */
 import { decodeCollectionParam, parseCollection, type CollectionParse } from "@buildytech/page-contract/collection";
-import { setPendingSkin } from "../project/store.svelte.ts";
+import { setPendingSkin } from "../../../lib/project/store.svelte.ts";
 import { collectionErrorText, collectionScreenId, chatCollectionFrom } from "./collection";
-import { commitSession, createSession, run } from "./chat.svelte";
+import { commitSession, createSession, run } from "./chat.svelte.ts";
 import { nowIso } from "./turn";
 import type { ChatSession } from "./types";
-import { hydrateSessionContext } from "../browser/onboarding.svelte";
+import { hydrateSessionContext } from "../browser/onboarding.svelte.ts";
 
 export type CollectionIntake = { ok: true; sessionId: string; items: number; missing: number } | { ok: false; code: string; message: string };
 

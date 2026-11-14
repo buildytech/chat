@@ -16,9 +16,9 @@ import { Blocks, ListTree, MessageSquare } from "$lib/shell-icons";
 	import { creatorLayout } from "$lib/creator-layout.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
-	import { createdInThisTab, type ChatSession, type CreatorRuntimeStatus } from "$lib/chat-core";
+	import { createdInThisTab, type ChatSession, type CreatorRuntimeStatus } from "$modules/chat/core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/chat-agent";
-	import ChatThread from "./ChatThread.svelte";
+	import ChatThread from "../modules/chat/ui/ChatThread.svelte";
 
 	let {
 		session,

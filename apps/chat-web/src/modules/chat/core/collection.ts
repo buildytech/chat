@@ -5,8 +5,8 @@
  */
 import { snapshotDigest } from "@buildytech/builder-core";
 import type { CollectionItem } from "@buildytech/page-contract/collection";
-import { t } from "../i18n/dictionary";
-import { collectionScreenId, projectCollectionFrom, withoutItem, type ProjectCollection } from "../project/collection";
+import { t } from "../../../lib/i18n/dictionary";
+import { collectionScreenId, projectCollectionFrom, withoutItem, type ProjectCollection } from "../../../lib/project/collection";
 
 export type ChatCollection = ProjectCollection;
 

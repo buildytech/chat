@@ -5,8 +5,8 @@ import {
 	migrateProposal,
 	proposalStatus,
 	isPendingProposal
-} from "../../apps/chat-web/src/lib/chat-core/proposals.ts";
-import type { ChatMessage, ChatProposalState } from "../../apps/chat-web/src/lib/chat-core/types.ts";
+} from "../../apps/chat-web/src/modules/chat/core/proposals.ts";
+import type { ChatMessage, ChatProposalState } from "../../apps/chat-web/src/modules/chat/core/types.ts";
 
 function proposal(partial: Partial<ChatProposalState> = {}): ChatProposalState {
 	return {
