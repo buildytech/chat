@@ -60,7 +60,7 @@
       {#each quotes as q (q.id)}
         <FigureBlock class="m-0 flex flex-col gap-4" testid="item">
           <Box class="relative">
-            <MediaFrame alt={q.author} />
+            <MediaFrame alt={q.author} src={q.image} />
             <Button
               variant="default"
               size="default"

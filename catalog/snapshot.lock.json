@@ -3,7 +3,7 @@
 	"version": 0,
 	"config": {
 		"path": "catalog/snapshot.config.json",
-		"sha256": "6ffb605790a2eac83fc41b69cd1d33d2b1adbf61ca95d0ec373726a4dcf67848"
+		"sha256": "462069e2d0440ad9490b38e3f33a3ce757124fabcd025a24844671f5e1461994"
 	},
 	"policy": {
 		"path": "catalog/policy.v0.json",
@@ -11,7 +11,7 @@
 	},
 	"codegenX": {
 		"repo": "codegen-x/ui8kit",
-		"commit": "a4c5bebdbd107a8e06ba83aff32b7c1aa155d7da",
+		"commit": "b61663421cb048e33f2bc405035ea5e2ba1f5009",
 		"files": {
 			"added.v0.json": {
 				"sha256": "c596d20022e765e0e01da6212ba8c2b4c6fc71c2dde4ab43966850d67efe327e",
@@ -38,12 +38,12 @@
 				"bytes": 3752
 			},
 			"previews.v0.json": {
-				"sha256": "9809967aad6d8668125db4deade23815d28c395317d0b774ca3c8792ec2ca584",
-				"bytes": 240928
+				"sha256": "7fb4baf00995cb5fe818e76299efd610126d277026c96613d39e6d91e1b8f783",
+				"bytes": 241610
 			},
 			"props.v0.json": {
-				"sha256": "68d2a9e6dd2081bdd62e648e31e1ab84b07bf5cb2bc0d84c061ff461d535f0d9",
-				"bytes": 1953989
+				"sha256": "088cf63ac891475573bf95c658af60e3621643ecd06985aee5c4391151f0d19e",
+				"bytes": 1956896
 			},
 			"terms/pattern.v0.json": {
 				"sha256": "8516b8a03d49a4017946f06ace08be4ae6a090b5e7881710e295c23c1677ec91",
@@ -59,22 +59,22 @@
 		"cli": "ui8kit@3.5.0",
 		"registry": "https://registry.buildy.tw",
 		"runtime": "svelte",
-		"sourceCommit": "466225e7757aa0ed039d92e175ba569eb1ef4ddc",
+		"sourceCommit": "b61663421cb048e33f2bc405035ea5e2ba1f5009",
 		"files": {
 			"manifest.json": {
-				"sha256": "036a832e974969cfee66ab4fe6d401898fff669fc4faee8b2f9cda23cb7ce3a8",
-				"bytes": 914784
+				"sha256": "1760f8263aee86187e1dd2d1bb91d5c5eaa8c56d54ea63c8a1124c2f03543095",
+				"bytes": 914790
 			},
 			"props/v0.json": {
-				"sha256": "68d2a9e6dd2081bdd62e648e31e1ab84b07bf5cb2bc0d84c061ff461d535f0d9",
-				"bytes": 1953989
+				"sha256": "088cf63ac891475573bf95c658af60e3621643ecd06985aee5c4391151f0d19e",
+				"bytes": 1956896
 			},
 			"registry.json": {
-				"sha256": "87722b7d9397750aa3f73541ffa730ddf22ba8e0cd35b2cf55ec952279c63225",
+				"sha256": "c75194fb87b73761fb389baff9dc29a384c3b13bb0b5cfdc85c38a7f6566e50c",
 				"bytes": 1209664
 			},
 			"svelte/index.json": {
-				"sha256": "be62823f6023a6d57b6840827afb1f127b93468a259dedbdb581730e9988b432",
+				"sha256": "d623bc5ca7a51dab88c2775630df84f31fb1d07025910207c4f3bff5eeccfdea",
 				"bytes": 135960
 			},
 			"variants/v0.json": {
@@ -87,31 +87,31 @@
 				"sha256": "10dedbb0f4305681903ec981a58f7e86df2e3cc670f1ce85efd13cac6b1c6458"
 			},
 			"registry/props.v0.json": {
-				"sha256": "68d2a9e6dd2081bdd62e648e31e1ab84b07bf5cb2bc0d84c061ff461d535f0d9"
+				"sha256": "088cf63ac891475573bf95c658af60e3621643ecd06985aee5c4391151f0d19e"
 			},
 			"registry/snapshot.json": {
-				"sha256": "5d4791d8a9127c70adb63ee5cf21cfd6887d5fdc435d1980b51d8efbd04fb771"
+				"sha256": "7d7ea55c576cc8a20f0d45b812faaab2eca5f4d8c1265407f34fad1256893b45"
 			}
 		}
 	},
 	"outputs": {
 		"catalog/stock-registry.v0.json": {
-			"sha256": "1b617c49a2440a244c4bcdaca6385517a1fd2253df2dbe5632c7589add10daa9"
+			"sha256": "4850aa8b5761228e2c71cfc4bec10b7175274940e826468f11715ab63625a366"
 		},
 		"catalog/coverage.json": {
 			"sha256": "438d993ea8c3eab0e90f650def292699295125c4b10eb90471acdea77e901d37"
 		},
 		"packages/builder-core/src/catalog/snapshot.json": {
-			"sha256": "aab17dc44192d624f9db033f764949c4305b5fbef4bf1047b9ac7633d6000ab7"
+			"sha256": "4f0db70ee21369733b10b549848e2c8f7935551b445d45762e6dd99c2fc37c18"
 		},
 		"packages/builder-core/src/catalog/search-index.json": {
-			"sha256": "42133ef39e0901375d2e9cf434c5c0f3cb7f2db7135b972908c8e4870f6eb511"
+			"sha256": "80195aa0c52aeeadde861ad1a76f7ad5748be8d8e2eb201323d6d5668d985b71"
 		},
 		"packages/builder-core/src/catalog/sources.json": {
-			"sha256": "da8914870f8243fc648466bf7d75074037bb52cd858c284e75e21f83773c9886"
+			"sha256": "e47a8b95e4184450ae08aee44eaf07b7e21e470ec59c8274a580332176912dbe"
 		},
 		"packages/builder-core/src/catalog/props.json": {
-			"sha256": "911594115cad2938368ab7d0d8b0865498d2bac007f1c646ad1767fcdcfd626e"
+			"sha256": "8bba285f8304bf7e30980e61d0911980625695f749293f40eaa117268e1770c8"
 		},
 		"packages/builder-core/src/catalog/money.json": {
 			"sha256": "9c093687a90a0087e3f680fac918b6438b38aa527ac299b4add4e4a8ac8725cc"

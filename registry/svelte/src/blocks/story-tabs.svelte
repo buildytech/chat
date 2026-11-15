@@ -20,6 +20,8 @@
     labels: StoryLabels;
     layout?: "years" | "carousel";
     tone?: "default" | "muted";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
     onselect?: (id: string) => void;
   };
@@ -49,6 +51,8 @@
     labels,
     layout = "years",
     tone = "default",
+    image,
+    imageAlt,
     landmarkLabel,
     onselect,
   }: StoryTabsProps = $props();
@@ -98,7 +102,7 @@
   >
     {#snippet aside()}
       <Stack gap="4" align="stretch">
-        <MediaFrame alt={title} ratio="4/3" />
+        <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="4/3" />
         <Group gap="4" align="center" justify="between">
           <Button variant="outline" size="sm" layout="icon" type="button" aria-label={labels.previous}>
             <LucideIcon name="chevron-left" size={16} />

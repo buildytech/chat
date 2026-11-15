@@ -17,6 +17,8 @@
     actions?: "button" | "none";
     visual?: "icon" | "image";
     size?: "default" | "compact";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -43,6 +45,8 @@
     actions = "button",
     visual = "icon",
     size = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: EmptyPanelProps = $props();
 </script>
@@ -54,7 +58,7 @@
   >
     {#if ((visual as string) === "image")}
       <Stack gap="4" align="center" class="mx-auto max-w-md text-center" data-slot="empty-visual">
-        <MediaFrame alt={title} ratio="4/3" class="w-full max-w-xs" />
+        <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="4/3" class="w-full max-w-xs" />
         <Title as={2} size="2xl" weight="bold">
           {title}
         </Title>

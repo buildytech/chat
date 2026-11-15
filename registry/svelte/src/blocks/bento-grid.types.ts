@@ -6,4 +6,5 @@ export type Tile = {
   text: string;
   icon: string;
   size: string;
+  image?: string;
 };

@@ -23,6 +23,8 @@
     scale?: "default" | "display";
     tone?: "default" | "muted" | "inverse";
     density?: "roomy" | "default" | "compact";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -55,6 +57,8 @@
     scale = "default",
     tone = "default",
     density = "roomy",
+    image,
+    imageAlt,
     landmarkLabel,
   }: HeroClassicProps = $props();
   const mediaKind = $derived(media?.kind ?? "none");
@@ -80,7 +84,11 @@
   }
   landmarkLabel={landmarkLabel}
 >
-  <Backdrop kind={(((mediaKind as string) === "backdrop") ? "image" : "none")} alt={title} />
+  <Backdrop
+    kind={(((mediaKind as string) === "backdrop") ? "image" : "none")}
+    alt={(imageAlt ? imageAlt : title)}
+    image={image}
+  />
   {#if actions?.cta}
     {#if (actions?.mode === "form")}
       <Box
@@ -135,7 +143,7 @@
       </Grid>
     {/if}
     {#if (((mediaKind as string) === "image"))}
-      <MediaFrame alt={title} ratio="4/3" />
+      <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="4/3" />
     {/if}
   {/snippet}
 </SectionFrame>

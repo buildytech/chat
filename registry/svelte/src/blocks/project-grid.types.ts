@@ -10,6 +10,7 @@ export type Project = {
   featured: boolean;
   client: string;
   href?: string;
+  image?: string;
 };
 
 export type ProjectLabels = {

@@ -18,7 +18,7 @@ errors, and the chat said only `(write_stuck)`.
 3. **Diagnostics.** A failed turn (`write_invalid`, `write_stuck`) names the first reason in plain words of the interface language (`run.reason*` messages, no
    model-facing text). The last rejected write (first five issues, the document, or the block of the first issue when the document is over 24k characters) is
    kept in `run.rejected` of the assistant message (contract session 1.11.0, additive, open object; no prompts, no keys).
-4. **Images.** No registry block has an image URL prop (photo slots are placeholders the host renders), so a request to "replace placeholders with stock photos"
+4. **Images.** (Superseded by ADR 0049.) No registry block has an image URL prop (photo slots are placeholders the host renders), so a request to "replace placeholders with stock photos"
    cannot be met; the Build prompt says so (never invent image URLs, never claim photos were added).
 
 ## Consequences

@@ -30,7 +30,12 @@
 </script>
 
 <Box class="relative overflow-hidden rounded" data-slot="post-overlay">
-  <MediaFrame alt={p.title} ratio={ratio} class={(((ratio as string) === "4/3") ? "min-h-80" : "min-h-64")} />
+  <MediaFrame
+    alt={p.title}
+    src={p.image}
+    ratio={ratio}
+    class={(((ratio as string) === "4/3") ? "min-h-80" : "min-h-64")}
+  />
   <Stack gap="2" align="start" class="absolute bottom-4 left-4 right-4 rounded bg-background p-4">
     <Group gap="2" align="center">
       <Badge variant="secondary" size="sm">

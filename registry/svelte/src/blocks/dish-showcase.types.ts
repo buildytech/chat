@@ -12,6 +12,7 @@ export type Dish = {
   minutes: number;
   badge?: string;
   href?: string;
+  image?: string;
 };
 
 export type FoodLabels = {

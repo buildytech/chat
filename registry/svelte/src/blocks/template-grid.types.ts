@@ -6,6 +6,7 @@ export type Template = {
   views: string;
   likes: string;
   topic: string;
+  image?: string;
 };
 
 export type Filter = {

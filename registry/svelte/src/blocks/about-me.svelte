@@ -23,6 +23,8 @@
     layout?: "facts" | "skills";
     mediaSide?: "start" | "end";
     tone?: "default" | "muted";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -52,6 +54,8 @@
     layout = "facts",
     mediaSide = "start",
     tone = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: AboutMeProps = $props();
 </script>
@@ -105,6 +109,6 @@
     secondaryHref={actions.secondaryHref}
   />
   {#snippet aside()}
-    <MediaFrame alt={title} ratio="3/4" />
+    <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="3/4" />
   {/snippet}
 </SectionFrame>

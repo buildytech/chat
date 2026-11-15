@@ -39,7 +39,7 @@
   {#each lines as line (line.id)}
     <Group gap="4" align="start" data-slot="item">
       {#if ((media as string) === "image")}
-        <MediaFrame alt={line.name} ratio="1/1" class="size-16 shrink-0" />
+        <MediaFrame alt={line.name} src={line.image} ratio="1/1" class="size-16 shrink-0" />
       {/if}
       <Stack gap="2" align="stretch" class="flex-1">
         <Group gap="2" justify="between" align="start">

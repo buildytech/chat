@@ -26,6 +26,8 @@
     mediaSide?: "end" | "start";
     tone?: "default" | "muted";
     empty?: string;
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -55,6 +57,8 @@
     mediaSide = "end",
     tone = "default",
     empty = "",
+    image,
+    imageAlt,
     landmarkLabel,
   }: QuoteSplitProps = $props();
 </script>
@@ -132,7 +136,7 @@
       {#if ((layout as string) === "rating")}
         <QuoteRatingPanel extras={extras} labels={labels} />
       {:else}
-        <MediaFrame alt={title} ratio="4/3" />
+        <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="4/3" />
       {/if}
     {/snippet}
   </SectionFrame>

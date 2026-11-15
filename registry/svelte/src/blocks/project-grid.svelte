@@ -62,7 +62,7 @@
     <Stack gap="4" align="stretch" data-slot="items">
       {#each projects as p (p.id)}
         <Group gap="4" align="start" class="border-b border-border pb-4" data-slot="item">
-          <MediaFrame alt={p.title} ratio="1/1" class="size-16 shrink-0" />
+          <MediaFrame alt={p.title} src={p.image} ratio="1/1" class="size-16 shrink-0" />
           <Stack gap="2" align="stretch" class="flex-1">
             <Group gap="4" justify="between">
               <Text size="sm" weight="semibold">

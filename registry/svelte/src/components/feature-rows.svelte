@@ -45,7 +45,7 @@
           )
         )}
       >
-        <MediaFrame alt={feature.title} ratio="4/3" />
+        <MediaFrame alt={feature.title} src={feature.image} ratio="4/3" />
       </Box>
     </Grid>
   {/each}

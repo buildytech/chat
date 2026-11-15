@@ -63,7 +63,7 @@
     <List tag="ul" class="flex flex-col gap-4" data-slot="summary-lines">
       {#each lines as line (line.id)}
         <ListItem class="flex items-center gap-4 text-sm" data-slot="cart-line">
-          <MediaFrame alt={line.name} ratio="1/1" class="size-12 shrink-0" />
+          <MediaFrame alt={line.name} src={line.image} ratio="1/1" class="size-12 shrink-0" />
           <Stack gap="0" class="flex-1">
             <Text size="sm" weight="semibold">
               {line.name}

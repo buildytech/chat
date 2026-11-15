@@ -44,7 +44,7 @@
   {#if (item?.kind === "social")}
     <Group gap="4" align="center">
       {#if (item?.avatar !== "none")}
-        <MediaFrame alt={q.author} ratio="1/1" class="size-12 shrink-0 rounded-full" />
+        <MediaFrame alt={q.author} src={q.image} ratio="1/1" class="size-12 shrink-0 rounded-full" />
       {/if}
       <Stack gap="0">
         <Text size="sm" weight="semibold">
@@ -73,7 +73,7 @@
     </Text>
     <Group gap="4" align="center">
       {#if (item?.avatar !== "none")}
-        <MediaFrame alt={q.author} ratio="1/1" class="size-12 shrink-0 rounded-full" />
+        <MediaFrame alt={q.author} src={q.image} ratio="1/1" class="size-12 shrink-0 rounded-full" />
       {/if}
       <Stack gap="0">
         <Text size="sm" weight="semibold">

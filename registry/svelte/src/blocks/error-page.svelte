@@ -18,6 +18,8 @@
     layout?: "centered" | "split";
     code?: "show" | "hide";
     tone?: "default" | "muted";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -39,6 +41,8 @@
     layout = "centered",
     code = "show",
     tone = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: ErrorPageProps = $props();
 </script>
@@ -76,6 +80,6 @@
     align={(((layout as string) === "split") ? "start" : "center")}
   />
   {#snippet aside()}
-    <MediaFrame alt={title} ratio="4/3" />
+    <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="4/3" />
   {/snippet}
 </SectionFrame>

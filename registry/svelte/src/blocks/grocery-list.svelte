@@ -62,7 +62,7 @@
       {#each dishes as d (d.id)}
         <ListItem class="flex items-center gap-4 border-b border-border py-2" data-slot="item">
           {#if ((thumbs as string) === "show")}
-            <MediaFrame alt={d.name} ratio="1/1" class="size-12 shrink-0" />
+            <MediaFrame alt={d.name} src={d.image} ratio="1/1" class="size-12 shrink-0" />
           {/if}
           <Stack gap="0" class="min-w-0 flex-1">
             <Text size="sm" weight="semibold">

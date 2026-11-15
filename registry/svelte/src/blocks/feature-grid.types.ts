@@ -6,4 +6,5 @@ export type Feature = {
   text: string;
   icon: string;
   href?: string;
+  image?: string;
 };

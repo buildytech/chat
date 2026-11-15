@@ -22,6 +22,8 @@
     mediaSide?: "end" | "start";
     tone?: "default" | "muted";
     empty?: string;
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -51,6 +53,8 @@
     mediaSide = "start",
     tone = "default",
     empty = "",
+    image,
+    imageAlt,
     landmarkLabel,
   }: PostShowcaseProps = $props();
 </script>
@@ -101,7 +105,7 @@
       {/if}
     {/each}
     {#snippet aside()}
-      <MediaFrame alt={title} ratio="4/3" />
+      <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="4/3" />
     {/snippet}
   </SectionFrame>
 {:else}

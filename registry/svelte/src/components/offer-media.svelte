@@ -9,6 +9,7 @@
 
   export type OfferMediaProps = {
     alt: string;
+    image?: string;
     card: OfferCard;
   };
 </script>
@@ -21,11 +22,11 @@
   import Text from "../compose/Text.svelte";
   import MediaFrame from "../components/media-frame.svelte";
 
-  let { alt, card }: OfferMediaProps = $props();
+  let { alt, image, card }: OfferMediaProps = $props();
 </script>
 
 <Box class="relative" data-slot="hero-media">
-  <MediaFrame alt={alt} ratio="4/3" />
+  <MediaFrame alt={alt} src={image} ratio="4/3" />
   <Group
     gap="4"
     align="start"

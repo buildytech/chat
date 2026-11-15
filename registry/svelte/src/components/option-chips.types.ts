@@ -6,4 +6,5 @@ export type DishOption = {
   price: number;
   currency: string;
   note: string;
+  image?: string;
 };

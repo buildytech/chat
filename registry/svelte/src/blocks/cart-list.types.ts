@@ -7,6 +7,7 @@ export type CartLine = {
   price: number;
   currency: string;
   qty: number;
+  image?: string;
 };
 
 export type CartLabels = {

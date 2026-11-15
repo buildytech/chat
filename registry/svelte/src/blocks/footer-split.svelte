@@ -24,6 +24,8 @@
     layout?: "stats" | "points" | "links" | "newsletter" | "contacts" | "channels";
     mediaSide?: "end" | "start";
     tone?: "default" | "muted";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -60,6 +62,8 @@
     layout = "stats",
     mediaSide = "end",
     tone = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: FooterSplitProps = $props();
 </script>
@@ -91,7 +95,7 @@
     {:else}
       <Box class="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
         {#if ((mediaSide as string) === "start")}
-          <MediaFrame alt={brand} ratio="4/3" />
+          <MediaFrame alt={(imageAlt ? imageAlt : brand)} src={image} ratio="4/3" />
         {/if}
         <Stack gap="8" align="stretch">
           {#if (((layout as string) === "points") || ((layout as string) === "links"))}
@@ -135,7 +139,7 @@
           </Box>
         </Stack>
         {#if ((mediaSide as string) !== "start")}
-          <MediaFrame alt={brand} ratio="4/3" />
+          <MediaFrame alt={(imageAlt ? imageAlt : brand)} src={image} ratio="4/3" />
         {/if}
       </Box>
     {/if}

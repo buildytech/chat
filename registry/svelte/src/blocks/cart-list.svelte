@@ -69,7 +69,7 @@
         <Card variant="default">
           <CardContent class="flex flex-wrap items-center gap-4">
             {#if ((media as string) === "image")}
-              <MediaFrame alt={line.name} ratio="1/1" class="size-16 shrink-0" />
+              <MediaFrame alt={line.name} src={line.image} ratio="1/1" class="size-16 shrink-0" />
             {/if}
             <Stack gap="0" class="min-w-40 flex-1">
               <Text size="sm" weight="semibold">

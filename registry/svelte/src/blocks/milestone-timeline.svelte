@@ -17,6 +17,8 @@
     layout?: "split" | "stacked" | "row";
     tone?: "default" | "muted";
     density?: "default" | "compact";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -42,6 +44,8 @@
     layout = "split",
     tone = "default",
     density = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: MilestoneTimelineProps = $props();
 </script>
@@ -102,6 +106,6 @@
     </List>
   {/if}
   {#snippet aside()}
-    <MediaFrame alt={title} ratio="3/4" />
+    <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="3/4" />
   {/snippet}
 </SectionFrame>

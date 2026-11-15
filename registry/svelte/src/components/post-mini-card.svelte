@@ -22,7 +22,7 @@
 </script>
 
 <Stack gap="2" align="stretch" class="rounded bg-card inset-ring inset-ring-border p-2" data-slot="post-mini">
-  <MediaFrame alt={p.title} />
+  <MediaFrame alt={p.title} src={p.image} />
   <Stack gap="2" align="start" class="p-2">
     <Badge variant="secondary" size="sm">
       {p.category}

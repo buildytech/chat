@@ -18,7 +18,8 @@
       "sample-rows.test.ts",
       "view-map.test.ts",
       "write-drop-props.test.ts",
-      "write-icon-alias.test.ts"
+      "write-icon-alias.test.ts",
+      "write-image.test.ts"
     ],
     "chat-agent": [
       "agent-tools.test.ts",

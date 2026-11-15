@@ -23,6 +23,8 @@
     cards?: "grid3" | "grid4" | "icons";
     mediaSide?: "end" | "start";
     tone?: "default" | "muted";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -51,6 +53,8 @@
     cards = "grid3",
     mediaSide = "end",
     tone = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: FaqSplitProps = $props();
 </script>
@@ -117,7 +121,7 @@
         </Button>
       </Box>
       {#snippet aside()}
-        <MediaFrame alt={title} ratio="4/3" />
+        <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="4/3" />
       {/snippet}
     </SectionFrame>
   {/if}
@@ -134,7 +138,7 @@
     >
       <FaqFinder items={items} labels={labels} topics={topics} />
       {#snippet aside()}
-        <MediaFrame alt={title} ratio="4/3" />
+        <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="4/3" />
       {/snippet}
     </SectionFrame>
   {/if}

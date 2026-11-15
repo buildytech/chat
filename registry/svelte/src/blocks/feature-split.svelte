@@ -22,6 +22,8 @@
     layout?: "grid" | "cards" | "stats" | "metrics";
     mediaSide?: "end" | "start";
     tone?: "default" | "muted";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -47,6 +49,8 @@
     layout = "grid",
     mediaSide = "end",
     tone = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: FeatureSplitProps = $props();
 </script>
@@ -90,6 +94,10 @@
     />
   {/if}
   {#snippet aside()}
-    <MediaFrame alt={title} ratio={(((layout as string) === "stats") ? "1/1" : "4/3")} />
+    <MediaFrame
+      alt={(imageAlt ? imageAlt : title)}
+      src={image}
+      ratio={(((layout as string) === "stats") ? "1/1" : "4/3")}
+    />
   {/snippet}
 </SectionFrame>

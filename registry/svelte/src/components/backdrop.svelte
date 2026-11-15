@@ -10,6 +10,7 @@
   export type BackdropProps = {
     kind?: "none" | "image";
     alt?: string;
+    image?: string;
   };
 </script>
 
@@ -17,11 +18,11 @@
   import Box from "../compose/Box.svelte";
   import MediaFrame from "../components/media-frame.svelte";
 
-  let { kind = "none", alt = "" }: BackdropProps = $props();
+  let { kind = "none", alt = "", image }: BackdropProps = $props();
 </script>
 
 {#if ((kind as string) === "image")}
   <Box class="pointer-events-none absolute inset-0 -z-10" data-slot="backdrop">
-    <MediaFrame alt={alt} ratio="21/9" class="size-full rounded-none opacity-30" />
+    <MediaFrame alt={alt} src={image} ratio="21/9" class="size-full rounded-none opacity-30" />
   </Box>
 {/if}

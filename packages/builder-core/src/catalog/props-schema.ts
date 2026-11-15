@@ -7,6 +7,7 @@
  *
  * Nothing here is hand-written block data: every name, type, enum and default comes from the published schema.
  */
+import { isImageName } from "./image-url.ts";
 import { isMoneyName } from "./money.ts";
 import raw from "./props.json" with { type: "json" };
 
@@ -222,6 +223,8 @@ export type PropsFieldNode = {
 	required: boolean;
 	/** number: money in minor units (a name the registry formats with fmtMoney, beside a `currency` prop; money.ts). */
 	money?: true;
+	/** text: a picture address (an https URL or a relative path; image-url.ts). */
+	image?: true;
 	/** enum: the allowed values (layout axes and the like); the icon enum is lucideIcons(). */
 	enum?: string[];
 	/** enum: the schema's values as written (numbers stay numbers: `level` 1 | 2). */
@@ -250,6 +253,7 @@ function fieldTree(node: JsonSchema, depth: number): PropsFieldNode[] {
 		const target = valueOf(inner);
 		const out: PropsFieldNode = { name, kind, required: required.includes(name) };
 		if (kind === "number" && hasCurrency && isMoneyName(name)) out.money = true;
+		if (kind === "text" && isImageName(name)) out.image = true;
 		if (kind === "enum") {
 			out.enum = (target.enum as unknown[]).map(String);
 			out.enumValues = target.enum as Array<string | number | boolean | null>;

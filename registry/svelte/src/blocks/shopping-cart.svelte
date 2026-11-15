@@ -82,7 +82,7 @@
           class="rounded bg-card inset-ring inset-ring-border flex-wrap p-4"
           data-slot="item"
         >
-          <MediaFrame alt={line.name} ratio="1/1" class="size-20 shrink-0" />
+          <MediaFrame alt={line.name} src={line.image} ratio="1/1" class="size-20 shrink-0" />
           <Stack gap="0" class="min-w-40 flex-1">
             <Text size="sm" weight="semibold">
               {line.name}

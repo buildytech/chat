@@ -22,6 +22,8 @@
     layout?: "overlay" | "backdrop";
     mediaSide?: "end" | "start";
     tone?: "default" | "muted";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -50,6 +52,8 @@
     layout = "overlay",
     mediaSide = "end",
     tone = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: StoreHeroProps = $props();
 </script>
@@ -66,7 +70,7 @@
     class={(("image" === "image") ? "relative isolate overflow-hidden" : "")}
     landmarkLabel={landmarkLabel}
   >
-    <Backdrop kind="image" alt={title} />
+    <Backdrop kind="image" alt={(imageAlt ? imageAlt : title)} image={image} />
     <ActionGroup
       primary={actions.cta}
       primaryHref={actions.href}
@@ -134,7 +138,7 @@
       </Grid>
     {/if}
     {#snippet aside()}
-      <OfferMedia alt={title} card={card} />
+      <OfferMedia alt={(imageAlt ? imageAlt : title)} image={image} card={card} />
     {/snippet}
   </SectionFrame>
 {/if}

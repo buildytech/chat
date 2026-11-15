@@ -8,4 +8,5 @@ export type Member = {
   location: string;
   bio: string;
   skills: string[];
+  image?: string;
 };

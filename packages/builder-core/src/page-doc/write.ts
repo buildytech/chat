@@ -7,6 +7,7 @@
  *     items share (title, lead, ...) are carried over;
  *   - a block whose `variant` changed without touching the layout axes gets the axes of the new variant's preset;
  *   - icon names are mapped to the published Lucide name (spelling, old Lucide names); a name that matches nothing is dropped (optional icon) or replaced by the sample icon of the field (required), with a note;
+ *   - a picture address (a text prop named image) must be an https URL or a relative path; anything else is dropped with a note and the placeholder shows;
  *   - host-managed fields (id, status, createdAt, updatedAt) always come from the base page.
  * Blocks nothing touched stay byte for byte as they are. Then the one gate (gate.ts) judges the result; on failure the
  * answer is a list of { path, code, expected, got }. No local repair of a rejected write, no operation taxonomy.
@@ -15,6 +16,7 @@ import { cloneJson, pagePatchV2Issues, type BlockV2, type PageV2, type PropValue
 import { pointerInfo, propsFieldTree, propShapeFor, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { variantAxisProps, variantPreset } from "../catalog/organism.ts";
 import { resolveIconName } from "../icon-name.ts";
+import { isImageUrl } from "../catalog/image-url.ts";
 import { diffPages, type DiffEntry } from "./diff.ts";
 import { renderIssues } from "./probe.ts";
 import { checkPageDoc, pointerOfSchemaPath, valueAtPointer, type DocIssue } from "./gate.ts";
@@ -53,7 +55,7 @@ export function freshBlockId(item: string, taken: Set<string>): string {
 }
 
 /**
- * Icon props (fields of kind icon, in lists and objects) mapped to the published Lucide names. A name Lucide does not have:
+ * Icon props (fields of kind icon, in lists and objects) mapped to the published Lucide names, and picture addresses (image) kept only when valid. A name Lucide does not have:
  * an optional icon is dropped, a required one takes the icon of the same field in the block's sample props (both noted);
  * with no such icon it stays and fails the gate, which names the path and the nearest real icons.
  */
@@ -79,6 +81,9 @@ function repairIcons(item: string, props: Record<string, unknown>, sample: Recor
 					notes.push(`${here}: icon "${inner}" is not a Lucide icon; the sample icon "${fallback}" is used.`);
 					out[key] = fallback;
 				} else out[key] = inner;
+			} else if (node?.image && typeof inner === "string") {
+				if (isImageUrl(inner)) out[key] = inner;
+				else notes.push(`${here}: image "${inner.length > 48 ? `${inner.slice(0, 48)}...` : inner}" is not an https URL or a relative path; dropped (the placeholder shows).`);
 			} else if (node?.kind === "list" && Array.isArray(inner)) {
 				const rows = modelOf(key);
 				out[key] = inner.map((row, index) => walk(row, node.fields, `${here}/${index}`, Array.isArray(rows) ? rows[0] : undefined));

@@ -61,7 +61,7 @@
       {#each features as f (f.id)}
         <Card variant="default" class="h-full gap-4 overflow-hidden">
           {#if ((item as string) === "picture")}
-            <MediaFrame alt={f.title} />
+            <MediaFrame alt={f.title} src={f.image} />
           {:else}
             <Box
               class="flex aspect-video items-center justify-center rounded bg-muted text-foreground"

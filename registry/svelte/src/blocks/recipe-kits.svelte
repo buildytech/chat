@@ -72,7 +72,7 @@
           }
           data-slot="item"
         >
-          <MediaFrame alt={d.name} ratio="4/3" />
+          <MediaFrame alt={d.name} src={d.image} ratio="4/3" />
           <Stack gap="4">
             <Group gap="2" class="flex-wrap">
               <Badge variant="secondary" size="default">

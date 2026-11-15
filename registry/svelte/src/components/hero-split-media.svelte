@@ -10,6 +10,7 @@
   export type HeroSplitMediaProps = {
     content: HeroContent;
     alt: string;
+    image?: string;
     media?: "picture" | "card" | "grid" | "plans";
   };
 </script>
@@ -25,21 +26,21 @@
   import OfferMedia from "../components/offer-media.svelte";
   import { cn } from "../utils";
 
-  let { content, alt, media = "picture" }: HeroSplitMediaProps = $props();
+  let { content, alt, image, media = "picture" }: HeroSplitMediaProps = $props();
 </script>
 
 {#if ((media as string) === "picture")}
-  <MediaFrame alt={alt} ratio="4/3" />
+  <MediaFrame alt={alt} src={image} ratio="4/3" />
 {/if}
 {#if ((media as string) === "card")}
-  <OfferMedia alt={alt} card={content.card} />
+  <OfferMedia alt={alt} image={image} card={content.card} />
 {/if}
 {#if (((media as string) === "grid") && ((content.features?.length ?? 0) > 0))}
   <Box class="grid grid-cols-2 gap-4" data-slot="hero-grid">
     {#each content.features as f, i (f.id)}
       {#if (i < 4)}
         <FigureBlock class="flex flex-col gap-2" testid="hero-tile">
-          <MediaFrame alt={f.title} ratio="1/1" />
+          <MediaFrame alt={f.title} src={f.image} ratio="1/1" />
           <Text size="xs" class="text-muted-foreground">
             {f.title}
           </Text>
@@ -50,7 +51,7 @@
 {/if}
 {#if (((media as string) === "plans") && ((content.plans?.length ?? 0) > 0))}
   <Box class="relative" data-slot="hero-media">
-    <MediaFrame alt={alt} ratio="4/3" />
+    <MediaFrame alt={alt} src={image} ratio="4/3" />
     {#each content.plans as p, i (p.id)}
       {#if (i < 2)}
         <Stack

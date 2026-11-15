@@ -5,6 +5,7 @@ export type Photo = {
   title: string;
   tag: string;
   size: string;
+  image?: string;
 };
 
 export type PhotoLabels = {

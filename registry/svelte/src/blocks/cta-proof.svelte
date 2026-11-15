@@ -25,6 +25,8 @@
     proof?: "logos" | "features" | "stats" | "rows" | "zones";
     mediaSide?: "end" | "start";
     tone?: "default" | "muted";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -48,6 +50,8 @@
     proof = "stats",
     mediaSide = "end",
     tone = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: CtaProofProps = $props();
 </script>
@@ -77,6 +81,6 @@
     </Text>
   {/if}
   {#snippet aside()}
-    <MediaFrame alt={title} ratio="4/3" />
+    <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="4/3" />
   {/snippet}
 </SectionFrame>

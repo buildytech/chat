@@ -58,7 +58,7 @@
 >
   {#if ((media as string) === "image")}
     <Box class={cn("relative shrink-0", (((layout as string) === "horizontal") ? "sm:w-48" : ""))}>
-      <MediaFrame alt={dish.name} ratio="4/3" class="h-full" />
+      <MediaFrame alt={dish.name} src={dish.image} ratio="4/3" class="h-full" />
       {#if dish.badge}
         <Badge variant="default" size="default" class="absolute left-4 top-4">
           {dish.badge}

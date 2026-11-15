@@ -15,7 +15,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
-import { addScreen, catalogSnapshot, emptyPage, registrySkins, screenSupport } from "../../packages/builder-core/src/index.ts";
+import { addScreen, catalogSnapshot, emptyPage, registrySkins, screenSupport, writePage } from "../../packages/builder-core/src/index.ts";
 import { CLI_CONFIG, CLI_LOCK, packZipFiles } from "../../apps/chat-web/src/lib/page-store/pack.ts";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
@@ -37,8 +37,27 @@ function screenPage(kind: "dashboard" | "landing"): PageV2 {
 	return r.page;
 }
 
+/** Blocks whose pictures the page sets (ADR 0049): the export still equals what the CLI writes for the same items. */
+function picturePage(): PageV2 {
+	const photo = "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1200&q=80";
+	const empty = emptyPage({ title: "Pictures", locale: "en", now: NOW });
+	const r = writePage(empty, {
+		page: {
+			...empty,
+			blocks: [
+				{ item: "hero-split", props: { title: "Happy birthday", image: photo, imageAlt: "A birthday cake" } },
+				{ item: "photo-gallery", props: { title: "Photos", photos: [{ id: "p1", title: "Cake", tag: "food", size: "large", image: photo }] } },
+				{ item: "cta-band", props: { title: "Join the party", image: photo } }
+			]
+		}
+	}, { now: NOW });
+	assert.ok(r.ok, JSON.stringify(!r.ok && r.issues));
+	return r.page;
+}
+
 const SAMPLES: Array<{ label: string; page: PageV2; skin?: string }> = [
 	{ label: "fitness page, default theme", page: fitness },
+	{ label: "page with pictures (hero, gallery, cta band)", page: picturePage() },
 	{ label: "dashboard screen", page: screenPage("dashboard") },
 	{ label: "landing screen with the first registry skin", page: screenPage("landing"), skin: registrySkins()[0]!.id }
 ];

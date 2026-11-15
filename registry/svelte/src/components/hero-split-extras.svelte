@@ -46,7 +46,7 @@
     <Group gap="2" align="center">
       {#each content.people as p, i (p.id)}
         {#if (i < 4)}
-          <MediaFrame alt={p.author} ratio="1/1" class="size-10 shrink-0 rounded-full" />
+          <MediaFrame alt={p.author} src={p.image} ratio="1/1" class="size-10 shrink-0 rounded-full" />
         {/if}
       {/each}
     </Group>
@@ -85,7 +85,7 @@
             {p.quote}
           </Text>
           <Group gap="4" align="center">
-            <MediaFrame alt={p.author} ratio="1/1" class="size-10 shrink-0 rounded-full" />
+            <MediaFrame alt={p.author} src={p.image} ratio="1/1" class="size-10 shrink-0 rounded-full" />
             <Stack gap="0">
               <Text size="sm" weight="semibold">
                 {p.author}

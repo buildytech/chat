@@ -10,6 +10,7 @@ export type Quote = {
   handle: string;
   time: string;
   mark: string;
+  image?: string;
 };
 
 export type QuoteLabels = {

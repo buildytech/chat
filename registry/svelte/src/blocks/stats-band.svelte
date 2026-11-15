@@ -20,6 +20,8 @@
     align?: "start" | "center";
     tone?: "default" | "muted";
     density?: "roomy" | "default" | "compact";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -45,6 +47,8 @@
     align = "center",
     tone = "default",
     density = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: StatsBandProps = $props();
 </script>
@@ -69,7 +73,11 @@
   )}
   landmarkLabel={landmarkLabel}
 >
-  <Backdrop kind={(((surface as string) === "image") ? "image" : "none")} alt={title} />
+  <Backdrop
+    kind={(((surface as string) === "image") ? "image" : "none")}
+    alt={(imageAlt ? imageAlt : title)}
+    image={image}
+  />
   {#if ((stats?.length ?? 0) === 0)}
     <EmptyState icon="chart-column" title={empty} />
   {:else if ((surface as string) === "panel")}

@@ -27,6 +27,8 @@
     media?: "picture" | "card" | "grid" | "plans";
     mediaSide?: "end" | "start";
     tone?: "default" | "muted";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -49,6 +51,8 @@
     media = "picture",
     mediaSide = "end",
     tone = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: HeroSplitProps = $props();
 </script>
@@ -71,6 +75,6 @@
     secondaryHref={actions.secondaryHref}
   />
   {#snippet aside()}
-    <HeroSplitMedia content={content} alt={title} media={media} />
+    <HeroSplitMedia content={content} alt={(imageAlt ? imageAlt : title)} image={image} media={media} />
   {/snippet}
 </SectionFrame>

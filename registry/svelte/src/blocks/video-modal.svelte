@@ -19,6 +19,8 @@
     size?: "default" | "wide";
     outline?: "none" | "chapters";
     tone?: "default" | "muted";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -48,6 +50,8 @@
     size = "default",
     outline = "none",
     tone = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: VideoModalProps = $props();
 </script>
@@ -74,7 +78,7 @@
       </Button>
     </Group>
     <Box class="relative" data-slot="player">
-      <MediaFrame alt={title} />
+      <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} />
       <Button
         variant="default"
         size="default"

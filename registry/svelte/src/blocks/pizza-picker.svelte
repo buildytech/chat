@@ -70,7 +70,7 @@
           }
           data-slot="item"
         >
-          <MediaFrame alt={d.name} ratio="1/1" />
+          <MediaFrame alt={d.name} src={d.image} ratio="1/1" />
           <Stack gap="4" class={(((layout as string) === "rows") ? "md:col-span-2" : "")}>
             <Stack gap="2">
               <Text size="lg" weight="semibold">

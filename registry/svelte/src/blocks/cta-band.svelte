@@ -19,6 +19,8 @@
     tone?: "default" | "muted";
     proof?: "none" | "quote";
     density?: "roomy" | "default" | "compact";
+    image?: string;
+    imageAlt?: string;
     landmarkLabel?: string;
   };
 </script>
@@ -48,6 +50,8 @@
     tone = "muted",
     proof = "none",
     density = "default",
+    image,
+    imageAlt,
     landmarkLabel,
   }: CtaBandProps = $props();
   const center = $derived(((layout as string) === "band") || ((layout as string) === "banner"));
@@ -110,7 +114,7 @@
     {/if}
     <CtaActions id={id} actions={actions} center={center} />
     {#snippet aside()}
-      <MediaFrame alt={title} ratio="4/3" />
+      <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} ratio="4/3" />
     {/snippet}
   </SectionFrame>
 {/if}

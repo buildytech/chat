@@ -43,7 +43,7 @@
           "has-checked:inset-ring-foreground"}
         data-slot="option"
       >
-        <MediaFrame alt={o.name} ratio="4/3" />
+        <MediaFrame alt={o.name} src={o.image} ratio="4/3" />
         <Label class="flex items-center gap-2 font-medium">
           <Radio name={name} value={o.id} checked={(i === 0)} />
           <Inline>
