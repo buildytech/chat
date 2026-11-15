@@ -51,6 +51,7 @@ Numbering: `NNNN-kebab-title.md`. Numbers only increase; files are never renamed
 | [0045](0045-remove-old-data-paths.md) | The old-data paths are removed; old data is refused and set aside, never converted | Accepted |
 | [0046](0046-money-minor-units.md) | Money: minor units in the document, major units for the model and the author | Accepted |
 | [0047](0047-rich-text-block-removed.md) | The rich-text block is removed | Accepted |
+| [0048](0048-icon-names-and-rejected-write.md) | Old Lucide names map; an unknown icon does not fail a page; the last rejected write is kept | Accepted |
 
 Status values: Proposed, Accepted, Superseded, Deprecated, Withdrawn.
 
@@ -97,3 +98,4 @@ Status values: Proposed, Accepted, Superseded, Deprecated, Withdrawn.
 0045 removes the old-data paths (page-spec/v1 migration and model, `feed-screen` repair, legacy storage keys, proposal and layout migrations, migration counters): old data is refused with a reason and set aside in quarantine, never converted.
 0046 keeps money in minor units in the document (registry Codex v0.4) and gives the model and the author major units: names derived from the registry sources, one `toMajor` / `toMinor` pair, a boundary on what the model reads and writes (page, patch values) and in the Inspector; no prompt text about minor units; the currency symbol stays upstream.
 0047 removes the rich-text block everywhere (codegen-x specs and generators, the registry, Stock, the chat catalog): coverage 526/526, the `markup` field kind and its gap reason go, the content-blog page of rich text goes with it.
+0048 maps the old Lucide names (smile, home) to the published ones from a generated alias table, drops an optional unknown icon and gives a required one the sample icon instead of failing the page (both noted), names the first reason of a failed turn in plain words, and keeps the last rejected write in `run.rejected` (contract session 1.11.0) for diagnosis.

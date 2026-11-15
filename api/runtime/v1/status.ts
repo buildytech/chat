@@ -27745,8 +27745,299 @@ exports["RUN_BUDGET"] = RUN_BUDGET;
 
 });
 
+__def("packages/builder-core/src/catalog/lucide-aliases.json", function (exports) {
+  exports.default = {
+ "activitysquare": "square-activity",
+ "alarmcheck": "alarm-clock-check",
+ "alarmminus": "alarm-clock-minus",
+ "alarmplus": "alarm-clock-plus",
+ "album": "square-bookmark",
+ "alertcircle": "circle-exclamation-point",
+ "alertoctagon": "octagon-exclamation-point",
+ "alerttriangle": "triangle-exclamation-point",
+ "aligncenter": "text-align-center",
+ "alignjustify": "text-align-justify",
+ "alignleft": "text-align-start",
+ "alignright": "text-align-end",
+ "angry": "face-angry",
+ "annoyed": "face-expressionless",
+ "archiverestore": "archive-arrow-up",
+ "areachart": "chart-area",
+ "arrowdowncircle": "circle-arrow-down",
+ "arrowdownleftfromcircle": "circle-arrow-down-left-exit",
+ "arrowdownleftfromsquare": "square-arrow-down-left-exit",
+ "arrowdownleftsquare": "square-arrow-down-left",
+ "arrowdownrightfromcircle": "circle-arrow-down-right-exit",
+ "arrowdownrightfromsquare": "square-arrow-down-right-exit",
+ "arrowdownrightsquare": "square-arrow-down-right",
+ "arrowdownsquare": "square-arrow-down",
+ "arrowleftcircle": "circle-arrow-left",
+ "arrowleftsquare": "square-arrow-left",
+ "arrowrightcircle": "circle-arrow-right",
+ "arrowrightsquare": "square-arrow-right",
+ "arrowupcircle": "circle-arrow-up",
+ "arrowupleftfromcircle": "circle-arrow-up-left-exit",
+ "arrowupleftfromsquare": "square-arrow-up-left-exit",
+ "arrowupleftsquare": "square-arrow-up-left",
+ "arrowuprightfromcircle": "circle-arrow-up-right-exit",
+ "arrowuprightfromsquare": "square-arrow-up-right-exit",
+ "arrowuprightsquare": "square-arrow-up-right",
+ "arrowupsquare": "square-arrow-up",
+ "asterisksquare": "square-asterisk",
+ "badgealert": "badge-exclamation-point",
+ "badgehelp": "badge-question-mark",
+ "barchart": "chart-no-axes-column-increasing",
+ "barchart2": "chart-no-axes-column",
+ "barchart3": "chart-column",
+ "barchart4": "chart-column-increasing",
+ "barchartbig": "chart-column-big",
+ "barcharthorizontal": "chart-bar",
+ "barcharthorizontalbig": "chart-bar-big",
+ "batterywarning": "battery-exclamation-point",
+ "betweenhorizonalend": "between-horizontal-end",
+ "betweenhorizonalstart": "between-horizontal-start",
+ "bold": "letter-b",
+ "bookalert": "book-exclamation-point",
+ "bookmarked": "book-bookmark",
+ "booktemplate": "book-dashed",
+ "boxselect": "square-dashed",
+ "building2": "building-complex",
+ "candlestickchart": "chart-candlestick",
+ "checkcircle": "circle-check-big",
+ "checkcircle2": "circle-check",
+ "checksquare": "square-check-big",
+ "checksquare2": "square-check",
+ "chevrondowncircle": "circle-chevron-down",
+ "chevrondownsquare": "square-chevron-down",
+ "chevronleftcircle": "circle-chevron-left",
+ "chevronleftsquare": "square-chevron-left",
+ "chevronrightcircle": "circle-chevron-right",
+ "chevronrightsquare": "square-chevron-right",
+ "chevronupcircle": "circle-chevron-up",
+ "chevronupsquare": "square-chevron-up",
+ "circlealert": "circle-exclamation-point",
+ "circlearrowoutdownleft": "circle-arrow-down-left-exit",
+ "circlearrowoutdownright": "circle-arrow-down-right-exit",
+ "circlearrowoutupleft": "circle-arrow-up-left-exit",
+ "circlearrowoutupright": "circle-arrow-up-right-exit",
+ "circlehelp": "circle-question-mark",
+ "circleparking": "circle-letter-p",
+ "circleparkingoff": "circle-letter-p-off",
+ "circleslashed": "circle-slash-2",
+ "clipboardedit": "clipboard-pen",
+ "clipboardsignature": "clipboard-pen-line",
+ "clockalert": "clock-exclamation-point",
+ "cloudalert": "cloud-exclamation-point",
+ "code2": "code-xml",
+ "codesquare": "square-code",
+ "columns": "columns-2",
+ "columnssettings": "columns-3-cog",
+ "contact2": "contact-round",
+ "copyright": "circle-letter-c",
+ "curlybraces": "braces",
+ "dividecircle": "circle-divide",
+ "dividesquare": "square-divide",
+ "dotsquare": "square-dot",
+ "downloadcloud": "cloud-download",
+ "edit": "square-pen",
+ "edit2": "pen",
+ "edit3": "pen-line",
+ "equalsquare": "square-equal",
+ "fileaudio": "file-headphone",
+ "fileaudio2": "file-headphone",
+ "filebadge2": "file-badge",
+ "filebarchart": "file-chart-column-increasing",
+ "filebarchart2": "file-chart-column",
+ "filecheck2": "file-check-corner",
+ "filecode2": "file-code-corner",
+ "filecog2": "file-cog",
+ "fileedit": "file-pen",
+ "filejson": "file-braces",
+ "filejson2": "file-braces-corner",
+ "filekey2": "file-key",
+ "filelinechart": "file-chart-line",
+ "filelock2": "file-lock",
+ "fileminus2": "file-minus-corner",
+ "filepiechart": "file-chart-pie",
+ "fileplus2": "file-plus-corner",
+ "filequestion": "file-question-mark",
+ "filesearch2": "file-search-corner",
+ "filesignature": "file-pen-line",
+ "filetype2": "file-type-corner",
+ "filevideo": "file-play",
+ "filevideo2": "file-video-camera",
+ "filevolume2": "file-signal",
+ "filewarning": "file-exclamation-point",
+ "filex2": "file-x-corner",
+ "filter": "funnel",
+ "filterx": "funnel-x",
+ "fingerprint": "fingerprint-pattern",
+ "fliphorizontal": "square-centerline-dashed-horizontal",
+ "fliphorizontal2": "triangles-centerline-dashed-horizontal",
+ "flipvertical": "square-centerline-dashed-vertical",
+ "flipvertical2": "triangles-centerline-dashed-vertical",
+ "foldercog2": "folder-cog",
+ "folderedit": "folder-pen",
+ "forkknife": "utensils",
+ "forkknifecrossed": "utensils-crossed",
+ "forminput": "rectangle-ellipsis",
+ "frown": "face-slightly-frowning",
+ "functionsquare": "square-function",
+ "ganttchart": "chart-no-axes-gantt",
+ "ganttchartsquare": "square-chart-gantt",
+ "gaugecircle": "circle-gauge",
+ "gitcommit": "git-commit-horizontal",
+ "globe2": "earth",
+ "grab": "hand-grab",
+ "grid": "grid-3x3",
+ "heading": "letter-h",
+ "helpcircle": "circle-question-mark",
+ "helpinghand": "hand-helping",
+ "history": "rotate-ccw-clock",
+ "home": "house",
+ "icecream": "ice-cream-cone",
+ "icecream2": "ice-cream-bowl",
+ "indent": "list-indent-increase",
+ "indentdecrease": "list-indent-decrease",
+ "indentincrease": "list-indent-increase",
+ "inspect": "square-mouse-pointer",
+ "kanbansquare": "square-kanban",
+ "kanbansquaredashed": "square-dashed-kanban",
+ "laptop2": "laptop-minimal",
+ "laugh": "face-grinning",
+ "layers3": "layers",
+ "layout": "panels-top-left",
+ "lettertext": "text-initial",
+ "librarysquare": "square-library",
+ "linechart": "chart-line",
+ "loader2": "loader-circle",
+ "locationedit": "map-pin-pen",
+ "mailalert": "mail-exclamation-point",
+ "mailquestion": "mail-question-mark",
+ "mailwarning": "mail-exclamation-point",
+ "meh": "face-neutral",
+ "menusquare": "square-menu",
+ "messagecirclealert": "message-circle-exclamation-point",
+ "messagecirclequestion": "message-circle-question-mark",
+ "messagecirclewarning": "message-circle-exclamation-point",
+ "messagesquarealert": "message-square-exclamation-point",
+ "messagesquarewarning": "message-square-exclamation-point",
+ "mic2": "mic-vocal",
+ "minuscircle": "circle-minus",
+ "minussquare": "square-minus",
+ "morehorizontal": "ellipsis",
+ "morevertical": "ellipsis-vertical",
+ "mousepointersquaredashed": "square-dashed-mouse-pointer",
+ "msquare": "square-letter-m",
+ "music": "eighth-notes",
+ "music2": "eighth-note",
+ "music3": "half-note",
+ "music4": "sixteenth-notes",
+ "octagonalert": "octagon-exclamation-point",
+ "outdent": "list-indent-decrease",
+ "paintbrush2": "paintbrush-vertical",
+ "palmtree": "tree-palm",
+ "panelbottominactive": "panel-bottom-dashed",
+ "panelleftinactive": "panel-left-dashed",
+ "panelrightinactive": "panel-right-dashed",
+ "panelsleftright": "columns-3",
+ "panelstopbottom": "rows-3",
+ "paneltopinactive": "panel-top-dashed",
+ "parkingcircle": "circle-letter-p",
+ "parkingcircleoff": "circle-letter-p-off",
+ "parkingsquare": "square-letter-p",
+ "parkingsquareoff": "square-letter-p-off",
+ "pausecircle": "circle-pause",
+ "pauseoctagon": "octagon-pause",
+ "penbox": "square-pen",
+ "pensquare": "square-pen",
+ "percentcircle": "circle-percent",
+ "percentdiamond": "diamond-percent",
+ "percentsquare": "square-percent",
+ "piechart": "chart-pie",
+ "pilcrowsquare": "square-pilcrow",
+ "pisquare": "square-pi",
+ "playcircle": "circle-play",
+ "playsquare": "square-play",
+ "plugzap2": "plug-zap",
+ "pluscircle": "circle-plus",
+ "plussquare": "square-plus",
+ "podcast": "mic-signal",
+ "powercircle": "circle-power",
+ "powersquare": "square-power",
+ "rows": "rows-2",
+ "scatterchart": "chart-scatter",
+ "school2": "university",
+ "scissorssquare": "square-scissors",
+ "scissorssquaredashedbottom": "square-bottom-dashed-scissors",
+ "searchalert": "search-exclamation-point",
+ "sendhorizonal": "send-horizontal",
+ "shieldalert": "shield-exclamation-point",
+ "shieldclose": "shield-x",
+ "shieldquestion": "shield-question-mark",
+ "sidebar": "panel-left",
+ "sidebarclose": "panel-left-close",
+ "sidebaropen": "panel-left-open",
+ "sigmasquare": "square-sigma",
+ "slashsquare": "square-slash",
+ "sliders": "sliders-vertical",
+ "smile": "face-slightly-smiling",
+ "smileplus": "face-slightly-smiling-plus",
+ "sortasc": "arrow-up-narrow-wide",
+ "sortdesc": "arrow-down-wide-narrow",
+ "splitsquarehorizontal": "square-split-horizontal",
+ "splitsquarevertical": "square-split-vertical",
+ "squarearrowoutdownleft": "square-arrow-down-left-exit",
+ "squarearrowoutdownright": "square-arrow-down-right-exit",
+ "squarearrowoutupleft": "square-arrow-up-left-exit",
+ "squarearrowoutupright": "square-arrow-up-right-exit",
+ "squareganttchart": "square-chart-gantt",
+ "squarem": "square-letter-m",
+ "squareparking": "square-letter-p",
+ "squareparkingoff": "square-letter-p-off",
+ "stars": "sparkles",
+ "stopcircle": "circle-stop",
+ "subtitles": "captions",
+ "tableconfig": "columns-3-cog",
+ "terminalsquare": "square-terminal",
+ "testtube2": "test-tube-diagonal",
+ "text": "text-align-start",
+ "textselect": "square-dashed-text",
+ "textselection": "square-dashed-text",
+ "train": "tram-front",
+ "trash2": "trash",
+ "trianglealert": "triangle-exclamation-point",
+ "tv2": "tv-minimal",
+ "unlock": "lock-open",
+ "unlockkeyhole": "lock-keyhole-open",
+ "uploadcloud": "cloud-upload",
+ "user2": "user-round",
+ "usercheck2": "user-round-check",
+ "usercircle": "circle-user",
+ "usercircle2": "circle-user-round",
+ "usercog2": "user-round-cog",
+ "userminus2": "user-round-minus",
+ "userplus2": "user-round-plus",
+ "users2": "users-round",
+ "usersquare": "square-user",
+ "usersquare2": "square-user-round",
+ "userx2": "user-round-x",
+ "verified": "badge-check",
+ "wallet2": "wallet-minimal",
+ "wand2": "wand-sparkles",
+ "waves": "waves-horizontal",
+ "wraptext": "text-wrap",
+ "xcircle": "circle-x",
+ "xoctagon": "octagon-x",
+ "xsquare": "square-x"
+};
+});
+
 __def("packages/builder-core/src/icon-name.ts", function (exports) {
 const { lucideIcons } = __req("packages/builder-core/src/catalog/props-schema.ts");
+const aliasTable = __req("packages/builder-core/src/catalog/lucide-aliases.json").default;
+const ALIASES: Record<string, string> = aliasTable;
+
 let INDEX: { names: Set<string>; byKey: Map<string, string> } | null = null;
 
 function key(name: string): string {
@@ -27788,6 +28079,12 @@ function distance(a: string, b: string, max: number): number {
 	return prev[b.length]!;
 }
 
+/** The published icon an old Lucide name stands for (smile -> face-slightly-smiling), when the enum has it. */
+function aliasOf(aliases: Record<string, string>, names: Set<string>, name: string): string | undefined {
+	const target = aliases[key(name)];
+	return target && names.has(target) ? target : undefined;
+}
+
 /** The published icon name for a model's name, or null when none is close enough. */
 function resolveIconName(raw: string): string | null {
 	const { names, byKey } = index();
@@ -27795,7 +28092,7 @@ function resolveIconName(raw: string): string | null {
 	if (names.has(raw)) return raw;
 	const name = kebab(raw);
 	if (names.has(name)) return name;
-	const hit = byKey.get(key(name)) ?? (name.endsWith("s") ? byKey.get(key(name.slice(0, -1))) : undefined);
+	const hit = byKey.get(key(name)) ?? aliasOf(ALIASES, names, name) ?? (name.endsWith("s") ? byKey.get(key(name.slice(0, -1))) : undefined);
 	if (hit) return hit;
 	// Typos only: one edit from 5 characters, two from 8; never a short or loose guess.
 	const max = name.length >= 8 ? 2 : name.length >= 5 ? 1 : 0;
@@ -28461,31 +28758,42 @@ function freshBlockId(item: string, taken: Set<string>): string {
 	return id;
 }
 
-/** Icon props (fields of kind icon, in lists and objects) mapped to the published Lucide names (spelling only); an unknown name stays and fails the gate. */
-function repairIcons(item: string, props: Record<string, unknown>, notes: string[], at: string): Record<string, unknown> {
+/**
+ * Icon props (fields of kind icon, in lists and objects) mapped to the published Lucide names. A name Lucide does not have:
+ * an optional icon is dropped, a required one takes the icon of the same field in the block's sample props (both noted);
+ * with no such icon it stays and fails the gate, which names the path and the nearest real icons.
+ */
+function repairIcons(item: string, props: Record<string, unknown>, sample: Record<string, unknown>, notes: string[], at: string): Record<string, unknown> {
 	const tree = propsFieldTree(item);
 	if (!tree) return props;
-	const walk = (value: unknown, nodes: PropsFieldNode[] | undefined, path: string): unknown => {
+	const walk = (value: unknown, nodes: PropsFieldNode[] | undefined, path: string, model: unknown): unknown => {
 		if (!nodes || !isObject(value)) return value;
 		const out: Record<string, unknown> = {};
+		const modelOf = (key: string): unknown => (isObject(model) ? model[key] : undefined);
 		for (const [key, inner] of Object.entries(value)) {
 			const node = nodes.find((entry) => entry.name === key);
 			const here = `${path}/${key}`;
 			if (node?.kind === "icon" && typeof inner === "string") {
 				const fixed = resolveIconName(inner);
-				// An unknown name is kept as written: the props gate rejects it at this path and names the nearest real icons.
-				if (fixed === null) out[key] = inner;
-				else {
+				const stand = modelOf(key);
+				const fallback = typeof stand === "string" ? resolveIconName(stand) : null;
+				if (fixed !== null) {
 					if (fixed !== inner) notes.push(`${here}: icon "${inner}" written as "${fixed}".`);
 					out[key] = fixed;
-				}
-			} else if (node?.kind === "list" && Array.isArray(inner)) out[key] = inner.map((row, index) => walk(row, node.fields, `${here}/${index}`));
-			else if (node?.kind === "object") out[key] = walk(inner, node.fields, here);
+				} else if (!node.required) notes.push(`${here}: icon "${inner}" is not a Lucide icon; dropped (the element renders without an icon).`);
+				else if (fallback) {
+					notes.push(`${here}: icon "${inner}" is not a Lucide icon; the sample icon "${fallback}" is used.`);
+					out[key] = fallback;
+				} else out[key] = inner;
+			} else if (node?.kind === "list" && Array.isArray(inner)) {
+				const rows = modelOf(key);
+				out[key] = inner.map((row, index) => walk(row, node.fields, `${here}/${index}`, Array.isArray(rows) ? rows[0] : undefined));
+			} else if (node?.kind === "object") out[key] = walk(inner, node.fields, here, modelOf(key));
 			else out[key] = inner;
 		}
 		return out;
 	};
-	return walk(props, tree, `${at}/props`) as Record<string, unknown>;
+	return walk(props, tree, `${at}/props`, sample) as Record<string, unknown>;
 }
 
 /** Text props both items have (the same name, a string in the old props): kept when an item is swapped for another. */
@@ -28546,7 +28854,7 @@ function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): void {
 				notes.push(`${out.id}: variant ${prior.variant ?? "default"} -> ${out.variant ?? "default"}; layout axes taken from the new variant.`);
 			} else props = effectiveProps(out.item, out.variant, props0, BLANK);
 		}
-		out.props = repairIcons(out.item, props, notes, at) as Record<string, PropValueV2>;
+		out.props = repairIcons(out.item, props, sampleProps(out.item, out.variant, out.id), notes, at) as Record<string, PropValueV2>;
 		return out;
 	});
 }
@@ -30389,6 +30697,29 @@ const { checkCollection } = __req("packages/builder-core/src/index.ts");
 const { diffPages } = __req("packages/builder-core/src/index.ts");
 const { writeInputFromModel, writePage } = __req("packages/builder-core/src/index.ts");
 const { blankRequired } = __req("packages/builder-core/src/index.ts");
+const REJECTED_DOC_CHARS = 24_000;
+const cut = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 3)}...` : text);
+
+/** What a failed turn keeps of its last rejected write: the first issues and the document (when large: the block of the first issue). */
+function rejectedWrite(input: Record<string, unknown>, issues: DocIssue[], code: string): RejectedWrite {
+	const doc = input.page ?? input.patch;
+	const out: RejectedWrite = {
+		code,
+		issues: issues.slice(0, 5).map((issue) => ({
+			path: issue.path,
+			code: issue.code,
+			expected: cut(issue.expected, 300),
+			...(issue.got === undefined ? {} : { got: typeof issue.got === "object" && issue.got !== null ? cut(JSON.stringify(issue.got), 200) : typeof issue.got === "string" ? cut(issue.got, 200) : issue.got })
+		}))
+	};
+	if (doc === undefined) return out;
+	if (JSON.stringify(doc).length <= REJECTED_DOC_CHARS) return { ...out, doc };
+	const at = /^\/blocks\/(\d+)/.exec(issues[0]?.path ?? "");
+	const blocks: unknown = typeof doc === "object" && doc !== null ? Reflect.get(doc, "blocks") : undefined;
+	const block = at && Array.isArray(blocks) ? blocks[Number(at[1])] : undefined;
+	return block !== undefined && JSON.stringify(block).length <= REJECTED_DOC_CHARS ? { ...out, doc: { block }, partial: true } : out;
+}
+
 function isAgentReply(value: unknown): value is AgentReply {
 	return Boolean(value && typeof value === "object" && (value as { reply?: unknown }).reply === "text" && (value as { ok?: unknown }).ok === true);
 }
@@ -30460,6 +30791,7 @@ function runWriteTool(ctx: TurnContext, working: PageV2, args: Record<string, un
 	};
 }
 
+exports["rejectedWrite"] = rejectedWrite;
 exports["isAgentReply"] = isAgentReply;
 exports["agentReply"] = agentReply;
 exports["scopeIssues"] = scopeIssues;
@@ -31284,7 +31616,7 @@ const SYSTEM_COMMON = [
 	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
 	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
 	"- item is a registry item (npx ui8kit add <item>); itemIndex lists every item with its variants (header / footer roles are marked as information only). variant is one of the item's variants.",
-	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field; an icon is a real Lucide icon name in kebab-case: an unknown name is rejected with its path and the nearest real names, pick one of those.",
+	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field; an icon is a real Lucide icon name in kebab-case (old names like smile or home are mapped; a name Lucide does not have is dropped from an optional icon and replaced by the sample icon in a required one, both noted in the answer). No block has an image URL prop: image slots are placeholders the host renders, so never invent image URLs and never write in the page text that photos were added or replaced.",
 	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision, header and footer included (the roles in itemIndex are information, not rules: a banner may stand above a header, a page may hold several headers, a footer may stand anywhere): pick, replace, add, remove and reorder blocks as the request needs. Screens from search_catalog are hints, never constraints.",
 	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
 	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
@@ -31427,7 +31759,7 @@ exports["installPropsGate"] = installPropsGate;
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
 const { RUN_BUDGET, itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
-const { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
+const { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, rejectedWrite, runWriteTool, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
 const { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } = __req("apps/xai-runtime/src/chat-prompts.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
@@ -31608,7 +31940,7 @@ type TurnResultOut = { result: AgentReply | AgentFailure; meta: LiveTurnMeta };
 type IssueSet = { signature: string; issues: Array<{ path: string; code: string; expected: string; got?: unknown }>; message: string };
 
 /** What the loop has so far: the working page, the last accepted proposal, the last failed write, the catalog blocks read. */
-type LoopState = { working: PageV2; proposal: PageProposal | null; lastIssues: IssueSet | null; stuck: IssueSet | null; blocks: string[]; accepted: boolean };
+type LoopState = { working: PageV2; proposal: PageProposal | null; lastIssues: IssueSet | null; stuck: IssueSet | null; blocks: string[]; accepted: boolean; rejected: AgentFailure["rejected"] | null };
 
 type ToolCall = NonNullable<ChatMessage["tool_calls"]>[number];
 
@@ -31623,6 +31955,7 @@ function runToolCall(ctx: TurnContext, state: LoopState, name: string, args: Rec
 			state.lastIssues = null;
 			return written.payload;
 		}
+		state.rejected = rejectedWrite(args, written.issues, written.code);
 		const sig = signature(written.issues);
 		if (state.lastIssues?.signature === sig) state.stuck = { signature: sig, issues: written.issues, message: written.message };
 		state.lastIssues = { signature: sig, issues: written.issues, message: written.message };
@@ -31640,12 +31973,13 @@ function runToolCall(ctx: TurnContext, state: LoopState, name: string, args: Rec
 /** The result of a finished loop: the proposal, a stuck or invalid write, the text answer, or no answer. */
 function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: number, meta: LiveTurnMeta): TurnResultOut {
 	const { stuck, proposal, lastIssues } = state;
+	const rejected = state.rejected ? { rejected: state.rejected } : {};
 	if (stuck) {
 		const shown = stuck.issues.slice(0, 3).map((issue) => `${issue.path} ${issue.code}`).join("; ");
-		return { result: { ok: false, code: "write_stuck", message: `The page was not written: the agent sent the same invalid page twice (${shown}). Nothing changed.`, issues: stuck.issues }, meta };
+		return { result: { ok: false, code: "write_stuck", message: `The page was not written: the agent sent the same invalid page twice (${shown}). Nothing changed.`, issues: stuck.issues, ...rejected }, meta };
 	}
 	if (proposal && proposal.diff.length > 0) return { result: agentReply(ctx.mode, text, state.blocks, proposal), meta };
-	if (lastIssues) return { result: { ok: false, code: "write_invalid", message: lastIssues.message, issues: lastIssues.issues }, meta };
+	if (lastIssues) return { result: { ok: false, code: "write_invalid", message: lastIssues.message, issues: lastIssues.issues, ...rejected }, meta };
 	if (text) return { result: agentReply(ctx.mode, text, state.blocks), meta };
 	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${steps} step${steps === 1 ? "" : "s"}.` }, meta };
 }
@@ -31660,7 +31994,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 		{ role: "user", content: userPrompt(ctx, problems) }
 	];
 	const tools = agentOpenAiTools(ctx.mode);
-	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false };
+	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false, rejected: null };
 	let text = "";
 	const finish = (): LiveTurnMeta => {
 		// Complete when every request reported its usage; incomplete only for a request that did not (it was always marked incomplete before).

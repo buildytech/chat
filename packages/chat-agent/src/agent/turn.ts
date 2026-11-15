@@ -49,7 +49,33 @@ export type AgentReply = {
 	proposal?: PageProposal;
 };
 
-export type AgentFailure = { ok: false; code: string; message: string; issues?: DocIssue[] };
+/** The last write the host rejected, kept small for diagnosis (the run record of the chat message; no prompts, no keys). */
+export type RejectedWrite = { code: string; issues: Array<{ path: string; code: string; expected: string; got?: unknown }>; doc?: unknown; partial?: true };
+
+export type AgentFailure = { ok: false; code: string; message: string; issues?: DocIssue[]; rejected?: RejectedWrite };
+
+const REJECTED_DOC_CHARS = 24_000;
+const cut = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 3)}...` : text);
+
+/** What a failed turn keeps of its last rejected write: the first issues and the document (when large: the block of the first issue). */
+export function rejectedWrite(input: Record<string, unknown>, issues: DocIssue[], code: string): RejectedWrite {
+	const doc = input.page ?? input.patch;
+	const out: RejectedWrite = {
+		code,
+		issues: issues.slice(0, 5).map((issue) => ({
+			path: issue.path,
+			code: issue.code,
+			expected: cut(issue.expected, 300),
+			...(issue.got === undefined ? {} : { got: typeof issue.got === "object" && issue.got !== null ? cut(JSON.stringify(issue.got), 200) : typeof issue.got === "string" ? cut(issue.got, 200) : issue.got })
+		}))
+	};
+	if (doc === undefined) return out;
+	if (JSON.stringify(doc).length <= REJECTED_DOC_CHARS) return { ...out, doc };
+	const at = /^\/blocks\/(\d+)/.exec(issues[0]?.path ?? "");
+	const blocks: unknown = typeof doc === "object" && doc !== null ? Reflect.get(doc, "blocks") : undefined;
+	const block = at && Array.isArray(blocks) ? blocks[Number(at[1])] : undefined;
+	return block !== undefined && JSON.stringify(block).length <= REJECTED_DOC_CHARS ? { ...out, doc: { block }, partial: true } : out;
+}
 
 export function isAgentReply(value: unknown): value is AgentReply {
 	return Boolean(value && typeof value === "object" && (value as { reply?: unknown }).reply === "text" && (value as { ok?: unknown }).ok === true);

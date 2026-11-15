@@ -6,7 +6,7 @@
  * loop stops after two identical error lists. There is no local repair, no operation taxonomy, no phrase recognition.
  */
 import { RUN_BUDGET, itemInfo, renderProblems } from "@buildytech/builder-core";
-import { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, runWriteTool, safeErrorMessage, unknownUsage, type AgentFailure, type AgentReply, type PageProposal, type RunUsage, type StepUsage, type TurnContext } from "@buildytech/chat-agent";
+import { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, rejectedWrite, runWriteTool, safeErrorMessage, unknownUsage, type AgentFailure, type AgentReply, type PageProposal, type RunUsage, type StepUsage, type TurnContext } from "@buildytech/chat-agent";
 import { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./chat-prompts.ts";
 import type { PageV2 } from "@buildytech/page-contract";
 import { installPropsGate } from "@buildytech/builder-core/props-gate";
@@ -190,7 +190,7 @@ type TurnResultOut = { result: AgentReply | AgentFailure; meta: LiveTurnMeta };
 type IssueSet = { signature: string; issues: Array<{ path: string; code: string; expected: string; got?: unknown }>; message: string };
 
 /** What the loop has so far: the working page, the last accepted proposal, the last failed write, the catalog blocks read. */
-type LoopState = { working: PageV2; proposal: PageProposal | null; lastIssues: IssueSet | null; stuck: IssueSet | null; blocks: string[]; accepted: boolean };
+type LoopState = { working: PageV2; proposal: PageProposal | null; lastIssues: IssueSet | null; stuck: IssueSet | null; blocks: string[]; accepted: boolean; rejected: AgentFailure["rejected"] | null };
 
 type ToolCall = NonNullable<ChatMessage["tool_calls"]>[number];
 
@@ -205,6 +205,7 @@ function runToolCall(ctx: TurnContext, state: LoopState, name: string, args: Rec
 			state.lastIssues = null;
 			return written.payload;
 		}
+		state.rejected = rejectedWrite(args, written.issues, written.code);
 		const sig = signature(written.issues);
 		if (state.lastIssues?.signature === sig) state.stuck = { signature: sig, issues: written.issues, message: written.message };
 		state.lastIssues = { signature: sig, issues: written.issues, message: written.message };
@@ -222,12 +223,13 @@ function runToolCall(ctx: TurnContext, state: LoopState, name: string, args: Rec
 /** The result of a finished loop: the proposal, a stuck or invalid write, the text answer, or no answer. */
 function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: number, meta: LiveTurnMeta): TurnResultOut {
 	const { stuck, proposal, lastIssues } = state;
+	const rejected = state.rejected ? { rejected: state.rejected } : {};
 	if (stuck) {
 		const shown = stuck.issues.slice(0, 3).map((issue) => `${issue.path} ${issue.code}`).join("; ");
-		return { result: { ok: false, code: "write_stuck", message: `The page was not written: the agent sent the same invalid page twice (${shown}). Nothing changed.`, issues: stuck.issues }, meta };
+		return { result: { ok: false, code: "write_stuck", message: `The page was not written: the agent sent the same invalid page twice (${shown}). Nothing changed.`, issues: stuck.issues, ...rejected }, meta };
 	}
 	if (proposal && proposal.diff.length > 0) return { result: agentReply(ctx.mode, text, state.blocks, proposal), meta };
-	if (lastIssues) return { result: { ok: false, code: "write_invalid", message: lastIssues.message, issues: lastIssues.issues }, meta };
+	if (lastIssues) return { result: { ok: false, code: "write_invalid", message: lastIssues.message, issues: lastIssues.issues, ...rejected }, meta };
 	if (text) return { result: agentReply(ctx.mode, text, state.blocks), meta };
 	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${steps} step${steps === 1 ? "" : "s"}.` }, meta };
 }
@@ -242,7 +244,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 		{ role: "user", content: userPrompt(ctx, problems) }
 	];
 	const tools = agentOpenAiTools(ctx.mode);
-	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false };
+	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false, rejected: null };
 	let text = "";
 	const finish = (): LiveTurnMeta => {
 		// Complete when every request reported its usage; incomplete only for a request that did not (it was always marked incomplete before).

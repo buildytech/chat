@@ -1,5 +1,5 @@
 import type { CatalogRefs, DiffEntry, ScenarioId } from "@buildytech/builder-core";
-import type { AgentMode, RunUsage, SessionUsage } from "@buildytech/chat-agent";
+import type { AgentMode, RejectedWrite, RunUsage, SessionUsage } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import type { SessionRevisionEntry } from "@buildytech/page-contract/session";
 
@@ -77,6 +77,8 @@ export type ChatRunRecord = {
 	tools?: string[];
 	runId?: string;
 	usage: RunUsage;
+	/** A turn that ended without an accepted write: the last rejected write (first issues and the document), for diagnosis of an exported session (contract 1.11.0; small, no secrets). */
+	rejected?: RejectedWrite;
 };
 
 export type ChatMessage = {

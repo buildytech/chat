@@ -6,13 +6,13 @@
  *  2. right screen: a food/delivery request finds the food screens and dish blocks through the general Stock search.
  *     Replacing a block with a dish block takes the dish sample props.
  *  3. assembly and content in ONE write_page (3 model requests, no empty blocks).
- *  4. an unknown Lucide icon is rejected with its path and the nearest real names; the page title comes from the request.
+ *  4. an old Lucide name is mapped to the published one, an unknown icon is replaced by the sample icon (noted) instead of failing the page.
  */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { blankRequired, checkPageDoc, effectiveProps, emptyPage, itemInfo, renderBlock, sampleProps, screenItems, writePage } from "../../packages/builder-core/src/index.ts";
+import { blankRequired, checkPageDoc, effectiveProps, emptyPage, itemInfo, lucideIcons, renderBlock, sampleProps, screenItems, writePage } from "../../packages/builder-core/src/index.ts";
 import { executeCatalogTool, runWriteTool, type AgentReply } from "../../packages/chat-agent/src/index.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
@@ -110,29 +110,25 @@ test("3. Build: assembly and content in ONE write_page, 2 model requests, nothin
 	assert.ok(FOOD_SCREEN.test(searched.items[0]!.screenId), JSON.stringify(searched).slice(0, 300));
 });
 
-test("4. a write that leaves required text empty is told which paths; unknown icons are rejected with the path, then fixed", async () => {
+test("4. a write that leaves required text empty is told which paths; unknown icons are mapped or replaced with a note, the write is accepted", async () => {
 	const base = newPage();
 	const bareHero = { ...fill, blocks: fill.blocks.map((b) => (b.id === "block-hero" ? { id: b.id, item: b.item, variant: b.variant } : b)) };
 	const badIcons = JSON.parse(JSON.stringify(fill)) as PageV2;
 	const links = (badIcons.blocks[0]!.props as { links: Array<{ icon: string }> }).links;
 	[links[0]!.icon, links[1]!.icon, links[2]!.icon] = ["home", "lamb", "chicken"];
-	const script: Scripted[] = [
-		{ calls: [{ name: "write_page", arguments: { page: badIcons } }] },
-		{ calls: [{ name: "write_page", arguments: { page: fill } }] },
-		{ content: "Never asked for." }
-	];
+	const script: Scripted[] = [{ calls: [{ name: "write_page", arguments: { page: badIcons } }] }, { content: "Never asked for." }];
 	const { out, seen } = await withProvider(script, async (seen) => ({
 		out: await runXaiCatalogTurn("k", MODEL, { brief: BRIEF, mode: "build", page: base, expectedRevision: 0 }, signal()),
 		seen
 	}));
-	assert.equal(seen.requests.length, 2, "the accepted write ends the turn");
-	const rejected = (seen.requests[1]!.messages as Array<{ role: string; content?: string }>).filter((m) => m.role === "tool").map((m) => JSON.parse(m.content!) as { issues: Array<{ path: string; code: string; expected: string; got: unknown }> });
-	assert.deepEqual(rejected[0]!.issues.map((i) => [i.path, i.code, i.got]), [
-		["/blocks/0/props/links/0/icon", "props_invalid", "home"],
-		["/blocks/0/props/links/1/icon", "props_invalid", "lamb"],
-		["/blocks/0/props/links/2/icon", "props_invalid", "chicken"]
-	]);
-	assert.match(rejected[0]!.issues[0]!.expected, /not one, nearest: .*; any other real name works/);
+	assert.equal(seen.requests.length, 1, "the accepted write ends the turn");
+	const proposal = (out.result as AgentReply).proposal!;
+	const icons = (proposal.page.blocks[0]!.props as { links: Array<{ icon: string }> }).links.slice(0, 3).map((l) => l.icon);
+	assert.equal(icons[0], "house", "home is the old Lucide name of house");
+	assert.ok(icons.every((icon) => lucideIcons().includes(icon)), JSON.stringify(icons));
+	const notes = proposal.warnings.join("\n");
+	assert.match(notes, /links\/0\/icon: icon "home" written as "house"/);
+	assert.match(notes, /links\/1\/icon: icon "lamb" is not a Lucide icon; the sample icon/);
 	// the fill hint of an accepted write that leaves required text empty (the turn itself ends on the accepted write)
 	const bare = runWriteTool({ brief: BRIEF, mode: "build", page: base, expectedRevision: 0 }, base, { page: bareHero });
 	assert.ok(bare.ok);

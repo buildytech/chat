@@ -55,7 +55,7 @@ function finishedSession(pending: ChatSession, out: Awaited<ReturnType<typeof ru
 		tools: agentToolNames(mode),
 		note: runtimeNoteFor(status)
 	};
-	run.lastError = result.ok ? null : localizedRunError(result.code, result.message, modelId);
+	run.lastError = result.ok ? null : localizedRunError(result.code, result.message, modelId, "issues" in result ? result.issues : undefined);
 	const reply = replyMessage(out);
 	// A new proposal supersedes the pending ones of its own kind: an Ask proposal the Ask ones, a Build proposal the Build ones.
 	const prior = reply.proposal ? markPendingProposals(pending.messages, "superseded", "all", (m) => (m.mode === "ask") === (reply.mode === "ask")) : pending.messages;

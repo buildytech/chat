@@ -6,7 +6,7 @@
  *   - a block whose `item` changed without props of its own gets the sample props of the new item; text props the two
  *     items share (title, lead, ...) are carried over;
  *   - a block whose `variant` changed without touching the layout axes gets the axes of the new variant's preset;
- *   - icon names are mapped to the published Lucide name by spelling (a name that matches nothing is rejected by the gate, with the nearest real names);
+ *   - icon names are mapped to the published Lucide name (spelling, old Lucide names); a name that matches nothing is dropped (optional icon) or replaced by the sample icon of the field (required), with a note;
  *   - host-managed fields (id, status, createdAt, updatedAt) always come from the base page.
  * Blocks nothing touched stay byte for byte as they are. Then the one gate (gate.ts) judges the result; on failure the
  * answer is a list of { path, code, expected, got }. No local repair of a rejected write, no operation taxonomy.
@@ -52,31 +52,42 @@ export function freshBlockId(item: string, taken: Set<string>): string {
 	return id;
 }
 
-/** Icon props (fields of kind icon, in lists and objects) mapped to the published Lucide names (spelling only); an unknown name stays and fails the gate. */
-function repairIcons(item: string, props: Record<string, unknown>, notes: string[], at: string): Record<string, unknown> {
+/**
+ * Icon props (fields of kind icon, in lists and objects) mapped to the published Lucide names. A name Lucide does not have:
+ * an optional icon is dropped, a required one takes the icon of the same field in the block's sample props (both noted);
+ * with no such icon it stays and fails the gate, which names the path and the nearest real icons.
+ */
+function repairIcons(item: string, props: Record<string, unknown>, sample: Record<string, unknown>, notes: string[], at: string): Record<string, unknown> {
 	const tree = propsFieldTree(item);
 	if (!tree) return props;
-	const walk = (value: unknown, nodes: PropsFieldNode[] | undefined, path: string): unknown => {
+	const walk = (value: unknown, nodes: PropsFieldNode[] | undefined, path: string, model: unknown): unknown => {
 		if (!nodes || !isObject(value)) return value;
 		const out: Record<string, unknown> = {};
+		const modelOf = (key: string): unknown => (isObject(model) ? model[key] : undefined);
 		for (const [key, inner] of Object.entries(value)) {
 			const node = nodes.find((entry) => entry.name === key);
 			const here = `${path}/${key}`;
 			if (node?.kind === "icon" && typeof inner === "string") {
 				const fixed = resolveIconName(inner);
-				// An unknown name is kept as written: the props gate rejects it at this path and names the nearest real icons.
-				if (fixed === null) out[key] = inner;
-				else {
+				const stand = modelOf(key);
+				const fallback = typeof stand === "string" ? resolveIconName(stand) : null;
+				if (fixed !== null) {
 					if (fixed !== inner) notes.push(`${here}: icon "${inner}" written as "${fixed}".`);
 					out[key] = fixed;
-				}
-			} else if (node?.kind === "list" && Array.isArray(inner)) out[key] = inner.map((row, index) => walk(row, node.fields, `${here}/${index}`));
-			else if (node?.kind === "object") out[key] = walk(inner, node.fields, here);
+				} else if (!node.required) notes.push(`${here}: icon "${inner}" is not a Lucide icon; dropped (the element renders without an icon).`);
+				else if (fallback) {
+					notes.push(`${here}: icon "${inner}" is not a Lucide icon; the sample icon "${fallback}" is used.`);
+					out[key] = fallback;
+				} else out[key] = inner;
+			} else if (node?.kind === "list" && Array.isArray(inner)) {
+				const rows = modelOf(key);
+				out[key] = inner.map((row, index) => walk(row, node.fields, `${here}/${index}`, Array.isArray(rows) ? rows[0] : undefined));
+			} else if (node?.kind === "object") out[key] = walk(inner, node.fields, here, modelOf(key));
 			else out[key] = inner;
 		}
 		return out;
 	};
-	return walk(props, tree, `${at}/props`) as Record<string, unknown>;
+	return walk(props, tree, `${at}/props`, sample) as Record<string, unknown>;
 }
 
 /** Text props both items have (the same name, a string in the old props): kept when an item is swapped for another. */
@@ -137,7 +148,7 @@ export function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): vo
 				notes.push(`${out.id}: variant ${prior.variant ?? "default"} -> ${out.variant ?? "default"}; layout axes taken from the new variant.`);
 			} else props = effectiveProps(out.item, out.variant, props0, BLANK);
 		}
-		out.props = repairIcons(out.item, props, notes, at) as Record<string, PropValueV2>;
+		out.props = repairIcons(out.item, props, sampleProps(out.item, out.variant, out.id), notes, at) as Record<string, PropValueV2>;
 		return out;
 	});
 }

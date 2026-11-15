@@ -30,6 +30,7 @@ CI: `.github/workflows/ci.yml`. Operator notes: [.project/](../.project/README.m
 | `npm run snapshot` | Rebuild the Stock plus registry graph (network, about 1 minute); `snapshot:check` is offline; `snapshot:derive` after a policy edit |
 | `npm run registry:snapshot` / `registry:check` | The pinned UI8Kit CLI snapshot in `registry/svelte` |
 | `npm run schema:check` | The page-spec schema against the validator |
+| `npm run icons:aliases` / `icons:aliases:check` | The old Lucide names (smile, home) of the pinned `lucide` package in `lucide-aliases.json` |
 
 ## Optional xAI runtime
 

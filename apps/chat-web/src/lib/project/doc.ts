@@ -1,5 +1,5 @@
 /**
- * The stored session document (`session.schema.json#/$defs/session`, session 1.10.0) as a project plus its extensions.
+ * The stored session document (`session.schema.json#/$defs/session`, session 1.11.0) as a project plus its extensions.
  * Pure. `projectOfDoc` and `docOfProject` are inverse for every document this app writes: the extensions of a project
  * (`ext.<name>`, the chat is `ext.chat`) are stored under `ext` as they are, a project with no extension has no `ext`.
  * `projectId` is written only when it differs from `id`.

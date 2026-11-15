@@ -17,6 +17,7 @@ import type { Project } from "../../../lib/project/types.ts";
 import { getSelectedSession } from "./chat.svelte.ts";
 import { blockScope } from "./block-scope.svelte.ts";
 import { conversationForTurn } from "./conversation";
+import { firstReason, type RejectedIssue } from "./reason";
 import { collectionRequest } from "./collection";
 import type { ChatMessage, ChatProposalState, ChatRunRecord, ChatSession } from "./types";
 
@@ -83,6 +84,7 @@ export function runRecord(opts: {
 	path?: string;
 	tools?: string[];
 	runId?: string;
+	rejected?: ChatRunRecord["rejected"];
 }): ChatRunRecord {
 	const model = getChatModel(opts.modelId);
 	return {
@@ -97,7 +99,8 @@ export function runRecord(opts: {
 		path: opts.path,
 		tools: opts.tools,
 		runId: opts.runId,
-		usage: opts.usage
+		usage: opts.usage,
+		...(opts.rejected ? { rejected: opts.rejected } : {})
 	};
 }
 
@@ -159,7 +162,7 @@ export function runtimeNoteFor(status: { ready?: boolean; code?: string }): stri
 }
 
 /** Never show platform text (for example Vercel's "An error occurred with your deployment"). */
-export function localizedRunError(code: string | undefined, message: string, modelId: string): string {
+export function localizedRunError(code: string | undefined, message: string, modelId: string, issues?: readonly RejectedIssue[]): string {
 	const label = getChatModel(modelId)?.label ?? modelId;
 	if (code === "runtime_timeout") return t("runtime.timeout").replace("{code}", code);
 	if (code === "runtime_platform_error") return t("runtime.platformError").replace("{code}", code);
@@ -172,8 +175,8 @@ export function localizedRunError(code: string | undefined, message: string, mod
 	if (code === "xai_runtime_unreachable") return t("runtime.unreachable");
 	if (code === "aborted") return t("runtime.cancelled");
 	// A turn that ends without an accepted write: the status and a short reason, never the model-facing error text.
-	if (code === "write_invalid") return t("run.writeInvalid").replace("{code}", code);
-	if (code === "write_stuck") return t("run.writeStuck").replace("{code}", code);
+	if (code === "write_invalid") return t("run.writeInvalid").replace("{code}", code).replace("{reason}", firstReason(issues, t)).replace(/\s{2,}/g, " ");
+	if (code === "write_stuck") return t("run.writeStuck").replace("{code}", code).replace("{reason}", firstReason(issues, t)).replace(/\s{2,}/g, " ");
 	if (code === "no_answer") return t("run.noAnswer").replace("{code}", code);
 	return message;
 }
@@ -234,9 +237,9 @@ export function newProposalState(input: {
  */
 export function replyMessage(out: TurnOutcome): ChatMessage {
 	const { result, plan, modelId, live, usage } = out;
-	const run = runRecord({ modelId, live, usage, path: out.path, tools: out.tools, runId: out.runId });
+	const run = runRecord({ modelId, live, usage, path: out.path, tools: out.tools, runId: out.runId, rejected: "rejected" in result ? result.rejected : undefined });
 	if (!result.ok) {
-		return { id: uid("msg"), role: "assistant", text: localizedRunError(result.code, result.message, modelId), createdAt: nowIso(), run };
+		return { id: uid("msg"), role: "assistant", text: localizedRunError(result.code, result.message, modelId, "issues" in result ? result.issues : undefined), createdAt: nowIso(), run };
 	}
 	const mode: AgentMode = result.mode;
 	const base = { id: uid("msg"), role: "assistant" as const, text: result.text, createdAt: nowIso(), mode, answer: { blocks: [...result.blocks] }, run };

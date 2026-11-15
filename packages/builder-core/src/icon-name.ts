@@ -1,13 +1,17 @@
 import { lucideIcons } from "./catalog/props-schema.ts";
+import aliasTable from "./catalog/lucide-aliases.json" with { type: "json" };
 
 /**
  * Row icon names from the model against the contract's Lucide enum (ADR 0023): spelling variants (case, camel case,
- * spaces, underscores, an `icon` / `lucide` prefix or suffix, a plural) map to the published name, a typo maps to
- * the one published name within edit distance 1 (2 from 8 characters), anything else is dropped. Generic over the enum: no word lists.
- * The props gate never sees a name outside the enum, so no repair round is spent on icons.
+ * spaces, underscores, an `icon` / `lucide` prefix or suffix, a plural) map to the published name, so do the old Lucide
+ * names (smile, home, check-circle: generated lucide-aliases.json, `npm run icons:aliases`), a typo maps to the one
+ * published name within edit distance 1 (2 from 8 characters); a name that matches nothing is null (write_page then drops an optional
+ * icon or takes the sample icon for a required one, with a note). Generic over the enum: no word lists.
  */
 
 export type IconFix = { from: string; to: string | null };
+
+const ALIASES: Record<string, string> = aliasTable;
 
 let INDEX: { names: Set<string>; byKey: Map<string, string> } | null = null;
 
@@ -50,6 +54,12 @@ function distance(a: string, b: string, max: number): number {
 	return prev[b.length]!;
 }
 
+/** The published icon an old Lucide name stands for (smile -> face-slightly-smiling), when the enum has it. */
+function aliasOf(aliases: Record<string, string>, names: Set<string>, name: string): string | undefined {
+	const target = aliases[key(name)];
+	return target && names.has(target) ? target : undefined;
+}
+
 /** The published icon name for a model's name, or null when none is close enough. */
 export function resolveIconName(raw: string): string | null {
 	const { names, byKey } = index();
@@ -57,7 +67,7 @@ export function resolveIconName(raw: string): string | null {
 	if (names.has(raw)) return raw;
 	const name = kebab(raw);
 	if (names.has(name)) return name;
-	const hit = byKey.get(key(name)) ?? (name.endsWith("s") ? byKey.get(key(name.slice(0, -1))) : undefined);
+	const hit = byKey.get(key(name)) ?? aliasOf(ALIASES, names, name) ?? (name.endsWith("s") ? byKey.get(key(name.slice(0, -1))) : undefined);
 	if (hit) return hit;
 	// Typos only: one edit from 5 characters, two from 8; never a short or loose guess.
 	const max = name.length >= 8 ? 2 : name.length >= 5 ? 1 : 0;
