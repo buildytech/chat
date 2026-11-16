@@ -8,6 +8,7 @@ Index: product intent, ADRs, SLOs, SLSA. Code architecture lives in `docs/`, not
 | --- | --- |
 | [intent.md](intent.md) | One-page product intent |
 | [adr/](adr/README.md) | Architecture Decision Records (index of all 47) |
+| [.refactor/](.refactor/INDEX.md) | Planned refactors (not yet ADRs): delete lists and keep/verify notes |
 | [slo/chat-web.md](slo/chat-web.md) | Early-stage SLO: build CI and the app's indicators |
 | [slo/chat-ui-refinement.md](slo/chat-ui-refinement.md) | Visual, accessibility and regression acceptance targets for ADR 0028 |
 | [slsa/controls.md](slsa/controls.md) | Supply-chain checklist and build recipe (ADR 0002) |
