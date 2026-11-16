@@ -156,4 +156,3 @@ export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: Ab
 	}
 	return loopResult(ctx, state, text, trace.steps, finish());
 }
-
