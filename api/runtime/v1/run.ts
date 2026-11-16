@@ -27750,7 +27750,7 @@ exports["isScenarioId"] = isScenarioId;
 
 __def("packages/builder-core/src/policy.ts", function (exports) {
 
-const POLICY_VERSION = "page-agent/6";
+const POLICY_VERSION = "page-agent/7";
 /** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
 const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
 const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
@@ -31729,15 +31729,61 @@ exports["turnMeta"] = turnMeta;
 
 });
 
+__def("packages/chat-agent/src/agent/execution.ts", function (exports) {
+const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
+const { aggregateStepUsage, unknownUsage } = __req("packages/chat-agent/src/usage.ts");
+const { turnMeta } = __req("packages/chat-agent/src/agent/provider.ts");
+function createExecution(modelId: string, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions) {
+	const trace = { runId, steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
+	const stepUsage: StepUsage[] = [];
+	const counts: BudgetCounts = { requests: 0, toolCalls: 0, writeAttempts: 0 };
+	let incomplete: RunUsage["incompleteReason"];
+	const finish = (): LiveTurnMeta => {
+		const reason = incomplete ?? (stepUsage.length < counts.requests ? "error" : undefined);
+		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, reason ? { incomplete: reason } : undefined) : unknownUsage(reason ?? "error", counts.requests);
+		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts } };
+	};
+	const fail = (code: string, message: string): ProviderStep => ({ ok: false, result: { ok: false, code, message }, meta: finish() });
+	const stopped = (): ProviderStep | null => {
+		const timeout = signal.reason instanceof Error && signal.reason.name === "TimeoutError";
+		if (signal.aborted || (options.deadline !== undefined && Date.now() >= options.deadline)) {
+			incomplete = timeout || (!signal.aborted && options.deadline !== undefined) ? "timeout" : "cancelled";
+			return fail(incomplete === "timeout" ? "runtime_timeout" : "aborted", incomplete === "timeout" ? "The run deadline was reached. No further work was started." : "The run was cancelled.");
+		}
+		return null;
+	};
+	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "stepUsage" | "trace" | "maxTokens">): Promise<ProviderStep> => {
+		const stop = stopped();
+		if (stop) return stop;
+		if (counts.requests >= AGENT_BUDGET.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
+		counts.requests += 1;
+		trace.steps = counts.requests;
+		try {
+			const result = await provider({ ...input, modelId, signal, stepUsage, trace, maxTokens: AGENT_BUDGET.maxTokens });
+			return stopped() ?? result;
+		} catch (error) {
+			const stop = stopped();
+			if (stop) return stop;
+			incomplete = "error";
+			options.onProviderError?.(error);
+			return fail("provider_failed", "The provider request failed. No automatic retry was sent.");
+		}
+	};
+	return { trace, counts, finish, request, stopped };
+}
+
+exports["createExecution"] = createExecution;
+
+});
+
 __def("packages/chat-agent/src/agent/loop.ts", function (exports) {
 const { itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
 const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
 const { agentOpenAiTools, agentToolChoice } = __req("packages/chat-agent/src/agent/agent-tools.ts");
 const { agentReply, rejectedWrite, runWriteTool } = __req("packages/chat-agent/src/agent/turn.ts");
-const { aggregateStepUsage, unknownUsage } = __req("packages/chat-agent/src/usage.ts");
+const { createExecution } = __req("packages/chat-agent/src/agent/execution.ts");
 const { executeCatalogTool } = __req("packages/chat-agent/src/agent/catalog-tools.ts");
 const { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } = __req("packages/chat-agent/src/agent/prompts.ts");
-const { turnMeta } = __req("packages/chat-agent/src/agent/provider.ts");
 function parseArgs(raw: string | undefined): Record<string, unknown> {
 	try {
 		const parsed = JSON.parse(raw || "{}") as unknown;
@@ -31827,10 +31873,8 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 	return null;
 }
 
-async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSignal, provider: AgentProvider, runId: string): Promise<TurnResultOut> {
-	const trace = { runId, steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
-	const stepUsage: StepUsage[] = [];
-	const counts: BudgetCounts = { requests: 0, toolCalls: 0, writeAttempts: 0 };
+async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions = {}): Promise<TurnResultOut> {
+	const { trace, counts, finish, stopped, request: send } = createExecution(modelId, signal, provider, runId, options);
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
 	const messages: ChatMessage[] = [
@@ -31840,11 +31884,6 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 	const tools = agentOpenAiTools(ctx.mode);
 	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false, rejected: null };
 	let text = "";
-	const finish = (): LiveTurnMeta => {
-		// Complete when every request reported its usage; incomplete only for a request that did not (it was always marked incomplete before).
-		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, stepUsage.length < trace.steps ? { incomplete: "error" } : undefined) : unknownUsage("error", trace.steps);
-		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId), budget: { ...counts } };
-	};
 	let endedOnCalls = false;
 	// Build asks for a tool call on every step (tool_choice "required"): the model reads with the catalog tools and ends with
 	// write_page, and the turn ends with the first accepted write (no extra model step to summarize it). If a step still comes
@@ -31856,13 +31895,7 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 	let nudged = false;
 	let forceNamed = false;
 	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
-	const request = async (toolChoice: ProviderRequest["toolChoice"]) => {
-		if (signal.aborted) return { ok: false, result: { ok: false, code: "aborted", message: "The run was cancelled." }, meta: finish() } as const;
-		if (counts.requests >= AGENT_BUDGET.maxRequests) return { ok: false, result: { ok: false, code: "request_budget", message: "The provider request budget was reached. No additional request was sent." }, meta: finish() } as const;
-		counts.requests += 1;
-		trace.steps = counts.requests;
-		return provider({ modelId, messages, tools, toolChoice, maxTokens: AGENT_BUDGET.maxTokens, signal, stepUsage, trace });
-	};
+	const request = (toolChoice: Parameters<typeof send>[0]["toolChoice"]) => send({ messages, tools, toolChoice });
 	let steps = 0;
 	while (steps < AGENT_BUDGET.maxSteps && !state.stuck) {
 		steps += 1;
@@ -31889,6 +31922,8 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 		trace.toolCallingWorked = true;
 		messages.push({ role: "assistant", content: message.content ?? null, tool_calls: calls });
 		state.accepted = false;
+		const stop = stopped();
+		if (stop && !stop.ok) return { result: stop.result, meta: stop.meta };
 		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages);
 		if (failure) return { result: failure, meta: finish() };
 		// Build ends with the accepted write.
@@ -32120,16 +32155,23 @@ function newRunId(): string {
 }
 
 
+function logException(err: unknown, apiKey: string, modelId: string, signal: AbortSignal): void {
+	const safe = safeErrorMessage(err, [apiKey]);
+	if (!signal.aborted) console.error(JSON.stringify({ runtime: "xai-grok", event: "xai_run_exception", modelId, name: err instanceof Error ? err.name : typeof err, code: safe.code, message: safe.message }));
+}
+
 type TurnResult = AgentReply | AgentFailure;
 
-async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
+async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL, deadline?: number): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
 	try {
-		return await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId());
+		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { deadline, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
+		if (!turn.result.ok && turn.result.code === "provider_failed") return { ...turn, result: { ...turn.result, code: "xai_chat_failed", message: "The xAI chat request could not be completed. No automatic retry was sent." } };
+		return turn;
 	} catch (err) {
 		const safe = safeErrorMessage(err, [apiKey]);
 		const aborted = safe.code === "AbortError" || safe.message.toLowerCase().includes("abort") || signal.aborted;
 		// The caller only sees a generic failure; the function log must name the exception (redacted, 280 chars).
-		if (!aborted) console.error(JSON.stringify({ runtime: "xai-grok", event: "xai_run_exception", modelId, name: err instanceof Error ? err.name : typeof err, code: safe.code, message: safe.message }));
+		if (!aborted) logException(err, apiKey, modelId, signal);
 		return {
 			result: {
 				ok: false,
@@ -32531,13 +32573,14 @@ async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promi
 	if (notReady) return notReady;
 	await ensureRenderProbe();
 	const ms = clampRunBudgetMs(body.abortMs, env);
+	const deadline = Date.now() + ms;
 	const signal = combinedAbort(request, ms);
 	try {
-		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal, xaiBaseUrl(env));
+		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal, xaiBaseUrl(env), deadline);
 		const { meta } = turn;
 		// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
 		const checked =
-			!turn.result.ok && turn.result.code === "aborted" && !request.signal.aborted
+			!turn.result.ok && (turn.result.code === "aborted" || turn.result.code === "runtime_timeout") && !request.signal.aborted
 				? {
 						ok: false as const,
 						code: "runtime_timeout",

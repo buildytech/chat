@@ -170,13 +170,14 @@ async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promi
 	if (notReady) return notReady;
 	await ensureRenderProbe();
 	const ms = clampRunBudgetMs(body.abortMs, env);
+	const deadline = Date.now() + ms;
 	const signal = combinedAbort(request, ms);
 	try {
-		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal, xaiBaseUrl(env));
+		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal, xaiBaseUrl(env), deadline);
 		const { meta } = turn;
 		// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
 		const checked =
-			!turn.result.ok && turn.result.code === "aborted" && !request.signal.aborted
+			!turn.result.ok && (turn.result.code === "aborted" || turn.result.code === "runtime_timeout") && !request.signal.aborted
 				? {
 						ok: false as const,
 						code: "runtime_timeout",

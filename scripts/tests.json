@@ -24,6 +24,7 @@
     "chat-agent": [
       "agent-tools.test.ts",
       "build-forced-write.test.ts",
+      "execution.test.ts",
       "collection-intake.test.ts",
       "food-agent.test.ts",
       "model-switch.test.ts",

@@ -4,10 +4,10 @@ import { AGENT_BUDGET, type BudgetCounts } from "./budget.ts";
 import type { PageV2 } from "@buildytech/page-contract";
 import { agentOpenAiTools, agentToolChoice } from "./agent-tools.ts";
 import { agentReply, rejectedWrite, runWriteTool, type AgentFailure, type AgentReply, type PageProposal, type TurnContext } from "./turn.ts";
-import { aggregateStepUsage, unknownUsage, type StepUsage } from "../usage.ts";
+import { createExecution, type ExecutionOptions } from "./execution.ts";
 import { executeCatalogTool } from "./catalog-tools.ts";
 import { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./prompts.ts";
-import { turnMeta, type AgentProvider, type ProviderRequest, type ChatMessage, type LiveTurnMeta } from "./provider.ts";
+import { type AgentProvider, type ChatMessage, type LiveTurnMeta } from "./provider.ts";
 
 function parseArgs(raw: string | undefined): Record<string, unknown> {
 	try {
@@ -98,10 +98,8 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 	return null;
 }
 
-export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSignal, provider: AgentProvider, runId: string): Promise<TurnResultOut> {
-	const trace = { runId, steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
-	const stepUsage: StepUsage[] = [];
-	const counts: BudgetCounts = { requests: 0, toolCalls: 0, writeAttempts: 0 };
+export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions = {}): Promise<TurnResultOut> {
+	const { trace, counts, finish, stopped, request: send } = createExecution(modelId, signal, provider, runId, options);
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
 	const messages: ChatMessage[] = [
@@ -111,11 +109,6 @@ export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: Ab
 	const tools = agentOpenAiTools(ctx.mode);
 	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false, rejected: null };
 	let text = "";
-	const finish = (): LiveTurnMeta => {
-		// Complete when every request reported its usage; incomplete only for a request that did not (it was always marked incomplete before).
-		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, stepUsage.length < trace.steps ? { incomplete: "error" } : undefined) : unknownUsage("error", trace.steps);
-		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId), budget: { ...counts } };
-	};
 	let endedOnCalls = false;
 	// Build asks for a tool call on every step (tool_choice "required"): the model reads with the catalog tools and ends with
 	// write_page, and the turn ends with the first accepted write (no extra model step to summarize it). If a step still comes
@@ -127,13 +120,7 @@ export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: Ab
 	let nudged = false;
 	let forceNamed = false;
 	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
-	const request = async (toolChoice: ProviderRequest["toolChoice"]) => {
-		if (signal.aborted) return { ok: false, result: { ok: false, code: "aborted", message: "The run was cancelled." }, meta: finish() } as const;
-		if (counts.requests >= AGENT_BUDGET.maxRequests) return { ok: false, result: { ok: false, code: "request_budget", message: "The provider request budget was reached. No additional request was sent." }, meta: finish() } as const;
-		counts.requests += 1;
-		trace.steps = counts.requests;
-		return provider({ modelId, messages, tools, toolChoice, maxTokens: AGENT_BUDGET.maxTokens, signal, stepUsage, trace });
-	};
+	const request = (toolChoice: Parameters<typeof send>[0]["toolChoice"]) => send({ messages, tools, toolChoice });
 	let steps = 0;
 	while (steps < AGENT_BUDGET.maxSteps && !state.stuck) {
 		steps += 1;
@@ -160,6 +147,8 @@ export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: Ab
 		trace.toolCallingWorked = true;
 		messages.push({ role: "assistant", content: message.content ?? null, tool_calls: calls });
 		state.accepted = false;
+		const stop = stopped();
+		if (stop && !stop.ok) return { result: stop.result, meta: stop.meta };
 		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages);
 		if (failure) return { result: failure, meta: finish() };
 		// Build ends with the accepted write.

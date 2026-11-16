@@ -9,16 +9,23 @@ function newRunId(): string {
 }
 
 
+function logException(err: unknown, apiKey: string, modelId: string, signal: AbortSignal): void {
+	const safe = safeErrorMessage(err, [apiKey]);
+	if (!signal.aborted) console.error(JSON.stringify({ runtime: "xai-grok", event: "xai_run_exception", modelId, name: err instanceof Error ? err.name : typeof err, code: safe.code, message: safe.message }));
+}
+
 type TurnResult = AgentReply | AgentFailure;
 
-export async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
+export async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL, deadline?: number): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
 	try {
-		return await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId());
+		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { deadline, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
+		if (!turn.result.ok && turn.result.code === "provider_failed") return { ...turn, result: { ...turn.result, code: "xai_chat_failed", message: "The xAI chat request could not be completed. No automatic retry was sent." } };
+		return turn;
 	} catch (err) {
 		const safe = safeErrorMessage(err, [apiKey]);
 		const aborted = safe.code === "AbortError" || safe.message.toLowerCase().includes("abort") || signal.aborted;
 		// The caller only sees a generic failure; the function log must name the exception (redacted, 280 chars).
-		if (!aborted) console.error(JSON.stringify({ runtime: "xai-grok", event: "xai_run_exception", modelId, name: err instanceof Error ? err.name : typeof err, code: safe.code, message: safe.message }));
+		if (!aborted) logException(err, apiKey, modelId, signal);
 		return {
 			result: {
 				ok: false,
