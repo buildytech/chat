@@ -2,12 +2,12 @@
 import { itemInfo, renderProblems } from "@buildytech/builder-core";
 import { AGENT_BUDGET, type BudgetCounts } from "./budget.ts";
 import type { PageV2 } from "@buildytech/page-contract";
-import { agentOpenAiTools, agentToolChoice } from "./agent-tools.ts";
+import { agentTools, agentToolChoice } from "./agent-tools.ts";
 import { agentReply, rejectedWrite, runWriteTool, type AgentFailure, type AgentReply, type PageProposal, type TurnContext } from "./turn.ts";
 import { createExecution, type ExecutionOptions } from "./execution.ts";
 import { executeCatalogTool } from "./catalog-tools.ts";
 import { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./prompts.ts";
-import { type AgentProvider, type ChatMessage, type LiveTurnMeta } from "./provider.ts";
+import { type AgentProvider, type AgentMessage, type LiveTurnMeta } from "./provider.ts";
 
 function parseArgs(raw: string | undefined): Record<string, unknown> {
 	try {
@@ -18,13 +18,13 @@ function parseArgs(raw: string | undefined): Record<string, unknown> {
 	}
 }
 
-function modelText(message: ChatMessage): string {
-	return typeof message.content === "string" ? message.content.trim() : "";
+function modelText(message: AgentMessage): string {
+	return typeof message.text === "string" ? message.text.trim() : "";
 }
 
 
 /** The request after the nudge: Build forces the write_page call (Ask stays on auto). */
-const FORCE_WRITE = { type: "function", function: { name: "write_page" } } as const;
+const FORCE_WRITE = { name: "write_page" } as const;
 
 /** Identity of an error list: code, path and the rejected value; two equal lists in a row end the turn. A new value at the same path is a new attempt, not a repeat. */
 function signature(issues: Array<{ path: string; code: string; got?: unknown }>): string {
@@ -38,7 +38,7 @@ type IssueSet = { signature: string; issues: Array<{ path: string; code: string;
 /** What the loop has so far: the working page, the last accepted proposal, the last failed write, the catalog blocks read. */
 type LoopState = { working: PageV2; proposal: PageProposal | null; lastIssues: IssueSet | null; stuck: IssueSet | null; blocks: string[]; accepted: boolean; rejected: AgentFailure["rejected"] | null };
 
-type ToolCall = NonNullable<ChatMessage["tool_calls"]>[number];
+type ToolCall = NonNullable<AgentMessage["calls"]>[number];
 
 /** One tool call of a step: the write (accepted, or the issue list and the stuck check) or a catalog read; the answer for the model. */
 function runToolCall(ctx: TurnContext, state: LoopState, name: string, args: Record<string, unknown>): unknown {
@@ -81,10 +81,10 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 }
 
 
-function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: ChatMessage[]): AgentFailure | null {
+function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[]): AgentFailure | null {
 	let wrote = false;
 	for (const call of calls) {
-		const name = call.function?.name ?? "";
+		const name = call.name ?? "";
 		if (counts.toolCalls >= AGENT_BUDGET.maxToolCalls || (name === "write_page" && !wrote && counts.writeAttempts >= AGENT_BUDGET.maxWriteAttempts)) {
 			return { ok: false, code: "tool_budget", message: "The tool or write-attempt budget was reached. No further tools were executed." };
 		}
@@ -92,8 +92,8 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 		toolsCalled.push(name);
 		const duplicateWrite = name === "write_page" && wrote;
 		if (name === "write_page" && !wrote) { wrote = true; counts.writeAttempts += 1; }
-		const reply = duplicateWrite ? { ok: false, code: "multiple_writes", message: "Only one write_page attempt per provider response is allowed." } : runToolCall(ctx, state, name, parseArgs(call.function?.arguments));
-		messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
+		const reply = duplicateWrite ? { ok: false, code: "multiple_writes", message: "Only one write_page attempt per provider response is allowed." } : runToolCall(ctx, state, name, parseArgs(call.argumentsJson));
+		messages.push({ role: "tool", callId: call.id, name, text: JSON.stringify(reply) });
 	}
 	return null;
 }
@@ -102,11 +102,11 @@ export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: Ab
 	const { trace, counts, finish, stopped, request: send } = createExecution(modelId, signal, provider, runId, options);
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
-	const messages: ChatMessage[] = [
-		{ role: "system", content: ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD },
-		{ role: "user", content: userPrompt(ctx, problems) }
+	const messages: AgentMessage[] = [
+		{ role: "system", text: ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD },
+		{ role: "user", text: userPrompt(ctx, problems) }
 	];
-	const tools = agentOpenAiTools(ctx.mode);
+	const tools = agentTools(ctx.mode);
 	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false, rejected: null };
 	let text = "";
 	let endedOnCalls = false;
@@ -133,19 +133,19 @@ export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: Ab
 		const message = step.message;
 		const said = modelText(message);
 		if (said) text = said;
-		const calls: ToolCall[] = message.tool_calls ?? [];
+		const calls: ToolCall[] = message.calls ?? [];
 		if (calls.length === 0) {
 			if (expectsChange && !nudged && !changed() && steps < AGENT_BUDGET.maxSteps) {
 				nudged = true;
 				forceNamed = build;
-				messages.push({ role: "assistant", content: said || "" }, { role: "user", content: nudgeText(ctx, open) });
+				messages.push({ role: "assistant", text: said || "" }, { role: "user", text: nudgeText(ctx, open) });
 				continue;
 			}
 			break;
 		}
 		endedOnCalls = true;
 		trace.toolCallingWorked = true;
-		messages.push({ role: "assistant", content: message.content ?? null, tool_calls: calls });
+		messages.push({ role: "assistant", text: message.text ?? "", calls });
 		state.accepted = false;
 		const stop = stopped();
 		if (stop && !stop.ok) return { result: stop.result, meta: stop.meta };

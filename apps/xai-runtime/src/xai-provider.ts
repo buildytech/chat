@@ -1,5 +1,7 @@
 /** xAI Chat Completions transport. No page writes or agent-loop decisions. */
-import { aggregateStepUsage, assertNoFallback, readProviderUsage, unknownUsage, turnMeta, type ChatMessage, type ProviderRequest, type ProviderStep } from "@buildytech/chat-agent";
+import { assertNoFallback, readProviderUsage, type ProviderRequest, type ProviderStep } from "@buildytech/chat-agent";
+
+import { xaiMessage, readXaiMessage, xaiRefused } from "./xai-codec.ts";
 
 function silentFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 	return fetch(input, init);
@@ -23,12 +25,11 @@ function classifyProviderFailure(status: number, snippet: string): { code: strin
 	if (status === 429) {
 		return { code: "rate_limited", message: "The xAI chat request was rate limited. No automatic retry was sent." };
 	}
-	return { code: "xai_chat_failed", message: "The xAI chat request could not be completed. No automatic retry was sent." };
+	return { code: "provider_failed", message: "The xAI chat request could not be completed. No automatic retry was sent." };
 }
 
 
 export async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: string }): Promise<ProviderStep> {
-	const { trace } = input;
 	const requestStarted = Date.now();
 	const res = await silentFetch(`${input.baseUrl}/chat/completions`, {
 		method: "POST",
@@ -39,54 +40,32 @@ export async function providerStep(input: ProviderRequest & { apiKey: string; ba
 		},
 		body: JSON.stringify({
 			model: input.modelId,
-			messages: input.messages,
-			tools: input.tools,
+			messages: input.messages.map(xaiMessage),
+			tools: input.tools.map((tool) => ({ type: "function", function: tool })),
 			// Choice comes from the versioned agent mode policy; the host may explicitly force a repair write.
-			tool_choice: input.toolChoice,
+			tool_choice: typeof input.toolChoice === "string" ? input.toolChoice : { type: "function", function: input.toolChoice },
 			stream: false,
 			max_tokens: input.maxTokens,
 			temperature: 0
 		}),
 		signal: input.signal
 	});
-	const usageSoFar = () =>
-		input.stepUsage.length ? aggregateStepUsage(input.stepUsage, { incomplete: "error" }) : unknownUsage("error", trace.steps);
 	if (!res.ok) {
 		const snippet = await res.text().then((text) => text.slice(0, 240), () => "");
 		const failure = classifyProviderFailure(res.status, snippet);
-		return {
-			ok: false,
-			result: { ok: false, code: failure.code, message: failure.message },
-			meta: {
-				...turnMeta("chat-completions", input.modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usageSoFar(), trace.runId),
-				providerStatus: res.status,
-				providerMs: Date.now() - requestStarted
-			}
-		};
+		return { ok: false, error: { ...failure, status: res.status, elapsedMs: Date.now() - requestStarted } };
 	}
 	const payload = (await res.json()) as {
-		choices?: Array<{ finish_reason?: string; message?: ChatMessage }>;
+		choices?: Array<{ finish_reason?: string; message?: unknown }>;
 		usage?: unknown;
 		model?: string;
 	};
+	const usage = readProviderUsage(payload.usage) ?? undefined;
 	const used = typeof payload.model === "string" ? payload.model : input.modelId;
 	const switched = assertNoFallback(input.modelId, used);
-	if (switched) {
-		return {
-			ok: false,
-			result: { ok: false, code: switched.code, message: switched.message },
-			meta: turnMeta("chat-completions", input.modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, unknownUsage("error", trace.steps), trace.runId)
-		};
-	}
-	const usage = readProviderUsage(payload.usage);
-	if (usage) input.stepUsage.push(usage);
-	const message = payload.choices?.[0]?.message;
-	if (!message) {
-		return {
-			ok: false,
-			result: { ok: false, code: "malformed_response", message: "Chat completion had no message." },
-			meta: turnMeta("chat-completions", input.modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usageSoFar(), trace.runId)
-		};
-	}
-	return { ok: true, message };
+	if (switched) return { ok: false, error: { code: switched.code, message: switched.message }, usage };
+	if (xaiRefused(payload.choices?.[0]?.message)) return { ok: false, error: { code: "provider_refusal", message: "The provider declined this request." }, usage };
+	const message = readXaiMessage(payload.choices?.[0]?.message);
+	if (!message) return { ok: false, error: { code: "malformed_response", message: "Chat completion had no supported assistant message." }, usage };
+	return { ok: true, message, usage };
 }

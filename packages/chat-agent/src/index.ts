@@ -12,4 +12,4 @@ export * from "./env-map.ts";
 export { contractFingerprint } from "./fingerprint.ts";
 export { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./agent/prompts.ts";
 export { runAgentLoop } from "./agent/loop.ts";
-export { turnMeta, type AgentProvider, type ProviderRequest, type ProviderStep, type ChatMessage, type LiveTurnMeta } from "./agent/provider.ts";
+export { turnMeta, type AgentProvider, type ProviderRequest, type ProviderStep, type AgentMessage, type AgentCall, type LiveTurnMeta } from "./agent/provider.ts";

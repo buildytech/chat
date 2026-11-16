@@ -27750,7 +27750,7 @@ exports["isScenarioId"] = isScenarioId;
 
 __def("packages/builder-core/src/policy.ts", function (exports) {
 
-const POLICY_VERSION = "page-agent/7";
+const POLICY_VERSION = "page-agent/8";
 /** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
 const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
 const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
@@ -30389,30 +30389,23 @@ function agentToolParameters(name: string): JsonSchemaObject {
 	return resolveAgentSchema(tool.parameters);
 }
 
-type OpenAiFunctionTool = {
-	type: "function";
-	function: { name: string; description: string; parameters: JsonSchemaObject };
-};
+const RESOLVED = new Map<string, ResolvedAgentTool[]>();
 
-const RESOLVED = new Map<string, OpenAiFunctionTool[]>();
-
-/** OpenAI-compatible tool list of a mode (optionally narrowed to `only`). Cached per mode and subset. */
-function agentOpenAiTools(mode: AgentMode, only?: string[]): OpenAiFunctionTool[] {
-	const key = `${mode}:${only ? only.join(",") : "*"}`;
+/** Neutral resolved tools. Definitions and schemas remain in the one versioned document. */
+function agentTools(mode: AgentMode, only?: string[]): ResolvedAgentTool[] {
+	const key = mode + ":" + (only ? only.join(",") : "*");
 	const hit = RESOLVED.get(key);
 	if (hit) return hit;
 	const tools = agentToolsDocument.tools
 		.filter((tool) => tool.modes.includes(mode) && (!only || only.includes(tool.name)))
-		.map((tool) => ({
-			type: "function" as const,
-			function: {
-				name: tool.name,
-				description: tool.descriptionByMode?.[mode] ?? tool.description,
-				parameters: resolveAgentSchema(tool.parameters)
-			}
-		}));
+		.map((tool) => ({ name: tool.name, description: tool.descriptionByMode?.[mode] ?? tool.description, parameters: resolveAgentSchema(tool.parameters) }));
 	RESOLVED.set(key, tools);
 	return tools;
+}
+
+/** Compatibility projection for existing callers; execution uses agentTools. */
+function agentOpenAiTools(mode: AgentMode, only?: string[]) {
+	return agentTools(mode, only).map((tool) => ({ type: "function" as const, function: tool }));
 }
 
 function properties(name: string): Record<string, unknown> {
@@ -30431,6 +30424,7 @@ exports["agentToolChoice"] = agentToolChoice;
 exports["isAgentMode"] = isAgentMode;
 exports["agentToolNames"] = agentToolNames;
 exports["toolOffersMode"] = toolOffersMode;
+exports["agentTools"] = agentTools;
 exports["agentOpenAiTools"] = agentOpenAiTools;
 exports["catalogToolParameterSchema"] = catalogToolParameterSchema;
 
@@ -31733,6 +31727,8 @@ __def("packages/chat-agent/src/agent/execution.ts", function (exports) {
 const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
 const { aggregateStepUsage, unknownUsage } = __req("packages/chat-agent/src/usage.ts");
 const { turnMeta } = __req("packages/chat-agent/src/agent/provider.ts");
+type ExecutionStep = { ok: true; message: AgentMessage } | { ok: false; result: import("./turn.ts").AgentFailure; meta: LiveTurnMeta };
+
 function createExecution(modelId: string, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions) {
 	const trace = { runId, steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
@@ -31743,8 +31739,8 @@ function createExecution(modelId: string, signal: AbortSignal, provider: AgentPr
 		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, reason ? { incomplete: reason } : undefined) : unknownUsage(reason ?? "error", counts.requests);
 		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts } };
 	};
-	const fail = (code: string, message: string): ProviderStep => ({ ok: false, result: { ok: false, code, message }, meta: finish() });
-	const stopped = (): ProviderStep | null => {
+	const fail = (code: string, message: string): ExecutionStep => ({ ok: false, result: { ok: false, code, message }, meta: finish() });
+	const stopped = (): ExecutionStep | null => {
 		const timeout = signal.reason instanceof Error && signal.reason.name === "TimeoutError";
 		if (signal.aborted || (options.deadline !== undefined && Date.now() >= options.deadline)) {
 			incomplete = timeout || (!signal.aborted && options.deadline !== undefined) ? "timeout" : "cancelled";
@@ -31752,15 +31748,19 @@ function createExecution(modelId: string, signal: AbortSignal, provider: AgentPr
 		}
 		return null;
 	};
-	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "stepUsage" | "trace" | "maxTokens">): Promise<ProviderStep> => {
+	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens">): Promise<ExecutionStep> => {
 		const stop = stopped();
 		if (stop) return stop;
 		if (counts.requests >= AGENT_BUDGET.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
 		counts.requests += 1;
 		trace.steps = counts.requests;
 		try {
-			const result = await provider({ ...input, modelId, signal, stepUsage, trace, maxTokens: AGENT_BUDGET.maxTokens });
-			return stopped() ?? result;
+			const result = await provider({ ...input, modelId, signal, maxTokens: AGENT_BUDGET.maxTokens });
+			if (result.usage) stepUsage.push(result.usage);
+			const stop = stopped();
+			if (stop) return stop;
+			if (!result.ok) return { ok: false, result: { ok: false, code: result.error.code, message: result.error.message }, meta: { ...finish(), providerStatus: result.error.status, providerMs: result.error.elapsedMs } };
+			return { ok: true, message: result.message };
 		} catch (error) {
 			const stop = stopped();
 			if (stop) return stop;
@@ -31779,7 +31779,7 @@ exports["createExecution"] = createExecution;
 __def("packages/chat-agent/src/agent/loop.ts", function (exports) {
 const { itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
 const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
-const { agentOpenAiTools, agentToolChoice } = __req("packages/chat-agent/src/agent/agent-tools.ts");
+const { agentTools, agentToolChoice } = __req("packages/chat-agent/src/agent/agent-tools.ts");
 const { agentReply, rejectedWrite, runWriteTool } = __req("packages/chat-agent/src/agent/turn.ts");
 const { createExecution } = __req("packages/chat-agent/src/agent/execution.ts");
 const { executeCatalogTool } = __req("packages/chat-agent/src/agent/catalog-tools.ts");
@@ -31793,13 +31793,13 @@ function parseArgs(raw: string | undefined): Record<string, unknown> {
 	}
 }
 
-function modelText(message: ChatMessage): string {
-	return typeof message.content === "string" ? message.content.trim() : "";
+function modelText(message: AgentMessage): string {
+	return typeof message.text === "string" ? message.text.trim() : "";
 }
 
 
 /** The request after the nudge: Build forces the write_page call (Ask stays on auto). */
-const FORCE_WRITE = { type: "function", function: { name: "write_page" } } as const;
+const FORCE_WRITE = { name: "write_page" } as const;
 
 /** Identity of an error list: code, path and the rejected value; two equal lists in a row end the turn. A new value at the same path is a new attempt, not a repeat. */
 function signature(issues: Array<{ path: string; code: string; got?: unknown }>): string {
@@ -31813,7 +31813,7 @@ type IssueSet = { signature: string; issues: Array<{ path: string; code: string;
 /** What the loop has so far: the working page, the last accepted proposal, the last failed write, the catalog blocks read. */
 type LoopState = { working: PageV2; proposal: PageProposal | null; lastIssues: IssueSet | null; stuck: IssueSet | null; blocks: string[]; accepted: boolean; rejected: AgentFailure["rejected"] | null };
 
-type ToolCall = NonNullable<ChatMessage["tool_calls"]>[number];
+type ToolCall = NonNullable<AgentMessage["calls"]>[number];
 
 /** One tool call of a step: the write (accepted, or the issue list and the stuck check) or a catalog read; the answer for the model. */
 function runToolCall(ctx: TurnContext, state: LoopState, name: string, args: Record<string, unknown>): unknown {
@@ -31856,10 +31856,10 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 }
 
 
-function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: ChatMessage[]): AgentFailure | null {
+function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[]): AgentFailure | null {
 	let wrote = false;
 	for (const call of calls) {
-		const name = call.function?.name ?? "";
+		const name = call.name ?? "";
 		if (counts.toolCalls >= AGENT_BUDGET.maxToolCalls || (name === "write_page" && !wrote && counts.writeAttempts >= AGENT_BUDGET.maxWriteAttempts)) {
 			return { ok: false, code: "tool_budget", message: "The tool or write-attempt budget was reached. No further tools were executed." };
 		}
@@ -31867,8 +31867,8 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 		toolsCalled.push(name);
 		const duplicateWrite = name === "write_page" && wrote;
 		if (name === "write_page" && !wrote) { wrote = true; counts.writeAttempts += 1; }
-		const reply = duplicateWrite ? { ok: false, code: "multiple_writes", message: "Only one write_page attempt per provider response is allowed." } : runToolCall(ctx, state, name, parseArgs(call.function?.arguments));
-		messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
+		const reply = duplicateWrite ? { ok: false, code: "multiple_writes", message: "Only one write_page attempt per provider response is allowed." } : runToolCall(ctx, state, name, parseArgs(call.argumentsJson));
+		messages.push({ role: "tool", callId: call.id, name, text: JSON.stringify(reply) });
 	}
 	return null;
 }
@@ -31877,11 +31877,11 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 	const { trace, counts, finish, stopped, request: send } = createExecution(modelId, signal, provider, runId, options);
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
-	const messages: ChatMessage[] = [
-		{ role: "system", content: ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD },
-		{ role: "user", content: userPrompt(ctx, problems) }
+	const messages: AgentMessage[] = [
+		{ role: "system", text: ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD },
+		{ role: "user", text: userPrompt(ctx, problems) }
 	];
-	const tools = agentOpenAiTools(ctx.mode);
+	const tools = agentTools(ctx.mode);
 	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false, rejected: null };
 	let text = "";
 	let endedOnCalls = false;
@@ -31908,19 +31908,19 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 		const message = step.message;
 		const said = modelText(message);
 		if (said) text = said;
-		const calls: ToolCall[] = message.tool_calls ?? [];
+		const calls: ToolCall[] = message.calls ?? [];
 		if (calls.length === 0) {
 			if (expectsChange && !nudged && !changed() && steps < AGENT_BUDGET.maxSteps) {
 				nudged = true;
 				forceNamed = build;
-				messages.push({ role: "assistant", content: said || "" }, { role: "user", content: nudgeText(ctx, open) });
+				messages.push({ role: "assistant", text: said || "" }, { role: "user", text: nudgeText(ctx, open) });
 				continue;
 			}
 			break;
 		}
 		endedOnCalls = true;
 		trace.toolCallingWorked = true;
-		messages.push({ role: "assistant", content: message.content ?? null, tool_calls: calls });
+		messages.push({ role: "assistant", text: message.text ?? "", calls });
 		state.accepted = false;
 		const stop = stopped();
 		if (stop && !stop.ok) return { result: stop.result, meta: stop.meta };
@@ -32048,8 +32048,73 @@ exports["installPropsGate"] = installPropsGate;
 
 });
 
+__def("apps/xai-runtime/src/xai-codec.ts", function (exports) {
+
+function xaiMessage(message: AgentMessage): Record<string, unknown> {
+	return {
+		role: message.role,
+		content: message.text ?? null,
+		...(message.calls?.length ? { tool_calls: message.calls.map((call) => ({ id: call.id, type: "function", function: { name: call.name, arguments: call.argumentsJson } })) } : {}),
+		...(message.callId ? { tool_call_id: message.callId } : {}),
+		...(message.name ? { name: message.name } : {})
+	};
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function record(value: unknown): Record<string, unknown> | null {
+	return isRecord(value) ? value : null;
+}
+
+function text(value: unknown): string | null {
+	if (value == null) return "";
+	if (typeof value === "string") return value;
+	if (!Array.isArray(value)) return null;
+	const parts: string[] = [];
+	for (const part of value) {
+		const item = record(part);
+		if (item?.type !== "text" || typeof item.text !== "string") return null;
+		parts.push(item.text);
+	}
+	return parts.join("");
+}
+
+function readXaiMessage(value: unknown): AgentMessage | null {
+	const message = record(value);
+	if (!message || message.role !== "assistant" || message.refusal) return null;
+	const content = text(message.content);
+	if (content === null) return null;
+	const calls = [];
+	const ids = new Set<string>();
+	if (message.tool_calls !== undefined) {
+		if (!Array.isArray(message.tool_calls)) return null;
+		for (const value of message.tool_calls) {
+			const call = record(value);
+			const fn = record(call?.function);
+			if (!call || call.type !== "function" || typeof call.id !== "string" || !call.id || ids.has(call.id) || typeof fn?.name !== "string" || !fn.name || typeof fn.arguments !== "string") return null;
+			ids.add(call.id);
+			calls.push({ id: call.id, name: fn.name, argumentsJson: fn.arguments });
+		}
+	}
+	return { role: "assistant", text: content, ...(calls.length ? { calls } : {}) };
+}
+
+function xaiRefused(value: unknown): boolean {
+	const message = record(value);
+	return typeof message?.refusal === "string" && message.refusal.length > 0;
+}
+
+exports["xaiMessage"] = xaiMessage;
+exports["readXaiMessage"] = readXaiMessage;
+exports["xaiRefused"] = xaiRefused;
+
+});
+
 __def("apps/xai-runtime/src/xai-provider.ts", function (exports) {
-const { aggregateStepUsage, assertNoFallback, readProviderUsage, unknownUsage, turnMeta } = __req("packages/chat-agent/src/index.ts");
+const { assertNoFallback, readProviderUsage } = __req("packages/chat-agent/src/index.ts");
+const { xaiMessage, readXaiMessage, xaiRefused } = __req("apps/xai-runtime/src/xai-codec.ts");
 function silentFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 	return fetch(input, init);
 }
@@ -32072,12 +32137,11 @@ function classifyProviderFailure(status: number, snippet: string): { code: strin
 	if (status === 429) {
 		return { code: "rate_limited", message: "The xAI chat request was rate limited. No automatic retry was sent." };
 	}
-	return { code: "xai_chat_failed", message: "The xAI chat request could not be completed. No automatic retry was sent." };
+	return { code: "provider_failed", message: "The xAI chat request could not be completed. No automatic retry was sent." };
 }
 
 
 async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: string }): Promise<ProviderStep> {
-	const { trace } = input;
 	const requestStarted = Date.now();
 	const res = await silentFetch(`${input.baseUrl}/chat/completions`, {
 		method: "POST",
@@ -32088,56 +32152,34 @@ async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: 
 		},
 		body: JSON.stringify({
 			model: input.modelId,
-			messages: input.messages,
-			tools: input.tools,
+			messages: input.messages.map(xaiMessage),
+			tools: input.tools.map((tool) => ({ type: "function", function: tool })),
 			// Choice comes from the versioned agent mode policy; the host may explicitly force a repair write.
-			tool_choice: input.toolChoice,
+			tool_choice: typeof input.toolChoice === "string" ? input.toolChoice : { type: "function", function: input.toolChoice },
 			stream: false,
 			max_tokens: input.maxTokens,
 			temperature: 0
 		}),
 		signal: input.signal
 	});
-	const usageSoFar = () =>
-		input.stepUsage.length ? aggregateStepUsage(input.stepUsage, { incomplete: "error" }) : unknownUsage("error", trace.steps);
 	if (!res.ok) {
 		const snippet = await res.text().then((text) => text.slice(0, 240), () => "");
 		const failure = classifyProviderFailure(res.status, snippet);
-		return {
-			ok: false,
-			result: { ok: false, code: failure.code, message: failure.message },
-			meta: {
-				...turnMeta("chat-completions", input.modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usageSoFar(), trace.runId),
-				providerStatus: res.status,
-				providerMs: Date.now() - requestStarted
-			}
-		};
+		return { ok: false, error: { ...failure, status: res.status, elapsedMs: Date.now() - requestStarted } };
 	}
 	const payload = (await res.json()) as {
-		choices?: Array<{ finish_reason?: string; message?: ChatMessage }>;
+		choices?: Array<{ finish_reason?: string; message?: unknown }>;
 		usage?: unknown;
 		model?: string;
 	};
+	const usage = readProviderUsage(payload.usage) ?? undefined;
 	const used = typeof payload.model === "string" ? payload.model : input.modelId;
 	const switched = assertNoFallback(input.modelId, used);
-	if (switched) {
-		return {
-			ok: false,
-			result: { ok: false, code: switched.code, message: switched.message },
-			meta: turnMeta("chat-completions", input.modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, unknownUsage("error", trace.steps), trace.runId)
-		};
-	}
-	const usage = readProviderUsage(payload.usage);
-	if (usage) input.stepUsage.push(usage);
-	const message = payload.choices?.[0]?.message;
-	if (!message) {
-		return {
-			ok: false,
-			result: { ok: false, code: "malformed_response", message: "Chat completion had no message." },
-			meta: turnMeta("chat-completions", input.modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usageSoFar(), trace.runId)
-		};
-	}
-	return { ok: true, message };
+	if (switched) return { ok: false, error: { code: switched.code, message: switched.message }, usage };
+	if (xaiRefused(payload.choices?.[0]?.message)) return { ok: false, error: { code: "provider_refusal", message: "The provider declined this request." }, usage };
+	const message = readXaiMessage(payload.choices?.[0]?.message);
+	if (!message) return { ok: false, error: { code: "malformed_response", message: "Chat completion had no supported assistant message." }, usage };
+	return { ok: true, message, usage };
 }
 
 exports["providerStep"] = providerStep;

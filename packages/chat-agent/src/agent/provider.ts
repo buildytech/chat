@@ -1,13 +1,13 @@
-import type { AgentFailure } from "./turn.ts";
 import type { RunUsage, StepUsage } from "../usage.ts";
-import type { agentOpenAiTools } from "./agent-tools.ts";
+import type { ResolvedAgentTool } from "./agent-tools.ts";
 import type { BudgetCounts } from "./budget.ts";
 
-export type ChatMessage = {
+export type AgentCall = { id: string; name: string; argumentsJson: string };
+export type AgentMessage = {
 	role: "system" | "user" | "assistant" | "tool";
-	content?: string | null;
-	tool_calls?: Array<{ id: string; type: "function"; function: { name: string; arguments: string } }>;
-	tool_call_id?: string;
+	text?: string;
+	calls?: AgentCall[];
+	callId?: string;
 	name?: string;
 };
 
@@ -42,19 +42,16 @@ export function turnMeta(
 
 
 export type ProviderStep =
-	| { ok: true; message: ChatMessage }
-	| { ok: false; result: AgentFailure; meta: LiveTurnMeta };
-
+	| { ok: true; message: AgentMessage; usage?: StepUsage }
+	| { ok: false; error: { code: string; message: string; status?: number; elapsedMs?: number }; usage?: StepUsage };
 
 /** Transport input without credentials or endpoint; supplied by the runtime host. */
 export type ProviderRequest = {
 	modelId: string;
-	messages: ChatMessage[];
-	tools: ReturnType<typeof agentOpenAiTools>;
-	toolChoice: "auto" | "none" | "required" | { type: "function"; function: { name: string } };
+	messages: readonly AgentMessage[];
+	tools: readonly ResolvedAgentTool[];
+	toolChoice: "auto" | "none" | "required" | { name: string };
 	maxTokens: number;
 	signal: AbortSignal;
-	stepUsage: StepUsage[];
-	trace: { runId: string; steps: number; toolCallingWorked: boolean; toolsCalled: string[] };
 };
 export type AgentProvider = (input: ProviderRequest) => Promise<ProviderStep>;

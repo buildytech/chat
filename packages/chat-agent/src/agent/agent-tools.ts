@@ -96,30 +96,24 @@ function agentToolParameters(name: string): JsonSchemaObject {
 	return resolveAgentSchema(tool.parameters);
 }
 
-type OpenAiFunctionTool = {
-	type: "function";
-	function: { name: string; description: string; parameters: JsonSchemaObject };
-};
+export type ResolvedAgentTool = { name: string; description: string; parameters: JsonSchemaObject };
+const RESOLVED = new Map<string, ResolvedAgentTool[]>();
 
-const RESOLVED = new Map<string, OpenAiFunctionTool[]>();
-
-/** OpenAI-compatible tool list of a mode (optionally narrowed to `only`). Cached per mode and subset. */
-export function agentOpenAiTools(mode: AgentMode, only?: readonly string[]): OpenAiFunctionTool[] {
-	const key = `${mode}:${only ? only.join(",") : "*"}`;
+/** Neutral resolved tools. Definitions and schemas remain in the one versioned document. */
+export function agentTools(mode: AgentMode, only?: readonly string[]): ResolvedAgentTool[] {
+	const key = mode + ":" + (only ? only.join(",") : "*");
 	const hit = RESOLVED.get(key);
 	if (hit) return hit;
 	const tools = agentToolsDocument.tools
 		.filter((tool) => tool.modes.includes(mode) && (!only || only.includes(tool.name)))
-		.map((tool) => ({
-			type: "function" as const,
-			function: {
-				name: tool.name,
-				description: tool.descriptionByMode?.[mode] ?? tool.description,
-				parameters: resolveAgentSchema(tool.parameters)
-			}
-		}));
+		.map((tool) => ({ name: tool.name, description: tool.descriptionByMode?.[mode] ?? tool.description, parameters: resolveAgentSchema(tool.parameters) }));
 	RESOLVED.set(key, tools);
 	return tools;
+}
+
+/** Compatibility projection for existing callers; execution uses agentTools. */
+export function agentOpenAiTools(mode: AgentMode, only?: readonly string[]) {
+	return agentTools(mode, only).map((tool) => ({ type: "function" as const, function: tool }));
 }
 
 function properties(name: string): Record<string, unknown> {

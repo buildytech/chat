@@ -13,8 +13,7 @@ test("a later provider exception preserves reported tokens, run identity and act
 	let calls = 0;
 	const execution = createExecution("fixture", new AbortController().signal, async (request) => {
 		if (++calls === 2) throw new Error("private upstream body");
-		request.stepUsage.push(reported);
-		return { ok: true, message: { role: "assistant", content: "Read" } };
+		return { ok: true, usage: reported, message: { role: "assistant", text: "Read" } };
 	}, "stable-id", {});
 	await execution.request(input);
 	const failure = await execution.request(input);
@@ -36,8 +35,7 @@ for (const timeout of [false, true]) test(`${timeout ? "timeout" : "cancel"} dur
 			controller.abort(new DOMException("private reason", timeout ? "TimeoutError" : "AbortError"));
 			throw controller.signal.reason;
 		}
-		request.stepUsage.push(reported);
-		return { ok: true, message: { role: "assistant", content: "Read" } };
+		return { ok: true, usage: reported, message: { role: "assistant", text: "Read" } };
 	}, "stable-id", {});
 	await execution.request(input);
 	const failure = await execution.request(input);
@@ -59,12 +57,11 @@ test("deadline is checked again before named fallback and the final no-tools req
 	try {
 		const execution = createExecution("fixture", new AbortController().signal, async (request) => {
 			calls += 1;
-			request.stepUsage.push(reported);
-			return { ok: true, message: { role: "assistant", content: "Read" } };
+			return { ok: true, usage: reported, message: { role: "assistant", text: "Read" } };
 		}, "stable-id", { deadline: now + 100 });
 		await execution.request(input);
 		now += 101;
-		for (const toolChoice of [{ type: "function", function: { name: "write_page" } } as const, "required" as const, "none" as const]) {
+		for (const toolChoice of [{ name: "write_page" } as const, "required" as const, "none" as const]) {
 			const result = await execution.request({ ...input, toolChoice });
 			assert.equal(result.ok, false);
 			if (!result.ok) assert.equal(result.result.code, "runtime_timeout");
@@ -79,9 +76,8 @@ test("an aborted response cannot execute its write, even when the provider resol
 	const controller = new AbortController();
 	const page = emptyPage({ title: "Before", now: "2026-11-16T12:00:00Z" });
 	const out = await runAgentLoop("fixture", { brief: "Rename", mode: "build", page, expectedRevision: 0 }, controller.signal, async (request) => {
-		request.stepUsage.push(reported);
 		controller.abort();
-		return { ok: true, message: { role: "assistant", tool_calls: [{ id: "write", type: "function", function: { name: "write_page", arguments: JSON.stringify({ patch: [{ op: "replace", path: "/title", value: "After" }] }) } }] } };
+		return { ok: true, usage: reported, message: { role: "assistant", calls: [{ id: "write", name: "write_page", argumentsJson: JSON.stringify({ patch: [{ op: "replace", path: "/title", value: "After" }] }) }] } };
 	}, "stable-id");
 	assert.equal(out.result.ok, false);
 	assert.equal(out.meta.budget?.writeAttempts, 0);
