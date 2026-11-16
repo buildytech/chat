@@ -31631,26 +31631,9 @@ exports["contractFingerprint"] = contractFingerprint;
 
 });
 
-__def("packages/chat-agent/src/index.ts", function (exports) {
-{ const __m = __req("packages/chat-agent/src/agent/agent-tools.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-{ const __m = __req("packages/chat-agent/src/agent/blocks.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-{ const __m = __req("packages/chat-agent/src/agent/catalog-tools.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-{ const __m = __req("packages/chat-agent/src/agent/turn.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-{ const __m = __req("packages/chat-agent/src/models.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-{ const __m = __req("packages/chat-agent/src/usage.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-{ const __m = __req("packages/chat-agent/src/xai-env.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-{ const __m = __req("packages/chat-agent/src/protect.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-{ const __m = __req("packages/chat-agent/src/redact.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-{ const __m = __req("packages/chat-agent/src/env-map.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
-exports["contractFingerprint"] = __req("packages/chat-agent/src/fingerprint.ts")["contractFingerprint"];
-
-
-
-});
-
-__def("apps/xai-runtime/src/chat-prompts.ts", function (exports) {
+__def("packages/chat-agent/src/agent/prompts.ts", function (exports) {
 const { collectionPromptContext, pageForModel } = __req("packages/builder-core/src/index.ts");
-const { itemIndex, propsOutline } = __req("packages/chat-agent/src/index.ts");
+const { itemIndex, propsOutline } = __req("packages/chat-agent/src/agent/blocks.ts");
 const SYSTEM_COMMON = [
 	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
 	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
@@ -31715,6 +31698,27 @@ exports["SYSTEM_BUILD"] = SYSTEM_BUILD;
 exports["SYSTEM_ASK"] = SYSTEM_ASK;
 exports["userPrompt"] = userPrompt;
 exports["nudgeText"] = nudgeText;
+
+});
+
+__def("packages/chat-agent/src/index.ts", function (exports) {
+{ const __m = __req("packages/chat-agent/src/agent/agent-tools.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/agent/blocks.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/agent/catalog-tools.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/agent/turn.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/models.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/usage.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/xai-env.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/protect.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/redact.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/env-map.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+exports["contractFingerprint"] = __req("packages/chat-agent/src/fingerprint.ts")["contractFingerprint"];
+exports["SYSTEM_ASK"] = __req("packages/chat-agent/src/agent/prompts.ts")["SYSTEM_ASK"];
+exports["SYSTEM_BUILD"] = __req("packages/chat-agent/src/agent/prompts.ts")["SYSTEM_BUILD"];
+exports["nudgeText"] = __req("packages/chat-agent/src/agent/prompts.ts")["nudgeText"];
+exports["userPrompt"] = __req("packages/chat-agent/src/agent/prompts.ts")["userPrompt"];
+
+
 
 });
 
@@ -31799,7 +31803,7 @@ exports["installPropsGate"] = installPropsGate;
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
 const { RUN_BUDGET, itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
 const { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentToolChoice, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, rejectedWrite, runWriteTool, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
-const { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } = __req("apps/xai-runtime/src/chat-prompts.ts");
+const { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } = __req("packages/chat-agent/src/index.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
 

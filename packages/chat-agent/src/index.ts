@@ -10,3 +10,4 @@ export * from "./protect.ts";
 export * from "./redact.ts";
 export * from "./env-map.ts";
 export { contractFingerprint } from "./fingerprint.ts";
+export { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./agent/prompts.ts";

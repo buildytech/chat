@@ -11,4 +11,5 @@ Each note is one change: why, what to delete, what to keep, how to verify.
 
 - [Общий план и приоритеты](agent-system-plan.md) — код этапа 1 реализован; общий агентский цикл, адаптеры, поиск, контекст и браузерный кабинет сценариев.
 - [Stage 1: единая политика](stage-1-policy.md) — ход реализации и проверки.
+- [Stage 2: общее выполнение](stage-2-runtime.md) — перенос prompts в агентский модуль; следующий шаг — контракт провайдера и loop.
 - Исходные сведения: [xAI API audit](grokapi-report-2026-11-16.md), [catalog search audit](constructor-search-audit-2026-11-16.md).

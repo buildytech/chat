@@ -7,7 +7,7 @@
  */
 import { RUN_BUDGET, itemInfo, renderProblems } from "@buildytech/builder-core";
 import { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentToolChoice, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, rejectedWrite, runWriteTool, safeErrorMessage, unknownUsage, type AgentFailure, type AgentReply, type PageProposal, type RunUsage, type StepUsage, type TurnContext } from "@buildytech/chat-agent";
-import { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./chat-prompts.ts";
+import { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import { installPropsGate } from "@buildytech/builder-core/props-gate";
 

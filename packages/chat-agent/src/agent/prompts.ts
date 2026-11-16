@@ -3,7 +3,8 @@
  * props of the blocks on the page, the registry index) and the one nudge sent when a turn ends without an accepted write.
  */
 import { collectionPromptContext, pageForModel, type renderProblems } from "@buildytech/builder-core";
-import { itemIndex, propsOutline, type TurnContext } from "@buildytech/chat-agent";
+import { itemIndex, propsOutline } from "./blocks.ts";
+import type { TurnContext } from "./turn.ts";
 import type { PageV2 } from "@buildytech/page-contract";
 
 const SYSTEM_COMMON = [
