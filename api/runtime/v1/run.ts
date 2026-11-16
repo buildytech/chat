@@ -31878,7 +31878,6 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 	return loopResult(ctx, state, text, trace.steps, finish());
 }
 
-
 exports["runAgentLoop"] = runAgentLoop;
 
 });
@@ -32075,7 +32074,6 @@ async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: 
 	}
 	return { ok: true, message };
 }
-
 
 exports["providerStep"] = providerStep;
 
