@@ -8,7 +8,7 @@
  *   node scripts/check-dead.mjs --update      lower the baseline
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WEB_SRC, catalogs, isSource, walk } from "./lib/module-boundary.mjs";
 
@@ -32,7 +32,7 @@ export function unusedExports() {
 	const texts = new Map([...scanFiles(), ...walk(join(root, "scripts"), (p) => /\.(ts|mjs|js)$/.test(p)), ...walk(join(root, "apps/chat-web/src"), (p) => p.endsWith(".svelte"))].map((p) => [p, read(p)]));
 	const out = [];
 	for (const file of files) {
-		if (/\/routes\//.test(file) || /\/index\.ts$/.test(file)) continue;
+		if (/\/routes\//.test(file.replaceAll("\\", "/")) || /\/index\.ts$/.test(file.replaceAll("\\", "/"))) continue;
 		const text = texts.get(file) ?? read(file);
 		const names = new Set([...text.matchAll(/^export\s+(?:declare\s+)?(?:async\s+)?(?:function\*?|const|let|class|type|interface|enum)\s+([A-Za-z_$][\w$]*)/gm)].map((m) => m[1]));
 		for (const name of names) {
@@ -46,10 +46,10 @@ export function unusedExports() {
 export function deadFiles() {
 	const all = scanFiles().filter((p) => /\.(ts|svelte)$/.test(p) && !p.endsWith(".d.ts") && !/\.test\.ts$/.test(p));
 	const texts = new Map(scanFiles().concat(walk(join(root, "scripts"), (p) => /\.(ts|mjs)$/.test(p))).map((p) => [p, read(p)]));
-	const entry = (p) => /\/routes\//.test(p) || /hooks\.client\.ts$/.test(p) || /\/xai-runtime\/src\/(server|status|vercel-fetch)\.ts$/.test(p) || /\/index\.ts$/.test(p);
+	const entry = (path) => { const p = path.replaceAll("\\", "/"); return /\/routes\//.test(p) || /hooks\.client\.ts$/.test(p) || /\/xai-runtime\/src\/(server|status|vercel-fetch)\.ts$/.test(p) || /\/index\.ts$/.test(p); };
 	return all.filter((file) => {
 		if (entry(file)) return false;
-		const name = file.replace(/^.*\//, "").replace(/\.(ts|svelte)$/, "");
+		const name = basename(file).replace(/\.(ts|svelte)$/, "");
 		const stem = name.replace(/\.svelte$/, "");
 		for (const [path, text] of texts) {
 			if (path === file) continue;

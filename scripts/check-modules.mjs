@@ -60,7 +60,10 @@ const bundleText = (dir) => walk(dir, (p) => /\.(js|css|html|json|map|txt)$/.tes
 
 async function noTrace() {
 	rmSync(out, { recursive: true, force: true });
-	const build = spawnSync("npm", ["run", "build", "--workspace=@buildytech/chat-web"], { cwd: root, stdio: "inherit", env: { ...process.env, VITE_MODULE_CHAT: "0", BUILDY_BUILD_DIR: out } });
+	const npmCli = process.env.npm_execpath;
+	const command = npmCli ? process.execPath : process.platform === "win32" ? "npm.cmd" : "npm";
+	const args = [...(npmCli ? [npmCli] : []), "run", "build", "--workspace=@buildytech/chat-web"];
+	const build = spawnSync(command, args, { cwd: root, shell: !npmCli && process.platform === "win32", stdio: "inherit", env: { ...process.env, VITE_MODULE_CHAT: "0", BUILDY_BUILD_DIR: out } });
 	if (build.status !== 0) return report("no-trace build", ["the chat-off build failed"]);
 	const tokens = chatTokens();
 	const off = bundleText(out);

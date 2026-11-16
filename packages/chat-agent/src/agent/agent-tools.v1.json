@@ -1,7 +1,7 @@
 {
  "$schema": "https://json-schema.org/draft/2020-12/schema",
  "format": "buildy-agent-tools",
- "version": 2,
+ "version": 3,
  "description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
  "modes": {
   "ask": {
@@ -9,8 +9,8 @@
    "toolChoice": "auto"
   },
   "build": {
-   "description": "Edit the page. Tool choice auto: a text-only answer is shown and creates no proposal; a successful write_page creates one pending proposal (a diff) the author applies with Apply.",
-   "toolChoice": "auto"
+   "description": "Edit the page. Tool choice required: read with tools, then write_page. An accepted write ends the turn and creates a pending proposal (a diff) for Apply. A text-only response creates no proposal; the host may nudge once.",
+   "toolChoice": "required"
   }
  },
  "enumSources": {

@@ -25,13 +25,18 @@ type AgentToolsDocument = {
 	format: "buildy-agent-tools";
 	version: number;
 	description: string;
-	modes: Record<AgentMode, { description: string; toolChoice: "auto" }>;
+	modes: Record<AgentMode, { description: string; toolChoice: "auto" | "required" }>;
 	enumSources: Record<string, string>;
 	tools: AgentToolDefinition[];
 };
 
 export const agentToolsDocument = raw as unknown as AgentToolsDocument;
 export const AGENT_TOOLS_VERSION = `${agentToolsDocument.format}/${agentToolsDocument.version}`;
+
+/** The versioned mode policy shared by runtime and configuration viewers. */
+export function agentToolChoice(mode: AgentMode): "auto" | "required" {
+ return agentToolsDocument.modes[mode].toolChoice;
+}
 
 export function isAgentMode(value: unknown): value is AgentMode {
 	return typeof value === "string" && (AGENT_MODES as readonly string[]).includes(value);

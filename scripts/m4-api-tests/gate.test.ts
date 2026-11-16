@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, isAbsolute, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertionCounts } from "../check-ratchet.mjs";
 import { classSets } from "../ui8px-extract.mjs";
@@ -43,7 +43,7 @@ test("12-factor: the environment is read in the config modules and the entry poi
 	]);
 	const reads = [...sourceOf("apps/chat-web/src"), ...sourceOf("apps/xai-runtime/src"), ...sourceOf("packages")]
 		.filter((file) => /\bprocess\??\.env\b|\bimport\.meta\.env\b/.test(readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\/|^\s*\/\/.*$/gm, "")))
-		.map((file) => relative(ROOT, file));
+		.map((file) => relative(ROOT, file).split(sep).join("/"));
 	const extra = reads.filter((file) => !allowed.has(file));
 	assert.deepEqual(extra, [], "read the environment through a config module");
 	for (const file of ["apps/chat-web/config.js", "apps/xai-runtime/src/config.ts"]) assert.ok(existsSync(join(ROOT, file)));
@@ -53,7 +53,7 @@ test("12-factor: every variable the app reads is documented in .env.example", ()
 	const example = readFileSync(join(ROOT, ".env.example"), "utf8");
 	const files = ["apps/chat-web/config.js", ...sourceOf("apps/xai-runtime/src"), ...sourceOf("packages/chat-agent/src")];
 	const names = new Set<string>();
-	for (const file of files) for (const m of readFileSync(join(ROOT, file.startsWith("/") ? relative(ROOT, file) : file), "utf8").matchAll(/\benv\??\.([A-Z][A-Z0-9_]{4,})|"([A-Z][A-Z0-9_]{8,})"/g)) names.add((m[1] ?? m[2])!);
+	for (const file of files) for (const m of readFileSync(isAbsolute(file) ? file : join(ROOT, file), "utf8").matchAll(/\benv\??\.([A-Z][A-Z0-9_]{4,})|"([A-Z][A-Z0-9_]{8,})"/g)) names.add((m[1] ?? m[2])!);
 	assert.ok(names.size >= 10, `found the variable names (${names.size})`);
 	for (const name of names) assert.match(example, new RegExp(`\\b${name}\\b`), `${name} is in .env.example`);
 });

@@ -6,7 +6,7 @@
  * loop stops after two identical error lists. There is no local repair, no operation taxonomy, no phrase recognition.
  */
 import { RUN_BUDGET, itemInfo, renderProblems } from "@buildytech/builder-core";
-import { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, rejectedWrite, runWriteTool, safeErrorMessage, unknownUsage, type AgentFailure, type AgentReply, type PageProposal, type RunUsage, type StepUsage, type TurnContext } from "@buildytech/chat-agent";
+import { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentToolChoice, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, rejectedWrite, runWriteTool, safeErrorMessage, unknownUsage, type AgentFailure, type AgentReply, type PageProposal, type RunUsage, type StepUsage, type TurnContext } from "@buildytech/chat-agent";
 import { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./chat-prompts.ts";
 import type { PageV2 } from "@buildytech/page-contract";
 import { installPropsGate } from "@buildytech/builder-core/props-gate";
@@ -111,7 +111,7 @@ async function providerStep(input: {
 			model: input.modelId,
 			messages: input.messages,
 			tools: input.tools,
-			// The author picks Ask or Build in the composer; the model decides whether to call a tool (ADR-0011).
+			// Choice comes from the versioned agent mode policy; the host may explicitly force a repair write.
 			tool_choice: input.toolChoice,
 			stream: false,
 			max_tokens: input.maxTokens,
@@ -266,7 +266,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 	while (trace.steps < BUDGET.maxSteps && !state.stuck) {
 		trace.steps += 1;
 		endedOnCalls = false;
-		let step = await request(forceNamed ? FORCE_WRITE : build ? "required" : "auto");
+		let step = await request(forceNamed ? FORCE_WRITE : agentToolChoice(ctx.mode));
 		// A model that refuses the named function gets "required".
 		if (forceNamed && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) step = await request("required");
 		forceNamed = false;

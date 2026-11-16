@@ -27750,7 +27750,7 @@ exports["isScenarioId"] = isScenarioId;
 
 __def("packages/builder-core/src/policy.ts", function (exports) {
 
-const POLICY_VERSION = "page-agent/4";
+const POLICY_VERSION = "page-agent/5";
 /** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
 const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
 const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
@@ -30165,7 +30165,7 @@ __def("packages/chat-agent/src/agent/agent-tools.v1.json", function (exports) {
   exports.default = {
  "$schema": "https://json-schema.org/draft/2020-12/schema",
  "format": "buildy-agent-tools",
- "version": 2,
+ "version": 3,
  "description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
  "modes": {
   "ask": {
@@ -30173,8 +30173,8 @@ __def("packages/chat-agent/src/agent/agent-tools.v1.json", function (exports) {
    "toolChoice": "auto"
   },
   "build": {
-   "description": "Edit the page. Tool choice auto: a text-only answer is shown and creates no proposal; a successful write_page creates one pending proposal (a diff) the author applies with Apply.",
-   "toolChoice": "auto"
+   "description": "Edit the page. Tool choice required: read with tools, then write_page. An accepted write ends the turn and creates a pending proposal (a diff) for Apply. A text-only response creates no proposal; the host may nudge once.",
+   "toolChoice": "required"
   }
  },
  "enumSources": {
@@ -30327,13 +30327,18 @@ type AgentToolsDocument = {
 	format: "buildy-agent-tools";
 	version: number;
 	description: string;
-	modes: Record<AgentMode, { description: string; toolChoice: "auto" }>;
+	modes: Record<AgentMode, { description: string; toolChoice: "auto" | "required" }>;
 	enumSources: Record<string, string>;
 	tools: AgentToolDefinition[];
 };
 
 const agentToolsDocument = raw as unknown as AgentToolsDocument;
 const AGENT_TOOLS_VERSION = `${agentToolsDocument.format}/${agentToolsDocument.version}`;
+
+/** The versioned mode policy shared by runtime and configuration viewers. */
+function agentToolChoice(mode: AgentMode): "auto" | "required" {
+ return agentToolsDocument.modes[mode].toolChoice;
+}
 
 function isAgentMode(value: unknown): value is AgentMode {
 	return typeof value === "string" && (AGENT_MODES as string[]).includes(value);
@@ -30431,6 +30436,7 @@ function catalogToolParameterSchema(): Record<string, Record<string, unknown>> {
 exports["AGENT_MODES"] = AGENT_MODES;
 exports["agentToolsDocument"] = agentToolsDocument;
 exports["AGENT_TOOLS_VERSION"] = AGENT_TOOLS_VERSION;
+exports["agentToolChoice"] = agentToolChoice;
 exports["isAgentMode"] = isAgentMode;
 exports["agentToolNames"] = agentToolNames;
 exports["toolOffersMode"] = toolOffersMode;
@@ -31792,7 +31798,7 @@ exports["installPropsGate"] = installPropsGate;
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
 const { RUN_BUDGET, itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
-const { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, rejectedWrite, runWriteTool, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
+const { DEFAULT_XAI_BASE_URL, agentOpenAiTools, agentToolChoice, agentReply, aggregateStepUsage, assertNoFallback, executeCatalogTool, readProviderUsage, rejectedWrite, runWriteTool, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
 const { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } = __req("apps/xai-runtime/src/chat-prompts.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 installPropsGate();
@@ -31894,7 +31900,7 @@ async function providerStep(input: {
 			model: input.modelId,
 			messages: input.messages,
 			tools: input.tools,
-			// The author picks Ask or Build in the composer; the model decides whether to call a tool (ADR-0011).
+			// Choice comes from the versioned agent mode policy; the host may explicitly force a repair write.
 			tool_choice: input.toolChoice,
 			stream: false,
 			max_tokens: input.maxTokens,
@@ -32049,7 +32055,7 @@ async function agentLoop(apiKey: string, modelId: string, ctx: TurnContext, sign
 	while (trace.steps < BUDGET.maxSteps && !state.stuck) {
 		trace.steps += 1;
 		endedOnCalls = false;
-		let step = await request(forceNamed ? FORCE_WRITE : build ? "required" : "auto");
+		let step = await request(forceNamed ? FORCE_WRITE : agentToolChoice(ctx.mode));
 		// A model that refuses the named function gets "required".
 		if (forceNamed && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) step = await request("required");
 		forceNamed = false;

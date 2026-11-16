@@ -61,7 +61,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 	const { files, count } = extract();
 	console.log(`ui8px: ${count} class sets from ${files} Svelte files mirrored to .ui8px/extract`);
 	if (!process.argv.includes("--extract")) {
-		const run = spawnSync("npx", ["--no-install", "ui8px", "lint", ".ui8px/extract"], { cwd: root, encoding: "utf8" });
+		const run = spawnSync(process.execPath, [fileURLToPath(import.meta.resolve("ui8px/dist/index.js")), "lint", ".ui8px/extract"], { cwd: root, encoding: "utf8" });
+		if (run.error || run.status === null) throw new Error(`Could not run local ui8px: ${run.error?.message ?? run.signal}`);
 		mkdirSync(join(root, ".ui8px/reports"), { recursive: true });
 		writeFileSync(join(root, ".ui8px/reports/last-lint.txt"), run.stdout);
 		if (run.stderr.trim()) process.stderr.write(run.stderr);

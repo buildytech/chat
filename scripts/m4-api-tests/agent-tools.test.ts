@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { ALLOWED_TOOLS, emptyPage, facetVocabulary } from "../../packages/builder-core/src/index.ts";
-import { AGENT_TOOLS_VERSION, agentOpenAiTools, agentToolNames, agentToolsDocument, askBlockCards, catalogToolParameterSchema, contractFingerprint, executeCatalogTool, isAgentReply, mapChatRunRequest, readBlock, type AgentReply } from "../../packages/chat-agent/src/index.ts";
+import { AGENT_TOOLS_VERSION, agentToolChoice, agentOpenAiTools, agentToolNames, agentToolsDocument, askBlockCards, catalogToolParameterSchema, contractFingerprint, executeCatalogTool, isAgentReply, mapChatRunRequest, readBlock, type AgentReply } from "../../packages/chat-agent/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
 import { handleRuntimeFetch } from "../../apps/xai-runtime/src/http.ts";
 import { chatModeOf, turnOutcome } from "../../apps/chat-web/src/modules/chat/core/modes.ts";
@@ -37,7 +37,10 @@ test("agent-tools.v1.json is the one tool definition: four tools, both modes, pl
 		assert.deepEqual([...agentToolNames(mode)].sort(), ["get_block", "get_page", "search_catalog", "write_page"], mode);
 		assert.equal(hasVendorKeyword(agentOpenAiTools(mode)), false, `${mode} tools still carry x-* keywords`);
 	}
-	// Enum markers are filled from the pinned catalog, never typed in the file.
+	assert.equal(agentToolChoice("ask"), "auto");
+ assert.equal(agentToolChoice("build"), "required");
+ assert.equal(agentToolsDocument.modes.build.toolChoice, "required");
+ // Enum markers are filled from the pinned catalog, never typed in the file.
 	assert.deepEqual(catalogToolParameterSchema().section.enum, facetVocabulary().section);
 	assert.deepEqual(catalogToolParameterSchema().job.enum, facetVocabulary().job);
 	// No operation taxonomy, no layout tool, no plan tool.

@@ -36,9 +36,10 @@ export function counts() {
 		const text = readFileSync(path, "utf8");
 		const c = assertionCounts(text);
 		for (const key of Object.keys(c)) total[key] += c[key];
-		if (!path.endsWith("lib/browser/storage-v1.ts")) total.directLocalStorage += (stripComments(text).match(/(?<![\w"'.])localStorage\b(?!["'])/g) ?? []).length;
+		if (!path.replaceAll("\\", "/").endsWith("lib/browser/storage-v1.ts")) total.directLocalStorage += (stripComments(text).match(/(?<![\w"'.])localStorage\b(?!["'])/g) ?? []).length;
 	}
-	const lint = spawnSync("npx", ["--no-install", "eslint", "packages", "apps", "-f", "json"], { cwd: root, encoding: "utf8", maxBuffer: 1 << 28 });
+	const lint = spawnSync(process.execPath, [fileURLToPath(new URL("bin/eslint.js", import.meta.resolve("eslint/package.json"))), "packages", "apps", "-f", "json"], { cwd: root, encoding: "utf8", maxBuffer: 1 << 28 });
+	if (lint.error || lint.status === null) throw new Error(`Could not run local ESLint: ${lint.error?.message ?? lint.signal}`);
 	total.eslintWarnings = JSON.parse(lint.stdout).reduce((n, f) => n + f.messages.filter((m) => m.severity === 1).length, 0);
 	return total;
 }
