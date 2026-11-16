@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { readXaiMessage, xaiMessage, xaiRefused } from "../../apps/xai-runtime/src/xai-codec.ts";
+import { readXaiMessage, xaiMessage, xaiRefused } from "../../packages/provider-xai/src/codec.ts";
 
 test("xAI codec preserves text parts and tool calls through the neutral protocol", () => {
 	const message = readXaiMessage({ role: "assistant", content: [{ type: "text", text: "First" }, { type: "text", text: " second" }], tool_calls: [{ id: "one", type: "function", function: { name: "get_page", arguments: "{}" } }] });

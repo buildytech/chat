@@ -1,7 +1,7 @@
 /** xAI runtime composition: install the gate, bind transport credentials, redact failures. */
 import { DEFAULT_XAI_BASE_URL, runAgentLoop, turnMeta, safeErrorMessage, unknownUsage, type AgentReply, type AgentFailure, type LiveTurnMeta, type TurnContext } from "@buildytech/chat-agent";
 import { installPropsGate } from "@buildytech/builder-core/props-gate";
-import { providerStep } from "./xai-provider.ts";
+import { providerStep } from "@buildytech/provider-xai";
 installPropsGate();
 
 function newRunId(): string {

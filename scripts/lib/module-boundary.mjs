@@ -55,6 +55,12 @@ export function boundaryViolations(root) {
 	const problems = [];
 	const names = moduleNames(root);
 	const base = join(root, WEB_SRC);
+	for (const path of walk(base, isSource)) {
+		for (const spec of specifiersOf(readFileSync(path, "utf8"))) {
+			const target = spec.startsWith(".") ? relative(root, resolve(dirname(path), spec)).replaceAll("\\", "/") : "";
+			if (spec.startsWith("@buildytech/provider-") || /^packages\/provider-[^/]+(?:\/|$)/.test(target)) problems.push(`${relative(base, path)}: browser imports a server provider (${spec})`);
+		}
+	}
 	for (const path of coreFiles(root)) {
 		const rel = relative(base, path).replaceAll("\\", "/");
 		if (rel === "modules/index.ts") continue;

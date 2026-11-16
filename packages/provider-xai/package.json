@@ -1,0 +1,17 @@
+{
+  "name": "@buildytech/provider-xai",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Server-only xAI transport adapter for the neutral BuildY agent protocol",
+  "exports": {
+    ".": {
+      "browser": null,
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@buildytech/chat-agent": "0.0.0"
+  }
+}

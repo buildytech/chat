@@ -16,7 +16,7 @@ import { walk } from "./lib/module-boundary.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const file = join(root, "scripts/ratchet-baseline.json");
-const SOURCE = ["apps/chat-web/src", "apps/xai-runtime/src", "packages/builder-core/src", "packages/chat-agent/src", "packages/page-contract/src", "packages/ports/src"];
+const SOURCE = ["apps/chat-web/src", "apps/xai-runtime/src", "packages/builder-core/src", "packages/chat-agent/src", "packages/provider-xai/src", "packages/page-contract/src", "packages/ports/src"];
 
 export const sourceFiles = () => SOURCE.flatMap((dir) => walk(join(root, dir), (p) => /\.(ts|svelte)$/.test(p) && !/\.test\.ts$/.test(p)));
 

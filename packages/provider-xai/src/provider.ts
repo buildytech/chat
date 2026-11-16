@@ -1,7 +1,8 @@
 /** xAI Chat Completions transport. No page writes or agent-loop decisions. */
 import { assertNoFallback, readProviderUsage, type ProviderRequest, type ProviderStep } from "@buildytech/chat-agent";
 
-import { xaiMessage, readXaiMessage, xaiRefused } from "./xai-codec.ts";
+import { xaiMessage, readXaiMessage, xaiRefused } from "./codec.ts";
+import { xaiCapabilities } from "./capabilities.ts";
 
 function silentFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 	return fetch(input, init);
@@ -30,6 +31,12 @@ function classifyProviderFailure(status: number, snippet: string): { code: strin
 
 
 export async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: string }): Promise<ProviderStep> {
+	const capabilities = xaiCapabilities(input.modelId);
+	const choice = input.toolChoice;
+	if (capabilities.toolLoop !== "enabled") return { ok: false, error: { code: capabilities.unavailableCode ?? "model_tools_unavailable", message: "This model is not enabled for the xAI tool adapter. No fallback was selected." } };
+	if (!Number.isSafeInteger(input.maxTokens) || input.maxTokens <= 0 || (choice === "required" && input.tools.length === 0) || (typeof choice === "object" && !input.tools.some((tool) => tool.name === choice.name))) {
+		return { ok: false, error: { code: "unsupported_request", message: "Invalid token limit or unavailable tool choice. No provider request was sent." } };
+	}
 	const requestStarted = Date.now();
 	const res = await silentFetch(`${input.baseUrl}/chat/completions`, {
 		method: "POST",

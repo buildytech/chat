@@ -34,6 +34,7 @@
       "usage.test.ts"
     ],
     "xai-runtime": [
+      "provider-xai.test.ts",
       "gate.test.ts",
       "render-probe-callers.test.ts",
       "vercel-protect.test.ts"

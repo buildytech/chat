@@ -27750,7 +27750,7 @@ exports["isScenarioId"] = isScenarioId;
 
 __def("packages/builder-core/src/policy.ts", function (exports) {
 
-const POLICY_VERSION = "page-agent/8";
+const POLICY_VERSION = "page-agent/9";
 /** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
 const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
 const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
@@ -32048,7 +32048,7 @@ exports["installPropsGate"] = installPropsGate;
 
 });
 
-__def("apps/xai-runtime/src/xai-codec.ts", function (exports) {
+__def("packages/provider-xai/src/codec.ts", function (exports) {
 
 function xaiMessage(message: AgentMessage): Record<string, unknown> {
 	return {
@@ -32112,9 +32112,31 @@ exports["xaiRefused"] = xaiRefused;
 
 });
 
-__def("apps/xai-runtime/src/xai-provider.ts", function (exports) {
+__def("packages/provider-xai/src/capabilities.ts", function (exports) {
+const { getChatModel, modelRunsToolLoop, modelUnavailableCode } = __req("packages/chat-agent/src/index.ts");
+function xaiCapabilities(modelId: string) {
+	const model = getChatModel(modelId);
+	return {
+		provider: "xai",
+		protocol: "chat-completions",
+		streaming: false,
+		toolChoices: ["auto", "none", "required", "named-with-required-fallback"],
+		completionTokenParameter: "max_tokens",
+		fixedTemperature: 0,
+		modelId,
+		toolLoop: model ? modelRunsToolLoop(model) ? "enabled" : "disabled" : "unknown",
+		unavailableCode: model ? modelUnavailableCode(model) : "unknown_chat_model"
+	} as const;
+}
+
+exports["xaiCapabilities"] = xaiCapabilities;
+
+});
+
+__def("packages/provider-xai/src/provider.ts", function (exports) {
 const { assertNoFallback, readProviderUsage } = __req("packages/chat-agent/src/index.ts");
-const { xaiMessage, readXaiMessage, xaiRefused } = __req("apps/xai-runtime/src/xai-codec.ts");
+const { xaiMessage, readXaiMessage, xaiRefused } = __req("packages/provider-xai/src/codec.ts");
+const { xaiCapabilities } = __req("packages/provider-xai/src/capabilities.ts");
 function silentFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 	return fetch(input, init);
 }
@@ -32142,6 +32164,12 @@ function classifyProviderFailure(status: number, snippet: string): { code: strin
 
 
 async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: string }): Promise<ProviderStep> {
+	const capabilities = xaiCapabilities(input.modelId);
+	const choice = input.toolChoice;
+	if (capabilities.toolLoop !== "enabled") return { ok: false, error: { code: capabilities.unavailableCode ?? "model_tools_unavailable", message: "This model is not enabled for the xAI tool adapter. No fallback was selected." } };
+	if (!Number.isSafeInteger(input.maxTokens) || input.maxTokens <= 0 || (choice === "required" && input.tools.length === 0) || (typeof choice === "object" && !input.tools.some((tool) => tool.name === choice.name))) {
+		return { ok: false, error: { code: "unsupported_request", message: "Invalid token limit or unavailable tool choice. No provider request was sent." } };
+	}
 	const requestStarted = Date.now();
 	const res = await silentFetch(`${input.baseUrl}/chat/completions`, {
 		method: "POST",
@@ -32186,10 +32214,18 @@ exports["providerStep"] = providerStep;
 
 });
 
+__def("packages/provider-xai/src/index.ts", function (exports) {
+exports["providerStep"] = __req("packages/provider-xai/src/provider.ts")["providerStep"];
+exports["xaiCapabilities"] = __req("packages/provider-xai/src/capabilities.ts")["xaiCapabilities"];
+
+
+
+});
+
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
 const { DEFAULT_XAI_BASE_URL, runAgentLoop, turnMeta, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
-const { providerStep } = __req("apps/xai-runtime/src/xai-provider.ts");
+const { providerStep } = __req("packages/provider-xai/src/index.ts");
 installPropsGate();
 
 function newRunId(): string {
