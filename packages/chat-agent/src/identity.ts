@@ -9,4 +9,3 @@ export function fnv1a64(text: string): string {
 	}
 	return h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
 }
-
