@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { buildSync } from "esbuild";
 import { contractFingerprint } from "../../packages/chat-agent/src/index.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -15,7 +16,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const OUT = join(ROOT, "api", "runtime", "_t");
 mkdirSync(OUT, { recursive: true });
 if (!existsSync(join(ROOT, "api", "runtime", "_render", "blocks.mjs"))) execFileSync(process.execPath, [join(ROOT, "scripts/build-render-bundle.mjs")], { cwd: ROOT, stdio: "pipe" });
-execFileSync(process.execPath, [fileURLToPath(import.meta.resolve("esbuild/bin/esbuild")),  "api/runtime/v1/run.ts", "--format=esm", "--platform=node", "--log-level=error", `--outdir=${OUT}`], { cwd: ROOT, stdio: "pipe" });
+buildSync({ absWorkingDir: ROOT, entryPoints: ["api/runtime/v1/run.ts"], format: "esm", platform: "node", logLevel: "error", outdir: OUT });
 const entry = (await import(pathToFileURL(join(OUT, "run.js")).href)) as { default: { fetch(request: Request): Promise<Response> } };
 
 const page = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/fitness-applied-v2.json"), "utf8"));
