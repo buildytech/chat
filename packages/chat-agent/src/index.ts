@@ -13,3 +13,5 @@ export { contractFingerprint } from "./fingerprint.ts";
 export { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./agent/prompts.ts";
 export { runAgentLoop } from "./agent/loop.ts";
 export { turnMeta, type AgentProvider, type ProviderRequest, type ProviderStep, type AgentMessage, type AgentCall, type LiveTurnMeta } from "./agent/provider.ts";
+export { compileScenario, parseScenarioRef, type ScenarioProfile, type ScenarioRef, type CompiledScenario } from "./scenarios/compile.ts";
+export { resolveScenario, scenarioProfiles } from "./scenarios/registry.ts";

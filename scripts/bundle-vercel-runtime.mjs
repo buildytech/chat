@@ -35,6 +35,7 @@ function packageSrc(name, subpath = ".") {
 function resolveSpec(fromRel, spec) {
 	if (EXTERNAL.has(spec)) return { external: spec };
 	if (spec === "@buildytech/builder-core") return { id: packageSrc("builder-core") };
+	if (spec === "@buildytech/agent-manifests") return { id: packageSrc("agent-manifests") };
 	if (spec === "@buildytech/provider-xai") return { id: packageSrc("provider-xai") };
 	if (spec === "@buildytech/chat-agent") return { id: packageSrc("chat-agent") };
 	if (spec === "@buildytech/page-contract") return { id: packageSrc("page-contract") };

@@ -5,9 +5,12 @@ import { turnMeta, type AgentProvider, type LiveTurnMeta, type ProviderRequest, 
 
 type ExecutionStep = { ok: true; message: AgentMessage } | { ok: false; result: import("./turn.ts").AgentFailure; meta: LiveTurnMeta };
 
-export type ExecutionOptions = { deadline?: number; onProviderError?: (error: unknown) => void };
+import type { CompiledScenario } from "../scenarios/compile.ts";
+
+export type ExecutionOptions = { scenario?: CompiledScenario; deadline?: number; onProviderError?: (error: unknown) => void };
 
 export function createExecution(modelId: string, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions) {
+	const budget = options.scenario?.budget ?? AGENT_BUDGET;
 	const trace = { runId, steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
 	const counts: BudgetCounts = { requests: 0, toolCalls: 0, writeAttempts: 0 };
@@ -15,7 +18,7 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 	const finish = (): LiveTurnMeta => {
 		const reason = incomplete ?? (stepUsage.length < counts.requests ? "error" : undefined);
 		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, reason ? { incomplete: reason } : undefined) : unknownUsage(reason ?? "error", counts.requests);
-		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts } };
+		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts }, ...(options.scenario ? { scenario: { id: options.scenario.profile.id, version: options.scenario.profile.version, fingerprint: options.scenario.fingerprint, provider: options.scenario.profile.provider, providerVersion: options.scenario.manifestVersion, modelId } } : {}) };
 	};
 	const fail = (code: string, message: string): ExecutionStep => ({ ok: false, result: { ok: false, code, message }, meta: finish() });
 	const stopped = (): ExecutionStep | null => {
@@ -26,14 +29,14 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 		}
 		return null;
 	};
-	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens">): Promise<ExecutionStep> => {
+	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens" | "provider">): Promise<ExecutionStep> => {
 		const stop = stopped();
 		if (stop) return stop;
-		if (counts.requests >= AGENT_BUDGET.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
+		if (counts.requests >= budget.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
 		counts.requests += 1;
 		trace.steps = counts.requests;
 		try {
-			const result = await provider({ ...input, modelId, signal, maxTokens: AGENT_BUDGET.maxTokens });
+			const result = await provider({ ...input, modelId, signal, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens });
 			if (result.usage) stepUsage.push(result.usage);
 			const stop = stopped();
 			if (stop) return stop;

@@ -1,6 +1,7 @@
 /** Shared page-agent loop. The host injects transport; schema and render gates remain shared. */
 import { itemInfo, renderProblems } from "@buildytech/builder-core";
 import { AGENT_BUDGET, type BudgetCounts } from "./budget.ts";
+import type { ExecutionBudget } from "../scenarios/compile.ts";
 import type { PageV2 } from "@buildytech/page-contract";
 import { agentTools, agentToolChoice } from "./agent-tools.ts";
 import { agentReply, rejectedWrite, runWriteTool, type AgentFailure, type AgentReply, type PageProposal, type TurnContext } from "./turn.ts";
@@ -81,11 +82,11 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 }
 
 
-function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[]): AgentFailure | null {
+function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[], budget: Pick<ExecutionBudget, "maxToolCalls" | "maxWriteAttempts">): AgentFailure | null {
 	let wrote = false;
 	for (const call of calls) {
 		const name = call.name ?? "";
-		if (counts.toolCalls >= AGENT_BUDGET.maxToolCalls || (name === "write_page" && !wrote && counts.writeAttempts >= AGENT_BUDGET.maxWriteAttempts)) {
+		if (counts.toolCalls >= budget.maxToolCalls || (name === "write_page" && !wrote && counts.writeAttempts >= budget.maxWriteAttempts)) {
 			return { ok: false, code: "tool_budget", message: "The tool or write-attempt budget was reached. No further tools were executed." };
 		}
 		counts.toolCalls += 1;
@@ -99,14 +100,17 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 }
 
 export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions = {}): Promise<TurnResultOut> {
+	const scenario = options.scenario;
+	if (scenario && (scenario.modelId !== modelId || scenario.profile.mode !== ctx.mode)) throw new Error("Scenario binding mismatch");
+	const budget = scenario?.budget ?? AGENT_BUDGET;
 	const { trace, counts, finish, stopped, request: send } = createExecution(modelId, signal, provider, runId, options);
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
 	const messages: AgentMessage[] = [
-		{ role: "system", text: ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD },
-		{ role: "user", text: userPrompt(ctx, problems) }
+		{ role: "system", text: scenario?.systemPrompt ?? (ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD) },
+		{ role: "user", text: scenario ? scenario.context(ctx, problems) : userPrompt(ctx, problems) }
 	];
-	const tools = agentTools(ctx.mode);
+	const tools = scenario?.tools ?? agentTools(ctx.mode);
 	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false, rejected: null };
 	let text = "";
 	let endedOnCalls = false;
@@ -122,10 +126,10 @@ export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: Ab
 	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
 	const request = (toolChoice: Parameters<typeof send>[0]["toolChoice"]) => send({ messages, tools, toolChoice });
 	let steps = 0;
-	while (steps < AGENT_BUDGET.maxSteps && !state.stuck) {
+	while (steps < budget.maxSteps && !state.stuck) {
 		steps += 1;
 		endedOnCalls = false;
-		let step = await request(forceNamed ? FORCE_WRITE : agentToolChoice(ctx.mode));
+		let step = await request(forceNamed ? FORCE_WRITE : scenario?.toolChoice ?? agentToolChoice(ctx.mode));
 		// A model that refuses the named function gets "required".
 		if (forceNamed && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) step = await request("required");
 		forceNamed = false;
@@ -138,7 +142,7 @@ export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: Ab
 			if (expectsChange && !nudged && !changed() && steps < AGENT_BUDGET.maxSteps) {
 				nudged = true;
 				forceNamed = build;
-				messages.push({ role: "assistant", text: said || "" }, { role: "user", text: nudgeText(ctx, open) });
+				messages.push({ role: "assistant", text: said || "" }, { role: "user", text: scenario ? scenario.nudge(ctx, open) : nudgeText(ctx, open) });
 				continue;
 			}
 			break;
@@ -149,7 +153,7 @@ export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: Ab
 		state.accepted = false;
 		const stop = stopped();
 		if (stop && !stop.ok) return { result: stop.result, meta: stop.meta };
-		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages);
+		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages, budget);
 		if (failure) return { result: failure, meta: finish() };
 		// Build ends with the accepted write.
 		// The text beside the call is not an answer (a model may print the document there): the host shows the diff card and the status.

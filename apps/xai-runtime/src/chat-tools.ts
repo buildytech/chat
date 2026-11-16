@@ -1,5 +1,5 @@
 /** xAI runtime composition: install the gate, bind transport credentials, redact failures. */
-import { DEFAULT_XAI_BASE_URL, runAgentLoop, turnMeta, safeErrorMessage, unknownUsage, type AgentReply, type AgentFailure, type LiveTurnMeta, type TurnContext } from "@buildytech/chat-agent";
+import { DEFAULT_XAI_BASE_URL, resolveScenario, runAgentLoop, turnMeta, safeErrorMessage, unknownUsage, type AgentReply, type AgentFailure, type LiveTurnMeta, type TurnContext } from "@buildytech/chat-agent";
 import { installPropsGate } from "@buildytech/builder-core/props-gate";
 import { providerStep } from "@buildytech/provider-xai";
 installPropsGate();
@@ -18,7 +18,9 @@ type TurnResult = AgentReply | AgentFailure;
 
 export async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL, deadline?: number): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
 	try {
-		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { deadline, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
+		const compiled = resolveScenario(ctx.mode, modelId, ctx.scenario);
+		if (!compiled.ok || compiled.scenario.profile.provider !== "xai") return { result: { ok: false, code: "invalid_scenario", message: "The scenario could not be resolved.", issues: (compiled.ok ? [{ path: "/provider", code: "adapter_mismatch" }] : compiled.issues).map((issue) => ({ ...issue, expected: "registered compatible scenario" })) }, meta: turnMeta("chat-completions", modelId, false, 0, [], unknownUsage("error", 0), newRunId()) };
+		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { scenario: compiled.scenario, deadline, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
 		if (!turn.result.ok && turn.result.code === "provider_failed") return { ...turn, result: { ...turn.result, code: "xai_chat_failed", message: "The xAI chat request could not be completed. No automatic retry was sent." } };
 		return turn;
 	} catch (err) {

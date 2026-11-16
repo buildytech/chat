@@ -3,57 +3,9 @@ import { CANDIDATE_CHAT_MODEL } from "./xai-env.ts";
 import { isAgentMode, type AgentMode } from "./agent/agent-tools.ts";
 import { collectionBounds, type CollectionBounds } from "@buildytech/builder-core";
 
-/**
- * Readable labels for the five parent-verified TEXT models.
- * intendedRole is an owner suggestion for later manuals — not a routing rule
- * and not proof that the model has that capability.
- */
-export const GROK_CHAT_MODELS = [
-	{
-		id: "grok-4.20-0309-non-reasoning",
-		label: "Grok 4.20 Non-reasoning",
-		intendedRole: "block-selection",
-		intendedRoleNote: "Owner suggestion for later: block selection. Not a technical capability claim. Not used for routing."
-	},
-	{
-		id: "grok-4.20-0309-reasoning",
-		label: "Grok 4.20 Reasoning",
-		intendedRole: "block-selection",
-		intendedRoleNote: "Owner suggestion for later: block selection. Not a technical capability claim. Not used for routing."
-	},
-	{
-		id: "grok-4.20-multi-agent-0309",
-		label: "Grok 4.20 Multi-agent",
-		intendedRole: "task-distribution",
-		intendedRoleNote: "Owner suggestion for later: task distribution. Not a technical capability claim. Not used for routing.",
-		/**
-		 * Live probe 2026-11-09: chat completions answers 400 "Multi Agent requests are not allowed
-		 * on chat completions"; the Responses API answers 400 "Client-side tools for multi-agent
-		 * models require beta access". The catalog tool loop cannot run on it.
-		 */
-		toolLoop: "unavailable",
-		unavailableCode: "multi_agent_tools_unavailable"
-	},
-	{
-		id: "grok-4.7",
-		label: "Grok 4.7",
-		intendedRole: "consulting",
-		intendedRoleNote: "Owner suggestion for later: consulting. Not a technical capability claim. Not used for routing.",
-		/**
-		 * Live runs 2026-11-09 (dashboard prompt, tool_choice "required", 285 s budget): 4 of 7 finished,
-		 * in 54-227 s; the rest failed after 169-240 s (provider error, no propose_layout, timeout).
-		 * Answers in prose on tool_choice "auto". Too slow and unreliable for the catalog tool loop.
-		 */
-		toolLoop: "unavailable",
-		unavailableCode: "model_too_slow"
-	},
-	{
-		id: "grok-build-0.1",
-		label: "Grok Build 0.1",
-		intendedRole: "assembly",
-		intendedRoleNote: "Owner suggestion for later: assembly. Not a technical capability claim. Not used for routing."
-	}
-] as const;
+import { parseScenarioRef, type ScenarioRef } from "./scenarios/compile.ts";
+import { XAI_MODELS, manifestModelStatus } from "@buildytech/agent-manifests";
+export const GROK_CHAT_MODELS = XAI_MODELS;
 
 export type GrokChatModelId = (typeof GROK_CHAT_MODELS)[number]["id"];
 export type GrokChatModel = (typeof GROK_CHAT_MODELS)[number];
@@ -61,12 +13,12 @@ export type GrokChatModel = (typeof GROK_CHAT_MODELS)[number];
 /** False when the model cannot run this app's client-side tool loop (shown disabled in the selector). */
 export function modelRunsToolLoop(model: GrokChatModel | null | undefined): boolean {
 	if (!model) return false;
-	return !("toolLoop" in model && model.toolLoop === "unavailable");
+	return manifestModelStatus("xai", model.id).status === "enabled";
 }
 
 export function modelUnavailableCode(model: GrokChatModel | null | undefined): string | null {
 	if (!model || modelRunsToolLoop(model)) return null;
-	return "unavailableCode" in model ? model.unavailableCode : "model_tools_unavailable";
+	return manifestModelStatus("xai", model.id).code;
 }
 
 export const DEFAULT_CHAT_MODEL_ID: GrokChatModelId = CANDIDATE_CHAT_MODEL;
@@ -81,6 +33,7 @@ type ModelResolveOk = {
 type ModelResolveError = {
 	ok: false;
 	code:
+		| "invalid_scenario"
 		| "missing_model_id"
 		| "image_model_not_for_chat"
 		| "unknown_chat_model"
@@ -187,6 +140,7 @@ export function assertNoFallback(requestedId: string, executedId: string): Model
 
 /** A POST /v1/run body mapped onto one exact chat model and a trusted turn context (ADR 0034). */
 type ChatRunRequest = {
+	scenario?: ScenarioRef;
 	modelId: GrokChatModelId;
 	label: string;
 	live: boolean;
@@ -223,6 +177,7 @@ function parsePageDoc(raw: unknown): PageV2 | undefined {
 export function mapChatRunRequest(
 	body: {
 		modelId?: unknown;
+		scenario?: unknown;
 		brief?: unknown;
 		screenId?: unknown;
 		expectedRevision?: unknown;
@@ -241,10 +196,13 @@ export function mapChatRunRequest(
 		allowUnlistedTrial: opts.allowUnlistedTrial
 	});
 	if (!resolved.ok) return resolved;
+	const scenario = body.scenario === undefined ? undefined : parseScenarioRef(body.scenario);
+	if (scenario === null) return { ok: false, code: "invalid_scenario", message: "Expected a registered scenario reference (id and version only).", requestedId: resolved.modelId };
 	return {
 		ok: true,
 		request: {
 			modelId: resolved.modelId,
+			scenario,
 			label: resolved.label,
 			live: resolved.live,
 			brief: String(body.brief ?? ""),

@@ -27750,7 +27750,7 @@ exports["isScenarioId"] = isScenarioId;
 
 __def("packages/builder-core/src/policy.ts", function (exports) {
 
-const POLICY_VERSION = "page-agent/9";
+const POLICY_VERSION = "page-agent/10";
 /** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
 const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
 const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
@@ -30840,6 +30840,96 @@ exports["runWriteTool"] = runWriteTool;
 
 });
 
+__def("packages/agent-manifests/src/xai.ts", function (exports) {
+
+const XAI_MODELS = [
+	{
+		id: "grok-4.20-0309-non-reasoning",
+		label: "Grok 4.20 Non-reasoning",
+		intendedRole: "block-selection",
+		intendedRoleNote: "Owner suggestion for later: block selection. Not a technical capability claim. Not used for routing."
+	},
+	{
+		id: "grok-4.20-0309-reasoning",
+		label: "Grok 4.20 Reasoning",
+		intendedRole: "block-selection",
+		intendedRoleNote: "Owner suggestion for later: block selection. Not a technical capability claim. Not used for routing."
+	},
+	{
+		id: "grok-4.20-multi-agent-0309",
+		label: "Grok 4.20 Multi-agent",
+		intendedRole: "task-distribution",
+		intendedRoleNote: "Owner suggestion for later: task distribution. Not a technical capability claim. Not used for routing.",
+		/**
+		 * Live probe 2026-11-09: chat completions answers 400 "Multi Agent requests are not allowed
+		 * on chat completions"; the Responses API answers 400 "Client-side tools for multi-agent
+		 * models require beta access". The catalog tool loop cannot run on it.
+		 */
+		toolLoop: "unavailable",
+		unavailableCode: "multi_agent_tools_unavailable"
+	},
+	{
+		id: "grok-4.7",
+		label: "Grok 4.7",
+		intendedRole: "consulting",
+		intendedRoleNote: "Owner suggestion for later: consulting. Not a technical capability claim. Not used for routing.",
+		/**
+		 * Live runs 2026-11-09 (dashboard prompt, tool_choice "required", 285 s budget): 4 of 7 finished,
+		 * in 54-227 s; the rest failed after 169-240 s (provider error, no propose_layout, timeout).
+		 * Answers in prose on tool_choice "auto". Too slow and unreliable for the catalog tool loop.
+		 */
+		toolLoop: "unavailable",
+		unavailableCode: "model_too_slow"
+	},
+	{
+		id: "grok-build-0.1",
+		label: "Grok Build 0.1",
+		intendedRole: "assembly",
+		intendedRoleNote: "Owner suggestion for later: assembly. Not a technical capability claim. Not used for routing."
+	}
+] as const;
+
+
+const XAI_MANIFEST = {
+	id: "xai", version: 1, defaultModelId: "grok-4.20-0309-non-reasoning",
+	protocol: "chat-completions", streaming: false,
+	toolChoices: ["auto", "none", "required", "named-with-required-fallback"],
+	completionTokenParameter: "max_tokens", fixedTemperature: 0, models: XAI_MODELS
+} as const;
+
+exports["XAI_MODELS"] = XAI_MODELS;
+exports["XAI_MANIFEST"] = XAI_MANIFEST;
+
+});
+
+__def("packages/agent-manifests/src/index.ts", function (exports) {
+const { XAI_MANIFEST } = __req("packages/agent-manifests/src/xai.ts");
+exports["XAI_MANIFEST"] = __req("packages/agent-manifests/src/xai.ts")["XAI_MANIFEST"];
+exports["XAI_MODELS"] = __req("packages/agent-manifests/src/xai.ts")["XAI_MODELS"];
+const PROVIDER_MANIFESTS = immutableData([XAI_MANIFEST] as const);
+function providerManifest(id: string, version?: number) { return PROVIDER_MANIFESTS.filter((manifest) => manifest.id === id && (version === undefined || manifest.version === version)).sort((a, b) => b.version - a.version)[0] ?? null; }
+function manifestModelStatus(providerId: string, modelId: string, version?: number) {
+	const model = providerManifest(providerId, version)?.models.find((model) => model.id === modelId);
+	if (!model) return { status: "unknown", code: "unknown_chat_model" } as const;
+	if ("toolLoop" in model && model.toolLoop === "unavailable") return { status: "disabled", code: model.unavailableCode } as const;
+	return { status: "enabled", code: null } as const;
+}
+
+function immutableData<T>(value: T): T {
+	if (value !== null && typeof value === "object") {
+		for (const child of Object.values(value)) immutableData(child);
+		Object.freeze(value);
+	}
+	return value;
+}
+
+exports["PROVIDER_MANIFESTS"] = PROVIDER_MANIFESTS;
+exports["providerManifest"] = providerManifest;
+exports["manifestModelStatus"] = manifestModelStatus;
+exports["immutableData"] = immutableData;
+
+});
+
 __def("packages/chat-agent/src/env-map.ts", function (exports) {
 
 function readEnv(env?: EnvMap): EnvMap {
@@ -30853,6 +30943,7 @@ exports["readEnv"] = readEnv;
 });
 
 __def("packages/chat-agent/src/xai-env.ts", function (exports) {
+const { XAI_MANIFEST } = __req("packages/agent-manifests/src/index.ts");
 const { readEnv } = __req("packages/chat-agent/src/env-map.ts");
 const XAI_SECRET_ENV = ["XAI_API_KEY"] as const;
 const RUNTIME_AUTH_ENV = ["BUILDY_RUNTIME_BASIC_AUTH_USER", "BUILDY_RUNTIME_BASIC_AUTH_PASSWORD"] as const;
@@ -30865,13 +30956,13 @@ function xaiBaseUrl(env?: EnvMap): string {
 }
 
 /** The model a fresh runtime proposes when discovery lists it (the first listed chat model otherwise). Never a promise that the key may use it. */
-const CANDIDATE_CHAT_MODEL = "grok-4.20-0309-non-reasoning";
+const CANDIDATE_CHAT_MODEL = XAI_MANIFEST.defaultModelId;
 
 const XAI_RUNTIME_NOTES = {
 	provider: "Official xAI REST at https://api.x.ai/v1 with Bearer XAI_API_KEY.",
 	discover: "GET /v1/models (data[]), GET /v1/language-models (models[]), GET /v1/image-generation-models (models[]). Key-scoped.",
-	chat: "POST /v1/chat/completions, stream true. Conservative app tools use createOpenAI({ name: 'xai', baseURL, apiKey }).chat(actualModelId) + streamText.",
-	responses: "AI SDK 7 xai(modelId) defaults to Responses. This app does not use that default for catalog tools. If Responses is ever chosen, store:false. No zero-retention promise.",
+	chat: "POST /v1/chat/completions, stream false. The provider-xai adapter implements the neutral page-agent protocol.",
+	responses: "Responses is not implemented by this adapter. A future adapter must declare its storage policy explicitly.",
 	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
 	tools: "Application-executed tools only: get_page, search_catalog, get_block, write_page. Never mix hosted web_search / code_execution.",
 	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",
@@ -30930,66 +31021,314 @@ exports["classifyDiscoveredModels"] = classifyDiscoveredModels;
 
 });
 
+__def("packages/chat-agent/src/scenarios/profile.schema.json", function (exports) {
+  exports.default = {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:buildy:agent-scenario:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "id",
+    "version",
+    "mode",
+    "provider",
+    "prompt",
+    "context",
+    "nudge",
+    "toolSet",
+    "execution",
+    "limits",
+    "model",
+    "providerVersion"
+  ],
+  "properties": {
+    "format": {
+      "const": "buildy-agent-scenario"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]*$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "mode": {
+      "enum": [
+        "ask",
+        "build"
+      ]
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nudge": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution": {
+      "type": "string",
+      "minLength": 1
+    },
+    "toolSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "include": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxSteps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxRequests": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxToolCalls": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxWriteAttempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "model": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "selection"
+          ],
+          "properties": {
+            "selection": {
+              "const": "author"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "providerVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    }
+  }
+};
+});
+
+__def("packages/chat-agent/src/agent/prompts.ts", function (exports) {
+const { collectionPromptContext, pageForModel } = __req("packages/builder-core/src/index.ts");
+const { itemIndex, propsOutline } = __req("packages/chat-agent/src/agent/blocks.ts");
+const SYSTEM_COMMON = [
+	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
+	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
+	"- item is a registry item (npx ui8kit add <item>); itemIndex lists every item with its variants (header / footer roles are marked as information only). variant is one of the item's variants.",
+	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field; an icon is a real Lucide icon name in kebab-case (old names like smile or home are mapped; a name Lucide does not have is dropped from an optional icon and replaced by the sample icon in a required one, both noted in the answer). A picture is an optional prop: image (an https URL or a relative path) with imageAlt on a block, or image on a list record, where get_block shows it; without it the block shows a placeholder, which is fine, so leave image out by default. Never invent a URL. Set image only when the author gave an address or asked for photos; then use only a direct https image URL of a real public photo you are sure exists (stock sites like images.unsplash.com or images.pexels.com), with a short imageAlt of what it shows; a value that is not https or a relative path is dropped with a note. Never write in the page text that photos were added unless you set image.",
+	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision, header and footer included (the roles in itemIndex are information, not rules: a banner may stand above a header, a page may hold several headers, a footer may stand anywhere): pick, replace, add, remove and reorder blocks as the request needs. Screens from search_catalog are hints, never constraints.",
+	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
+	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
+	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",
+	"- scope.blockIds, when present, are the blocks the author selected: edit only those (props, variant, item). Do not change page fields, other blocks, or the order.",
+	"- currency is an ISO 4217 code (RUB, USD, EUR), never a symbol such as ₽ or $.",
+	"- Write content when asked. A fictional product is fine when the author says so; never present invented facts as real ones when the author gave real ones.",
+	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why."
+].join("\n");
+
+const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: every step is a tool call. Read with the catalog tools, then change the page with write_page: the whole document goes into the call, never into the text. The turn ends when write_page is accepted. If the request needs no change, write the current page back unchanged.`;
+
+const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page and the catalog. Answer questions in text. When your answer recommends changes to the page, call write_page once with exactly those changes: it becomes a proposal the author can apply in Build with one click (nothing is applied by Ask). Do not write when you only explain.`;
+
+const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
+
+/** The page document the model reads: without host-managed fields. */
+function pageView(page: PageV2): Record<string, unknown> {
+	const view: Record<string, unknown> = { ...pageForModel(page) };
+	for (const key of HOST_FIELDS) delete view[key];
+	return view;
+}
+
+function userPrompt(ctx: TurnContext, problems: ReturnType<typeof renderProblems>): string {
+	const items = [...new Set(ctx.page.blocks.map((block) => block.item))];
+	const outlines = Object.fromEntries(items.map((item) => [item, propsOutline(item)]).filter(([, lines]) => lines));
+	return JSON.stringify({
+		request: ctx.brief,
+		...(ctx.conversation?.length ? { conversation: ctx.conversation } : {}),
+		page: pageView(ctx.page),
+		...(problems.length ? { renderProblems: problems, renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
+		...(ctx.scopeBlockIds?.length ? { scope: { blockIds: ctx.scopeBlockIds } } : {}),
+		...(ctx.screenId ? { screenHint: ctx.screenId } : {}),
+		...(ctx.collection ? { collection: collectionPromptContext(ctx.collection) } : {}),
+		propsOfBlocksOnPage: outlines,
+		itemIndex: itemIndex()
+	});
+}
+
+/**
+ * Sent once when a turn that is expected to change the page ends without an accepted write (ADR 0035). Program text, no phrase
+ * recognition. In Build the request that follows forces write_page (tool_choice), so the text says the document goes into the
+ * call and is never printed; Ask keeps the way out of saying plainly that the page does not change.
+ */
+function nudgeText(ctx: TurnContext, problems: number): string {
+	const build = ctx.mode === "build";
+	return [
+		"Host notice: nothing on the page has changed in this turn (no write_page was accepted).",
+		problems > 0 ? "The page has blocks that do not render; they are listed in renderProblems (get_page shows them)." : ctx.scopeBlockIds?.length ? "Blocks are selected for this edit." : "",
+		build
+			? "Call write_page with the page document now; the document goes into the call, do not print it in the text. Do not report a change that write_page did not accept."
+			: "Call write_page now with the change, or say plainly that you are not changing the page and why. Do not report a change that write_page did not accept."
+	].filter(Boolean).join(" ");
+}
+
+exports["SYSTEM_BUILD"] = SYSTEM_BUILD;
+exports["SYSTEM_ASK"] = SYSTEM_ASK;
+exports["userPrompt"] = userPrompt;
+exports["nudgeText"] = nudgeText;
+
+});
+
+__def("packages/chat-agent/src/identity.ts", function (exports) {
+
+function fnv1a64(text: string): string {
+	let h1 = 0x811c9dc5;
+	let h2 = 0xcbf29ce4;
+	for (let i = 0; i < text.length; i++) {
+		const c = text.charCodeAt(i);
+		h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+		h2 = Math.imul(h2 ^ (c + 0x9e), 0x01000193) >>> 0;
+	}
+	return h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
+}
+
+
+exports["fnv1a64"] = fnv1a64;
+
+});
+
+__def("packages/chat-agent/src/scenarios/compile.ts", function (exports) {
+const { ALLOWED_TOOLS } = __req("packages/builder-core/src/index.ts");
+const Ajv2020 = __ext_ajv2020;
+const { immutableData, providerManifest, manifestModelStatus } = __req("packages/agent-manifests/src/index.ts");
+const schema = __req("packages/chat-agent/src/scenarios/profile.schema.json").default;
+const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
+const { AGENT_TOOLS_VERSION, agentTools, agentToolChoice } = __req("packages/chat-agent/src/agent/agent-tools.ts");
+const { SYSTEM_ASK, SYSTEM_BUILD, userPrompt, nudgeText } = __req("packages/chat-agent/src/agent/prompts.ts");
+const { fnv1a64 } = __req("packages/chat-agent/src/identity.ts");
+const ajv = new Ajv2020({ strict: true, allErrors: true });
+const validate = ajv.compile<ScenarioProfile>(schema);
+const validateRef = ajv.compile<ScenarioRef>({ type: "object", additionalProperties: false, required: ["id", "version"], properties: { id: schema.properties.id, version: schema.properties.version } });
+function parseScenarioRef(raw: unknown): ScenarioRef | null { return validateRef(raw) ? immutableData(structuredClone(raw)) : null; }
+const prompts: Record<string, string> = { "page.ask@1": SYSTEM_ASK, "page.build@1": SYSTEM_BUILD };
+
+function identity(value: unknown): string {
+	const json = JSON.stringify(value, (_key, node: unknown) => node !== null && typeof node === "object" && !Array.isArray(node) ? Object.fromEntries(Object.entries(node).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) : node);
+	return `scenario-v1-${fnv1a64(json)}`;
+}
+
+/** Compile drafts for inspection; only the registered resolver is used for live execution. */
+function compileScenario(raw: unknown, modelId: string) {
+	if (!validate(raw)) return { ok: false, issues: (validate.errors ?? []).map((error) => ({ path: error.instancePath, code: error.keyword })) } as const;
+	const profile = structuredClone(raw);
+	const issues: Array<{ path: string; code: string }> = [];
+	const reject = (path: string, code: string) => { issues.push({ path, code }); };
+	const manifest = providerManifest(profile.provider, profile.providerVersion);
+	if (!manifest) reject("/provider", "unknown_provider_version");
+	if (manifest && !manifest.toolChoices.some((choice) => choice === agentToolChoice(profile.mode))) reject("/provider", "unsupported_tool_choice");
+	if ("id" in profile.model && profile.model.id !== modelId) reject("/model/id", "model_binding_mismatch");
+	if (manifestModelStatus(profile.provider, modelId, profile.providerVersion).status !== "enabled") reject("/modelId", "model_unavailable");
+	if (!prompts[profile.prompt] || profile.prompt !== `page.${profile.mode}@1`) reject("/prompt", "incompatible_prompt");
+	if (profile.context !== "page.context@1") reject("/context", "unknown_context");
+	if (profile.nudge !== "page.nudge@1") reject("/nudge", "unknown_nudge");
+	if (profile.execution !== "page-loop@1") reject("/execution", "unknown_execution");
+	if (profile.toolSet.ref !== AGENT_TOOLS_VERSION) reject("/toolSet/ref", "unknown_tool_version");
+	const available = agentTools(profile.mode);
+	if (profile.toolSet.include?.some((name) => !available.some((tool) => tool.name === name))) reject("/toolSet/include", "unknown_tool");
+	const tools = profile.toolSet.include ? available.filter((tool) => profile.toolSet.include?.includes(tool.name)) : available;
+	if (tools.length !== available.length) reject("/toolSet/include", "incompatible_prompt_tools");
+	if (tools.some((tool) => !ALLOWED_TOOLS.some((name) => name === tool.name))) reject("/toolSet/include", "missing_handler");
+	if (!tools.some((tool) => tool.name === "write_page")) reject("/toolSet/include", "write_required");
+	const { toolPageSize: _pageSize, ...ceilings } = AGENT_BUDGET;
+	const overrides = new Map(Object.entries(profile.limits));
+	for (const [key, ceiling] of Object.entries(ceilings)) {
+		const value = overrides.get(key);
+		if (value !== undefined && value > ceiling) reject(`/limits/${key}`, "budget_ceiling");
+	}
+	if (issues.length || !manifest) return { ok: false, issues } as const;
+	const budget: ExecutionBudget = { ...ceilings, ...profile.limits };
+	const fingerprint = identity({ profile, modelId, manifest, prompt: prompts[profile.prompt], tools, budget, toolChoice: agentToolChoice(profile.mode) });
+	return { ok: true, scenario: immutableData({ profile, modelId, manifestVersion: manifest.version, systemPrompt: prompts[profile.prompt]!, context: userPrompt, nudge: nudgeText, tools, budget, toolChoice: agentToolChoice(profile.mode), fingerprint }) } as const;
+}
+
+exports["parseScenarioRef"] = parseScenarioRef;
+exports["compileScenario"] = compileScenario;
+
+});
+
 __def("packages/chat-agent/src/models.ts", function (exports) {
 const { parsePageV2 } = __req("packages/page-contract/src/index.ts");
 const { CANDIDATE_CHAT_MODEL } = __req("packages/chat-agent/src/xai-env.ts");
 const { isAgentMode } = __req("packages/chat-agent/src/agent/agent-tools.ts");
 const { collectionBounds } = __req("packages/builder-core/src/index.ts");
-const GROK_CHAT_MODELS = [
-	{
-		id: "grok-4.20-0309-non-reasoning",
-		label: "Grok 4.20 Non-reasoning",
-		intendedRole: "block-selection",
-		intendedRoleNote: "Owner suggestion for later: block selection. Not a technical capability claim. Not used for routing."
-	},
-	{
-		id: "grok-4.20-0309-reasoning",
-		label: "Grok 4.20 Reasoning",
-		intendedRole: "block-selection",
-		intendedRoleNote: "Owner suggestion for later: block selection. Not a technical capability claim. Not used for routing."
-	},
-	{
-		id: "grok-4.20-multi-agent-0309",
-		label: "Grok 4.20 Multi-agent",
-		intendedRole: "task-distribution",
-		intendedRoleNote: "Owner suggestion for later: task distribution. Not a technical capability claim. Not used for routing.",
-		/**
-		 * Live probe 2026-11-09: chat completions answers 400 "Multi Agent requests are not allowed
-		 * on chat completions"; the Responses API answers 400 "Client-side tools for multi-agent
-		 * models require beta access". The catalog tool loop cannot run on it.
-		 */
-		toolLoop: "unavailable",
-		unavailableCode: "multi_agent_tools_unavailable"
-	},
-	{
-		id: "grok-4.7",
-		label: "Grok 4.7",
-		intendedRole: "consulting",
-		intendedRoleNote: "Owner suggestion for later: consulting. Not a technical capability claim. Not used for routing.",
-		/**
-		 * Live runs 2026-11-09 (dashboard prompt, tool_choice "required", 285 s budget): 4 of 7 finished,
-		 * in 54-227 s; the rest failed after 169-240 s (provider error, no propose_layout, timeout).
-		 * Answers in prose on tool_choice "auto". Too slow and unreliable for the catalog tool loop.
-		 */
-		toolLoop: "unavailable",
-		unavailableCode: "model_too_slow"
-	},
-	{
-		id: "grok-build-0.1",
-		label: "Grok Build 0.1",
-		intendedRole: "assembly",
-		intendedRoleNote: "Owner suggestion for later: assembly. Not a technical capability claim. Not used for routing."
-	}
-] as const;
+const { parseScenarioRef } = __req("packages/chat-agent/src/scenarios/compile.ts");
+const { XAI_MODELS, manifestModelStatus } = __req("packages/agent-manifests/src/index.ts");
+const GROK_CHAT_MODELS = XAI_MODELS;
 
 function modelRunsToolLoop(model: GrokChatModel | null | undefined): boolean {
 	if (!model) return false;
-	return !("toolLoop" in model && model.toolLoop === "unavailable");
+	return manifestModelStatus("xai", model.id).status === "enabled";
 }
 
 function modelUnavailableCode(model: GrokChatModel | null | undefined): string | null {
 	if (!model || modelRunsToolLoop(model)) return null;
-	return "unavailableCode" in model ? model.unavailableCode : "model_tools_unavailable";
+	return manifestModelStatus("xai", model.id).code;
 }
 
 const DEFAULT_CHAT_MODEL_ID: GrokChatModelId = CANDIDATE_CHAT_MODEL;
@@ -31004,6 +31343,7 @@ type ModelResolveOk = {
 type ModelResolveError = {
 	ok: false;
 	code:
+		| "invalid_scenario"
 		| "missing_model_id"
 		| "image_model_not_for_chat"
 		| "unknown_chat_model"
@@ -31110,6 +31450,7 @@ function assertNoFallback(requestedId: string, executedId: string): ModelResolve
 
 /** A POST /v1/run body mapped onto one exact chat model and a trusted turn context (ADR 0034). */
 type ChatRunRequest = {
+	scenario?: ScenarioRef;
 	modelId: GrokChatModelId;
 	label: string;
 	live: boolean;
@@ -31146,6 +31487,7 @@ function parsePageDoc(raw: unknown): PageV2 | undefined {
 function mapChatRunRequest(
 	body: {
 		modelId?: unknown;
+		scenario?: unknown;
 		brief?: unknown;
 		screenId?: unknown;
 		expectedRevision?: unknown;
@@ -31164,10 +31506,13 @@ function mapChatRunRequest(
 		allowUnlistedTrial: opts.allowUnlistedTrial
 	});
 	if (!resolved.ok) return resolved;
+	const scenario = body.scenario === undefined ? undefined : parseScenarioRef(body.scenario);
+	if (scenario === null) return { ok: false, code: "invalid_scenario", message: "Expected a registered scenario reference (id and version only).", requestedId: resolved.modelId };
 	return {
 		ok: true,
 		request: {
 			modelId: resolved.modelId,
+			scenario,
 			label: resolved.label,
 			live: resolved.live,
 			brief: String(body.brief ?? ""),
@@ -31592,17 +31937,7 @@ const { POLICY_VERSION } = __req("packages/builder-core/src/index.ts");
 const { catalogSnapshot } = __req("packages/builder-core/src/index.ts");
 const { SEARCH_INDEX_SOURCES } = __req("packages/builder-core/src/index.ts");
 const { AGENT_TOOLS_VERSION } = __req("packages/chat-agent/src/agent/agent-tools.ts");
-function fnv1a64(text: string): string {
-	let h1 = 0x811c9dc5;
-	let h2 = 0xcbf29ce4;
-	for (let i = 0; i < text.length; i++) {
-		const c = text.charCodeAt(i);
-		h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
-		h2 = Math.imul(h2 ^ (c + 0x9e), 0x01000193) >>> 0;
-	}
-	return h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
-}
-
+const { fnv1a64 } = __req("packages/chat-agent/src/identity.ts");
 let cached: string | null = null;
 
 /**
@@ -31633,76 +31968,6 @@ exports["contractFingerprint"] = contractFingerprint;
 
 });
 
-__def("packages/chat-agent/src/agent/prompts.ts", function (exports) {
-const { collectionPromptContext, pageForModel } = __req("packages/builder-core/src/index.ts");
-const { itemIndex, propsOutline } = __req("packages/chat-agent/src/agent/blocks.ts");
-const SYSTEM_COMMON = [
-	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
-	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
-	"- item is a registry item (npx ui8kit add <item>); itemIndex lists every item with its variants (header / footer roles are marked as information only). variant is one of the item's variants.",
-	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field; an icon is a real Lucide icon name in kebab-case (old names like smile or home are mapped; a name Lucide does not have is dropped from an optional icon and replaced by the sample icon in a required one, both noted in the answer). A picture is an optional prop: image (an https URL or a relative path) with imageAlt on a block, or image on a list record, where get_block shows it; without it the block shows a placeholder, which is fine, so leave image out by default. Never invent a URL. Set image only when the author gave an address or asked for photos; then use only a direct https image URL of a real public photo you are sure exists (stock sites like images.unsplash.com or images.pexels.com), with a short imageAlt of what it shows; a value that is not https or a relative path is dropped with a note. Never write in the page text that photos were added unless you set image.",
-	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision, header and footer included (the roles in itemIndex are information, not rules: a banner may stand above a header, a page may hold several headers, a footer may stand anywhere): pick, replace, add, remove and reorder blocks as the request needs. Screens from search_catalog are hints, never constraints.",
-	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
-	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
-	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",
-	"- scope.blockIds, when present, are the blocks the author selected: edit only those (props, variant, item). Do not change page fields, other blocks, or the order.",
-	"- currency is an ISO 4217 code (RUB, USD, EUR), never a symbol such as ₽ or $.",
-	"- Write content when asked. A fictional product is fine when the author says so; never present invented facts as real ones when the author gave real ones.",
-	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why."
-].join("\n");
-
-const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: every step is a tool call. Read with the catalog tools, then change the page with write_page: the whole document goes into the call, never into the text. The turn ends when write_page is accepted. If the request needs no change, write the current page back unchanged.`;
-
-const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page and the catalog. Answer questions in text. When your answer recommends changes to the page, call write_page once with exactly those changes: it becomes a proposal the author can apply in Build with one click (nothing is applied by Ask). Do not write when you only explain.`;
-
-const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
-
-/** The page document the model reads: without host-managed fields. */
-function pageView(page: PageV2): Record<string, unknown> {
-	const view: Record<string, unknown> = { ...pageForModel(page) };
-	for (const key of HOST_FIELDS) delete view[key];
-	return view;
-}
-
-function userPrompt(ctx: TurnContext, problems: ReturnType<typeof renderProblems>): string {
-	const items = [...new Set(ctx.page.blocks.map((block) => block.item))];
-	const outlines = Object.fromEntries(items.map((item) => [item, propsOutline(item)]).filter(([, lines]) => lines));
-	return JSON.stringify({
-		request: ctx.brief,
-		...(ctx.conversation?.length ? { conversation: ctx.conversation } : {}),
-		page: pageView(ctx.page),
-		...(problems.length ? { renderProblems: problems, renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
-		...(ctx.scopeBlockIds?.length ? { scope: { blockIds: ctx.scopeBlockIds } } : {}),
-		...(ctx.screenId ? { screenHint: ctx.screenId } : {}),
-		...(ctx.collection ? { collection: collectionPromptContext(ctx.collection) } : {}),
-		propsOfBlocksOnPage: outlines,
-		itemIndex: itemIndex()
-	});
-}
-
-/**
- * Sent once when a turn that is expected to change the page ends without an accepted write (ADR 0035). Program text, no phrase
- * recognition. In Build the request that follows forces write_page (tool_choice), so the text says the document goes into the
- * call and is never printed; Ask keeps the way out of saying plainly that the page does not change.
- */
-function nudgeText(ctx: TurnContext, problems: number): string {
-	const build = ctx.mode === "build";
-	return [
-		"Host notice: nothing on the page has changed in this turn (no write_page was accepted).",
-		problems > 0 ? "The page has blocks that do not render; they are listed in renderProblems (get_page shows them)." : ctx.scopeBlockIds?.length ? "Blocks are selected for this edit." : "",
-		build
-			? "Call write_page with the page document now; the document goes into the call, do not print it in the text. Do not report a change that write_page did not accept."
-			: "Call write_page now with the change, or say plainly that you are not changing the page and why. Do not report a change that write_page did not accept."
-	].filter(Boolean).join(" ");
-}
-
-exports["SYSTEM_BUILD"] = SYSTEM_BUILD;
-exports["SYSTEM_ASK"] = SYSTEM_ASK;
-exports["userPrompt"] = userPrompt;
-exports["nudgeText"] = nudgeText;
-
-});
-
 __def("packages/chat-agent/src/agent/provider.ts", function (exports) {
 
 function turnMeta(
@@ -31730,6 +31995,7 @@ const { turnMeta } = __req("packages/chat-agent/src/agent/provider.ts");
 type ExecutionStep = { ok: true; message: AgentMessage } | { ok: false; result: import("./turn.ts").AgentFailure; meta: LiveTurnMeta };
 
 function createExecution(modelId: string, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions) {
+	const budget = options.scenario?.budget ?? AGENT_BUDGET;
 	const trace = { runId, steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
 	const counts: BudgetCounts = { requests: 0, toolCalls: 0, writeAttempts: 0 };
@@ -31737,7 +32003,7 @@ function createExecution(modelId: string, signal: AbortSignal, provider: AgentPr
 	const finish = (): LiveTurnMeta => {
 		const reason = incomplete ?? (stepUsage.length < counts.requests ? "error" : undefined);
 		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, reason ? { incomplete: reason } : undefined) : unknownUsage(reason ?? "error", counts.requests);
-		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts } };
+		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts }, ...(options.scenario ? { scenario: { id: options.scenario.profile.id, version: options.scenario.profile.version, fingerprint: options.scenario.fingerprint, provider: options.scenario.profile.provider, providerVersion: options.scenario.manifestVersion, modelId } } : {}) };
 	};
 	const fail = (code: string, message: string): ExecutionStep => ({ ok: false, result: { ok: false, code, message }, meta: finish() });
 	const stopped = (): ExecutionStep | null => {
@@ -31748,14 +32014,14 @@ function createExecution(modelId: string, signal: AbortSignal, provider: AgentPr
 		}
 		return null;
 	};
-	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens">): Promise<ExecutionStep> => {
+	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens" | "provider">): Promise<ExecutionStep> => {
 		const stop = stopped();
 		if (stop) return stop;
-		if (counts.requests >= AGENT_BUDGET.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
+		if (counts.requests >= budget.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
 		counts.requests += 1;
 		trace.steps = counts.requests;
 		try {
-			const result = await provider({ ...input, modelId, signal, maxTokens: AGENT_BUDGET.maxTokens });
+			const result = await provider({ ...input, modelId, signal, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens });
 			if (result.usage) stepUsage.push(result.usage);
 			const stop = stopped();
 			if (stop) return stop;
@@ -31856,11 +32122,11 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 }
 
 
-function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[]): AgentFailure | null {
+function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[], budget: Pick<ExecutionBudget, "maxToolCalls" | "maxWriteAttempts">): AgentFailure | null {
 	let wrote = false;
 	for (const call of calls) {
 		const name = call.name ?? "";
-		if (counts.toolCalls >= AGENT_BUDGET.maxToolCalls || (name === "write_page" && !wrote && counts.writeAttempts >= AGENT_BUDGET.maxWriteAttempts)) {
+		if (counts.toolCalls >= budget.maxToolCalls || (name === "write_page" && !wrote && counts.writeAttempts >= budget.maxWriteAttempts)) {
 			return { ok: false, code: "tool_budget", message: "The tool or write-attempt budget was reached. No further tools were executed." };
 		}
 		counts.toolCalls += 1;
@@ -31874,14 +32140,17 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 }
 
 async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions = {}): Promise<TurnResultOut> {
+	const scenario = options.scenario;
+	if (scenario && (scenario.modelId !== modelId || scenario.profile.mode !== ctx.mode)) throw new Error("Scenario binding mismatch");
+	const budget = scenario?.budget ?? AGENT_BUDGET;
 	const { trace, counts, finish, stopped, request: send } = createExecution(modelId, signal, provider, runId, options);
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
 	const messages: AgentMessage[] = [
-		{ role: "system", text: ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD },
-		{ role: "user", text: userPrompt(ctx, problems) }
+		{ role: "system", text: scenario?.systemPrompt ?? (ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD) },
+		{ role: "user", text: scenario ? scenario.context(ctx, problems) : userPrompt(ctx, problems) }
 	];
-	const tools = agentTools(ctx.mode);
+	const tools = scenario?.tools ?? agentTools(ctx.mode);
 	const state: LoopState = { working: ctx.page, proposal: null, lastIssues: null, stuck: null, blocks: [], accepted: false, rejected: null };
 	let text = "";
 	let endedOnCalls = false;
@@ -31897,10 +32166,10 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
 	const request = (toolChoice: Parameters<typeof send>[0]["toolChoice"]) => send({ messages, tools, toolChoice });
 	let steps = 0;
-	while (steps < AGENT_BUDGET.maxSteps && !state.stuck) {
+	while (steps < budget.maxSteps && !state.stuck) {
 		steps += 1;
 		endedOnCalls = false;
-		let step = await request(forceNamed ? FORCE_WRITE : agentToolChoice(ctx.mode));
+		let step = await request(forceNamed ? FORCE_WRITE : scenario?.toolChoice ?? agentToolChoice(ctx.mode));
 		// A model that refuses the named function gets "required".
 		if (forceNamed && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) step = await request("required");
 		forceNamed = false;
@@ -31913,7 +32182,7 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 			if (expectsChange && !nudged && !changed() && steps < AGENT_BUDGET.maxSteps) {
 				nudged = true;
 				forceNamed = build;
-				messages.push({ role: "assistant", text: said || "" }, { role: "user", text: nudgeText(ctx, open) });
+				messages.push({ role: "assistant", text: said || "" }, { role: "user", text: scenario ? scenario.nudge(ctx, open) : nudgeText(ctx, open) });
 				continue;
 			}
 			break;
@@ -31924,7 +32193,7 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 		state.accepted = false;
 		const stop = stopped();
 		if (stop && !stop.ok) return { result: stop.result, meta: stop.meta };
-		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages);
+		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages, budget);
 		if (failure) return { result: failure, meta: finish() };
 		// Build ends with the accepted write.
 		// The text beside the call is not an answer (a model may print the document there): the host shows the diff card and the status.
@@ -31947,6 +32216,104 @@ exports["runAgentLoop"] = runAgentLoop;
 
 });
 
+__def("packages/chat-agent/src/scenarios/builtins.v1.json", function (exports) {
+  exports.default = {
+  "format": "buildy-scenario-registry",
+  "version": 1,
+  "defaults": {
+    "ask": {
+      "id": "page.ask",
+      "version": 1
+    },
+    "build": {
+      "id": "page.build",
+      "version": 1
+    }
+  },
+  "profiles": [
+    {
+      "format": "buildy-agent-scenario",
+      "id": "page.ask",
+      "version": 1,
+      "mode": "ask",
+      "provider": "xai",
+      "prompt": "page.ask@1",
+      "context": "page.context@1",
+      "nudge": "page.nudge@1",
+      "toolSet": {
+        "ref": "buildy-agent-tools/3"
+      },
+      "execution": "page-loop@1",
+      "limits": {},
+      "model": {
+        "selection": "author"
+      },
+      "providerVersion": 1
+    },
+    {
+      "format": "buildy-agent-scenario",
+      "id": "page.build",
+      "version": 1,
+      "mode": "build",
+      "provider": "xai",
+      "prompt": "page.build@1",
+      "context": "page.context@1",
+      "nudge": "page.nudge@1",
+      "toolSet": {
+        "ref": "buildy-agent-tools/3"
+      },
+      "execution": "page-loop@1",
+      "limits": {},
+      "model": {
+        "selection": "author"
+      },
+      "providerVersion": 1
+    }
+  ]
+};
+});
+
+__def("packages/chat-agent/src/scenarios/registry.ts", function (exports) {
+const { immutableData, providerManifest } = __req("packages/agent-manifests/src/index.ts");
+const definitions = __req("packages/chat-agent/src/scenarios/builtins.v1.json").default;
+const { compileScenario, parseScenarioRef } = __req("packages/chat-agent/src/scenarios/compile.ts");
+const { AGENT_MODES } = __req("packages/chat-agent/src/agent/agent-tools.ts");
+immutableData(definitions);
+const profiles = definitions.profiles;
+const identities = new Set<string>();
+for (const profile of profiles) {
+	const key = `${profile.id}@${profile.version}`;
+	if (identities.has(key)) throw new Error(`Duplicate scenario: ${key}`);
+	identities.add(key);
+	const manifest = providerManifest(profile.provider, profile.providerVersion);
+	const modelId = "id" in profile.model && typeof profile.model.id === "string" ? profile.model.id : manifest?.defaultModelId;
+	if (!modelId || !compileScenario(profile, modelId).ok) throw new Error(`Invalid built-in scenario: ${key}`);
+}
+for (const mode of AGENT_MODES) {
+	const ref = parseScenarioRef(definitions.defaults[mode]);
+	if (!ref || !profiles.some((profile) => profile.id === ref.id && profile.version === ref.version && profile.mode === mode)) throw new Error(`Invalid default scenario for ${mode}`);
+}
+const cache = new Map<string, ReturnType<typeof compileScenario>>();
+
+function scenarioProfiles() { return profiles; }
+
+/** Live resolution accepts registered references only, never a browser-supplied profile body. */
+function resolveScenario(mode: AgentMode, modelId: string, ref: ScenarioRef = definitions.defaults[mode]) {
+	const profile = profiles.find((profile) => profile.id === ref.id && profile.version === ref.version && profile.mode === mode);
+	if (!profile) return { ok: false, issues: [{ path: "/scenario", code: "unknown_scenario_version_or_mode" }] } as const;
+	const key = `${profile.id}@${profile.version}:${modelId}`;
+	const hit = cache.get(key);
+	if (hit) return hit;
+	const result = compileScenario(profile, modelId);
+	if (result.ok) cache.set(key, result);
+	return result;
+}
+
+exports["scenarioProfiles"] = scenarioProfiles;
+exports["resolveScenario"] = resolveScenario;
+
+});
+
 __def("packages/chat-agent/src/index.ts", function (exports) {
 { const __m = __req("packages/chat-agent/src/agent/agent-tools.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/agent/blocks.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
@@ -31965,6 +32332,10 @@ exports["nudgeText"] = __req("packages/chat-agent/src/agent/prompts.ts")["nudgeT
 exports["userPrompt"] = __req("packages/chat-agent/src/agent/prompts.ts")["userPrompt"];
 exports["runAgentLoop"] = __req("packages/chat-agent/src/agent/loop.ts")["runAgentLoop"];
 exports["turnMeta"] = __req("packages/chat-agent/src/agent/provider.ts")["turnMeta"];
+exports["compileScenario"] = __req("packages/chat-agent/src/scenarios/compile.ts")["compileScenario"];
+exports["parseScenarioRef"] = __req("packages/chat-agent/src/scenarios/compile.ts")["parseScenarioRef"];
+exports["resolveScenario"] = __req("packages/chat-agent/src/scenarios/registry.ts")["resolveScenario"];
+exports["scenarioProfiles"] = __req("packages/chat-agent/src/scenarios/registry.ts")["scenarioProfiles"];
 
 
 
@@ -32113,20 +32484,13 @@ exports["xaiRefused"] = xaiRefused;
 });
 
 __def("packages/provider-xai/src/capabilities.ts", function (exports) {
-const { getChatModel, modelRunsToolLoop, modelUnavailableCode } = __req("packages/chat-agent/src/index.ts");
-function xaiCapabilities(modelId: string) {
-	const model = getChatModel(modelId);
-	return {
-		provider: "xai",
-		protocol: "chat-completions",
-		streaming: false,
-		toolChoices: ["auto", "none", "required", "named-with-required-fallback"],
-		completionTokenParameter: "max_tokens",
-		fixedTemperature: 0,
-		modelId,
-		toolLoop: model ? modelRunsToolLoop(model) ? "enabled" : "disabled" : "unknown",
-		unavailableCode: model ? modelUnavailableCode(model) : "unknown_chat_model"
-	} as const;
+const { providerManifest, manifestModelStatus } = __req("packages/agent-manifests/src/index.ts");
+function xaiCapabilities(modelId: string, version?: number) {
+	const manifest = providerManifest("xai", version);
+	if (!manifest) return null;
+	const model = manifestModelStatus("xai", modelId, manifest.version);
+	const { models: _models, defaultModelId: _default, id, ...capabilities } = manifest;
+	return { ...capabilities, provider: id, modelId, toolLoop: model.status, unavailableCode: model.code };
 }
 
 exports["xaiCapabilities"] = xaiCapabilities;
@@ -32164,7 +32528,9 @@ function classifyProviderFailure(status: number, snippet: string): { code: strin
 
 
 async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: string }): Promise<ProviderStep> {
-	const capabilities = xaiCapabilities(input.modelId);
+	if (input.provider && input.provider.id !== "xai") return { ok: false, error: { code: "provider_mismatch", message: "The request is bound to another provider. No request was sent." } };
+	const capabilities = xaiCapabilities(input.modelId, input.provider?.version);
+	if (!capabilities) return { ok: false, error: { code: "unknown_provider_version", message: "The requested provider policy version is unavailable. No request was sent." } };
 	const choice = input.toolChoice;
 	if (capabilities.toolLoop !== "enabled") return { ok: false, error: { code: capabilities.unavailableCode ?? "model_tools_unavailable", message: "This model is not enabled for the xAI tool adapter. No fallback was selected." } };
 	if (!Number.isSafeInteger(input.maxTokens) || input.maxTokens <= 0 || (choice === "required" && input.tools.length === 0) || (typeof choice === "object" && !input.tools.some((tool) => tool.name === choice.name))) {
@@ -32185,8 +32551,8 @@ async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: 
 			// Choice comes from the versioned agent mode policy; the host may explicitly force a repair write.
 			tool_choice: typeof input.toolChoice === "string" ? input.toolChoice : { type: "function", function: input.toolChoice },
 			stream: false,
-			max_tokens: input.maxTokens,
-			temperature: 0
+			[capabilities.completionTokenParameter]: input.maxTokens,
+			temperature: capabilities.fixedTemperature
 		}),
 		signal: input.signal
 	});
@@ -32223,7 +32589,7 @@ exports["xaiCapabilities"] = __req("packages/provider-xai/src/capabilities.ts")[
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { DEFAULT_XAI_BASE_URL, runAgentLoop, turnMeta, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
+const { DEFAULT_XAI_BASE_URL, resolveScenario, runAgentLoop, turnMeta, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 const { providerStep } = __req("packages/provider-xai/src/index.ts");
 installPropsGate();
@@ -32242,7 +32608,9 @@ type TurnResult = AgentReply | AgentFailure;
 
 async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL, deadline?: number): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
 	try {
-		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { deadline, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
+		const compiled = resolveScenario(ctx.mode, modelId, ctx.scenario);
+		if (!compiled.ok || compiled.scenario.profile.provider !== "xai") return { result: { ok: false, code: "invalid_scenario", message: "The scenario could not be resolved.", issues: (compiled.ok ? [{ path: "/provider", code: "adapter_mismatch" }] : compiled.issues).map((issue) => ({ ...issue, expected: "registered compatible scenario" })) }, meta: turnMeta("chat-completions", modelId, false, 0, [], unknownUsage("error", 0), newRunId()) };
+		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { scenario: compiled.scenario, deadline, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
 		if (!turn.result.ok && turn.result.code === "provider_failed") return { ...turn, result: { ...turn.result, code: "xai_chat_failed", message: "The xAI chat request could not be completed. No automatic retry was sent." } };
 		return turn;
 	} catch (err) {
@@ -32611,6 +32979,7 @@ type MappedRequest = Extract<ReturnType<typeof mapChatRunRequest>, { ok: true }>
 function turnInput(req: MappedRequest): Parameters<typeof runXaiCatalogTurn>[2] {
 	return {
 		brief: req.brief,
+		scenario: req.scenario,
 		mode: req.mode,
 		conversation: req.conversation,
 		page: req.currentPage ?? emptyPage({ title: "New page" }),
@@ -32679,6 +33048,7 @@ async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promi
 			path: meta.path,
 			runId: meta.runId,
 			toolsUsed: meta.toolsCalled,
+			scenario: meta.scenario,
 			usage: meta.usage
 		});
 	} catch (err) {

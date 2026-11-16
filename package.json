@@ -12,7 +12,8 @@
     "packages/ports",
     "packages/builder-core",
     "packages/chat-agent",
-    "packages/provider-xai"
+    "packages/provider-xai",
+    "packages/agent-manifests"
   ],
   "scripts": {
     "dev": "npm run dev --workspace=@buildytech/chat-web",

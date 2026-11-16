@@ -66,6 +66,7 @@ export function boundaryViolations(root) {
 		if (rel === "modules/index.ts") continue;
 		for (const spec of specifiersOf(readFileSync(path, "utf8"))) {
 			if (reachesModules(path, spec, base)) problems.push(`${rel}: core imports a module (${spec})`);
+			if (spec.startsWith("@buildytech/agent-manifests")) problems.push(`${rel}: core imports agent configuration (${spec})`);
 			if (spec.startsWith("@buildytech/chat-agent")) problems.push(`${rel}: core imports the chat agent package (${spec})`);
 		}
 	}

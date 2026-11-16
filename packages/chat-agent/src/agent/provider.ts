@@ -22,6 +22,7 @@ export type LiveTurnMeta = {
 	usage: RunUsage;
 	/** Actual attempted work, including named fallback and final no-tools requests. */
 	budget?: BudgetCounts;
+	scenario?: { id: string; version: number; fingerprint: string; provider: string; providerVersion: number; modelId: string };
 	/** HTTP status of a failed provider request (status only; never the body). */
 	providerStatus?: number;
 	/** Wall time of the failed provider request in ms. */
@@ -47,6 +48,7 @@ export type ProviderStep =
 
 /** Transport input without credentials or endpoint; supplied by the runtime host. */
 export type ProviderRequest = {
+	provider?: { id: string; version: number };
 	modelId: string;
 	messages: readonly AgentMessage[];
 	tools: readonly ResolvedAgentTool[];

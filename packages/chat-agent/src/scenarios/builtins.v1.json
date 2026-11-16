@@ -1,0 +1,54 @@
+{
+  "format": "buildy-scenario-registry",
+  "version": 1,
+  "defaults": {
+    "ask": {
+      "id": "page.ask",
+      "version": 1
+    },
+    "build": {
+      "id": "page.build",
+      "version": 1
+    }
+  },
+  "profiles": [
+    {
+      "format": "buildy-agent-scenario",
+      "id": "page.ask",
+      "version": 1,
+      "mode": "ask",
+      "provider": "xai",
+      "prompt": "page.ask@1",
+      "context": "page.context@1",
+      "nudge": "page.nudge@1",
+      "toolSet": {
+        "ref": "buildy-agent-tools/3"
+      },
+      "execution": "page-loop@1",
+      "limits": {},
+      "model": {
+        "selection": "author"
+      },
+      "providerVersion": 1
+    },
+    {
+      "format": "buildy-agent-scenario",
+      "id": "page.build",
+      "version": 1,
+      "mode": "build",
+      "provider": "xai",
+      "prompt": "page.build@1",
+      "context": "page.context@1",
+      "nudge": "page.nudge@1",
+      "toolSet": {
+        "ref": "buildy-agent-tools/3"
+      },
+      "execution": "page-loop@1",
+      "limits": {},
+      "model": {
+        "selection": "author"
+      },
+      "providerVersion": 1
+    }
+  ]
+}

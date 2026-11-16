@@ -51,7 +51,7 @@ export function chatTokens() {
 			for (const value of Object.values(catalog.overrides[lang])) if (value.length >= 8 && !coreValues.has(value)) tokens.add(value);
 		}
 	}
-	const sources = [...walk(join(root, WEB_SRC, "modules/chat"), isSource), ...walk(join(root, "packages/chat-agent/src"), isSource)].filter((p) => !p.endsWith(".test.ts"));
+	const sources = [...walk(join(root, WEB_SRC, "modules/chat"), isSource), ...walk(join(root, "packages/chat-agent/src"), isSource), ...walk(join(root, "packages/agent-manifests/src"), isSource)].filter((p) => !p.endsWith(".test.ts"));
 	for (const path of sources) for (const s of strings(readFileSync(path, "utf8"))) tokens.add(s);
 	return [...tokens].filter((token) => !FRAMEWORK_WORDS.has(token) && !coreText.includes(token) && !token.includes("${"));
 }

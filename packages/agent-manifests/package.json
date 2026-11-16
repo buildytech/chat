@@ -1,0 +1,11 @@
+{
+  "name": "@buildytech/agent-manifests",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Public versioned provider manifests without executable transports",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

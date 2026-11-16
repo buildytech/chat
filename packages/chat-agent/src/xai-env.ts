@@ -2,6 +2,7 @@
  * xAI Grok (official). Server-only. Never VITE_/PUBLIC_.
  * Distinct from Cursor SDK keys. Do not rename CURSOR_API_KEY to this.
  */
+import { XAI_MANIFEST } from "@buildytech/agent-manifests";
 import { readEnv, type EnvMap } from "./env-map.ts";
 
 export const XAI_SECRET_ENV = ["XAI_API_KEY"] as const;
@@ -15,13 +16,13 @@ export function xaiBaseUrl(env?: EnvMap): string {
 }
 
 /** The model a fresh runtime proposes when discovery lists it (the first listed chat model otherwise). Never a promise that the key may use it. */
-export const CANDIDATE_CHAT_MODEL = "grok-4.20-0309-non-reasoning";
+export const CANDIDATE_CHAT_MODEL = XAI_MANIFEST.defaultModelId;
 
 export const XAI_RUNTIME_NOTES = {
 	provider: "Official xAI REST at https://api.x.ai/v1 with Bearer XAI_API_KEY.",
 	discover: "GET /v1/models (data[]), GET /v1/language-models (models[]), GET /v1/image-generation-models (models[]). Key-scoped.",
-	chat: "POST /v1/chat/completions, stream true. Conservative app tools use createOpenAI({ name: 'xai', baseURL, apiKey }).chat(actualModelId) + streamText.",
-	responses: "AI SDK 7 xai(modelId) defaults to Responses. This app does not use that default for catalog tools. If Responses is ever chosen, store:false. No zero-retention promise.",
+	chat: "POST /v1/chat/completions, stream false. The provider-xai adapter implements the neutral page-agent protocol.",
+	responses: "Responses is not implemented by this adapter. A future adapter must declare its storage policy explicitly.",
 	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
 	tools: "Application-executed tools only: get_page, search_catalog, get_block, write_page. Never mix hosted web_search / code_execution.",
 	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",

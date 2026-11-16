@@ -10,11 +10,12 @@ import { boundaryViolations } from "../lib/module-boundary.mjs";
 test("xAI capabilities derive model policy from the existing catalog, not a duplicate allowlist", () => {
 	for (const model of GROK_CHAT_MODELS) {
 		const caps = xaiCapabilities(model.id);
+		assert.ok(caps);
 		assert.equal(caps.toolLoop, modelRunsToolLoop(model) ? "enabled" : "disabled");
 		assert.equal(caps.streaming, false);
 		assert.equal(caps.completionTokenParameter, "max_tokens");
 	}
-	assert.equal(xaiCapabilities("unknown-model").toolLoop, "unknown");
+	assert.equal(xaiCapabilities("unknown-model")?.toolLoop, "unknown");
 });
 
 test("xAI rejects disabled models and incompatible requests before HTTP without fallback", async () => {
@@ -23,7 +24,7 @@ test("xAI rejects disabled models and incompatible requests before HTTP without 
 	globalThis.fetch = async () => { calls += 1; throw new Error("HTTP must not run"); };
 	const request: ProviderRequest = { modelId: "grok-4.20-0309-non-reasoning", messages: [], tools: [], toolChoice: "auto", maxTokens: 100, signal: new AbortController().signal };
 	try {
-		for (const override of [{ modelId: "unknown-model" }, { modelId: "grok-4.7" }, { modelId: "grok-4.20-multi-agent-0309" }, { maxTokens: 0 }, { toolChoice: "required" as const }, { toolChoice: { name: "write_page" } }]) {
+		for (const override of [{ provider: { id: "xai", version: 999 } }, { provider: { id: "other", version: 1 } }, { modelId: "unknown-model" }, { modelId: "grok-4.7" }, { modelId: "grok-4.20-multi-agent-0309" }, { maxTokens: 0 }, { toolChoice: "required" as const }, { toolChoice: { name: "write_page" } }]) {
 			const result = await providerStep({ ...request, ...override, apiKey: "not-a-key", baseUrl: "https://unused.invalid" });
 			assert.equal(result.ok, false);
 		}

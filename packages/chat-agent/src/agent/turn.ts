@@ -13,6 +13,7 @@ import { writeInputFromModel, writePage, type WriteInput } from "@buildytech/bui
 import { blankRequired } from "@buildytech/builder-core";
 
 export type TurnContext = {
+	scenario?: import("../scenarios/compile.ts").ScenarioRef;
 	brief: string;
 	mode: AgentMode;
 	conversation?: Array<{ role: "user" | "assistant"; text: string }>;

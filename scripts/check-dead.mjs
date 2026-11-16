@@ -16,7 +16,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const baselineFile = join(root, "scripts/ratchet-baseline.json");
 const read = (p) => readFileSync(p, "utf8");
 
-const SCAN = ["apps/chat-web/src", "apps/xai-runtime/src", "packages/builder-core/src", "packages/chat-agent/src", "packages/provider-xai/src", "packages/page-contract/src", "packages/ports/src"];
+const SCAN = ["apps/chat-web/src", "apps/xai-runtime/src", "packages/builder-core/src", "packages/chat-agent/src", "packages/provider-xai/src", "packages/agent-manifests/src", "packages/page-contract/src", "packages/ports/src"];
 const scanFiles = () => SCAN.flatMap((dir) => walk(join(root, dir), (p) => /\.(ts|svelte|mjs|js)$/.test(p)));
 
 export function unusedI18nKeys() {

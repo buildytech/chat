@@ -130,6 +130,7 @@ type MappedRequest = Extract<ReturnType<typeof mapChatRunRequest>, { ok: true }>
 function turnInput(req: MappedRequest): Parameters<typeof runXaiCatalogTurn>[2] {
 	return {
 		brief: req.brief,
+		scenario: req.scenario,
 		mode: req.mode,
 		conversation: req.conversation,
 		page: req.currentPage ?? emptyPage({ title: "New page" }),
@@ -198,6 +199,7 @@ async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promi
 			path: meta.path,
 			runId: meta.runId,
 			toolsUsed: meta.toolsCalled,
+			scenario: meta.scenario,
 			usage: meta.usage
 		});
 	} catch (err) {
