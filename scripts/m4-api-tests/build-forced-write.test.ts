@@ -118,6 +118,9 @@ test("a model that refuses the named function (HTTP 400) is asked again with too
 	try {
 		const out = await runXaiCatalogTurn("k", MODEL, { brief: BRIEF, mode: "build", page: blank(), expectedRevision: 1 }, signal());
 		assert.deepEqual(choices.slice(0, 3), ["required", NAMED, "required"]);
+		assert.equal(out.meta.steps, 3);
+		assert.equal(out.meta.budget?.requests, 3);
+		assert.equal(out.meta.usage.status, "incomplete", "the rejected named request reported no usage");
 		assert.ok(out.result.ok && out.result.proposal);
 	} finally {
 		globalThis.fetch = original;

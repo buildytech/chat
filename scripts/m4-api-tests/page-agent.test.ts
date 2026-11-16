@@ -234,3 +234,30 @@ test("shared loop accepts an injected transport without credentials or an xAI HT
 	assert.equal(out.result.ok, true);
 	assert.equal(out.meta.runId, "injected-test");
 });
+
+
+test("budget: final no-tools request is counted and its usage is included", async () => {
+	const ctx = { brief: "Explain", mode: "ask" as const, page: emptyPage({ title: "Test", now: NOW }), expectedRevision: 0 };
+	const out = await runAgentLoop("fixture", ctx, signal(), async (input) => {
+		input.stepUsage.push({ promptTokens: 1, completionTokens: 1, totalTokens: 2 });
+		return { ok: true, message: input.toolChoice === "none" ? { role: "assistant", content: "Finished" } : { role: "assistant", tool_calls: [{ id: "read", type: "function", function: { name: "get_page", arguments: "{}" } }] } };
+	}, "budget-test");
+	assert.equal(out.meta.steps, 9);
+	assert.deepEqual(out.meta.budget, { requests: 9, toolCalls: 8, writeAttempts: 0 });
+	assert.equal(out.meta.usage.status, "complete");
+	assert.equal(out.meta.usage.totalTokens, 18);
+});
+
+test("budget: a single response cannot execute unlimited reads", async () => {
+	const out = await runAgentLoop("fixture", { brief: "Explain", mode: "ask", page: emptyPage({ title: "Test", now: NOW }), expectedRevision: 0 }, signal(), async () => ({ ok: true, message: { role: "assistant", tool_calls: Array.from({ length: 40 }, (_, n) => ({ id: String(n), type: "function", function: { name: "get_page", arguments: "{}" } })) } }), "budget-test");
+	assert.equal(out.result.ok, false);
+	if (!out.result.ok) assert.equal(out.result.code, "tool_budget");
+	assert.deepEqual(out.meta.budget, { requests: 1, toolCalls: 32, writeAttempts: 0 });
+});
+
+test("budget: only the first write of a response is attempted", async () => {
+	const out = await runAgentLoop("fixture", { brief: "Rename", mode: "build", page: emptyPage({ title: "Test", now: NOW }), expectedRevision: 0 }, signal(), async () => ({ ok: true, message: { role: "assistant", tool_calls: ["First", "Second"].map((title) => ({ id: title, type: "function", function: { name: "write_page", arguments: JSON.stringify({ patch: [{ op: "replace", path: "/title", value: title }] }) } })) } }), "budget-test");
+	assert.ok(out.result.ok && out.result.proposal);
+	if (out.result.ok) assert.equal(out.result.proposal?.page.title, "First");
+	assert.deepEqual(out.meta.budget, { requests: 1, toolCalls: 2, writeAttempts: 1 });
+});

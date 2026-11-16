@@ -27750,7 +27750,7 @@ exports["isScenarioId"] = isScenarioId;
 
 __def("packages/builder-core/src/policy.ts", function (exports) {
 
-const POLICY_VERSION = "page-agent/5";
+const POLICY_VERSION = "page-agent/6";
 /** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
 const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
 const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
@@ -27758,19 +27758,11 @@ const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
 /** Every tool of agent-tools.v1.json (a test keeps both equal). Which ones a turn offers depends on its mode. */
 const ALLOWED_TOOLS = ["search_catalog", "get_block", "get_page", "write_page"] as const;
 
-const RUN_BUDGET = {
-	maxToolCalls: 8,
-	maxMs: 90_000,
-	shortlist: 12,
-	toolPageSize: 4,
-	reserveProposeSteps: 1
-} as const;
 
 exports["POLICY_VERSION"] = POLICY_VERSION;
 exports["MODEL_CATALOG_VERSION"] = MODEL_CATALOG_VERSION;
 exports["TRIAL_POLICY_VERSION"] = TRIAL_POLICY_VERSION;
 exports["ALLOWED_TOOLS"] = ALLOWED_TOOLS;
-exports["RUN_BUDGET"] = RUN_BUDGET;
 
 });
 
@@ -30134,7 +30126,6 @@ exports["ALLOWED_TOOLS"] = __req("packages/builder-core/src/policy.ts")["ALLOWED
 exports["POLICY_VERSION"] = __req("packages/builder-core/src/policy.ts")["POLICY_VERSION"];
 exports["MODEL_CATALOG_VERSION"] = __req("packages/builder-core/src/policy.ts")["MODEL_CATALOG_VERSION"];
 exports["TRIAL_POLICY_VERSION"] = __req("packages/builder-core/src/policy.ts")["TRIAL_POLICY_VERSION"];
-exports["RUN_BUDGET"] = __req("packages/builder-core/src/policy.ts")["RUN_BUDGET"];
 exports["COLLECTION_CODES"] = __req("packages/builder-core/src/collection.ts")["COLLECTION_CODES"];
 exports["checkCollection"] = __req("packages/builder-core/src/collection.ts")["checkCollection"];
 exports["collectionBounds"] = __req("packages/builder-core/src/collection.ts")["collectionBounds"];
@@ -30579,14 +30570,31 @@ exports["readBlock"] = readBlock;
 
 });
 
+__def("packages/chat-agent/src/agent/budget.ts", function (exports) {
+
+const AGENT_BUDGET = {
+	maxSteps: 8,
+	maxRequests: 10,
+	maxToolCalls: 32,
+	maxWriteAttempts: 8,
+	maxTokens: 8192,
+	toolPageSize: 4
+} as const;
+
+
+exports["AGENT_BUDGET"] = AGENT_BUDGET;
+
+});
+
 __def("packages/chat-agent/src/agent/catalog-tools.ts", function (exports) {
+const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
 const { facetTree, searchCatalog } = __req("packages/builder-core/src/index.ts");
 const { blockLabelVocabulary, vocabularyValues } = __req("packages/builder-core/src/index.ts");
 const { toolOffersMode } = __req("packages/chat-agent/src/agent/agent-tools.ts");
 const { readBlock } = __req("packages/chat-agent/src/agent/blocks.ts");
 const { screenItems } = __req("packages/builder-core/src/index.ts");
 const { pageForModel, renderProblems } = __req("packages/builder-core/src/index.ts");
-const { ALLOWED_TOOLS, RUN_BUDGET } = __req("packages/builder-core/src/index.ts");
+const { ALLOWED_TOOLS } = __req("packages/builder-core/src/index.ts");
 type ToolCall = { name: string; arguments?: Record<string, unknown> };
 type ToolHost = { mode?: AgentMode; page?: PageV2 | null };
 type ToolOutcome =
@@ -30678,7 +30686,7 @@ function searchTool(args: Record<string, unknown>): ToolOutcome {
 		blocks: blocks?.length ? blocks : undefined,
 		q: typeof args.q === "string" && args.q.trim() ? args.q.trim().slice(0, 200) : undefined,
 		page: typeof args.page === "number" ? args.page : 1,
-		pageSize: RUN_BUDGET.toolPageSize,
+		pageSize: AGENT_BUDGET.toolPageSize,
 		supportedOnly: true
 	};
 	const result = searchCatalog(query);
@@ -31722,7 +31730,8 @@ exports["turnMeta"] = turnMeta;
 });
 
 __def("packages/chat-agent/src/agent/loop.ts", function (exports) {
-const { RUN_BUDGET, itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
+const { itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
+const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
 const { agentOpenAiTools, agentToolChoice } = __req("packages/chat-agent/src/agent/agent-tools.ts");
 const { agentReply, rejectedWrite, runWriteTool } = __req("packages/chat-agent/src/agent/turn.ts");
 const { aggregateStepUsage, unknownUsage } = __req("packages/chat-agent/src/usage.ts");
@@ -31745,8 +31754,6 @@ function modelText(message: ChatMessage): string {
 
 /** The request after the nudge: Build forces the write_page call (Ask stays on auto). */
 const FORCE_WRITE = { type: "function", function: { name: "write_page" } } as const;
-
-const BUDGET = { maxSteps: RUN_BUDGET.maxToolCalls, maxTokens: 8192 } as const;
 
 /** Identity of an error list: code, path and the rejected value; two equal lists in a row end the turn. A new value at the same path is a new attempt, not a repeat. */
 function signature(issues: Array<{ path: string; code: string; got?: unknown }>): string {
@@ -31802,9 +31809,28 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${steps} step${steps === 1 ? "" : "s"}.` }, meta };
 }
 
+
+function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: ChatMessage[]): AgentFailure | null {
+	let wrote = false;
+	for (const call of calls) {
+		const name = call.function?.name ?? "";
+		if (counts.toolCalls >= AGENT_BUDGET.maxToolCalls || (name === "write_page" && !wrote && counts.writeAttempts >= AGENT_BUDGET.maxWriteAttempts)) {
+			return { ok: false, code: "tool_budget", message: "The tool or write-attempt budget was reached. No further tools were executed." };
+		}
+		counts.toolCalls += 1;
+		toolsCalled.push(name);
+		const duplicateWrite = name === "write_page" && wrote;
+		if (name === "write_page" && !wrote) { wrote = true; counts.writeAttempts += 1; }
+		const reply = duplicateWrite ? { ok: false, code: "multiple_writes", message: "Only one write_page attempt per provider response is allowed." } : runToolCall(ctx, state, name, parseArgs(call.function?.arguments));
+		messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
+	}
+	return null;
+}
+
 async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSignal, provider: AgentProvider, runId: string): Promise<TurnResultOut> {
 	const trace = { runId, steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
+	const counts: BudgetCounts = { requests: 0, toolCalls: 0, writeAttempts: 0 };
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
 	const messages: ChatMessage[] = [
@@ -31817,7 +31843,7 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 	const finish = (): LiveTurnMeta => {
 		// Complete when every request reported its usage; incomplete only for a request that did not (it was always marked incomplete before).
 		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, stepUsage.length < trace.steps ? { incomplete: "error" } : undefined) : unknownUsage("error", trace.steps);
-		return turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId);
+		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, trace.steps, trace.toolsCalled, usage, trace.runId), budget: { ...counts } };
 	};
 	let endedOnCalls = false;
 	// Build asks for a tool call on every step (tool_choice "required"): the model reads with the catalog tools and ends with
@@ -31830,21 +31856,28 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 	let nudged = false;
 	let forceNamed = false;
 	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
-	const request = (toolChoice: ProviderRequest["toolChoice"]) => provider({ modelId, messages, tools, toolChoice, maxTokens: BUDGET.maxTokens, signal, stepUsage, trace });
-	while (trace.steps < BUDGET.maxSteps && !state.stuck) {
-		trace.steps += 1;
+	const request = async (toolChoice: ProviderRequest["toolChoice"]) => {
+		if (signal.aborted) return { ok: false, result: { ok: false, code: "aborted", message: "The run was cancelled." }, meta: finish() } as const;
+		if (counts.requests >= AGENT_BUDGET.maxRequests) return { ok: false, result: { ok: false, code: "request_budget", message: "The provider request budget was reached. No additional request was sent." }, meta: finish() } as const;
+		counts.requests += 1;
+		trace.steps = counts.requests;
+		return provider({ modelId, messages, tools, toolChoice, maxTokens: AGENT_BUDGET.maxTokens, signal, stepUsage, trace });
+	};
+	let steps = 0;
+	while (steps < AGENT_BUDGET.maxSteps && !state.stuck) {
+		steps += 1;
 		endedOnCalls = false;
 		let step = await request(forceNamed ? FORCE_WRITE : agentToolChoice(ctx.mode));
 		// A model that refuses the named function gets "required".
 		if (forceNamed && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) step = await request("required");
 		forceNamed = false;
-		if (!step.ok) return { result: step.result, meta: step.meta };
+		if (!step.ok) return { result: step.result, meta: { ...step.meta, ...finish() } };
 		const message = step.message;
 		const said = modelText(message);
 		if (said) text = said;
 		const calls: ToolCall[] = message.tool_calls ?? [];
 		if (calls.length === 0) {
-			if (expectsChange && !nudged && !changed() && trace.steps < BUDGET.maxSteps) {
+			if (expectsChange && !nudged && !changed() && steps < AGENT_BUDGET.maxSteps) {
 				nudged = true;
 				forceNamed = build;
 				messages.push({ role: "assistant", content: said || "" }, { role: "user", content: nudgeText(ctx, open) });
@@ -31856,12 +31889,8 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 		trace.toolCallingWorked = true;
 		messages.push({ role: "assistant", content: message.content ?? null, tool_calls: calls });
 		state.accepted = false;
-		for (const call of calls) {
-			const name = call.function?.name ?? "";
-			trace.toolsCalled.push(name);
-			const reply = runToolCall(ctx, state, name, parseArgs(call.function?.arguments));
-			messages.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(reply) });
-		}
+		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages);
+		if (failure) return { result: failure, meta: finish() };
 		// Build ends with the accepted write.
 		// The text beside the call is not an answer (a model may print the document there): the host shows the diff card and the status.
 		if (build && state.accepted) {
@@ -31873,6 +31902,7 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 	if (endedOnCalls && !state.stuck && !changed()) {
 		// The step budget ended on tool calls: one more request, no tools, so the model answers with what it read.
 		const last = await request("none");
+		if (!last.ok) return { result: last.result, meta: { ...last.meta, ...finish() } };
 		if (last.ok) text = modelText(last.message) || text;
 	}
 	return loopResult(ctx, state, text, trace.steps, finish());

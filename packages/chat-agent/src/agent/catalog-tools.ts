@@ -1,3 +1,4 @@
+import { AGENT_BUDGET } from "./budget.ts";
 /**
  * The read tools of the agent (ADR 0034): search_catalog (Stock screens as ranking hints, with their sections as registry
  * items), get_block (one registry item: variants, props outline, sample props) and get_page (the page document). No
@@ -11,7 +12,7 @@ import { toolOffersMode, type AgentMode } from "./agent-tools.ts";
 import { readBlock } from "./blocks.ts";
 import { screenItems } from "@buildytech/builder-core";
 import { pageForModel, renderProblems } from "@buildytech/builder-core";
-import { ALLOWED_TOOLS, RUN_BUDGET, type AllowedTool } from "@buildytech/builder-core";
+import { ALLOWED_TOOLS, type AllowedTool } from "@buildytech/builder-core";
 
 type ToolCall = { name: string; arguments?: Record<string, unknown> };
 type ToolHost = { mode?: AgentMode; page?: PageV2 | null };
@@ -123,7 +124,7 @@ function searchTool(args: Record<string, unknown>): ToolOutcome {
 		blocks: blocks?.length ? blocks : undefined,
 		q: typeof args.q === "string" && args.q.trim() ? args.q.trim().slice(0, 200) : undefined,
 		page: typeof args.page === "number" ? args.page : 1,
-		pageSize: RUN_BUDGET.toolPageSize,
+		pageSize: AGENT_BUDGET.toolPageSize,
 		supportedOnly: true
 	};
 	const result = searchCatalog(query);

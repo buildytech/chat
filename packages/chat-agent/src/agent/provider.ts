@@ -1,6 +1,7 @@
 import type { AgentFailure } from "./turn.ts";
 import type { RunUsage, StepUsage } from "../usage.ts";
 import type { agentOpenAiTools } from "./agent-tools.ts";
+import type { BudgetCounts } from "./budget.ts";
 
 export type ChatMessage = {
 	role: "system" | "user" | "assistant" | "tool";
@@ -19,6 +20,8 @@ export type LiveTurnMeta = {
 	steps: number;
 	toolsCalled: string[];
 	usage: RunUsage;
+	/** Actual attempted work, including named fallback and final no-tools requests. */
+	budget?: BudgetCounts;
 	/** HTTP status of a failed provider request (status only; never the body). */
 	providerStatus?: number;
 	/** Wall time of the failed provider request in ms. */
