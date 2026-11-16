@@ -78,6 +78,6 @@ test("session totals mark incomplete and never invent dollars", () => {
 	assert.equal(session.cost.available, false);
 	const dollars = costForModel("grok-4.7", unknownUsage("error"));
 	assert.equal(dollars.available, false);
-	assert.equal(dollars.reason, "no_official_current_rates_in_repo");
+	assert.equal(dollars.reason, "not_reported");
 	assert.equal("amount" in dollars, false);
 });

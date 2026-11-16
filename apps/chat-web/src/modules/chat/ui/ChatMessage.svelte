@@ -1,4 +1,5 @@
 <script lang="ts">
+	import UsageCost from "./UsageCost.svelte";
 import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$lib/shell-icons";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte.ts";
  import Block from "$registry/compose/Block.svelte";
@@ -186,7 +187,7 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 								{t("usage.tools").replace("{list}", run.tools.join(", "))}
 							</Text>
 						{/if}
-						<Text tag="p" class="text-xs text-muted-foreground">{t("usage.noDollars")}</Text>
+						<UsageCost cost={run.usage?.cost} />
 					</Stack>
 				</Disclosure>
 			{/if}

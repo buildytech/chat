@@ -51,9 +51,11 @@ export const XAI_MODELS = [
 ] as const;
 
 
-export const XAI_MANIFEST = {
+export const XAI_MANIFEST_V1 = {
 	id: "xai", version: 1, defaultModelId: "grok-4.20-0309-non-reasoning",
 	protocol: "chat-completions", streaming: false,
 	toolChoices: ["auto", "none", "required", "named-with-required-fallback"],
 	completionTokenParameter: "max_tokens", fixedTemperature: 0, models: XAI_MODELS
 } as const;
+
+export const XAI_MANIFEST = { ...XAI_MANIFEST_V1, version: 2, completionTokenParameter: "max_completion_tokens" } as const;

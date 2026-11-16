@@ -2,6 +2,7 @@ import { ALLOWED_TOOLS } from "@buildytech/builder-core";
 import Ajv2020 from "ajv/dist/2020.js";
 import { immutableData, providerManifest, manifestModelStatus } from "@buildytech/agent-manifests";
 import schema from "./profile.schema.json" with { type: "json" };
+import { executionPolicy } from "../agent/execution-policy.ts";
 import { AGENT_BUDGET } from "../agent/budget.ts";
 import { AGENT_TOOLS_VERSION, agentTools, agentToolChoice, type AgentMode } from "../agent/agent-tools.ts";
 import { SYSTEM_ASK, SYSTEM_BUILD, userPrompt, nudgeText } from "../agent/prompts.ts";
@@ -39,7 +40,8 @@ export function compileScenario(raw: unknown, modelId: string) {
 	if (!prompts[profile.prompt] || profile.prompt !== `page.${profile.mode}@1`) reject("/prompt", "incompatible_prompt");
 	if (profile.context !== "page.context@1") reject("/context", "unknown_context");
 	if (profile.nudge !== "page.nudge@1") reject("/nudge", "unknown_nudge");
-	if (profile.execution !== "page-loop@1") reject("/execution", "unknown_execution");
+	const policy = executionPolicy(profile.execution);
+	if (!policy) reject("/execution", "unknown_execution");
 	if (profile.toolSet.ref !== AGENT_TOOLS_VERSION) reject("/toolSet/ref", "unknown_tool_version");
 	const available = agentTools(profile.mode);
 	if (profile.toolSet.include?.some((name) => !available.some((tool) => tool.name === name))) reject("/toolSet/include", "unknown_tool");
@@ -53,9 +55,9 @@ export function compileScenario(raw: unknown, modelId: string) {
 		const value = overrides.get(key);
 		if (value !== undefined && value > ceiling) reject(`/limits/${key}`, "budget_ceiling");
 	}
-	if (issues.length || !manifest) return { ok: false, issues } as const;
+	if (issues.length || !manifest || !policy) return { ok: false, issues } as const;
 	const budget: ExecutionBudget = { ...ceilings, ...profile.limits };
-	const fingerprint = identity({ profile, modelId, manifest, prompt: prompts[profile.prompt], tools, budget, toolChoice: agentToolChoice(profile.mode) });
-	return { ok: true, scenario: immutableData({ profile, modelId, manifestVersion: manifest.version, systemPrompt: prompts[profile.prompt]!, context: userPrompt, nudge: nudgeText, tools, budget, toolChoice: agentToolChoice(profile.mode), fingerprint }) } as const;
+	const fingerprint = identity({ profile, modelId, manifest, ...(policy.id === "page-loop@1" ? {} : { executionPolicy: policy }), prompt: prompts[profile.prompt], tools, budget, toolChoice: agentToolChoice(profile.mode) });
+	return { ok: true, scenario: immutableData({ profile, modelId, executionPolicy: policy, manifestVersion: manifest.version, systemPrompt: prompts[profile.prompt]!, context: userPrompt, nudge: nudgeText, tools, budget, toolChoice: agentToolChoice(profile.mode), fingerprint }) } as const;
 }
 export type CompiledScenario = Extract<ReturnType<typeof compileScenario>, { ok: true }>["scenario"];

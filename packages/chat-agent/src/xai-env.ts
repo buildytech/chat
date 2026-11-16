@@ -25,7 +25,7 @@ export const XAI_RUNTIME_NOTES = {
 	responses: "Responses is not implemented by this adapter. A future adapter must declare its storage policy explicitly.",
 	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
 	tools: "Application-executed tools only: get_page, search_catalog, get_block, write_page. Never mix hosted web_search / code_execution.",
-	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",
+	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. Only page-loop@2 permits one transient HTTP retry within the request/deadline ceilings. Transport exceptions are not retried.",
 	toolCalling: "Each live turn proves the tool protocol itself: the run reports toolCallingProven when the model called a tool (get_page, search_catalog, get_block, write_page) and the host accepted or rejected the call.",
 } as const;
 

@@ -2,8 +2,8 @@
  * One agent turn of the chat (ADR 0034): what it starts from, the request, the reply message and the proposal the
  * reply carries, checked again against the page the author sees. No storage: the callers commit the messages.
  */
-import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, catalogProvenance, collectionBounds, collectionDraft, diffPages, emptyPage, writePage, type DiffEntry } from "@buildytech/builder-core";
-import { formatChatModelChoice, getChatModel, mapChatRunRequest, scopeIssues, unknownUsage, aggregateSessionUsage, type AgentMode, type RunUsage } from "@buildytech/chat-agent";
+import { catalogProvenance, collectionBounds, collectionDraft, diffPages, emptyPage, writePage, type DiffEntry } from "@buildytech/builder-core";
+import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, formatChatModelChoice, getChatModel, mapChatRunRequest, scopeIssues, unknownUsage, aggregateSessionUsage, type AgentMode, type RunUsage } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import { t } from "../../../lib/i18n/dictionary";
 import { fetchXaiStatus, runXaiTurn, type TurnRequest, type XaiRunResponse } from "../browser/xai-client";

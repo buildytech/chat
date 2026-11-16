@@ -200,6 +200,7 @@ async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promi
 			runId: meta.runId,
 			toolsUsed: meta.toolsCalled,
 			scenario: meta.scenario,
+			providerRetries: meta.providerRetries,
 			usage: meta.usage
 		});
 	} catch (err) {

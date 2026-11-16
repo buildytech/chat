@@ -9,7 +9,7 @@
 
 Use compileScenario to validate/inspect a draft locally. Only resolveScenario can select a registered scenario for live execution. Compilation alone never makes a draft runnable. The current runtime binds xAI credentials outside the profile and rejects a profile for another adapter.
 
-A run may include `scenario: { id: "page.ask", version: 1 }` alongside mode/modelId. A missing reference uses that mode's registered default; a mismatched mode or unknown version fails. A profile body is rejected. The response's scenario reference/fingerprint identifies the actual compiled configuration; no key, endpoint or author context is included.
+A run may include `scenario: { id: "page.ask", version: 2 }` alongside mode/modelId. A missing reference uses that mode's registered default; a mismatched mode or unknown version fails. A profile body is rejected. The response's scenario reference/fingerprint identifies the actual compiled configuration; no key, endpoint or author context is included.
 
 To change shipped behavior, append a new profile version, update the explicit default if activating it, and add replay/validation tests. Bump prompt/context/nudge/execution reference versions when their implementation changes. Update the manifest version when its policy changes; model account availability still comes from discovery. Never silently activate a newly discovered model.
 
@@ -18,3 +18,5 @@ Browser viewing and editing are not implemented yet. That UI must consume the sa
 Provider references include providerVersion; unknown manifest versions fail. Model binding is explicit: author-selected, or a fixed id that must match the requested model (never silently substituted). Registry format version and immutable scenario content version are distinct. Defaults live in the registry JSON. When retiring an implementation, explicitly retire affected live versions and retain their historical definitions outside the active registry.
 
 The pinned provider id/version is passed through the neutral request to the server adapter. An unknown version or adapter mismatch is refused before HTTP; no latest-version fallback is used for a pinned request. The response includes providerVersion with the scenario identity.
+
+Defaults now point to v2: provider manifest v2 uses max_completion_tokens and page-loop@2 permits one bounded transient retry. Explicit v1 references retain their old wire/retry policy and fingerprints. See agent-accounting.md for billed totals, partial cost and retry semantics. The browser map is deferred by the owner.

@@ -20,7 +20,7 @@
 		"usage.session": "Session · {status} · {runs} runs · prompt {prompt} · completion {completion} · total {total}",
 		"usage.complete": "complete",
 		"usage.incomplete": "incomplete",
-		"usage.noDollars": "Dollar cost is unavailable. Official current rates for these exact model ids are not confirmed in this repo.",
+		"usage.noDollars": "Billed cost is unknown. Missing data does not mean zero.",
 		"composer.model": "Model",
 		"composer.modelGrok": "Grok",
 		"empty.title": "New chat",
@@ -166,7 +166,9 @@
 		"proposal.askOutdated": "The page changed after this proposal. Ask again.",
 		"proposal.outsideScope": "The proposal changes blocks outside the selection.",
 		"proposal.rejected": "The page was not changed: {code} {message}",
-		"message.noChange": "No changes were made to the page."
+		"message.noChange": "No changes were made to the page.",
+		"usage.billed": "API billed cost: {amount} USD.",
+		"usage.billedPartial": "Known billed subtotal: {amount} USD. Total is unknown."
 	},
 	"overrides": {
 		"sidebar.newChat": "New chat",

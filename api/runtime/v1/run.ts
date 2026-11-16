@@ -27750,18 +27750,9 @@ exports["isScenarioId"] = isScenarioId;
 
 __def("packages/builder-core/src/policy.ts", function (exports) {
 
-const POLICY_VERSION = "page-agent/10";
-/** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
-const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
-const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
-
-/** Every tool of agent-tools.v1.json (a test keeps both equal). Which ones a turn offers depends on its mode. */
 const ALLOWED_TOOLS = ["search_catalog", "get_block", "get_page", "write_page"] as const;
 
 
-exports["POLICY_VERSION"] = POLICY_VERSION;
-exports["MODEL_CATALOG_VERSION"] = MODEL_CATALOG_VERSION;
-exports["TRIAL_POLICY_VERSION"] = TRIAL_POLICY_VERSION;
 exports["ALLOWED_TOOLS"] = ALLOWED_TOOLS;
 
 });
@@ -30123,9 +30114,6 @@ exports["screenThumbUrl"] = __req("packages/builder-core/src/catalog/provenance.
 exports["setPropsValidator"] = __req("packages/builder-core/src/catalog/provenance.ts")["setPropsValidator"];
 exports["propsValidatorInstalled"] = __req("packages/builder-core/src/catalog/provenance.ts")["propsValidatorInstalled"];
 exports["ALLOWED_TOOLS"] = __req("packages/builder-core/src/policy.ts")["ALLOWED_TOOLS"];
-exports["POLICY_VERSION"] = __req("packages/builder-core/src/policy.ts")["POLICY_VERSION"];
-exports["MODEL_CATALOG_VERSION"] = __req("packages/builder-core/src/policy.ts")["MODEL_CATALOG_VERSION"];
-exports["TRIAL_POLICY_VERSION"] = __req("packages/builder-core/src/policy.ts")["TRIAL_POLICY_VERSION"];
 exports["COLLECTION_CODES"] = __req("packages/builder-core/src/collection.ts")["COLLECTION_CODES"];
 exports["checkCollection"] = __req("packages/builder-core/src/collection.ts")["checkCollection"];
 exports["collectionBounds"] = __req("packages/builder-core/src/collection.ts")["collectionBounds"];
@@ -30890,23 +30878,26 @@ const XAI_MODELS = [
 ] as const;
 
 
-const XAI_MANIFEST = {
+const XAI_MANIFEST_V1 = {
 	id: "xai", version: 1, defaultModelId: "grok-4.20-0309-non-reasoning",
 	protocol: "chat-completions", streaming: false,
 	toolChoices: ["auto", "none", "required", "named-with-required-fallback"],
 	completionTokenParameter: "max_tokens", fixedTemperature: 0, models: XAI_MODELS
 } as const;
 
+const XAI_MANIFEST = { ...XAI_MANIFEST_V1, version: 2, completionTokenParameter: "max_completion_tokens" } as const;
+
 exports["XAI_MODELS"] = XAI_MODELS;
+exports["XAI_MANIFEST_V1"] = XAI_MANIFEST_V1;
 exports["XAI_MANIFEST"] = XAI_MANIFEST;
 
 });
 
 __def("packages/agent-manifests/src/index.ts", function (exports) {
-const { XAI_MANIFEST } = __req("packages/agent-manifests/src/xai.ts");
+const { XAI_MANIFEST, XAI_MANIFEST_V1 } = __req("packages/agent-manifests/src/xai.ts");
 exports["XAI_MANIFEST"] = __req("packages/agent-manifests/src/xai.ts")["XAI_MANIFEST"];
 exports["XAI_MODELS"] = __req("packages/agent-manifests/src/xai.ts")["XAI_MODELS"];
-const PROVIDER_MANIFESTS = immutableData([XAI_MANIFEST] as const);
+const PROVIDER_MANIFESTS = immutableData([XAI_MANIFEST, XAI_MANIFEST_V1] as const);
 function providerManifest(id: string, version?: number) { return PROVIDER_MANIFESTS.filter((manifest) => manifest.id === id && (version === undefined || manifest.version === version)).sort((a, b) => b.version - a.version)[0] ?? null; }
 function manifestModelStatus(providerId: string, modelId: string, version?: number) {
 	const model = providerManifest(providerId, version)?.models.find((model) => model.id === modelId);
@@ -30965,7 +30956,7 @@ const XAI_RUNTIME_NOTES = {
 	responses: "Responses is not implemented by this adapter. A future adapter must declare its storage policy explicitly.",
 	images: "POST /v1/images/generations is separate. Do not run image models without an explicit later action.",
 	tools: "Application-executed tools only: get_page, search_catalog, get_block, write_page. Never mix hosted web_search / code_execution.",
-	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. maxRetries 0.",
+	privacy: "Server-side XAI_API_KEY. Browser BYOK stays UI-only. No request/body/header/raw SDK logs. One sanitized run counter (runId, steps, tool names/counts, provider usage) is allowed. Only page-loop@2 permits one transient HTTP retry within the request/deadline ceilings. Transport exceptions are not retried.",
 	toolCalling: "Each live turn proves the tool protocol itself: the run reports toolCallingProven when the model called a tool (get_page, search_catalog, get_block, write_page) and the host accepted or rejected the call.",
 } as const;
 
@@ -31165,6 +31156,35 @@ __def("packages/chat-agent/src/scenarios/profile.schema.json", function (exports
 };
 });
 
+__def("packages/chat-agent/src/agent/execution-policy.ts", function (exports) {
+
+const CURRENT_EXECUTION_POLICY = { id: "page-loop@2", maxTransientRetries: 1, baseDelayMs: 250, maxDelayMs: 2000 } as const;
+const policies = [{ id: "page-loop@1", maxTransientRetries: 0, baseDelayMs: 250, maxDelayMs: 2000 }, CURRENT_EXECUTION_POLICY] as const;
+function executionPolicy(id: string) { return policies.find((policy) => policy.id === id) ?? null; }
+
+function retryDelay(error: { status?: number; retryable?: boolean; retryAfterMs?: number }, used: number, policy: (typeof policies)[number], remainingMs: number): number | null {
+	if (!error.retryable || ![429, 500, 502, 503, 504].includes(error.status ?? 0) || used >= policy.maxTransientRetries) return null;
+	const delay = Math.max(policy.baseDelayMs * 2 ** used, error.retryAfterMs ?? 0);
+	return Number.isFinite(delay) && delay <= policy.maxDelayMs && delay < remainingMs ? delay : null;
+}
+
+/** Cancellation ends the wait and releases both the timer and listener. The caller rechecks before dispatch. */
+function waitForRetry(ms: number, signal: AbortSignal): Promise<void> {
+	return new Promise((resolve) => {
+		if (signal.aborted) { resolve(); return; }
+		const done = () => { clearTimeout(timer); signal.removeEventListener("abort", done); resolve(); };
+		const timer = setTimeout(done, ms);
+		signal.addEventListener("abort", done, { once: true });
+	});
+}
+
+exports["CURRENT_EXECUTION_POLICY"] = CURRENT_EXECUTION_POLICY;
+exports["executionPolicy"] = executionPolicy;
+exports["retryDelay"] = retryDelay;
+exports["waitForRetry"] = waitForRetry;
+
+});
+
 __def("packages/chat-agent/src/agent/prompts.ts", function (exports) {
 const { collectionPromptContext, pageForModel } = __req("packages/builder-core/src/index.ts");
 const { itemIndex, propsOutline } = __req("packages/chat-agent/src/agent/blocks.ts");
@@ -31257,6 +31277,7 @@ const { ALLOWED_TOOLS } = __req("packages/builder-core/src/index.ts");
 const Ajv2020 = __ext_ajv2020;
 const { immutableData, providerManifest, manifestModelStatus } = __req("packages/agent-manifests/src/index.ts");
 const schema = __req("packages/chat-agent/src/scenarios/profile.schema.json").default;
+const { executionPolicy } = __req("packages/chat-agent/src/agent/execution-policy.ts");
 const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
 const { AGENT_TOOLS_VERSION, agentTools, agentToolChoice } = __req("packages/chat-agent/src/agent/agent-tools.ts");
 const { SYSTEM_ASK, SYSTEM_BUILD, userPrompt, nudgeText } = __req("packages/chat-agent/src/agent/prompts.ts");
@@ -31286,7 +31307,8 @@ function compileScenario(raw: unknown, modelId: string) {
 	if (!prompts[profile.prompt] || profile.prompt !== `page.${profile.mode}@1`) reject("/prompt", "incompatible_prompt");
 	if (profile.context !== "page.context@1") reject("/context", "unknown_context");
 	if (profile.nudge !== "page.nudge@1") reject("/nudge", "unknown_nudge");
-	if (profile.execution !== "page-loop@1") reject("/execution", "unknown_execution");
+	const policy = executionPolicy(profile.execution);
+	if (!policy) reject("/execution", "unknown_execution");
 	if (profile.toolSet.ref !== AGENT_TOOLS_VERSION) reject("/toolSet/ref", "unknown_tool_version");
 	const available = agentTools(profile.mode);
 	if (profile.toolSet.include?.some((name) => !available.some((tool) => tool.name === name))) reject("/toolSet/include", "unknown_tool");
@@ -31300,10 +31322,10 @@ function compileScenario(raw: unknown, modelId: string) {
 		const value = overrides.get(key);
 		if (value !== undefined && value > ceiling) reject(`/limits/${key}`, "budget_ceiling");
 	}
-	if (issues.length || !manifest) return { ok: false, issues } as const;
+	if (issues.length || !manifest || !policy) return { ok: false, issues } as const;
 	const budget: ExecutionBudget = { ...ceilings, ...profile.limits };
-	const fingerprint = identity({ profile, modelId, manifest, prompt: prompts[profile.prompt], tools, budget, toolChoice: agentToolChoice(profile.mode) });
-	return { ok: true, scenario: immutableData({ profile, modelId, manifestVersion: manifest.version, systemPrompt: prompts[profile.prompt]!, context: userPrompt, nudge: nudgeText, tools, budget, toolChoice: agentToolChoice(profile.mode), fingerprint }) } as const;
+	const fingerprint = identity({ profile, modelId, manifest, ...(policy.id === "page-loop@1" ? {} : { executionPolicy: policy }), prompt: prompts[profile.prompt], tools, budget, toolChoice: agentToolChoice(profile.mode) });
+	return { ok: true, scenario: immutableData({ profile, modelId, executionPolicy: policy, manifestVersion: manifest.version, systemPrompt: prompts[profile.prompt]!, context: userPrompt, nudge: nudgeText, tools, budget, toolChoice: agentToolChoice(profile.mode), fingerprint }) } as const;
 }
 
 exports["parseScenarioRef"] = parseScenarioRef;
@@ -31541,38 +31563,75 @@ exports["mapChatRunRequest"] = mapChatRunRequest;
 
 });
 
+__def("packages/chat-agent/src/cost.ts", function (exports) {
+
+type BilledCost = {
+	available: true; kind: "billed"; currency: "USD"; ticks: string; usd: string;
+	completeness: "complete" | "partial"; reportedRequests: number; requests: number;
+};
+type CostUnavailable = { available: false; reason: "not_reported" | "no_official_current_rates_in_repo"; note: string };
+type CostEstimate = { available: true; kind: "estimated"; currency: "USD"; amount: number; modelId: string; source: string; asOf: string; vsBilled: "estimated_not_billed" };
+const COST_UNAVAILABLE: CostUnavailable = { available: false, reason: "not_reported", note: "Billed cost is unavailable in this usage record. Missing cost is unknown, never zero." };
+type CostPart = { ticks?: string; reportedRequests: number; requests: number; complete: boolean };
+
+function readBilledTicks(value: unknown): string | undefined {
+	if (typeof value === "number") return Number.isSafeInteger(value) && value >= 0 ? String(value) : undefined;
+	return typeof value === "string" && /^(0|[1-9][0-9]*)$/.test(value) ? value : undefined;
+}
+
+function aggregateBilledCost(parts: CostPart[]): BilledCost | CostUnavailable {
+	let total = 0n, reportedRequests = 0, requests = 0;
+	let complete = true;
+	for (const part of parts) {
+		requests += part.requests;
+		const ticks = readBilledTicks(part.ticks);
+		if (ticks !== undefined) { total += BigInt(ticks); reportedRequests += part.reportedRequests; }
+		complete &&= part.complete && ticks !== undefined;
+	}
+	if (!reportedRequests) return COST_UNAVAILABLE;
+	const scale = 10_000_000_000n;
+	return { available: true, kind: "billed", currency: "USD", ticks: total.toString(), usd: `${total / scale}.${(total % scale).toString().padStart(10, "0")}`, completeness: complete ? "complete" : "partial", reportedRequests, requests };
+}
+
+function record(value: unknown): value is Record<string, unknown> { return value !== null && typeof value === "object" && !Array.isArray(value); }
+/** Historical usage is an open host record; malformed or estimated costs cannot become billed amounts. */
+function storedCostPart(cost: unknown, requests: number): CostPart {
+	const validCount = Number.isSafeInteger(requests) && requests >= 0;
+	const expected = validCount ? requests : 0;
+	if (record(cost) && cost.available === true && cost.kind === "billed" && cost.currency === "USD") {
+		const ticks = readBilledTicks(cost.ticks);
+		if (ticks !== undefined && typeof cost.reportedRequests === "number" && Number.isSafeInteger(cost.reportedRequests) && cost.reportedRequests > 0 && typeof cost.requests === "number" && Number.isSafeInteger(cost.requests) && cost.requests >= cost.reportedRequests) {
+			return { ticks, reportedRequests: cost.reportedRequests, requests: Math.max(expected, cost.requests), complete: validCount && cost.completeness === "complete" && cost.reportedRequests === cost.requests && cost.requests === requests };
+		}
+	}
+	return { requests: expected, reportedRequests: 0, complete: false };
+}
+
+function billedCostForDisplay(cost: unknown) {
+	const requests = record(cost) && typeof cost.requests === "number" ? cost.requests : 0;
+	return aggregateBilledCost([storedCostPart(cost, requests)]);
+}
+
+exports["COST_UNAVAILABLE"] = COST_UNAVAILABLE;
+exports["readBilledTicks"] = readBilledTicks;
+exports["aggregateBilledCost"] = aggregateBilledCost;
+exports["storedCostPart"] = storedCostPart;
+exports["billedCostForDisplay"] = billedCostForDisplay;
+
+});
+
 __def("packages/chat-agent/src/usage.ts", function (exports) {
-
+const { COST_UNAVAILABLE, readBilledTicks, aggregateBilledCost, storedCostPart } = __req("packages/chat-agent/src/cost.ts");
+exports["COST_UNAVAILABLE"] = __req("packages/chat-agent/src/cost.ts")["COST_UNAVAILABLE"];
+exports["billedCostForDisplay"] = __req("packages/chat-agent/src/cost.ts")["billedCostForDisplay"];
 type TokenCount = number | "unknown";
-
-type CostUnavailable = {
-	available: false;
-	reason: "no_official_current_rates_in_repo";
-	note: "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used.";
-};
-
-type CostEstimate = {
-	available: true;
-	kind: "estimated";
-	currency: "USD";
-	amount: number;
-	modelId: string;
-	source: string;
-	asOf: string;
-	vsBilled: "estimated_not_billed";
-};
-
-const COST_UNAVAILABLE: CostUnavailable = {
-	available: false,
-	reason: "no_official_current_rates_in_repo",
-	note: "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
-};
 
 function unknownUsage(reason: RunUsage["incompleteReason"], steps = 0): RunUsage {
 	return {
 		status: "incomplete",
 		incompleteReason: reason,
 		steps,
+		reportedSteps: 0,
 		promptTokens: "unknown",
 		completionTokens: "unknown",
 		totalTokens: "unknown",
@@ -31582,7 +31641,7 @@ function unknownUsage(reason: RunUsage["incompleteReason"], steps = 0): RunUsage
 }
 
 function asCount(value: unknown): number | null {
-	if (typeof value === "number" && Number.isFinite(value) && value >= 0) return value;
+	if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) return value;
 	return null;
 }
 
@@ -31593,7 +31652,8 @@ function readProviderUsage(raw: unknown): StepUsage | null {
 	const prompt = asCount(u.prompt_tokens ?? u.inputTokens ?? u.promptTokens);
 	const completion = asCount(u.completion_tokens ?? u.outputTokens ?? u.completionTokens);
 	const total = asCount(u.total_tokens ?? u.totalTokens);
-	if (prompt === null && completion === null && total === null) return null;
+	const ticks = readBilledTicks(u.cost_in_usd_ticks);
+	if (prompt === null && completion === null && total === null && ticks === undefined) return null;
 	const details =
 		u.completion_tokens_details && typeof u.completion_tokens_details === "object"
 			? (u.completion_tokens_details as Record<string, unknown>)
@@ -31609,26 +31669,29 @@ function readProviderUsage(raw: unknown): StepUsage | null {
 	const step: StepUsage = {
 		promptTokens: prompt ?? "unknown",
 		completionTokens: completion ?? "unknown",
-		totalTokens: total ?? (prompt !== null && completion !== null ? prompt + completion : "unknown")
+		totalTokens: total ?? (prompt !== null && completion !== null ? addCount(prompt, completion) : "unknown")
 	};
 	if (reasoning !== null) step.reasoningTokens = reasoning;
 	if (cached !== null) step.cachedTokens = cached;
+	if (ticks !== undefined) step.costUsdTicks = ticks;
 	return step;
 }
 
 function addCount(a: TokenCount, b: TokenCount): TokenCount {
 	if (a === "unknown" || b === "unknown") return "unknown";
-	return a + b;
+	const total = a + b;
+	return Number.isSafeInteger(total) ? total : "unknown";
 }
 
 /** Sum tool-loop steps. Uses prompt+completion per step; does not add total on top of those. */
-function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, opts?: { incomplete?: RunUsage["incompleteReason"] }): RunUsage {
+function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, opts?: { incomplete?: RunUsage["incompleteReason"]; requests?: number }): RunUsage {
+	const requests = opts?.requests ?? steps.length;
 	const present = steps.filter((s): s is StepUsage => Boolean(s));
 	if (opts?.incomplete) {
-		if (present.length === 0) return unknownUsage(opts.incomplete, steps.length);
+		if (present.length === 0) return unknownUsage(opts.incomplete, requests);
 	}
 	if (present.length === 0) {
-		return unknownUsage(opts?.incomplete ?? "error", 0);
+		return unknownUsage(opts?.incomplete ?? "error", requests);
 	}
 	let prompt: TokenCount = 0;
 	let completion: TokenCount = 0;
@@ -31649,22 +31712,26 @@ function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, opts?: {
 		}
 	}
 	const total: TokenCount =
-		prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion;
+		addCount(prompt, completion);
 	const last = present[present.length - 1];
+	const reason = opts?.incomplete ?? (present.length < requests || prompt === "unknown" || completion === "unknown" ? "error" : undefined);
+	const parts = present.map((step) => ({ ticks: step.costUsdTicks, reportedRequests: step.costUsdTicks === undefined ? 0 : 1, requests: 1, complete: step.costUsdTicks !== undefined }));
+	if (requests > present.length) parts.push({ ticks: undefined, reportedRequests: 0, requests: requests - present.length, complete: false });
 	const run: RunUsage = {
-		status: opts?.incomplete ? "incomplete" : "complete",
-		incompleteReason: opts?.incomplete,
-		steps: present.length,
+		status: reason ? "incomplete" : "complete",
+		incompleteReason: reason,
+		steps: requests,
+		reportedSteps: present.length,
 		promptTokens: prompt,
 		completionTokens: completion,
 		totalTokens: total,
 		reportedBy: "xai-provider",
 		aggregation: "sum-of-tool-loop-requests",
 		lastStep: last,
-		cost: COST_UNAVAILABLE
+		cost: aggregateBilledCost(parts)
 	};
-	if (sawReasoning) run.reasoningTokens = reasoning;
-	if (sawCached) run.cachedTokens = cached;
+	if (sawReasoning && Number.isSafeInteger(reasoning)) run.reasoningTokens = reasoning;
+	if (sawCached && Number.isSafeInteger(cached)) run.cachedTokens = cached;
 	return run;
 }
 
@@ -31706,23 +31773,22 @@ function aggregateSessionUsage(runs: RunUsage[]): SessionUsage {
 		promptTokens: prompt,
 		completionTokens: completion,
 		totalTokens: prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion,
-		cost: COST_UNAVAILABLE
+		cost: aggregateBilledCost(runs.map((run) => storedCostPart(run.cost, run.steps)))
 	};
-	if (sawReasoning) session.reasoningTokens = reasoning;
-	if (sawCached) session.cachedTokens = cached;
+	if (sawReasoning && Number.isSafeInteger(reasoning)) session.reasoningTokens = reasoning;
+	if (sawCached && Number.isSafeInteger(cached)) session.cachedTokens = cached;
 	return session;
 }
 
 /** Never invent a dollar amount. Official rates are not pinned in this repo. */
-function costForModel(_modelId: string, _usage: RunUsage): CostUnavailable {
-	return COST_UNAVAILABLE;
+function costForModel(_modelId: string, usage: RunUsage): UsageCost {
+	return usage.cost.available && usage.cost.kind === "billed" ? usage.cost : COST_UNAVAILABLE;
 }
 
 function formatTokens(value: TokenCount): string {
 	return value === "unknown" ? "UNKNOWN" : String(value);
 }
 
-exports["COST_UNAVAILABLE"] = COST_UNAVAILABLE;
 exports["unknownUsage"] = unknownUsage;
 exports["readProviderUsage"] = readProviderUsage;
 exports["aggregateStepUsage"] = aggregateStepUsage;
@@ -31931,8 +31997,22 @@ exports["safeErrorMessage"] = safeErrorMessage;
 
 });
 
+__def("packages/chat-agent/src/policy.ts", function (exports) {
+
+const POLICY_VERSION = "page-agent/11";
+/** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
+const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
+const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
+
+
+exports["POLICY_VERSION"] = POLICY_VERSION;
+exports["MODEL_CATALOG_VERSION"] = MODEL_CATALOG_VERSION;
+exports["TRIAL_POLICY_VERSION"] = TRIAL_POLICY_VERSION;
+
+});
+
 __def("packages/chat-agent/src/fingerprint.ts", function (exports) {
-const { POLICY_VERSION } = __req("packages/builder-core/src/index.ts");
+const { POLICY_VERSION } = __req("packages/chat-agent/src/policy.ts");
 const { catalogSnapshot } = __req("packages/builder-core/src/index.ts");
 const { SEARCH_INDEX_SOURCES } = __req("packages/builder-core/src/index.ts");
 const { AGENT_TOOLS_VERSION } = __req("packages/chat-agent/src/agent/agent-tools.ts");
@@ -31988,6 +32068,7 @@ exports["turnMeta"] = turnMeta;
 });
 
 __def("packages/chat-agent/src/agent/execution.ts", function (exports) {
+const { CURRENT_EXECUTION_POLICY, retryDelay, waitForRetry } = __req("packages/chat-agent/src/agent/execution-policy.ts");
 const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
 const { aggregateStepUsage, unknownUsage } = __req("packages/chat-agent/src/usage.ts");
 const { turnMeta } = __req("packages/chat-agent/src/agent/provider.ts");
@@ -31995,17 +32076,19 @@ type ExecutionStep = { ok: true; message: AgentMessage } | { ok: false; result: 
 
 function createExecution(modelId: string, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions) {
 	const budget = options.scenario?.budget ?? AGENT_BUDGET;
+	const policy = options.scenario?.executionPolicy ?? CURRENT_EXECUTION_POLICY;
+	let retriesUsed = 0;
 	const trace = { runId, steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
 	const counts: BudgetCounts = { requests: 0, toolCalls: 0, writeAttempts: 0 };
 	let incomplete: RunUsage["incompleteReason"];
 	const finish = (): LiveTurnMeta => {
 		const reason = incomplete ?? (stepUsage.length < counts.requests ? "error" : undefined);
-		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, reason ? { incomplete: reason } : undefined) : unknownUsage(reason ?? "error", counts.requests);
-		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts }, ...(options.scenario ? { scenario: { id: options.scenario.profile.id, version: options.scenario.profile.version, fingerprint: options.scenario.fingerprint, provider: options.scenario.profile.provider, providerVersion: options.scenario.manifestVersion, modelId } } : {}) };
+		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, { incomplete: reason, requests: counts.requests }) : unknownUsage(reason ?? "error", counts.requests);
+		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts }, providerRetries: retriesUsed, ...(options.scenario ? { scenario: { id: options.scenario.profile.id, version: options.scenario.profile.version, fingerprint: options.scenario.fingerprint, provider: options.scenario.profile.provider, providerVersion: options.scenario.manifestVersion, modelId } } : {}) };
 	};
-	const fail = (code: string, message: string): ExecutionStep => ({ ok: false, result: { ok: false, code, message }, meta: finish() });
-	const stopped = (): ExecutionStep | null => {
+	const fail = (code: string, message: string): Extract<ExecutionStep, { ok: false }> => ({ ok: false, result: { ok: false, code, message }, meta: finish() });
+	const stopped = (): Extract<ExecutionStep, { ok: false }> | null => {
 		const timeout = signal.reason instanceof Error && signal.reason.name === "TimeoutError";
 		if (signal.aborted || (options.deadline !== undefined && Date.now() >= options.deadline)) {
 			incomplete = timeout || (!signal.aborted && options.deadline !== undefined) ? "timeout" : "cancelled";
@@ -32013,28 +32096,44 @@ function createExecution(modelId: string, signal: AbortSignal, provider: AgentPr
 		}
 		return null;
 	};
+	const failure = (error: unknown) => {
+		const stop = stopped();
+		if (stop) return stop;
+		incomplete = "error";
+		try { options.onProviderError?.(error); } catch { /* Diagnostics cannot erase billed usage. */ }
+		return fail("provider_failed", "The execution failed. Thrown errors are not retried.");
+	};
 	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens" | "provider">): Promise<ExecutionStep> => {
 		const stop = stopped();
 		if (stop) return stop;
 		if (counts.requests >= budget.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
-		counts.requests += 1;
-		trace.steps = counts.requests;
 		try {
-			const result = await provider({ ...input, modelId, signal, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens });
-			if (result.usage) stepUsage.push(result.usage);
-			const stop = stopped();
-			if (stop) return stop;
+			let result;
+			let pendingRetry = false;
+			while (true) {
+				const stop = stopped();
+				if (stop) return stop;
+				if (counts.requests >= budget.maxRequests) return fail("request_budget", "The provider request budget was reached.");
+				if (pendingRetry) { retriesUsed += 1; pendingRetry = false; }
+				counts.requests += 1;
+				trace.steps = counts.requests;
+				result = await provider({ ...input, modelId, signal, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens });
+				if (result.usage) stepUsage.push(result.usage);
+				const after = stopped();
+				if (after) return after;
+				if (result.ok || counts.requests >= budget.maxRequests) break;
+				const delay = retryDelay(result.error, retriesUsed, policy, options.deadline === undefined ? Infinity : options.deadline - Date.now());
+				if (delay === null) break;
+				await waitForRetry(delay, signal);
+				pendingRetry = true;
+			}
 			if (!result.ok) return { ok: false, result: { ok: false, code: result.error.code, message: result.error.message }, meta: { ...finish(), providerStatus: result.error.status, providerMs: result.error.elapsedMs } };
 			return { ok: true, message: result.message };
 		} catch (error) {
-			const stop = stopped();
-			if (stop) return stop;
-			incomplete = "error";
-			options.onProviderError?.(error);
-			return fail("provider_failed", "The provider request failed. No automatic retry was sent.");
+			return failure(error);
 		}
 	};
-	return { trace, counts, finish, request, stopped };
+	return { trace, counts, finish, request, stopped, failure };
 }
 
 exports["createExecution"] = createExecution;
@@ -32141,8 +32240,15 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions = {}): Promise<TurnResultOut> {
 	const scenario = options.scenario;
 	if (scenario && (scenario.modelId !== modelId || scenario.profile.mode !== ctx.mode)) throw new Error("Scenario binding mismatch");
+	const execution = createExecution(modelId, signal, provider, runId, options);
+	try { return await runLoop(ctx, options, execution); }
+	catch (error) { const failed = execution.failure(error); return { result: failed.result, meta: failed.meta }; }
+}
+
+async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: ReturnType<typeof createExecution>): Promise<TurnResultOut> {
+	const scenario = options.scenario;
 	const budget = scenario?.budget ?? AGENT_BUDGET;
-	const { trace, counts, finish, stopped, request: send } = createExecution(modelId, signal, provider, runId, options);
+	const { trace, counts, finish, stopped, request: send } = execution;
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
 	const messages: AgentMessage[] = [
@@ -32178,7 +32284,7 @@ async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSign
 		if (said) text = said;
 		const calls: ToolCall[] = message.calls ?? [];
 		if (calls.length === 0) {
-			if (expectsChange && !nudged && !changed() && steps < AGENT_BUDGET.maxSteps) {
+			if (expectsChange && !nudged && !changed() && steps < budget.maxSteps) {
 				nudged = true;
 				forceNamed = build;
 				messages.push({ role: "assistant", text: said || "" }, { role: "user", text: scenario ? scenario.nudge(ctx, open) : nudgeText(ctx, open) });
@@ -32222,11 +32328,11 @@ __def("packages/chat-agent/src/scenarios/builtins.v1.json", function (exports) {
   "defaults": {
     "ask": {
       "id": "page.ask",
-      "version": 1
+      "version": 2
     },
     "build": {
       "id": "page.build",
-      "version": 1
+      "version": 2
     }
   },
   "profiles": [
@@ -32267,6 +32373,44 @@ __def("packages/chat-agent/src/scenarios/builtins.v1.json", function (exports) {
         "selection": "author"
       },
       "providerVersion": 1
+    },
+    {
+      "format": "buildy-agent-scenario",
+      "id": "page.ask",
+      "version": 2,
+      "mode": "ask",
+      "provider": "xai",
+      "prompt": "page.ask@1",
+      "context": "page.context@1",
+      "nudge": "page.nudge@1",
+      "toolSet": {
+        "ref": "buildy-agent-tools/3"
+      },
+      "execution": "page-loop@2",
+      "limits": {},
+      "model": {
+        "selection": "author"
+      },
+      "providerVersion": 2
+    },
+    {
+      "format": "buildy-agent-scenario",
+      "id": "page.build",
+      "version": 2,
+      "mode": "build",
+      "provider": "xai",
+      "prompt": "page.build@1",
+      "context": "page.context@1",
+      "nudge": "page.nudge@1",
+      "toolSet": {
+        "ref": "buildy-agent-tools/3"
+      },
+      "execution": "page-loop@2",
+      "limits": {},
+      "model": {
+        "selection": "author"
+      },
+      "providerVersion": 2
     }
   ]
 };
@@ -32335,6 +32479,9 @@ exports["compileScenario"] = __req("packages/chat-agent/src/scenarios/compile.ts
 exports["parseScenarioRef"] = __req("packages/chat-agent/src/scenarios/compile.ts")["parseScenarioRef"];
 exports["resolveScenario"] = __req("packages/chat-agent/src/scenarios/registry.ts")["resolveScenario"];
 exports["scenarioProfiles"] = __req("packages/chat-agent/src/scenarios/registry.ts")["scenarioProfiles"];
+exports["POLICY_VERSION"] = __req("packages/chat-agent/src/policy.ts")["POLICY_VERSION"];
+exports["MODEL_CATALOG_VERSION"] = __req("packages/chat-agent/src/policy.ts")["MODEL_CATALOG_VERSION"];
+exports["TRIAL_POLICY_VERSION"] = __req("packages/chat-agent/src/policy.ts")["TRIAL_POLICY_VERSION"];
 
 
 
@@ -32482,6 +32629,31 @@ exports["xaiRefused"] = xaiRefused;
 
 });
 
+__def("packages/provider-xai/src/errors.ts", function (exports) {
+
+function retryAfterMs(value: string | null, now = Date.now()): number | undefined {
+	if (value === null) return undefined;
+	const seconds = /^[0-9]+(?:\.[0-9]+)?$/.test(value.trim()) ? Number(value) : NaN;
+	const ms = Number.isFinite(seconds) ? seconds * 1000 : /^[A-Za-z]{3}, [0-9]{2} [A-Za-z]{3} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} GMT$/.test(value.trim()) ? Date.parse(value) - now : NaN;
+	return Number.isFinite(ms) && ms >= 0 ? ms : undefined;
+}
+
+function classifyProviderFailure(status: number, snippet: string) {
+	if (status === 401) return { code: "provider_unauthorized", message: "The provider rejected authentication.", retryable: false };
+	if (status === 403) return { code: "provider_forbidden", message: "The provider denied access.", retryable: false };
+	if (status === 429) return { code: "rate_limited", message: "The provider rate limit was reached.", retryable: true };
+	if (status >= 500) return { code: "provider_unavailable", message: "The provider service failed.", retryable: [500, 502, 503, 504].includes(status) };
+	const lower = snippet.toLowerCase();
+	if (/tool|function.?call/.test(lower) && /not.?support|unavail|invalid|unknown/.test(lower)) return { code: "tools_unsupported", message: "The model rejected application tools. No other model was substituted.", retryable: false };
+	if (status === 404 || /model.?not.?found|unknown.?model|does not exist/.test(lower)) return { code: "model_unavailable", message: "The requested model is unavailable. No fallback was selected.", retryable: false };
+	return { code: "provider_failed", message: "The provider rejected the request.", retryable: false };
+}
+
+exports["retryAfterMs"] = retryAfterMs;
+exports["classifyProviderFailure"] = classifyProviderFailure;
+
+});
+
 __def("packages/provider-xai/src/capabilities.ts", function (exports) {
 const { providerManifest, manifestModelStatus } = __req("packages/agent-manifests/src/index.ts");
 function xaiCapabilities(modelId: string, version?: number) {
@@ -32499,30 +32671,10 @@ exports["xaiCapabilities"] = xaiCapabilities;
 __def("packages/provider-xai/src/provider.ts", function (exports) {
 const { assertNoFallback, readProviderUsage } = __req("packages/chat-agent/src/index.ts");
 const { xaiMessage, readXaiMessage, xaiRefused } = __req("packages/provider-xai/src/codec.ts");
+const { classifyProviderFailure, retryAfterMs } = __req("packages/provider-xai/src/errors.ts");
 const { xaiCapabilities } = __req("packages/provider-xai/src/capabilities.ts");
 function silentFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 	return fetch(input, init);
-}
-
-
-function classifyProviderFailure(status: number, snippet: string): { code: string; message: string } {
-	const lower = snippet.toLowerCase();
-	if (/tool|function.?call/.test(lower) && /not.?support|unavail|invalid|unknown/.test(lower)) {
-		return {
-			code: "tools_unsupported",
-			message: "This Grok model rejected application tools. Tool support is not assumed. No other model was substituted."
-		};
-	}
-	if (status === 404 || /model.?not.?found|unknown.?model|does not exist/.test(lower)) {
-		return {
-			code: "model_unavailable",
-			message: "The requested Grok chat model is not available on this account. No fallback model was selected."
-		};
-	}
-	if (status === 429) {
-		return { code: "rate_limited", message: "The xAI chat request was rate limited. No automatic retry was sent." };
-	}
-	return { code: "provider_failed", message: "The xAI chat request could not be completed. No automatic retry was sent." };
 }
 
 
@@ -32556,9 +32708,9 @@ async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: 
 		signal: input.signal
 	});
 	if (!res.ok) {
-		const snippet = await res.text().then((text) => text.slice(0, 240), () => "");
-		const failure = classifyProviderFailure(res.status, snippet);
-		return { ok: false, error: { ...failure, status: res.status, elapsedMs: Date.now() - requestStarted } };
+		const body = await res.text().catch(() => "");
+		const failure = classifyProviderFailure(res.status, body.slice(0, 240));
+		return { ok: false, error: { ...failure, status: res.status, retryAfterMs: retryAfterMs(res.headers.get("retry-after")), elapsedMs: Date.now() - requestStarted }, usage: errorUsage(body) };
 	}
 	const payload = (await res.json()) as {
 		choices?: Array<{ finish_reason?: string; message?: unknown }>;
@@ -32573,6 +32725,13 @@ async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: 
 	const message = readXaiMessage(payload.choices?.[0]?.message);
 	if (!message) return { ok: false, error: { code: "malformed_response", message: "Chat completion had no supported assistant message." }, usage };
 	return { ok: true, message, usage };
+}
+
+function errorUsage(body: string) {
+	try {
+		const payload: unknown = JSON.parse(body);
+		return payload && typeof payload === "object" && "usage" in payload ? readProviderUsage(payload.usage) ?? undefined : undefined;
+	} catch { return undefined; }
 }
 
 exports["providerStep"] = providerStep;
@@ -32610,7 +32769,7 @@ async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnConte
 		const compiled = resolveScenario(ctx.mode, modelId, ctx.scenario);
 		if (!compiled.ok || compiled.scenario.profile.provider !== "xai") return { result: { ok: false, code: "invalid_scenario", message: "The scenario could not be resolved.", issues: (compiled.ok ? [{ path: "/provider", code: "adapter_mismatch" }] : compiled.issues).map((issue) => ({ ...issue, expected: "registered compatible scenario" })) }, meta: turnMeta("chat-completions", modelId, false, 0, [], unknownUsage("error", 0), newRunId()) };
 		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { scenario: compiled.scenario, deadline, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
-		if (!turn.result.ok && turn.result.code === "provider_failed") return { ...turn, result: { ...turn.result, code: "xai_chat_failed", message: "The xAI chat request could not be completed. No automatic retry was sent." } };
+		if (!turn.result.ok && turn.result.code === "provider_failed") return { ...turn, result: { ...turn.result, code: "xai_chat_failed", message: "The xAI chat request could not be completed." } };
 		return turn;
 	} catch (err) {
 		const safe = safeErrorMessage(err, [apiKey]);
@@ -32621,7 +32780,7 @@ async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnConte
 			result: {
 				ok: false,
 				code: aborted ? "aborted" : "xai_chat_failed",
-				message: aborted ? "The run was cancelled. Usage is unknown, not zero." : "The xAI chat request could not be completed. No automatic retry was sent."
+				message: aborted ? "The run was cancelled. Usage is unknown, not zero." : "The xAI chat request could not be completed."
 			},
 			meta: turnMeta("chat-completions", modelId, false, 0, [], unknownUsage(aborted ? "cancelled" : "error", 0), newRunId())
 		};
@@ -33048,6 +33207,7 @@ async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promi
 			runId: meta.runId,
 			toolsUsed: meta.toolsCalled,
 			scenario: meta.scenario,
+			providerRetries: meta.providerRetries,
 			usage: meta.usage
 		});
 	} catch (err) {

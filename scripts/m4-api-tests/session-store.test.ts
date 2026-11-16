@@ -4,6 +4,7 @@
  * committed edit, coalesced typing = one revision = one undo step, session.pageRevision in sync, unchanged = no-op).
  */
 import assert from "node:assert/strict";
+import { aggregateStepUsage, aggregateSessionUsage, readProviderUsage } from "../../packages/chat-agent/src/usage.ts";
 import { afterEach, test } from "node:test";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -439,4 +440,20 @@ test("a session file with a page-spec/v1 page is refused as page_v1_unsupported 
 	const page = landing();
 	const ok = parseSessionFile(JSON.stringify({ format: "buildy:v1", exportedAt: NOW, app, pins, sessions: [chat("session-n", { page: { applied: page, candidate: null, selectedBlockId: null, revision: 1 }, pageRevision: 1 })] }));
 	assert.ok(ok.ok);
+});
+
+
+test("portable session preserves exact billed ticks and partial cost without a schema change", () => {
+	const usage = aggregateStepUsage([readProviderUsage({ prompt_tokens: 1, completion_tokens: 1, cost_in_usd_ticks: "9007199254740993" })], { requests: 2 });
+	const source = chat("session-cost");
+	const assistant = { ...source.messages[1]!, run: { ...source.messages[1]!.run!, usage } };
+	const sessionUsage = aggregateSessionUsage([usage]);
+	const file = buildSessionFile({ chats: [{ ...source, messages: [source.messages[0]!, assistant], usage: sessionUsage }], pages: {}, app, pins, now: NOW });
+	assert.deepEqual(sessionFileIssues(file), []);
+	const parsed = parseSessionFile(JSON.stringify(file));
+	assert.ok(parsed.ok, JSON.stringify(parsed));
+	const roundtrip = splitSessionFile(parsed.file).chats[0]!;
+	assert.deepEqual(roundtrip.usage, sessionUsage);
+	assert.ok(Array.isArray(roundtrip.messages));
+	assert.deepEqual(roundtrip.messages[1].run.usage, usage);
 });

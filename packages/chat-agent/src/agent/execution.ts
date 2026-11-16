@@ -1,3 +1,4 @@
+import { CURRENT_EXECUTION_POLICY, retryDelay, waitForRetry } from "./execution-policy.ts";
 /** Per-turn accounting survives provider throws, cancellation and deadline expiry. */
 import { AGENT_BUDGET, type BudgetCounts } from "./budget.ts";
 import { aggregateStepUsage, unknownUsage, type RunUsage, type StepUsage } from "../usage.ts";
@@ -11,17 +12,19 @@ export type ExecutionOptions = { scenario?: CompiledScenario; deadline?: number;
 
 export function createExecution(modelId: string, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions) {
 	const budget = options.scenario?.budget ?? AGENT_BUDGET;
+	const policy = options.scenario?.executionPolicy ?? CURRENT_EXECUTION_POLICY;
+	let retriesUsed = 0;
 	const trace = { runId, steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
 	const counts: BudgetCounts = { requests: 0, toolCalls: 0, writeAttempts: 0 };
 	let incomplete: RunUsage["incompleteReason"];
 	const finish = (): LiveTurnMeta => {
 		const reason = incomplete ?? (stepUsage.length < counts.requests ? "error" : undefined);
-		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, reason ? { incomplete: reason } : undefined) : unknownUsage(reason ?? "error", counts.requests);
-		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts }, ...(options.scenario ? { scenario: { id: options.scenario.profile.id, version: options.scenario.profile.version, fingerprint: options.scenario.fingerprint, provider: options.scenario.profile.provider, providerVersion: options.scenario.manifestVersion, modelId } } : {}) };
+		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, { incomplete: reason, requests: counts.requests }) : unknownUsage(reason ?? "error", counts.requests);
+		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts }, providerRetries: retriesUsed, ...(options.scenario ? { scenario: { id: options.scenario.profile.id, version: options.scenario.profile.version, fingerprint: options.scenario.fingerprint, provider: options.scenario.profile.provider, providerVersion: options.scenario.manifestVersion, modelId } } : {}) };
 	};
-	const fail = (code: string, message: string): ExecutionStep => ({ ok: false, result: { ok: false, code, message }, meta: finish() });
-	const stopped = (): ExecutionStep | null => {
+	const fail = (code: string, message: string): Extract<ExecutionStep, { ok: false }> => ({ ok: false, result: { ok: false, code, message }, meta: finish() });
+	const stopped = (): Extract<ExecutionStep, { ok: false }> | null => {
 		const timeout = signal.reason instanceof Error && signal.reason.name === "TimeoutError";
 		if (signal.aborted || (options.deadline !== undefined && Date.now() >= options.deadline)) {
 			incomplete = timeout || (!signal.aborted && options.deadline !== undefined) ? "timeout" : "cancelled";
@@ -29,26 +32,42 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 		}
 		return null;
 	};
+	const failure = (error: unknown) => {
+		const stop = stopped();
+		if (stop) return stop;
+		incomplete = "error";
+		try { options.onProviderError?.(error); } catch { /* Diagnostics cannot erase billed usage. */ }
+		return fail("provider_failed", "The execution failed. Thrown errors are not retried.");
+	};
 	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens" | "provider">): Promise<ExecutionStep> => {
 		const stop = stopped();
 		if (stop) return stop;
 		if (counts.requests >= budget.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
-		counts.requests += 1;
-		trace.steps = counts.requests;
 		try {
-			const result = await provider({ ...input, modelId, signal, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens });
-			if (result.usage) stepUsage.push(result.usage);
-			const stop = stopped();
-			if (stop) return stop;
+			let result;
+			let pendingRetry = false;
+			while (true) {
+				const stop = stopped();
+				if (stop) return stop;
+				if (counts.requests >= budget.maxRequests) return fail("request_budget", "The provider request budget was reached.");
+				if (pendingRetry) { retriesUsed += 1; pendingRetry = false; }
+				counts.requests += 1;
+				trace.steps = counts.requests;
+				result = await provider({ ...input, modelId, signal, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens });
+				if (result.usage) stepUsage.push(result.usage);
+				const after = stopped();
+				if (after) return after;
+				if (result.ok || counts.requests >= budget.maxRequests) break;
+				const delay = retryDelay(result.error, retriesUsed, policy, options.deadline === undefined ? Infinity : options.deadline - Date.now());
+				if (delay === null) break;
+				await waitForRetry(delay, signal);
+				pendingRetry = true;
+			}
 			if (!result.ok) return { ok: false, result: { ok: false, code: result.error.code, message: result.error.message }, meta: { ...finish(), providerStatus: result.error.status, providerMs: result.error.elapsedMs } };
 			return { ok: true, message: result.message };
 		} catch (error) {
-			const stop = stopped();
-			if (stop) return stop;
-			incomplete = "error";
-			options.onProviderError?.(error);
-			return fail("provider_failed", "The provider request failed. No automatic retry was sent.");
+			return failure(error);
 		}
 	};
-	return { trace, counts, finish, request, stopped };
+	return { trace, counts, finish, request, stopped, failure };
 }

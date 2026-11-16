@@ -1,4 +1,4 @@
-import { POLICY_VERSION } from "@buildytech/builder-core";
+import { POLICY_VERSION } from "./policy.ts";
 import { catalogSnapshot } from "@buildytech/builder-core";
 import { SEARCH_INDEX_SOURCES } from "@buildytech/builder-core";
 import { AGENT_TOOLS_VERSION } from "./agent/agent-tools.ts";

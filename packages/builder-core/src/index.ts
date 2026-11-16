@@ -127,10 +127,7 @@ export type {
 	CatalogScreenRef
 } from "./catalog/provenance.ts";
 export {
-	ALLOWED_TOOLS,
-	POLICY_VERSION,
-	MODEL_CATALOG_VERSION,
-	TRIAL_POLICY_VERSION
+	ALLOWED_TOOLS
 } from "./policy.ts";
 export type { AllowedTool } from "./policy.ts";
 export type { FacetTree } from "./catalog/search.ts";

@@ -1,3 +1,6 @@
+import { COST_UNAVAILABLE, readBilledTicks, aggregateBilledCost, storedCostPart, type UsageCost } from "./cost.ts";
+export { COST_UNAVAILABLE, billedCostForDisplay } from "./cost.ts";
+
 /** Provider usage. Unknown is the string "unknown", never 0, for cancelled/error paths. */
 
 type TokenCount = number | "unknown";
@@ -8,12 +11,14 @@ export type StepUsage = {
 	totalTokens: TokenCount;
 	reasoningTokens?: number;
 	cachedTokens?: number;
+	costUsdTicks?: string;
 };
 
 export type RunUsage = {
 	status: "complete" | "incomplete";
 	incompleteReason?: "cancelled" | "error" | "timeout";
 	steps: number;
+	reportedSteps?: number;
 	promptTokens: TokenCount;
 	completionTokens: TokenCount;
 	totalTokens: TokenCount;
@@ -25,7 +30,7 @@ export type RunUsage = {
 	aggregation?: "sum-of-tool-loop-requests";
 	/** Last provider usage object in the loop, when present. */
 	lastStep?: StepUsage;
-	cost: CostUnavailable | CostEstimate;
+	cost: UsageCost;
 };
 
 export type SessionUsage = {
@@ -37,30 +42,7 @@ export type SessionUsage = {
 	totalTokens: TokenCount;
 	reasoningTokens?: number;
 	cachedTokens?: number;
-	cost: CostUnavailable;
-};
-
-type CostUnavailable = {
-	available: false;
-	reason: "no_official_current_rates_in_repo";
-	note: "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used.";
-};
-
-type CostEstimate = {
-	available: true;
-	kind: "estimated";
-	currency: "USD";
-	amount: number;
-	modelId: string;
-	source: string;
-	asOf: string;
-	vsBilled: "estimated_not_billed";
-};
-
-export const COST_UNAVAILABLE: CostUnavailable = {
-	available: false,
-	reason: "no_official_current_rates_in_repo",
-	note: "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+	cost: UsageCost;
 };
 
 export function unknownUsage(reason: RunUsage["incompleteReason"], steps = 0): RunUsage {
@@ -68,6 +50,7 @@ export function unknownUsage(reason: RunUsage["incompleteReason"], steps = 0): R
 		status: "incomplete",
 		incompleteReason: reason,
 		steps,
+		reportedSteps: 0,
 		promptTokens: "unknown",
 		completionTokens: "unknown",
 		totalTokens: "unknown",
@@ -77,7 +60,7 @@ export function unknownUsage(reason: RunUsage["incompleteReason"], steps = 0): R
 }
 
 function asCount(value: unknown): number | null {
-	if (typeof value === "number" && Number.isFinite(value) && value >= 0) return value;
+	if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) return value;
 	return null;
 }
 
@@ -88,7 +71,8 @@ export function readProviderUsage(raw: unknown): StepUsage | null {
 	const prompt = asCount(u.prompt_tokens ?? u.inputTokens ?? u.promptTokens);
 	const completion = asCount(u.completion_tokens ?? u.outputTokens ?? u.completionTokens);
 	const total = asCount(u.total_tokens ?? u.totalTokens);
-	if (prompt === null && completion === null && total === null) return null;
+	const ticks = readBilledTicks(u.cost_in_usd_ticks);
+	if (prompt === null && completion === null && total === null && ticks === undefined) return null;
 	const details =
 		u.completion_tokens_details && typeof u.completion_tokens_details === "object"
 			? (u.completion_tokens_details as Record<string, unknown>)
@@ -104,26 +88,29 @@ export function readProviderUsage(raw: unknown): StepUsage | null {
 	const step: StepUsage = {
 		promptTokens: prompt ?? "unknown",
 		completionTokens: completion ?? "unknown",
-		totalTokens: total ?? (prompt !== null && completion !== null ? prompt + completion : "unknown")
+		totalTokens: total ?? (prompt !== null && completion !== null ? addCount(prompt, completion) : "unknown")
 	};
 	if (reasoning !== null) step.reasoningTokens = reasoning;
 	if (cached !== null) step.cachedTokens = cached;
+	if (ticks !== undefined) step.costUsdTicks = ticks;
 	return step;
 }
 
 function addCount(a: TokenCount, b: TokenCount): TokenCount {
 	if (a === "unknown" || b === "unknown") return "unknown";
-	return a + b;
+	const total = a + b;
+	return Number.isSafeInteger(total) ? total : "unknown";
 }
 
 /** Sum tool-loop steps. Uses prompt+completion per step; does not add total on top of those. */
-export function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, opts?: { incomplete?: RunUsage["incompleteReason"] }): RunUsage {
+export function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, opts?: { incomplete?: RunUsage["incompleteReason"]; requests?: number }): RunUsage {
+	const requests = opts?.requests ?? steps.length;
 	const present = steps.filter((s): s is StepUsage => Boolean(s));
 	if (opts?.incomplete) {
-		if (present.length === 0) return unknownUsage(opts.incomplete, steps.length);
+		if (present.length === 0) return unknownUsage(opts.incomplete, requests);
 	}
 	if (present.length === 0) {
-		return unknownUsage(opts?.incomplete ?? "error", 0);
+		return unknownUsage(opts?.incomplete ?? "error", requests);
 	}
 	let prompt: TokenCount = 0;
 	let completion: TokenCount = 0;
@@ -144,22 +131,26 @@ export function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, o
 		}
 	}
 	const total: TokenCount =
-		prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion;
+		addCount(prompt, completion);
 	const last = present[present.length - 1];
+	const reason = opts?.incomplete ?? (present.length < requests || prompt === "unknown" || completion === "unknown" ? "error" : undefined);
+	const parts = present.map((step) => ({ ticks: step.costUsdTicks, reportedRequests: step.costUsdTicks === undefined ? 0 : 1, requests: 1, complete: step.costUsdTicks !== undefined }));
+	if (requests > present.length) parts.push({ ticks: undefined, reportedRequests: 0, requests: requests - present.length, complete: false });
 	const run: RunUsage = {
-		status: opts?.incomplete ? "incomplete" : "complete",
-		incompleteReason: opts?.incomplete,
-		steps: present.length,
+		status: reason ? "incomplete" : "complete",
+		incompleteReason: reason,
+		steps: requests,
+		reportedSteps: present.length,
 		promptTokens: prompt,
 		completionTokens: completion,
 		totalTokens: total,
 		reportedBy: "xai-provider",
 		aggregation: "sum-of-tool-loop-requests",
 		lastStep: last,
-		cost: COST_UNAVAILABLE
+		cost: aggregateBilledCost(parts)
 	};
-	if (sawReasoning) run.reasoningTokens = reasoning;
-	if (sawCached) run.cachedTokens = cached;
+	if (sawReasoning && Number.isSafeInteger(reasoning)) run.reasoningTokens = reasoning;
+	if (sawCached && Number.isSafeInteger(cached)) run.cachedTokens = cached;
 	return run;
 }
 
@@ -201,16 +192,16 @@ export function aggregateSessionUsage(runs: RunUsage[]): SessionUsage {
 		promptTokens: prompt,
 		completionTokens: completion,
 		totalTokens: prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion,
-		cost: COST_UNAVAILABLE
+		cost: aggregateBilledCost(runs.map((run) => storedCostPart(run.cost, run.steps)))
 	};
-	if (sawReasoning) session.reasoningTokens = reasoning;
-	if (sawCached) session.cachedTokens = cached;
+	if (sawReasoning && Number.isSafeInteger(reasoning)) session.reasoningTokens = reasoning;
+	if (sawCached && Number.isSafeInteger(cached)) session.cachedTokens = cached;
 	return session;
 }
 
 /** Never invent a dollar amount. Official rates are not pinned in this repo. */
-export function costForModel(_modelId: string, _usage: RunUsage): CostUnavailable {
-	return COST_UNAVAILABLE;
+export function costForModel(_modelId: string, usage: RunUsage): UsageCost {
+	return usage.cost.available && usage.cost.kind === "billed" ? usage.cost : COST_UNAVAILABLE;
 }
 
 export function formatTokens(value: TokenCount): string {

@@ -102,8 +102,15 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions = {}): Promise<TurnResultOut> {
 	const scenario = options.scenario;
 	if (scenario && (scenario.modelId !== modelId || scenario.profile.mode !== ctx.mode)) throw new Error("Scenario binding mismatch");
+	const execution = createExecution(modelId, signal, provider, runId, options);
+	try { return await runLoop(ctx, options, execution); }
+	catch (error) { const failed = execution.failure(error); return { result: failed.result, meta: failed.meta }; }
+}
+
+async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: ReturnType<typeof createExecution>): Promise<TurnResultOut> {
+	const scenario = options.scenario;
 	const budget = scenario?.budget ?? AGENT_BUDGET;
-	const { trace, counts, finish, stopped, request: send } = createExecution(modelId, signal, provider, runId, options);
+	const { trace, counts, finish, stopped, request: send } = execution;
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
 	const messages: AgentMessage[] = [
@@ -139,7 +146,7 @@ export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: Ab
 		if (said) text = said;
 		const calls: ToolCall[] = message.calls ?? [];
 		if (calls.length === 0) {
-			if (expectsChange && !nudged && !changed() && steps < AGENT_BUDGET.maxSteps) {
+			if (expectsChange && !nudged && !changed() && steps < budget.maxSteps) {
 				nudged = true;
 				forceNamed = build;
 				messages.push({ role: "assistant", text: said || "" }, { role: "user", text: scenario ? scenario.nudge(ctx, open) : nudgeText(ctx, open) });

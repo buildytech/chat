@@ -20,7 +20,7 @@
 		"usage.session": "Сессия · {status} · запусков {runs} · промпт {prompt} · ответ {completion} · всего {total}",
 		"usage.complete": "готово",
 		"usage.incomplete": "не полно",
-		"usage.noDollars": "Цена в долларах неизвестна: тарифы этих моделей здесь не подтверждены.",
+		"usage.noDollars": "Стоимость по отчётам API неизвестна. Отсутствие данных не означает ноль.",
 		"composer.model": "Модель",
 		"composer.modelGrok": "Grok",
 		"empty.title": "Новый чат",
@@ -166,7 +166,9 @@
 		"proposal.askOutdated": "Страница изменилась после этого предложения. Спросите снова.",
 		"proposal.outsideScope": "Предложение меняет блоки вне выделения.",
 		"proposal.rejected": "Страница не изменена: {code} {message}",
-		"message.noChange": "Страница не изменена."
+		"message.noChange": "Страница не изменена.",
+		"usage.billed": "Стоимость по отчётам API: {amount} USD.",
+		"usage.billedPartial": "Известная часть стоимости API: {amount} USD. Итог неизвестен."
 	},
 	"overrides": {
 		"sidebar.newChat": "Новый чат",

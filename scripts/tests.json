@@ -25,6 +25,7 @@
       "agent-tools.test.ts",
       "build-forced-write.test.ts",
       "execution.test.ts",
+      "accounting-retry.test.ts",
       "scenarios.test.ts",
       "xai-codec.test.ts",
       "collection-intake.test.ts",

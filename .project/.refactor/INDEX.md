@@ -9,7 +9,11 @@ Each note is one change: why, what to delete, what to keep, how to verify.
 
 ## Agent system programme
 
-- [Общий план и приоритеты](agent-system-plan.md) — код этапа 1 реализован; общий агентский цикл, адаптеры, поиск, контекст и браузерный кабинет сценариев.
+- [Общий план и приоритеты](agent-system-plan.md) — этапы 1–2 реализованы; backend этапа 3 готов. Workbench отложен владельцем; поиск и контекст ещё впереди.
 - [Stage 1: единая политика](stage-1-policy.md) — ход реализации и проверки.
-- [Stage 2: общее выполнение](stage-2-runtime.md) — перенос prompts в агентский модуль; следующий шаг — контракт провайдера и loop.
+- [Stage 2: общее выполнение](stage-2-runtime.md) — история реализации loop, нейтрального протокола, provider-xai, профилей и учёта.
 - Исходные сведения: [xAI API audit](grokapi-report-2026-11-16.md), [catalog search audit](constructor-search-audit-2026-11-16.md).
+
+## Текущий приоритет (2026-11-16)
+
+Учёт billed ticks, корректные steps/nudge, новые defaults v2 и bounded HTTP retries реализованы. Следующий отдельный шаг — сценарии обсуждения без write_page, затем общий поиск и оптимизация контекста/кэша. Браузерная карта выполнения и редактор сценариев отложены по указанию владельца. Streaming, Responses и платные замеры моделей остаются поздними этапами.

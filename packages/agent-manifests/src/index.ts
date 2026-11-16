@@ -1,7 +1,7 @@
 /** Public data only: no transport, credentials, prompts or runtime imports. */
-import { XAI_MANIFEST } from "./xai.ts";
+import { XAI_MANIFEST, XAI_MANIFEST_V1 } from "./xai.ts";
 export { XAI_MANIFEST, XAI_MODELS } from "./xai.ts";
-export const PROVIDER_MANIFESTS = immutableData([XAI_MANIFEST] as const);
+export const PROVIDER_MANIFESTS = immutableData([XAI_MANIFEST, XAI_MANIFEST_V1] as const);
 export function providerManifest(id: string, version?: number) { return PROVIDER_MANIFESTS.filter((manifest) => manifest.id === id && (version === undefined || manifest.version === version)).sort((a, b) => b.version - a.version)[0] ?? null; }
 export function manifestModelStatus(providerId: string, modelId: string, version?: number) {
 	const model = providerManifest(providerId, version)?.models.find((model) => model.id === modelId);

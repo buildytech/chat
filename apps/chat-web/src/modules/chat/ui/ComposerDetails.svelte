@@ -1,4 +1,5 @@
 <script lang="ts">
+	import UsageCost from "./UsageCost.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte.ts";
 	import Stack from "$registry/compose/Stack.svelte";
 	import Summary from "$registry/compose/Summary.svelte";
@@ -24,7 +25,7 @@
 						.replace("{total}", formatTokens(sessionUsage.totalTokens))
 						.replace("{runs}", String(sessionUsage.runs))}</Text
 				>
-				<Text tag="p" class="text-xs text-muted-foreground">{t("usage.noDollars")}</Text>
+				<UsageCost cost={sessionUsage.cost} />
 			{/if}
 			{#if persistLabel}<Text tag="p" class="text-xs text-muted-foreground">{persistLabel}</Text>{/if}
 			{#if runtimeLabel}<Text tag="p" class="text-xs text-muted-foreground">{runtimeLabel}</Text>{/if}

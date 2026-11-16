@@ -13,7 +13,7 @@ test("xAI capabilities derive model policy from the existing catalog, not a dupl
 		assert.ok(caps);
 		assert.equal(caps.toolLoop, modelRunsToolLoop(model) ? "enabled" : "disabled");
 		assert.equal(caps.streaming, false);
-		assert.equal(caps.completionTokenParameter, "max_tokens");
+		assert.equal(caps.completionTokenParameter, "max_completion_tokens");
 	}
 	assert.equal(xaiCapabilities("unknown-model")?.toolLoop, "unknown");
 });

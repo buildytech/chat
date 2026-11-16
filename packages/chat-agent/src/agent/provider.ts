@@ -25,6 +25,7 @@ export type LiveTurnMeta = {
 	scenario?: { id: string; version: number; fingerprint: string; provider: string; providerVersion: number; modelId: string };
 	/** HTTP status of a failed provider request (status only; never the body). */
 	providerStatus?: number;
+	providerRetries?: number;
 	/** Wall time of the failed provider request in ms. */
 	providerMs?: number;
 };
@@ -44,7 +45,7 @@ export function turnMeta(
 
 export type ProviderStep =
 	| { ok: true; message: AgentMessage; usage?: StepUsage }
-	| { ok: false; error: { code: string; message: string; status?: number; elapsedMs?: number }; usage?: StepUsage };
+	| { ok: false; error: { code: string; message: string; status?: number; elapsedMs?: number; retryable?: boolean; retryAfterMs?: number }; usage?: StepUsage };
 
 /** Transport input without credentials or endpoint; supplied by the runtime host. */
 export type ProviderRequest = {
