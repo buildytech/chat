@@ -128,7 +128,7 @@ test("there is one probe closure: runtime, coverage script and browser call prob
 });
 
 test("turn-start: the page is probed once per turn and the result serves the prompt and the nudge", () => {
-	const tools = read("apps/xai-runtime/src/chat-tools.ts");
+	const tools = read("packages/chat-agent/src/agent/loop.ts");
 	assert.equal((tools.match(/renderProblems\(ctx\.page\)/g) ?? []).length, 1);
 	assert.match(tools, /userPrompt\(ctx, problems\)/);
 	assert.match(tools, /const open = problems\.length/);

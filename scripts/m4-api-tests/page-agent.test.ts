@@ -11,7 +11,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { addScreen, allItems, checkPageDoc, effectiveProps, emptyPage, itemInfo, sampleProps, writePage } from "../../packages/builder-core/src/index.ts";
-import { type AgentReply, type PageProposal } from "../../packages/chat-agent/src/index.ts";
+import { runAgentLoop, type AgentReply, type PageProposal } from "../../packages/chat-agent/src/index.ts";
 import { validateItemProps } from "../../packages/builder-core/src/catalog/provenance.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
@@ -218,4 +218,19 @@ test("every item variant starts from sample props that pass the registry props s
 		}
 	}
 	assert.ok(checked > 400);
+});
+
+
+test("shared loop accepts an injected transport without credentials or an xAI HTTP request", async () => {
+	let requests = 0;
+	const out = await runAgentLoop("fixture-model", { brief: "Explain", mode: "ask", page: emptyPage({ title: "Test", now: NOW }), expectedRevision: 0 }, signal(), async (input) => {
+		requests += 1;
+		assert.equal(input.toolChoice, "auto");
+		assert.equal("apiKey" in input, false);
+		assert.equal("baseUrl" in input, false);
+		return { ok: true, message: { role: "assistant", content: "Explanation" } };
+	}, "injected-test");
+	assert.equal(requests, 1);
+	assert.equal(out.result.ok, true);
+	assert.equal(out.meta.runId, "injected-test");
 });

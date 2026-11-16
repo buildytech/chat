@@ -23,6 +23,17 @@
 		"registry": "https://registry.buildy.tw",
 		"runtime": "svelte",
 		"sourceCommit": "b61663421cb048e33f2bc405035ea5e2ba1f5009",
-		"files": ["registry.json", "manifest.json", "svelte/index.json", "variants/v0.json", "props/v0.json"]
+		"files": [
+			"registry.json",
+			"manifest.json",
+			"svelte/index.json",
+			"variants/v0.json",
+			"props/v0.json"
+		]
+	},
+	"contract": {
+		"repo": "ui8kit/contract",
+		"commit": "20d0853fba892410dd42a92ac9adfa8241d0880a",
+		"schemas": "public"
 	}
 }

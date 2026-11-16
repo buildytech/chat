@@ -3,7 +3,7 @@
 	"version": 0,
 	"config": {
 		"path": "catalog/snapshot.config.json",
-		"sha256": "462069e2d0440ad9490b38e3f33a3ce757124fabcd025a24844671f5e1461994"
+		"sha256": "a5c4f5c34ceb70872c2cd9edb68cd40788e942c88387bbc16dec42fb8361800f"
 	},
 	"policy": {
 		"path": "catalog/policy.v0.json",

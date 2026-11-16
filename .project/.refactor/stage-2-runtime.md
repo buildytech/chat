@@ -6,4 +6,10 @@
 
 Проверки текущего шага: npm run verify завершился с кодом 0 на Node 22.23.5. Все 332 теста, coverage 526/526, secrets, audit, typecheck, lint/ratchets, Svelte и обе сборки прошли. No-trace: 725/725 строк отсутствуют без чата, контроль 584/725; headless chat off 27/27, chat on 22/22. Первый sandbox-прогон упёрся в EPERM временных ссылок двух ZIP-тестов; повтор с необходимым доступом успешен без изменения тестов. Журнал: .cache/stage2-prompts-verify.log (gitignored).
 
-Платные вызовы провайдеров не запускаются. Предыдущее разовое разрешение на push относилось к 70edd6a; отсутствие штатного gate этим не устранено. Текущий шаг фиксируется локально.
+Первый шаг зафиксирован в 14b5efa. Следом loop перенесён в agent/loop.ts, transport contract — в agent/provider.ts, HTTP xAI — в apps/xai-runtime/src/xai-provider.ts. Host связывает credentials и устанавливает props gate. Прямой тест внедрения транспорта не требует xAI/fetch. Существующие replays продолжают проверять реальные тела HTTP через runtime composition.
+
+Контракт пока использует Chat Completions-shaped сообщения и существующий учёт usage; это промежуточная граница, а не готовый адаптер OpenAI/Responses. Нормализация сообщений, независимые budgets/deadline, сохранение usage после исключений, отдельный provider package и capabilities ещё впереди. API-параметры и prompts по смыслу не меняются. Платные вызовы провайдеров не запускаются.
+
+По последующему указанию владельца новые коммиты имеют автора Codex; gate теперь хранится в scripts/push-gate.sh (Node orchestration в scripts/push-gate.mjs), AGENTS.md обновлён. Кириллица разрешена. schema:check сверяет public/ закреплённого ui8kit/contract (20d0853fba892410dd42a92ac9adfa8241d0880a в snapshot.config.json); --published отдельно диагностирует schema.buildy.tw. Все шесть схем совпали, lock обновлён через snapshot:derive, snapshot:check прошёл. Полный gate включает verify и не прячет незакоммиченные файлы.
+
+Проверки переноса loop/transport: полный verify успешен (332 существующих теста, coverage 526/526, check/build, no-trace 734/734, headless 27/27 и 22/22). Добавленный тест injected transport проверен отдельно в page-agent.test.ts: 8/8. Финальный gate повторяет весь набор на точном коммите в чистой копии. Текущий этап 2 остаётся частично выполненным: независимые budgets и нормализация протокола не реализованы.

@@ -313,7 +313,7 @@ test("Vercel API typecheck has AI SDK shims and does not silently assemble Grok 
 	assert.match(shims, /declare module "zod"/);
 	assert.doesNotMatch(shims, /^\s*export function enum\b/m);
 	assert.match(shims, /\benum:\s*\(/);
-	const tools = readFileSync(join(REPO, "apps/xai-runtime/src/chat-tools.ts"), "utf8");
+	const tools = readFileSync(join(REPO, "packages/chat-agent/src/agent/loop.ts"), "utf8");
 	assert.doesNotMatch(tools, /runConstructorTools\(ctx\)/);
 	assert.match(tools, /write_stuck/, "the loop stops after two identical error lists instead of looping or assembling a page itself");
 	assert.doesNotMatch(tools, /assembleLayout|proposeLayout/);
