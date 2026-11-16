@@ -1,3 +1,4 @@
+import { createRunTrace } from "./run-trace.ts";
 import { CURRENT_EXECUTION_POLICY, retryDelay, waitForRetry } from "./execution-policy.ts";
 /** Per-turn accounting survives provider throws, cancellation and deadline expiry. */
 import { AGENT_BUDGET, type BudgetCounts } from "./budget.ts";
@@ -17,13 +18,14 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 	const trace = { runId, steps: 0, toolCallingWorked: false, toolsCalled: [] as string[] };
 	const stepUsage: StepUsage[] = [];
 	const counts: BudgetCounts = { requests: 0, toolCalls: 0, writeAttempts: 0 };
+	const recorder = createRunTrace(runId, modelId, budget, counts, options.scenario, options.deadline);
 	let incomplete: RunUsage["incompleteReason"];
 	const finish = (): LiveTurnMeta => {
 		const reason = incomplete ?? (stepUsage.length < counts.requests ? "error" : undefined);
 		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, { incomplete: reason, requests: counts.requests }) : unknownUsage(reason ?? "error", counts.requests);
-		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts }, providerRetries: retriesUsed, ...(options.scenario ? { scenario: { id: options.scenario.profile.id, version: options.scenario.profile.version, fingerprint: options.scenario.fingerprint, provider: options.scenario.profile.provider, providerVersion: options.scenario.manifestVersion, modelId } } : {}) };
+		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts }, providerRetries: retriesUsed, runTrace: structuredClone(recorder.trace), ...(options.scenario ? { scenario: { id: options.scenario.profile.id, version: options.scenario.profile.version, fingerprint: options.scenario.fingerprint, provider: options.scenario.profile.provider, providerVersion: options.scenario.manifestVersion, modelId } } : {}) };
 	};
-	const fail = (code: string, message: string): Extract<ExecutionStep, { ok: false }> => ({ ok: false, result: { ok: false, code, message }, meta: finish() });
+	const fail = (code: string, message: string): Extract<ExecutionStep, { ok: false }> => { recorder.stop(code); return { ok: false, result: { ok: false, code, message }, meta: finish() }; };
 	const stopped = (): Extract<ExecutionStep, { ok: false }> | null => {
 		const timeout = signal.reason instanceof Error && signal.reason.name === "TimeoutError";
 		if (signal.aborted || (options.deadline !== undefined && Date.now() >= options.deadline)) {
@@ -39,7 +41,7 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 		try { options.onProviderError?.(error); } catch { /* Diagnostics cannot erase billed usage. */ }
 		return fail("provider_failed", "The execution failed. Thrown errors are not retried.");
 	};
-	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens" | "provider">): Promise<ExecutionStep> => {
+	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens" | "provider"> & { nudged?: boolean }): Promise<ExecutionStep> => {
 		const stop = stopped();
 		if (stop) return stop;
 		if (counts.requests >= budget.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
@@ -53,8 +55,11 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 				if (pendingRetry) { retriesUsed += 1; pendingRetry = false; }
 				counts.requests += 1;
 				trace.steps = counts.requests;
-				result = await provider({ ...input, modelId, signal, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens });
+				const completed = recorder.request(input, input.nudged ?? false);
+				const started = Date.now();
+				try { result = await provider({ ...input, modelId, signal, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens }); } catch (error) { completed(null, Date.now() - started); throw error; }
 				if (result.usage) stepUsage.push(result.usage);
+				completed(result, Date.now() - started);
 				const after = stopped();
 				if (after) return after;
 				if (result.ok || counts.requests >= budget.maxRequests) break;
@@ -63,11 +68,11 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 				await waitForRetry(delay, signal);
 				pendingRetry = true;
 			}
-			if (!result.ok) return { ok: false, result: { ok: false, code: result.error.code, message: result.error.message }, meta: { ...finish(), providerStatus: result.error.status, providerMs: result.error.elapsedMs } };
+			if (!result.ok) { recorder.stop(result.error.code); return { ok: false, result: { ok: false, code: result.error.code, message: result.error.message }, meta: { ...finish(), providerStatus: result.error.status, providerMs: result.error.elapsedMs } }; }
 			return { ok: true, message: result.message };
 		} catch (error) {
 			return failure(error);
 		}
 	};
-	return { trace, counts, finish, request, stopped, failure };
+	return { recorder, trace, counts, finish, request, stopped, failure };
 }

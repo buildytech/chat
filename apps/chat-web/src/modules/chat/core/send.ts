@@ -59,7 +59,7 @@ function finishedSession(pending: ChatSession, out: Awaited<ReturnType<typeof ru
 	const reply = replyMessage(out);
 	// A new proposal supersedes the pending ones of its own kind: an Ask proposal the Ask ones, a Build proposal the Build ones.
 	const prior = reply.proposal ? markPendingProposals(pending.messages, "superseded", "all", (m) => (m.mode === "ask") === (reply.mode === "ask")) : pending.messages;
-	return { ...pending, updatedAt: nowIso(), selectedModelId: modelId, messages: [...prior, reply], usage: sessionUsageFrom(pending, usage) };
+	return { ...pending, ...(out.runTrace ? { runTraces: { ...pending.runTraces, [out.runTrace.runId]: out.runTrace } } : {}), updatedAt: nowIso(), selectedModelId: modelId, messages: [...prior, reply], usage: sessionUsageFrom(pending, usage) };
 }
 
 async function sendMessageText(text: string): Promise<ChatSession> {

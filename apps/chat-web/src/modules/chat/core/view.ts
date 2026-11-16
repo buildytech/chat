@@ -21,16 +21,17 @@ export function viewOf(project: Project): ChatSession {
 	if (view) return view;
 	const { ext: _ext, ...fields } = project;
 	const chat = chatOf(project);
-	view = { ...fields, messages: chat?.messages ?? [], ...(chat?.mode ? { mode: chat.mode } : {}), ...(chat?.selectedModelId ? { selectedModelId: chat.selectedModelId } : {}), ...(chat?.usage ? { usage: chat.usage } : {}) } as ChatSession;
+	view = { ...fields, runTraces: project.ext["agent-trace"], messages: chat?.messages ?? [], ...(chat?.mode ? { mode: chat.mode } : {}), ...(chat?.selectedModelId ? { selectedModelId: chat.selectedModelId } : {}), ...(chat?.usage ? { usage: chat.usage } : {}) } as ChatSession;
 	views.set(project, view);
 	return view;
 }
 
 /** The project a chat view stands for: its project fields, and `ext.chat` when the view or the project before it has a chat. */
 export function projectOfView(view: ChatSession, prev: Project | null): Project {
-	const { messages, mode, selectedModelId, usage, projectId, ...fields } = view;
+	const { runTraces, messages, mode, selectedModelId, usage, projectId, ...fields } = view;
 	const kept = { ...(prev?.ext ?? {}) };
 	delete kept.chat;
+	if (runTraces) kept["agent-trace"] = runTraces;
 	const hasChat = Boolean(prev?.ext.chat) || messages.length > 0 || mode !== undefined || selectedModelId !== undefined || usage !== undefined;
 	const chat = { ...(mode ? { mode } : {}), ...(selectedModelId ? { selectedModelId } : {}), ...(usage ? { usage } : {}), messages };
 	return { ...fields, projectId: prev?.projectId ?? projectId ?? view.id, ext: hasChat ? { ...kept, chat } : kept } as Project;

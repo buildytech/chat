@@ -108,6 +108,7 @@ export type ChatMessage = {
  * selected model, usage). The project store keeps the project; this view is derived from it (chat.svelte.ts).
  */
 export type ChatSession = {
+	runTraces?: Record<string, import("@buildytech/chat-agent").RunTrace>;
 	id: string;
 	/** Key of the page record when it differs from `id` (session file 1.9.0). */
 	projectId?: string;

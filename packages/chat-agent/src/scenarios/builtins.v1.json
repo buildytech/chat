@@ -87,6 +87,30 @@
         "selection": "author"
       },
       "providerVersion": 2
+    },
+    {
+      "format": "buildy-agent-scenario",
+      "id": "page.discuss",
+      "version": 1,
+      "mode": "ask",
+      "provider": "xai",
+      "prompt": "page.discuss@1",
+      "context": "page.context@1",
+      "nudge": "page.nudge@1",
+      "toolSet": {
+        "ref": "buildy-agent-tools/3",
+        "include": [
+          "get_page",
+          "search_catalog",
+          "get_block"
+        ]
+      },
+      "execution": "page-loop@2",
+      "limits": {},
+      "model": {
+        "selection": "author"
+      },
+      "providerVersion": 2
     }
   ]
 }

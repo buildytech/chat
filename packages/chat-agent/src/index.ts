@@ -16,3 +16,5 @@ export { turnMeta, type AgentProvider, type ProviderRequest, type ProviderStep, 
 export { compileScenario, parseScenarioRef, type ScenarioProfile, type ScenarioRef, type CompiledScenario } from "./scenarios/compile.ts";
 export { resolveScenario, scenarioProfiles } from "./scenarios/registry.ts";
 export { POLICY_VERSION, MODEL_CATALOG_VERSION, TRIAL_POLICY_VERSION } from "./policy.ts";
+
+export type { RunTrace } from "./agent/run-trace.ts";

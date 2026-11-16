@@ -27,11 +27,13 @@ export type XaiRunResponse = (AgentReply | AgentFailure) & {
 	liveModel?: boolean;
 	path?: string;
 	runId?: string;
+	runTrace?: import("@buildytech/chat-agent").RunTrace;
 	toolsUsed?: string[];
 };
 
 /** One agent turn (ADR 0034): the page document the agent edits, what the author sees, the selection, the dialogue. */
 export type TurnRequest = {
+	scenario?: import("@buildytech/chat-agent").ScenarioRef;
 	modelId: string;
 	brief: string;
 	mode: AgentMode;

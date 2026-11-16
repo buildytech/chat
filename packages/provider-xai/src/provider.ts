@@ -34,6 +34,7 @@ export async function providerStep(input: ProviderRequest & { apiKey: string; ba
 			// Choice comes from the versioned agent mode policy; the host may explicitly force a repair write.
 			tool_choice: typeof input.toolChoice === "string" ? input.toolChoice : { type: "function", function: input.toolChoice },
 			stream: false,
+			...(input.provider?.version === 1 ? {} : { parallel_tool_calls: false }),
 			[capabilities.completionTokenParameter]: input.maxTokens,
 			temperature: capabilities.fixedTemperature
 		}),
@@ -53,10 +54,10 @@ export async function providerStep(input: ProviderRequest & { apiKey: string; ba
 	const used = typeof payload.model === "string" ? payload.model : input.modelId;
 	const switched = assertNoFallback(input.modelId, used);
 	if (switched) return { ok: false, error: { code: switched.code, message: switched.message }, usage };
-	if (xaiRefused(payload.choices?.[0]?.message)) return { ok: false, error: { code: "provider_refusal", message: "The provider declined this request." }, usage };
+	if (xaiRefused(payload.choices?.[0]?.message)) return { ok: false, error: { code: "provider_refusal", message: "The provider declined this request." }, usage, response: { finishReason: payload.choices?.[0]?.finish_reason, refusal: "provider_refused", status: res.status } };
 	const message = readXaiMessage(payload.choices?.[0]?.message);
 	if (!message) return { ok: false, error: { code: "malformed_response", message: "Chat completion had no supported assistant message." }, usage };
-	return { ok: true, message, usage };
+	return { ok: true, message, usage, response: { finishReason: payload.choices?.[0]?.finish_reason, refusal: null, status: res.status } };
 }
 
 function errorUsage(body: string) {

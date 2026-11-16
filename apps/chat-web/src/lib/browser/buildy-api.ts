@@ -4,6 +4,7 @@
  * BuildY and every BuildY host open. `import(json)` checks a file (schema + program checks) and loads it; a failing
  * file changes nothing. Holds no credential: provider keys and Basic Auth never enter a session.
  */
+import { projectTraceBodies } from "./trace-export.ts";
 import { catalogProvenance } from "@buildytech/builder-core";
 import { SESSION_FORMAT, SESSION_SCHEMA_URL } from "@buildytech/page-contract/session";
 import chatPackage from "../../../package.json";
@@ -22,7 +23,7 @@ declare const __BUILDY_PINS__: Pick<SessionPins, "stock" | "registry">;
 type BuildyApi = {
 	readonly format: typeof SESSION_FORMAT;
 	readonly schema: string;
-	export(options?: { download?: boolean }): SessionFile;
+	export(options?: { download?: boolean; includeBodies?: boolean }): SessionFile;
 	/** A session file buildy:v1, or a file a loaded module opens (the chat: a Stock collection buildy-collection:v1 in a new Build chat). */
 	import(json: unknown): Promise<ImportResult | ModuleImportResult>;
 };
@@ -74,8 +75,8 @@ function download(file: SessionFile): void {
 }
 
 /** The session file of this browser; `download` also saves it as a .json file (Settings > Export, `buildy.export()`). */
-export function exportSessionFile(options?: { download?: boolean }): SessionFile {
-	const file = exportProjects({ app: app(), pins: sessionPins(), settings: settings(), prefs: { layout: { ...creatorLayout.layout } } });
+export function exportSessionFile(options?: { download?: boolean; includeBodies?: boolean }): SessionFile {
+	const file = projectTraceBodies(exportProjects({ app: app(), pins: sessionPins(), settings: settings(), prefs: { layout: { ...creatorLayout.layout } } }), options?.includeBodies);
 	if (options?.download) download(file);
 	return file;
 }

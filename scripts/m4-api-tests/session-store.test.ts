@@ -457,3 +457,13 @@ test("portable session preserves exact billed ticks and partial cost without a s
 	assert.ok(Array.isArray(roundtrip.messages));
 	assert.deepEqual(roundtrip.messages[1].run.usage, usage);
 });
+
+test("run traces survive the open session extension without changing the run schema", () => {
+ const trace = { format: "run-trace/1", runId: "run-test", stopReason: "answer", steps: [{ request: { toolChoice: "auto" } }] };
+ const source = { ...chat("session-trace"), ext: { "agent-trace": { "run-test": trace } } };
+ const file = buildSessionFile({ chats: [source], pages: {}, app, pins, now: NOW });
+ assert.deepEqual(sessionFileIssues(file), []);
+ const parsed = parseSessionFile(JSON.stringify(file));
+ assert.ok(parsed.ok);
+ if (parsed.ok) assert.deepEqual(splitSessionFile(parsed.file).chats[0]!.ext?.["agent-trace"], source.ext["agent-trace"]);
+});

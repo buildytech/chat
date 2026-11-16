@@ -105,6 +105,7 @@ export function runRecord(opts: {
 }
 
 type TurnOutcome = {
+	runTrace?: import("@buildytech/chat-agent").RunTrace;
 	result: XaiRunResponse | { ok: false; code: string; message: string };
 	plan: TurnPlan;
 	status: Awaited<ReturnType<typeof fetchXaiStatus>>;
@@ -147,6 +148,7 @@ export async function runTurn(brief: string, mode: AgentMode, signal: AbortSigna
 		usage,
 		path: live.path,
 		tools: live.toolsUsed,
+		runTrace: live.runTrace,
 		runId: live.runId
 	};
 }

@@ -1,0 +1,15 @@
+# Run trace v1
+
+Each completed runtime response carries `runTrace`, format `run-trace/1`. The browser keeps it unchanged under `session.ext["agent-trace"][runId]`; `message.run.runId` links the answer to it. This uses the session contract's open extension namespace, not the closed `run` record. No vendor schema changes are needed.
+
+The explicit discussion scenario is `page.discuss@1`: only `get_page`, `search_catalog`, `get_block`, no proposal and no repair-write nudge. The server rejects unadvertised tool calls before executing them. Explicit registered `page.ask@1/2` references retain the previous proposal behavior; Build is unchanged. Clients may send `scenario: {id: "page.discuss", version: 1}`. No prompt-word inference selects a mode or scenario.
+
+The server records effective limits, identity, catalog digest, start/deadline, stop reason, prompt/tool/context descriptors, every provider attempt (including retries, named fallback and final answer), usage and every executed tool result. Unknown provider fields remain `unknown`; unknown cost never becomes zero. Context stability is descriptive: it does not claim a provider cache hit. Cache hit percentage is cached/prompt tokens for that request, not a run-wide rate.
+
+`window.buildy.export()` and Settings Export omit trace bodies. `window.buildy.export({includeBodies: true, download: true})` includes recorded prompt, context, message, tool arguments/results and diff bodies. This projection does not mutate stored data. A hash-only imported session cannot recover bodies. Hashes are the existing non-cryptographic FNV identity function, explicitly tagged; sizes are UTF-8 bytes, not tokens. Traces contain application message data, never transport headers, credentials or configured endpoints. Content the author puts in messages is still author content.
+
+Gate paths/codes and acceptance remain visible without bodies. No invented `similar` or error code is manufactured: the gate's actual results are retained. A successful write is an accepted **proposal**, not a committed browser revision: `pageRevision: null` is deliberate. Applied revisions remain in the session's existing revision history. A later host linkage may connect Apply to a run without pretending that the server committed it.
+
+`budgetLeft.tokens` is `unknown`: the current budget has a per-request visible completion ceiling, no aggregate token quota. The per-request ceiling is recorded separately. Unknown timing/HTTP/finish details remain unknown. Refusal is normalized to a provider-refused marker; private error bodies are not copied. V2 xAI requests explicitly disable parallel calls; v1 keeps its prior wire policy. Retries are separate steps and have no new message delta when the transcript is identical.
+
+Limit: a browser abort/disconnect can prevent the server response from arriving; this stateless runtime cannot deliver its final trace after the connection is gone. Browser cancellation records must not claim an observed server trace. There is no background telemetry or trace persistence service.

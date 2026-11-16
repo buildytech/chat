@@ -82,7 +82,7 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 }
 
 
-function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[], budget: Pick<ExecutionBudget, "maxToolCalls" | "maxWriteAttempts">): AgentFailure | null {
+function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[], budget: Pick<ExecutionBudget, "maxToolCalls" | "maxWriteAttempts">, execution: ReturnType<typeof createExecution>, allowed: string[]): AgentFailure | null {
 	let wrote = false;
 	for (const call of calls) {
 		const name = call.name ?? "";
@@ -93,7 +93,9 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 		toolsCalled.push(name);
 		const duplicateWrite = name === "write_page" && wrote;
 		if (name === "write_page" && !wrote) { wrote = true; counts.writeAttempts += 1; }
-		const reply = duplicateWrite ? { ok: false, code: "multiple_writes", message: "Only one write_page attempt per provider response is allowed." } : runToolCall(ctx, state, name, parseArgs(call.argumentsJson));
+		const started = Date.now();
+		const reply = !allowed.includes(name) ? { ok: false, code: "tool_not_allowed" } : duplicateWrite ? { ok: false, code: "multiple_writes", message: "Only one write_page attempt per provider response is allowed." } : runToolCall(ctx, state, name, parseArgs(call.argumentsJson));
+		execution.recorder.tool(call, reply, Date.now() - started, state.proposal);
 		messages.push({ role: "tool", callId: call.id, name, text: JSON.stringify(reply) });
 	}
 	return null;
@@ -127,14 +129,17 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 	// blocks that do not render (every block of the current page is probed at turn start) gets the one nudge as well.
 	const build = ctx.mode === "build";
 	const open = problems.length;
-	const expectsChange = open > 0 || build;
+	const canWrite = tools.some((tool) => tool.name === "write_page");
+	const expectsChange = canWrite && (open > 0 || build);
 	let nudged = false;
 	let forceNamed = false;
 	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
-	const request = (toolChoice: Parameters<typeof send>[0]["toolChoice"]) => send({ messages, tools, toolChoice });
+	execution.recorder.prefix(messages, tools);
+	const request = (toolChoice: Parameters<typeof send>[0]["toolChoice"]) => send({ messages, tools, toolChoice, nudged });
 	let steps = 0;
 	while (steps < budget.maxSteps && !state.stuck) {
 		steps += 1;
+		execution.recorder.loopStep();
 		endedOnCalls = false;
 		let step = await request(forceNamed ? FORCE_WRITE : scenario?.toolChoice ?? agentToolChoice(ctx.mode));
 		// A model that refuses the named function gets "required".
@@ -160,8 +165,8 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 		state.accepted = false;
 		const stop = stopped();
 		if (stop && !stop.ok) return { result: stop.result, meta: stop.meta };
-		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages, budget);
-		if (failure) return { result: failure, meta: finish() };
+		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages, budget, execution, tools.map((tool) => tool.name));
+		if (failure) { execution.recorder.stop(failure.code); return { result: failure, meta: finish() }; }
 		// Build ends with the accepted write.
 		// The text beside the call is not an answer (a model may print the document there): the host shows the diff card and the status.
 		if (build && state.accepted) {
@@ -176,5 +181,7 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 		if (!last.ok) return { result: last.result, meta: { ...last.meta, ...finish() } };
 		if (last.ok) text = modelText(last.message) || text;
 	}
-	return loopResult(ctx, state, text, trace.steps, finish());
+	const result = loopResult(ctx, state, text, trace.steps, finish());
+	execution.recorder.stop(result.result.ok ? (state.accepted ? "proposal_accepted" : "answer") : result.result.code);
+	return { ...result, meta: finish() };
 }

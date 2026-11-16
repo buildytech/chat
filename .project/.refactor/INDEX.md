@@ -17,3 +17,5 @@ Each note is one change: why, what to delete, what to keep, how to verify.
 ## Текущий приоритет (2026-11-16)
 
 Учёт billed ticks, корректные steps/nudge, новые defaults v2 и bounded HTTP retries реализованы. Следующий отдельный шаг — сценарии обсуждения без write_page, затем общий поиск и оптимизация контекста/кэша. Браузерная карта выполнения и редактор сценариев отложены по указанию владельца. Streaming, Responses и платные замеры моделей остаются поздними этапами.
+
+Discussion follow-up (ADR 0054): Read-only page.discuss@1 is registered explicitly; Ask defaults stay compatible; registered legacy Ask proposal profiles remain. Server run-trace/1 is persisted in ext["agent-trace"], with body opt-in on export. Browser Workbench remains deferred. Next: unified search/context and cache experiments.

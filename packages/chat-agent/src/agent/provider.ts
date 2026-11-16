@@ -13,6 +13,7 @@ export type AgentMessage = {
 
 export type LiveTurnMeta = {
 	runId: string;
+	runTrace?: import("./run-trace.ts").RunTrace;
 	path: "chat-completions";
 	modelId: string;
 	requestedModelId: string;
@@ -43,9 +44,10 @@ export function turnMeta(
 }
 
 
-export type ProviderStep =
+type ResponseInfo = { response?: { finishReason?: string; refusal?: string | null; status?: number } };
+export type ProviderStep = ResponseInfo & (
 	| { ok: true; message: AgentMessage; usage?: StepUsage }
-	| { ok: false; error: { code: string; message: string; status?: number; elapsedMs?: number; retryable?: boolean; retryAfterMs?: number }; usage?: StepUsage };
+	| { ok: false; error: { code: string; message: string; status?: number; elapsedMs?: number; retryable?: boolean; retryAfterMs?: number }; usage?: StepUsage });
 
 /** Transport input without credentials or endpoint; supplied by the runtime host. */
 export type ProviderRequest = {

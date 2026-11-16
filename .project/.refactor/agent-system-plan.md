@@ -119,3 +119,5 @@ Endpoints, secret bindings и жёсткие серверные лимиты в�
 ## Уточнение приоритетов после аудита учёта
 
 Учёт ticks и запросов, nudge по бюджету сценария, классификация ошибок и один transient retry реализованы. Defaults page.ask/page.build v2 закрепляют manifest v2 (max_completion_tokens) и page-loop@2. Явные v1 сохраняют legacy wire contract и отсутствие retries. POLICY_VERSION и связанные версии перенесены из builder-core в chat-agent; бюджеты уже там. Следом — read-only обсуждение, поиск, контекст/кэш и eval. Workbench/стадии UI сейчас отложены; платные эксперименты — только по отдельному разрешению.
+
+Discussion follow-up (ADR 0054): Read-only page.discuss@1 is registered explicitly; Ask defaults stay compatible; registered legacy Ask proposal profiles remain. Server run-trace/1 is persisted in ext["agent-trace"], with body opt-in on export. Browser Workbench remains deferred. Next: unified search/context and cache experiments.

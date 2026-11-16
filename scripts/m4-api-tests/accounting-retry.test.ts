@@ -63,6 +63,8 @@ test("a transient retry is counted and billed once per actual attempt", async ()
 	assert.equal(meta.steps, 2);
 	assert.equal(meta.usage.steps, 2);
 	assert.equal(meta.providerRetries, 1);
+	assert.equal(meta.runTrace?.steps.length, 2);
+	assert.deepEqual(meta.runTrace?.steps[1]?.request && JSON.parse(JSON.stringify(meta.runTrace.steps[1].request)).messagesAdded, []);
 	assert.ok(meta.usage.cost.available && meta.usage.cost.kind === "billed" && meta.usage.cost.ticks === "123");
 	assert.equal((await execution.request(input)).ok, false);
 	assert.equal(calls, 3);

@@ -26,6 +26,7 @@
       "build-forced-write.test.ts",
       "execution.test.ts",
       "accounting-retry.test.ts",
+      "run-trace.test.ts",
       "scenarios.test.ts",
       "xai-codec.test.ts",
       "collection-intake.test.ts",
