@@ -48,8 +48,8 @@ test("Build with selected blocks and open problems: a model that claims a fix wi
 	assert.equal(last[1]!.role, "user");
 	assert.match(last[1]!.content, /no write_page was accepted/);
 	assert.match(last[1]!.content, /renderProblems/);
-	assert.ok(out.result.ok);
-	if (out.result.ok) assert.equal(out.result.proposal, undefined, "nothing is proposed: the client shows the no-change line");
+	assert.equal(out.result.ok, false);
+	if (!out.result.ok) assert.equal(out.result.code, "build_no_proposal", "a claimed fix without an accepted write is not a completed Build");
 	assert.equal(out.meta.usage.status, "complete");
 	assert.deepEqual(out.meta.toolsCalled, ["get_block", "get_block"]);
 });

@@ -8,7 +8,7 @@
     },
     "build": {
       "id": "page.build",
-      "version": 2
+      "version": 3
     }
   },
   "profiles": [
@@ -107,6 +107,30 @@
       },
       "execution": "page-loop@2",
       "limits": {},
+      "model": {
+        "selection": "author"
+      },
+      "providerVersion": 2
+    },
+    {
+      "format": "buildy-agent-scenario",
+      "id": "page.build",
+      "version": 3,
+      "mode": "build",
+      "provider": "xai",
+      "prompt": "page.build@1",
+      "context": "page.context@1",
+      "nudge": "page.nudge@1",
+      "toolSet": {
+        "ref": "buildy-agent-tools/3"
+      },
+      "execution": "page-loop@3",
+      "limits": {
+        "maxSteps": 24,
+        "maxRequests": 32,
+        "maxToolCalls": 64,
+        "maxWriteAttempts": 8
+      },
       "model": {
         "selection": "author"
       },

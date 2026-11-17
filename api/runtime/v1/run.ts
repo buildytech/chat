@@ -30563,8 +30563,10 @@ const AGENT_BUDGET = {
 	toolPageSize: 4
 } as const;
 
+const PHASED_BUDGET_CEILINGS = { ...AGENT_BUDGET, maxSteps: 64, maxRequests: 80, maxToolCalls: 256 };
 
 exports["AGENT_BUDGET"] = AGENT_BUDGET;
+exports["PHASED_BUDGET_CEILINGS"] = PHASED_BUDGET_CEILINGS;
 
 });
 
@@ -31168,8 +31170,9 @@ __def("packages/chat-agent/src/scenarios/profile.schema.json", function (exports
 
 __def("packages/chat-agent/src/agent/execution-policy.ts", function (exports) {
 
-const CURRENT_EXECUTION_POLICY = { id: "page-loop@2", maxTransientRetries: 1, baseDelayMs: 250, maxDelayMs: 2000 } as const;
-const policies = [{ id: "page-loop@1", maxTransientRetries: 0, baseDelayMs: 250, maxDelayMs: 2000 }, CURRENT_EXECUTION_POLICY] as const;
+const POLICY_V2 = { id: "page-loop@2", maxTransientRetries: 1, baseDelayMs: 250, maxDelayMs: 2000 } as const;
+const CURRENT_EXECUTION_POLICY = { ...POLICY_V2, id: "page-loop@3", buildCompletion: { reservedSteps: 4, reservedRequests: 5, reservedToolCalls: 4, reservedTimeMs: 60_000 } } as const;
+const policies = [{ id: "page-loop@1", maxTransientRetries: 0, baseDelayMs: 250, maxDelayMs: 2000 }, POLICY_V2, CURRENT_EXECUTION_POLICY] as const;
 function executionPolicy(id: string) { return policies.find((policy) => policy.id === id) ?? null; }
 
 function retryDelay(error: { status?: number; retryable?: boolean; retryAfterMs?: number }, used: number, policy: (typeof policies)[number], remainingMs: number): number | null {
@@ -31288,7 +31291,7 @@ const Ajv2020 = __ext_ajv2020;
 const { immutableData, providerManifest, manifestModelStatus } = __req("packages/agent-manifests/src/index.ts");
 const schema = __req("packages/chat-agent/src/scenarios/profile.schema.json").default;
 const { executionPolicy } = __req("packages/chat-agent/src/agent/execution-policy.ts");
-const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
+const { AGENT_BUDGET, PHASED_BUDGET_CEILINGS } = __req("packages/chat-agent/src/agent/budget.ts");
 const { AGENT_TOOLS_VERSION, agentTools, agentToolChoice } = __req("packages/chat-agent/src/agent/agent-tools.ts");
 const { SYSTEM_ASK, SYSTEM_BUILD, userPrompt, nudgeText } = __req("packages/chat-agent/src/agent/prompts.ts");
 const { fnv1a64 } = __req("packages/chat-agent/src/identity.ts");
@@ -31328,14 +31331,16 @@ function compileScenario(raw: unknown, modelId: string) {
 	if (!discussion && tools.length !== available.length) reject("/toolSet/include", "incompatible_prompt_tools");
 	if (tools.some((tool) => !ALLOWED_TOOLS.some((name) => name === tool.name))) reject("/toolSet/include", "missing_handler");
 	if (discussion ? tools.some((tool) => tool.name === "write_page") : !tools.some((tool) => tool.name === "write_page")) reject("/toolSet/include", discussion ? "discussion_write_forbidden" : "write_required");
-	const { toolPageSize: _pageSize, ...ceilings } = AGENT_BUDGET;
+	const { toolPageSize: _pageSize, ...ceilings } = policy?.id === "page-loop@3" ? PHASED_BUDGET_CEILINGS : AGENT_BUDGET;
 	const overrides = new Map(Object.entries(profile.limits));
 	for (const [key, ceiling] of Object.entries(ceilings)) {
 		const value = overrides.get(key);
 		if (value !== undefined && value > ceiling) reject(`/limits/${key}`, "budget_ceiling");
 	}
 	if (issues.length || !manifest || !policy) return { ok: false, issues } as const;
-	const budget: ExecutionBudget = { ...ceilings, ...profile.limits };
+	const { toolPageSize: _defaultPageSize, ...defaults } = AGENT_BUDGET;
+	const budget: ExecutionBudget = { ...defaults, ...profile.limits };
+	if (profile.mode === "build" && policy.id === "page-loop@3" && (budget.maxSteps <= policy.buildCompletion.reservedSteps || budget.maxRequests <= policy.buildCompletion.reservedRequests || budget.maxToolCalls <= policy.buildCompletion.reservedToolCalls)) return { ok: false, issues: [{ path: "/limits", code: "completion_reserve" }] } as const;
 	const fingerprint = identity({ profile, modelId, manifest, ...(policy.id === "page-loop@1" ? {} : { executionPolicy: policy }), prompt: prompts[profile.prompt], tools, budget, toolChoice: agentToolChoice(profile.mode) });
 	return { ok: true, scenario: immutableData({ profile, modelId, executionPolicy: policy, manifestVersion: manifest.version, systemPrompt: prompts[profile.prompt]!, context: userPrompt, nudge: nudgeText, tools, budget, toolChoice: agentToolChoice(profile.mode), fingerprint }) } as const;
 }
@@ -32012,7 +32017,7 @@ exports["safeErrorMessage"] = safeErrorMessage;
 
 __def("packages/chat-agent/src/policy.ts", function (exports) {
 
-const POLICY_VERSION = "page-agent/11";
+const POLICY_VERSION = "page-agent/12";
 /** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
 const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
 const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
@@ -32060,6 +32065,20 @@ exports["contractFingerprint"] = contractFingerprint;
 
 });
 
+__def("packages/chat-agent/src/agent/completion-phase.ts", function (exports) {
+
+type CompletionReserve = { reservedSteps: number; reservedRequests: number; reservedToolCalls: number; reservedTimeMs: number };
+
+/** Completion gets a bounded reserve; catalog reading cannot spend it. */
+function completionPhase(budget: ExecutionBudget, counts: BudgetCounts, steps: number, repairing: boolean, reserve: CompletionReserve | undefined, remainingMs = Infinity) {
+	const reason = !reserve ? null : remainingMs <= reserve.reservedTimeMs ? "reserved_time" : steps >= budget.maxSteps - reserve.reservedSteps ? "reserved_steps" : counts.requests >= budget.maxRequests - reserve.reservedRequests ? "reserved_requests" : counts.toolCalls >= budget.maxToolCalls - reserve.reservedToolCalls ? "reserved_tools" : null;
+	return { phase: repairing ? "repair" : reason ? "write" : "read", forceWrite: Boolean(reason), reason };
+}
+
+exports["completionPhase"] = completionPhase;
+
+});
+
 __def("packages/chat-agent/src/agent/run-trace.ts", function (exports) {
 const { catalogProvenance } = __req("packages/builder-core/src/index.ts");
 const { fnv1a64 } = __req("packages/chat-agent/src/identity.ts");
@@ -32092,17 +32111,17 @@ function createRunTrace(runId: string, modelId: string, budget: ExecutionBudget,
 			let context: unknown; try { context = JSON.parse(messages[1]?.text ?? "{}"); } catch { context = {}; }
 			trace.prefix = { systemPrompt: body(messages[0]?.text ?? ""), tools: body(tools), context: record(context) ? Object.fromEntries(Object.entries(context).map(([key, value]) => [key, { ...body(value), stability: key === "itemIndex" ? "stable" : "variable" }])) : {} };
 		},
-		request(input: Pick<ProviderRequest, "messages" | "tools" | "toolChoice">, nudged: boolean) {
+		request(input: Pick<ProviderRequest, "messages" | "tools" | "toolChoice"> & { phase?: string; completionReason?: string }, nudged: boolean) {
 			const initial = previous.length === 0;
 			const additions = input.messages.slice(previous.length).map((message, index) => {
 				const descriptor = body(message);
 				return initial && index < 2 ? { role: message.role, hash: descriptor.hash, bytes: descriptor.bytes, source: "prefix" } : { role: message.role, ...descriptor };
 			});
 			previous = structuredClone([...input.messages]);
-			const step: TraceStep = { index: trace.steps.length + 1, startedAt: new Date().toISOString(), request: { toolChoice: input.toolChoice, parallelToolCalls: "unknown", completionTokenParameter: "unknown", tools: { hash: body(input.tools).hash, bytes: body(input.tools).bytes }, maxTokens: budget.maxTokens, nudged, messagesAdded: additions }, budgetLeft: left() };
+			const step: TraceStep = { index: trace.steps.length + 1, startedAt: new Date().toISOString(), request: { ...(input.phase ? { phase: input.phase } : {}), ...(input.completionReason ? { completionReason: input.completionReason } : {}), toolChoice: input.toolChoice, parallelToolCalls: "unknown", completionTokenParameter: "unknown", tools: { hash: body(input.tools).hash, bytes: body(input.tools).bytes }, maxTokens: budget.maxTokens, nudged, messagesAdded: additions }, budgetLeft: left() };
 			trace.steps.push(step);
 			return (result: ProviderStep | null, latencyMs: number) => {
-				if (result?.requestInfo) step.request = { ...step.request, parallelToolCalls: result.requestInfo.parallelToolCalls, completionTokenParameter: result.requestInfo.completionTokenParameter, maxTokens: result.requestInfo.maxTokens };
+				if (result?.requestInfo) step.request = { ...step.request, promptCacheKeySent: result.requestInfo.promptCacheKeySent, parallelToolCalls: result.requestInfo.parallelToolCalls, completionTokenParameter: result.requestInfo.completionTokenParameter, maxTokens: result.requestInfo.maxTokens };
 				step.response = { finish_reason: result?.response?.finishReason ?? "unknown", refusal: result?.response?.refusal ?? null, content: result?.ok ? body(result.message.text ?? null) : null, tool_calls: result?.ok ? result.message.calls?.map((call) => ({ id: call.id, name: call.name, arguments: body(call.argumentsJson) })) ?? [] : [], latencyMs, status: result?.response?.status ?? (result && !result.ok ? result.error.status : undefined) ?? "unknown", error: result && !result.ok ? result.error.code : result ? null : "provider_threw" };
 				const usage = result?.usage;
 				step.usage = { prompt: usage?.promptTokens ?? "unknown", completion: usage?.completionTokens ?? "unknown", cached: usage?.cachedTokens ?? "unknown", reasoning: usage?.reasoningTokens ?? "unknown", cost_in_usd_ticks: usage?.costUsdTicks ?? "unknown", cacheHitPercent: typeof usage?.promptTokens === "number" && usage.promptTokens > 0 && usage.cachedTokens !== undefined ? usage.cachedTokens / usage.promptTokens * 100 : "unknown" };
@@ -32137,7 +32156,7 @@ function turnMeta(
 }
 
 
-type ProviderRequestInfo = { parallelToolCalls: boolean | "provider_default"; completionTokenParameter: string; maxTokens: number };
+type ProviderRequestInfo = { promptCacheKeySent?: boolean; parallelToolCalls: boolean | "provider_default"; completionTokenParameter: string; maxTokens: number };
 type ResponseInfo = { requestInfo?: ProviderRequestInfo; response?: { finishReason?: string; refusal?: string | null; status?: number } };
 
 exports["turnMeta"] = turnMeta;
@@ -32182,7 +32201,7 @@ function createExecution(modelId: string, signal: AbortSignal, provider: AgentPr
 		try { options.onProviderError?.(error); } catch { /* Diagnostics cannot erase billed usage. */ }
 		return fail("provider_failed", "The execution failed. Thrown errors are not retried.");
 	};
-	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens" | "provider"> & { nudged?: boolean }): Promise<ExecutionStep> => {
+	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens" | "provider"> & { nudged?: boolean; phase?: string; completionReason?: string }): Promise<ExecutionStep> => {
 		const stop = stopped();
 		if (stop) return stop;
 		if (counts.requests >= budget.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
@@ -32198,7 +32217,7 @@ function createExecution(modelId: string, signal: AbortSignal, provider: AgentPr
 				trace.steps = counts.requests;
 				const completed = recorder.request(input, input.nudged ?? false);
 				const started = Date.now();
-				try { result = await provider({ ...input, modelId, signal, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens }); } catch (error) { completed(null, Date.now() - started); throw error; }
+				try { result = await provider({ ...input, modelId, signal, cacheKey: policy.id === "page-loop@3" ? runId : undefined, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens }); } catch (error) { completed(null, Date.now() - started); throw error; }
 				if (result.usage) stepUsage.push(result.usage);
 				completed(result, Date.now() - started);
 				const after = stopped();
@@ -32223,6 +32242,8 @@ exports["createExecution"] = createExecution;
 });
 
 __def("packages/chat-agent/src/agent/loop.ts", function (exports) {
+const { completionPhase } = __req("packages/chat-agent/src/agent/completion-phase.ts");
+const { CURRENT_EXECUTION_POLICY } = __req("packages/chat-agent/src/agent/execution-policy.ts");
 const { itemInfo, renderProblems } = __req("packages/builder-core/src/index.ts");
 const { AGENT_BUDGET } = __req("packages/chat-agent/src/agent/budget.ts");
 const { agentTools, agentToolChoice } = __req("packages/chat-agent/src/agent/agent-tools.ts");
@@ -32297,15 +32318,22 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 	}
 	if (proposal && proposal.diff.length > 0) return { result: agentReply(ctx.mode, text, state.blocks, proposal), meta };
 	if (lastIssues) return { result: { ok: false, code: "write_invalid", message: lastIssues.message, issues: lastIssues.issues, ...rejected }, meta };
+	if (ctx.mode === "build") return state.accepted ? { result: agentReply(ctx.mode, "", state.blocks), meta } : { result: { ok: false, code: "build_no_proposal", message: "Build ended without an accepted page write. No page proposal was created." }, meta };
 	if (text) return { result: agentReply(ctx.mode, text, state.blocks), meta };
 	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${steps} step${steps === 1 ? "" : "s"}.` }, meta };
 }
 
 
-function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[], budget: Pick<ExecutionBudget, "maxToolCalls" | "maxWriteAttempts">, execution: ReturnType<typeof createExecution>, allowed: string[]): AgentFailure | null {
+function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[], budget: Pick<ExecutionBudget, "maxToolCalls" | "maxWriteAttempts">, execution: ReturnType<typeof createExecution>, allowed: string[], readToolLimit?: number): AgentFailure | null {
 	let wrote = false;
 	for (const [index, call] of calls.entries()) {
 		const name = call.name ?? "";
+		if (name !== "write_page" && readToolLimit !== undefined && counts.toolCalls >= readToolLimit) {
+			const reply = { ok: false, code: "completion_reserved", message: "Catalog reading is complete for this turn. Call write_page with the information already read." };
+			execution.recorder.tool(call, reply, 0, null, undefined, false);
+			messages.push({ role: "tool", callId: call.id, name, text: JSON.stringify(reply) });
+			continue;
+		}
 		if (counts.toolCalls >= budget.maxToolCalls || (name === "write_page" && !wrote && counts.writeAttempts >= budget.maxWriteAttempts)) {
 			for (const skipped of calls.slice(index)) execution.recorder.tool(skipped, { ok: false, code: "tool_budget" }, 0, null, undefined, false);
 			return { ok: false, code: "tool_budget", message: "The tool or write-attempt budget was reached. No further tools were executed." };
@@ -32349,22 +32377,32 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 	// back as plain text, the model is told once and the next request forces write_page by name. Ask stays on "auto"; Ask with
 	// blocks that do not render (every block of the current page is probed at turn start) gets the one nudge as well.
 	const build = ctx.mode === "build";
+	const policy = scenario?.executionPolicy ?? CURRENT_EXECUTION_POLICY;
+	const reserve = build && "buildCompletion" in policy ? policy.buildCompletion : undefined;
 	const open = problems.length;
 	const canWrite = tools.some((tool) => tool.name === "write_page");
 	const expectsChange = canWrite && (open > 0 || build);
 	let nudged = false;
 	let forceNamed = false;
+	let completionAnnounced = false;
 	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
 	execution.recorder.prefix(messages, tools);
-	const request = (toolChoice: Parameters<typeof send>[0]["toolChoice"]) => send({ messages, tools, toolChoice, nudged });
+	const request = (toolChoice: Parameters<typeof send>[0]["toolChoice"], phase?: string, completionReason?: string) => send({ messages, tools, toolChoice, nudged, phase, completionReason });
 	let steps = 0;
 	while (steps < budget.maxSteps && !state.stuck) {
+		const phase = completionPhase(budget, counts, steps, Boolean(state.lastIssues), reserve, options.deadline === undefined ? Infinity : options.deadline - Date.now());
+		const forced = forceNamed || phase.forceWrite;
+		if (phase.forceWrite && !forceNamed && !completionAnnounced) {
+			completionAnnounced = true;
+			nudged = true;
+			messages.push({ role: "user", text: "Host completion phase: use the registry items already read and call write_page now. Return the document or patch in the tool call, never in chat text. The remaining requests are reserved for validation repair." });
+		}
 		steps += 1;
 		execution.recorder.loopStep();
 		endedOnCalls = false;
-		let step = await request(forceNamed ? FORCE_WRITE : scenario?.toolChoice ?? agentToolChoice(ctx.mode));
+		let step = await request(forced ? FORCE_WRITE : scenario?.toolChoice ?? agentToolChoice(ctx.mode), build ? (state.lastIssues ? "repair" : forced ? "write" : "read") : undefined, phase.reason ?? (forceNamed ? "text_nudge" : undefined));
 		// A model that refuses the named function gets "required".
-		if (forceNamed && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) step = await request("required");
+		if (forced && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) step = await request("required", build ? phase.phase : undefined, "named_fallback");
 		forceNamed = false;
 		if (!step.ok) return { result: step.result, meta: { ...step.meta, ...finish() } };
 		const message = step.message;
@@ -32386,7 +32424,7 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 		state.accepted = false;
 		const stop = stopped();
 		if (stop && !stop.ok) return { result: stop.result, meta: stop.meta };
-		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages, budget, execution, tools.map((tool) => tool.name));
+		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages, budget, execution, forced && build ? ["write_page"] : tools.map((tool) => tool.name), reserve ? budget.maxToolCalls - reserve.reservedToolCalls : undefined);
 		if (failure) { execution.recorder.stop(failure.code); return { result: failure, meta: finish() }; }
 		// Build ends with the accepted write.
 		// The text beside the call is not an answer (a model may print the document there): the host shows the diff card and the status.
@@ -32396,7 +32434,7 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 			break;
 		}
 	}
-	if (endedOnCalls && !state.stuck && !changed()) {
+	if (!build && endedOnCalls && !state.stuck && !changed()) {
 		// The step budget ended on tool calls: one more request, no tools, so the model answers with what it read.
 		const last = await request("none");
 		if (!last.ok) return { result: last.result, meta: { ...last.meta, ...finish() } };
@@ -32422,7 +32460,7 @@ __def("packages/chat-agent/src/scenarios/builtins.v1.json", function (exports) {
     },
     "build": {
       "id": "page.build",
-      "version": 2
+      "version": 3
     }
   },
   "profiles": [
@@ -32521,6 +32559,30 @@ __def("packages/chat-agent/src/scenarios/builtins.v1.json", function (exports) {
       },
       "execution": "page-loop@2",
       "limits": {},
+      "model": {
+        "selection": "author"
+      },
+      "providerVersion": 2
+    },
+    {
+      "format": "buildy-agent-scenario",
+      "id": "page.build",
+      "version": 3,
+      "mode": "build",
+      "provider": "xai",
+      "prompt": "page.build@1",
+      "context": "page.context@1",
+      "nudge": "page.nudge@1",
+      "toolSet": {
+        "ref": "buildy-agent-tools/3"
+      },
+      "execution": "page-loop@3",
+      "limits": {
+        "maxSteps": 24,
+        "maxRequests": 32,
+        "maxToolCalls": 64,
+        "maxWriteAttempts": 8
+      },
       "model": {
         "selection": "author"
       },
@@ -32849,12 +32911,13 @@ async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: 
 	if (!Number.isSafeInteger(input.maxTokens) || input.maxTokens <= 0 || (choice === "required" && input.tools.length === 0) || (typeof choice === "object" && !input.tools.some((tool) => tool.name === choice.name))) {
 		return { ok: false, error: { code: "unsupported_request", message: "Invalid token limit or unavailable tool choice. No provider request was sent." } };
 	}
-	const requestInfo = { parallelToolCalls: input.provider?.version === 1 ? "provider_default" as const : false, completionTokenParameter: capabilities.completionTokenParameter, maxTokens: input.maxTokens };
+	const requestInfo = { promptCacheKeySent: Boolean(input.cacheKey), parallelToolCalls: input.provider?.version === 1 ? "provider_default" as const : false, completionTokenParameter: capabilities.completionTokenParameter, maxTokens: input.maxTokens };
 	const requestStarted = Date.now();
 	const res = await silentFetch(`${input.baseUrl}/chat/completions`, {
 		method: "POST",
 		headers: {
 			Authorization: `Bearer ${input.apiKey}`,
+			...(input.cacheKey ? { "x-grok-conv-id": input.cacheKey } : {}),
 			"Content-Type": "application/json",
 			Accept: "application/json"
 		},

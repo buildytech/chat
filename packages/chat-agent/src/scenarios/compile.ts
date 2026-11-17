@@ -3,7 +3,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import { immutableData, providerManifest, manifestModelStatus } from "@buildytech/agent-manifests";
 import schema from "./profile.schema.json" with { type: "json" };
 import { executionPolicy } from "../agent/execution-policy.ts";
-import { AGENT_BUDGET } from "../agent/budget.ts";
+import { AGENT_BUDGET, PHASED_BUDGET_CEILINGS } from "../agent/budget.ts";
 import { AGENT_TOOLS_VERSION, agentTools, agentToolChoice, type AgentMode } from "../agent/agent-tools.ts";
 import { SYSTEM_ASK, SYSTEM_BUILD, userPrompt, nudgeText } from "../agent/prompts.ts";
 import { fnv1a64 } from "../identity.ts";
@@ -51,14 +51,16 @@ export function compileScenario(raw: unknown, modelId: string) {
 	if (!discussion && tools.length !== available.length) reject("/toolSet/include", "incompatible_prompt_tools");
 	if (tools.some((tool) => !ALLOWED_TOOLS.some((name) => name === tool.name))) reject("/toolSet/include", "missing_handler");
 	if (discussion ? tools.some((tool) => tool.name === "write_page") : !tools.some((tool) => tool.name === "write_page")) reject("/toolSet/include", discussion ? "discussion_write_forbidden" : "write_required");
-	const { toolPageSize: _pageSize, ...ceilings } = AGENT_BUDGET;
+	const { toolPageSize: _pageSize, ...ceilings } = policy?.id === "page-loop@3" ? PHASED_BUDGET_CEILINGS : AGENT_BUDGET;
 	const overrides = new Map(Object.entries(profile.limits));
 	for (const [key, ceiling] of Object.entries(ceilings)) {
 		const value = overrides.get(key);
 		if (value !== undefined && value > ceiling) reject(`/limits/${key}`, "budget_ceiling");
 	}
 	if (issues.length || !manifest || !policy) return { ok: false, issues } as const;
-	const budget: ExecutionBudget = { ...ceilings, ...profile.limits };
+	const { toolPageSize: _defaultPageSize, ...defaults } = AGENT_BUDGET;
+	const budget: ExecutionBudget = { ...defaults, ...profile.limits };
+	if (profile.mode === "build" && policy.id === "page-loop@3" && (budget.maxSteps <= policy.buildCompletion.reservedSteps || budget.maxRequests <= policy.buildCompletion.reservedRequests || budget.maxToolCalls <= policy.buildCompletion.reservedToolCalls)) return { ok: false, issues: [{ path: "/limits", code: "completion_reserve" }] } as const;
 	const fingerprint = identity({ profile, modelId, manifest, ...(policy.id === "page-loop@1" ? {} : { executionPolicy: policy }), prompt: prompts[profile.prompt], tools, budget, toolChoice: agentToolChoice(profile.mode) });
 	return { ok: true, scenario: immutableData({ profile, modelId, executionPolicy: policy, manifestVersion: manifest.version, systemPrompt: prompts[profile.prompt]!, context: userPrompt, nudge: nudgeText, tools, budget, toolChoice: agentToolChoice(profile.mode), fingerprint }) } as const;
 }

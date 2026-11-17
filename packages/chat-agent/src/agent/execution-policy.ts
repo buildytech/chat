@@ -1,6 +1,7 @@
 /** Versioned execution policy; old registered scenarios retain zero transient retries. */
-export const CURRENT_EXECUTION_POLICY = { id: "page-loop@2", maxTransientRetries: 1, baseDelayMs: 250, maxDelayMs: 2000 } as const;
-const policies = [{ id: "page-loop@1", maxTransientRetries: 0, baseDelayMs: 250, maxDelayMs: 2000 }, CURRENT_EXECUTION_POLICY] as const;
+const POLICY_V2 = { id: "page-loop@2", maxTransientRetries: 1, baseDelayMs: 250, maxDelayMs: 2000 } as const;
+export const CURRENT_EXECUTION_POLICY = { ...POLICY_V2, id: "page-loop@3", buildCompletion: { reservedSteps: 4, reservedRequests: 5, reservedToolCalls: 4, reservedTimeMs: 60_000 } } as const;
+const policies = [{ id: "page-loop@1", maxTransientRetries: 0, baseDelayMs: 250, maxDelayMs: 2000 }, POLICY_V2, CURRENT_EXECUTION_POLICY] as const;
 export function executionPolicy(id: string) { return policies.find((policy) => policy.id === id) ?? null; }
 
 export function retryDelay(error: { status?: number; retryable?: boolean; retryAfterMs?: number }, used: number, policy: (typeof policies)[number], remainingMs: number): number | null {

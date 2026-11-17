@@ -41,7 +41,7 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 		try { options.onProviderError?.(error); } catch { /* Diagnostics cannot erase billed usage. */ }
 		return fail("provider_failed", "The execution failed. Thrown errors are not retried.");
 	};
-	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens" | "provider"> & { nudged?: boolean }): Promise<ExecutionStep> => {
+	const request = async (input: Omit<ProviderRequest, "modelId" | "signal" | "maxTokens" | "provider"> & { nudged?: boolean; phase?: string; completionReason?: string }): Promise<ExecutionStep> => {
 		const stop = stopped();
 		if (stop) return stop;
 		if (counts.requests >= budget.maxRequests) return fail("request_budget", "The provider request budget was reached. No additional request was sent.");
@@ -57,7 +57,7 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 				trace.steps = counts.requests;
 				const completed = recorder.request(input, input.nudged ?? false);
 				const started = Date.now();
-				try { result = await provider({ ...input, modelId, signal, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens }); } catch (error) { completed(null, Date.now() - started); throw error; }
+				try { result = await provider({ ...input, modelId, signal, cacheKey: policy.id === "page-loop@3" ? runId : undefined, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens }); } catch (error) { completed(null, Date.now() - started); throw error; }
 				if (result.usage) stepUsage.push(result.usage);
 				completed(result, Date.now() - started);
 				const after = stopped();

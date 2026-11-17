@@ -90,7 +90,7 @@ test("cancellation during backoff sends no retry; exceptions are never retried",
 });
 
 test("scenario ceilings stop retries and prevent a nudge after the last logical step", async () => {
-	const registered = resolveScenario("build", MODEL);
+	const registered = resolveScenario("build", MODEL, { id: "page.build", version: 2 });
 	assert.ok(registered.ok);
 	if (!registered.ok) return;
 	const compiled = compileScenario({ ...registered.scenario.profile, limits: { maxSteps: 1, maxRequests: 1 } }, MODEL);

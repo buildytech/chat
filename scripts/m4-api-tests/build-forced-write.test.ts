@@ -83,8 +83,8 @@ test("a model that follows tool_choice (and prints the document beside the call)
 test("a plain-text answer after the forced request: no write, no proposal (the client shows the page-not-changed line)", async () => {
 	const { out, seen } = await run([...reads, { content: "I will not change the page." }]);
 	assert.deepEqual(seen.requests.map(choiceOf), ["required", "required", "required", NAMED]);
-	assert.ok(out.result.ok);
-	if (out.result.ok) assert.equal(out.result.proposal, undefined);
+	assert.equal(out.result.ok, false);
+	if (!out.result.ok) assert.equal(out.result.code, "build_no_proposal");
 });
 
 test("a write that fails validation: the turn fails with write_invalid and its code (shown as the localized line)", async () => {

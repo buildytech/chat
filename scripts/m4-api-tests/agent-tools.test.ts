@@ -106,16 +106,14 @@ test("Ask turn that keeps calling tools gets a final tool_choice none step for t
 	assert.equal((out.result as AgentReply).text, "Eight variants.");
 });
 
-test("Build turn: a text-only answer is shown and creates no proposal", async () => {
+test("Build turn: a text-only answer without an accepted write is a failure", async () => {
 	const { out, seen } = await withProvider([{ content: "Features has 8 variants; tell me which one to use." }], async (seen) => ({
 		out: await runXaiCatalogTurn("k", MODEL, { brief: BRIEF, mode: "build", page: page(), expectedRevision: 0 }, signal()),
 		seen
 	}));
 	assert.equal(seen.requests.length, 2, "required, then the nudge with write_page forced by name");
-	const reply = out.result as AgentReply;
-	assert.equal(reply.mode, "build");
-	assert.equal(reply.proposal, undefined);
-	assert.equal(turnOutcome(reply), "text");
+	assert.equal(out.result.ok, false);
+	if (!out.result.ok) assert.equal(out.result.code, "build_no_proposal");
 });
 
 test("runtime /v1/run passes the mode through and returns the text answer (200, no page)", async () => {

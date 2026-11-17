@@ -64,8 +64,9 @@ for (const modelId of MODELS) {
 	for (const mode of ["ask", "build"] as const) {
 		test(`bundled run entry: ${mode} on ${modelId} takes a v2 page body and calls the provider`, async () => {
 			const { response, body, seen } = await run(modelId, mode);
-			assert.equal(response.status, 200, JSON.stringify(body));
-			assert.equal(body.ok, true, JSON.stringify(body));
+			assert.equal(response.status, mode === "ask" ? 200 : 422, JSON.stringify(body));
+			assert.equal(body.ok, mode === "ask");
+			if (mode === "build") assert.equal(body.code, "build_no_proposal");
 			assert.ok(seen.length >= 1, "at least one provider request");
 			assert.equal(seen[0]!.model, modelId);
 		});

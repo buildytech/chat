@@ -180,6 +180,7 @@ export function localizedRunError(code: string | undefined, message: string, mod
 	// A turn that ends without an accepted write: the status and a short reason, never the model-facing error text.
 	if (code === "write_invalid") return t("run.writeInvalid").replace("{code}", code).replace("{reason}", firstReason(issues, t)).replace(/\s{2,}/g, " ");
 	if (code === "write_stuck") return t("run.writeStuck").replace("{code}", code).replace("{reason}", firstReason(issues, t)).replace(/\s{2,}/g, " ");
+	if (code === "build_no_proposal") return t("run.buildNoProposal");
 	if (code === "no_answer") return t("run.noAnswer").replace("{code}", code);
 	return message;
 }

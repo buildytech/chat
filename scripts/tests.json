@@ -24,6 +24,7 @@
     "chat-agent": [
       "agent-tools.test.ts",
       "build-forced-write.test.ts",
+      "build-completion.test.ts",
       "execution.test.ts",
       "accounting-retry.test.ts",
       "run-trace.test.ts",

@@ -9,3 +9,6 @@ export const AGENT_BUDGET = {
 } as const;
 
 export type BudgetCounts = { requests: number; toolCalls: number; writeAttempts: number };
+
+/** New phased profiles can spend more on complex pages without changing legacy profile limits. */
+export const PHASED_BUDGET_CEILINGS = { ...AGENT_BUDGET, maxSteps: 64, maxRequests: 80, maxToolCalls: 256 };

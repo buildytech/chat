@@ -1,4 +1,6 @@
 /** Shared page-agent loop. The host injects transport; schema and render gates remain shared. */
+import { completionPhase } from "./completion-phase.ts";
+import { CURRENT_EXECUTION_POLICY } from "./execution-policy.ts";
 import { itemInfo, renderProblems } from "@buildytech/builder-core";
 import { AGENT_BUDGET, type BudgetCounts } from "./budget.ts";
 import type { ExecutionBudget } from "../scenarios/compile.ts";
@@ -77,15 +79,22 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 	}
 	if (proposal && proposal.diff.length > 0) return { result: agentReply(ctx.mode, text, state.blocks, proposal), meta };
 	if (lastIssues) return { result: { ok: false, code: "write_invalid", message: lastIssues.message, issues: lastIssues.issues, ...rejected }, meta };
+	if (ctx.mode === "build") return state.accepted ? { result: agentReply(ctx.mode, "", state.blocks), meta } : { result: { ok: false, code: "build_no_proposal", message: "Build ended without an accepted page write. No page proposal was created." }, meta };
 	if (text) return { result: agentReply(ctx.mode, text, state.blocks), meta };
 	return { result: { ok: false, code: "no_answer", message: `The model ended without an answer or a page write within ${steps} step${steps === 1 ? "" : "s"}.` }, meta };
 }
 
 
-function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[], budget: Pick<ExecutionBudget, "maxToolCalls" | "maxWriteAttempts">, execution: ReturnType<typeof createExecution>, allowed: string[]): AgentFailure | null {
+function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[], budget: Pick<ExecutionBudget, "maxToolCalls" | "maxWriteAttempts">, execution: ReturnType<typeof createExecution>, allowed: string[], readToolLimit?: number): AgentFailure | null {
 	let wrote = false;
 	for (const [index, call] of calls.entries()) {
 		const name = call.name ?? "";
+		if (name !== "write_page" && readToolLimit !== undefined && counts.toolCalls >= readToolLimit) {
+			const reply = { ok: false, code: "completion_reserved", message: "Catalog reading is complete for this turn. Call write_page with the information already read." };
+			execution.recorder.tool(call, reply, 0, null, undefined, false);
+			messages.push({ role: "tool", callId: call.id, name, text: JSON.stringify(reply) });
+			continue;
+		}
 		if (counts.toolCalls >= budget.maxToolCalls || (name === "write_page" && !wrote && counts.writeAttempts >= budget.maxWriteAttempts)) {
 			for (const skipped of calls.slice(index)) execution.recorder.tool(skipped, { ok: false, code: "tool_budget" }, 0, null, undefined, false);
 			return { ok: false, code: "tool_budget", message: "The tool or write-attempt budget was reached. No further tools were executed." };
@@ -129,22 +138,32 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 	// back as plain text, the model is told once and the next request forces write_page by name. Ask stays on "auto"; Ask with
 	// blocks that do not render (every block of the current page is probed at turn start) gets the one nudge as well.
 	const build = ctx.mode === "build";
+	const policy = scenario?.executionPolicy ?? CURRENT_EXECUTION_POLICY;
+	const reserve = build && "buildCompletion" in policy ? policy.buildCompletion : undefined;
 	const open = problems.length;
 	const canWrite = tools.some((tool) => tool.name === "write_page");
 	const expectsChange = canWrite && (open > 0 || build);
 	let nudged = false;
 	let forceNamed = false;
+	let completionAnnounced = false;
 	const changed = () => Boolean(state.proposal && state.proposal.diff.length > 0);
 	execution.recorder.prefix(messages, tools);
-	const request = (toolChoice: Parameters<typeof send>[0]["toolChoice"]) => send({ messages, tools, toolChoice, nudged });
+	const request = (toolChoice: Parameters<typeof send>[0]["toolChoice"], phase?: string, completionReason?: string) => send({ messages, tools, toolChoice, nudged, phase, completionReason });
 	let steps = 0;
 	while (steps < budget.maxSteps && !state.stuck) {
+		const phase = completionPhase(budget, counts, steps, Boolean(state.lastIssues), reserve, options.deadline === undefined ? Infinity : options.deadline - Date.now());
+		const forced = forceNamed || phase.forceWrite;
+		if (phase.forceWrite && !forceNamed && !completionAnnounced) {
+			completionAnnounced = true;
+			nudged = true;
+			messages.push({ role: "user", text: "Host completion phase: use the registry items already read and call write_page now. Return the document or patch in the tool call, never in chat text. The remaining requests are reserved for validation repair." });
+		}
 		steps += 1;
 		execution.recorder.loopStep();
 		endedOnCalls = false;
-		let step = await request(forceNamed ? FORCE_WRITE : scenario?.toolChoice ?? agentToolChoice(ctx.mode));
+		let step = await request(forced ? FORCE_WRITE : scenario?.toolChoice ?? agentToolChoice(ctx.mode), build ? (state.lastIssues ? "repair" : forced ? "write" : "read") : undefined, phase.reason ?? (forceNamed ? "text_nudge" : undefined));
 		// A model that refuses the named function gets "required".
-		if (forceNamed && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) step = await request("required");
+		if (forced && !step.ok && (step.meta.providerStatus === 400 || step.meta.providerStatus === 422)) step = await request("required", build ? phase.phase : undefined, "named_fallback");
 		forceNamed = false;
 		if (!step.ok) return { result: step.result, meta: { ...step.meta, ...finish() } };
 		const message = step.message;
@@ -166,7 +185,7 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 		state.accepted = false;
 		const stop = stopped();
 		if (stop && !stop.ok) return { result: stop.result, meta: stop.meta };
-		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages, budget, execution, tools.map((tool) => tool.name));
+		const failure = runCalls(ctx, state, calls, counts, trace.toolsCalled, messages, budget, execution, forced && build ? ["write_page"] : tools.map((tool) => tool.name), reserve ? budget.maxToolCalls - reserve.reservedToolCalls : undefined);
 		if (failure) { execution.recorder.stop(failure.code); return { result: failure, meta: finish() }; }
 		// Build ends with the accepted write.
 		// The text beside the call is not an answer (a model may print the document there): the host shows the diff card and the status.
@@ -176,7 +195,7 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 			break;
 		}
 	}
-	if (endedOnCalls && !state.stuck && !changed()) {
+	if (!build && endedOnCalls && !state.stuck && !changed()) {
 		// The step budget ended on tool calls: one more request, no tools, so the model answers with what it read.
 		const last = await request("none");
 		if (!last.ok) return { result: last.result, meta: { ...last.meta, ...finish() } };

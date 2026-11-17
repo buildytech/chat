@@ -168,7 +168,8 @@
 		"proposal.rejected": "Страница не изменена: {code} {message}",
 		"message.noChange": "Страница не изменена.",
 		"usage.billed": "Стоимость по отчётам API: {amount} USD.",
-		"usage.billedPartial": "Известная часть стоимости API: {amount} USD. Итог неизвестен."
+		"usage.billedPartial": "Известная часть стоимости API: {amount} USD. Итог неизвестен.",
+		"run.buildNoProposal": "Build не создал проверенное предложение страницы. Изменения не внесены."
 	},
 	"overrides": {
 		"sidebar.newChat": "Новый чат",

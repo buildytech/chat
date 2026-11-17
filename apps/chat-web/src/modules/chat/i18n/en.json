@@ -168,7 +168,8 @@
 		"proposal.rejected": "The page was not changed: {code} {message}",
 		"message.noChange": "No changes were made to the page.",
 		"usage.billed": "API billed cost: {amount} USD.",
-		"usage.billedPartial": "Known billed subtotal: {amount} USD. Total is unknown."
+		"usage.billedPartial": "Known billed subtotal: {amount} USD. Total is unknown.",
+		"run.buildNoProposal": "Build did not produce a validated page proposal. No changes were made."
 	},
 	"overrides": {
 		"sidebar.newChat": "New chat",

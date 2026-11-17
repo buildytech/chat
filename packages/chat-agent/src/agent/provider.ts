@@ -44,7 +44,7 @@ export function turnMeta(
 }
 
 
-type ProviderRequestInfo = { parallelToolCalls: boolean | "provider_default"; completionTokenParameter: string; maxTokens: number };
+type ProviderRequestInfo = { promptCacheKeySent?: boolean; parallelToolCalls: boolean | "provider_default"; completionTokenParameter: string; maxTokens: number };
 type ResponseInfo = { requestInfo?: ProviderRequestInfo; response?: { finishReason?: string; refusal?: string | null; status?: number } };
 export type ProviderStep = ResponseInfo & (
 	| { ok: true; message: AgentMessage; usage?: StepUsage }
@@ -54,6 +54,7 @@ export type ProviderStep = ResponseInfo & (
 export type ProviderRequest = {
 	provider?: { id: string; version: number };
 	modelId: string;
+	cacheKey?: string;
 	messages: readonly AgentMessage[];
 	tools: readonly ResolvedAgentTool[];
 	toolChoice: "auto" | "none" | "required" | { name: string };
