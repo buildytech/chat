@@ -1,12 +1,12 @@
 /** ChatCore send: one user message, one agent turn, the reply committed to the chat. Live Grok uses `/runtime`. */
-import { agentToolNames, unknownUsage } from "@buildytech/chat-agent";
+import { agentToolNames, startAttempt, endAttempt, usageOfAttempts } from "@buildytech/chat-agent";
 import { t } from "../../../lib/i18n/dictionary";
 import { getSelectedModelId } from "../browser/models.svelte.ts";
 import { chatModeOf } from "./modes";
-import { abortInflight, commitSession, createSession, currentEpoch, getSelectedSession, run, startRun } from "./chat.svelte.ts";
+import { abortInflight, commitSession, createSession, currentEpoch, getSelectedSession, getSession, canRunSession, run, startRun } from "./chat.svelte.ts";
 import { loadPropsGate } from "../../../lib/gates";
 import { markPendingProposals } from "./proposals";
-import { localizedRunError, nowIso, replyMessage, runRecord, runTurn, runtimeNoteFor, sessionUsageFrom, uid } from "./turn";
+import { localizedRunError, nowIso, replyMessage, runTurn, runtimeNoteFor, sessionUsageFrom, uid } from "./turn";
 import type { ChatMessage, ChatSession } from "./types";
 
 /** The session with the user's message appended (a new chat takes its title from the first line). */
@@ -30,20 +30,6 @@ function withUserMessage(session: ChatSession, trimmed: string, mode: ChatMessag
 	};
 }
 
-/** The session after a cancelled run: a note that it was cancelled, usage unknown. */
-function cancelledSession(pending: ChatSession): ChatSession {
-	run.lastError = t("runtime.cancelled");
-	const cancelled = unknownUsage("cancelled", 0);
-	const reply: ChatMessage = {
-		id: uid("msg"),
-		role: "assistant",
-		text: t("runtime.cancelled"),
-		createdAt: nowIso(),
-		run: runRecord({ modelId: getSelectedModelId(), live: false, usage: cancelled })
-	};
-	return { ...pending, updatedAt: nowIso(), messages: [...pending.messages, reply], usage: sessionUsageFrom(pending, cancelled) };
-}
-
 /** The session after a finished turn; records what the runtime can do and the error, if any. */
 function finishedSession(pending: ChatSession, out: Awaited<ReturnType<typeof runTurn>>, mode: NonNullable<ChatMessage["mode"]>): ChatSession {
 	const { result, status, modelId, live, usage } = out;
@@ -62,41 +48,65 @@ function finishedSession(pending: ChatSession, out: Awaited<ReturnType<typeof ru
 	return { ...pending, ...(out.runTrace ? { runTraces: { ...pending.runTraces, [out.runTrace.runId]: out.runTrace } } : {}), updatedAt: nowIso(), selectedModelId: modelId, messages: [...prior, reply], usage: sessionUsageFrom(pending, usage) };
 }
 
-async function sendMessageText(text: string): Promise<ChatSession> {
-	const trimmed = text.trim();
-	// A new chat starts blank. Screens and blocks are added from the Blocks tab, not picked here.
-	if (!trimmed) return getSelectedSession() ?? createSession();
-	const session = getSelectedSession() ?? (await createSession());
-	const mode = chatModeOf(session, run.pendingMode);
-	const pending = withUserMessage(session, trimmed, mode);
-	commitSession(pending);
-	abortInflight();
-	const ac = new AbortController();
-	const release = startRun(ac);
-	const token = currentEpoch();
-	try {
-		await loadPropsGate();
-		const out = await runTurn(trimmed, mode, ac.signal);
-		if (token !== currentEpoch()) return getSelectedSession() ?? pending;
-		const done = finishedSession(pending, out, mode);
-		commitSession(done);
-		return done;
-	} catch (err) {
-		if ((err as Error).name === "AbortError") {
-			const done = cancelledSession(pending);
-			commitSession(done);
-			return done;
-		}
-		run.lastError = t("runtime.sendFailed");
-		throw err;
-	} finally {
-		release();
-	}
+async function sendMessageText(text: string, retryOf?: string): Promise<ChatSession> {
+ const trimmed = text.trim();
+ if (!trimmed) return getSelectedSession() ?? createSession();
+ const session = getSelectedSession() ?? (await createSession());
+ if (!canRunSession(session.id)) { run.lastError = t("runtime.sendFailed"); return session; }
+ const mode = chatModeOf(session, run.pendingMode);
+ abortInflight();
+ const pending = withUserMessage(session, trimmed, mode);
+ const attemptId = uid("attempt");
+ const startedAt = nowIso();
+ const attempts = Object.fromEntries(Object.entries(pending.runAttempts ?? {}).map(([id, attempt]) => [id, attempt.status === "running" ? endAttempt(attempt, "superseded", startedAt) : attempt]));
+ attempts[attemptId] = { ...startAttempt(attemptId, pending.messages.at(-1)!.id, getSelectedModelId(), startedAt), ...(retryOf && attempts[retryOf] ? { retryOf } : {}) };
+ run.lastRequestId = attemptId;
+ run.lastFailedText = null;
+ pending.runAttempts = attempts;
+ pending.usage = usageOfAttempts(attempts, pending.messages);
+ if (!commitSession(pending)) {
+  pending.runAttempts[attemptId] = endAttempt(attempts[attemptId]!, "error", nowIso(), { code: "storage_unavailable" });
+  pending.usage = usageOfAttempts(pending.runAttempts, pending.messages);
+  commitSession(pending);
+  return pending;
+ }
+ const ac = new AbortController();
+ const release = startRun(ac);
+ const token = currentEpoch();
+ try {
+  await loadPropsGate();
+  const out = await runTurn(trimmed, mode, ac.signal, { modelId: attempts[attemptId]!.modelId });
+  const current = getSession(pending.id);
+  if (!current) return getSelectedSession() ?? pending;
+  const attempt = current.runAttempts?.[attemptId];
+  if (!attempt) return current;
+  const active = token === currentEpoch() && attempt.status === "running" && !ac.signal.aborted;
+  const done = active ? finishedSession(current, out, mode) : current;
+  const status = attempt.status !== "running" ? attempt.status : !active || (!out.result.ok && out.result.code === "aborted") ? "aborted" : out.result.ok ? "completed" : "error";
+  if (active) run.lastFailedText = out.result.ok ? null : trimmed;
+  const trace = out.runTrace;
+  const runAttempts = { ...done.runAttempts, [attemptId]: endAttempt(attempt, status, nowIso(), { usage: out.usage, runId: out.runId, ...(active ? { assistantMessageId: done.messages.at(-1)?.id } : {}), traceState: trace ? "received" : "not_received", ...(trace?.scenario ? { scenario: trace.scenario } : {}), ...(trace?.provider && trace.provider !== "unknown" ? { provider: trace.provider } : {}), ...(!out.result.ok ? { code: out.result.code } : {}) }) };
+  const final = { ...done, runAttempts, ...(trace ? { runTraces: { ...done.runTraces, [trace.runId]: trace } } : {}), usage: usageOfAttempts(runAttempts, done.messages) };
+  commitSession(final);
+  return final;
+ } catch (error) {
+  const current = getSession(pending.id);
+  if (!current) return getSelectedSession() ?? pending;
+  const attempt = current.runAttempts?.[attemptId];
+  if (!attempt) return current;
+  const aborted = ac.signal.aborted || (error instanceof Error && error.name === "AbortError");
+  const status = attempt.status !== "running" ? attempt.status : aborted ? "aborted" : "error";
+  const runAttempts = { ...current.runAttempts, [attemptId]: endAttempt(attempt, status, nowIso(), { code: aborted ? "aborted" : "host_error" }) };
+  const final = { ...current, runAttempts, usage: usageOfAttempts(runAttempts, current.messages) };
+  commitSession(final);
+  if (token === currentEpoch() && attempt.status === "running") { run.lastError = t(aborted ? "runtime.cancelled" : "runtime.sendFailed"); run.lastFailedText = trimmed; }
+  return final;
+ } finally { release(); }
 }
 
 /** ChatCore send. Ordinary text never auto-saves a page. Live Grok uses `/runtime`. */
 export async function sendMessage(text: string, _opts?: { requestId?: string; retry?: boolean }): Promise<ChatSession> {
-	return sendMessageText(text);
+	return sendMessageText(text, _opts?.retry ? _opts.requestId : undefined);
 }
 
 export async function retryLastFailed(): Promise<ChatSession | null> {

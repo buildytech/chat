@@ -120,6 +120,7 @@ export async function runXaiTurn(ctx: TurnRequest, signal?: AbortSignal): Promis
 			cache: "no-store",
 			headers: { "Content-Type": "application/json", Accept: "application/json" },
 			body: JSON.stringify({
+				...(ctx.scenario ? { scenario: ctx.scenario } : {}),
 				modelId: ctx.modelId,
 				contract: contractFingerprint(),
 				brief: ctx.brief,

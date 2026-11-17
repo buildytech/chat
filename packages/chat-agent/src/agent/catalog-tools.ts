@@ -44,7 +44,7 @@ function compactItem(item: SearchResult["items"][number]): CompactSearchItem {
 		subtitle: item.subtitle,
 		sections: screenItems(item.screenId).items,
 		labels: { site: item.labels.site, section: item.labels.section, job: item.labels.job, blocks: item.labels.blocks },
-		...(item.score ? { score: Math.round(item.score * 10) / 10, matched: item.matched } : {}),
+		...(typeof item.score === "number" ? { score: Math.round(item.score * 10) / 10, matched: item.matched } : {}),
 		...(item.via ? { via: item.via } : {}),
 		...(item.missingBlocks?.length ? { missingBlocks: item.missingBlocks } : {})
 	};
@@ -171,4 +171,13 @@ export function executeCatalogTool(call: ToolCall, host: ToolHost = {}): ToolOut
 		return { ok: true, name: "get_page", result: problems.length ? { ...pageForModel(host.page), renderProblems: problems } : pageForModel(host.page) };
 	}
 	return { ok: false, code: "not_a_read_tool", message: `${call.name} is handled by the turn, not by the catalog tools.` };
+}
+
+function record(value: unknown): value is Record<string, unknown> { return value !== null && typeof value === "object" && !Array.isArray(value); }
+/** Compact evidence stays available in hash-only session exports. No provider-specific fields. */
+export function catalogEvidence(name: string, result: unknown) {
+ if (!record(result)) return undefined;
+ if (name === "get_block") return { kind: "catalog-block", item: result.item };
+ if (name !== "search_catalog" || !Array.isArray(result.items)) return undefined;
+ return { kind: "catalog-search", total: result.total, noFit: result.noFit, items: result.items.filter(record).map((item) => ({ screenId: item.screenId, score: item.score ?? "unknown", matched: item.matched ?? [], via: item.via ?? "unknown", sections: Array.isArray(item.sections) ? item.sections.filter(record).map((section) => ({ item: section.item, variant: section.variant })) : [] })) };
 }

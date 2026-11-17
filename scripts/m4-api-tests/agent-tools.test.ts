@@ -83,7 +83,7 @@ test("Ask turn: tool_choice auto, a text answer, no proposal when the model does
 	assert.equal(reply.mode, "ask");
 	assert.equal(reply.text, answer);
 	assert.equal(reply.proposal, undefined);
-	assert.deepEqual(reply.blocks, ["block.features"]);
+	assert.deepEqual(reply.blocks, [readBlock("block.features")!.item]);
 	assert.equal(out.meta.usage.totalTokens, 2200);
 	assert.equal(turnOutcome(reply), "text");
 	// Cards are rebuilt from the registry; unknown items from the wire are dropped.

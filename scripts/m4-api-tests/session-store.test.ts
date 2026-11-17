@@ -1,3 +1,4 @@
+import { startAttempt, endAttempt } from "../../packages/chat-agent/src/run-attempt.ts";
 /**
  * Session standard (ADR 0015): the buildy:v1 key space and the old keys it sets aside (ADR 0045), schema validation at load with
  * quarantine, the portable session file buildy:v1 (export / import checks, Lab shape), and page revisions (one per
@@ -466,4 +467,14 @@ test("run traces survive the open session extension without changing the run sch
  const parsed = parseSessionFile(JSON.stringify(file));
  assert.ok(parsed.ok);
  if (parsed.ok) assert.deepEqual(splitSessionFile(parsed.file).chats[0]!.ext?.["agent-trace"], source.ext["agent-trace"]);
+});
+
+test("attempt ledger including an unanswered aborted run survives portable session validation", () => {
+ const attempt = endAttempt(startAttempt("attempt-a", "user-a", "provider/model", NOW), "aborted", NOW);
+ const source = { ...chat("session-attempt"), ext: { "agent-runs": { "attempt-a": attempt } } };
+ const file = buildSessionFile({ chats: [source], pages: {}, app, pins, now: NOW });
+ assert.deepEqual(sessionFileIssues(file), []);
+ const parsed = parseSessionFile(JSON.stringify(file));
+ assert.ok(parsed.ok);
+ if (parsed.ok) assert.deepEqual(splitSessionFile(parsed.file).chats[0]!.ext?.["agent-runs"], source.ext["agent-runs"]);
 });

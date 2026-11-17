@@ -6,7 +6,7 @@ import type { PageV2 } from "@buildytech/page-contract";
 import { agentTools, agentToolChoice } from "./agent-tools.ts";
 import { agentReply, rejectedWrite, runWriteTool, type AgentFailure, type AgentReply, type PageProposal, type TurnContext } from "./turn.ts";
 import { createExecution, type ExecutionOptions } from "./execution.ts";
-import { executeCatalogTool } from "./catalog-tools.ts";
+import { executeCatalogTool, catalogEvidence } from "./catalog-tools.ts";
 import { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./prompts.ts";
 import { type AgentProvider, type AgentMessage, type LiveTurnMeta } from "./provider.ts";
 
@@ -62,7 +62,7 @@ function runToolCall(ctx: TurnContext, state: LoopState, name: string, args: Rec
 	if (!outcome.ok) return { ok: false, code: outcome.code, message: outcome.message, ...(outcome.result ? { result: outcome.result } : {}) };
 	if (name === "get_block") {
 		const info = itemInfo(String((outcome.result as { item?: unknown }).item ?? ""));
-		if (info) state.blocks.push(info.spec);
+		if (info) state.blocks.push(info.item);
 	}
 	return outcome.result;
 }
@@ -84,9 +84,10 @@ function loopResult(ctx: TurnContext, state: LoopState, text: string, steps: num
 
 function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts: BudgetCounts, toolsCalled: string[], messages: AgentMessage[], budget: Pick<ExecutionBudget, "maxToolCalls" | "maxWriteAttempts">, execution: ReturnType<typeof createExecution>, allowed: string[]): AgentFailure | null {
 	let wrote = false;
-	for (const call of calls) {
+	for (const [index, call] of calls.entries()) {
 		const name = call.name ?? "";
 		if (counts.toolCalls >= budget.maxToolCalls || (name === "write_page" && !wrote && counts.writeAttempts >= budget.maxWriteAttempts)) {
+			for (const skipped of calls.slice(index)) execution.recorder.tool(skipped, { ok: false, code: "tool_budget" }, 0, null, undefined, false);
 			return { ok: false, code: "tool_budget", message: "The tool or write-attempt budget was reached. No further tools were executed." };
 		}
 		counts.toolCalls += 1;
@@ -95,7 +96,7 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 		if (name === "write_page" && !wrote) { wrote = true; counts.writeAttempts += 1; }
 		const started = Date.now();
 		const reply = !allowed.includes(name) ? { ok: false, code: "tool_not_allowed" } : duplicateWrite ? { ok: false, code: "multiple_writes", message: "Only one write_page attempt per provider response is allowed." } : runToolCall(ctx, state, name, parseArgs(call.argumentsJson));
-		execution.recorder.tool(call, reply, Date.now() - started, state.proposal);
+		execution.recorder.tool(call, reply, Date.now() - started, state.proposal, catalogEvidence(name, reply), allowed.includes(name) && !duplicateWrite);
 		messages.push({ role: "tool", callId: call.id, name, text: JSON.stringify(reply) });
 	}
 	return null;

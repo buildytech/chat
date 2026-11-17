@@ -31,8 +31,8 @@ export function listProjects(): ProjectSummary[] {
 	return projects.map(({ id, title, updatedAt }) => ({ id, title, updatedAt })).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
-export function saveProjects(): void {
-	saveSessionsJson(projects.map(docOfProject));
+export function saveProjects(): boolean {
+	return saveSessionsJson(projects.map(docOfProject));
 }
 const save = saveProjects;
 

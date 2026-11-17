@@ -165,7 +165,7 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 								.replace("{completion}", formatTokens(run.usage.completionTokens))
 								.replace("{total}", formatTokens(run.usage.totalTokens))}
 						</Text>
-						{#if run.usage.reportedBy === "xai-provider"}
+						{#if run.usage.reportedBy !== "none"}
 							<Text tag="p" class="text-xs text-muted-foreground"
 								>{t("usage.reportedBy")}. {t("usage.aggregation")}</Text
 							>

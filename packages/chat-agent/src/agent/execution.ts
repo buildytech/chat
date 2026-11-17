@@ -22,7 +22,7 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 	let incomplete: RunUsage["incompleteReason"];
 	const finish = (): LiveTurnMeta => {
 		const reason = incomplete ?? (stepUsage.length < counts.requests ? "error" : undefined);
-		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, { incomplete: reason, requests: counts.requests }) : unknownUsage(reason ?? "error", counts.requests);
+		const usage = stepUsage.length ? aggregateStepUsage(stepUsage, { incomplete: reason, requests: counts.requests, providerId: options.scenario?.profile.provider }) : unknownUsage(reason ?? "error", counts.requests);
 		return { ...turnMeta("chat-completions", modelId, trace.toolCallingWorked, counts.requests, trace.toolsCalled, usage, runId), budget: { ...counts }, providerRetries: retriesUsed, runTrace: structuredClone(recorder.trace), ...(options.scenario ? { scenario: { id: options.scenario.profile.id, version: options.scenario.profile.version, fingerprint: options.scenario.fingerprint, provider: options.scenario.profile.provider, providerVersion: options.scenario.manifestVersion, modelId } } : {}) };
 	};
 	const fail = (code: string, message: string): Extract<ExecutionStep, { ok: false }> => { recorder.stop(code); return { ok: false, result: { ok: false, code, message }, meta: finish() }; };

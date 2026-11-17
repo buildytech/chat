@@ -19,6 +19,7 @@ export async function providerStep(input: ProviderRequest & { apiKey: string; ba
 	if (!Number.isSafeInteger(input.maxTokens) || input.maxTokens <= 0 || (choice === "required" && input.tools.length === 0) || (typeof choice === "object" && !input.tools.some((tool) => tool.name === choice.name))) {
 		return { ok: false, error: { code: "unsupported_request", message: "Invalid token limit or unavailable tool choice. No provider request was sent." } };
 	}
+	const requestInfo = { parallelToolCalls: input.provider?.version === 1 ? "provider_default" as const : false, completionTokenParameter: capabilities.completionTokenParameter, maxTokens: input.maxTokens };
 	const requestStarted = Date.now();
 	const res = await silentFetch(`${input.baseUrl}/chat/completions`, {
 		method: "POST",
@@ -43,21 +44,22 @@ export async function providerStep(input: ProviderRequest & { apiKey: string; ba
 	if (!res.ok) {
 		const body = await res.text().catch(() => "");
 		const failure = classifyProviderFailure(res.status, body.slice(0, 240));
-		return { ok: false, error: { ...failure, status: res.status, retryAfterMs: retryAfterMs(res.headers.get("retry-after")), elapsedMs: Date.now() - requestStarted }, usage: errorUsage(body) };
+		return { ok: false, error: { ...failure, status: res.status, retryAfterMs: retryAfterMs(res.headers.get("retry-after")), elapsedMs: Date.now() - requestStarted }, usage: errorUsage(body), requestInfo };
 	}
 	const payload = (await res.json()) as {
 		choices?: Array<{ finish_reason?: string; message?: unknown }>;
 		usage?: unknown;
 		model?: string;
 	};
+	const response = { finishReason: payload.choices?.[0]?.finish_reason, refusal: null, status: res.status };
 	const usage = readProviderUsage(payload.usage) ?? undefined;
 	const used = typeof payload.model === "string" ? payload.model : input.modelId;
 	const switched = assertNoFallback(input.modelId, used);
-	if (switched) return { ok: false, error: { code: switched.code, message: switched.message }, usage };
-	if (xaiRefused(payload.choices?.[0]?.message)) return { ok: false, error: { code: "provider_refusal", message: "The provider declined this request." }, usage, response: { finishReason: payload.choices?.[0]?.finish_reason, refusal: "provider_refused", status: res.status } };
+	if (switched) return { ok: false, error: { code: switched.code, message: switched.message }, usage, requestInfo, response };
+	if (xaiRefused(payload.choices?.[0]?.message)) return { ok: false, error: { code: "provider_refusal", message: "The provider declined this request." }, usage, requestInfo, response: { ...response, refusal: "provider_refused" } };
 	const message = readXaiMessage(payload.choices?.[0]?.message);
-	if (!message) return { ok: false, error: { code: "malformed_response", message: "Chat completion had no supported assistant message." }, usage };
-	return { ok: true, message, usage, response: { finishReason: payload.choices?.[0]?.finish_reason, refusal: null, status: res.status } };
+	if (!message) return { ok: false, error: { code: "malformed_response", message: "Chat completion had no supported assistant message." }, usage, requestInfo, response };
+	return { ok: true, message, usage, requestInfo, response };
 }
 
 function errorUsage(body: string) {

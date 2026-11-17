@@ -21,7 +21,7 @@ test("tool-loop sums actual steps without double-counting totals", () => {
 	assert.equal(run.promptTokens, 400);
 	assert.equal(run.completionTokens, 35);
 	assert.equal(run.totalTokens, 435);
-	assert.equal(run.reportedBy, "xai-provider");
+	assert.equal(run.reportedBy, "provider");
 	assert.equal(run.aggregation, "sum-of-tool-loop-requests");
 	assert.equal(run.lastStep?.promptTokens, 160);
 	assert.equal(run.lastStep?.completionTokens, 5);

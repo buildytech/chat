@@ -18,3 +18,5 @@ export { resolveScenario, scenarioProfiles } from "./scenarios/registry.ts";
 export { POLICY_VERSION, MODEL_CATALOG_VERSION, TRIAL_POLICY_VERSION } from "./policy.ts";
 
 export type { RunTrace } from "./agent/run-trace.ts";
+
+export { startAttempt, endAttempt, usageOfAttempts, readRunAttempts, type RunAttempt, type RunAttempts } from "./run-attempt.ts";

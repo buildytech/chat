@@ -14,7 +14,7 @@ export type AgentMessage = {
 export type LiveTurnMeta = {
 	runId: string;
 	runTrace?: import("./run-trace.ts").RunTrace;
-	path: "chat-completions";
+	path: string;
 	modelId: string;
 	requestedModelId: string;
 	toolCallingWorked: boolean;
@@ -44,7 +44,8 @@ export function turnMeta(
 }
 
 
-type ResponseInfo = { response?: { finishReason?: string; refusal?: string | null; status?: number } };
+type ProviderRequestInfo = { parallelToolCalls: boolean | "provider_default"; completionTokenParameter: string; maxTokens: number };
+type ResponseInfo = { requestInfo?: ProviderRequestInfo; response?: { finishReason?: string; refusal?: string | null; status?: number } };
 export type ProviderStep = ResponseInfo & (
 	| { ok: true; message: AgentMessage; usage?: StepUsage }
 	| { ok: false; error: { code: string; message: string; status?: number; elapsedMs?: number; retryable?: boolean; retryAfterMs?: number }; usage?: StepUsage });

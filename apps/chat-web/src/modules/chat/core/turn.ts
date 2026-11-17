@@ -76,7 +76,7 @@ export function sessionUsageFrom(session: ChatSession, extra?: RunUsage) {
 	return aggregateSessionUsage(runs);
 }
 
-export function runRecord(opts: {
+function runRecord(opts: {
 	modelId: string;
 	live: boolean;
 	usage: RunUsage;
@@ -117,11 +117,12 @@ type TurnOutcome = {
 	runId?: string;
 };
 
-export async function runTurn(brief: string, mode: AgentMode, signal: AbortSignal): Promise<TurnOutcome> {
+export async function runTurn(brief: string, mode: AgentMode, signal: AbortSignal, selection?: { modelId: string }): Promise<TurnOutcome> {
 	const plan = planTurn(brief, mode);
+	const requestedModelId = selection?.modelId ?? getSelectedModelId();
 	const status = await fetchXaiStatus(signal);
 	const mapped = mapChatRunRequest(
-		{ modelId: getSelectedModelId() },
+		{ modelId: requestedModelId },
 		{ discoveredChatIds: status.models?.listed ? status.models.chatIds ?? [] : undefined, allowUnlistedTrial: !status.ready }
 	);
 	if (!mapped.ok) {

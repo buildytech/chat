@@ -1,5 +1,9 @@
 # Run trace v1
 
+ADR 0055 adds a separate host ledger `ext["agent-runs"][attemptId]`, format `run-attempt/1`. It is created before asynchronous work and references the user message, optional assistant message, optional server `runId` and optional `retryOf`. Errors, aborts and superseded sends remain visible without an answer. On browser rehydration, a still-running saved attempt becomes interrupted. Session totals include each ledger attempt once; linked assistant runs are not added again. Legacy message-only runs continue to count. Unknown ledger formats are preserved and refused for new sends, never rewritten as current data.
+
+Trace requests now include the observed token parameter name and adapter-reported parallel-call setting. Unknown adapters remain unknown; version numbers do not imply xAI defaults. Per-request tool hashes allow stable-array checks without bodies. `toolResults[].evidence` exposes compact search results (real IDs, score, matched, via, registry sections) in ordinary exports. Skipped calls have `execution: skipped`; accepted write records expose the proposal's `baseRevision` and keep `pageRevision: null`. New `answer.blocks` values are registry IDs.
+
 Each completed runtime response carries `runTrace`, format `run-trace/1`. The browser keeps it unchanged under `session.ext["agent-trace"][runId]`; `message.run.runId` links the answer to it. This uses the session contract's open extension namespace, not the closed `run` record. No vendor schema changes are needed.
 
 The explicit discussion scenario is `page.discuss@1`: only `get_page`, `search_catalog`, `get_block`, no proposal and no repair-write nudge. The server rejects unadvertised tool calls before executing them. Explicit registered `page.ask@1/2` references retain the previous proposal behavior; Build is unchanged. Clients may send `scenario: {id: "page.discuss", version: 1}`. No prompt-word inference selects a mode or scenario.

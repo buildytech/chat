@@ -3,6 +3,7 @@
  * selection wrappers that abort a run and reload the workspace context. The project (page, skin, collection, history,
  * persistence) lives in `../project`; the chat keeps only `project.ext.chat` (messages, mode, selected model, usage).
  */
+import { endAttempt, usageOfAttempts, readRunAttempts } from "@buildytech/chat-agent";
 import type { AgentMode } from "@buildytech/chat-agent";
 import { t } from "../../../lib/i18n/dictionary";
 import { getPersistError } from "../../../lib/browser/persist";
@@ -15,7 +16,7 @@ import { chatModeOf } from "./modes";
 import { projectOfView, viewOf } from "./view";
 import type { ChatSession, CreatorRuntimeStatus, ServerCapabilities, SessionSummary } from "./types";
 
-/** Run state shared by the chat modules. `lastRequestId` and `lastFailedText` stay null until a transport sets them. */
+/** Run state shared by the chat modules. `lastRequestId` identifies the host attempt; failed sends retain their text for an explicit retry. */
 export const run = $state({
 	lastError: null as string | null,
 	lastRequestId: null as string | null,
@@ -44,6 +45,25 @@ export function startRun(controller: AbortController): () => void {
 
 // ---- the chat view of a project --------------------------------------------------------------------------------
 
+export function canRunSession(id: string): boolean {
+	const project = getProjects().find((project) => project.id === id);
+	return Boolean(project && (project.ext["agent-runs"] === undefined || readRunAttempts(project.ext["agent-runs"]) !== null));
+}
+
+export function getSession(id: string): ChatSession | null {
+	const project = getProjects().find((project) => project.id === id);
+	return project ? viewOf(project) : null;
+}
+
+export function recoverInterruptedRuns(): void {
+	for (const project of getProjects()) {
+		const session = viewOf(project);
+		if (!Object.values(session.runAttempts ?? {}).some((attempt) => attempt.status === "running")) continue;
+		const runAttempts = Object.fromEntries(Object.entries(session.runAttempts ?? {}).map(([id, attempt]) => [id, attempt.status === "running" ? endAttempt(attempt, "interrupted", new Date().toISOString(), { code: "host_interrupted" }) : attempt]));
+		commitSession({ ...session, runAttempts, usage: usageOfAttempts(runAttempts, session.messages) });
+	}
+}
+
 export function getSelectedSession(): ChatSession | null {
 	const project = getSelectedProject();
 	return project ? viewOf(project) : null;
@@ -53,9 +73,9 @@ export function getSelectedSession(): ChatSession | null {
 function putSession(view: ChatSession): void {
 	putProject(projectOfView(view, getProjects().find((p) => p.id === view.id) ?? null), { save: false });
 }
-export function commitSession(view: ChatSession): void {
+export function commitSession(view: ChatSession): boolean {
 	putSession(view);
-	saveProjects();
+	return saveProjects();
 }
 
 export function listSessions(): SessionSummary[] {

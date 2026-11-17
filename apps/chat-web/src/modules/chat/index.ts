@@ -13,7 +13,7 @@ import ruMessages from "./i18n/ru.json";
 import { getSelectedModelId, setSelectedModelId } from "./browser/models.svelte.ts";
 import { takeCollectionParam } from "./browser/collection-intake";
 import { hydrateSessionContext } from "./browser/onboarding.svelte.ts";
-import { beforeHydrate, beforeProjectChange, getChatMode, projectOpened, run, setChatMode } from "./core/chat.svelte.ts";
+import { beforeHydrate, beforeProjectChange, getChatMode, projectOpened, recoverInterruptedRuns, run, setChatMode } from "./core/chat.svelte.ts";
 import { openCollectionFile, openCollectionParam } from "./core/intake";
 import { startPageFromScreen } from "./core/proposal-flow";
 import { CHAT_LEGACY_KEYS, chatOf } from "./core/view";
@@ -57,6 +57,7 @@ export const chatModule: BuilderModule = {
 			return takeCollectionParam();
 		},
 		afterHydrate: async (collection) => {
+			recoverInterruptedRuns();
 			if (typeof collection === "string" && collection) await openCollectionParam(collection);
 		},
 		pageStarted: (screenId) => {

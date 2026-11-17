@@ -25,7 +25,8 @@ export type RunUsage = {
 	reasoningTokens?: number;
 	cachedTokens?: number;
 	/** Who produced the token counts. Never a local snapshot byte size. */
-	reportedBy: "xai-provider" | "none";
+	reportedBy: "provider" | "xai-provider" | "none";
+	providerId?: string;
 	/** How prompt/completion were combined when reportedBy is xai-provider. */
 	aggregation?: "sum-of-tool-loop-requests";
 	/** Last provider usage object in the loop, when present. */
@@ -103,7 +104,7 @@ function addCount(a: TokenCount, b: TokenCount): TokenCount {
 }
 
 /** Sum tool-loop steps. Uses prompt+completion per step; does not add total on top of those. */
-export function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, opts?: { incomplete?: RunUsage["incompleteReason"]; requests?: number }): RunUsage {
+export function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, opts?: { incomplete?: RunUsage["incompleteReason"]; requests?: number; providerId?: string }): RunUsage {
 	const requests = opts?.requests ?? steps.length;
 	const present = steps.filter((s): s is StepUsage => Boolean(s));
 	if (opts?.incomplete) {
@@ -144,7 +145,8 @@ export function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, o
 		promptTokens: prompt,
 		completionTokens: completion,
 		totalTokens: total,
-		reportedBy: "xai-provider",
+		reportedBy: "provider",
+		...(opts?.providerId ? { providerId: opts.providerId } : {}),
 		aggregation: "sum-of-tool-loop-requests",
 		lastStep: last,
 		cost: aggregateBilledCost(parts)
