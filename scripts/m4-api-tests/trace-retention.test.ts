@@ -49,12 +49,12 @@ test("global trace count compacts oldest details while preserving exact billing 
 
 test("foreign origin storage triggers byte policy even for one small trace; unknown versions survive", () => {
 	const input = project("s", 1);
-	input.ext = { ...input.ext, "agent-trace": { ...input.ext["agent-trace"], future: { format: "future-trace/9", payload: "preserve" } } };
+	input.ext = { ...input.ext, "agent-storage": { format: "future-storage/2", opaque: true }, "agent-trace": { ...input.ext["agent-trace"], future: { format: "future-trace/9", payload: "preserve" } } };
 	const output = retainTraces([input], { coverage: "origin", otherEstimatedUtf16Bytes: TRACE_RETENTION_POLICY.originEstimatedUtf16SoftLimitBytes }, now)[0]!;
 	const trace = JSON.parse(JSON.stringify(output.ext["agent-trace"]));
 	assert.equal(trace.r0.retention.reason, "origin_byte_budget");
 	assert.deepEqual(trace.future, input.ext["agent-trace"]!.future);
-	assert.equal(JSON.parse(JSON.stringify(output.ext["agent-storage"])).coverage, "origin");
+	assert.deepEqual(output.ext["agent-storage"], input.ext["agent-storage"]);
 });
 
 test("whole-origin size includes foreign keys and labels unavailable enumeration honestly", () => {

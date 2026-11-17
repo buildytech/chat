@@ -43,6 +43,8 @@ function measure(projects: readonly Project[], footprint: StorageFootprint) {
 function annotate(projects: readonly Project[], footprint: StorageFootprint) {
 	const totals = measure(projects, footprint);
 	return projects.map((project) => {
+		const previous = project.ext["agent-storage"];
+		if (previous && previous.format !== "agent-storage/1") return project;
 		const { "agent-storage": _previous, ...ext } = project.ext;
 		if (!ext["agent-trace"] && !ext["agent-runs"]) return project;
 		const projectSize = size(docOfProject({ ...project, ext }));
