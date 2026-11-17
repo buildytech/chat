@@ -40,7 +40,7 @@ type TurnPlan = { request: Omit<TurnRequest, "modelId">; base: PageV2; shown: Pa
  * page, or, in a collection chat, from the draft of the collection (its first screen and required blocks) with the
  * empty page as what the author sees, so the diff reads as additions.
  */
-function planTurn(brief: string, mode: AgentMode): TurnPlan {
+function planTurn(brief: string, mode: AgentMode, currentMessageId?: string): TurnPlan {
 	const session = getSelectedSession();
 	const shownBase = shownPageOf();
 	const collection = mode === "build" ? collectionRequest(session?.collection) : null;
@@ -64,7 +64,7 @@ function planTurn(brief: string, mode: AgentMode): TurnPlan {
 			currentPage: base,
 			shownPage: base === shown ? null : shown,
 			scopeBlockIds: scope,
-			conversation: conversationForTurn(session?.messages ?? []),
+			conversation: conversationForTurn(session?.messages ?? [], currentMessageId),
 			collectionRequest: collection
 		}
 	};
@@ -117,8 +117,8 @@ type TurnOutcome = {
 	runId?: string;
 };
 
-export async function runTurn(brief: string, mode: AgentMode, signal: AbortSignal, selection?: { modelId: string }): Promise<TurnOutcome> {
-	const plan = planTurn(brief, mode);
+export async function runTurn(brief: string, mode: AgentMode, signal: AbortSignal, selection?: { modelId: string; userMessageId?: string }): Promise<TurnOutcome> {
+	const plan = planTurn(brief, mode, selection?.userMessageId);
 	const requestedModelId = selection?.modelId ?? getSelectedModelId();
 	const status = await fetchXaiStatus(signal);
 	const mapped = mapChatRunRequest(

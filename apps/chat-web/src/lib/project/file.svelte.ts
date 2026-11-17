@@ -15,8 +15,8 @@ export type ImportResult =
 
 /** The session file of this browser. Writes nothing the author did not already have (it saves the list first). */
 export function exportProjects(meta: { app: SessionApp; pins: SessionPins; settings?: SessionSettings; prefs?: SessionPrefs }): SessionFile {
-	const projects = getProjects();
 	if (getSelectedProjectId()) saveProjects();
+	const projects = getProjects();
 	const pages: Record<string, StoredPageRecord | null> = {};
 	for (const project of projects) pages[project.projectId] = readProjectPage(project.projectId);
 	return buildSessionFile({ chats: projects.map(docOfProject) as unknown as StoredChat[], pages, selectedSessionId: getSelectedProjectId(), ...meta });

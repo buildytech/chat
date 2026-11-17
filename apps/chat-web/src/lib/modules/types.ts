@@ -47,6 +47,8 @@ export type ModuleImportResult = { ok: boolean; note: string; [key: string]: unk
 export type ModuleFileKind = { detect: (parsed: unknown) => boolean; open: (parsed: unknown) => Promise<ModuleImportResult> };
 
 export type BuilderModule = {
+	/** Pure retention projection; the core commits it to memory only after a successful save. */
+	prepareProjectSave?: (projects: readonly Project[], storage: import("../browser/storage-v1.ts").StorageFootprint) => readonly Project[];
 	/** Unique id, also the project extension name (`ext.<id>`). */
 	id: string;
 	/** `en` and `ru` message catalogs; keys are the module's own (never a core key). `overrides` re-words core keys while the module is loaded. */

@@ -42,3 +42,7 @@ export const collectBeforeHydrate = (): unknown[] => modules.map((m) => m.hooks?
 export async function runAfterHydrate(tokens: unknown[]): Promise<void> {
 	for (const [i, module] of modules.entries()) await module.hooks?.afterHydrate?.(tokens[i]);
 }
+
+export function prepareProjectSave(projects: readonly Project[], storage: import("../browser/storage-v1.ts").StorageFootprint): readonly Project[] {
+	return modules.reduce((current, module) => module.prepareProjectSave?.(current, storage) ?? current, projects);
+}

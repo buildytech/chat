@@ -4,10 +4,11 @@
  * it): chat messages, mode and usage are an extension (`project.ext.chat`) that this store keeps and returns untouched.
  * Module-level state, browser only (ADR-0003 style: no shared SSR state).
  */
+import { prepareProjectSave } from "../modules/registry.svelte.ts";
 import { emptyPage } from "@buildytech/builder-core";
 import { readSessionQuery, resolveSessionSelection, syncSessionQuery } from "../api/session-url";
 import { t } from "../i18n/dictionary";
-import { allowPersistOverwrite, clearPagesBlob, deleteProjectPage, loadPagesBlob, loadSessionsJson, saveSessionsJson } from "../browser/persist";
+import { allowPersistOverwrite, clearPagesBlob, deleteProjectPage, loadPagesBlob, loadSessionsJson, saveSessionsJson, sessionStorageFootprint, getPersistError } from "../browser/persist";
 import { reconcileChatRevision, type StoredChat } from "../browser/session-file";
 import { STORAGE_KEYS, readKey, writeKey } from "../browser/storage-v1.ts";
 import { applyCandidate, bindProject, clearCurrentPage, discardCandidate, getAppliedProvenance, getLastAppliedPage, getPageRevision, onPageRevision, startEmptyPage } from "../page-store";
@@ -32,7 +33,15 @@ export function listProjects(): ProjectSummary[] {
 }
 
 export function saveProjects(): boolean {
-	return saveSessionsJson(projects.map(docOfProject));
+	const footprint = sessionStorageFootprint();
+	let next = prepareProjectSave(projects, footprint);
+	let saved = saveSessionsJson(next.map(docOfProject));
+	if (!saved && getPersistError()?.code === "quota") {
+		next = prepareProjectSave(projects, { ...footprint, aggressive: true });
+		saved = saveSessionsJson(next.map(docOfProject));
+	}
+	if (saved && next !== projects) projects = [...next];
+	return saved;
 }
 const save = saveProjects;
 

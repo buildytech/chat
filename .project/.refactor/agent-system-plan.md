@@ -123,3 +123,5 @@ Endpoints, secret bindings и жёсткие серверные лимиты в�
 Discussion follow-up (ADR 0054): Read-only page.discuss@1 is registered explicitly; Ask defaults stay compatible; registered legacy Ask proposal profiles remain. Server run-trace/1 is persisted in ext["agent-trace"], with body opt-in on export. Browser Workbench remains deferred. Next: unified search/context and cache experiments.
 
 Session completeness follow-up, 2026-11-17 (ADR 0055): host attempt ledger, interrupted/superseded/error accounting, retry links, provider-observed trace metadata, neutral usage origin, registry IDs and compact search evidence implemented. Server persistence, cache-key/prefix experiments, request-count targets, search relevance and answer-contract work remain separate stages.
+
+Storage follow-up (ADR 0056): Retry reuses user-message identity; origin-wide trace retention preserves forensic totals and exports historical/current size observations. Portable session profile and roundtrip checks are fixed before IndexedDB. Snapshot references, usage normalization and IndexedDB remain separate contract/storage stages.

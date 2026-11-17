@@ -7,6 +7,9 @@ export type RunAttempt = {
 	modelId: string; scenario?: ScenarioRef; provider?: string; runId?: string;
 	startedAt: string; endedAt?: string;
 	status: "running" | "completed" | "error" | "aborted" | "superseded" | "interrupted";
+	fingerprint?: string | null; providerVersion?: number; catalogDigest?: string; gateCodes?: string[]; cost_in_usd_ticks?: string;
+	storage?: { format: string; capturedAt: string; trace: { jsonUtf8Bytes: number; estimatedUtf16Bytes: number }; [key: string]: unknown };
+	traceRetention?: { state: string; reason: string; removedAt: string; policyVersion: number };
 	code?: string; usage: RunUsage; traceState: "not_received" | "received";
 };
 export type RunAttempts = Record<string, RunAttempt>;

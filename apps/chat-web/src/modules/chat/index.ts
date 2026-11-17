@@ -4,6 +4,7 @@
  * reached through this definition.
  */
 import "./chat.css";
+import { retainTraces } from "./core/trace-retention.ts";
 import { isCollectionDoc } from "@buildytech/page-contract/collection";
 import { MessageSquare } from "$lib/shell-icons";
 import { t } from "$lib/i18n/dictionary";
@@ -23,6 +24,7 @@ import ProposalReview from "./ui/ProposalReview.svelte";
 
 export const chatModule: BuilderModule = {
 	id: "chat",
+	prepareProjectSave: retainTraces,
 	messages: { en: enMessages.messages, ru: ruMessages.messages },
 	messageOverrides: { en: enMessages.overrides, ru: ruMessages.overrides },
 	legacyKeys: CHAT_LEGACY_KEYS,

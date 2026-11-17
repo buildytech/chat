@@ -9,7 +9,7 @@
 import { isScenarioId, type ScenarioId } from "@buildytech/builder-core";
 import { cloneJson, pageV2DefIssues } from "@buildytech/page-contract";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
-import { STORAGE_KEYS, browserStorage, quarantine, type StorageLike } from "./storage-v1.ts";
+import { STORAGE_KEYS, browserStorage, quarantine, storageFootprint, type StorageLike } from "./storage-v1.ts";
 
 export const SESSIONS_KEY = STORAGE_KEYS.sessions;
 export const PAGES_KEY = STORAGE_KEYS.pages;
@@ -226,6 +226,8 @@ function writeRaw(store: StorageLike, key: string, value: string): void {
 		/* the quarantined copy is safe; the next load retries */
 	}
 }
+
+export function sessionStorageFootprint() { return storageFootprint(storage(), SESSIONS_KEY); }
 
 export function saveSessionsJson(sessions: unknown): boolean {
 	return writeJson(SESSIONS_KEY, sessions);

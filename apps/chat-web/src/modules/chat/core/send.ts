@@ -2,6 +2,7 @@
 import { agentToolNames, startAttempt, endAttempt, usageOfAttempts } from "@buildytech/chat-agent";
 import { t } from "../../../lib/i18n/dictionary";
 import { getSelectedModelId } from "../browser/models.svelte.ts";
+import { retryMessage } from "./retry-message.ts";
 import { chatModeOf } from "./modes";
 import { abortInflight, commitSession, createSession, currentEpoch, getSelectedSession, getSession, canRunSession, run, startRun } from "./chat.svelte.ts";
 import { loadPropsGate } from "../../../lib/gates";
@@ -53,13 +54,16 @@ async function sendMessageText(text: string, retryOf?: string): Promise<ChatSess
  if (!trimmed) return getSelectedSession() ?? createSession();
  const session = getSelectedSession() ?? (await createSession());
  if (!canRunSession(session.id)) { run.lastError = t("runtime.sendFailed"); return session; }
- const mode = chatModeOf(session, run.pendingMode);
+ const original = retryMessage(session, retryOf);
+ if (retryOf && !original) return session;
+ const requestText = original?.text ?? trimmed;
+ const mode = original?.mode ?? chatModeOf(session, run.pendingMode);
  abortInflight();
- const pending = withUserMessage(session, trimmed, mode);
+ const pending = original ? { ...session } : withUserMessage(session, trimmed, mode);
  const attemptId = uid("attempt");
  const startedAt = nowIso();
  const attempts = Object.fromEntries(Object.entries(pending.runAttempts ?? {}).map(([id, attempt]) => [id, attempt.status === "running" ? endAttempt(attempt, "superseded", startedAt) : attempt]));
- attempts[attemptId] = { ...startAttempt(attemptId, pending.messages.at(-1)!.id, getSelectedModelId(), startedAt), ...(retryOf && attempts[retryOf] ? { retryOf } : {}) };
+ attempts[attemptId] = { ...startAttempt(attemptId, original?.id ?? pending.messages.at(-1)!.id, getSelectedModelId(), startedAt), ...(retryOf && attempts[retryOf] ? { retryOf } : {}) };
  run.lastRequestId = attemptId;
  run.lastFailedText = null;
  pending.runAttempts = attempts;
@@ -75,7 +79,7 @@ async function sendMessageText(text: string, retryOf?: string): Promise<ChatSess
  const token = currentEpoch();
  try {
   await loadPropsGate();
-  const out = await runTurn(trimmed, mode, ac.signal, { modelId: attempts[attemptId]!.modelId });
+  const out = await runTurn(requestText, mode, ac.signal, { modelId: attempts[attemptId]!.modelId, userMessageId: attempts[attemptId]!.userMessageId });
   const current = getSession(pending.id);
   if (!current) return getSelectedSession() ?? pending;
   const attempt = current.runAttempts?.[attemptId];
@@ -83,7 +87,7 @@ async function sendMessageText(text: string, retryOf?: string): Promise<ChatSess
   const active = token === currentEpoch() && attempt.status === "running" && !ac.signal.aborted;
   const done = active ? finishedSession(current, out, mode) : current;
   const status = attempt.status !== "running" ? attempt.status : !active || (!out.result.ok && out.result.code === "aborted") ? "aborted" : out.result.ok ? "completed" : "error";
-  if (active) run.lastFailedText = out.result.ok ? null : trimmed;
+  if (active) run.lastFailedText = out.result.ok ? null : requestText;
   const trace = out.runTrace;
   const runAttempts = { ...done.runAttempts, [attemptId]: endAttempt(attempt, status, nowIso(), { usage: out.usage, runId: out.runId, ...(active ? { assistantMessageId: done.messages.at(-1)?.id } : {}), traceState: trace ? "received" : "not_received", ...(trace?.scenario ? { scenario: trace.scenario } : {}), ...(trace?.provider && trace.provider !== "unknown" ? { provider: trace.provider } : {}), ...(!out.result.ok ? { code: out.result.code } : {}) }) };
   const final = { ...done, runAttempts, ...(trace ? { runTraces: { ...done.runTraces, [trace.runId]: trace } } : {}), usage: usageOfAttempts(runAttempts, done.messages) };
@@ -99,7 +103,7 @@ async function sendMessageText(text: string, retryOf?: string): Promise<ChatSess
   const runAttempts = { ...current.runAttempts, [attemptId]: endAttempt(attempt, status, nowIso(), { code: aborted ? "aborted" : "host_error" }) };
   const final = { ...current, runAttempts, usage: usageOfAttempts(runAttempts, current.messages) };
   commitSession(final);
-  if (token === currentEpoch() && attempt.status === "running") { run.lastError = t(aborted ? "runtime.cancelled" : "runtime.sendFailed"); run.lastFailedText = trimmed; }
+  if (token === currentEpoch() && attempt.status === "running") { run.lastError = t(aborted ? "runtime.cancelled" : "runtime.sendFailed"); run.lastFailedText = requestText; }
   return final;
  } finally { release(); }
 }

@@ -28,6 +28,7 @@
       "accounting-retry.test.ts",
       "run-trace.test.ts",
       "session-quality.test.ts",
+      "trace-retention.test.ts",
       "scenarios.test.ts",
       "xai-codec.test.ts",
       "collection-intake.test.ts",

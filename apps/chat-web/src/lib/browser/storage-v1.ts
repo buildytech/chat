@@ -38,7 +38,21 @@ const OLD_STORAGE_KEYS = [
 	"buildy:v1:layout"
 ] as const;
 
-export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem"> & Partial<Pick<Storage, "key" | "length">>;
+
+export type StorageFootprint = { otherEstimatedUtf16Bytes: number | null; coverage: "origin" | "unavailable"; aggressive?: boolean };
+/** Enumerates the whole origin, including foreign keys, without returning their names or values. */
+export function storageFootprint(store: StorageLike | null, replacingKey: string): StorageFootprint {
+	try {
+		if (!store || typeof store.key !== "function" || typeof store.length !== "number") return { otherEstimatedUtf16Bytes: null, coverage: "unavailable" };
+		let bytes = 0;
+		for (let index = 0; index < store.length; index += 1) {
+			const key = store.key(index);
+			if (key !== null && key !== replacingKey) bytes += 2 * (key.length + (store.getItem(key)?.length ?? 0));
+		}
+		return { otherEstimatedUtf16Bytes: bytes, coverage: "origin" };
+	} catch { return { otherEstimatedUtf16Bytes: null, coverage: "unavailable" }; }
+}
 
 export type QuarantineEntry = { at: string; key: string; reason: string; path?: string; raw: string };
 
