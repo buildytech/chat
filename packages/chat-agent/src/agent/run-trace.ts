@@ -38,12 +38,15 @@ export function createRunTrace(runId: string, modelId: string, budget: Execution
 		},
 		request(input: Pick<ProviderRequest, "messages" | "tools" | "toolChoice"> & { phase?: string; completionReason?: string }, nudged: boolean) {
 			const initial = previous.length === 0;
-			const additions = input.messages.slice(previous.length).map((message, index) => {
+			let retainedMessages = 0;
+			while (retainedMessages < previous.length && retainedMessages < input.messages.length && JSON.stringify(previous[retainedMessages]) === JSON.stringify(input.messages[retainedMessages])) retainedMessages += 1;
+			const additions = input.messages.slice(retainedMessages).map((message, index) => {
 				const descriptor = body(message);
 				return initial && index < 2 ? { role: message.role, hash: descriptor.hash, bytes: descriptor.bytes, source: "prefix" } : { role: message.role, ...descriptor };
 			});
+			const transcriptChange = retainedMessages < previous.length ? "replace" : "append";
 			previous = structuredClone([...input.messages]);
-			const step: TraceStep = { index: trace.steps.length + 1, startedAt: new Date().toISOString(), request: { ...(input.phase ? { phase: input.phase } : {}), ...(input.completionReason ? { completionReason: input.completionReason } : {}), toolChoice: input.toolChoice, parallelToolCalls: "unknown", completionTokenParameter: "unknown", tools: { hash: body(input.tools).hash, bytes: body(input.tools).bytes }, maxTokens: budget.maxTokens, nudged, messagesAdded: additions }, budgetLeft: left() };
+			const step: TraceStep = { index: trace.steps.length + 1, startedAt: new Date().toISOString(), request: { retainedMessages, transcriptChange, ...(input.phase ? { phase: input.phase } : {}), ...(input.completionReason ? { completionReason: input.completionReason } : {}), toolChoice: input.toolChoice, parallelToolCalls: "unknown", completionTokenParameter: "unknown", tools: { hash: body(input.tools).hash, bytes: body(input.tools).bytes }, maxTokens: budget.maxTokens, nudged, messagesAdded: additions }, budgetLeft: left() };
 			trace.steps.push(step);
 			return (result: ProviderStep | null, latencyMs: number) => {
 				if (result?.requestInfo) step.request = { ...step.request, promptCacheKeySent: result.requestInfo.promptCacheKeySent, parallelToolCalls: result.requestInfo.parallelToolCalls, completionTokenParameter: result.requestInfo.completionTokenParameter, maxTokens: result.requestInfo.maxTokens };

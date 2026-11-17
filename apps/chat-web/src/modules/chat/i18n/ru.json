@@ -169,7 +169,10 @@
 		"message.noChange": "Страница не изменена.",
 		"usage.billed": "Стоимость по отчётам API: {amount} USD.",
 		"usage.billedPartial": "Известная часть стоимости API: {amount} USD. Итог неизвестен.",
-		"run.buildNoProposal": "Build не создал проверенное предложение страницы. Изменения не внесены."
+		"run.buildNoProposal": "Build не создал проверенное предложение страницы. Изменения не внесены.",
+		"scope.editFields": "Править поля",
+		"run.fieldsFailed": "Правка полей не принята. Выберите один блок и повторите запрос.",
+		"run.fieldsExternal": "Для проверки нужны изменения вне этого блока. Используйте обычный режим Build."
 	},
 	"overrides": {
 		"sidebar.newChat": "Новый чат",

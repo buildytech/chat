@@ -16,7 +16,7 @@
 		<Text tag="p" class="text-xs text-muted-foreground">{t("scope.only")}</Text>
 		<Group class="flex-wrap gap-1">
 			{#each ids as id (id)}
-				<Button size="sm" variant="ghost" title={t("scope.remove")} onclick={() => blockScope.toggle(session.id, id)}>{id} ×</Button>
+				<Button size="sm" variant="ghost" title={t("scope.remove")} onclick={() => blockScope.toggle(session.id, id)}>{blockScope.fieldId(session.id) === id ? `${t("scope.editFields")} · ` : ""}{id} ×</Button>
 			{/each}
 			<Button size="sm" variant="ghost" onclick={() => blockScope.clear(session.id)}>{t("scope.clear")}</Button>
 		</Group>

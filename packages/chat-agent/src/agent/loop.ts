@@ -1,4 +1,5 @@
 /** Shared page-agent loop. The host injects transport; schema and render gates remain shared. */
+import { editFields } from "./edit-fields.ts";
 import { completionPhase } from "./completion-phase.ts";
 import { CURRENT_EXECUTION_POLICY } from "./execution-policy.ts";
 import { itemInfo, renderProblems } from "@buildytech/builder-core";
@@ -114,6 +115,7 @@ function runCalls(ctx: TurnContext, state: LoopState, calls: ToolCall[], counts:
 export async function runAgentLoop(modelId: string, ctx: TurnContext, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions = {}): Promise<TurnResultOut> {
 	const scenario = options.scenario;
 	if (scenario && (scenario.modelId !== modelId || scenario.profile.mode !== ctx.mode)) throw new Error("Scenario binding mismatch");
+	if (scenario?.profile.context === "block.props@1") return editFields(modelId, ctx, signal, provider, runId, options);
 	const execution = createExecution(modelId, signal, provider, runId, options);
 	try { return await runLoop(ctx, options, execution); }
 	catch (error) { const failed = execution.failure(error); return { result: failed.result, meta: failed.meta }; }

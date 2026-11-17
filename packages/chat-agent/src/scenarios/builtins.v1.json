@@ -135,6 +135,33 @@
         "selection": "author"
       },
       "providerVersion": 2
+    },
+    {
+      "format": "buildy-agent-scenario",
+      "id": "page.edit-fields",
+      "version": 1,
+      "mode": "build",
+      "provider": "xai",
+      "prompt": "page.edit-fields@1",
+      "context": "block.props@1",
+      "nudge": "page.nudge@1",
+      "toolSet": {
+        "ref": "buildy-agent-tools/3",
+        "include": [
+          "write_page"
+        ]
+      },
+      "execution": "page-loop@3",
+      "limits": {
+        "maxSteps": 3,
+        "maxRequests": 5,
+        "maxToolCalls": 3,
+        "maxWriteAttempts": 3
+      },
+      "model": {
+        "selection": "author"
+      },
+      "providerVersion": 2
     }
   ]
 }

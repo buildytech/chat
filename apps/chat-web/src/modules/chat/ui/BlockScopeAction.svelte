@@ -3,9 +3,11 @@
 	import Button from "$registry/kit/ui/button/Button.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { blockScope } from "../core/block-scope.svelte.ts";
-	import { getSelectedSession } from "../core";
+	import { getSelectedSession, setChatMode } from "../core";
 
 	let { blockId }: { blockId: string } = $props();
+	const fields = $derived(blockScope.fieldId(getSelectedSession()?.id) === blockId);
+	function editFields(event: MouseEvent) { event.stopPropagation(); const session = getSelectedSession(); if (session) { blockScope.editFields(session.id, blockId); setChatMode("build"); } }
 	const inScope = $derived(blockScope.ids(getSelectedSession()?.id).includes(blockId));
 
 	function toggle(event: MouseEvent) {
@@ -18,3 +20,5 @@
 <Button size="sm" variant="ghost" pressed={inScope} onclick={toggle}>
 	{t(inScope ? "scope.remove" : "scope.add")}
 </Button>
+
+<Button size="sm" variant="ghost" pressed={fields} onclick={editFields}>{t("scope.editFields")}</Button>

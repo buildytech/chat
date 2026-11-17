@@ -169,7 +169,10 @@
 		"message.noChange": "No changes were made to the page.",
 		"usage.billed": "API billed cost: {amount} USD.",
 		"usage.billedPartial": "Known billed subtotal: {amount} USD. Total is unknown.",
-		"run.buildNoProposal": "Build did not produce a validated page proposal. No changes were made."
+		"run.buildNoProposal": "Build did not produce a validated page proposal. No changes were made.",
+		"scope.editFields": "Edit fields",
+		"run.fieldsFailed": "The field edit was not accepted. Select one block and try again.",
+		"run.fieldsExternal": "Validation needs changes outside this block. Use the general Build mode."
 	},
 	"overrides": {
 		"sidebar.newChat": "New chat",

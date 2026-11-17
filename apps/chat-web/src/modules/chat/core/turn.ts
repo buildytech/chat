@@ -64,6 +64,7 @@ function planTurn(brief: string, mode: AgentMode, currentMessageId?: string): Tu
 			currentPage: base,
 			shownPage: base === shown ? null : shown,
 			scopeBlockIds: scope,
+			...(mode === "build" && scope.length === 1 && blockScope.fieldId(session?.id) === scope[0] ? { scenario: { id: "page.edit-fields", version: 1 } } : {}),
 			conversation: conversationForTurn(session?.messages ?? [], currentMessageId),
 			collectionRequest: collection
 		}
@@ -180,6 +181,8 @@ export function localizedRunError(code: string | undefined, message: string, mod
 	// A turn that ends without an accepted write: the status and a short reason, never the model-facing error text.
 	if (code === "write_invalid") return t("run.writeInvalid").replace("{code}", code).replace("{reason}", firstReason(issues, t)).replace(/\s{2,}/g, " ");
 	if (code === "write_stuck") return t("run.writeStuck").replace("{code}", code).replace("{reason}", firstReason(issues, t)).replace(/\s{2,}/g, " ");
+	if (code === "fields_external_error") return t("run.fieldsExternal");
+	if (code?.startsWith("fields_")) return t("run.fieldsFailed");
 	if (code === "build_no_proposal") return t("run.buildNoProposal");
 	if (code === "no_answer") return t("run.noAnswer").replace("{code}", code);
 	return message;
