@@ -11,5 +11,8 @@
 		".": "./src/index.ts",
 		"./session": "./src/session.ts",
 		"./collection": "./src/collection.ts"
+	},
+	"dependencies": {
+		"@ui8kit/contract": "^0.4.0"
 	}
 }

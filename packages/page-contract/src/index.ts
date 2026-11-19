@@ -22,3 +22,4 @@ export {
 	type PatchOpV2,
 	type PropValueV2
 } from "./v2.ts";
+export * from "./block-contract.ts";

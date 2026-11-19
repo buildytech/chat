@@ -27020,6 +27020,13 @@ exports["parsePageV2"] = parsePageV2;
 
 });
 
+__def("packages/page-contract/src/block-contract.ts", function (exports) {
+
+
+
+
+});
+
 __def("packages/page-contract/src/index.ts", function (exports) {
 exports["PAGE_BLOCK_KINDS"] = __req("packages/page-contract/src/types.ts")["PAGE_BLOCK_KINDS"];
 exports["cloneJson"] = __req("packages/page-contract/src/clone.ts")["cloneJson"];
@@ -27037,6 +27044,7 @@ exports["pageV2Issues"] = __req("packages/page-contract/src/v2.ts")["pageV2Issue
 exports["pageV2ProgramIssues"] = __req("packages/page-contract/src/v2.ts")["pageV2ProgramIssues"];
 exports["pageSpecV2Schema"] = __req("packages/page-contract/src/v2.ts")["pageSpecV2Schema"];
 exports["parsePageV2"] = __req("packages/page-contract/src/v2.ts")["parsePageV2"];
+{ const __m = __req("packages/page-contract/src/block-contract.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 
 
 
