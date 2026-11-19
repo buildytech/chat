@@ -13,7 +13,7 @@ available components: ui.buildy.tw, planned chat address: chat.buildy.tw.
 
 - Push verified work to **`main`** with a normal fast-forward-safe push.
 - **Do not open a pull request.** PRs permanently pollute this repo's history.
-- Commit author: `Codex <codex@openai.com>` via `git -c user.name=… -c user.email=…`. This is Git author metadata, not the identity used to authenticate a push.
+- Commit author: `Grok Bot <grokbot@users.noreply.github.com>` via `git -c user.name=… -c user.email=…`. This is Git author metadata, not the identity used to authenticate a push.
 - Push through the repository gate (`bash scripts/push-gate.sh`: clean main, fresh runtime bundle, pinned contract schema match, full `npm run verify`, then normal push); never bypass it. Cyrillic is allowed. Use `--check-only` for verification without pushing. Workflow files are owner-only. Generated code changes only through its generator.
 - No force / reset / amend of published history.
 - Do not edit other repositories (wp-fasty, wpmodules, local-wp, …).
