@@ -35,8 +35,8 @@ export function withExt(project: Project, name: string, payload: Record<string, 
 }
 
 /** After a pending proposal became the applied page: the page id, its revision and the screen it came from. */
-export function withApplied(project: Project, applied: { pageId?: string; revision: number | null; screenId: string | null; now: string }): Project {
-	return { ...project, updatedAt: applied.now, pageId: applied.pageId, pageRevision: applied.revision, screenId: applied.screenId };
+export function withApplied(project: Project, applied: { pageId?: string; revision: number | null; now: string }): Project {
+	return { ...project, updatedAt: applied.now, pageId: applied.pageId, pageRevision: applied.revision };
 }
 
 export const bySavedAt = (a: Project, b: Project): number => b.updatedAt.localeCompare(a.updatedAt);

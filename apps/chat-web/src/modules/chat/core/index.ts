@@ -24,7 +24,6 @@ export { chatModeOf, turnOutcome, DEFAULT_CHAT_MODE } from "./modes";
 export { parseMarkdown, parseInline, type MdBlock, type MdInline } from "./markdown";
 export { isPendingProposal, proposalStatus, markPendingProposals } from "./proposals";
 export type {
-	ChatArtifact,
 	ChatMessage,
 	ChatProposalState,
 	ChatRole,

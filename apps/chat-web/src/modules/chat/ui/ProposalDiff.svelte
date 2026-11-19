@@ -35,7 +35,7 @@
 </script>
 
 {#if proposal}
-	<Stack align="stretch" class="gap-2" data-slot="proposal" data-status={status} data-origin={proposal.origin ?? "build"}>
+	<Stack align="stretch" class="gap-2" data-slot="proposal" data-status={status}>
 		{#if rows.length}
 			<Box tag="ul" class="flex flex-col gap-1 rounded border border-border p-2" aria-label={t("diff.title")} data-slot="proposal-diff">
 				{#each rows as row, index (`${row.kind}-${row.id ?? ""}-${index}`)}

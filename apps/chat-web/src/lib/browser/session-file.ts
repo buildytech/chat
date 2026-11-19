@@ -1,5 +1,5 @@
 /**
- * Portable session file buildy:v1 (ADR 0015, https://schema.buildy.tw/session.schema.json): build it from the browser
+ * Portable session file buildy:v2 (ADR 0015, https://schema.buildy.tw/session-v2.schema.json): build it from the browser
  * stores, parse and check one before an import, and keep session.pageRevision / history in step with the page store.
  * Pure: no Svelte, no storage. Lab BuildY opens the same file (its importer reads `sessions[]`).
  */
@@ -14,17 +14,18 @@ import {
 } from "@buildytech/page-contract/session";
 import { isV1Page, normalizePageRecord, type StoredPageRecord } from "./persist.ts";
 
+/** The catalog sources of this build: the registry and the prototypes commit the catalog was generated from. */
 export type SessionPins = {
-	stock: { repo: string; contentCommit: string };
 	registry: { url: string; sourceCommit: string };
+	prototypes: { repo: string; commit: string };
 	catalogDigest?: string;
 };
 export type SessionApp = { name: string; version: string; host: "browser" | "desktop" | "wordpress"; commit?: string };
-/** Layout preferences (session 1.2.0 `prefs`, `buildy:v1:prefs`; ADR 0017). */
+/** Layout preferences (session `prefs`, stored as `buildy:v1:prefs`; ADR 0017). */
 export type SessionPrefs = { layout?: Record<string, number | boolean> };
 export type SessionSettings = { theme?: "light" | "dark"; selectedModelId?: string; previewHideServiceLabels?: boolean };
 
-/** The project a stored session works on: its `projectId`, else its own id (every file before session 1.9.0). */
+/** The project a stored session works on: its `projectId`, else its own id. */
 export function projectIdOf(chat: { id: string; projectId?: string }): string {
 	return chat.projectId ?? chat.id;
 }
@@ -32,7 +33,7 @@ export function projectIdOf(chat: { id: string; projectId?: string }): string {
 /** A session as the stores keep it: the project part, plus the optional chat extension (the page record lives in the page store). */
 export type StoredChat = {
 	id: string;
-	/** session 1.9.0: the project of the session (its page record is keyed by it); absent: `id`. */
+	/** The project of the session (its page record is keyed by it); absent: `id`. */
 	projectId?: string;
 	pageRevision?: number | null;
 	pageId?: string;
@@ -114,7 +115,7 @@ export function buildSessionFile(input: {
 	};
 }
 
-/** Parse and check a session file: JSON, then session.schema.json, then its program checks. Nothing is written. */
+/** Parse and check a session file: JSON, then session-v2.schema.json, then its program checks. Nothing is written. */
 export function parseSessionFile(input: unknown): ParsedSessionFile {
 	let value: unknown = input;
 	if (typeof input === "string") {
@@ -124,10 +125,11 @@ export function parseSessionFile(input: unknown): ParsedSessionFile {
 			return { ok: false, code: "invalid_json", issues: [{ path: "$", keyword: "json" }] };
 		}
 	}
+	// A retired page-spec/v1 page fails the v2 record schema too; it is named first so the author is told why.
+	const old = v1PageIssues(value);
+	if (old.length) return { ok: false, code: "page_v1_unsupported", issues: old.slice(0, 20) };
 	const issues = sessionFileIssues(value);
 	if (issues.length) return { ok: false, code: "schema_invalid", issues: issues.slice(0, 20) };
-	const old = v1PageIssues(value as SessionFile);
-	if (old.length) return { ok: false, code: "page_v1_unsupported", issues: old.slice(0, 20) };
 	const file = normalizeSessionFile(value as SessionFile);
 	const program = sessionProgramIssues(file);
 	if (program.length) return { ok: false, code: "program_invalid", issues: program.slice(0, 20) };
@@ -135,11 +137,14 @@ export function parseSessionFile(input: unknown): ParsedSessionFile {
 }
 
 /** Pages in the retired page-spec/v1 format (ADR 0045): the file is refused, nothing is read from it. */
-function v1PageIssues(file: SessionFile): SessionFileIssue[] {
+function v1PageIssues(value: unknown): SessionFileIssue[] {
 	const out: SessionFileIssue[] = [];
-	file.sessions.forEach((chat, i) => {
-		const page = chat.page as Record<string, unknown> | null;
-		for (const slot of ["applied", "candidate", "lastProposed"]) if (page && isV1Page(page[slot])) out.push({ path: `$.sessions[${i}].page.${slot}`, keyword: "page_v1_unsupported" });
+	const sessions = value && typeof value === "object" ? (value as { sessions?: unknown }).sessions : undefined;
+	if (!Array.isArray(sessions)) return out;
+	sessions.forEach((chat: unknown, i) => {
+		const page = chat && typeof chat === "object" ? (chat as { page?: unknown }).page : undefined;
+		if (!page || typeof page !== "object") return;
+		for (const slot of ["applied", "candidate", "lastProposed"]) if (isV1Page((page as Record<string, unknown>)[slot])) out.push({ path: `$.sessions[${i}].page.${slot}`, keyword: "page_v1_unsupported" });
 	});
 	return out;
 }

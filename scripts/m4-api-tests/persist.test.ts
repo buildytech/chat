@@ -58,7 +58,7 @@ afterEach(() => {
 });
 
 test("existing session arrays keep loading from the original key", () => {
-	const previous = [{ id: "session-1", title: "Barbecue", updatedAt: "2026-11-08T00:00:00.000Z", messages: [] }];
+	const previous = [{ id: "session-1", title: "Barbecue", updatedAt: "2026-11-08T00:00:00.000Z", ext: { chat: { messages: [] } } }];
 	memory.setItem(SESSIONS_KEY, JSON.stringify(previous));
 	const loaded = loadSessionsJson();
 	assert.deepEqual(loaded, previous);
@@ -147,49 +147,45 @@ test("quota errors are truthful and leave the last good blob", () => {
 	assert.deepEqual(loadSessionsJson(), [{ id: "session-1" }]);
 });
 
-// ---- ADR 0024 step D fix: "Start page from this screen" proposals --------------------------------------------------
+// ---- Build proposals in ext.chat; Ask proposals and Stock origins are gone (ADR 0059, buildy:v2) ---------------------
 
 const NOW_D = "2026-11-11T17:00:00.000Z";
-const screenChat = (origin?: string) => ({
-	id: "session-screen",
-	title: "Bakery",
+const buildChat = (proposalExtra: Record<string, unknown> = {}) => ({
+	id: "session-build",
+	title: "Studio",
 	updatedAt: NOW_D,
-	mode: "build",
-	messages: [
-		{
-			id: "msg-1",
-			role: "assistant",
-			text: "Started a page from the screen",
-			createdAt: NOW_D,
-			proposal: {
-				applied: true,
-				status: "applied",
-				source: "local-catalog-assembler",
-				liveModel: false,
-				warnings: [],
-				missing: [],
-				title: "Bakery",
-				catalogRefs: { catalogDigest: "sha256:x", pinnedCommit: "081a1c5", screen: null, blocks: [] },
-				...(origin ? { origin } : {})
-			}
+	ext: {
+		chat: {
+			mode: "build",
+			messages: [
+				{
+					id: "msg-1",
+					role: "assistant",
+					text: "Proposed a page",
+					createdAt: NOW_D,
+					mode: "build",
+					proposal: { applied: true, status: "applied", source: "write_page", liveModel: false, warnings: [], missing: [], title: "Studio", baseRevision: 0, ...proposalExtra }
+				}
+			]
 		}
-	]
+	}
 });
 
-test("a session from 'Start page from this screen' is schema-valid and survives a reload", () => {
-	memory.setItem(SESSIONS_KEY, JSON.stringify([screenChat()]));
-	assert.deepEqual(loadSessionsJson(), [screenChat()]);
+test("a Build chat with an applied proposal is schema-valid and survives a reload", () => {
+	memory.setItem(SESSIONS_KEY, JSON.stringify([buildChat()]));
+	assert.deepEqual(loadSessionsJson(), [buildChat()]);
 	assert.equal(getPersistError(), null, "nothing goes to quarantine");
 	assert.equal(memory.getItem("buildy:v1:quarantine"), null);
 });
 
-test("chats saved with the retired origin 'feed-screen' are quarantined, not repaired (ADR 0045)", () => {
-	memory.setItem(SESSIONS_KEY, JSON.stringify([screenChat("feed-screen"), screenChat("ask-plan")].map((c, i) => ({ ...c, id: `session-${i}` }))));
+test("chats with an Ask / Stock proposal origin or Stock catalog refs are quarantined, not repaired", () => {
+	const chats = [buildChat({ origin: "feed-screen" }), buildChat(), buildChat({ origin: "ask-plan" }), buildChat({ catalogRefs: { blocks: [] } })].map((c, i) => ({ ...c, id: `session-${i}` }));
+	memory.setItem(SESSIONS_KEY, JSON.stringify(chats));
 	const loaded = loadSessionsJson() as Array<{ id: string }>;
 	assert.deepEqual(loaded.map((c) => c.id), ["session-1"], "the valid chat loads");
 	assert.equal(getPersistError()?.code, "corrupt");
 	const quarantined = JSON.parse(memory.getItem("buildy:v1:quarantine")!) as Array<{ reason: string; raw: string }>;
-	assert.equal(quarantined.length, 1);
-	assert.match(quarantined[0]!.reason, /^session_invalid:/);
+	assert.equal(quarantined.length, 3);
+	for (const q of quarantined) assert.match(q.reason, /^session_invalid:/);
 	assert.equal((JSON.parse(quarantined[0]!.raw) as { id: string }).id, "session-0", "the refused chat is kept whole");
 });

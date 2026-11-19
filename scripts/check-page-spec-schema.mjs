@@ -11,7 +11,7 @@ if (!contract || !/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(contract.repo) || !/
 const source = args.includes('--published') ? 'https://schema.buildy.tw' : 'https://raw.githubusercontent.com/' + contract.repo + '/' + contract.commit + '/' + contract.schemas;
 console.log('schema source: ' + source);
 let failed = false;
-for (const name of ["page-spec", "page-patch", "page-spec-v2", "page-patch-v2", "session", "collection", "block-contract"]) {
+for (const name of ["page-spec", "page-patch", "page-spec-v2", "page-patch-v2", "session-v2", "block-contract"]) {
 	const url = `${source}/${name}.schema.json`;
 	const local = readFileSync(join(dir, `${name}.schema.json`), "utf8");
 	const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });

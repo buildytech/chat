@@ -18,13 +18,13 @@ import { previewSettings } from "./preview-settings.svelte";
 import type { SessionApp, SessionFile, SessionPins, SessionSettings } from "./session-file.ts";
 
 declare const __BUILDY_APP_COMMIT__: string;
-declare const __BUILDY_PINS__: Pick<SessionPins, "stock" | "registry">;
+declare const __BUILDY_PINS__: Pick<SessionPins, "registry" | "prototypes">;
 
 type BuildyApi = {
 	readonly format: typeof SESSION_FORMAT;
 	readonly schema: string;
 	export(options?: { download?: boolean; includeBodies?: boolean }): SessionFile;
-	/** A session file buildy:v1, or a file a loaded module opens (the chat: a Stock collection buildy-collection:v1 in a new Build chat). */
+	/** A session file buildy:v2, or a file a loaded module opens (no module claims one today). */
 	import(json: unknown): Promise<ImportResult | ModuleImportResult>;
 };
 
@@ -38,7 +38,7 @@ function app(): SessionApp {
 	};
 }
 
-/** Pins of this build: the Stock content commit and the registry source commit (catalog/snapshot.config.json). */
+/** Pins of this build: the registry and the prototypes commit (catalog/snapshot.config.json). */
 function sessionPins(): SessionPins {
 	return {
 		...__BUILDY_PINS__,
@@ -105,9 +105,8 @@ function parsedJson(json: unknown): unknown {
 }
 
 /**
- * Settings > Import and `buildy.import(json)`: the reader is picked by `format`. A file a loaded module claims (the
- * chat: a Stock collection buildy-collection:v1, which opens in a new Build chat with the same checks as an Open in
- * BuildY link) goes to that module; everything else is read as a session file.
+ * Settings > Import and `buildy.import(json)`: the reader is picked by `format`. A file a loaded module claims goes to
+ * that module; everything else is read as a session file.
  */
 export async function importFile(json: unknown): Promise<ImportResult | ModuleImportResult> {
 	const parsed = parsedJson(json);

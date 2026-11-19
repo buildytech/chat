@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Block from "$registry/compose/Block.svelte";
 	import Stack from "$registry/compose/Stack.svelte";
-	import { t } from "$lib/i18n/dictionary";
 	import type { ChatSession, CreatorRuntimeStatus } from "$modules/chat/core";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/chat-agent";
 	import ChatComposer from "./ChatComposer.svelte";
@@ -46,24 +45,6 @@
 	function onEdit(text: string) {
 		draft = text;
 	}
-
-	function activityFor(message: (typeof messages)[number]): string[] {
-		const arts = message.artifacts ?? [];
-		const lines: string[] = [];
-		for (const a of arts) {
-			if (a.kind === "saved_page") {
-				for (const file of a.files) {
-					lines.push(t("message.wrote").replace("{file}", file));
-				}
-				lines.push(
-					t("message.savedRevision")
-						.replace("{slug}", a.slug)
-						.replace("{revision}", String(a.revision))
-				);
-			}
-		}
-		return lines;
-	}
 </script>
 
 <Block class="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
@@ -83,11 +64,8 @@
 		<Stack align="stretch" class="min-h-0 flex-1 gap-6 overflow-y-auto p-4">
 			<Stack align="stretch" class="mx-auto w-full max-w-2xl gap-6">
 				{#each messages as message (message.id)}
-					{@const activity = activityFor(message)}
 					<ChatMessage
 						{message}
-						{activity}
-						showActivity={message.role === "assistant" && activity.length > 0}
 						{onEdit}
 						{onApply}
 						{onDiscard}

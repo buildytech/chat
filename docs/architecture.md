@@ -31,7 +31,7 @@ flowchart LR
 | `packages/builder-core` | The page document (`page-doc`), edit operations and their gates (document schema, props gate, render probe), the Stock catalog snapshot and search. No model dependencies. |
 | `packages/chat-agent` | The agent turn and its tools (`write_page`, `get_page`, `search_catalog`, `get_block`), model resolution, usage, runtime environment and protection. |
 | `apps/xai-runtime`, `api/runtime` | Protected server runtime (`/runtime/v1/status`, `/runtime/v1/run`); Vercel Functions in staging. `XAI_API_KEY` stays server-side. |
-| `packages/page-contract` | JSON Schemas and validators: the page-spec 2.0 document and the portable session `buildy:v1`. |
+| `packages/page-contract` | JSON Schemas and validators: the page-spec 2.0 document and the portable session `buildy:v2` (@ui8kit/contract 0.5.0). |
 | `packages/ports` | Framework-neutral Catalog, Page, Publish and Preview port types. |
 | `registry/svelte` | The pinned `npx ui8kit init` + `add --all` snapshot, the single source of UI ([ADR-0008](../.project/adr/0008-registry-single-source-of-ui.md)). Never hand-edited. |
 | `catalog/` | The pinned Stock plus registry graph and its derived artifacts ([ADR-0012](../.project/adr/0012-unified-catalog-snapshot.md), [0039](../.project/adr/0039-one-block-source.md)). |

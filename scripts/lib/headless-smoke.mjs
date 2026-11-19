@@ -102,7 +102,7 @@ export async function headlessSmoke({ dir, chat }) {
 		ok("reload kept the same document", d.sessions.length === 1 && d.sessions[0].pageRevision === s2.pageRevision, d.sessions[0]?.pageRevision);
 		// 4. export (file and API), then import into an empty browser
 		const exported = await pg.evaluate(() => window.buildy.export());
-		ok("export is a session file with the project", exported.format === "buildy:v1" && exported.sessions.length === 1 && !!exported.sessions[0].page);
+		ok("export is a session file with the project", exported.format === "buildy:v2" && exported.sessions.length === 1 && !!exported.sessions[0].page);
 		if (!chat) ok("exported project has no chat keys", !CHAT_KEYS.some((k) => k in exported.sessions[0]) && !("selectedModelId" in (exported.settings || {})), Object.keys(exported.sessions[0]));
 		const dl = pg.waitForEvent("download", { timeout: 8000 });
 		await pg.evaluate(() => window.buildy.export({ download: true }));

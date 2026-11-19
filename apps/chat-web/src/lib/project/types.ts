@@ -1,21 +1,18 @@
-import type { ScenarioId } from "@buildytech/builder-core";
 import type { SessionRevisionEntry } from "@buildytech/page-contract/session";
 
 /**
- * A project: the page, its skin and revision history (session buildy:v1 1.9.0). It exists without a chat.
+ * A project: the page, its skin and revision history (session buildy:v2). It exists without a chat.
  * Extensions (`ext`, by name) hold what other modules keep with the project: the chat module keeps `ext.chat`
  * (messages, mode, selected model, usage). The project store never reads an extension; it stores and returns it.
  */
 export type Project = {
 	/** The session id: the selection key (`?session=`) and the id in the stored session list. */
 	id: string;
-	/** The key of the page record in the pages blob. Equal to `id` unless a session file said otherwise (1.9.0 `projectId`). */
+	/** The key of the page record in the pages blob. Equal to `id` unless a session file said otherwise (`projectId`). */
 	projectId: string;
 	title: string;
 	createdAt?: string;
 	updatedAt: string;
-	scenarioId?: ScenarioId | null;
-	screenId?: string | null;
 	pageId?: string;
 	pageBound?: boolean;
 	pageRevision?: number | null;

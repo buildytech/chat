@@ -1,5 +1,5 @@
 /**
- * The session file buildy:v1 of this browser (export) and its import: every project, its page record, revisions and
+ * The session file buildy:v2 of this browser (export) and its import: every project, its page record, revisions and
  * history. No chat code: the chat part of a project is `ext.chat`, carried through unchanged.
  */
 import { SESSIONS_KEY, deleteProjectPage, quarantineValue, readProjectPage, writeAllProjectPages, type StoredPageRecord } from "../browser/persist";
@@ -23,7 +23,7 @@ export function exportProjects(meta: { app: SessionApp; pins: SessionPins; setti
 }
 
 /**
- * Load a session file: checked against session.schema.json and its program checks first (nothing is written when it
+ * Load a session file: checked against session-v2.schema.json and its program checks first (nothing is written when it
  * fails). A project with an id that already exists here is replaced; the replaced one and its page record are kept in
  * quarantine first, so an import never loses data. `selected` is the id to select next (the caller selects it).
  */

@@ -1,5 +1,5 @@
 <!--
-  Settings > Session file (ADR 0015): Export saves this browser's session file buildy:v1 (what `buildy.export()`
+  Settings > Session file (ADR 0015): Export saves this browser's session file buildy:v2 (what `buildy.export()`
   returns), Import checks one and loads it (`buildy.import(json)`; a failing file changes nothing), and Quarantine
   lists the stored values that failed their checks at load: kept, never loaded, downloadable as JSON.
 -->

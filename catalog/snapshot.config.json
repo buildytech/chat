@@ -15,7 +15,7 @@
 	},
 	"contract": {
 		"repo": "ui8kit/contract",
-		"commit": "999621963a8ddfd2c96c30d46d69056af0e69df1",
+		"commit": "5611b4403bf0363304e0a5abe3f9f32c64694c4e",
 		"schemas": "public"
 	}
 }

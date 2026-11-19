@@ -54,8 +54,6 @@ export type BuilderModule = {
 	/** `en` and `ru` message catalogs; keys are the module's own (never a core key). `overrides` re-words core keys while the module is loaded. */
 	messages?: { en: Record<string, string>; ru: Record<string, string> };
 	messageOverrides?: { en: Record<string, string>; ru: Record<string, string> };
-	/** Flat session keys documents before session 1.10.0 kept for this module; read into `ext.<id>` on load, never written. */
-	legacyKeys?: readonly string[];
 	/** What a new project starts with: title and `ext`. Without a module the title is `page.untitled` and `ext` is empty. */
 	newProject?: () => { title: string; ext: Project["ext"] };
 	tabs?: readonly ModuleTab[];

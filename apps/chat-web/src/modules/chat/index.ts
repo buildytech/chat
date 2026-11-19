@@ -13,7 +13,7 @@ import ruMessages from "./i18n/ru.json";
 import { getSelectedModelId, setSelectedModelId } from "./browser/models.svelte.ts";
 import { hydrateSessionContext } from "./browser/onboarding.svelte.ts";
 import { beforeHydrate, beforeProjectChange, getChatMode, projectOpened, recoverInterruptedRuns, run, setChatMode } from "./core/chat.svelte.ts";
-import { CHAT_LEGACY_KEYS, chatOf } from "./core/view";
+import { chatOf } from "./core/view";
 import BlockScopeAction from "./ui/BlockScopeAction.svelte";
 import ChatPanel from "./ui/ChatPanel.svelte";
 import ProposalReview from "./ui/ProposalReview.svelte";
@@ -23,7 +23,6 @@ export const chatModule: BuilderModule = {
 	prepareProjectSave: retainTraces,
 	messages: { en: enMessages.messages, ru: ruMessages.messages },
 	messageOverrides: { en: enMessages.overrides, ru: ruMessages.overrides },
-	legacyKeys: CHAT_LEGACY_KEYS,
 	newProject: () => ({ title: t("thread.untitled"), ext: { chat: { messages: [], mode: run.pendingMode } } }),
 	tabs: [{ id: "chat", labelKey: "leftPanel.chat", icon: MessageSquare, panel: ChatPanel }],
 	leftSurface: { icon: MessageSquare, tabKey: "shell.tabChat", regionKey: "shell.chatColumn", hideKey: "workspace.hideChat", showKey: "workspace.showChat" },

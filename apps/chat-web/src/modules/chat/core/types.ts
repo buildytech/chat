@@ -1,6 +1,5 @@
-import type { DiffEntry, ScenarioId } from "@buildytech/builder-core";
+import type { DiffEntry } from "@buildytech/builder-core";
 import type { AgentMode, RejectedWrite, RunUsage, SessionUsage } from "@buildytech/chat-agent";
-import type { PageV2 } from "@buildytech/page-contract";
 import type { SessionRevisionEntry } from "@buildytech/page-contract/session";
 
 export type ServerCapabilities = {
@@ -23,14 +22,6 @@ export type CreatorRuntimeStatus = {
 
 export type ChatRole = "user" | "assistant";
 
-export type ChatArtifact = {
-	kind: "saved_page";
-	pageId: string;
-	slug: string;
-	revision: number;
-	files: string[];
-};
-
 export type ProposalStatus = "pending" | "applied" | "discarded" | "superseded";
 
 export type ChatProposalState = {
@@ -38,30 +29,15 @@ export type ChatProposalState = {
 	status?: ProposalStatus;
 	source: string;
 	liveModel: boolean;
-	assembler?: string;
 	warnings: string[];
 	missing: string[];
 	title: string;
-	screenId?: string | null;
 	/** Page language of this proposal (follows the author's request). */
 	locale?: string;
-	/** Author asked for demo data and the page carries marked demo rows. */
-	demoData?: boolean;
-	/** Stock refs of an older proposal (session 1.x): kept in the file, no longer shown. */
-	catalogRefs?: unknown;
-	/**
-	 * Older chats only (Ask is read-only since ADR 0059): ask-card, ask-plan (1.4.0) and ask-proposal (1.8.0) are kept in the
-	 * file and shown without actions.
-	 */
-	origin?: "ask-card" | "ask-plan" | "ask-proposal";
-	/** The page revision the proposal was made for (Apply in Build checks that the page did not move on). */
+	/** The page revision the proposal was made for. */
 	baseRevision?: number;
 	/** The proposal as a diff against the page the author saw: per block added, removed, moved, changed. */
 	diff?: DiffEntry[];
-	/** An Ask proposal's page document (Ask never touches the page store). */
-	page?: PageV2;
-	/** Follow-up turns: block kinds added, kept, and removed versus the base page. */
-	changes?: { added: string[]; kept: string[]; removed: string[] };
 };
 
 export type ChatRunRecord = {
@@ -86,7 +62,6 @@ export type ChatMessage = {
 	role: ChatRole;
 	text: string;
 	createdAt: string;
-	artifacts?: ChatArtifact[];
 	proposal?: ChatProposalState;
 	run?: ChatRunRecord;
 	selectedModelId?: string;
@@ -99,8 +74,6 @@ export type ChatMessage = {
 	answer?: { blocks: string[] };
 	/** Build proposals: the model's own words next to the proposal summary (Markdown). */
 	modelText?: string;
-	/** A 1.4.0 page plan of an old Ask answer: kept in the chat file, shown as text only, never run (ADR 0034). */
-	plan?: unknown;
 };
 
 /**
@@ -119,8 +92,6 @@ export type ChatSession = {
 	pageId?: string;
 	pageBound?: boolean;
 	pageRevision?: number | null;
-	scenarioId?: ScenarioId | null;
-	screenId?: string | null;
 	selectedModelId?: string;
 	usage?: SessionUsage;
 	/** Ask or Build, picked in the composer and kept with this chat. */

@@ -77,7 +77,8 @@ export default defineConfig(({ mode }) => {
 			__BUILDY_APP_VERSION__: JSON.stringify(pkg.version),
 			__BUILDY_APP_COMMIT__: JSON.stringify(commit),
 			// The content pins of this build (catalog/snapshot.config.json), read here so the app imports nothing outside apps/chat-web.
-			__BUILDY_PINS__: JSON.stringify({ stock: { repo: pins.prototypes.repo, contentCommit: pins.prototypes.commit }, registry: { url: pins.ui8kit.registry, sourceCommit: pins.prototypes.commit } }),
+			// registry.buildy.tw is built from the prototypes commit, so it is the registry source commit too.
+			__BUILDY_PINS__: JSON.stringify({ registry: { url: pins.ui8kit.registry, sourceCommit: pins.prototypes.commit }, prototypes: { repo: pins.prototypes.repo, commit: pins.prototypes.commit } }),
 			__MODULE_CHAT__: JSON.stringify(chat)
 		},
 		server: {

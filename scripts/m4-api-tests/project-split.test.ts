@@ -7,17 +7,14 @@ import { readFileSync, readdirSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
-import { docOfProject, projectOfDoc, registerLegacyKeys } from "../../apps/chat-web/src/lib/project/doc.ts";
+import { docOfProject, projectOfDoc } from "../../apps/chat-web/src/lib/project/doc.ts";
 import { bySavedAt, draftPageId, newProject, withApplied, withExt, withSkin } from "../../apps/chat-web/src/lib/project/transitions.ts";
-import { CHAT_LEGACY_KEYS, projectOfView, viewOf } from "../../apps/chat-web/src/modules/chat/core/view.ts";
-
-// The chat module registers its keys when it loads; this file tests the project with it loaded (modules.test.ts: without).
-registerLegacyKeys("chat", CHAT_LEGACY_KEYS);
+import { projectOfView, viewOf } from "../../apps/chat-web/src/modules/chat/core/view.ts";
 
 const NOW = "2026-11-10T12:00:00.000Z";
 const lib = (path: string) => fileURLToPath(new URL(`../../apps/chat-web/src/lib/${path}`, import.meta.url));
 const chatCore = (path: string) => fileURLToPath(new URL(`../../apps/chat-web/src/modules/chat/core/${path}`, import.meta.url));
-/** A document before session 1.10.0: the chat keys flat at the top. */
+/** A buildy:v1 document: the chat keys flat at the top, the Stock scenario and screen. buildy:v2 does not read it. */
 const flatDoc = {
 	id: "session-a",
 	title: "Coffee",
@@ -35,14 +32,12 @@ const flatDoc = {
 	messages: [{ id: "m1", role: "user", text: "hi", createdAt: NOW }],
 	history: [{ revision: 1, at: NOW, cause: "apply" }]
 };
-/** The same project as the app writes it since 1.10.0: the chat under `ext.chat`. */
+/** The project as the app writes it (buildy:v2): the chat under `ext.chat`. */
 const legacyDoc = {
 	id: "session-a",
 	title: "Coffee",
 	createdAt: NOW,
 	updatedAt: NOW,
-	scenarioId: null,
-	screenId: "landing",
 	pageId: "page-a",
 	pageBound: true,
 	pageRevision: 2,
@@ -59,18 +54,14 @@ test("doc: a stored document is a fixed point of project -> doc, byte for byte (
 	}
 	assert.deepEqual(sessionDefIssues(noChatDoc, "session"), []);
 	const withChat = { id: "session-d", title: "Chat", updatedAt: NOW, ext: { chat: legacyDoc.ext.chat } };
-	for (const doc of [withChat, otherProjectDoc]) assert.deepEqual(sessionDefIssues(doc, "session"), [], "session 1.10.0: ext.chat is schema-valid");
+	for (const doc of [withChat, otherProjectDoc, legacyDoc]) assert.deepEqual(sessionDefIssues(doc, "session"), [], "ext.chat is schema-valid");
 });
 
-test("doc: a document before 1.10.0 (flat chat keys) is read into ext.chat and written back under ext, never flat", () => {
+test("doc: a buildy:v1 document (flat chat keys, scenario, screen) is not read into ext.chat and fails the session schema", () => {
 	const project = projectOfDoc(flatDoc as never);
-	assert.deepEqual(project.ext.chat, legacyDoc.ext.chat);
-	assert.equal(project.extra, undefined, "the flat keys are the chat's, not leftovers");
-	const written = docOfProject(project);
-	assert.equal(JSON.stringify(written), JSON.stringify(legacyDoc));
-	for (const key of ["messages", "mode", "usage", "selectedModelId"]) assert.equal(key in written, false, `${key} is not written flat`);
-	const both = projectOfDoc({ ...flatDoc, ext: { chat: { messages: [] } } } as never);
-	assert.deepEqual(both.ext.chat, { messages: [] }, "ext wins over the flat keys");
+	assert.deepEqual(project.ext, {}, "no legacy keys are read");
+	assert.deepEqual(Object.keys(project.extra ?? {}).sort(), ["messages", "mode", "scenarioId", "screenId", "selectedModelId", "usage"]);
+	assert.notDeepEqual(sessionDefIssues(flatDoc, "session"), [], "persist quarantines it at load");
 });
 
 test("doc: the project holds no chat field; a document with no messages has no ext.chat and gets none back", () => {
@@ -110,7 +101,7 @@ test("transitions: pure, each returns a new project and leaves the old one alone
 	assert.equal("skin" in withSkin(project, null), false);
 	assert.equal(withSkin(project, "warm"), project);
 	assert.equal(withSkin(project, "dark").skin, "dark");
-	const applied = withApplied(project, { pageId: "page-n", revision: 1, screenId: "landing", now: "2026-11-11T00:00:00.000Z" });
+	const applied = withApplied(project, { pageId: "page-n", revision: 1, now: "2026-11-11T00:00:00.000Z" });
 	assert.equal(applied.pageRevision, 1);
 	assert.equal(project.pageRevision, undefined);
 	assert.equal(withExt(withExt(project, "x", { a: 1 }), "x", null).ext.x, undefined);

@@ -51,7 +51,7 @@ function planTurn(brief: string, mode: AgentMode, currentMessageId?: string): Tu
 		request: {
 			brief,
 			mode,
-			screenId: getScreenId() ?? session?.screenId ?? null,
+			screenId: getScreenId(),
 			expectedRevision: getPageRevision() ?? 0,
 			currentPage: base,
 			shownPage: base === shown ? null : shown,
@@ -205,8 +205,6 @@ function newProposalState(input: {
 	warnings: string[];
 	baseRevision: number;
 	live: boolean;
-	screenId: string | null;
-	origin?: ChatProposalState["origin"];
 }): ChatProposalState {
 	return {
 		applied: false,
@@ -216,11 +214,9 @@ function newProposalState(input: {
 		warnings: input.warnings,
 		missing: [],
 		title: input.page.title,
-		screenId: input.screenId,
 		locale: input.page.locale,
 		baseRevision: input.baseRevision,
-		diff: input.diff,
-		...(input.origin ? { origin: input.origin } : {})
+		diff: input.diff
 	};
 }
 
@@ -246,5 +242,5 @@ export function replyMessage(out: TurnOutcome): ChatMessage {
 	const screenId = plan.request.screenId ?? null;
 	const baseRevision = plan.request.expectedRevision;
 	setCandidatePage(checked.page, provenanceFor(screenId));
-	return { ...base, proposal: newProposalState({ ...checked, baseRevision, live, screenId }) };
+	return { ...base, proposal: newProposalState({ ...checked, baseRevision, live }) };
 }

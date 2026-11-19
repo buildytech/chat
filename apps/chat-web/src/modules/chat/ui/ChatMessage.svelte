@@ -1,6 +1,6 @@
 <script lang="ts">
 	import UsageCost from "./UsageCost.svelte";
-import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$lib/shell-icons";
+import { Copy, Check, Pencil, Share2, ThumbsDown, ThumbsUp } from "$lib/shell-icons";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte.ts";
  import Block from "$registry/compose/Block.svelte";
 	import Disclosure from "$registry/kit/ui/disclosure/Disclosure.svelte";
@@ -20,15 +20,11 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 
 	let {
 		message,
-		activity = [],
-		showActivity = false,
 		onEdit,
 		onApply,
 		onDiscard,
 	}: {
 		message: ChatMessageModel;
-		activity?: string[];
-		showActivity?: boolean;
 		onEdit?: (text: string) => void;
 		onApply?: () => void;
 		onDiscard?: () => void;
@@ -180,16 +176,6 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 						<UsageCost cost={run.usage?.cost} />
 					</Stack>
 				</Disclosure>
-			{/if}
-			{#if !previewSettings.hideServiceLabels && showActivity && activity.length > 0}
-				<Stack align="stretch" class="gap-2" role="list" aria-label={t("chat.activity")}>
-					{#each activity as line (line)}
-						<Group class="items-center gap-2" role="listitem">
-							<Icon size="sm" class="text-muted-foreground"><FileText /></Icon>
-							<Text tag="span" class="text-xs font-semibold text-foreground">{line}</Text>
-						</Group>
-					{/each}
-				</Stack>
 			{/if}
 			<Group class="items-center gap-0" aria-label={t("chat.reactions")}>
 				<Button

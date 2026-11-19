@@ -1,7 +1,7 @@
 import { startAttempt, endAttempt } from "../../packages/chat-agent/src/run-attempt.ts";
 /**
  * Session standard (ADR 0015): the buildy:v1 key space and the old keys it sets aside (ADR 0045), schema validation at load with
- * quarantine, the portable session file buildy:v1 (export / import checks, Lab shape), and page revisions (one per
+ * quarantine, the portable session file buildy:v2 (export / import checks, the chat in ext.chat), and page revisions (one per
  * committed edit, coalesced typing = one revision = one undo step, session.pageRevision in sync, unchanged = no-op).
  */
 import assert from "node:assert/strict";
@@ -74,28 +74,29 @@ function landing(): PageV2 {
 	return studioPage({ title: "Coffee house", now: NOW });
 }
 
-const chat = (id: string, extra: Record<string, unknown> = {}) => ({
-	id,
-	title: "Coffee house",
-	updatedAt: NOW,
-	mode: "build",
-	messages: [
+/** A stored session document as the app writes it (buildy:v2): the project keys, the chat in `ext.chat`. */
+const messages = () => [
 		{ id: "msg-1", role: "user", text: "Landing for a coffee house", createdAt: NOW, mode: "build", selectedModelId: "grok-4" },
 		{
 			id: "msg-2",
 			role: "assistant",
 			text: "Proposal ready",
 			createdAt: NOW,
-			proposal: { applied: true, status: "applied", source: "xai", liveModel: true, warnings: [], missing: [], title: "Coffee", catalogRefs: { catalogDigest: "sha256:x", pinnedCommit: "081a1c5", screen: null, blocks: [] } },
+			proposal: { applied: true, status: "applied", source: "xai", liveModel: true, warnings: [], missing: [], title: "Coffee" },
 			run: { requestedModelId: "grok-4", modelId: "grok-4", modelLabel: "Grok 4", live: true, policyVersion: "1", modelCatalogVersion: "1", trialPolicyVersion: "1", usage: { status: "complete", steps: 2, promptTokens: 10, completionTokens: 5, totalTokens: 15, reportedBy: "xai-provider" } }
 		}
-	],
+	];
+const chat = (id: string, extra: Record<string, unknown> = {}) => ({
+	id,
+	title: "Coffee house",
+	updatedAt: NOW,
+	ext: { chat: { mode: "build", messages: messages() } },
 	...extra
 });
 
 const pins = {
-	stock: { repo: "codegen-x/ui8kit", contentCommit: "081a1c5e5cc5db6f6439a37edb666ddfee7aa006" },
-	registry: { url: "https://registry.buildy.tw", sourceCommit: "3a6d923a3bdf75bba8951a3dfda7f3e97a69ecc5" },
+	registry: { url: "https://registry.buildy.tw", sourceCommit: "716764ea0b500c25c3f2f15e74de540f2f71176e" },
+	prototypes: { repo: "ui8kit/prototypes", commit: "716764ea0b500c25c3f2f15e74de540f2f71176e" },
 	catalogDigest: "sha256:78a567cf"
 };
 const app = { name: "buildy-chat", version: "0.0.0", host: "browser" as const };
@@ -147,7 +148,7 @@ test("app source reads and writes only buildy:v1 keys (legacy names live in stor
 
 // ---- validation at load and quarantine ---------------------------------------------------------------------------
 
-test("load: chats are checked against session.schema.json; an invalid chat is quarantined, the others load", () => {
+test("load: chats are checked against session-v2.schema.json; an invalid chat is quarantined, the others load", () => {
 	const good = chat("session-a");
 	const bad = { ...chat("session-b"), apiKey: "not-a-session-field" };
 	store.setItem(STORAGE_KEYS.sessions, JSON.stringify([good, bad]));
@@ -161,6 +162,14 @@ test("load: chats are checked against session.schema.json; an invalid chat is qu
 	assert.equal(getPersistError()?.code, "corrupt");
 	assert.deepEqual(loadSessionsJson(), [good], "a second load quarantines nothing new");
 	assert.equal(readQuarantine(store).length, 1);
+});
+
+test("load: a buildy:v1 chat (flat messages and mode, scenario and screen) is quarantined, not read (session v2)", () => {
+	const { ext: _ext, ...project } = chat("session-old");
+	const old = { ...project, mode: "build", scenarioId: null, screenId: null, messages: messages() };
+	store.setItem(STORAGE_KEYS.sessions, JSON.stringify([old, chat("session-a")]));
+	assert.deepEqual(loadSessionsJson().map((c) => (c as { id: string }).id), ["session-a"]);
+	assert.match(readQuarantine(store)[0]!.reason, /^session_invalid:additionalProperties$/);
 });
 
 test("load: unreadable chats JSON is quarantined whole and the key starts empty", () => {
@@ -190,9 +199,9 @@ test("quarantine keeps a broken quarantine blob instead of overwriting it", () =
 	assert.deepEqual(q.map((e) => e.raw), ["oops", "v"]);
 });
 
-// ---- session file buildy:v1 ----------------------------------------------------------------------------------------
+// ---- session file buildy:v2 ----------------------------------------------------------------------------------------
 
-test("export: a real chat with its page is a schema-valid buildy:v1 file with pins and app; pageRevision follows the page", () => {
+test("export: a real chat with its page is a schema-valid buildy:v2 file with pins and app; pageRevision follows the page", () => {
 	const page = landing();
 	const file = buildSessionFile({
 		chats: [chat("session-a", { pageRevision: 1, history: [{ revision: 1, at: NOW, cause: "apply", pageId: page.id }] })],
@@ -204,8 +213,8 @@ test("export: a real chat with its page is a schema-valid buildy:v1 file with pi
 		now: NOW
 	});
 	assert.deepEqual(sessionFileIssues(file), []);
-	assert.equal(file.format, "buildy:v1");
-	assert.equal(file.$schema, "https://schema.buildy.tw/session.schema.json");
+	assert.equal(file.format, "buildy:v2");
+	assert.equal(file.$schema, "https://schema.buildy.tw/session-v2.schema.json");
 	assert.equal(file.sessions[0]!.pageRevision, 3, "the page store revision wins");
 	assert.equal(file.sessions[0]!.page?.revision, 3);
 	const parsed = parseSessionFile(JSON.stringify(file));
@@ -213,9 +222,11 @@ test("export: a real chat with its page is a schema-valid buildy:v1 file with pi
 	const { chats, pages } = splitSessionFile(parsed.file);
 	assert.equal(chats[0]!.id, "session-a");
 	assert.equal((pages["session-a"]!.applied as PageV2).id, page.id);
-	// Lab BuildY (lab-console importer.go) reads {"sessions":[{id,title,updatedAt,messages:[{id,role,text,createdAt,proposal,run}]}]}.
-	const lab = JSON.parse(JSON.stringify(file)) as { sessions: { id: string; title: string; updatedAt: string; messages: { id: string; role: string; text: string; createdAt: string; run?: { modelId: string } }[] }[] };
-	assert.equal(lab.sessions[0]!.messages[1]!.run?.modelId, "grok-4");
+	// The chat is ext.chat only (buildy:v2): no flat messages or mode on the session.
+	const out = JSON.parse(JSON.stringify(file)) as { sessions: { messages?: unknown; mode?: unknown; ext: { chat: { messages: { run?: { modelId: string } }[] } } }[] };
+	assert.equal(out.sessions[0]!.ext.chat.messages[1]!.run?.modelId, "grok-4");
+	assert.equal("messages" in out.sessions[0]!, false);
+	assert.equal("mode" in out.sessions[0]!, false);
 });
 
 test("import checks: bad JSON, wrong format, unknown or secret-looking fields and program checks are refused", () => {
@@ -227,9 +238,11 @@ test("import checks: bad JSON, wrong format, unknown or secret-looking fields an
 		return r.ok ? "ok" : r.code;
 	};
 	assert.equal(code("{"), "invalid_json");
-	assert.equal(code({ ...base, format: "buildy:v2" }), "schema_invalid");
+	assert.equal(code({ ...base, format: "buildy:v1" }), "schema_invalid");
+	assert.equal(code({ ...base, pins: { ...base.pins, stock: { repo: "codegen-x/ui8kit", contentCommit: "a".repeat(40) } } }), "schema_invalid", "no Stock pin");
 	assert.equal(code({ ...base, xaiApiKey: "x" }), "schema_invalid", "closed root: no credential slot");
-	assert.equal(code({ ...base, sessions: [{ ...base.sessions[0]!, mode: "plan" }] }), "schema_invalid");
+	assert.equal(code({ ...base, sessions: [{ ...base.sessions[0]!, ext: { chat: { mode: "plan" } } }] }), "schema_invalid");
+	assert.equal(code({ ...base, sessions: [{ ...base.sessions[0]!, screenId: null }] }), "schema_invalid", "no screen on a session");
 	assert.equal(code({ ...base, sessions: [{ ...base.sessions[0]!, pageRevision: 7 }] }), "program_invalid", "page_revision_mismatch");
 	assert.equal(code({ ...base, sessions: [base.sessions[0]!, base.sessions[0]!] }), "program_invalid", "duplicate_session_id");
 	assert.equal(code({ ...base, selectedSessionId: "session-zzz" }), "program_invalid", "selected_session_unknown");
@@ -238,7 +251,7 @@ test("import checks: bad JSON, wrong format, unknown or secret-looking fields an
 	assert.equal(code(base), "ok");
 });
 
-test("skin (session 1.1.0): kept with the chat through export and import; a malformed skin id is refused", () => {
+test("skin: kept with the chat through export and import; a malformed skin id is refused", () => {
 	const page = landing();
 	const pages = { "session-a": { applied: page, candidate: null, selectedBlockId: null, revision: 1 } };
 	const file = buildSessionFile({ chats: [chat("session-a", { skin: "claude" })], pages, selectedSessionId: null, app, pins, now: NOW });
@@ -254,7 +267,7 @@ test("skin (session 1.1.0): kept with the chat through export and import; a malf
 		const r = parseSessionFile({ ...file, sessions: [{ ...file.sessions[0]!, skin }] });
 		assert.equal(r.ok ? "ok" : r.code, "schema_invalid", `${JSON.stringify(skin)} is refused`);
 	}
-	// A 1.0.0 file (no skin) still loads: the default theme.
+	// A file without a skin loads: the default theme.
 	const plain = buildSessionFile({ chats: [chat("session-a")], pages, selectedSessionId: null, app, pins, now: NOW });
 	assert.equal("skin" in plain.sessions[0]!, false);
 	assert.ok(parseSessionFile(plain).ok);
@@ -378,9 +391,9 @@ test("page store and chat store are wired: applyCandidate and replaceVisiblePage
 	assert.match(store, /reconcileChatRevision\(/);
 });
 
-// ---- session 1.9.0: a project without a chat, projectId (ADR 0040) --------------------------------------------------
+// ---- a project without a chat, projectId (ADR 0040) --------------------------------------------------------------
 
-test("session 1.9.0: a project with a page and no chat (no messages) is a valid session and round-trips through export and import", () => {
+test("a project with a page and no chat (no messages) is a valid session and round-trips through export and import", () => {
 	const page = landing();
 	const project = { id: "session-p", title: "Coffee house", updatedAt: NOW };
 	assert.deepEqual(sessionDefIssues(project, "session"), []);
@@ -405,7 +418,7 @@ function splitInput(file: ReturnType<typeof buildSessionFile>) {
 	return { chats, pages };
 }
 
-test("session 1.9.0: page records follow the project id; two sessions of one project may not both carry the page", () => {
+test("page records follow the project id; two sessions of one project may not both carry the page", () => {
 	const page = landing();
 	const record = { applied: page, candidate: null, selectedBlockId: null, revision: 1 };
 	const file = buildSessionFile({ chats: [chat("session-chat", { projectId: "project-1" })], pages: { "project-1": record }, selectedSessionId: null, app, pins, now: NOW });
@@ -418,7 +431,7 @@ test("session 1.9.0: page records follow the project id; two sessions of one pro
 	assert.ok(sharing.ok, "a second chat of the project without its own page copy is fine");
 });
 
-test("session 1.9.0: every file without projectId (1.0.0 to 1.8.0) loads unchanged: the project id is the session id", () => {
+test("a file without projectId: the project id is the session id", () => {
 	const page = landing();
 	const file = buildSessionFile({ chats: [chat("session-a")], pages: { "session-a": { applied: page, candidate: null, selectedBlockId: null, revision: 1 } }, selectedSessionId: null, app, pins, now: NOW });
 	assert.equal("projectId" in file.sessions[0]!, false);
@@ -431,36 +444,35 @@ test("session 1.9.0: every file without projectId (1.0.0 to 1.8.0) loads unchang
 test("a session file with a page-spec/v1 page is refused as page_v1_unsupported with the path; v2 files still parse", () => {
 	const v1Page = { id: "page-old", slug: "old", status: "draft", title: "Old", locale: "en", seo: { title: "Old", description: "Old" }, createdAt: NOW, updatedAt: NOW, layout: { version: 1, blocks: [] } };
 	const record = { applied: v1Page, candidate: null, selectedBlockId: null, revision: 1 };
-	const refused = parseSessionFile(JSON.stringify({ format: "buildy:v1", exportedAt: NOW, app, pins, sessions: [chat("session-o", { page: record, pageRevision: 1 })] }));
+	const refused = parseSessionFile(JSON.stringify({ format: "buildy:v2", exportedAt: NOW, app, pins, sessions: [chat("session-o", { page: record, pageRevision: 1 })] }));
 	assert.equal(refused.ok, false);
 	if (!refused.ok) {
 		assert.equal(refused.code, "page_v1_unsupported");
 		assert.deepEqual(refused.issues, [{ path: "$.sessions[0].page.applied", keyword: "page_v1_unsupported" }]);
 	}
 	const page = landing();
-	const ok = parseSessionFile(JSON.stringify({ format: "buildy:v1", exportedAt: NOW, app, pins, sessions: [chat("session-n", { page: { applied: page, candidate: null, selectedBlockId: null, revision: 1 }, pageRevision: 1 })] }));
+	const ok = parseSessionFile(JSON.stringify({ format: "buildy:v2", exportedAt: NOW, app, pins, sessions: [chat("session-n", { page: { applied: page, candidate: null, selectedBlockId: null, revision: 1 }, pageRevision: 1 })] }));
 	assert.ok(ok.ok);
 });
 
 
 test("portable session preserves exact billed ticks and partial cost without a schema change", () => {
 	const usage = aggregateStepUsage([readProviderUsage({ prompt_tokens: 1, completion_tokens: 1, cost_in_usd_ticks: "9007199254740993" })], { requests: 2 });
-	const source = chat("session-cost");
-	const assistant = { ...source.messages[1]!, run: { ...source.messages[1]!.run!, usage } };
+	const source = messages();
+	const assistant = { ...source[1]!, run: { ...source[1]!.run!, usage } };
 	const sessionUsage = aggregateSessionUsage([usage]);
-	const file = buildSessionFile({ chats: [{ ...source, messages: [source.messages[0]!, assistant], usage: sessionUsage }], pages: {}, app, pins, now: NOW });
+	const file = buildSessionFile({ chats: [chat("session-cost", { ext: { chat: { mode: "build", usage: sessionUsage, messages: [source[0]!, assistant] } } })], pages: {}, app, pins, now: NOW });
 	assert.deepEqual(sessionFileIssues(file), []);
 	const parsed = parseSessionFile(JSON.stringify(file));
 	assert.ok(parsed.ok, JSON.stringify(parsed));
-	const roundtrip = splitSessionFile(parsed.file).chats[0]!;
+	const roundtrip = (splitSessionFile(parsed.file).chats[0]! as unknown as { ext: { chat: { usage: unknown; messages: { run: { usage: unknown } }[] } } }).ext.chat;
 	assert.deepEqual(roundtrip.usage, sessionUsage);
-	assert.ok(Array.isArray(roundtrip.messages));
-	assert.deepEqual(roundtrip.messages[1].run.usage, usage);
+	assert.deepEqual(roundtrip.messages[1]!.run.usage, usage);
 });
 
 test("run traces survive the open session extension without changing the run schema", () => {
  const trace = { format: "run-trace/1", runId: "run-test", stopReason: "answer", steps: [{ request: { toolChoice: "auto" } }] };
- const source = { ...chat("session-trace"), ext: { "agent-trace": { "run-test": trace } } };
+ const source = { ...chat("session-trace"), ext: { chat: { messages: messages() }, "agent-trace": { "run-test": trace } } };
  const file = buildSessionFile({ chats: [source], pages: {}, app, pins, now: NOW });
  assert.deepEqual(sessionFileIssues(file), []);
  const parsed = parseSessionFile(JSON.stringify(file));
@@ -470,7 +482,7 @@ test("run traces survive the open session extension without changing the run sch
 
 test("attempt ledger including an unanswered aborted run survives portable session validation", () => {
  const attempt = endAttempt(startAttempt("attempt-a", "user-a", "provider/model", NOW), "aborted", NOW);
- const source = { ...chat("session-attempt"), ext: { "agent-runs": { "attempt-a": attempt } } };
+ const source = { ...chat("session-attempt"), ext: { chat: { messages: messages() }, "agent-runs": { "attempt-a": attempt } } };
  const file = buildSessionFile({ chats: [source], pages: {}, app, pins, now: NOW });
  assert.deepEqual(sessionFileIssues(file), []);
  const parsed = parseSessionFile(JSON.stringify(file));

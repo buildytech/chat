@@ -12,6 +12,6 @@
 		"./session": "./src/session.ts"
 	},
 	"dependencies": {
-		"@ui8kit/contract": "^0.4.0"
+		"@ui8kit/contract": "^0.5.0"
 	}
 }

@@ -1,6 +1,6 @@
 # Portable session contract before IndexedDB
 
-Normative application profile, 2026-11-17. The published `buildy:v1` session schema remains the wire contract. Do not hand-edit vendor schemas or encode storage-engine keys/transactions in the exported document.
+Normative application profile, 2026-11-17. The published `buildy:v2` session schema (`https://schema.buildy.tw/session-v2.schema.json`, @ui8kit/contract 0.5.0) is the wire contract; `buildy:v1` files and stored chats are no longer read (they fail the schema and go to quarantine). Do not hand-edit vendor schemas or encode storage-engine keys/transactions in the exported document.
 
 ## Storage-independent records
 

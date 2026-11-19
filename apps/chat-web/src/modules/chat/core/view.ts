@@ -9,8 +9,6 @@ import type { AgentMode } from "@buildytech/chat-agent";
 import type { Project } from "../../../lib/project/types.ts";
 import type { ChatMessage, ChatSession } from "./types.ts";
 
-/** The flat session keys of documents before session 1.10.0 that are the chat's; read into `ext.chat`, never written. */
-export const CHAT_LEGACY_KEYS = ["mode", "selectedModelId", "usage", "messages"] as const;
 type ChatPayload = { messages?: ChatMessage[]; mode?: AgentMode; selectedModelId?: string; usage?: ChatSession["usage"] };
 export const chatOf = (project: Project): ChatPayload | undefined => project.ext.chat as ChatPayload | undefined;
 const views = new WeakMap<Project, ChatSession>();

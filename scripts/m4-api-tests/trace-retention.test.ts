@@ -78,7 +78,7 @@ test("byte retention can prune a single large run and keeps audit totals without
 test("portable export contract survives record split/rebuild with summaries and unknown extensions", () => {
 	const rows = retainTraces([project("s", 1)], { ...footprint, aggressive: true }, now);
 	const app = { name: "BuildY", version: "1", host: "browser" } as const;
-	const pins = { stock: { repo: "codegen-x/ui8kit", contentCommit: "a".repeat(40) }, registry: { url: "https://ui.buildy.tw", sourceCommit: "b".repeat(40) } };
+	const pins = { registry: { url: "https://registry.buildy.tw", sourceCommit: "b".repeat(40) }, prototypes: { repo: "ui8kit/prototypes", commit: "b".repeat(40) } };
 	const before = buildSessionFile({ chats: rows, pages: {}, selectedSessionId: "s", app, pins, now });
 	const parsed = parseSessionFile(JSON.stringify(before));
 	assert.ok(parsed.ok, JSON.stringify(parsed));

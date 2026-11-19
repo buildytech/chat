@@ -25,8 +25,6 @@ function withUserMessage(session: ChatSession, trimmed: string, mode: ChatMessag
 		...session,
 		title: untitled ? trimmed.slice(0, 48) : session.title,
 		updatedAt: nowIso(),
-		scenarioId: session.scenarioId ?? null,
-		screenId: session.screenId ?? null,
 		messages: [...session.messages, userMsg]
 	};
 }

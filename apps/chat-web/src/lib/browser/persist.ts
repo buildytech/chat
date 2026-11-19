@@ -1,7 +1,7 @@
 /**
  * Browser-local persistence for chats and per-session pages under the buildy:v1 key space (ADR 0015): chats in
- * `buildy:v1:sessions`, page records in `buildy:v1:pages` (page-spec/v2 store blob). Both are validated at load against the session profile buildy:v1
- * (`session.schema.json#/$defs/session`) and page-spec/v2 (`page-spec-v2.schema.json#/$defs/record`); a value that fails
+ * `buildy:v1:sessions`, page records in `buildy:v1:pages` (page-spec/v2 store blob). Both are validated at load against the session profile buildy:v2
+ * (`session-v2.schema.json#/$defs/session`; a buildy:v1 chat fails and goes to quarantine) and page-spec/v2 (`page-spec-v2.schema.json#/$defs/record`); a value that fails
  * goes to quarantine (`buildy:v1:quarantine`) with its reason and the rest loads. Nothing is dropped silently. A page-spec/v1
  * record (ADR 0045: the migration is gone) is quarantined as `page_v1_unsupported`, like any other value this build cannot read.
  */
@@ -177,7 +177,7 @@ function writeJson(key: string, value: unknown): boolean {
 }
 
 /**
- * Chats of this browser, each validated against session.schema.json#/$defs/session. A chat that fails is moved to
+ * Chats of this browser, each validated against session-v2.schema.json#/$defs/session. A chat that fails is moved to
  * quarantine and the list is rewritten without it; an unreadable blob is quarantined whole.
  */
 export function loadSessionsJson(): unknown[] {
@@ -289,7 +289,7 @@ export function writeAllProjectPages(records: Record<string, StoredPageRecord>):
 	return writeJson(PAGES_KEY, blob);
 }
 
-/** The page record of a project (the pages blob is keyed by project id; for sessions written before session 1.9.0 that is the session id). */
+/** The page record of a project (the pages blob is keyed by project id). */
 export function readProjectPage(projectId: string): StoredPageRecord | null {
 	const rec = loadPagesBlob().pages[projectId];
 	if (!rec) return null;

@@ -4,7 +4,6 @@
  * every answer is the builder-only one, so the core runs without chat.
  */
 import { registerMessages } from "../i18n/dictionary.ts";
-import { registerLegacyKeys } from "../project/doc.ts";
 import type { Project } from "../project/types.ts";
 import type { Component } from "svelte";
 import type { BuilderModule, ModuleFileKind, ModuleHooks, ModuleTab, SlotName, SlotProps } from "./types.ts";
@@ -14,7 +13,6 @@ let modules = $state<readonly BuilderModule[]>([]);
 export function registerModule(module: BuilderModule): void {
 	if (modules.some((m) => m.id === module.id)) return;
 	if (module.messages) registerMessages(module.messages, module.messageOverrides);
-	if (module.legacyKeys) registerLegacyKeys(module.id, module.legacyKeys);
 	module.install?.();
 	modules = [...modules, module];
 }

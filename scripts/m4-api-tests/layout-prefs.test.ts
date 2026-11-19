@@ -142,13 +142,13 @@ test("shortcuts: Ctrl/Cmd+B, Ctrl/Cmd+I, Ctrl/Cmd+\\ by physical key; not with A
 	assert.equal(shortcutFor(ev("KeyK")), null);
 });
 
-test("session file prefs (1.2.0): the stored layout is schema-valid; out-of-range or unknown fields are not", () => {
+test("session file prefs: the stored layout is schema-valid; out-of-range or unknown fields are not", () => {
 	const base = {
-		$schema: "https://schema.buildy.tw/session.schema.json",
-		format: "buildy:v1",
+		$schema: "https://schema.buildy.tw/session-v2.schema.json",
+		format: "buildy:v2",
 		exportedAt: "2026-11-10T12:00:00.000Z",
 		app: { name: "buildy-chat", version: "0.5.0", host: "browser" },
-		pins: { stock: { repo: "codegen-x/ui8kit", contentCommit: "081a1c5e5cc5db6f6439a37edb666ddfee7aa006" }, registry: { url: "https://registry.buildy.tw", sourceCommit: "3a6d923a3bdf75bba8951a3dfda7f3e97a69ecc5" } },
+		pins: { registry: { url: "https://registry.buildy.tw", sourceCommit: "716764ea0b500c25c3f2f15e74de540f2f71176e" }, prototypes: { repo: "ui8kit/prototypes", commit: "716764ea0b500c25c3f2f15e74de540f2f71176e" } },
 		selectedSessionId: null,
 		sessions: []
 	};
@@ -157,6 +157,7 @@ test("session file prefs (1.2.0): the stored layout is schema-valid; out-of-rang
 	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { layout: { sideWidth: 1.5 } } }), []);
 	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { layout: { dock: "left" } } }), []);
 	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { theme: "dark" } }), []);
+	assert.notDeepEqual(sessionFileIssues({ ...base, prefs: { layout: { chatWidth: 320 } } }), [], "the old chat pane name is gone (buildy:v2)");
 });
 
 test("shortcuts: a layout shortcut pressed inside the preview frame is re-dispatched on the chat window; other keys stay", () => {

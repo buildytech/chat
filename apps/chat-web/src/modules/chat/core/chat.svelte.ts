@@ -1,6 +1,6 @@
 /**
  * The chat module (ADR 0040): the chat view of the selected project, the composer mode, the run state and the
- * selection wrappers that abort a run and reload the workspace context. The project (page, skin, collection, history,
+ * selection wrappers that abort a run and reload the workspace context. The project (page, skin, history,
  * persistence) lives in `../project`; the chat keeps only `project.ext.chat` (messages, mode, selected model, usage).
  */
 import { endAttempt, usageOfAttempts, readRunAttempts } from "@buildytech/chat-agent";
@@ -11,7 +11,6 @@ import { hydrateSessionContext } from "../browser/onboarding.svelte.ts";
 import { getSelectedProject, getProjects, listProjects, putProject, saveProjects } from "../../../lib/project/store.svelte.ts";
 import { applyUrlSelection, createWorkspaceProject, openProject, removeAllProjects, removeProject, startWorkspace } from "../../../lib/modules/workspace.svelte.ts";
 import type { ProjectOpenedEvent } from "../../../lib/modules/types.ts";
-import type { Project } from "../../../lib/project/types.ts";
 import { chatModeOf } from "./modes";
 import { projectOfView, viewOf } from "./view";
 import type { ChatSession, CreatorRuntimeStatus, ServerCapabilities, SessionSummary } from "./types";
@@ -111,11 +110,6 @@ export function abortInflightRun(): void {
 
 const notFound = (id: string): string => t("runtime.sessionNotFound").replace("{id}", id);
 
-/** The scenario and screen of the selected project become the workspace context. */
-function restoreWorkspace(project: Project | null): void {
-	hydrateSessionContext({ scenarioId: project?.scenarioId ?? null, screenId: project?.screenId ?? null });
-}
-
 /** Hook: the selected project is about to change; a run of the old one stops and its late results are dropped. */
 export function beforeProjectChange(): void {
 	abortInflight();
@@ -124,7 +118,8 @@ export function beforeProjectChange(): void {
 
 /** Hook: the selected project changed; the workspace context follows it and a missing project is said. */
 export function projectOpened(event: ProjectOpenedEvent): void {
-	restoreWorkspace(event.project);
+	// A project keeps no scenario or screen (buildy:v2): the workspace context starts empty.
+	hydrateSessionContext({ scenarioId: null, screenId: null });
 	if (event.reason === "select" || event.reason === "delete") run.lastError = event.missing ? notFound(event.missing) : null;
 	else if (event.reason === "hydrate" && event.missing) run.lastError = notFound(event.missing);
 }

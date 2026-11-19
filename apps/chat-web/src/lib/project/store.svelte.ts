@@ -11,7 +11,7 @@ import { t } from "../i18n/dictionary";
 import { allowPersistOverwrite, clearPagesBlob, deleteProjectPage, loadPagesBlob, loadSessionsJson, saveSessionsJson, sessionStorageFootprint, getPersistError } from "../browser/persist";
 import { reconcileChatRevision, type StoredChat } from "../browser/session-file";
 import { STORAGE_KEYS, readKey, writeKey } from "../browser/storage-v1.ts";
-import { applyCandidate, bindProject, clearCurrentPage, discardCandidate, getAppliedProvenance, getLastAppliedPage, getPageRevision, onPageRevision, startEmptyPage } from "../page-store";
+import { applyCandidate, bindProject, clearCurrentPage, discardCandidate, getLastAppliedPage, getPageRevision, onPageRevision, startEmptyPage } from "../page-store";
 import { docOfProject, projectOfDoc, type SessionDoc } from "./doc.ts";
 import { bySavedAt, draftPageId, newProject, withApplied, withRevision, withSkin } from "./transitions.ts";
 import type { Project, ProjectSummary } from "./types.ts";
@@ -185,14 +185,13 @@ onPageRevision((event) => {
 	putProject(withRevision(project, { ...entry, at: nowIso() }));
 });
 
-/** The pending proposal becomes the applied page: the next revision, and the project keeps its page id, revision and screen. */
-export function applyPending(opts: { fallbackScreenId?: string | null } = {}): boolean {
+/** The pending proposal becomes the applied page: the next revision, and the project keeps its page id and revision. */
+export function applyPending(): boolean {
 	if (!getSelectedProject() || !applyCandidate((getPageRevision() ?? 0) + 1)) return false;
 	// Re-read: applyCandidate announced the revision and the project got its history entry.
 	const project = getSelectedProject();
 	if (!project) return false;
-	const screenId = getAppliedProvenance()?.screenId ?? project.screenId ?? opts.fallbackScreenId ?? null;
-	putProject(withApplied(project, { pageId: getLastAppliedPage()?.id, revision: getPageRevision(), screenId, now: nowIso() }));
+	putProject(withApplied(project, { pageId: getLastAppliedPage()?.id, revision: getPageRevision(), now: nowIso() }));
 	return true;
 }
 
@@ -204,6 +203,6 @@ export function startEmptyProject(screenId: string | null): boolean {
 	if (!project) return false;
 	const page = emptyPage({ title: t("page.untitled"), locale: "en", id: draftPageId(project) });
 	if (!startEmptyPage(page, { screenId, scenarioId: null, missing: [] })) return false;
-	putProject({ ...(getSelectedProject() ?? project), updatedAt: nowIso(), pageId: page.id, pageRevision: 0, screenId });
+	putProject({ ...(getSelectedProject() ?? project), updatedAt: nowIso(), pageId: page.id, pageRevision: 0 });
 	return true;
 }
