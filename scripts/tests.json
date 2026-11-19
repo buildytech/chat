@@ -57,6 +57,7 @@
       "session-store.test.ts",
       "contract-vendor.test.ts",
       "session-replay.test.ts",
+      "live-replay.test.ts",
       "session-url.test.ts",
       "svelte-code.test.ts",
       "ui-skin.test.ts"

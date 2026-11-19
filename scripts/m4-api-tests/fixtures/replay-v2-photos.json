@@ -1,0 +1,774 @@
+{
+  "$schema": "https://schema.buildy.tw/session-v2.schema.json",
+  "format": "buildy:v2",
+  "exportedAt": "2026-11-19T22:47:58.442Z",
+  "app": {
+    "name": "buildy-chat",
+    "version": "0.5.0",
+    "host": "browser",
+    "commit": "dba17f0aed93c288290f84d270c65d3aa6d5d4ce"
+  },
+  "pins": {
+    "registry": {
+      "url": "https://registry.buildy.tw",
+      "sourceCommit": "716764ea0b500c25c3f2f15e74de540f2f71176e"
+    },
+    "prototypes": {
+      "repo": "ui8kit/prototypes",
+      "commit": "716764ea0b500c25c3f2f15e74de540f2f71176e"
+    },
+    "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d"
+  },
+  "selectedSessionId": "session-a05daedb-8bf5-491f-80d3-9f953c9ae75d",
+  "sessions": [
+    {
+      "id": "session-a05daedb-8bf5-491f-80d3-9f953c9ae75d",
+      "title": "Make a page for Quiet Rooms, a small interior de",
+      "updatedAt": "2026-11-19T22:47:52.767Z",
+      "pageId": "page-a05daedb-8bf5-491f-80d3-9f953c9ae75d",
+      "pageRevision": 1,
+      "history": [
+        {
+          "revision": 1,
+          "cause": "apply",
+          "pageId": "page-a05daedb-8bf5-491f-80d3-9f953c9ae75d",
+          "at": "2026-11-19T22:47:52.758Z"
+        }
+      ],
+      "ext": {
+        "agent-runs": {
+          "attempt-2a6e1993-ca0e-4c13-a212-8e66bf02e296": {
+            "format": "run-attempt/1",
+            "attemptId": "attempt-2a6e1993-ca0e-4c13-a212-8e66bf02e296",
+            "userMessageId": "msg-ae4df1a4-584f-40b2-92df-c1c8d338dc9d",
+            "modelId": "grok-4.20-0309-non-reasoning",
+            "startedAt": "2026-11-19T22:47:44.671Z",
+            "status": "completed",
+            "usage": {
+              "status": "complete",
+              "steps": 3,
+              "reportedSteps": 3,
+              "promptTokens": 6185,
+              "completionTokens": 394,
+              "totalTokens": 6579,
+              "reportedBy": "provider",
+              "providerId": "xai",
+              "aggregation": "sum-of-tool-loop-requests",
+              "lastStep": {
+                "promptTokens": 2400,
+                "completionTokens": 362,
+                "totalTokens": 2762,
+                "reasoningTokens": 0,
+                "cachedTokens": 1920,
+                "costUsdTicks": "18890000"
+              },
+              "cost": {
+                "available": true,
+                "kind": "billed",
+                "currency": "USD",
+                "ticks": "48186500",
+                "usd": "0.0048186500",
+                "completeness": "complete",
+                "reportedRequests": 3,
+                "requests": 3
+              },
+              "reasoningTokens": 0,
+              "cachedTokens": 3712
+            },
+            "traceState": "received",
+            "runId": "xai-mwo551oa-0hlzsb",
+            "assistantMessageId": "msg-94c9c872-4a74-442e-b4a1-ef622d9c401c",
+            "scenario": {
+              "id": "page.build",
+              "version": 4
+            },
+            "provider": "xai",
+            "endedAt": "2026-11-19T22:47:50.919Z",
+            "fingerprint": "scenario-v1-7039e2cad37da33b",
+            "providerVersion": 2,
+            "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+            "gateCodes": [],
+            "cost_in_usd_ticks": "48186500",
+            "storage": {
+              "format": "run-storage/1",
+              "capturedAt": "2026-11-19T22:47:50.919Z",
+              "basis": "before-current-save-metrics",
+              "trace": {
+                "jsonUtf8Bytes": 22006,
+                "estimatedUtf16Bytes": 44012
+              },
+              "project": {
+                "jsonUtf8Bytes": 26186,
+                "estimatedUtf16Bytes": 52372
+              },
+              "sessionsJsonUtf8Bytes": 26188,
+              "traceJsonUtf8Bytes": 22006,
+              "originEstimatedUtf16Bytes": 60728,
+              "coverage": "origin"
+            }
+          }
+        },
+        "agent-trace": {
+          "xai-mwo551oa-0hlzsb": {
+            "format": "run-trace/1",
+            "runId": "xai-mwo551oa-0hlzsb",
+            "modelId": "grok-4.20-0309-non-reasoning",
+            "scenario": {
+              "id": "page.build",
+              "version": 4
+            },
+            "fingerprint": "scenario-v1-7039e2cad37da33b",
+            "providerVersion": 2,
+            "provider": "xai",
+            "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+            "budget": {
+              "maxSteps": 24,
+              "maxRequests": 32,
+              "maxToolCalls": 64,
+              "maxWriteAttempts": 8,
+              "maxTokens": 8192
+            },
+            "startedAt": "2026-11-19T22:47:46.618Z",
+            "deadlineMs": 284986,
+            "stopReason": "proposal_accepted",
+            "prefix": {
+              "systemPrompt": {
+                "hash": "fnv1a64:7bad89a993679528",
+                "bytes": 3755
+              },
+              "tools": {
+                "hash": "fnv1a64:66d8e957fefbadd2",
+                "bytes": 2033
+              },
+              "context": {
+                "request": {
+                  "hash": "fnv1a64:8850b73e279e721b",
+                  "bytes": 282,
+                  "stability": "variable"
+                },
+                "page": {
+                  "hash": "fnv1a64:e3bdf6b3318e937a",
+                  "bytes": 116,
+                  "stability": "variable"
+                },
+                "propsOfBlocksOnPage": {
+                  "hash": "fnv1a64:5465b82524c5ecd4",
+                  "bytes": 2,
+                  "stability": "variable"
+                },
+                "itemIndex": {
+                  "hash": "fnv1a64:f70e06b2a58510d3",
+                  "bytes": 128,
+                  "stability": "stable"
+                }
+              }
+            },
+            "steps": [
+              {
+                "index": 1,
+                "startedAt": "2026-11-19T22:47:46.620Z",
+                "request": {
+                  "retainedMessages": 0,
+                  "transcriptChange": "append",
+                  "phase": "read",
+                  "toolChoice": "required",
+                  "parallelToolCalls": false,
+                  "completionTokenParameter": "max_completion_tokens",
+                  "tools": {
+                    "hash": "fnv1a64:66d8e957fefbadd2",
+                    "bytes": 2033
+                  },
+                  "maxTokens": 8192,
+                  "nudged": false,
+                  "messagesAdded": [
+                    {
+                      "role": "system",
+                      "hash": "fnv1a64:bd16017f993b3402",
+                      "bytes": 3817,
+                      "source": "prefix"
+                    },
+                    {
+                      "role": "user",
+                      "hash": "fnv1a64:19882fd52a994638",
+                      "bytes": 651,
+                      "source": "prefix"
+                    }
+                  ],
+                  "promptCacheKeySent": true
+                },
+                "budgetLeft": {
+                  "steps": 23,
+                  "requests": 31,
+                  "tools": 63,
+                  "writes": 8,
+                  "tokens": "unknown",
+                  "maxCompletionTokensPerRequest": 8192,
+                  "timeMs": 284522
+                },
+                "response": {
+                  "finish_reason": "tool_calls",
+                  "refusal": null,
+                  "content": {
+                    "hash": "fnv1a64:811c9dc5cbf29ce4",
+                    "bytes": 0
+                  },
+                  "tool_calls": [
+                    {
+                      "id": "call-a4501bd8-17ab-4391-b921-59f76c416ac6-0",
+                      "name": "get_block",
+                      "arguments": {
+                        "hash": "fnv1a64:bb8508ec439bd191",
+                        "bytes": 45
+                      }
+                    }
+                  ],
+                  "latencyMs": 456,
+                  "status": 200,
+                  "error": null
+                },
+                "usage": {
+                  "prompt": 1743,
+                  "completion": 16,
+                  "cached": 128,
+                  "reasoning": 0,
+                  "cost_in_usd_ticks": "20843500",
+                  "cacheHitPercent": 7.343660355708548
+                }
+              },
+              {
+                "index": 2,
+                "startedAt": "2026-11-19T22:47:47.082Z",
+                "request": {
+                  "retainedMessages": 2,
+                  "transcriptChange": "append",
+                  "phase": "read",
+                  "toolChoice": "required",
+                  "parallelToolCalls": false,
+                  "completionTokenParameter": "max_completion_tokens",
+                  "tools": {
+                    "hash": "fnv1a64:66d8e957fefbadd2",
+                    "bytes": 2033
+                  },
+                  "maxTokens": 8192,
+                  "nudged": false,
+                  "messagesAdded": [
+                    {
+                      "role": "assistant",
+                      "hash": "fnv1a64:27459d82ac76b7b7",
+                      "bytes": 184
+                    },
+                    {
+                      "role": "tool",
+                      "hash": "fnv1a64:73190d812e7d4a9c",
+                      "bytes": 1361
+                    }
+                  ],
+                  "promptCacheKeySent": true
+                },
+                "budgetLeft": {
+                  "steps": 22,
+                  "requests": 30,
+                  "tools": 62,
+                  "writes": 8,
+                  "tokens": "unknown",
+                  "maxCompletionTokensPerRequest": 8192,
+                  "timeMs": 284118
+                },
+                "response": {
+                  "finish_reason": "tool_calls",
+                  "refusal": null,
+                  "content": {
+                    "hash": "fnv1a64:811c9dc5cbf29ce4",
+                    "bytes": 0
+                  },
+                  "tool_calls": [
+                    {
+                      "id": "call-3417d636-a7db-40b0-a608-40e8d6c2c502-1",
+                      "name": "get_block",
+                      "arguments": {
+                        "hash": "fnv1a64:6daca66132bc1f20",
+                        "bytes": 40
+                      }
+                    }
+                  ],
+                  "latencyMs": 402,
+                  "status": 200,
+                  "error": null
+                },
+                "usage": {
+                  "prompt": 2042,
+                  "completion": 16,
+                  "cached": 1664,
+                  "reasoning": 0,
+                  "cost_in_usd_ticks": "8453000",
+                  "cacheHitPercent": 81.48873653281098
+                }
+              },
+              {
+                "index": 3,
+                "startedAt": "2026-11-19T22:47:47.486Z",
+                "request": {
+                  "retainedMessages": 4,
+                  "transcriptChange": "append",
+                  "phase": "read",
+                  "toolChoice": "required",
+                  "parallelToolCalls": false,
+                  "completionTokenParameter": "max_completion_tokens",
+                  "tools": {
+                    "hash": "fnv1a64:66d8e957fefbadd2",
+                    "bytes": 2033
+                  },
+                  "maxTokens": 8192,
+                  "nudged": false,
+                  "messagesAdded": [
+                    {
+                      "role": "assistant",
+                      "hash": "fnv1a64:54d09cc9a0a42eec",
+                      "bytes": 179
+                    },
+                    {
+                      "role": "tool",
+                      "hash": "fnv1a64:d34560e231508823",
+                      "bytes": 1559
+                    }
+                  ],
+                  "promptCacheKeySent": true
+                },
+                "budgetLeft": {
+                  "steps": 21,
+                  "requests": 29,
+                  "tools": 61,
+                  "writes": 7,
+                  "tokens": "unknown",
+                  "maxCompletionTokensPerRequest": 8192,
+                  "timeMs": 280812
+                },
+                "response": {
+                  "finish_reason": "tool_calls",
+                  "refusal": null,
+                  "content": {
+                    "hash": "fnv1a64:811c9dc5cbf29ce4",
+                    "bytes": 0
+                  },
+                  "tool_calls": [
+                    {
+                      "id": "call-80d57a6e-4cbf-46f1-a525-208c5b604b5f-2",
+                      "name": "write_page",
+                      "arguments": {
+                        "hash": "fnv1a64:6dd654f7277a9122",
+                        "bytes": 1592
+                      }
+                    }
+                  ],
+                  "latencyMs": 3161,
+                  "status": 200,
+                  "error": null
+                },
+                "usage": {
+                  "prompt": 2400,
+                  "completion": 362,
+                  "cached": 1920,
+                  "reasoning": 0,
+                  "cost_in_usd_ticks": "18890000",
+                  "cacheHitPercent": 80
+                }
+              }
+            ],
+            "toolResults": [
+              {
+                "step": 1,
+                "callId": "call-a4501bd8-17ab-4391-b921-59f76c416ac6-0",
+                "name": "get_block",
+                "evidence": {
+                  "kind": "catalog-block",
+                  "item": "hero-simple"
+                },
+                "args": {
+                  "hash": "fnv1a64:bb8508ec439bd191",
+                  "bytes": 45
+                },
+                "ok": true,
+                "result": {
+                  "hash": "fnv1a64:05663214c4cc4149",
+                  "bytes": 1130
+                },
+                "durationMs": 4,
+                "execution": "completed"
+              },
+              {
+                "step": 2,
+                "callId": "call-3417d636-a7db-40b0-a608-40e8d6c2c502-1",
+                "name": "get_block",
+                "evidence": {
+                  "kind": "catalog-block",
+                  "item": "team-simple"
+                },
+                "args": {
+                  "hash": "fnv1a64:6daca66132bc1f20",
+                  "bytes": 40
+                },
+                "ok": true,
+                "result": {
+                  "hash": "fnv1a64:0f108a4770283eee",
+                  "bytes": 1286
+                },
+                "durationMs": 2,
+                "execution": "completed"
+              },
+              {
+                "step": 3,
+                "callId": "call-80d57a6e-4cbf-46f1-a525-208c5b604b5f-2",
+                "name": "write_page",
+                "args": {
+                  "hash": "fnv1a64:6dd654f7277a9122",
+                  "bytes": 1592
+                },
+                "ok": true,
+                "result": {
+                  "hash": "fnv1a64:5159c7174fde3f0a",
+                  "bytes": 480
+                },
+                "durationMs": 143,
+                "execution": "completed",
+                "accepted": true,
+                "gate": {
+                  "codes": [],
+                  "issues": []
+                },
+                "baseRevision": 0,
+                "pageRevision": null,
+                "revisionMeaning": "proposal_only_not_applied",
+                "diff": {
+                  "hash": "fnv1a64:d4729648475847cd",
+                  "bytes": 313
+                }
+              }
+            ]
+          }
+        },
+        "chat": {
+          "mode": "build",
+          "selectedModelId": "grok-4.20-0309-non-reasoning",
+          "usage": {
+            "status": "complete",
+            "runs": 1,
+            "incompleteRuns": 0,
+            "promptTokens": 6185,
+            "completionTokens": 394,
+            "totalTokens": 6579,
+            "cost": {
+              "available": true,
+              "kind": "billed",
+              "currency": "USD",
+              "ticks": "48186500",
+              "usd": "0.0048186500",
+              "completeness": "complete",
+              "reportedRequests": 3,
+              "requests": 3
+            },
+            "reasoningTokens": 0,
+            "cachedTokens": 3712
+          },
+          "messages": [
+            {
+              "id": "msg-ae4df1a4-584f-40b2-92df-c1c8d338dc9d",
+              "role": "user",
+              "text": "Make a page for Quiet Rooms, a small interior design studio for small flats: a hero and the team of three people (names and roles). Use real stock photos: https URLs from images.unsplash.com or images.pexels.com for the hero image (with imageAlt) and an avatar for each team member.",
+              "createdAt": "2026-11-19T22:47:44.671Z",
+              "selectedModelId": "grok-4.20-0309-non-reasoning",
+              "mode": "build"
+            },
+            {
+              "id": "msg-94c9c872-4a74-442e-b4a1-ef622d9c401c",
+              "role": "assistant",
+              "text": "",
+              "createdAt": "2026-11-19T22:47:50.888Z",
+              "mode": "build",
+              "answer": {
+                "blocks": [
+                  "hero-simple",
+                  "team-simple"
+                ]
+              },
+              "run": {
+                "requestedModelId": "grok-4.20-0309-non-reasoning",
+                "modelId": "grok-4.20-0309-non-reasoning",
+                "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+                "live": true,
+                "policyVersion": "page-agent/13",
+                "modelCatalogVersion": "grok-text-5/2026-11-08",
+                "trialPolicyVersion": "page-agent/13+grok-text-5/2026-11-08",
+                "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+                "path": "chat-completions",
+                "tools": [
+                  "get_block",
+                  "get_block",
+                  "write_page"
+                ],
+                "runId": "xai-mwo551oa-0hlzsb",
+                "usage": {
+                  "status": "complete",
+                  "steps": 3,
+                  "reportedSteps": 3,
+                  "promptTokens": 6185,
+                  "completionTokens": 394,
+                  "totalTokens": 6579,
+                  "reportedBy": "provider",
+                  "providerId": "xai",
+                  "aggregation": "sum-of-tool-loop-requests",
+                  "lastStep": {
+                    "promptTokens": 2400,
+                    "completionTokens": 362,
+                    "totalTokens": 2762,
+                    "reasoningTokens": 0,
+                    "cachedTokens": 1920,
+                    "costUsdTicks": "18890000"
+                  },
+                  "cost": {
+                    "available": true,
+                    "kind": "billed",
+                    "currency": "USD",
+                    "ticks": "48186500",
+                    "usd": "0.0048186500",
+                    "completeness": "complete",
+                    "reportedRequests": 3,
+                    "requests": 3
+                  },
+                  "reasoningTokens": 0,
+                  "cachedTokens": 3712
+                }
+              },
+              "proposal": {
+                "applied": true,
+                "status": "applied",
+                "source": "write_page",
+                "liveModel": true,
+                "warnings": [],
+                "missing": [],
+                "title": "Quiet Rooms",
+                "locale": "en",
+                "baseRevision": 0,
+                "diff": [
+                  {
+                    "scope": "page",
+                    "change": "changed",
+                    "paths": [
+                      "/title",
+                      "/slug",
+                      "/seo/title",
+                      "/seo/description"
+                    ]
+                  },
+                  {
+                    "scope": "block",
+                    "change": "added",
+                    "id": "block-hero-simple",
+                    "item": "hero-simple",
+                    "variant": "mediaStart",
+                    "to": 0
+                  },
+                  {
+                    "scope": "block",
+                    "change": "added",
+                    "id": "block-team-simple",
+                    "item": "team-simple",
+                    "variant": "cols3",
+                    "to": 1
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "agent-storage": {
+          "format": "agent-storage/1",
+          "policyVersion": 1,
+          "basis": "project-excludes-own-metrics; origin-before-current-metrics",
+          "project": {
+            "jsonUtf8Bytes": 26611,
+            "estimatedUtf16Bytes": 53222
+          },
+          "sessionsJsonUtf8Bytes": 26942,
+          "traceJsonUtf8Bytes": 22006,
+          "originEstimatedUtf16Bytes": 62230,
+          "budgetExceeded": false,
+          "coverage": "origin"
+        }
+      },
+      "page": {
+        "applied": {
+          "version": 2,
+          "slug": "quiet-rooms",
+          "title": "Quiet Rooms",
+          "locale": "en",
+          "seo": {
+            "title": "Quiet Rooms - Interior Design Studio for Small Flats",
+            "description": "Discover Quiet Rooms, a boutique interior design studio specializing in creating serene and functional spaces for small flats and apartments."
+          },
+          "blocks": [
+            {
+              "item": "hero-simple",
+              "variant": "mediaStart",
+              "props": {
+                "media": "start",
+                "id": "block-hero-simple",
+                "title": "Quiet Rooms",
+                "description": "A small interior design studio dedicated to transforming compact living spaces into peaceful retreats. We specialize in small flats, blending functionality with tranquility.",
+                "image": "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6",
+                "imageAlt": "Modern minimalist living room interior",
+                "actionLabel": "View our work",
+                "actionHref": "#team",
+                "level": 1,
+                "padding": "spacious",
+                "align": "start"
+              },
+              "id": "block-hero-simple"
+            },
+            {
+              "item": "team-simple",
+              "variant": "cols3",
+              "props": {
+                "cols": "3",
+                "surface": "plain",
+                "members": [
+                  {
+                    "id": "members-1",
+                    "title": "Elena Voss",
+                    "description": "Founder & Lead Designer",
+                    "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+                  },
+                  {
+                    "id": "members-2",
+                    "title": "Marcus Hale",
+                    "description": "Senior Interior Architect",
+                    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d"
+                  },
+                  {
+                    "id": "members-3",
+                    "title": "Lila Chen",
+                    "description": "Design Consultant & Space Planner",
+                    "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80"
+                  }
+                ],
+                "id": "block-team-simple",
+                "title": "Our Team",
+                "description": "Meet the passionate designers behind Quiet Rooms, each bringing unique expertise to create harmonious small-space interiors.",
+                "level": 2,
+                "padding": "standard",
+                "align": "center"
+              },
+              "id": "block-team-simple"
+            }
+          ],
+          "id": "page-a05daedb-8bf5-491f-80d3-9f953c9ae75d",
+          "status": "draft",
+          "createdAt": "2026-11-19T22:47:45.592Z",
+          "updatedAt": "2026-11-19T22:47:50.918Z"
+        },
+        "candidate": null,
+        "appliedProvenance": {
+          "screenId": null,
+          "scenarioId": null,
+          "missing": []
+        },
+        "candidateProvenance": null,
+        "selectedBlockId": "block-hero-simple",
+        "revision": 1,
+        "lastProposed": {
+          "version": 2,
+          "slug": "quiet-rooms",
+          "title": "Quiet Rooms",
+          "locale": "en",
+          "seo": {
+            "title": "Quiet Rooms - Interior Design Studio for Small Flats",
+            "description": "Discover Quiet Rooms, a boutique interior design studio specializing in creating serene and functional spaces for small flats and apartments."
+          },
+          "blocks": [
+            {
+              "item": "hero-simple",
+              "variant": "mediaStart",
+              "props": {
+                "media": "start",
+                "id": "block-hero-simple",
+                "title": "Quiet Rooms",
+                "description": "A small interior design studio dedicated to transforming compact living spaces into peaceful retreats. We specialize in small flats, blending functionality with tranquility.",
+                "image": "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6",
+                "imageAlt": "Modern minimalist living room interior",
+                "actionLabel": "View our work",
+                "actionHref": "#team",
+                "level": 1,
+                "padding": "spacious",
+                "align": "start"
+              },
+              "id": "block-hero-simple"
+            },
+            {
+              "item": "team-simple",
+              "variant": "cols3",
+              "props": {
+                "cols": "3",
+                "surface": "plain",
+                "members": [
+                  {
+                    "id": "members-1",
+                    "title": "Elena Voss",
+                    "description": "Founder & Lead Designer",
+                    "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+                  },
+                  {
+                    "id": "members-2",
+                    "title": "Marcus Hale",
+                    "description": "Senior Interior Architect",
+                    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d"
+                  },
+                  {
+                    "id": "members-3",
+                    "title": "Lila Chen",
+                    "description": "Design Consultant & Space Planner",
+                    "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80"
+                  }
+                ],
+                "id": "block-team-simple",
+                "title": "Our Team",
+                "description": "Meet the passionate designers behind Quiet Rooms, each bringing unique expertise to create harmonious small-space interiors.",
+                "level": 2,
+                "padding": "standard",
+                "align": "center"
+              },
+              "id": "block-team-simple"
+            }
+          ],
+          "id": "page-a05daedb-8bf5-491f-80d3-9f953c9ae75d",
+          "status": "draft",
+          "createdAt": "2026-11-19T22:47:45.592Z",
+          "updatedAt": "2026-11-19T22:47:50.918Z"
+        },
+        "lastProposedProvenance": {
+          "screenId": null,
+          "scenarioId": null,
+          "missing": []
+        }
+      }
+    }
+  ],
+  "settings": {
+    "theme": "light",
+    "previewHideServiceLabels": false,
+    "selectedModelId": "grok-4.20-0309-non-reasoning"
+  },
+  "prefs": {
+    "layout": {
+      "navWidth": 240,
+      "sideWidth": 320,
+      "inspectorWidth": 304,
+      "layersHeight": 200,
+      "treeWidth": 208,
+      "navCollapsed": true,
+      "sideCollapsed": false,
+      "inspectorCollapsed": false,
+      "layersCollapsed": false,
+      "treeCollapsed": false,
+      "focus": false
+    }
+  }
+}
