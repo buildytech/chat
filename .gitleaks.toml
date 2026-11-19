@@ -10,6 +10,10 @@ description = "reviewed 2026-11-14: content hashes (sha256 of source files) of t
 paths = ['''registry/svelte/ui8kit\.lock\.json''']
 
 [[allowlists]]
+description = "reviewed 2026-11-20: content hashes (sha256 of pinned files, e.g. the key \"prototypes/tokens.css\") of the registry snapshot, not credentials"
+paths = ['''registry/snapshot\.json''']
+
+[[allowlists]]
 description = "reviewed 2026-11-14: a fake canary key that the logs-without-secrets test plants to prove it never reaches a log"
 paths = ['''scripts/m4-api-tests/logs-secrets\.test\.ts''']
 
