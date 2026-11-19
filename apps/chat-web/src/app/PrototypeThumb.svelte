@@ -13,8 +13,9 @@
 	let { item, variant, class: className }: { item: string; variant: string; class?: string } = $props();
 
 	const PROTOTYPES = import.meta.glob<Component<Record<string, unknown>>>("../../../../prototypes/svelte/blocks/*.svelte", { import: "default", eager: true });
-	/** The page width the prototype is laid out at (its md / lg breakpoints follow the viewport, a desktop here). */
-	const PAGE_WIDTH = 1280;
+	/** The width the prototype is laid out at: its md / lg breakpoints follow the viewport (a desktop here), so the layout stays the
+	    desktop one; 720 rather than the 1280 page keeps the 8px text bars about 1.5px thick in a 2-column card instead of under 1px. */
+	const PAGE_WIDTH = 720;
 
 	const file = $derived(catalogBlock(item)?.prototype ?? "");
 	const Prototype = $derived(Object.entries(PROTOTYPES).find(([path]) => path.endsWith(`/${file}`))?.[1] ?? null);
