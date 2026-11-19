@@ -1,0 +1,769 @@
+{
+  "$schema": "https://schema.buildy.tw/session.schema.json",
+  "format": "buildy:v1",
+  "exportedAt": "2026-11-16T17:56:41.881Z",
+  "app": {
+    "name": "buildy-chat",
+    "version": "0.5.0",
+    "host": "browser",
+    "commit": "2d9ef9ecbf494cc03d82e229306736d382e44694"
+  },
+  "pins": {
+    "stock": {
+      "repo": "codegen-x/ui8kit",
+      "contentCommit": "b61663421cb048e33f2bc405035ea5e2ba1f5009"
+    },
+    "registry": {
+      "url": "https://registry.buildy.tw",
+      "sourceCommit": "b61663421cb048e33f2bc405035ea5e2ba1f5009"
+    },
+    "catalogDigest": "sha256:dc156a323d17f94267b7308cda39161e5eff307874a60aff91c74949b7dce1ff"
+  },
+  "selectedSessionId": "session-bfc0aa68-60be-4ade-8ec1-3560ca8018e2",
+  "sessions": [
+    {
+      "id": "session-bfc0aa68-60be-4ade-8ec1-3560ca8018e2",
+      "title": "давай соберем любую страничку по ИТ теме с карти",
+      "updatedAt": "2026-11-16T17:54:42.985Z",
+      "scenarioId": null,
+      "screenId": null,
+      "pageId": "page-bfc0aa68-60be-4ade-8ec1-3560ca8018e2",
+      "pageRevision": 1,
+      "skin": "supabase",
+      "history": [
+        {
+          "revision": 1,
+          "cause": "apply",
+          "pageId": "page-bfc0aa68-60be-4ade-8ec1-3560ca8018e2",
+          "at": "2026-11-16T17:54:42.984Z"
+        }
+      ],
+      "ext": {
+        "chat": {
+          "mode": "build",
+          "selectedModelId": "grok-4.20-0309-non-reasoning",
+          "usage": {
+            "status": "complete",
+            "runs": 1,
+            "incompleteRuns": 0,
+            "promptTokens": 45398,
+            "completionTokens": 5940,
+            "totalTokens": 51338,
+            "cost": {
+              "available": false,
+              "reason": "no_official_current_rates_in_repo",
+              "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+            },
+            "reasoningTokens": 0,
+            "cachedTokens": 31488
+          },
+          "messages": [
+            {
+              "id": "msg-c69bd9bf-69f7-4902-b272-e8314003100e",
+              "role": "user",
+              "text": "давай соберем любую страничку по ИТ теме с картинками из фотостоков",
+              "createdAt": "2026-11-16T17:53:48.981Z",
+              "selectedModelId": "grok-4.20-0309-non-reasoning",
+              "mode": "build"
+            },
+            {
+              "id": "msg-06341a49-60a7-4215-8085-63a4c2801f94",
+              "role": "assistant",
+              "text": "",
+              "createdAt": "2026-11-16T17:54:32.965Z",
+              "mode": "build",
+              "answer": {
+                "blocks": [
+                  "block.navbar",
+                  "block.hero",
+                  "block.features",
+                  "block.stats",
+                  "block.testimonials",
+                  "block.cta",
+                  "block.sitemap"
+                ]
+              },
+              "run": {
+                "requestedModelId": "grok-4.20-0309-non-reasoning",
+                "modelId": "grok-4.20-0309-non-reasoning",
+                "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+                "live": true,
+                "policyVersion": "page-agent/10",
+                "modelCatalogVersion": "grok-text-5/2026-11-08",
+                "trialPolicyVersion": "page-agent/10+grok-text-5/2026-11-08",
+                "catalogDigest": "sha256:dc156a323d17f94267b7308cda39161e5eff307874a60aff91c74949b7dce1ff",
+                "path": "chat-completions",
+                "tools": [
+                  "search_catalog",
+                  "get_block",
+                  "get_block",
+                  "get_block",
+                  "get_block",
+                  "get_block",
+                  "get_block",
+                  "get_block",
+                  "write_page",
+                  "write_page",
+                  "write_page"
+                ],
+                "runId": "xai-mwjkbj54-88xbs3",
+                "usage": {
+                  "status": "complete",
+                  "steps": 5,
+                  "promptTokens": 45398,
+                  "completionTokens": 5940,
+                  "totalTokens": 51338,
+                  "reportedBy": "xai-provider",
+                  "aggregation": "sum-of-tool-loop-requests",
+                  "lastStep": {
+                    "promptTokens": 13809,
+                    "completionTokens": 1259,
+                    "totalTokens": 15068,
+                    "reasoningTokens": 0,
+                    "cachedTokens": 12416
+                  },
+                  "cost": {
+                    "available": false,
+                    "reason": "no_official_current_rates_in_repo",
+                    "note": "Dollar cost is shown only when official current rates for the exact model id are confirmed, with source and date, and marked estimated vs billed. Generic or remembered prices are not used."
+                  },
+                  "reasoningTokens": 0,
+                  "cachedTokens": 31488
+                }
+              },
+              "proposal": {
+                "applied": true,
+                "status": "applied",
+                "source": "write_page",
+                "liveModel": true,
+                "warnings": [],
+                "missing": [],
+                "title": "IT Solutions",
+                "screenId": null,
+                "locale": "ru",
+                "baseRevision": 0,
+                "diff": [
+                  {
+                    "scope": "page",
+                    "change": "changed",
+                    "paths": [
+                      "/title",
+                      "/slug",
+                      "/locale",
+                      "/seo/title",
+                      "/seo/description"
+                    ]
+                  },
+                  {
+                    "scope": "block",
+                    "change": "added",
+                    "id": "block-nav-bar",
+                    "item": "nav-bar",
+                    "variant": "inline",
+                    "to": 0
+                  },
+                  {
+                    "scope": "block",
+                    "change": "added",
+                    "id": "block-hero-classic",
+                    "item": "hero-classic",
+                    "variant": "split",
+                    "to": 1
+                  },
+                  {
+                    "scope": "block",
+                    "change": "added",
+                    "id": "block-feature-grid",
+                    "item": "feature-grid",
+                    "variant": "rowsAlternate",
+                    "to": 2
+                  },
+                  {
+                    "scope": "block",
+                    "change": "added",
+                    "id": "block-stats-band",
+                    "item": "stats-band",
+                    "variant": "icons",
+                    "to": 3
+                  },
+                  {
+                    "scope": "block",
+                    "change": "added",
+                    "id": "block-testimonial-grid",
+                    "item": "testimonial-grid",
+                    "variant": "grid3",
+                    "to": 4
+                  },
+                  {
+                    "scope": "block",
+                    "change": "added",
+                    "id": "block-cta-band",
+                    "item": "cta-band",
+                    "variant": "band",
+                    "to": 5
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "page": {
+        "applied": {
+          "version": 2,
+          "slug": "it-tech-landing",
+          "title": "IT Solutions",
+          "locale": "ru",
+          "seo": {
+            "title": "IT Solutions - Инновационные технологии для вашего бизнеса",
+            "description": "Современные IT-решения, разработка ПО, облачные сервисы и цифровая трансформация для компаний. Узнайте, как мы помогаем бизнесу расти с помощью передовых технологий."
+          },
+          "blocks": [
+            {
+              "item": "nav-bar",
+              "variant": "inline",
+              "props": {
+                "layout": "inline",
+                "over": "none",
+                "actions": {
+                  "mode": "cta",
+                  "cta": "Начать",
+                  "href": "#cta"
+                },
+                "tone": "default",
+                "label": "IT Solutions",
+                "brand": "IT Solutions",
+                "links": [
+                  {
+                    "id": "links-1",
+                    "name": "Главная",
+                    "icon": "house",
+                    "href": "#"
+                  },
+                  {
+                    "id": "links-2",
+                    "name": "Решения",
+                    "icon": "cpu",
+                    "href": "#features"
+                  },
+                  {
+                    "id": "links-3",
+                    "name": "О нас",
+                    "icon": "users",
+                    "href": "#about"
+                  },
+                  {
+                    "id": "links-4",
+                    "name": "Контакты",
+                    "icon": "mail",
+                    "href": "#cta"
+                  }
+                ],
+                "search": {
+                  "label": "Label",
+                  "shortcut": "Shortcut"
+                },
+                "brandHref": "#"
+              },
+              "id": "block-nav-bar"
+            },
+            {
+              "item": "hero-classic",
+              "variant": "split",
+              "props": {
+                "layout": "split",
+                "media": {
+                  "kind": "image",
+                  "side": "end"
+                },
+                "scale": "default",
+                "tone": "default",
+                "density": "roomy",
+                "actions": {
+                  "mode": "two",
+                  "cta": "Получить консультацию",
+                  "href": "#cta",
+                  "secondary": "Узнать больше",
+                  "secondaryHref": "#features"
+                },
+                "text": "Мы помогаем компаниям внедрять передовые технологии, разрабатывать надежное ПО и оптимизировать бизнес-процессы. От облачных сервисов до ИИ — ваши цели становятся реальностью.",
+                "id": "block-hero-classic",
+                "title": "Инновационные IT-решения для вашего успеха",
+                "level": 1,
+                "badge": "Ваш надежный IT-партнер",
+                "image": "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0",
+                "imageAlt": "Современный офис с IT-специалистами за компьютерами"
+              },
+              "id": "block-hero-classic"
+            },
+            {
+              "item": "feature-grid",
+              "variant": "rowsAlternate",
+              "props": {
+                "layout": "rows",
+                "cols": "1-3",
+                "item": "card",
+                "mediaSide": "alternate",
+                "tone": "muted",
+                "density": "default",
+                "features": [
+                  {
+                    "id": "features-1",
+                    "title": "Разработка ПО",
+                    "text": "Создаем масштабируемые веб- и мобильные приложения на современных стеках: React, Node.js, Python и других.",
+                    "icon": "code",
+                    "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6"
+                  },
+                  {
+                    "id": "features-2",
+                    "title": "Облачные сервисы",
+                    "text": "Миграция в облако, управление AWS, Azure и Google Cloud для повышения эффективности и безопасности.",
+                    "icon": "cloud",
+                    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa"
+                  },
+                  {
+                    "id": "features-3",
+                    "title": "Искусственный интеллект",
+                    "text": "Внедряем решения на базе ML и нейросетей для автоматизации и анализа данных.",
+                    "icon": "brain",
+                    "image": "https://images.unsplash.com/photo-1677442136019-21780ecad995"
+                  }
+                ],
+                "id": "block-feature-grid",
+                "title": "Наши ключевые возможности"
+              },
+              "id": "block-feature-grid"
+            },
+            {
+              "item": "stats-band",
+              "variant": "icons",
+              "props": {
+                "cols": "4",
+                "layout": "row",
+                "surface": "none",
+                "item": "icon",
+                "align": "start",
+                "tone": "default",
+                "density": "default",
+                "stats": [
+                  {
+                    "id": "stats-1",
+                    "label": "Проектов завершено",
+                    "value": "250+",
+                    "icon": "circle-check-big",
+                    "hint": "Более 250 успешных внедрений"
+                  },
+                  {
+                    "id": "stats-2",
+                    "label": "Клиентов",
+                    "value": "120",
+                    "icon": "users",
+                    "hint": "Постоянные партнеры по всему миру"
+                  },
+                  {
+                    "id": "stats-3",
+                    "label": "Специалистов",
+                    "value": "85",
+                    "icon": "user-check",
+                    "hint": "Команда опытных разработчиков"
+                  },
+                  {
+                    "id": "stats-4",
+                    "label": "Годов на рынке",
+                    "value": "12",
+                    "icon": "calendar",
+                    "hint": "С 2012 года"
+                  }
+                ],
+                "id": "block-stats-band",
+                "title": "Наши достижения"
+              },
+              "id": "block-stats-band"
+            },
+            {
+              "item": "testimonial-grid",
+              "variant": "grid3",
+              "props": {
+                "layout": "grid",
+                "cols": "1-3",
+                "item": {
+                  "kind": "card",
+                  "avatar": "image",
+                  "rating": "show",
+                  "mark": "none"
+                },
+                "tone": "default",
+                "density": "roomy",
+                "quotes": [
+                  {
+                    "id": "quotes-1",
+                    "author": "Анна Смирнова",
+                    "role": "CTO",
+                    "company": "TechCorp",
+                    "quote": "Благодаря их команде мы запустили новый продукт в рекордные сроки. Профессионализм на высшем уровне!",
+                    "rating": 5,
+                    "handle": "@annasm",
+                    "time": "2 месяца назад",
+                    "mark": "quote",
+                    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+                  },
+                  {
+                    "id": "quotes-2",
+                    "author": "Дмитрий Иванов",
+                    "role": "CEO",
+                    "company": "DataFlow",
+                    "quote": "ИИ-решения полностью изменили наш подход к анализу данных. ROI вырос на 180%.",
+                    "rating": 5,
+                    "handle": "@dmitryiv",
+                    "time": "1 месяц назад",
+                    "mark": "quote",
+                    "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
+                  },
+                  {
+                    "id": "quotes-3",
+                    "author": "Елена Петрова",
+                    "role": "Head of IT",
+                    "company": "InnovateLab",
+                    "quote": "Облачная миграция прошла гладко, без простоев. Отличная поддержка 24/7.",
+                    "rating": 5,
+                    "handle": "@elenap",
+                    "time": "3 недели назад",
+                    "mark": "quote",
+                    "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80"
+                  }
+                ],
+                "labels": {
+                  "rating": "Рейтинг",
+                  "byLine": "от",
+                  "handleLine": "на"
+                },
+                "id": "block-testimonial-grid",
+                "title": "Что говорят наши клиенты"
+              },
+              "id": "block-testimonial-grid"
+            },
+            {
+              "item": "cta-band",
+              "variant": "band",
+              "props": {
+                "layout": "band",
+                "tone": "muted",
+                "actions": {
+                  "mode": "one",
+                  "cta": "Связаться с нами",
+                  "href": "#"
+                },
+                "proof": "none",
+                "density": "roomy",
+                "text": "Свяжитесь с нами сегодня и получите бесплатную консультацию по цифровой трансформации от наших экспертов.",
+                "id": "block-cta-band",
+                "title": "Готовы трансформировать ваш бизнес?",
+                "image": "https://images.unsplash.com/photo-1552664730-d307ca884978",
+                "imageAlt": "Команда IT-специалистов на встрече"
+              },
+              "id": "block-cta-band"
+            }
+          ],
+          "id": "page-bfc0aa68-60be-4ade-8ec1-3560ca8018e2",
+          "status": "draft",
+          "createdAt": "2026-11-16T17:53:50.134Z",
+          "updatedAt": "2026-11-16T17:54:33.087Z"
+        },
+        "candidate": null,
+        "appliedProvenance": {
+          "screenId": null,
+          "scenarioId": null,
+          "missing": []
+        },
+        "candidateProvenance": null,
+        "selectedBlockId": "block-nav-bar",
+        "revision": 1,
+        "lastProposed": {
+          "version": 2,
+          "slug": "it-tech-landing",
+          "title": "IT Solutions",
+          "locale": "ru",
+          "seo": {
+            "title": "IT Solutions - Инновационные технологии для вашего бизнеса",
+            "description": "Современные IT-решения, разработка ПО, облачные сервисы и цифровая трансформация для компаний. Узнайте, как мы помогаем бизнесу расти с помощью передовых технологий."
+          },
+          "blocks": [
+            {
+              "item": "nav-bar",
+              "variant": "inline",
+              "props": {
+                "layout": "inline",
+                "over": "none",
+                "actions": {
+                  "mode": "cta",
+                  "cta": "Начать",
+                  "href": "#cta"
+                },
+                "tone": "default",
+                "label": "IT Solutions",
+                "brand": "IT Solutions",
+                "links": [
+                  {
+                    "id": "links-1",
+                    "name": "Главная",
+                    "icon": "house",
+                    "href": "#"
+                  },
+                  {
+                    "id": "links-2",
+                    "name": "Решения",
+                    "icon": "cpu",
+                    "href": "#features"
+                  },
+                  {
+                    "id": "links-3",
+                    "name": "О нас",
+                    "icon": "users",
+                    "href": "#about"
+                  },
+                  {
+                    "id": "links-4",
+                    "name": "Контакты",
+                    "icon": "mail",
+                    "href": "#cta"
+                  }
+                ],
+                "search": {
+                  "label": "Label",
+                  "shortcut": "Shortcut"
+                },
+                "brandHref": "#"
+              },
+              "id": "block-nav-bar"
+            },
+            {
+              "item": "hero-classic",
+              "variant": "split",
+              "props": {
+                "layout": "split",
+                "media": {
+                  "kind": "image",
+                  "side": "end"
+                },
+                "scale": "default",
+                "tone": "default",
+                "density": "roomy",
+                "actions": {
+                  "mode": "two",
+                  "cta": "Получить консультацию",
+                  "href": "#cta",
+                  "secondary": "Узнать больше",
+                  "secondaryHref": "#features"
+                },
+                "text": "Мы помогаем компаниям внедрять передовые технологии, разрабатывать надежное ПО и оптимизировать бизнес-процессы. От облачных сервисов до ИИ — ваши цели становятся реальностью.",
+                "id": "block-hero-classic",
+                "title": "Инновационные IT-решения для вашего успеха",
+                "level": 1,
+                "badge": "Ваш надежный IT-партнер",
+                "image": "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0",
+                "imageAlt": "Современный офис с IT-специалистами за компьютерами"
+              },
+              "id": "block-hero-classic"
+            },
+            {
+              "item": "feature-grid",
+              "variant": "rowsAlternate",
+              "props": {
+                "layout": "rows",
+                "cols": "1-3",
+                "item": "card",
+                "mediaSide": "alternate",
+                "tone": "muted",
+                "density": "default",
+                "features": [
+                  {
+                    "id": "features-1",
+                    "title": "Разработка ПО",
+                    "text": "Создаем масштабируемые веб- и мобильные приложения на современных стеках: React, Node.js, Python и других.",
+                    "icon": "code",
+                    "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6"
+                  },
+                  {
+                    "id": "features-2",
+                    "title": "Облачные сервисы",
+                    "text": "Миграция в облако, управление AWS, Azure и Google Cloud для повышения эффективности и безопасности.",
+                    "icon": "cloud",
+                    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa"
+                  },
+                  {
+                    "id": "features-3",
+                    "title": "Искусственный интеллект",
+                    "text": "Внедряем решения на базе ML и нейросетей для автоматизации и анализа данных.",
+                    "icon": "brain",
+                    "image": "https://images.unsplash.com/photo-1677442136019-21780ecad995"
+                  }
+                ],
+                "id": "block-feature-grid",
+                "title": "Наши ключевые возможности"
+              },
+              "id": "block-feature-grid"
+            },
+            {
+              "item": "stats-band",
+              "variant": "icons",
+              "props": {
+                "cols": "4",
+                "layout": "row",
+                "surface": "none",
+                "item": "icon",
+                "align": "start",
+                "tone": "default",
+                "density": "default",
+                "stats": [
+                  {
+                    "id": "stats-1",
+                    "label": "Проектов завершено",
+                    "value": "250+",
+                    "icon": "circle-check-big",
+                    "hint": "Более 250 успешных внедрений"
+                  },
+                  {
+                    "id": "stats-2",
+                    "label": "Клиентов",
+                    "value": "120",
+                    "icon": "users",
+                    "hint": "Постоянные партнеры по всему миру"
+                  },
+                  {
+                    "id": "stats-3",
+                    "label": "Специалистов",
+                    "value": "85",
+                    "icon": "user-check",
+                    "hint": "Команда опытных разработчиков"
+                  },
+                  {
+                    "id": "stats-4",
+                    "label": "Годов на рынке",
+                    "value": "12",
+                    "icon": "calendar",
+                    "hint": "С 2012 года"
+                  }
+                ],
+                "id": "block-stats-band",
+                "title": "Наши достижения"
+              },
+              "id": "block-stats-band"
+            },
+            {
+              "item": "testimonial-grid",
+              "variant": "grid3",
+              "props": {
+                "layout": "grid",
+                "cols": "1-3",
+                "item": {
+                  "kind": "card",
+                  "avatar": "image",
+                  "rating": "show",
+                  "mark": "none"
+                },
+                "tone": "default",
+                "density": "roomy",
+                "quotes": [
+                  {
+                    "id": "quotes-1",
+                    "author": "Анна Смирнова",
+                    "role": "CTO",
+                    "company": "TechCorp",
+                    "quote": "Благодаря их команде мы запустили новый продукт в рекордные сроки. Профессионализм на высшем уровне!",
+                    "rating": 5,
+                    "handle": "@annasm",
+                    "time": "2 месяца назад",
+                    "mark": "quote",
+                    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+                  },
+                  {
+                    "id": "quotes-2",
+                    "author": "Дмитрий Иванов",
+                    "role": "CEO",
+                    "company": "DataFlow",
+                    "quote": "ИИ-решения полностью изменили наш подход к анализу данных. ROI вырос на 180%.",
+                    "rating": 5,
+                    "handle": "@dmitryiv",
+                    "time": "1 месяц назад",
+                    "mark": "quote",
+                    "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
+                  },
+                  {
+                    "id": "quotes-3",
+                    "author": "Елена Петрова",
+                    "role": "Head of IT",
+                    "company": "InnovateLab",
+                    "quote": "Облачная миграция прошла гладко, без простоев. Отличная поддержка 24/7.",
+                    "rating": 5,
+                    "handle": "@elenap",
+                    "time": "3 недели назад",
+                    "mark": "quote",
+                    "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80"
+                  }
+                ],
+                "labels": {
+                  "rating": "Рейтинг",
+                  "byLine": "от",
+                  "handleLine": "на"
+                },
+                "id": "block-testimonial-grid",
+                "title": "Что говорят наши клиенты"
+              },
+              "id": "block-testimonial-grid"
+            },
+            {
+              "item": "cta-band",
+              "variant": "band",
+              "props": {
+                "layout": "band",
+                "tone": "muted",
+                "actions": {
+                  "mode": "one",
+                  "cta": "Связаться с нами",
+                  "href": "#"
+                },
+                "proof": "none",
+                "density": "roomy",
+                "text": "Свяжитесь с нами сегодня и получите бесплатную консультацию по цифровой трансформации от наших экспертов.",
+                "id": "block-cta-band",
+                "title": "Готовы трансформировать ваш бизнес?",
+                "image": "https://images.unsplash.com/photo-1552664730-d307ca884978",
+                "imageAlt": "Команда IT-специалистов на встрече"
+              },
+              "id": "block-cta-band"
+            }
+          ],
+          "id": "page-bfc0aa68-60be-4ade-8ec1-3560ca8018e2",
+          "status": "draft",
+          "createdAt": "2026-11-16T17:53:50.134Z",
+          "updatedAt": "2026-11-16T17:54:33.087Z"
+        },
+        "lastProposedProvenance": {
+          "screenId": null,
+          "scenarioId": null,
+          "missing": []
+        }
+      }
+    }
+  ],
+  "settings": {
+    "theme": "dark",
+    "previewHideServiceLabels": true,
+    "selectedModelId": "grok-4.20-0309-non-reasoning"
+  },
+  "prefs": {
+    "layout": {
+      "navWidth": 240,
+      "sideWidth": 320,
+      "inspectorWidth": 304,
+      "layersHeight": 200,
+      "treeWidth": 208,
+      "navCollapsed": false,
+      "sideCollapsed": false,
+      "inspectorCollapsed": false,
+      "layersCollapsed": false,
+      "treeCollapsed": false,
+      "focus": false
+    }
+  }
+}
