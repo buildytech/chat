@@ -10,23 +10,26 @@ import {
 	applyJsonPatch,
 	checkPageDoc,
 	diffPages,
+	emptyPage,
 	renderBlock,
 	sampleProps,
 	writePage
 } from "../../packages/builder-core/src/index.ts";
 
-const applied = JSON.parse(readFileSync(fileURLToPath(new URL("./fixtures/fitness-applied-v2.json", import.meta.url)), "utf8")) as PageV2;
+const fill = JSON.parse(readFileSync(fileURLToPath(new URL("./fixtures/studio-fill.json", import.meta.url)), "utf8")) as PageV2;
+const written = writePage(emptyPage({ title: fill.title, now: "2026-11-19T12:00:00.000Z" }), { page: fill });
+assert.ok(written.ok, JSON.stringify(written));
 
-/** The owner's fitness page at revision 3 (8 blocks) as a page-spec/v2 document. */
-const migrated = (_slot: "applied"): PageV2 => structuredClone(applied);
+/** The studio page (ADR 0059): hero-simple + team-simple with content. */
+const migrated = (_slot: "applied"): PageV2 => structuredClone(written.page);
 
 test("the gate names every problem as { path, code, expected, got }", () => {
 	const page = migrated("applied");
 	const bad = JSON.parse(JSON.stringify(page)) as PageV2;
-	bad.blocks[1]!.props = { ...bad.blocks[1]!.props, tone: "neon" };
-	bad.blocks[2]!.variant = "carousel";
-	bad.blocks[3]!.item = "no-such-item";
-	[bad.blocks[0], bad.blocks[7]] = [bad.blocks[7]!, bad.blocks[0]!]; // header and footer swapped: still valid (ADR 0037)
+	bad.blocks[0]!.props = { ...bad.blocks[0]!.props, padding: "neon" };
+	bad.blocks[1]!.variant = "carousel";
+	bad.blocks.push({ id: "block-x", item: "no-such-item" } as never);
+	[bad.blocks[0], bad.blocks[1]] = [bad.blocks[1]!, bad.blocks[0]!]; // any order is valid (ADR 0037)
 	const gate = checkPageDoc(bad);
 	assert.ok(!gate.ok);
 	const codes = new Set(gate.issues.map((issue) => issue.code));
@@ -36,9 +39,9 @@ test("the gate names every problem as { path, code, expected, got }", () => {
 		assert.match(issue.path, /^\/(blocks\/\d+.*)?$/);
 		assert.ok(issue.expected !== undefined, JSON.stringify(issue));
 	}
-	const tone = gate.issues.find((issue) => issue.code === "props_invalid");
-	assert.equal(tone?.path, "/blocks/1/props/tone");
-	assert.equal(tone?.got, "neon");
+	const padding = gate.issues.find((issue) => issue.code === "props_invalid");
+	assert.equal(padding?.path, "/blocks/1/props/padding");
+	assert.equal(padding?.got, "neon");
 });
 
 test("RFC 6902: add, replace, move, remove, copy, test", () => {
@@ -61,46 +64,46 @@ test("RFC 6902: add, replace, move, remove, copy, test", () => {
 
 test("a new block gets the registry sample props of its variant, not placeholder copy", () => {
 	const page = migrated("applied");
-	const r = writePage(page, { patch: [{ op: "add", path: "/blocks/2", value: { item: "feature-grid", variant: "grid" } }] });
+	const r = writePage(page, { patch: [{ op: "add", path: "/blocks/1", value: { item: "team-simple", variant: "cols2" } }] });
 	assert.ok(r.ok, JSON.stringify(r));
-	const added = r.page.blocks[2]!;
-	assert.equal(added.id, "block-feature-grid");
-	assert.deepEqual(added.props, renderBlock({ id: added.id, item: "feature-grid", variant: "grid", props: sampleProps("feature-grid", "grid", added.id) })!.props);
+	const added = r.page.blocks[1]!;
+	assert.equal(added.id, "block-team-simple");
+	assert.deepEqual(added.props, renderBlock({ id: added.id, item: "team-simple", variant: "cols2", props: sampleProps("team-simple", "cols2", added.id) })!.props);
 	const text = JSON.stringify(added.props);
 	assert.ok(!/Why this page|Novaya|Stock screen|not invented/.test(text));
-	assert.deepEqual(r.diff.map((entry) => [entry.change, entry.id]), [["added", "block-feature-grid"]]);
+	assert.deepEqual(r.diff.map((entry) => [entry.change, entry.id]), [["added", "block-team-simple"]]);
 });
 
 test("write_page changes only what it names; untouched blocks keep their bytes", () => {
 	const page = migrated("applied");
-	const r = writePage(page, { patch: [{ op: "replace", path: "/blocks/1/props/title", value: "FitForge" }, { op: "replace", path: "/seo", value: { title: "FitForge", description: "A fictional fitness app." } }] });
+	const r = writePage(page, { patch: [{ op: "replace", path: "/blocks/0/props/title", value: "Small flats, calm rooms" }, { op: "replace", path: "/seo", value: { title: "Quiet Rooms", description: "A fictional interior studio." } }] });
 	assert.ok(r.ok, JSON.stringify(r));
-	assert.equal(r.page.blocks[1]!.props!.title, "FitForge");
-	for (const index of [0, 2, 3, 4, 5, 6, 7]) assert.equal(JSON.stringify(r.page.blocks[index]), JSON.stringify(page.blocks[index]));
-	assert.deepEqual(r.diff.map((entry) => [entry.scope, entry.change, entry.id ?? null, entry.paths]), [["page", "changed", null, ["/seo/title", "/seo/description"]], ["block", "changed", "block-hero", ["/props/title"]]]);
+	assert.equal(r.page.blocks[0]!.props!.title, "Small flats, calm rooms");
+	assert.equal(JSON.stringify(r.page.blocks[1]), JSON.stringify(page.blocks[1]));
+	assert.deepEqual(r.diff.map((entry) => [entry.scope, entry.change, entry.id ?? null, entry.paths]), [["page", "changed", null, ["/seo/title", "/seo/description"]], ["block", "changed", "hero", ["/props/title"]]]);
 	const none = writePage(page, { page: JSON.parse(JSON.stringify(page)) });
 	assert.ok(none.ok && !none.changed && none.diff.length === 0);
 });
 
 test("a rejected write changes nothing and lists the paths", () => {
 	const page = migrated("applied");
-	const r = writePage(page, { patch: [{ op: "replace", path: "/blocks/1/props/tone", value: "neon" }] });
+	const r = writePage(page, { patch: [{ op: "replace", path: "/blocks/0/props/title", value: 42 }] });
 	assert.ok(!r.ok);
-	assert.equal(r.issues[0]!.path, "/blocks/1/props/tone");
-	assert.equal(page.blocks[1]!.props!.tone, "default");
+	assert.equal(r.issues[0]!.path, "/blocks/0/props/title");
+	assert.equal(page.blocks[0]!.props!.title, "Calm rooms for small flats");
 	const both = writePage(page, { page: {}, patch: [] });
 	assert.ok(!both.ok);
 });
 
 test("a swapped item takes the sample props of the new item and keeps the shared text", () => {
 	const page = migrated("applied");
-	const before = page.blocks[2]!.props!.title;
-	const r = writePage(page, { patch: [{ op: "replace", path: "/blocks/2/item", value: "steps-list" }, { op: "remove", path: "/blocks/2/variant" }] });
+	const before = page.blocks[0]!.props!.title;
+	const r = writePage(page, { patch: [{ op: "replace", path: "/blocks/0/item", value: "team-simple" }, { op: "remove", path: "/blocks/0/variant" }] });
 	assert.ok(r.ok, JSON.stringify(r));
-	const block = r.page.blocks[2]!;
-	assert.equal(block.item, "steps-list");
+	const block = r.page.blocks[0]!;
+	assert.equal(block.item, "team-simple");
 	assert.equal(block.props!.title, before);
-	assert.ok(Array.isArray(block.props!.steps));
+	assert.ok(Array.isArray(block.props!.members));
 	const entry = diffPages(page, r.page)[0]!;
 	assert.equal(entry.change, "changed");
 	assert.ok(entry.paths!.includes("/item"));

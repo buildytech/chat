@@ -33,7 +33,8 @@ import {
 } from "../../apps/chat-web/src/lib/browser/session-file.ts";
 import { commitChange, nextRevision } from "../../apps/chat-web/src/lib/page-store/revision.ts";
 import { EditHistory } from "../../apps/chat-web/src/lib/inspector/history.ts";
-import { addScreen, applyOp, emptyPage } from "../../packages/builder-core/src/index.ts";
+import { applyOp, emptyPage } from "../../packages/builder-core/src/index.ts";
+import { studioPage } from "./studio-page.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 import { SESSION_MAX_HISTORY, sessionDefIssues, sessionFileIssues, sessionSchema } from "../../packages/page-contract/src/session.ts";
 
@@ -70,9 +71,7 @@ afterEach(() => {
 });
 
 function landing(): PageV2 {
-	const r = addScreen(emptyPage({ title: "Coffee house", locale: "en", now: NOW }), "screen.theme-marketing-landing/home");
-	assert.ok(r.ok, JSON.stringify(r));
-	return r.page;
+	return studioPage({ title: "Coffee house", now: NOW });
 }
 
 const chat = (id: string, extra: Record<string, unknown> = {}) => ({
@@ -341,7 +340,7 @@ test("revisions: undo is a committed change (next revision); edits of a pending 
 
 test("revisions: an unchanged value is a no-op (same page object, so no step and no revision)", () => {
 	const page = landing();
-	const hero = page.blocks.find((block) => block.item === "hero-classic")!;
+	const hero = page.blocks.find((block) => block.item === "hero-simple")!;
 	const first = applyOp(page, { op: "set", blockId: hero.id, pointer: "/title", value: "Fresh coffee" });
 	assert.ok(first.ok, JSON.stringify(first));
 	const again = applyOp(first.page, { op: "set", blockId: hero.id, pointer: "/title", value: "Fresh coffee" });

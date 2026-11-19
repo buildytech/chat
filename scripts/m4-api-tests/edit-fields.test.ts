@@ -8,10 +8,10 @@ let uninstall: () => void;
 before(async () => { uninstall = await installBundleProbe(); });
 after(() => uninstall?.());
 function base() {
-	const result = writePage(emptyPage({ title: "Private page metadata", now: "2026-11-17T12:00:00Z" }), { patch: [{ op: "add", path: "/blocks", value: [{ id: "selected", item: "hero-classic", variant: "centered" }, { id: "other", item: "hero-classic", variant: "centered", props: { title: "UNRELATED_SENTINEL" } }] }] });
+	const result = writePage(emptyPage({ title: "Private page metadata", now: "2026-11-17T12:00:00Z" }), { patch: [{ op: "add", path: "/blocks", value: [{ id: "selected", item: "hero-simple", variant: "mediaEnd" }, { id: "other", item: "hero-simple", variant: "mediaEnd", props: { title: "UNRELATED_SENTINEL" } }] }] });
 	assert.ok(result.ok); if (!result.ok) throw new Error("Fixture failed"); return result.page;
 }
-function scenario() { const result = resolveScenario("build", MODEL, { id: "page.edit-fields", version: 1 }); assert.ok(result.ok); if (!result.ok) throw new Error("Missing profile"); return result.scenario; }
+function scenario() { const result = resolveScenario("build", MODEL, { id: "page.edit-fields", version: 2 }); assert.ok(result.ok); if (!result.ok) throw new Error("Missing profile"); return result.scenario; }
 const reply = (args: unknown) => ({ ok: true as const, message: { role: "assistant" as const, calls: [{ id: "write", name: "write_page", argumentsJson: JSON.stringify(args) }] } });
 
 test("field edit sees one object, repairs its candidate without transcript growth and preserves other blocks", async () => {

@@ -6,7 +6,8 @@
  */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -28,15 +29,29 @@ const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
 const BUNDLE = join(ROOT, "api", "runtime", "_render", "blocks.mjs");
 const NOW = "2026-11-14T12:00:00.000Z";
 const read = (path: string) => readFileSync(join(ROOT, path), "utf8");
-const owner = JSON.parse(read("scripts/m4-api-tests/fixtures/blocks-page-1e1031a.json")) as PageV2;
-const fixed = JSON.parse(JSON.stringify(owner).replaceAll('"currency":"\u20bd"', '"currency":"RUB"')) as PageV2;
+/** The studio page (ADR 0059) and the same page with a hero title the boom bundle throws on. */
+const fixed = JSON.parse(read("scripts/m4-api-tests/fixtures/studio-fill.json")) as PageV2;
+const owner = JSON.parse(JSON.stringify(fixed).replace('"Calm rooms for small flats"', '"boom"')) as PageV2;
+/** The catalog blocks never throw on valid props; this module is the compiled bundle with a component that throws on "boom". */
+const BOOM = `import * as real from ${JSON.stringify(pathToFileURL(BUNDLE).href)};
+export const blocks = real.blocks;
+export function render(component, options) { if (options.props.title === "boom") throw new Error("Invalid value : boom"); return real.render(component, options); }
+`;
 
 let bundle: RenderModule;
+let dir = "";
+let boomUrl = "";
 before(async () => {
 	if (!existsSync(BUNDLE)) spawnSync(process.execPath, [join(ROOT, "scripts/build-render-bundle.mjs")], { cwd: ROOT, stdio: "pipe" });
-	bundle = (await import(pathToFileURL(BUNDLE).href)) as RenderModule;
+	dir = mkdtempSync(join(tmpdir(), "buildy-probe-"));
+	writeFileSync(join(dir, "boom.mjs"), BOOM);
+	boomUrl = pathToFileURL(join(dir, "boom.mjs")).href;
+	bundle = (await import(boomUrl)) as RenderModule;
 });
-after(() => installRenderProbe(null));
+after(() => {
+	installRenderProbe(null);
+	rmSync(dir, { recursive: true, force: true });
+});
 
 const fake = (render: (props: Record<string, unknown>) => string): RenderModule => ({ blocks: new Proxy({} as Record<string, unknown>, { get: (_t, key) => (typeof key === "string" && key.startsWith("blocks/none") ? undefined : {}) }), render: ((_: never, o: { props: Record<string, unknown> }) => ({ body: render(o.props) })) as RenderModule["render"] });
 
@@ -55,7 +70,7 @@ test("probeOutcome: throws, empty, content (an icon or a control is content)", (
 });
 
 test("write-time: the empty policy decides what a block that shows nothing does; a block that throws is refused under both", () => {
-	const add = { patch: [{ op: "add", path: "/blocks/-", value: { item: "cta-band", variant: "band" } }] };
+	const add = { patch: [{ op: "add", path: "/blocks/-", value: { item: "hero-simple", variant: "mediaEnd" } }] };
 	const blank = probeFromModule(fake(() => "<div></div>"));
 	const boom = probeFromModule(fake(() => { throw new Error("nope"); }));
 	installRenderProbe(blank, { required: true });
@@ -83,23 +98,23 @@ test("a write with nothing to render (rename, move, remove) is not failed by a m
 test("the browser loads the shared bundle and installs the probe: the Inspector edit that makes a component throw is refused with the prop's path", async () => {
 	assert.equal(RENDER_BUNDLE_PATH, "/render/blocks.mjs");
 	installRenderProbe(null, { required: true, empty: "allow" });
-	await loadRenderProbe(pathToFileURL(BUNDLE).href);
-	const edit = applyOp(fixed, { op: "set", blockId: "dishes", pointer: "/dishes/0/currency", value: "\u20bd" });
-	assert.equal(edit.ok, false, "a currency symbol where the component calls Intl.NumberFormat");
+	await loadRenderProbe(boomUrl);
+	const edit = applyOp(fixed, { op: "set", blockId: "hero", pointer: "/title", value: "boom" });
+	assert.equal(edit.ok, false, "a value the component throws on");
 	if (!edit.ok) {
 		assert.equal(edit.code, "render_failed");
-		assert.equal(edit.pointer, "/blocks/2/props/dishes/0/currency");
+		assert.equal(edit.pointer, "/blocks/0/props/title");
 	}
-	assert.ok(applyOp(fixed, { op: "set", blockId: "dishes", pointer: "/dishes/0/currency", value: "USD" }).ok, "a valid code is accepted");
+	assert.ok(applyOp(fixed, { op: "set", blockId: "hero", pointer: "/title", value: "Calm rooms" }).ok, "a value it renders is accepted");
 });
 
-test("a Blocks feed add of every sample renders, so the agent host accepts the same add (site-footer, once blank, shows its labels)", () => {
+test("a Blocks feed add of every sample renders, so the agent host accepts the same add", () => {
 	installRenderProbe(probeFromModule(bundle), { required: true });
-	assert.ok(applyOp(fixed, { op: "add", item: "site-footer", variant: "minimal" }).ok);
+	for (const [item, variant] of [["hero-simple", "mediaTop"], ["team-simple", "cards3"]] as const) assert.ok(applyOp(fixed, { op: "add", item, variant }).ok, `${item}/${variant}`);
 });
 
 
-test("every caller gives the same verdict: write-time, turn-start and the coverage classifier agree on the owner's page", () => {
+test("every caller gives the same verdict: write-time, turn-start and the coverage classifier agree on a page with a throwing block", () => {
 	const probe = probeFromModule(bundle);
 	installRenderProbe(probe, { required: true });
 	const write = writePage(emptyPage({ title: "x", now: NOW }), { page: owner }, { now: NOW });
@@ -111,7 +126,7 @@ test("every caller gives the same verdict: write-time, turn-start and the covera
 	});
 	assert.deepEqual(writePaths.map((p) => p.split("/props")[0]), coverage);
 	assert.deepEqual(turnStart.map((p) => p.split("/props")[0]), coverage);
-	assert.deepEqual(coverage, ["/blocks/2", "/blocks/4"]);
+	assert.deepEqual(coverage, ["/blocks/0"]);
 });
 
 test("there is one probe closure: runtime, coverage script and browser call probeFromModule, none hand-rolls a render", () => {

@@ -1,9 +1,8 @@
 import type { ScenarioId } from "@buildytech/builder-core";
 import type { SessionRevisionEntry } from "@buildytech/page-contract/session";
-import type { ProjectCollection } from "./collection.ts";
 
 /**
- * A project: the page, its skin, collection and revision history (session buildy:v1 1.9.0). It exists without a chat.
+ * A project: the page, its skin and revision history (session buildy:v1 1.9.0). It exists without a chat.
  * Extensions (`ext`, by name) hold what other modules keep with the project: the chat module keeps `ext.chat`
  * (messages, mode, selected model, usage). The project store never reads an extension; it stores and returns it.
  */
@@ -24,7 +23,6 @@ export type Project = {
 	skin?: string | null;
 	/** Revisions of the applied page, oldest first (ADR 0015). Last entry <= pageRevision. */
 	history?: SessionRevisionEntry[];
-	collection?: ProjectCollection;
 	/** Document keys no loaded module claims, carried through load and save untouched. */
 	extra?: Readonly<Record<string, unknown>>;
 	ext: Readonly<Record<string, Readonly<Record<string, unknown>>>>;

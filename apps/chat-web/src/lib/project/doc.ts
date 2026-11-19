@@ -7,7 +7,7 @@
 import type { Project } from "./types.ts";
 
 /** Keys of the session schema that belong to the project, in schema order. */
-const PROJECT_KEYS = ["title", "createdAt", "updatedAt", "scenarioId", "screenId", "pageId", "pageBound", "pageRevision", "skin", "collection", "history"] as const;
+const PROJECT_KEYS = ["title", "createdAt", "updatedAt", "scenarioId", "screenId", "pageId", "pageBound", "pageRevision", "skin", "history"] as const;
 
 /**
  * Flat session keys older documents (before 1.10.0) kept for a module: a module that registers them gets the keys it
@@ -21,7 +21,7 @@ export function registerLegacyKeys(name: string, keys: readonly string[]): void 
 const claimed = (): Set<string> => new Set([...legacy.values()].flat());
 
 /** Schema order of the whole session def (session.schema.json), so a written document always has the same key order. */
-const SESSION_KEY_ORDER = ["id", "projectId", "title", "createdAt", "updatedAt", "scenarioId", "screenId", "pageId", "pageBound", "pageRevision", "skin", "collection", "page", "history", "ext"];
+const SESSION_KEY_ORDER = ["id", "projectId", "title", "createdAt", "updatedAt", "scenarioId", "screenId", "pageId", "pageBound", "pageRevision", "skin", "page", "history", "ext"];
 
 export type SessionDoc = { id: string; title: string; updatedAt: string; projectId?: string; [key: string]: unknown };
 

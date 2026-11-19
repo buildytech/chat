@@ -6,9 +6,7 @@
 import { cloneJson, type BlockV2, type PageV2 } from "@buildytech/page-contract";
 import { coerceEnumValue } from "../catalog/props-fill.ts";
 import { addSlotCheck, moveSlotCheck, naturalIndex } from "./slots.ts";
-import { screenItems } from "./start.ts";
-import { catalogEntryBySpec } from "../catalog/sources.ts";
-import { itemInfo, itemOfSpec } from "./items.ts";
+import { itemInfo } from "./items.ts";
 import { sampleProps } from "./render.ts";
 import { freshBlockId, writePage } from "./write.ts";
 import { ensureParents, fail, done, liveProps, pruneEmpty, replaceProps, setAtPointer, type OpName, type OpResult, type PageOp } from "./ops-core.ts";
@@ -17,19 +15,16 @@ import { listRowOp, mapEntryOp } from "./ops-rows.ts";
 export { setAtPointer };
 export type { OpName, OpResult, PageOp };
 
-/** Whether a Stock catalog block variant can be added to a page (the Blocks feed "+" and drag): a registry item that renders. */
+/** Whether a catalog block variant can be added to a page (the Blocks feed "+" and drag): a registry item that renders. */
 export type AddCheck =
 	| { ok: true; item: string; variant: string }
-	| { ok: false; code: "unknown_block" | "no_renderer" | "unknown_variant"; message: string };
+	| { ok: false; code: "unknown_item" | "unknown_variant"; message: string };
 
-export function checkAdd(spec: string, variant?: string | null): AddCheck {
-	const entry = catalogEntryBySpec(spec);
-	if (!entry?.available) return { ok: false, code: "unknown_block", message: `${spec} is not a Stock catalog block.` };
-	const item = itemOfSpec(spec);
-	const info = item ? itemInfo(item) : null;
-	if (!item || !info) return { ok: false, code: "no_renderer", message: `${spec} has no registry item that renders in this BuildY version yet.` };
+export function checkAdd(item: string, variant?: string | null): AddCheck {
+	const info = itemInfo(item);
+	if (!info) return { ok: false, code: "unknown_item", message: `${item} is not a block of the catalog.` };
 	const want = variant || info.defaultVariant;
-	if (!info.variants.includes(want)) return { ok: false, code: "unknown_variant", message: `${spec} has no variant ${want}.` };
+	if (!info.variants.includes(want)) return { ok: false, code: "unknown_variant", message: `${item} has no variant ${want}.` };
 	return { ok: true, item, variant: want };
 }
 
@@ -133,30 +128,4 @@ function applyOpInner(page: PageV2, input: PageOp): OpResult {
 		case "list_row":
 			return listRowOp(page, index, block, input);
 	}
-}
-
-/** Drop a Stock screen into a page: its renderable sections as adds at slot `at` (default: the end), in the screen's order; one result, one undo step. */
-export function addScreen(page: PageV2, screenId: string, at?: number): (Extract<OpResult, { ok: true }> & { added: string[]; skipped: string[] }) | Extract<OpResult, { ok: false }> {
-	const { items, missing } = screenItems(screenId);
-	const skipped = [...missing];
-	if (!items.length) return { ...(fail("no_sections", `${screenId} has no section this BuildY version renders.`) as Extract<OpResult, { ok: false }>) };
-	let next = page;
-	let slot = Math.max(0, Math.min(at ?? page.blocks.length, page.blocks.length));
-	const added: string[] = [];
-	let first: Extract<OpResult, { ok: false }> | null = null;
-	let last: Extract<OpResult, { ok: true }> | null = null;
-	for (const entry of items) {
-		const result = applyOp(next, { op: "add", item: entry.item, variant: entry.variant, at: slot });
-		if (!result.ok) {
-			first ??= result;
-			skipped.push(entry.item);
-			continue;
-		}
-		next = result.page;
-		last = result;
-		added.push(result.blockId);
-		slot += 1;
-	}
-	if (!last) return first ?? (fail("nothing_added", `No section of ${screenId} fits this page.`) as Extract<OpResult, { ok: false }>);
-	return { ...last, page: next, blockId: added[0]!, op: "insert", added, skipped };
 }

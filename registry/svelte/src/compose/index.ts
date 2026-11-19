@@ -43,6 +43,7 @@ export { default as Button } from "./Button.svelte";
 export { default as ButtonPlain } from "./ButtonPlain.svelte";
 export { default as Link } from "./Link.svelte";
 export { default as LinkPlain } from "./LinkPlain.svelte";
+export { default as LinkButton } from "./LinkButton.svelte";
 export { default as Label } from "./Label.svelte";
 export { default as Form } from "./Form.svelte";
 export { default as Input } from "./Input.svelte";

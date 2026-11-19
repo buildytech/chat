@@ -52,7 +52,7 @@ test("browser sends registered scenario references and retains runtime traces fo
 	const original = globalThis.fetch;
 	try {
 		for (const mode of ["ask", "build"] as const) {
-			const scenario = { id: mode === "ask" ? "page.discuss" : "page.build", version: mode === "ask" ? 1 : 2 };
+			const scenario = { id: mode === "ask" ? "page.ask" : "page.build", version: mode === "ask" ? 3 : 4 };
 			globalThis.fetch = async (_input, init) => {
 				const request = JSON.parse(String(init?.body));
 				assert.deepEqual(request.scenario, scenario);
@@ -64,7 +64,8 @@ test("browser sends registered scenario references and retains runtime traces fo
 	} finally { globalThis.fetch = original; }
 });
 
-test("hash-only search evidence retains observed ids, zero scores, matches and registry items", () => {
-	const evidence = catalogEvidence("search_catalog", { total: 1, items: [{ screenId: "screen/from-catalog", score: 0, matched: ["observed"], via: "exact", sections: [{ item: "registry-item", variant: "variant" }] }] });
-	assert.deepEqual(evidence?.items?.[0], { screenId: "screen/from-catalog", score: 0, matched: ["observed"], via: "exact", sections: [{ item: "registry-item", variant: "variant" }] });
+test("catalog evidence keeps what the agent read: the list size and the block it opened", () => {
+	assert.deepEqual(catalogEvidence("list_blocks", { total: 2, items: "hero-simple (Hero Simple; hero; mediaEnd, mediaStart, mediaTop)" }), { kind: "catalog-list", total: 2 });
+	assert.deepEqual(catalogEvidence("get_block", { item: "team-simple", title: "Team Simple" }), { kind: "catalog-block", item: "team-simple" });
+	assert.equal(catalogEvidence("get_page", { page: {} }), undefined);
 });

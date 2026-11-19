@@ -1,12 +1,15 @@
 /**
- * Picture addresses (ADR 0049). A block picture is an optional text prop named `image` (a section: `image` + `imageAlt`; a record:
- * `image`). Empty or absent shows the registry placeholder. A value is kept only when it is an https URL or a relative path
+ * Picture addresses (ADR 0049). A block picture is an optional text prop named `image` or `imageDark` (a section, with `imageAlt`)
+ * or `avatar` (a team member). Empty or absent shows the registry placeholder. A value is kept only when it is an https URL or a relative path
  * (no scheme, no spaces); anything else (http:, data:, javascript:, free text) is dropped from the write with a note, the way an
  * unknown icon is, so a page never carries an address the runtime would have to refuse.
  */
 
+/** The address props of the media places of the block contracts (hero-simple `image`/`imageDark`, team-simple `members[].avatar`). */
+const IMAGE_NAMES: ReadonlySet<string> = new Set(["image", "imageDark", "avatar"]);
+
 /** A prop of this name, of kind text, is a picture address. */
-export const isImageName = (name: string): boolean => name === "image";
+export const isImageName = (name: string): boolean => IMAGE_NAMES.has(name);
 
 const MAX_LENGTH = 2048;
 

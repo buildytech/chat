@@ -55,7 +55,7 @@ test("compiled limits govern actual execution, not just diagnostics", async () =
 	const out = await runAgentLoop(MODEL, { mode: "ask", brief: "Explain", page: page(), expectedRevision: 0 }, signal(), async (request) => {
 		calls += 1;
 		assert.equal(request.maxTokens, 256);
-		assert.deepEqual(request.provider, { id: "xai", version: 1 });
+		assert.deepEqual(request.provider, { id: "xai", version: 2 });
 		assert.equal(request.messages[0]?.text, result.scenario.systemPrompt);
 		return { ok: true, message: { role: "assistant", calls: [{ id: "one", name: "get_page", argumentsJson: "{}" }] } };
 	}, "test-profile", { scenario: result.scenario });
@@ -71,7 +71,7 @@ test("runtime uses the registered version and rejects a mismatched reference bef
 		const good = await runXaiCatalogTurn("not-a-key", MODEL, ctx, signal());
 		assert.ok(good.result.ok);
 		assert.equal(good.meta.scenario?.id, "page.ask");
-		assert.equal(good.meta.scenario?.version, 2);
+		assert.equal(good.meta.scenario?.version, 3);
 		const bad = await runXaiCatalogTurn("not-a-key", MODEL, { ...ctx, scenario: { id: "page.build", version: 1 } }, signal());
 		assert.equal(bad.result.ok, false);
 		assert.equal(seen.requests.length, 1);

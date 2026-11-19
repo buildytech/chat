@@ -10,7 +10,7 @@
 import Ajv2020 from "ajv/dist/2020.js";
 import type { ErrorObject, ValidateFunction } from "ajv";
 import { propsSchemaFor, refShapeDefs } from "./props-schema.ts";
-import { setPropsValidator, type PropsIssue } from "./provenance.ts";
+import { setPropsValidator, type PropsIssue } from "./validator.ts";
 import type { RegistryRender } from "./organism.ts";
 
 const ajv = new Ajv2020({ strict: true, allErrors: true });

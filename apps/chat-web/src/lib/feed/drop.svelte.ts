@@ -13,10 +13,8 @@ import { feedDrag } from "./drag.svelte";
 export function dropRefusal(at: number): string | null {
 	const item = feedDrag.item;
 	if (!item) return null;
-	// A screen: its sections take the slot in the screen's order (header / footer included, nothing is skipped for being a second one).
-	if (item.type === "screen") return item.supported ? null : t("feed.why.screen_not_renderable");
-	const check = inspector.canAdd(item.spec, item.variant);
-	if (!check.ok) return t(`feed.why.${check.code}`).replace("{role}", item.role ?? "");
+	const check = inspector.canAdd(item.item, item.variant);
+	if (!check.ok) return t(`feed.why.${check.code}`);
 	const page = getCurrentPage();
 	const slot = addSlotCheck(page ? blocksOf(page) : [], at);
 	return slot.ok ? null : t(`dnd.why.${slot.code}`);
@@ -27,11 +25,11 @@ export async function dropAt(at: number): Promise<boolean> {
 	const item = feedDrag.item;
 	feedDrag.end();
 	if (!item) return false;
-	const done = await (item.type === "screen" ? inspector.addScreen(item.id, at) : inspector.add(item.spec, item.variant, at));
-	const name = (key: string) => t(key).replace("{title}", item.title).replace("{variant}", item.variant).replace("{position}", String(at + 1));
+	const done = await inspector.add(item.item, item.variant, at);
+	const name = (key: string) => t(key).replace("{title}", item.title).replace("{variant}", item.label).replace("{position}", String(at + 1));
 	if (done.ok) {
 		canvas.requestReveal(done.blockId);
-		feedDrag.status = { ok: true, text: name(item.type === "screen" ? "dnd.droppedScreen" : "dnd.dropped") };
+		feedDrag.status = { ok: true, text: name("dnd.dropped") };
 	} else feedDrag.status = { ok: false, text: t("feed.addFailed").replace("{message}", done.message) };
 	return done.ok;
 }

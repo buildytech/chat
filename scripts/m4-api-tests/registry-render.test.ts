@@ -1,5 +1,5 @@
 /**
- * Every Stock catalog asset (spec/variant) renders through its UI8Kit registry block (SSR, the pinned CLI snapshot)
+ * Every feed card (block variant, ADR 0059) renders through its UI8Kit registry block (SSR, the pinned CLI snapshot)
  * with the sample props of a new page-spec/v2 block (the props the Blocks feed writes): no stub, no throw, markup on the page.
  */
 import assert from "node:assert/strict";
@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
-import { catalogSnapshot, catalogSources, registryItemFor, sampleProps } from "../../packages/builder-core/src/index.ts";
+import { catalogSearch, catalogSources, sampleProps } from "../../packages/builder-core/src/index.ts";
 
 const SNAPSHOT = realpathSync.native(fileURLToPath(new URL("../../registry/svelte", import.meta.url)));
 
@@ -20,7 +20,7 @@ function viteFileId(id: string): string {
 	return realpathSync.native(file).replaceAll("\\", "/") + query;
 }
 
-test("all 526 catalog assets render via their registry block (SSR)", { timeout: 240_000 }, async () => {
+test("every feed card renders via its registry block (SSR)", { timeout: 240_000 }, async () => {
 	const server = await createServer({
 		root: SNAPSHOT,
 		configFile: false,
@@ -39,12 +39,11 @@ test("all 526 catalog assets render via their registry block (SSR)", { timeout: 
 		const { render } = (await server.ssrLoadModule(viteFileId(resolved))) as { render: (component: unknown, options: { props: Record<string, unknown> }) => { body: string } };
 		const failures: string[] = [];
 		let rendered = 0;
-		const ids = catalogSnapshot.blockIndex.flatMap((entry) => entry.catalogIds);
-		for (const id of ids) {
-			const slash = id.indexOf("/");
-			const hit = registryItemFor(id.slice(0, slash), id.slice(slash + 1));
-			const organism = hit ? catalogSources.blocks[hit.item]?.organism : undefined;
-			if (!hit || !organism) {
+		const cards = catalogSearch().items;
+		for (const { id, item, variant } of cards) {
+			const hit = { item, variant };
+			const organism = catalogSources.blocks[item]?.organism;
+			if (!organism) {
 				failures.push(`${id}: stub`);
 				continue;
 			}
@@ -58,7 +57,7 @@ test("all 526 catalog assets render via their registry block (SSR)", { timeout: 
 			}
 		}
 		assert.deepEqual(failures, []);
-		assert.equal(rendered, 526);
+		assert.equal(rendered, cards.length);
 	} finally {
 		await server.close();
 	}

@@ -1,35 +1,17 @@
 {
-	"$comment": "The one place that pins the catalog sources (ADR 0012). `npm run snapshot` reads it, fetches every input at these pins and writes catalog/stock-registry.v0.json, catalog/snapshot.lock.json, catalog/coverage.json and the runtime artifacts derived from them. Two codegen-x pins (ADR 0012 addendum): codegenX.commit is the Stock content BuildY reads; ui8kit.sourceCommit is the commit registry.buildy.tw was built from. They may differ only when the Stock commit descends from the registry commit and publishes byte-identical variants and props.",
-	"codegenX": {
-		"repo": "codegen-x/ui8kit",
-		"commit": "b61663421cb048e33f2bc405035ea5e2ba1f5009",
-		"raw": "https://raw.githubusercontent.com",
-		"content": "apps/stock/content",
-		"files": [
-			"assets.v0.json",
-			"facets.v0.json",
-			"previews.v0.json",
-			"install.v0.json",
-			"added.v0.json",
-			"pattern-map.v0.json",
-			"terms/pattern.v0.json",
-			"i18n/locales.json",
-			"variants.v0.json",
-			"props.v0.json"
-		]
-	},
+	"$comment": "The one place that pins the catalog sources (ADR 0059). `npm run snapshot` (network) runs the pinned UI8Kit CLI in a clean Svelte project (every kit primitive, lib and utils item, the theme items, the components the app chrome imports and only the blocks listed here), pins the published variants, props, contracts and models of those blocks, and copies the generated prototypes (wireframes) of ui8kit/prototypes at the pinned commit. `npm run snapshot:check` is offline. Never edit the generated files by hand.",
 	"ui8kit": {
 		"cli": "ui8kit@3.5.0",
 		"registry": "https://registry.buildy.tw",
 		"runtime": "svelte",
-		"sourceCommit": "b61663421cb048e33f2bc405035ea5e2ba1f5009",
-		"files": [
-			"registry.json",
-			"manifest.json",
-			"svelte/index.json",
-			"variants/v0.json",
-			"props/v0.json"
-		]
+		"blocks": ["hero-simple", "team-simple"],
+		"components": ["field"]
+	},
+	"prototypes": {
+		"repo": "ui8kit/prototypes",
+		"commit": "716764ea0b500c25c3f2f15e74de540f2f71176e",
+		"generated": "packages/blocks/src/generated",
+		"tokens": "packages/blocks/src/tokens.css"
 	},
 	"contract": {
 		"repo": "ui8kit/contract",

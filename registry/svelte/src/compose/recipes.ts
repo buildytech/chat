@@ -543,6 +543,30 @@ export const RECIPES: Record<string, R> = {
     },
     "compound": []
   },
+  "link-button": {
+    "base": "inline-flex shrink-0 items-center justify-center whitespace-nowrap font-medium inset-ring transition-colors rounded",
+    "keys": [
+      "variant",
+      "size"
+    ],
+    "defaults": {
+      "variant": "default",
+      "size": "default"
+    },
+    "byKey": {
+      "variant": {
+        "default": "bg-primary text-primary-foreground inset-ring-primary hover:bg-primary/90",
+        "outline": "bg-card text-foreground inset-ring-border hover:bg-accent hover:text-accent-foreground",
+        "secondary": "bg-secondary text-secondary-foreground inset-ring-border hover:bg-secondary/80"
+      },
+      "size": {
+        "sm": "h-8 px-3 text-sm",
+        "default": "h-10 px-4 text-sm",
+        "lg": "h-12 px-6 text-base"
+      }
+    },
+    "compound": []
+  },
   "link-plain": {
     "base": "",
     "keys": [],

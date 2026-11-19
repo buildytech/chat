@@ -1,4 +1,4 @@
-import type { CatalogRefs, DiffEntry, ScenarioId } from "@buildytech/builder-core";
+import type { DiffEntry, ScenarioId } from "@buildytech/builder-core";
 import type { AgentMode, RejectedWrite, RunUsage, SessionUsage } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import type { SessionRevisionEntry } from "@buildytech/page-contract/session";
@@ -47,8 +47,8 @@ export type ChatProposalState = {
 	locale?: string;
 	/** Author asked for demo data and the page carries marked demo rows. */
 	demoData?: boolean;
-	/** Program-generated from the pinned Stock catalog after validation. Persisted with the chat. */
-	catalogRefs?: CatalogRefs;
+	/** Stock refs of an older proposal (session 1.x): kept in the file, no longer shown. */
+	catalogRefs?: unknown;
 	/**
 	 * ask-card: Apply variant on an Ask block card; ask-proposal: the proposal of an Ask answer (kept in `page` while the
 	 * message is Ask's) and its Apply in Build; ask-plan: a 1.4.0 plan (old chats only). None of them calls the model.
@@ -129,8 +129,6 @@ export type ChatSession = {
 	skin?: string | null;
 	/** Revisions of the applied page, oldest first (session buildy:v1 history; ADR 0015). Last entry <= pageRevision. */
 	history?: SessionRevisionEntry[];
-	/** Stock collection the chat was opened from (session 1.3.0 `collection`): present items bound Build. */
-	collection?: import("./collection").ChatCollection;
 };
 
 export type SessionSummary = Pick<ChatSession, "id" | "title" | "updatedAt">;

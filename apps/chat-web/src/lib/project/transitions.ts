@@ -5,7 +5,6 @@
 import { recordRevision, type StoredChat } from "../browser/session-file.ts";
 import type { SessionRevisionEntry } from "@buildytech/page-contract/session";
 import type { Project } from "./types.ts";
-import { withoutItem } from "./collection.ts";
 
 export function newProject(input: { id: string; title: string; now: string; skin?: string | null; ext?: Project["ext"] }): Project {
 	return {
@@ -33,10 +32,6 @@ export function withSkin(project: Project, skin: string | null): Project {
 export function withExt(project: Project, name: string, payload: Record<string, unknown> | null): Project {
 	const { [name]: _drop, ...others } = project.ext;
 	return { ...project, ext: payload ? { ...others, [name]: payload } : others };
-}
-
-export function withoutCollectionItem(project: Project, index: number): Project {
-	return project.collection ? { ...project, collection: withoutItem(project.collection, index) } : project;
 }
 
 /** After a pending proposal became the applied page: the page id, its revision and the screen it came from. */

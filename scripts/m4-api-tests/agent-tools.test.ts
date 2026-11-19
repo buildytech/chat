@@ -1,19 +1,19 @@
 /**
- * The agent's tools and modes (ADR 0034): one tool definition file, Ask and Build share it; Ask never applies; a Build turn
+ * The agent's tools and modes (ADR 0034, ADR 0059): one tool definition file; Ask reads only (no write tool at all); a Build turn
  * that only answers makes no proposal; the loop gives the model a final answer step; the runtime passes the mode through.
  */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { ALLOWED_TOOLS, emptyPage, facetVocabulary } from "../../packages/builder-core/src/index.ts";
-import { AGENT_TOOLS_VERSION, agentToolChoice, agentOpenAiTools, agentToolNames, agentToolsDocument, askBlockCards, catalogToolParameterSchema, contractFingerprint, executeCatalogTool, isAgentReply, mapChatRunRequest, readBlock, type AgentReply } from "../../packages/chat-agent/src/index.ts";
+import { ALLOWED_TOOLS, allItems, emptyPage } from "../../packages/builder-core/src/index.ts";
+import { AGENT_TOOLS_VERSION, agentToolChoice, agentOpenAiTools, agentToolNames, agentToolsDocument, contractFingerprint, executeCatalogTool, isAgentReply, mapChatRunRequest, readBlock, type AgentReply } from "../../packages/chat-agent/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
 import { handleRuntimeFetch } from "../../apps/xai-runtime/src/http.ts";
 import { chatModeOf, turnOutcome } from "../../apps/chat-web/src/modules/chat/core/modes.ts";
 import { parseMarkdown, parseInline } from "../../apps/chat-web/src/modules/chat/core/markdown.ts";
 import { MODEL, signal, toolNames, withProvider, type Scripted } from "./agent-replay.ts";
 
-const BRIEF = "Just talk, do not change the page: list the Features blocks you would use and explain.";
+const BRIEF = "Just talk, do not change the page: which team layout would you use and why?";
 const page = () => emptyPage({ title: "Coffee house", locale: "en", now: "2026-11-13T12:00:00.000Z" });
 
 function hasVendorKeyword(node: unknown): boolean {
@@ -22,60 +22,59 @@ function hasVendorKeyword(node: unknown): boolean {
 	return Object.entries(node).some(([key, value]) => key.startsWith("x-") || hasVendorKeyword(value));
 }
 
-test("agent-tools.v1.json is the one tool definition: four tools, both modes, plain JSON Schema after resolve", () => {
+test("agent-tools.v1.json is the one tool definition: four tools, Ask without write_page, plain JSON Schema after resolve", () => {
 	const raw = JSON.parse(readFileSync(new URL("../../packages/chat-agent/src/agent/agent-tools.v1.json", import.meta.url), "utf8"));
 	assert.equal(raw.format, "buildy-agent-tools");
 	assert.match(AGENT_TOOLS_VERSION, /^buildy-agent-tools\/\d+$/);
-	assert.deepEqual([...ALLOWED_TOOLS].sort(), ["get_block", "get_page", "search_catalog", "write_page"]);
+	assert.deepEqual([...ALLOWED_TOOLS].sort(), ["get_block", "get_page", "list_blocks", "write_page"]);
 	assert.deepEqual(new Set(agentToolsDocument.tools.map((tool) => tool.name)), new Set(ALLOWED_TOOLS));
 	for (const tool of agentToolsDocument.tools) {
 		assert.ok(tool.modes.length > 0 && tool.modes.every((mode) => mode === "ask" || mode === "build"), tool.name);
 		assert.equal((tool.parameters as { type?: string }).type, "object", tool.name);
 	}
-	// Ask and Build offer the same four tools; Ask's write_page is a proposal the host never applies.
-	for (const mode of ["ask", "build"] as const) {
-		assert.deepEqual([...agentToolNames(mode)].sort(), ["get_block", "get_page", "search_catalog", "write_page"], mode);
-		assert.equal(hasVendorKeyword(agentOpenAiTools(mode)), false, `${mode} tools still carry x-* keywords`);
-	}
+	// Ask reads (no write tool at all); Build reads and writes.
+	assert.deepEqual([...agentToolNames("ask")].sort(), ["get_block", "get_page", "list_blocks"]);
+	assert.deepEqual([...agentToolNames("build")].sort(), ["get_block", "get_page", "list_blocks", "write_page"]);
+	for (const mode of ["ask", "build"] as const) assert.equal(hasVendorKeyword(agentOpenAiTools(mode)), false, `${mode} tools still carry x-* keywords`);
 	assert.equal(agentToolChoice("ask"), "auto");
  assert.equal(agentToolChoice("build"), "required");
  assert.equal(agentToolsDocument.modes.build.toolChoice, "required");
  // Enum markers are filled from the pinned catalog, never typed in the file.
-	assert.deepEqual(catalogToolParameterSchema().section.enum, facetVocabulary().section);
-	assert.deepEqual(catalogToolParameterSchema().job.enum, facetVocabulary().job);
+	const getBlock = agentOpenAiTools("build").find((tool) => tool.function.name === "get_block")!;
+	assert.deepEqual((getBlock.function.parameters as { properties: { item: { enum: string[] } } }).properties.item.enum, allItems());
 	// No operation taxonomy, no layout tool, no plan tool.
 	assert.doesNotMatch(JSON.stringify(raw), /propose_layout|edit_page|propose_plan|get_skill/);
 	assert.match(contractFingerprint(), /^cf1-/);
 });
 
-test("catalog tools: an unknown tool is refused; get_block reads every variant of an item and its sample props", () => {
+test("catalog tools: an unknown tool is refused; list_blocks names every block; get_block reads every variant and its sample props", () => {
 	const unknown = executeCatalogTool({ name: "propose_layout", arguments: {} }, { mode: "build" });
 	assert.equal(unknown.ok, false);
-	const block = readBlock("feature-grid");
+	const list = executeCatalogTool({ name: "list_blocks", arguments: {} }, { mode: "ask" });
+	assert.ok(list.ok, JSON.stringify(list));
+	assert.match(JSON.stringify(list), /hero-simple/);
+	assert.match(JSON.stringify(list), /team-simple/);
+	const block = readBlock("team-simple");
 	assert.ok(block.ok);
 	if (block.ok) {
-		assert.equal(block.item, "feature-grid");
-		assert.match(block.install, /^npx ui8kit add feature-grid/);
-		assert.ok(block.variants.length >= 8 && block.variants.includes(block.defaultVariant));
-		assert.deepEqual(Object.keys(block.variantSets).sort(), [...block.variants].sort());
-		assert.ok(block.props.some((line) => line.startsWith("features")));
-		assert.match(String(block.stockUrl), /^https:\/\/app\.codegen-x\.com\/#\/asset\/block\.features\/[\w-]+$/);
+		assert.equal(block.item, "team-simple");
+		assert.match(block.install, /^npx ui8kit add team-simple/);
+		assert.deepEqual(block.variants.map((variant) => variant.id), ["cols3", "cols2", "cols4", "cards3"]);
+		assert.equal(block.defaultVariant, "cols3");
+		assert.ok(block.props.some((line) => line.startsWith("members")));
 	}
-	const unknownItem = readBlock("block.nope");
-	assert.equal(unknownItem.ok, false);
-	// A Stock spec or a registry item name both resolve: the model may use either.
-	const bySpec = readBlock("block.features");
-	assert.ok(bySpec.ok && bySpec.item === "feature-grid");
+	assert.equal(readBlock("feature-grid").ok, false, "a block outside the catalog");
+	assert.equal(readBlock("block.features").ok, false, "Stock specs are gone");
 });
 
 test("Ask turn: tool_choice auto, a text answer, no proposal when the model does not write", async () => {
-	const answer = "There are **8** Features variants:\n\n1. `grid` - default\n2. `grid2` - two columns";
+	const answer = "Team Simple has **4** layouts:\n\n1. `cols3` - default\n2. `cards3` - on cards";
 	const { out, seen } = await withProvider(
-		[{ calls: [{ name: "get_block", arguments: { item: "block.features" } }] }, { content: answer }],
+		[{ calls: [{ name: "get_block", arguments: { item: "team-simple" } }] }, { content: answer }],
 		async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: BRIEF, mode: "ask", page: page(), expectedRevision: 0 }, signal()), seen })
 	);
 	for (const request of seen.requests) {
-		assert.deepEqual(toolNames(request).sort(), ["get_block", "get_page", "search_catalog", "write_page"]);
+		assert.deepEqual(toolNames(request).sort(), ["get_block", "get_page", "list_blocks"]);
 		assert.equal(request.tool_choice, "auto");
 	}
 	const reply = out.result as AgentReply;
@@ -83,31 +82,27 @@ test("Ask turn: tool_choice auto, a text answer, no proposal when the model does
 	assert.equal(reply.mode, "ask");
 	assert.equal(reply.text, answer);
 	assert.equal(reply.proposal, undefined);
-	assert.deepEqual(reply.blocks, [readBlock("block.features")!.item]);
+	assert.deepEqual(reply.blocks, ["team-simple"]);
 	assert.equal(out.meta.usage.totalTokens, 2200);
 	assert.equal(turnOutcome(reply), "text");
-	// Cards are rebuilt from the registry; unknown items from the wire are dropped.
-	const cards = askBlockCards([...reply.blocks, "block.invented"]);
-	assert.equal(cards.length, 1);
-	assert.ok(cards[0]!.variants.length >= 8);
 });
 
 test("Ask turn that keeps calling tools gets a final tool_choice none step for the answer", async () => {
 	const { out, seen } = await withProvider(
 		[
-			{ calls: [{ name: "search_catalog", arguments: { q: "features" } }] },
-			...Array.from({ length: 7 }, () => ({ calls: [{ name: "get_block", arguments: { item: "feature-grid" } }] })),
-			{ content: "Eight variants." }
+			{ calls: [{ name: "list_blocks", arguments: {} }] },
+			...Array.from({ length: 7 }, () => ({ calls: [{ name: "get_block", arguments: { item: "team-simple" } }] })),
+			{ content: "Four layouts." }
 		],
 		async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: "list features", mode: "ask", page: page(), expectedRevision: 0 }, signal()), seen })
 	);
 	assert.equal(seen.requests.at(-1)!.tool_choice, "none");
 	assert.ok(seen.requests.slice(0, -1).every((request) => request.tool_choice === "auto"));
-	assert.equal((out.result as AgentReply).text, "Eight variants.");
+	assert.equal((out.result as AgentReply).text, "Four layouts.");
 });
 
 test("Build turn: a text-only answer without an accepted write is a failure", async () => {
-	const { out, seen } = await withProvider([{ content: "Features has 8 variants; tell me which one to use." }], async (seen) => ({
+	const { out, seen } = await withProvider([{ content: "Team Simple has 4 layouts; tell me which one to use." }], async (seen) => ({
 		out: await runXaiCatalogTurn("k", MODEL, { brief: BRIEF, mode: "build", page: page(), expectedRevision: 0 }, signal()),
 		seen
 	}));

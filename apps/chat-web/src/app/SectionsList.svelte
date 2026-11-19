@@ -26,9 +26,9 @@ import { ArrowDown, ArrowUp, GripVertical, Redo2, Trash2, Undo2 } from "$lib/she
 	import { feedDrag } from "$lib/feed/drag.svelte";
 	import { dropAt, dropRefusal, refuseDrop } from "$lib/feed/drop.svelte";
 	import { blocksOf, getCurrentPage, getSelectedBlockId, selectBlock, type PageBlock } from "$lib/page-store";
-	import { blockThumbUrl, itemInfo, moveSlotCheck } from "@buildytech/builder-core";
+	import { itemInfo, moveSlotCheck } from "@buildytech/builder-core";
 	import { inspectorPanel } from "$lib/inspector/panel.svelte";
-	import StockThumb from "./StockThumb.svelte";
+	import PrototypeThumb from "./PrototypeThumb.svelte";
 
 	const page = $derived(getCurrentPage());
 	const sections = $derived(page ? blocksOf(page) : []);
@@ -272,10 +272,10 @@ import { ArrowDown, ArrowUp, GripVertical, Redo2, Trash2, Undo2 } from "$lib/she
 								onpointerenter={() => canvas.hover(block.id)}
 								onpointerleave={() => canvas.hover(null)}
 							>
-								<StockThumb src={blockThumbUrl(itemInfo(block.item)?.spec ?? "", block.variant)} title={titleOf(block)} class="w-14" />
+								<PrototypeThumb item={block.item} variant={block.variant ?? itemInfo(block.item)?.defaultVariant ?? ""} class="w-14 rounded border border-border" />
 								<Stack align="stretch" class="min-w-0 flex-1 gap-0">
 									<Text tag="span" class="truncate text-xs font-medium text-foreground">{titleOf(block)}</Text>
-									<Text tag="span" class="truncate font-mono text-xs text-muted-foreground">{itemInfo(block.item)?.spec ?? block.item}{block.variant ? `/${block.variant}` : ""}</Text>
+									<Text tag="span" class="truncate font-mono text-xs text-muted-foreground">{block.item}{block.variant ? `/${block.variant}` : ""}</Text>
 								</Stack>
 							</Button>
 							<Group class="shrink-0 items-center gap-0">

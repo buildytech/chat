@@ -67,8 +67,6 @@ export type BuilderModule = {
 	hasActivity?: (project: Project | null) => boolean;
 	/** `edit`: the module's mode switch is on Build, or there is none. Read inside `$derived`. */
 	editorMode?: () => "build" | "ask";
-	/** Open a Stock screen as a new page the module's own way (a recorded proposal); null/undefined falls back to the core start. */
-	startPageFromScreen?: (screenId: string) => Promise<{ ok: true } | { ok: false; code: string; message: string }>;
 	/** Settings the module keeps in a session file (`settings`). */
 	sessionSettings?: { read: () => Partial<SessionSettings>; apply: (settings: SessionSettings) => void };
 	fileKinds?: readonly ModuleFileKind[];

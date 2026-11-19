@@ -1,7 +1,7 @@
 /**
  * Export vs the real CLI (plan item 6, audit E-02): the registry files, ui8kit.config.json and ui8kit.lock.json of an exported
  * project are what `npx ui8kit init --yes --framework svelte` + `npx ui8kit add <registryItems>` write for the same items,
- * for a sample of pages (blocks of several kinds, a dashboard screen, a landing screen with a registry skin).
+ * for a sample of pages (the studio page of the two catalog blocks, the same with a registry skin, one hero with sample props).
  *   default                the export is compared with a golden file of the CLI's output (offline, sha256 per file)
  *   UI8KIT_LIVE=1          the export is compared with the CLI run right now (network; also checks the golden file is current)
  *   UI8KIT_UPDATE=1        (with UI8KIT_LIVE=1) rewrite the golden file from the live CLI
@@ -15,8 +15,9 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
-import { addScreen, catalogSnapshot, emptyPage, registrySkins, screenSupport, writePage } from "../../packages/builder-core/src/index.ts";
+import { emptyPage, registrySkins, writePage } from "../../packages/builder-core/src/index.ts";
 import { CLI_CONFIG, CLI_LOCK, packZipFiles } from "../../apps/chat-web/src/lib/page-store/pack.ts";
+import { studioPage } from "./studio-page.ts";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const SNAPSHOT = path.join(ROOT, "registry/svelte");
@@ -27,39 +28,19 @@ const LIVE = process.env.UI8KIT_LIVE === "1";
 
 const read = async (paths: string[]) => Object.fromEntries(paths.map((file) => [file, readFileSync(path.join(SNAPSHOT, file), "utf8")]));
 const sha = (text: string) => createHash("sha256").update(text.replace(/\r\n/g, "\n")).digest("hex");
-const fitness = JSON.parse(readFileSync(path.join(ROOT, "scripts/m4-api-tests/fixtures/fitness-applied-v2.json"), "utf8")) as PageV2;
+const fill = JSON.parse(readFileSync(path.join(ROOT, "scripts/m4-api-tests/fixtures/studio-fill.json"), "utf8")) as PageV2;
 
-function screenPage(kind: "dashboard" | "landing"): PageV2 {
-	const screen = catalogSnapshot.screens.find((entry) => screenSupport(entry).supported && (kind === "dashboard" ? entry.labels.section.includes("dashboard") : entry.labels.site.includes(kind) && !entry.labels.section.includes("dashboard")));
-	assert.ok(screen, kind);
-	const r = addScreen(emptyPage({ title: `A ${kind}`, locale: "en", now: NOW }), screen.screenId);
-	assert.ok(r.ok);
-	return r.page;
-}
-
-/** Blocks whose pictures the page sets (ADR 0049): the export still equals what the CLI writes for the same items. */
-function picturePage(): PageV2 {
-	const photo = "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1200&q=80";
-	const empty = emptyPage({ title: "Pictures", locale: "en", now: NOW });
-	const r = writePage(empty, {
-		page: {
-			...empty,
-			blocks: [
-				{ item: "hero-split", props: { title: "Happy birthday", image: photo, imageAlt: "A birthday cake" } },
-				{ item: "photo-gallery", props: { title: "Photos", photos: [{ id: "p1", title: "Cake", tag: "food", size: "large", image: photo }] } },
-				{ item: "cta-band", props: { title: "Join the party", image: photo } }
-			]
-		}
-	}, { now: NOW });
+/** The studio page with its pictures (ADR 0049): the export still equals what the CLI writes for the same items. */
+function studio(): PageV2 {
+	const r = writePage(emptyPage({ title: fill.title, locale: "en", now: NOW }), { page: fill }, { now: NOW });
 	assert.ok(r.ok, JSON.stringify(!r.ok && r.issues));
 	return r.page;
 }
 
 const SAMPLES: Array<{ label: string; page: PageV2; skin?: string }> = [
-	{ label: "fitness page, default theme", page: fitness },
-	{ label: "page with pictures (hero, gallery, cta band)", page: picturePage() },
-	{ label: "dashboard screen", page: screenPage("dashboard") },
-	{ label: "landing screen with the first registry skin", page: screenPage("landing"), skin: registrySkins()[0]!.id }
+	{ label: "studio page, default theme", page: studio() },
+	{ label: "studio page with the first registry skin", page: studio(), skin: registrySkins()[0]!.id },
+	{ label: "one hero with sample props", page: studioPage({ now: NOW, blocks: [["hero-simple", "mediaTop"]] }) }
 ];
 
 const files = (dir: string): string[] => readdirSync(dir).flatMap((name) => (statSync(path.join(dir, name)).isDirectory() ? files(path.join(dir, name)).map((f) => `${name}/${f}`) : [name]));

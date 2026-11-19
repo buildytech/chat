@@ -1,5 +1,5 @@
 /**
- * The project store: the sessions of this browser as projects (page, skin, collection, revision history), selection,
+ * The project store: the sessions of this browser as projects (page, skin, revision history), selection,
  * persistence, and the page operations that change the project record. It never imports chat code (a test enforces
  * it): chat messages, mode and usage are an extension (`project.ext.chat`) that this store keeps and returns untouched.
  * Module-level state, browser only (ADR-0003 style: no shared SSR state).
@@ -13,7 +13,7 @@ import { reconcileChatRevision, type StoredChat } from "../browser/session-file"
 import { STORAGE_KEYS, readKey, writeKey } from "../browser/storage-v1.ts";
 import { applyCandidate, bindProject, clearCurrentPage, discardCandidate, getAppliedProvenance, getLastAppliedPage, getPageRevision, onPageRevision, startEmptyPage } from "../page-store";
 import { docOfProject, projectOfDoc, type SessionDoc } from "./doc.ts";
-import { bySavedAt, draftPageId, newProject, withApplied, withRevision, withSkin, withoutCollectionItem } from "./transitions.ts";
+import { bySavedAt, draftPageId, newProject, withApplied, withRevision, withSkin } from "./transitions.ts";
 import type { Project, ProjectSummary } from "./types.ts";
 
 const SELECTED_KEY = STORAGE_KEYS.selectedSessionId;
@@ -164,20 +164,14 @@ export function sessionToSelectFromUrl(): string | null {
 	return urlSession === selectedId ? null : urlSession;
 }
 
-// ---- skin and collection -----------------------------------------------------------------------------------------
+// ---- skin -----------------------------------------------------------------------------------------------------
 
 export const getProjectSkin = (): string | null => (getSelectedProject() ? (getSelectedProject()!.skin ?? null) : pendingSkin);
-export const setPendingSkin = (skin: string | null): void => void (pendingSkin = skin);
 
 export function setProjectSkin(skin: string | null): void {
 	pendingSkin = skin;
 	const project = getSelectedProject();
 	if (project && (project.skin ?? null) !== skin) putProject(withSkin(project, skin));
-}
-
-export function removeCollectionItem(index: number): void {
-	const project = getSelectedProject();
-	if (project?.collection) putProject(withoutCollectionItem(project, index));
 }
 
 // ---- the page of the project -------------------------------------------------------------------------------------

@@ -2,7 +2,7 @@
  * One agent turn of the chat (ADR 0034): what it starts from, the request, the reply message and the proposal the
  * reply carries, checked again against the page the author sees. No storage: the callers commit the messages.
  */
-import { catalogProvenance, collectionBounds, collectionDraft, diffPages, emptyPage, writePage, type DiffEntry } from "@buildytech/builder-core";
+import { catalogDigest, diffPages, emptyPage, writePage, type DiffEntry } from "@buildytech/builder-core";
 import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, formatChatModelChoice, getChatModel, mapChatRunRequest, scopeIssues, unknownUsage, aggregateSessionUsage, type AgentMode, type RunUsage } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import { t } from "../../../lib/i18n/dictionary";
@@ -18,7 +18,6 @@ import { getSelectedSession } from "./chat.svelte.ts";
 import { blockScope } from "./block-scope.svelte.ts";
 import { conversationForTurn } from "./conversation";
 import { firstReason, type RejectedIssue } from "./reason";
-import { collectionRequest } from "./collection";
 import type { ChatMessage, ChatProposalState, ChatRunRecord, ChatSession } from "./types";
 
 export const nowIso = (): string => new Date().toISOString();
@@ -37,21 +36,14 @@ type TurnPlan = { request: Omit<TurnRequest, "modelId">; base: PageV2; shown: Pa
 
 /**
  * What a turn starts from (ADR 0034). The agent edits the page the author sees. A chat with no page starts from an empty
- * page, or, in a collection chat, from the draft of the collection (its first screen and required blocks) with the
- * empty page as what the author sees, so the diff reads as additions.
+ * page.
  */
 function planTurn(brief: string, mode: AgentMode, currentMessageId?: string): TurnPlan {
 	const session = getSelectedSession();
 	const shownBase = shownPageOf();
-	const collection = mode === "build" ? collectionRequest(session?.collection) : null;
 	const empty = blankPage(getSelectedProject());
-	let base = shownBase ?? empty;
+	const base = shownBase ?? empty;
 	const shown: PageV2 = shownBase ?? empty;
-	if (!shownBase && collection) {
-		const bounds = collectionBounds(collection);
-		const draft = bounds ? collectionDraft(bounds, { title: session?.collection?.title ?? t("page.untitled"), locale: null }) : null;
-		if (draft?.ok) base = { ...draft.page, id: empty.id };
-	}
 	const scope = shownBase ? blockScope.ids(session?.id) : [];
 	return {
 		base,
@@ -64,9 +56,8 @@ function planTurn(brief: string, mode: AgentMode, currentMessageId?: string): Tu
 			currentPage: base,
 			shownPage: base === shown ? null : shown,
 			scopeBlockIds: scope,
-			...(mode === "build" && scope.length === 1 && blockScope.fieldId(session?.id) === scope[0] ? { scenario: { id: "page.edit-fields", version: 1 } } : {}),
-			conversation: conversationForTurn(session?.messages ?? [], currentMessageId),
-			collectionRequest: collection
+			...(mode === "build" && scope.length === 1 && blockScope.fieldId(session?.id) === scope[0] ? { scenario: { id: "page.edit-fields", version: 2 } } : {}),
+			conversation: conversationForTurn(session?.messages ?? [], currentMessageId)
 		}
 	};
 }
@@ -96,7 +87,7 @@ function runRecord(opts: {
 		policyVersion: POLICY_VERSION,
 		modelCatalogVersion: MODEL_CATALOG_VERSION,
 		trialPolicyVersion: TRIAL_POLICY_VERSION,
-		catalogDigest: opts.catalogDigest ?? catalogProvenance().sourceDigest,
+		catalogDigest: opts.catalogDigest ?? catalogDigest(),
 		path: opts.path,
 		tools: opts.tools,
 		runId: opts.runId,

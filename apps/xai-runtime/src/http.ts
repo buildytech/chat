@@ -136,9 +136,7 @@ function turnInput(req: MappedRequest): Parameters<typeof runXaiCatalogTurn>[2] 
 		page: req.currentPage ?? emptyPage({ title: "New page" }),
 		shownPage: req.shownPage ?? null,
 		expectedRevision: req.expectedRevision,
-		scopeBlockIds: req.scopeBlockIds,
-		screenId: req.screenId,
-		collection: req.collection
+		scopeBlockIds: req.scopeBlockIds
 	};
 }
 

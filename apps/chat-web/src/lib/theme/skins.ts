@@ -127,3 +127,46 @@ export function readSessionSkin(sessionId: string | null | undefined): string | 
 	const chat = loadSessionsJson().find((item) => (item as { id?: unknown })?.id === sessionId) as { skin?: unknown } | undefined;
 	return typeof chat?.skin === "string" ? chat.skin : null;
 }
+
+// ---- the page skin on a scope inside the app (the Blocks feed prototypes, ADR 0059) ---------------------------------
+
+const KIT_THEME = import.meta.glob<string>("../../../../../registry/svelte/src/styles/theme.css", { query: "?raw", import: "default", eager: true });
+const PROTOTYPE_TOKENS = import.meta.glob<string>("../../../../../prototypes/tokens.css", { query: "?raw", import: "default", eager: true });
+
+/** Attribute of an element that wears the page's skin inside the app document (never the app chrome). */
+export const PAGE_SKIN_SCOPE = "data-page-skin";
+const SCOPE = `[${PAGE_SKIN_SCOPE}]`;
+
+/** The body of the first top-level rule of `css` whose selector is exactly `selector` ("" when none). */
+function ruleBody(css: string, selector: string): string {
+	const at = css.indexOf(`\n${selector} {`);
+	if (at < 0) return "";
+	const open = css.indexOf("{", at);
+	return css.slice(open + 1, css.indexOf("\n}", open));
+}
+
+/** Every selector of plain top-level rules prefixed with the scope (the prototype tokens have no at-rules). */
+function scoped(css: string): string {
+	return css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/([^{}]+)\{([^{}]*)\}/g, (_rule, selectors: string, body: string) => {
+		const list = selectors
+			.split(",")
+			.map((part) => part.trim())
+			.filter(Boolean)
+			.map((part) => `${SCOPE} ${part}`);
+		return `${list.join(", ")} {${body}}\n`;
+	});
+}
+
+/**
+ * CSS that dresses a scope element (PAGE_SKIN_SCOPE plus data-skin) in the page's skin: the kit's default theme
+ * variables (light and dark, from the registry theme.css) so nothing of the app's own skin leaks in, theme-base and
+ * the skin (they match any element with data-skin), and the prototype shape tokens scoped to it.
+ */
+export async function pageSkinScopeCss(id: string | null): Promise<string> {
+	const theme = Object.values(KIT_THEME)[0] ?? "";
+	const tokens = Object.values(PROTOTYPE_TOKENS)[0] ?? "";
+	const light = ruleBody(theme, ":root");
+	const dark = ruleBody(theme, ':is(.dark, [data-theme="dark"])');
+	const base = `${SCOPE} {${light}\n  background-color: var(--background);\n  color: var(--foreground);\n}\n:is(.dark, [data-theme="dark"]) ${SCOPE}, ${SCOPE}:is(.dark, [data-theme="dark"]) {${dark}\n}\n`;
+	return `${base}${await skinCss(registrySkin(id)?.id ?? null)}\n${scoped(tokens)}`;
+}

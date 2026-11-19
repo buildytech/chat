@@ -5,11 +5,11 @@ import { resolveScenario, runAgentLoop } from "../../packages/chat-agent/src/ind
 import { projectTraceBodies } from "../../apps/chat-web/src/lib/browser/trace-export.ts";
 import { MODEL, signal } from "./agent-replay.ts";
 
-test("discussion refuses unsolicited writes and records the entire read-only chain", async () => {
-	const compiled = resolveScenario("ask", MODEL, { id: "page.discuss", version: 1 });
+test("Ask is read-only: it refuses unsolicited writes and records the entire read-only chain", async () => {
+	const compiled = resolveScenario("ask", MODEL);
 	assert.ok(compiled.ok);
 	if (!compiled.ok) return;
-	assert.equal(compiled.scenario.profile.id, "page.discuss");
+	assert.equal(compiled.scenario.profile.id, "page.ask");
 	assert.ok(!compiled.scenario.tools.some((tool) => tool.name === "write_page"));
 	let requests = 0;
 	const out = await runAgentLoop(MODEL, { mode: "ask", brief: "Discuss", expectedRevision: 0, page: emptyPage({ title: "Test", now: "2026-11-16T12:00:00Z" }) }, signal(), async () => {
@@ -30,16 +30,16 @@ test("discussion refuses unsolicited writes and records the entire read-only cha
 });
 
 test("three different rejected writes remain three visible gate events", async () => {
- const compiled = resolveScenario("ask", MODEL, { id: "page.ask", version: 2 });
+ const compiled = resolveScenario("build", MODEL);
  assert.ok(compiled.ok); if (!compiled.ok) return;
  let sent = 0;
- const out = await runAgentLoop(MODEL, { mode: "ask", brief: "Change", expectedRevision: 0, page: emptyPage({ title: "Test", now: "2026-11-16T12:00:00Z" }) }, signal(), async () => {
+ const out = await runAgentLoop(MODEL, { mode: "build", brief: "Change", expectedRevision: 0, page: emptyPage({ title: "Test", now: "2026-11-16T12:00:00Z" }) }, signal(), async () => {
   sent += 1;
   return { ok: true, message: sent <= 3 ? { role: "assistant", calls: [{ id: "write-" + sent, name: "write_page", argumentsJson: JSON.stringify({ patch: [{ op: "replace", path: "/invalid" + sent, value: sent }] }) }] } : { role: "assistant", text: "Could not change" } };
  }, "three-writes", { scenario: compiled.scenario });
  const trace = out.meta.runTrace!;
  assert.equal(trace.toolResults.length, 3);
- assert.equal(trace.steps.length, 4);
+ assert.equal(trace.steps.length, 5, "three writes, the text answer, the one Build nudge");
  for (const result of trace.toolResults) { assert.equal(result.accepted, false); assert.ok(result.gate); }
  const stripped = projectTraceBodies(trace);
  assert.equal(stripped.toolResults.length, 3);

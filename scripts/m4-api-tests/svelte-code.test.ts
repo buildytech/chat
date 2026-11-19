@@ -12,7 +12,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { type PageV2 } from "../../packages/page-contract/src/index.ts";
-import { addScreen, catalogSnapshot, emptyPage, registrySkins, screenSupport, writePage } from "../../packages/builder-core/src/index.ts";
+import { catalogSearch, emptyPage, registrySkins, writePage } from "../../packages/builder-core/src/index.ts";
+import { studioPage } from "./studio-page.ts";
 import { APP_FILE, registryItemsOf, svelteFromPage, sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
 import {
 	buildStoreZip,
@@ -28,9 +29,11 @@ import {
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const SNAPSHOT = path.join(ROOT, "registry/svelte");
 const NOW = "2026-11-09T00:00:00.000Z";
-/** The owner's fitness page (13.11), migrated 1.x -> 2.0: 8 registry blocks. */
-const fixture = JSON.parse(readFileSync(path.join(ROOT, "scripts/m4-api-tests/fixtures/fitness-applied-v2.json"), "utf8")) as PageV2;
-const SCENARIOS = ["dashboard", "landing", "website"] as const;
+/** The studio page of the simple line (ADR 0059): hero-simple + team-simple with content. */
+const fill = JSON.parse(readFileSync(path.join(ROOT, "scripts/m4-api-tests/fixtures/studio-fill.json"), "utf8")) as PageV2;
+const written = writePage(emptyPage({ title: fill.title, locale: "en", now: NOW }), { page: fill }, { now: NOW });
+assert.ok(written.ok, JSON.stringify(!written.ok && written.issues));
+const fixture = written.page;
 
 /** Node stand-in for the browser's import.meta.glob reader: the pinned CLI snapshot on disk. */
 async function readSnapshot(paths: string[]): Promise<Record<string, string>> {
@@ -40,46 +43,8 @@ async function readSnapshot(paths: string[]): Promise<Record<string, string>> {
 type CompileFn = (source: string, options: { filename: string; generate: "client" }) => { js: { code: string } };
 const compile = createRequire(path.join(ROOT, "apps/chat-web/package.json"))("svelte/compiler").compile as CompileFn;
 
-/** A page that starts from the first supported Stock screen of a kind: the page the chat starts from a screen. */
-function scenarioPage(id: string): PageV2 {
-	const screen = catalogSnapshot.screens.find((entry) => screenSupport(entry).supported && (id === "dashboard" ? entry.labels.section.includes("dashboard") : entry.labels.site.includes(id) && !entry.labels.section.includes("dashboard")));
-	assert.ok(screen, id);
-	const r = addScreen(emptyPage({ title: `A ${id} for a bakery`, locale: "en", now: NOW }), screen.screenId);
-	assert.ok(r.ok, `${id}: ${JSON.stringify(r)}`);
-	return r.page;
-}
-
-function featuresPage(variant: string): PageV2 {
-	const r = writePage(
-		emptyPage({ title: "Static site builder", locale: "en", now: NOW }),
-		{
-			page: {
-				version: 2,
-				title: "Static site builder",
-				slug: "static-site-builder",
-				locale: "en",
-				blocks: [
-					{
-						id: "block-features",
-						item: "feature-grid",
-						variant,
-						props: {
-							title: "Features of our service",
-							action: { label: "View all", href: "#/features" },
-							features: [
-								{ id: "f1", title: "Fast by default", text: "Pages render from static data.", icon: "zap" },
-								{ id: "f2", title: "Clear structure", text: "One heading per page.", icon: "layers" }
-							]
-						}
-					}
-				]
-			}
-		},
-		{ now: NOW }
-	);
-	assert.ok(r.ok, JSON.stringify(!r.ok && r.issues));
-	return r.page;
-}
+/** A page with one block of a feed card, sample props: the page the feed's + writes. */
+const cardPage = (item: string, variant: string): PageV2 => studioPage({ title: `${item} ${variant}`, now: NOW, blocks: [[item, variant]] });
 
 /** Every relative import of a .svelte/.ts file resolves to a file of the pack; bare imports are declared npm deps. */
 function assertSelfContained(label: string, files: PackFile[]): void {
@@ -102,16 +67,16 @@ function assertSelfContained(label: string, files: PackFile[]): void {
 }
 
 test("Code: App.svelte lists one section per block; each section imports one registry block with its props", () => {
-	const page = featuresPage("cells4");
-	const app = svelteFromPage(page);
-	assert.match(app, /import Block_features from "\.\/sections\/block-features\.svelte"/);
-	const files = sveltePackFiles(page);
+	const app = svelteFromPage(fixture);
+	assert.match(app, /import \w+ from "\.\/sections\/hero\.svelte"/);
+	const files = sveltePackFiles(fixture);
 	assert.equal(files[0]!.path, APP_FILE);
-	const section = files.find((file) => file.path.startsWith("src/sections/") && file.content.includes("feature-grid"))!;
-	assert.match(section.content, /import FeatureGrid from "\.\.\/blocks\/feature-grid\.svelte"/);
-	assert.match(section.content, /"icon": "zap"/);
-	assert.match(section.content, /"href": "#\/features"/);
-	assert.match(section.content, /"title": "Fast by default"/, "the props the page holds are the props the section passes");
+	const section = files.find((file) => file.path.startsWith("src/sections/") && file.content.includes("hero-simple"))!;
+	assert.match(section.content, /import HeroSimple from "\.\.\/blocks\/hero-simple\.svelte"/);
+	assert.match(section.content, /"actionHref": "#contact"/);
+	assert.match(section.content, /"title": "Calm rooms for small flats"/, "the props the page holds are the props the section passes");
+	const team = files.find((file) => file.path.startsWith("src/sections/") && file.content.includes("team-simple"))!;
+	assert.match(team.content, /"title": "Anna Petrova"/);
 	assert.doesNotMatch(files.map((file) => file.content).join("\n"), /\$lib\/|\$ui\/|lib\/compose|"\$":/);
 	for (const file of files) assert.ok(compile(file.content, { filename: file.path, generate: "client" }).js.code.length > 0, file.path);
 });
@@ -124,16 +89,15 @@ test("every block of a page is a registry block: one section file per block, no 
 	assert.ok(registryItemsOf(fixture).length >= 1 && !registryItemsOf(fixture).includes("alert"));
 });
 
-test("Landing, Website and Dashboard scenarios: every block is a registry block (0 stubs)", () => {
-	for (const id of SCENARIOS) {
-		const page = scenarioPage(id);
-		const stubs = sveltePackFiles(page).filter((file) => file.content.includes('data-slot="registry-stub"'));
-		assert.deepEqual(stubs.map((file) => file.path), [], id);
+test("every feed card packs as a registry block (0 stubs)", () => {
+	for (const card of catalogSearch().items) {
+		const stubs = sveltePackFiles(cardPage(card.item, card.variant)).filter((file) => file.content.includes('data-slot="registry-stub"'));
+		assert.deepEqual(stubs.map((file) => file.path), [], card.id);
 	}
 });
 
 test("ZIP = CLI layout: config, lock subset and the closure of the page's items, self-contained, compiles", async () => {
-	for (const [label, page] of [["features", featuresPage("grid")], ["dashboard", scenarioPage("dashboard")], ["fixture", fixture]] as const) {
+	for (const [label, page] of [["hero", cardPage("hero-simple", "mediaEnd")], ["team", cardPage("team-simple", "cards3")], ["fixture", fixture]] as const) {
 		const files = await packZipFiles(page, readSnapshot);
 		const paths = files.map((file) => file.path);
 		assert.equal(new Set(paths).size, paths.length, `${label}: duplicate paths`);
@@ -177,7 +141,7 @@ function unzipStore(bytes: Uint8Array): PackFile[] {
 }
 
 test("ZIP (registry blocks, with a skin) unzips and builds with vite, styles include dark, responsive and skin rules", async () => {
-	const page = scenarioPage("landing");
+	const page = fixture;
 	const skin = registrySkins()[0]!;
 	const entries = unzipStore(buildStoreZip(await packZipFiles(page, readSnapshot, { skin: skin.id })));
 	const dir = mkdtempSync(path.join(tmpdir(), "buildy-pack-"));
@@ -202,20 +166,9 @@ test("ZIP (registry blocks, with a skin) unzips and builds with vite, styles inc
 	}
 });
 
-/** A page without header or footer: Hero, Features and CTA written to an empty page. */
-function headerlessPage(): PageV2 {
-	const r = writePage(
-		emptyPage({ title: "Spring promo", locale: "en", now: NOW }),
-		{ page: { version: 2, title: "Spring promo", slug: "spring-promo", locale: "en", blocks: [{ item: "hero-classic", variant: "centered" }, { item: "feature-grid", variant: "grid2" }, { item: "cta-band", variant: "band" }] } },
-		{ now: NOW }
-	);
-	assert.ok(r.ok, JSON.stringify(!r.ok && r.issues));
-	return r.page;
-}
-
-test("headerless page (starts with Hero, no footer): ZIP and `npx ui8kit add` list carry only its sections and it builds with vite", async () => {
-	const page = headerlessPage();
-	assert.deepEqual(page.blocks.map((block) => block.item), ["hero-classic", "feature-grid", "cta-band"]);
+test("the studio page (starts with the hero, no header or footer): ZIP and `npx ui8kit add` list carry only its sections and it builds with vite", async () => {
+	const page = fixture;
+	assert.deepEqual(page.blocks.map((block) => block.item), ["hero-simple", "team-simple"]);
 	const items = registryItemsOf(page);
 	assert.ok(items.length >= 1 && !items.includes("alert"), `no stub: ${items.join(", ")}`);
 	assert.ok(!items.some((item) => /navbar|nav-bar|sitemap|footer/.test(item)), `no header or footer item: ${items.join(", ")}`);
@@ -244,8 +197,7 @@ test("headerless page (starts with Hero, no footer): ZIP and `npx ui8kit add` li
 
 test("exported code carries no preview attributes; the pack lists only registry files and the sections", async () => {
 	const lock = JSON.parse(readFileSync(path.join(SNAPSHOT, "ui8kit.lock.json"), "utf8")) as { items: Record<string, { name: string; files: Record<string, string> }> };
-	const page = scenarioPage("landing");
-	const files = await packZipFiles(page, readSnapshot);
+	const files = await packZipFiles(fixture, readSnapshot);
 	const registry = new Set(Object.values(lock.items).flatMap((item) => Object.keys(item.files)));
 	// BuildY-authored files: everything but the verbatim registry files and the CLI inventories (config, lock, manifest list real paths).
 	const inventories = new Set([CLI_CONFIG, CLI_LOCK, "manifest.json"]);
@@ -266,7 +218,7 @@ test("skin: the ZIP carries theme-<skin> exactly as `npx ui8kit add theme-<skin>
 	const skins = registrySkins();
 	assert.ok(skins.length >= 2, "the pinned registry carries skins");
 	const skin = skins.find((entry) => entry.id === "claude") ?? skins[0]!;
-	const page = featuresPage("grid");
+	const page = fixture;
 	const files = await packZipFiles(page, readSnapshot, { skin: skin.id });
 	const byPath = new Map(files.map((file) => [file.path, file.content]));
 	const themeItems = Object.values(lock.items).filter((item) => item.name === skin.item || item.name === "theme-base");

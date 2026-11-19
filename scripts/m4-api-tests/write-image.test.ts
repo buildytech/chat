@@ -10,8 +10,8 @@ import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { applyOp, emptyPage, inspectorModel, propsFieldTree, renderBlock, writePage } from "../../packages/builder-core/src/index.ts";
-import { isImageUrl } from "../../packages/builder-core/src/catalog/image-url.ts";
+import { applyOp, catalogBlocks, emptyPage, inspectorModel, propsFieldTree, renderBlock, writePage } from "../../packages/builder-core/src/index.ts";
+import { isImageName, isImageUrl } from "../../packages/builder-core/src/catalog/image-url.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
@@ -29,7 +29,7 @@ async function html(page: PageV2, index = 0): Promise<string> {
 	return mod.render(mod.blocks[`blocks/${rendered.item}.svelte`], { props: rendered.props as Record<string, unknown> }).body;
 }
 
-const block = (props: Record<string, unknown>, item = "hero-split") => ({ ...base(), blocks: [{ item, props }] });
+const block = (props: Record<string, unknown>, item = "hero-simple") => ({ ...base(), blocks: [{ item, props }] });
 
 test("isImageUrl: https URLs and relative paths pass; other schemes, protocol-relative, spaces and markup do not", () => {
 	for (const ok of ["", URL_A, "https://cdn.example.com/a.jpg", "/photos/a.jpg", "./a.jpg", "../a.jpg", "photos/a.jpg"]) assert.ok(isImageUrl(ok), ok);
@@ -37,7 +37,7 @@ test("isImageUrl: https URLs and relative paths pass; other schemes, protocol-re
 });
 
 test("the registry exposes image and imageAlt as plain text on the section blocks and image on the records", () => {
-	const tree = propsFieldTree("hero-split")!;
+	const tree = propsFieldTree("hero-simple")!;
 	const image = tree.find((n) => n.name === "image")!;
 	assert.equal(image.kind, "text");
 	assert.equal(image.required, false);
@@ -45,9 +45,13 @@ test("the registry exposes image and imageAlt as plain text on the section block
 	const alt = tree.find((n) => n.name === "imageAlt")!;
 	assert.equal(alt.kind, "text");
 	assert.ok(!alt.image, "imageAlt is not an address");
-	const photos = propsFieldTree("photo-gallery")!.find((n) => n.name === "photos")!;
-	assert.ok(photos.fields!.find((f) => f.name === "image")?.image);
-	assert.ok(propsFieldTree("product-card")!.find((n) => n.name === "product")!.fields!.find((f) => f.name === "image")?.image, "product-card keeps its image");
+	const members = propsFieldTree("team-simple")!.find((n) => n.name === "members")!;
+	assert.ok(members.fields!.find((f) => f.name === "avatar")?.image, "a member's portrait is an address");
+	assert.ok(tree.find((n) => n.name === "imageDark")?.image, "the dark picture is an address");
+	// every media place of the block contracts is an address the write checks (imageAlt is its text)
+	const media = catalogBlocks().flatMap((block) => block.contract.places.filter((place) => place.kind === "media").flatMap((place) => place.fields));
+	assert.ok(media.length >= 4);
+	for (const field of media.filter((f) => !f.endsWith("Alt"))) assert.ok(isImageName(field.split("/").at(-1)!), field);
 });
 
 test("write_page without an image: the block shows the decorative placeholder", async () => {
@@ -61,7 +65,7 @@ test("write_page without an image: the block shows the decorative placeholder", 
 });
 
 test("write_page with an image: kept, the block shows it with its alt text, lazy", async () => {
-	const written = writePage(base(), { page: block({ title: "Birthday", media: "picture", image: URL_A, imageAlt: "A birthday cake" }) });
+	const written = writePage(base(), { page: block({ title: "Birthday", image: URL_A, imageAlt: "A birthday cake" }) });
 	assert.ok(written.ok, JSON.stringify(!written.ok && written.issues));
 	if (!written.ok) return;
 	const props = written.page.blocks[0]!.props as Record<string, unknown>;
@@ -74,7 +78,7 @@ test("write_page with an image: kept, the block shows it with its alt text, lazy
 		assert.equal(attr(t, "loading"), "lazy");
 	}
 	// no imageAlt: the title is the alt text
-	const noAlt = writePage(base(), { page: block({ title: "Birthday", media: "picture", image: "/photos/cake.jpg" }) });
+	const noAlt = writePage(base(), { page: block({ title: "Birthday", image: "/photos/cake.jpg" }) });
 	assert.ok(noAlt.ok);
 	if (!noAlt.ok) return;
 	const picture = imgs(await html(noAlt.page)).filter((t) => attr(t, "src") === "/photos/cake.jpg");
@@ -89,17 +93,17 @@ test("a bad address is dropped with a note, the page is still written (section a
 		assert.ok(!("image" in (written.page.blocks[0]!.props as Record<string, unknown>)), bad);
 		assert.ok(written.warnings.some((w) => w.startsWith("/blocks/0/props/image: image ") && w.includes("not an https URL or a relative path; dropped")), JSON.stringify(written.warnings));
 	}
-	const gallery = writePage(base(), { page: { ...base(), blocks: [{ item: "photo-gallery", props: { title: "Photos", photos: [{ id: "p1", title: "Cake", tag: "food", size: "large", image: URL_A }, { id: "p2", title: "Party", tag: "fun", size: "wide", image: "ftp://x/a.jpg" }] } }] } });
-	assert.ok(gallery.ok, JSON.stringify(!gallery.ok && gallery.issues));
-	if (!gallery.ok) return;
-	const photos = (gallery.page.blocks[0]!.props as { photos: Array<Record<string, unknown>> }).photos;
-	assert.equal(photos[0]!.image, URL_A);
-	assert.ok(!("image" in photos[1]!));
-	assert.ok(gallery.warnings.some((w) => w.startsWith("/blocks/0/props/photos/1/image: image ")), JSON.stringify(gallery.warnings));
+	const team = writePage(base(), { page: { ...base(), blocks: [{ item: "team-simple", props: { title: "Team", members: [{ id: "a", title: "Anna", description: "Design", avatar: URL_A }, { id: "b", title: "Ilya", description: "Plans", avatar: "ftp://x/a.jpg" }] } }] } });
+	assert.ok(team.ok, JSON.stringify(!team.ok && team.issues));
+	if (!team.ok) return;
+	const members = (team.page.blocks[0]!.props as { members: Array<Record<string, unknown>> }).members;
+	assert.equal(members[0]!.avatar, URL_A);
+	assert.ok(!("avatar" in members[1]!));
+	assert.ok(team.warnings.some((w) => w.startsWith("/blocks/0/props/members/1/avatar: image ")), JSON.stringify(team.warnings));
 });
 
 test("the Inspector: image is a text field; a set writes it, a bad address is dropped with a note", () => {
-	const added = writePage(base(), { patch: [{ op: "add", path: "/blocks/-", value: { item: "hero-split" } }] }, { now: NOW });
+	const added = writePage(base(), { patch: [{ op: "add", path: "/blocks/-", value: { item: "hero-simple" } }] }, { now: NOW });
 	assert.ok(added.ok);
 	if (!added.ok) return;
 	const model = inspectorModel(added.page.blocks[0]!);

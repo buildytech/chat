@@ -10,6 +10,8 @@
 @source "../../../registry/svelte/src/compose";
 @source "../../../registry/svelte/src/kit";
 @source "../../../registry/svelte/src/utils";
+/* The block prototypes of the Blocks feed (ADR 0059): rectangles in the page's skin, drawn in the app document. */
+@source "../../../prototypes/svelte";
 /* The page blocks render only inside the preview frame (preview-frame.css). */
 @source not "../../../registry/svelte/src/blocks";
 @source not "../../../registry/svelte/src/components";

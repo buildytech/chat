@@ -43,7 +43,6 @@ export type TurnRequest = {
 	shownPage?: PageV2 | null;
 	scopeBlockIds?: string[];
 	conversation?: Array<{ role: "user" | "assistant"; text: string }>;
-	collectionRequest?: unknown;
 };
 
 function runtimeBase(): string {
@@ -130,8 +129,7 @@ export async function runXaiTurn(ctx: TurnRequest, signal?: AbortSignal): Promis
 				shownPage: ctx.shownPage ?? null,
 				scopeBlockIds: ctx.scopeBlockIds?.length ? ctx.scopeBlockIds : undefined,
 				conversation: ctx.conversation ?? [],
-				mode: ctx.mode,
-				...(ctx.collectionRequest ? { collection: ctx.collectionRequest } : {})
+				mode: ctx.mode
 			}),
 			signal
 		});

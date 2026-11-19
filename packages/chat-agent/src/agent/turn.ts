@@ -1,12 +1,10 @@
 /**
  * One agent turn (ADR 0034). The agent reads the page document and the registry, and writes the page with one tool,
- * `write_page`. Ask and Build share the same write and the same proposal; Ask's proposal is never applied by the host
- * (the author applies it in Build), Build's proposal is applied by the author with Apply. This module is pure: the
- * context a turn starts from, the proposal it ends with, and the write tool itself (scope, collection and the one gate).
+ * `write_page`, offered only in Build (Ask is read-only, ADR 0059); Build's proposal is applied by the author with Apply. This module is pure: the
+ * context a turn starts from, the proposal it ends with, and the write tool itself (scope and the one gate).
  */
 import type { PageV2 } from "@buildytech/page-contract";
 import type { AgentMode } from "./agent-tools.ts";
-import { checkCollection, type CollectionBounds } from "@buildytech/builder-core";
 import { diffPages, type DiffEntry } from "@buildytech/builder-core";
 import type { DocIssue } from "@buildytech/builder-core";
 import { writeInputFromModel, writePage, type WriteInput } from "@buildytech/builder-core";
@@ -23,12 +21,8 @@ export type TurnContext = {
 	expectedRevision: number;
 	/** Selected blocks: when set, the agent edits only those (their props, variant, item). Otherwise the whole page. */
 	scopeBlockIds?: string[];
-	/** The page the author sees, when `page` is a draft that is not on screen yet (collection intake). Default: `page`. */
+	/** The page the author sees, when `page` is a draft that is not on screen yet. Default: `page`. */
 	shownPage?: PageV2 | null;
-	/** Stock screen the author named as a hint; a ranking hint only. */
-	screenId?: string | null;
-	/** Stock collection of the chat: items outside it are rejected. */
-	collection?: CollectionBounds | null;
 };
 
 /** What a turn proposes: the whole next page document and what differs from the page the author sees. */
@@ -45,7 +39,7 @@ export type AgentReply = {
 	reply: "text";
 	mode: AgentMode;
 	text: string;
-	/** Registry items (and Stock block specs) the agent read; hosts rebuild their cards from their own catalog. */
+	/** Registry items the agent read (evidence of the turn). */
 	blocks: string[];
 	proposal?: PageProposal;
 };
@@ -120,7 +114,7 @@ export function runWriteTool(ctx: TurnContext, working: PageV2, args: Record<str
 	const shown = ctx.shownPage ?? ctx.page;
 	const diff = diffPages(shown, written.page);
 	const against = diffPages(ctx.page, written.page);
-	const issues = [...scopeIssues(against, ctx.scopeBlockIds), ...(ctx.collection ? checkCollection(written.page, ctx.collection) : [])];
+	const issues = scopeIssues(against, ctx.scopeBlockIds);
 	if (issues.length) {
 		return { ok: false, code: "write_invalid", message: `The page was not written: ${issues.length} problem${issues.length > 1 ? "s" : ""}, first at ${issues[0]!.path} (${issues[0]!.code}). Nothing changed; fix the listed paths and call write_page again.`, issues };
 	}

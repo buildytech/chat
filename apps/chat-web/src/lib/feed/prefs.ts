@@ -1,7 +1,6 @@
 /**
  * Build panel preferences (ADR 0024): the left panel tab, the Blocks feed view (1 or 2 columns) and whether the
- * inspector slide-over is open, one value `buildy:v1:feed` = `{ tab, columns, inspector }`. Pure, no Svelte. The page size never depends on the view: 8 cards are 8 rows
- * in one column or 4 rows in two.
+ * inspector slide-over is open, one value `buildy:v1:feed` = `{ tab, columns, inspector }`. Pure, no Svelte.
  */
 import { STORAGE_KEYS, type StorageLike } from "../browser/storage-v1.ts";
 
@@ -12,9 +11,6 @@ export type LeftTab = string;
 const TAB_ID = /^[a-z][a-z0-9-]{0,31}$/;
 export type FeedColumns = 1 | 2;
 export type FeedPrefs = { tab: LeftTab; columns: FeedColumns; inspector: boolean };
-
-/** Cards per feed page, the same in both views. */
-export const FEED_PAGE_SIZE = 8;
 
 export const defaultFeedPrefs = (): FeedPrefs => ({ tab: "blocks", columns: 2, inspector: false });
 

@@ -1,7 +1,7 @@
 /**
- * Registry and catalog sources (ADR 0012, 0034): the pinned props schemas and variants, the registry snapshot (the CLI
- * tree and its ui8kit.lock.json), the props gate (Ajv, fail-closed), the CSS from the registry tree, `lib` without .svelte,
- * the Stock thumbnails and asset pages, and the pinned Stock snapshot.
+ * Registry sources (ADR 0012, 0034, 0059): the pinned props schemas and variants (narrowed to the catalog blocks), the
+ * registry snapshot (the CLI tree and its ui8kit.lock.json), the props gate (Ajv, fail-closed), the CSS from the registry
+ * tree, and `lib` without .svelte.
  */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -10,20 +10,11 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import * as core from "../../packages/builder-core/src/index.ts";
+import { catalogSearch, catalogSources, checkPageDoc, propsDigest, propsEventsFor, propsSchemaFor, sampleProps, setPropsValidator } from "../../packages/builder-core/src/index.ts";
 import { installPropsGate, validateRegistryProps } from "../../packages/builder-core/src/catalog/props-gate.ts";
-
-const {
-	blockAssetUrl, blockThumbUrl, catalogSnapshot, catalogSourceFor, catalogSources, lucideIcons, propsDigest, propsEventsFor, propsSchemaFor,
-	parseCatalogSnapshot, registryItemFor, screenThumbUrl, setPropsValidator, stockThumbUrl, stockVariantOf, variantProps
-} = core as Record<string, any>;
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const read = (path: string) => readFileSync(join(ROOT, path), "utf8");
-const FEATURES = catalogSourceFor("block.features")!;
-const SNAPSHOT_PATH = new URL("../../packages/builder-core/src/catalog/snapshot.json", import.meta.url);
-const fileUnknown: unknown = JSON.parse(readFileSync(SNAPSHOT_PATH, "utf8"));
-const raw = parseCatalogSnapshot(fileUnknown);
 
 function walk(dir: string): string[] {
 	return readdirSync(dir).flatMap((name) => {
@@ -32,44 +23,35 @@ function walk(dir: string): string[] {
 	});
 }
 
-test("props pin: file sha256 and the internal digest (compact JSON without digest) match registry/snapshot.json", () => {
-	const snapshot = JSON.parse(read("registry/snapshot.json")) as { props: { url: string; sha256: string; digest: string; items: number } };
+test("props pin: file sha256 and digest match registry/snapshot.json; one schema per catalog block", () => {
+	const snapshot = JSON.parse(read("registry/snapshot.json")) as { props: { url: string; sha256: string; digest: string }; files: Record<string, string> };
 	const text = read("registry/props.v0.json");
 	assert.equal(snapshot.props.url, "https://registry.buildy.tw/props/v0.json");
-	assert.equal(createHash("sha256").update(text).digest("hex"), snapshot.props.sha256);
-	const { digest, ...rest } = JSON.parse(text) as { digest: string; items: Record<string, unknown> };
-	assert.equal(`sha256:${createHash("sha256").update(JSON.stringify(rest)).digest("hex")}`, digest);
-	assert.equal(digest, snapshot.props.digest);
-	assert.equal(propsDigest, digest);
-	assert.equal(Object.keys(rest.items).length, snapshot.props.items);
-	assert.deepEqual(catalogSources.props, { url: snapshot.props.url, sha256: snapshot.props.sha256, digest });
-});
-
-test("compact props.json rebuilds every published item schema exactly; every variants item has one", () => {
-	const published = JSON.parse(read("registry/props.v0.json")) as { items: Record<string, { schema: unknown; events: string[]; slots: string[] }> };
+	assert.match(snapshot.props.sha256, /^[0-9a-f]{64}$/, "the upstream file's sha256");
+	assert.equal(createHash("sha256").update(text).digest("hex"), snapshot.files["registry/props.v0.json"], "the narrowed file is pinned");
+	const published = JSON.parse(text) as { digest: string; items: Record<string, { schema: unknown; events: string[]; slots: string[] }> };
+	assert.equal(published.digest, snapshot.props.digest);
+	assert.equal(propsDigest, published.digest);
+	assert.deepEqual(catalogSources.props, snapshot.props);
 	for (const [item, entry] of Object.entries(published.items)) {
 		assert.equal(JSON.stringify(propsSchemaFor(item)), JSON.stringify(entry.schema), item);
 		assert.deepEqual(propsEventsFor(item), { events: entry.events, slots: entry.slots }, item);
 	}
-	for (const item of Object.keys(catalogSources.blocks)) assert.ok(propsSchemaFor(item), `${item} has no props schema`);
+	for (const item of ["hero-simple", "team-simple"]) assert.ok(propsSchemaFor(item), `${item} has no props schema`);
 });
 
-test("every catalog variant has sample props the published schema accepts (variant presets are partial; the merge is validated)", () => {
-	let checked = 0;
-	for (const [asset, hit] of Object.entries(catalogSources.assets) as Array<[string, { item: string; variant: string }]>) {
-		const props = core.sampleProps(hit.item, hit.variant, "block-1");
-		assert.deepEqual(validateRegistryProps({ item: hit.item, props }), [], `${asset}: ${JSON.stringify(validateRegistryProps({ item: hit.item, props }))}`);
-		checked += 1;
+test("every feed card has sample props the published schema accepts", () => {
+	for (const card of catalogSearch().items) {
+		const props = sampleProps(card.item, card.variant, "block-1");
+		assert.deepEqual(validateRegistryProps({ item: card.item, props }), [], card.id);
 	}
-	assert.ok(checked >= 500, `${checked}`);
 });
 
 test("schema gate fails: an enum axis, an unknown prop and a wrong type are reported with pointer and allowed values", () => {
-	const hit = registryItemFor("block.features", "grid")!;
-	const render = { item: hit.item, props: core.sampleProps(hit.item, hit.variant, "block-f") as Record<string, unknown> };
+	const render = { item: "hero-simple", props: sampleProps("hero-simple", "mediaEnd", "block-h") as Record<string, unknown> };
 	assert.deepEqual(validateRegistryProps(render), []);
-	const axis = validateRegistryProps({ ...render, props: { ...render.props, layout: "mosaic" } });
-	assert.equal(axis[0]?.pointer, "/layout");
+	const axis = validateRegistryProps({ ...render, props: { ...render.props, media: "mosaic" } });
+	assert.equal(axis[0]?.pointer, "/media");
 	assert.equal(axis[0]?.keyword, "enum");
 	assert.equal(axis[0]?.value, "mosaic");
 	assert.ok((axis[0]?.allowed ?? []).length >= 2);
@@ -77,80 +59,47 @@ test("schema gate fails: an enum axis, an unknown prop and a wrong type are repo
 	assert.equal(extra[0]?.keyword, "additionalProperties");
 	const type = validateRegistryProps({ ...render, props: { ...render.props, title: 42 } });
 	assert.equal(type[0]?.pointer, "/title");
-	// Reference-shape branches ({"$": ...}, {op, args}) of an anyOf are noise, never reported.
 	assert.ok(type.every((issue) => issue.message !== "must have required property '$'"));
 });
 
 test("the gate is fail-closed: without a validator a page with a registry block is rejected", () => {
-	const page = { version: 2, title: "Site", slug: "site", locale: "en", blocks: [{ id: "block-hero", item: "hero-classic", variant: "centered" }] } as never;
+	const page = { version: 2, title: "Site", slug: "site", locale: "en", blocks: [{ id: "block-hero", item: "hero-simple", variant: "mediaEnd" }] } as never;
 	setPropsValidator(null);
 	try {
-		const r = core.checkPageDoc(page);
+		const r = checkPageDoc(page);
 		assert.equal(r.ok, false);
 		assert.equal((r as { issues: Array<{ code: string }> }).issues[0]!.code, "props_gate_unavailable");
 	} finally {
 		installPropsGate();
 	}
-	assert.equal(core.checkPageDoc(page).ok, true);
+	assert.equal(checkPageDoc(page).ok, true);
 });
 
-test("events and slots stay next to the schema: never data props, wired by the host", () => {
-	assert.deepEqual(propsEventsFor("dish-card"), { events: ["add"], slots: [] });
-	assert.deepEqual(propsEventsFor("pricing-card"), { events: ["select"], slots: ["footer"] });
-	const schema = propsSchemaFor("dish-card") as { properties: Record<string, unknown> };
-	assert.equal("onadd" in schema.properties, false);
-	const hit = registryItemFor("block.dish", "vertical");
-	if (hit) {
-		const render = { item: hit.item, props: core.sampleProps(hit.item, hit.variant, "block-dish") as Record<string, unknown> };
-		assert.deepEqual(propsEventsFor(hit.item).events, ["add"]);
-		assert.equal("onadd" in render.props, false);
-		assert.deepEqual(validateRegistryProps(render), []);
-	}
-});
-
-test("registry snapshot: the CLI tree matches its ui8kit.lock.json (offline), every item from registry.buildy.tw/svelte", () => {
+test("registry snapshot: the CLI tree matches its ui8kit.lock.json and every pinned file (offline), every item from registry.buildy.tw/svelte", () => {
 	const run = spawnSync(process.execPath, ["scripts/registry-snapshot.mjs", "--check"], { cwd: ROOT, encoding: "utf8" });
 	assert.equal(run.status, 0, run.stderr || run.stdout);
-	assert.match(run.stdout, /all sha256 match/);
-	const lock = JSON.parse(readFileSync(join(ROOT, "registry/svelte/ui8kit.lock.json"), "utf8")) as {
-		lockVersion: number;
-		cli: string;
-		items: Record<string, { name: string; source: string; runtime: string; files: Record<string, string> }>;
-	};
+	assert.match(run.stdout, /all match/);
+	const lock = JSON.parse(read("registry/svelte/ui8kit.lock.json")) as { lockVersion: number; cli: string; items: Record<string, { source: string; runtime: string; files: Record<string, string> }> };
 	assert.equal(lock.lockVersion, 2);
 	assert.equal(`ui8kit@${lock.cli}`, catalogSources.cli);
-	const items = Object.values(lock.items);
-	assert.ok(items.length >= 300);
-	for (const item of items) {
+	for (const item of Object.values(lock.items)) {
 		assert.equal(item.source, "https://registry.buildy.tw/svelte");
 		assert.equal(item.runtime, "svelte");
 		for (const sha of Object.values(item.files)) assert.match(sha, /^[0-9a-f]{64}$/);
 	}
-	const config = JSON.parse(readFileSync(join(ROOT, "registry/svelte/ui8kit.config.json"), "utf8"));
+	assert.ok(lock.items["registry.buildy.tw|svelte|hero-simple"] && lock.items["registry.buildy.tw|svelte|team-simple"]);
+	const config = JSON.parse(read("registry/svelte/ui8kit.config.json"));
 	assert.equal(config.dir, "src");
 	assert.equal(config.framework, "svelte");
 	assert.deepEqual(catalogSources.initItems, ["presets", "recipes", "utils"]);
 });
 
-test("published variants: sha256 pinned, every Stock catalog asset maps to a registry block of the snapshot", () => {
+test("published variants: sha256 pinned, every feed card is a variant of its registry block", () => {
 	const text = readFileSync(join(ROOT, "registry/variants.v0.json"));
-	assert.equal(createHash("sha256").update(text).digest("hex"), catalogSources.variants.sha256);
-	const variants = JSON.parse(text.toString("utf8")) as { items: Record<string, { variants: Record<string, { asset: string }> }> };
-	const assets = Object.values(variants.items).flatMap((item) => Object.values(item.variants).map((variant) => variant.asset));
-	assert.equal(assets.length, 526);
-	const catalogIds = catalogSnapshot.blockIndex.flatMap((entry) => entry.catalogIds);
-	assert.equal(catalogIds.length, 526, "no cap on variants per catalog block");
-	for (const id of catalogIds) {
-		const [spec, variant] = [id.slice(0, id.indexOf("/")), id.slice(id.indexOf("/") + 1)];
-		const hit = registryItemFor(spec, variant);
-		assert.ok(hit, `${id} has no registry item`);
-		assert.equal(catalogSources.items[hit.item]?.type, "registry:block", id);
-	}
-	for (const entry of catalogSnapshot.blockIndex) assert.ok(registryItemFor(entry.spec), `${entry.spec} has no default item`);
-	assert.equal(FEATURES.item, "feature-grid");
-	assert.equal(FEATURES.defaultVariant, "grid");
-	assert.ok(Object.keys(FEATURES.variants).length >= 2);
-	assert.ok(lucideIcons().length > 100);
+	const files = (JSON.parse(read("registry/snapshot.json")) as { files: Record<string, string> }).files;
+	assert.equal(createHash("sha256").update(text).digest("hex"), files["registry/variants.v0.json"]);
+	const variants = JSON.parse(text.toString("utf8")) as { items: Record<string, { variants: Record<string, unknown> }> };
+	for (const card of catalogSearch().items) assert.ok(variants.items[card.item]?.variants[card.variant], card.id);
 });
 
 test("CSS: theme and tokens only from the registry tree; the chat declares no colour tokens of its own", () => {
@@ -192,51 +141,3 @@ test("layout: lib holds only logic (no .svelte), no chat-owned 'compose' path, n
 	}
 });
 
-test("Stock thumbnails and asset pages: exact variant pages, versioned WebP thumbnails, null when Stock has none", () => {
-	assert.equal(blockAssetUrl("block.features", "grid2"), "https://app.codegen-x.com/#/asset/block.features/grid2");
-	assert.match(String(blockThumbUrl("block.features", "grid2")), /^https:\/\/app\.codegen-x\.com\/thumbs\/block\.features--grid2\.webp\?v=[0-9a-f]{8}$/);
-	// an unknown variant falls back to the default variant's page and picture, an unknown block has neither
-	assert.equal(blockAssetUrl("block.features", "nosuch"), blockAssetUrl("block.features", stockVariantOf("block.features")));
-	assert.equal(blockAssetUrl("block.nosuch", "x"), null);
-	assert.equal(blockThumbUrl("block.nosuch", "x"), null);
-	assert.match(String(screenThumbUrl("screen.site/home")), /^https:\/\/app\.codegen-x\.com\/thumbs\/screen\.site--home\.webp\?v=[0-9a-f]{8}$/);
-	assert.equal(screenThumbUrl("screen.nosuch/home"), null);
-	// only snapshot-shaped paths become URLs
-	assert.equal(stockThumbUrl("https://evil.test/x.webp"), null);
-	assert.equal(stockThumbUrl("thumbs/../x.webp"), null);
-	// coverage: every screen and nearly every block variant has a picture
-	const variants = catalogSnapshot.blockIndex.flatMap((b) => b.variants.map((v) => blockThumbUrl(b.spec, v) !== null && b.thumbs?.[v] !== undefined));
-	assert.ok(variants.filter(Boolean).length >= 520, `${variants.filter(Boolean).length} of ${variants.length} variants`);
-	assert.equal(catalogSnapshot.screens.filter((s) => s.thumb).length, catalogSnapshot.screens.length);
-});
-
-test("production snapshot is pinned codegen-x Stock, not a synthetic TEST fixture", () => {
-	assert.equal(raw.provider, "codegen-x");
-	assert.equal(raw.repo, "codegen-x/ui8kit");
-	assert.equal(raw.sourceArtifact, "apps/stock/content/assets.v0.json");
-	// the digest is the pin of the graph (catalog/stock-registry.v0.json), not a literal that goes stale at every re-pin
-	assert.equal(raw.sourceDigest, (JSON.parse(read("catalog/stock-registry.v0.json")) as { sources: { codegenX: { assetsDigest: string } } }).sources.codegenX.assetsDigest);
-	assert.equal(raw.counts.screen, 79);
-	assert.equal(raw.screens.length, 79);
-	assert.equal(catalogSnapshot.screens.length, 79);
-	assert.equal(JSON.stringify(raw).includes("search_blocks"), false);
-	assert.equal(
-		raw.screens.some((screen) => /synthetic|TEST block/i.test(`${screen.screenId} ${screen.title}`)),
-		false
-	);
-});
-
-test("snapshot parse narrows ownerFilters and rejects a widened type", () => {
-	assert.equal(catalogSnapshot.ownerFilters.blank.type, "screen");
-	assert.equal(catalogSnapshot.ownerFilters.dashboard.type, "screen");
-	assert.equal(catalogSnapshot.ownerFilters.landing.type, "screen");
-	assert.equal(catalogSnapshot.ownerFilters.website.type, "screen");
-	const clone = JSON.parse(JSON.stringify(fileUnknown)) as {
-		ownerFilters: Record<string, { type?: string; section?: string; job?: string }>;
-	};
-	clone.ownerFilters.dashboard = { type: "hero", section: "dashboard" };
-	assert.throws(
-		() => parseCatalogSnapshot(clone),
-		(err: Error & { code?: string }) => err.code === "catalog_snapshot_invalid" && /ownerFilters\.dashboard\.type/.test(err.message)
-	);
-});

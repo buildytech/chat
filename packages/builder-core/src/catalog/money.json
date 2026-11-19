@@ -1,14 +1,5 @@
 {
 	"format": "buildy-money-names",
 	"unit": "minor",
-	"names": [
-		"amount",
-		"compareAt",
-		"freeFrom",
-		"minOrder",
-		"price",
-		"rate",
-		"total",
-		"yearly"
-	]
+	"names": []
 }

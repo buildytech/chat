@@ -284,7 +284,7 @@ test("Vercel functions are bundled JS artifacts, not workspace TypeScript export
 		assert.match(js, /xai-grok/);
 		assert.match(js, /codegen-x/);
 		assert.match(js, /apps\/xai-runtime\/src\/http\.ts/);
-		assert.match(js, /catalog\/snapshot\.json/);
+		assert.match(js, /catalog\/blocks\.json/);
 		assert.equal([...js.matchAll(/^export /gm)].length, 2, "only footer export const config + export default");
 		assert.doesNotMatch(js, /\nexport (async )?function /);
 		const mod = (await import(`${pathToFileURL(file).href}?t=${Date.now()}`)) as {

@@ -1,5 +1,5 @@
 import type { TraceStep, TraceBudgetLeft, TraceToolResult } from "./trace-records.ts";
-import { catalogProvenance } from "@buildytech/builder-core";
+import { catalogDigest } from "@buildytech/builder-core";
 import { fnv1a64 } from "../identity.ts";
 import type { ExecutionBudget, CompiledScenario } from "../scenarios/compile.ts";
 import type { AgentCall, AgentMessage, ProviderRequest, ProviderStep } from "./provider.ts";
@@ -21,7 +21,7 @@ export function createRunTrace(runId: string, modelId: string, budget: Execution
 	const trace = {
 		format: "run-trace/1" as const, runId, modelId, scenario: scenario ? { id: scenario.profile.id, version: scenario.profile.version } : null,
 		fingerprint: scenario?.fingerprint ?? null, providerVersion: scenario?.manifestVersion ?? null, provider: scenario?.profile.provider ?? "unknown",
-		catalogDigest: catalogProvenance().sourceDigest, budget, startedAt: new Date(started).toISOString(),
+		catalogDigest: catalogDigest(), budget, startedAt: new Date(started).toISOString(),
 		deadlineMs: deadline === undefined ? null : Math.max(0, deadline - started), stopReason: "running",
 		prefix, steps, toolResults
 	};

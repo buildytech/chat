@@ -1,144 +1,95 @@
 {
- "$schema": "https://json-schema.org/draft/2020-12/schema",
- "format": "buildy-agent-tools",
- "version": 3,
- "description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
- "modes": {
-  "ask": {
-   "description": "Conversation about the catalog and the page. Ask never changes the page: a write_page proposal is kept as a card the author applies in Build. Tool choice auto; the model's final text is the answer.",
-   "toolChoice": "auto"
-  },
-  "build": {
-   "description": "Edit the page. Tool choice required: read with tools, then write_page. An accepted write ends the turn and creates a pending proposal (a diff) for Apply. A text-only response creates no proposal; the host may nudge once.",
-   "toolChoice": "required"
-  }
- },
- "enumSources": {
-  "catalog.site": "Stock facet vocabulary: site type",
-  "catalog.section": "Stock facet vocabulary: section",
-  "catalog.job": "Stock facet vocabulary: job",
-  "catalog.industry": "Stock search vocabulary: industry",
-  "catalog.blocks": "Stock search vocabulary: block labels"
- },
- "tools": [
-  {
-   "name": "search_catalog",
-   "modes": [
-    "ask",
-    "build"
-   ],
-   "description": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Screens are ranking hints: each result lists its sections as registry items [{item, variant}] you may start from or ignore. When no renderable screen matches every facet the host drops the fewest facets and says which in relaxed. Do not repeat a search that returned items.",
-   "descriptionByMode": {
-    "ask": "Search Stock screens by q (catalog terms) and facets (site, section, job, industry, blocks). Returns scored screens with their sections as registry items. Read-only."
-   },
-   "parameters": {
-    "type": "object",
-    "properties": {
-     "q": {
-      "type": "string",
-      "description": "Free text in catalog terms (English catalog words work best, e.g. sidebar, shell, kanban, pricing). Matched against Stock titles, subtitles, block names and facet labels."
-     },
-     "site": {
-      "type": "string",
-      "x-buildy-enum": "catalog.site",
-      "description": "Site type: landing (one conversion page), website (multi-page site home), app, docs, shop, blog."
-     },
-     "section": {
-      "type": "string",
-      "x-buildy-enum": "catalog.section"
-     },
-     "job": {
-      "type": "string",
-      "x-buildy-enum": "catalog.job"
-     },
-     "industry": {
-      "type": "string",
-      "x-buildy-enum": "catalog.industry"
-     },
-     "blocks": {
-      "type": "array",
-      "items": {
-       "type": "string",
-       "x-buildy-enum": "catalog.blocks"
-      },
-      "description": "Block labels every screen must contain, e.g. [\"sidenav\"] for a built-in sidebar."
-     },
-     "page": {
-      "type": "integer",
-      "minimum": 1
-     },
-     "browse": {
-      "type": "boolean",
-      "description": "true: also return facets (renderable screen counts per facet value for this filter) to drill down with another call."
-     }
-    }
-   }
-  },
-  {
-   "name": "get_block",
-   "modes": [
-    "ask",
-    "build"
-   ],
-   "description": "Read one registry item: its variants (what each sets), the props you write (names, kinds, enums, rows; ? = optional), the sample props a new block starts with, and its Stock link. item is a registry name from the item index (feature-grid), a Stock spec (block.features) or label. Read-only.",
-   "parameters": {
-    "type": "object",
-    "properties": {
-     "item": {
-      "type": "string",
-      "description": "Registry item name, Stock spec or label."
-     },
-     "variant": {
-      "type": "string",
-      "description": "Variant whose sample props to show; default variant when omitted."
-     }
-    },
-    "required": [
-     "item"
-    ]
-   }
-  },
-  {
-   "name": "get_page",
-   "modes": [
-    "ask",
-    "build"
-   ],
-   "description": "Read the page document as it is now in this turn: { version, slug, title, locale, seo, blocks:[{ id, item, variant, props }] }. props are exactly the component props. When a block throws or shows nothing in the preview, renderProblems lists it with the path of the prop to fix. Read-only.",
-   "parameters": {
-    "type": "object",
-    "properties": {}
-   }
-  },
-  {
-   "name": "write_page",
-   "modes": [
-    "ask",
-    "build"
-   ],
-   "descriptionByMode": {
-    "ask": "Write a proposal for the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). Nothing is applied: the author applies the proposal in Build with one click. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again.",
-    "build": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it (page-spec/v2 schema, each block's props against the registry props schema, no position or count rule for header or footer) and returns the diff; the author applies it with Apply. On a problem the host returns [{ path, code, expected, got }] and changes nothing; fix those paths and write again."
-   },
-   "description": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it and returns the diff or [{ path, code, expected, got }].",
-   "parameters": {
-    "type": "object",
-    "properties": {
-     "page": {
-      "type": "object",
-      "description": "The whole page document: { title, slug, locale, seo: { title, description }, blocks: [{ id?, item, variant?, props }] }. A block without id gets one; a new block starts from the registry sample props, then your props. locale is the ISO code of the language the author writes in.",
-      "additionalProperties": true
-     },
-     "patch": {
-      "type": "array",
-      "description": "RFC 6902 operations on the page document (add, replace, remove, move, copy, test), paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- (append).",
-      "items": {
-       "type": "object",
-       "additionalProperties": true
-      }
-     }
-    }
-   }
-  }
- ]
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"format": "buildy-agent-tools",
+	"version": 4,
+	"description": "Agent tools of the BuildY page builder: one definition per tool (name, description, JSON Schema parameters) and the chat modes that offer it. Hosts (chat runtime, WordPress builder) send only the tools of the active mode. x-buildy-enum names a value list the host fills from its pinned catalog or page contract before sending; hosts strip every x-* keyword. See ADR-0011.",
+	"modes": {
+		"ask": {
+			"description": "Conversation about the catalog and the page. Read-only: Ask has no write tool and never changes the page or creates a proposal; changes are made in Build. Tool choice auto; the model's final text is the answer.",
+			"toolChoice": "auto"
+		},
+		"build": {
+			"description": "Edit the page. Tool choice required: read with tools, then write_page. An accepted write ends the turn and creates a pending proposal (a diff) for Apply. A text-only response creates no proposal; the host may nudge once.",
+			"toolChoice": "required"
+		}
+	},
+	"enumSources": {
+		"catalog.items": "Every block of the catalog (registry item names)"
+	},
+	"tools": [
+		{
+			"name": "list_blocks",
+			"modes": [
+				"ask",
+				"build"
+			],
+			"description": "List every block of the catalog (it is small): item, title, category, description, default variant and every variant with its label. Read-only.",
+			"parameters": {
+				"type": "object",
+				"properties": {}
+			}
+		},
+		{
+			"name": "get_block",
+			"modes": [
+				"ask",
+				"build"
+			],
+			"description": "Read one block of the catalog: its variants (label, layout axes, default settings such as align), the props you write (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Read-only.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"item": {
+						"type": "string",
+						"x-buildy-enum": "catalog.items",
+						"description": "Registry item name of the block."
+					},
+					"variant": {
+						"type": "string",
+						"description": "Variant whose sample props to show; default variant when omitted."
+					}
+				},
+				"required": [
+					"item"
+				]
+			}
+		},
+		{
+			"name": "get_page",
+			"modes": [
+				"ask",
+				"build"
+			],
+			"description": "Read the page document as it is now in this turn: { version, slug, title, locale, seo, blocks:[{ id, item, variant, props }] }. props are exactly the component props. When a block throws or shows nothing in the preview, renderProblems lists it with the path of the prop to fix. Read-only.",
+			"parameters": {
+				"type": "object",
+				"properties": {}
+			}
+		},
+		{
+			"name": "write_page",
+			"modes": [
+				"build"
+			],
+			"description": "Write the page: send the whole page document ({ page }) or an RFC 6902 JSON Patch of it ({ patch }). The host checks it and returns the diff or [{ path, code, expected, got }].",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"page": {
+						"type": "object",
+						"description": "The whole page document: { title, slug, locale, seo: { title, description }, blocks: [{ id?, item, variant?, props }] }. A block without id gets one; a new block starts from the registry sample props, then your props. locale is the ISO code of the language the author writes in.",
+						"additionalProperties": true
+					},
+					"patch": {
+						"type": "array",
+						"description": "RFC 6902 operations on the page document (add, replace, remove, move, copy, test), paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- (append).",
+						"items": {
+							"type": "object",
+							"additionalProperties": true
+						}
+					}
+				}
+			}
+		}
+	]
 }

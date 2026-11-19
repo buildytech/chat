@@ -6,7 +6,7 @@
  */
 import { closestIconNames } from "../icon-name.ts";
 import { pageV2Issues, pageV2ProgramIssues, type PageV2, type SchemaIssue } from "@buildytech/page-contract";
-import { validateItemProps } from "../catalog/provenance.ts";
+import { validateItemProps } from "../catalog/validator.ts";
 import { itemInfo, allItems } from "./items.ts";
 import { effectiveProps } from "./render.ts";
 
@@ -74,7 +74,7 @@ export function registryIssues(page: PageV2): DocIssue[] {
 		const info = itemInfo(block.item);
 		if (!info) {
 			const near = allItems().filter((name) => name.includes(block.item) || block.item.includes(name)).slice(0, 6);
-			out.push({ path: `${at}/item`, code: "unknown_item", expected: `a registry item that renders (search_catalog, get_block name them)${near.length ? `; similar: ${near.join(", ")}` : ""}`, got: block.item });
+			out.push({ path: `${at}/item`, code: "unknown_item", expected: `a block of the catalog (list_blocks and get_block name them)${near.length ? `; similar: ${near.join(", ")}` : ""}`, got: block.item });
 			return;
 		}
 		if (block.variant !== undefined && !info.variants.includes(block.variant)) {

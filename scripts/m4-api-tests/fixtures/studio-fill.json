@@ -1,0 +1,37 @@
+{
+	"version": 2,
+	"title": "Quiet Rooms Studio",
+	"slug": "quiet-rooms",
+	"locale": "en",
+	"seo": { "title": "Quiet Rooms Studio: interiors for small flats", "description": "A two-person interior studio for small flats: plans, materials and calm rooms." },
+	"blocks": [
+		{
+			"id": "hero",
+			"item": "hero-simple",
+			"variant": "mediaEnd",
+			"props": {
+				"badge": "Interior studio",
+				"title": "Calm rooms for small flats",
+				"description": "We plan, pick materials and see the work through, so a 40 m² flat feels like more.",
+				"image": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200",
+				"imageAlt": "A light living room with a sofa and plants",
+				"actionLabel": "Book a call",
+				"actionHref": "#contact"
+			}
+		},
+		{
+			"id": "team",
+			"item": "team-simple",
+			"variant": "cards3",
+			"props": {
+				"title": "The studio",
+				"description": "Three people, one flat at a time.",
+				"members": [
+					{ "id": "anna", "title": "Anna Petrova", "description": "Lead designer" },
+					{ "id": "ilya", "title": "Ilya Sorokin", "description": "Plans and drawings" },
+					{ "id": "mira", "title": "Mira Kim", "description": "Materials and sourcing" }
+				]
+			}
+		}
+	]
+}

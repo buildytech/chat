@@ -5,6 +5,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { studioPage } from "./studio-page.ts";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -19,7 +20,7 @@ if (!existsSync(join(ROOT, "api", "runtime", "_render", "blocks.mjs"))) execFile
 buildSync({ absWorkingDir: ROOT, entryPoints: ["api/runtime/v1/run.ts"], format: "esm", platform: "node", logLevel: "error", outdir: OUT });
 const entry = (await import(pathToFileURL(join(OUT, "run.js")).href)) as { default: { fetch(request: Request): Promise<Response> } };
 
-const page = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/fitness-applied-v2.json"), "utf8"));
+const page = studioPage();
 const MODELS = ["grok-4.20-0309-reasoning", "grok-4.20-0309-non-reasoning"];
 
 type Scripted = { content?: string; calls?: Array<{ name: string; arguments: Record<string, unknown> }> };
@@ -73,39 +74,39 @@ for (const modelId of MODELS) {
 	}
 }
 
-test("bundled run entry: the tool loop (get_page, search_catalog, get_block, write_page) runs end to end and returns a proposal", async () => {
+test("bundled run entry: the tool loop (get_page, list_blocks, get_block, write_page) runs end to end and returns a proposal", async () => {
 	const { response, body, seen } = await run(MODELS[0]!, "build", [
-		{ calls: [{ name: "get_page", arguments: {} }, { name: "search_catalog", arguments: { q: "pricing" } }, { name: "get_block", arguments: { item: "pricing-tiers" } }] },
-		{ calls: [{ name: "write_page", arguments: { patch: [{ op: "replace", path: "/title", value: "Spring plans" }] } }] },
+		{ calls: [{ name: "get_page", arguments: {} }, { name: "list_blocks", arguments: {} }, { name: "get_block", arguments: { item: "team-simple" } }] },
+		{ calls: [{ name: "write_page", arguments: { patch: [{ op: "replace", path: "/title", value: "Quiet Rooms" }] } }] },
 		{ content: "Renamed the page." }
 	]);
 	assert.equal(response.status, 200, JSON.stringify(body));
 	assert.equal(body.ok, true, JSON.stringify(body));
 	assert.equal(seen.length, 2);
 	assert.ok(body.proposal, "a write_page proposal");
-	assert.equal(((body.proposal as { page: { title: string } }).page).title, "Spring plans");
+	assert.equal(((body.proposal as { page: { title: string } }).page).title, "Quiet Rooms");
 });
 
-test("bundled run entry: a full 8-block page write (food fill) passes the bundled gates in one write_page", async () => {
-	const fill = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/food-fill.json"), "utf8"));
+test("bundled run entry: a full page of the two catalog blocks (studio fill) passes the bundled gates in one write_page", async () => {
+	const fill = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/studio-fill.json"), "utf8"));
 	const { response, body, seen } = await run(MODELS[1]!, "build", [{ calls: [{ name: "write_page", arguments: { page: fill } }] }, { content: "Done." }]);
 	assert.equal(response.status, 200, JSON.stringify(body));
 	assert.equal(seen.length, 1);
-	assert.equal(((body.proposal as { page: { blocks: unknown[] } }).page).blocks.length, 8);
+	assert.deepEqual(((body.proposal as { page: { blocks: Array<{ item: string }> } }).page).blocks.map((block) => block.item), ["hero-simple", "team-simple"]);
 });
 
-test("bundled run entry: the render probe is live; a page with a currency symbol is rejected with the prop path, ISO codes are accepted", async () => {
-	const owner = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/blocks-page-1e1031a.json"), "utf8"));
-	const fixed = JSON.parse(JSON.stringify(owner).replaceAll('"currency":"\u20bd"', '"currency":"RUB"'));
+test("bundled run entry: the bundled gate names a bad value with its path, and the fixed write goes through", async () => {
+	const fill = JSON.parse(readFileSync(join(ROOT, "scripts/m4-api-tests/fixtures/studio-fill.json"), "utf8"));
+	const bad = structuredClone(fill);
+	bad.blocks[0].props.padding = "neon";
 	const { response, body, seen } = await run(MODELS[0]!, "build", [
-		{ calls: [{ name: "write_page", arguments: { page: owner } }] },
-		{ calls: [{ name: "write_page", arguments: { page: fixed } }] },
+		{ calls: [{ name: "write_page", arguments: { page: bad } }] },
+		{ calls: [{ name: "write_page", arguments: { page: fill } }] },
 		{ content: "Done." }
 	]);
 	assert.equal(response.status, 200, JSON.stringify(body));
-	const first = JSON.parse(String((seen[1]!.messages as Array<{ role: string; content: string }>).findLast((m) => m.role === "tool")!.content)) as { ok: boolean; issues: Array<{ path: string; code: string }> };
+	const first = JSON.parse(String((seen[1]!.messages as Array<{ role: string; content: string }>).findLast((m) => m.role === "tool")!.content)) as { ok: boolean; issues?: Array<{ path: string; code: string }>; notes?: string[] };
 	assert.equal(first.ok, false);
-	assert.deepEqual(first.issues.map((issue) => `${issue.code} ${issue.path}`), ["render_failed /blocks/2/props/dishes/0/currency", "render_failed /blocks/4/props/zones/0/currency"]);
-	assert.equal(seen.length, 2);
-	assert.equal(((body.proposal as { page: { blocks: unknown[] } }).page).blocks.length, 9);
+	assert.deepEqual(first.issues?.map((issue) => `${issue.code} ${issue.path}`), ["props_invalid /blocks/0/props/padding"]);
+	assert.equal(((body.proposal as { page: { blocks: unknown[] } }).page).blocks.length, 2);
 });

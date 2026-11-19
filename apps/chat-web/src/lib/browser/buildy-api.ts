@@ -5,7 +5,7 @@
  * file changes nothing. Holds no credential: provider keys and Basic Auth never enter a session.
  */
 import { projectTraceBodies } from "./trace-export.ts";
-import { catalogProvenance } from "@buildytech/builder-core";
+import { catalogDigest } from "@buildytech/builder-core";
 import { SESSION_FORMAT, SESSION_SCHEMA_URL } from "@buildytech/page-contract/session";
 import chatPackage from "../../../package.json";
 import { emit, fileKinds, sessionSettingsModules } from "../modules/registry.svelte.ts";
@@ -42,7 +42,7 @@ function app(): SessionApp {
 function sessionPins(): SessionPins {
 	return {
 		...__BUILDY_PINS__,
-		catalogDigest: catalogProvenance().sourceDigest
+		catalogDigest: catalogDigest()
 	};
 }
 

@@ -1,17 +1,16 @@
 /**
  * Page operations (ADR 0034): the one set of edits the inspector, the Sections list, the Blocks feed and drag and drop run.
  * Every operation is a write_page patch on the page document, so a hand edit and an agent edit pass the same gate; the base
- * page is never modified, an operation that changes nothing returns the same page, and any block may stand at any slot
- * (no position or count rule for header / footer, ADR 0037).
+ * page is never modified, an operation that changes nothing returns the same page, and any block may stand at any slot.
+ * The catalog is the simple line (ADR 0059): hero-simple and team-simple.
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-	addScreen,
 	addSlotCheck,
 	applyOp,
+	checkAdd,
 	checkPageDoc,
-	deriveFamily,
 	writePage,
 	emptyPage,
 	inspectorModel,
@@ -19,19 +18,12 @@ import {
 	moveSlotCheck,
 	naturalIndex,
 	renderBlock,
-	screenItems,
 	type InspectorField,
 	type PageOp
 } from "../../packages/builder-core/src/index.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 
-const NOW = "2026-11-13T12:00:00.000Z";
-
-function landing(): PageV2 {
-	const r = addScreen(emptyPage({ title: "Coffee house", locale: "en", now: NOW }), "screen.theme-marketing-landing/home");
-	assert.ok(r.ok, JSON.stringify(r));
-	return r.page;
-}
+const NOW = "2026-11-19T12:00:00.000Z";
 
 const run = (page: PageV2, op: PageOp) => {
 	const before = JSON.stringify(page);
@@ -40,137 +32,113 @@ const run = (page: PageV2, op: PageOp) => {
 	return r;
 };
 
-test("slots: only the slot's existence is checked; the header / footer role is information (ADR 0037)", () => {
-	const page = landing();
-	const items = page.blocks.map((block) => block.item);
-	assert.equal(itemInfo(items[0]!)?.role, "header");
-	assert.equal(itemInfo(items.at(-1)!)?.role, "footer");
+/** A studio page: hero, team, hero again (the two catalog blocks, one of them twice). */
+function studio(): PageV2 {
+	let page = emptyPage({ title: "Studio", locale: "en", now: NOW });
+	for (const [item, variant] of [["hero-simple", "mediaEnd"], ["team-simple", "cols3"], ["hero-simple", "mediaTop"]] as const) {
+		const r = applyOp(page, { op: "add", item, variant });
+		assert.ok(r.ok, JSON.stringify(r));
+		page = r.page;
+	}
+	return page;
+}
+
+test("the feed's add check: catalog blocks and their variants only", () => {
+	assert.deepEqual(checkAdd("hero-simple", null), { ok: true, item: "hero-simple", variant: "mediaEnd" });
+	assert.deepEqual(checkAdd("team-simple", "cards3"), { ok: true, item: "team-simple", variant: "cards3" });
+	const unknown = checkAdd("feature-grid", null);
+	assert.ok(!unknown.ok && unknown.code === "unknown_item");
+	const variant = checkAdd("hero-simple", "nosuch");
+	assert.ok(!variant.ok && variant.code === "unknown_variant");
+});
+
+test("slots: only the slot's existence is checked; an add without a slot lands at the end", () => {
+	const page = studio();
 	const last = page.blocks.length - 1;
-	assert.equal(addSlotCheck(page.blocks, 0).ok, true, "a section above the header");
-	assert.equal(addSlotCheck(page.blocks, page.blocks.length).ok, true, "a section below the footer");
-	assert.equal(addSlotCheck(page.blocks, 3).ok, true, "a header in the middle");
-	assert.equal(addSlotCheck(page.blocks, 0).ok, true, "a footer at the top");
+	assert.equal(addSlotCheck(page.blocks, 0).ok, true);
+	assert.equal(addSlotCheck(page.blocks, page.blocks.length).ok, true);
 	const out = addSlotCheck(page.blocks, page.blocks.length + 1);
 	assert.ok(!out.ok && out.code === "index_out_of_range");
 	assert.equal(moveSlotCheck(page.blocks, 1, 0).ok, true);
-	assert.equal(moveSlotCheck(page.blocks, 1, last).ok, true);
-	assert.equal(moveSlotCheck(page.blocks, last, 1).ok, true, "the footer may leave the end");
+	assert.equal(moveSlotCheck(page.blocks, last, 0).ok, true);
 	assert.equal(moveSlotCheck(page.blocks, 0, last + 1).ok, false);
-	// a default for an add without a slot, never a rule
-	assert.equal(naturalIndex(page.blocks, "feature-grid"), last, "a section without a slot lands before the closing footer");
-	assert.equal(naturalIndex(page.blocks, "nav-bar"), 0);
+	assert.equal(naturalIndex(page.blocks), page.blocks.length);
+	const bad = run(page, { op: "add", item: "team-simple", variant: "cols2", at: page.blocks.length + 1 });
+	assert.ok(!bad.ok && bad.code === "index_out_of_range");
 });
 
-test("free composition: a banner above the header, several headers, a footer in the middle, every one valid and kept by the gate", () => {
-	const page = landing();
-	const header = page.blocks[0]!;
-	// a banner (a section) above the header
-	const banner = run(page, { op: "add", item: "cta-band", variant: "card", at: 0 });
-	assert.ok(banner.ok, JSON.stringify(banner));
-	assert.equal(banner.page.blocks[0]!.item, "cta-band");
-	assert.equal(banner.page.blocks[1]!.id, header.id);
-	// a second header, right under the first
-	const second = run(banner.page, { op: "add", item: header.item, variant: header.variant, at: 2 });
-	assert.ok(second.ok, JSON.stringify(second));
-	assert.equal(second.page.blocks.filter((b) => itemInfo(b.item)?.role === "header").length, 2);
-	// a header copy (duplicate), a footer dragged to the middle, a section after the last footer
-	const dup = run(second.page, { op: "duplicate", blockId: header.id });
-	assert.ok(dup.ok, JSON.stringify(dup));
-	const footerId = dup.page.blocks.at(-1)!.id;
-	const mid = run(dup.page, { op: "move", blockId: footerId, to: 3 });
-	assert.ok(mid.ok, JSON.stringify(mid));
-	assert.equal(mid.page.blocks[3]!.id, footerId);
-	const tail = run(mid.page, { op: "add", item: "feature-grid", variant: "grid", at: mid.page.blocks.length });
-	assert.ok(tail.ok, JSON.stringify(tail));
-	assert.equal(tail.page.blocks.at(-1)!.item, "feature-grid");
-	// the gate raises no position or count code for any of it, and a whole-document write passes too
-	assert.ok(checkPageDoc(tail.page).ok);
-	const reversed: PageV2 = { ...tail.page, blocks: [...tail.page.blocks].reverse() };
-	assert.ok(checkPageDoc(reversed).ok, "footer first, header last");
-	const written = writePage(page, { page: reversed });
-	assert.ok(written.ok, JSON.stringify(written));
-	// the roles are only a label: footer-like items first, headers last, nothing is reported
-	for (const code of ["header_not_first", "footer_not_last", "above_header", "below_footer", "edge_item"]) {
-		assert.ok(!JSON.stringify(checkPageDoc(reversed)).includes(code), code);
-	}
-});
-
-test("set, set_variant, reset, move, duplicate, remove, replace: one write each, gate-valid, one history entry", () => {
-	const page = landing();
-	const hero = page.blocks[1]!;
-	const set = run(page, { op: "set", blockId: hero.id, pointer: "/title", value: "Fresh coffee" });
+test("set, set_variant, reset, move, duplicate, remove, replace: one write each, gate-valid", () => {
+	const page = studio();
+	const hero = page.blocks[0]!;
+	const set = run(page, { op: "set", blockId: hero.id, pointer: "/title", value: "Quiet Rooms Studio" });
 	assert.ok(set.ok, JSON.stringify(set));
 	assert.equal(set.op, "set_field");
 	assert.equal(set.path, "/title");
-	assert.equal((set.page.blocks[1]!.props as { title: string }).title, "Fresh coffee");
+	assert.equal((set.page.blocks[0]!.props as { title: string }).title, "Quiet Rooms Studio");
 	assert.deepEqual(set.diff.map((d) => [d.change, d.id, d.paths]), [["changed", hero.id, ["/props/title"]]]);
 	// unchanged = the same page object: no step, no revision
-	const again = applyOp(set.page, { op: "set", blockId: hero.id, pointer: "/title", value: "Fresh coffee" });
+	const again = applyOp(set.page, { op: "set", blockId: hero.id, pointer: "/title", value: "Quiet Rooms Studio" });
 	assert.ok(again.ok);
 	assert.equal(again.page, set.page);
 	// a value the props schema refuses is not written
-	const bad = run(page, { op: "set", blockId: hero.id, pointer: "/tone", value: "neon" });
+	const bad = run(page, { op: "set", blockId: hero.id, pointer: "/padding", value: "neon" });
 	assert.ok(!bad.ok);
 	if (!bad.ok) assert.equal(bad.issues[0]!.code, "props_invalid");
 	assert.ok(!run(page, { op: "set", blockId: hero.id, pointer: "/nope/deeper", value: "x" }).ok);
 
-	const variants = itemInfo(hero.item)!.variants;
-	const other = variants.find((name) => name !== (hero.variant ?? itemInfo(hero.item)!.defaultVariant))!;
-	const varied = run(page, { op: "set_variant", blockId: hero.id, variant: other });
+	const varied = run(page, { op: "set_variant", blockId: hero.id, variant: "mediaStart" });
 	assert.ok(varied.ok, JSON.stringify(varied));
-	assert.equal(varied.page.blocks[1]!.variant, other);
+	assert.equal(varied.page.blocks[0]!.variant, "mediaStart");
 	assert.ok(!run(page, { op: "set_variant", blockId: hero.id, variant: "nosuch" }).ok);
 
-	const moved = run(page, { op: "move", blockId: page.blocks[2]!.id, to: 3 });
+	const moved = run(page, { op: "move", blockId: page.blocks[2]!.id, to: 0 });
 	assert.ok(moved.ok, JSON.stringify(moved));
-	assert.equal(moved.page.blocks[3]!.id, page.blocks[2]!.id);
-	assert.ok(run(page, { op: "move", blockId: page.blocks[2]!.id, to: 0 }).ok, "above the header is allowed");
+	assert.equal(moved.page.blocks[0]!.id, page.blocks[2]!.id);
 
-	const copy = run(page, { op: "duplicate", blockId: page.blocks[2]!.id });
+	const copy = run(page, { op: "duplicate", blockId: page.blocks[1]!.id });
 	assert.ok(copy.ok, JSON.stringify(copy));
 	assert.equal(copy.page.blocks.length, page.blocks.length + 1);
 	assert.equal(new Set(copy.page.blocks.map((b) => b.id)).size, copy.page.blocks.length);
-	assert.ok(run(page, { op: "duplicate", blockId: page.blocks[0]!.id }).ok, "a header may be duplicated");
 
-	const removed = run(page, { op: "remove", blockId: page.blocks[2]!.id });
+	const removed = run(page, { op: "remove", blockId: page.blocks[1]!.id });
 	assert.ok(removed.ok);
 	assert.equal(removed.page.blocks.length, page.blocks.length - 1);
 
-	const replaced = run(page, { op: "replace", blockId: page.blocks[2]!.id, item: "dish-showcase" });
+	const replaced = run(page, { op: "replace", blockId: page.blocks[2]!.id, item: "team-simple" });
 	assert.ok(replaced.ok, JSON.stringify(replaced));
-	assert.equal(replaced.page.blocks[2]!.item, "dish-showcase");
-	assert.ok(checkPageDoc(replaced.page).ok);
+	assert.equal(replaced.page.blocks[2]!.item, "team-simple");
 
 	const reset = run(set.page, { op: "reset", blockId: hero.id });
 	assert.ok(reset.ok);
-	assert.notEqual((reset.page.blocks[1]!.props as { title: string }).title, "Fresh coffee");
+	assert.notEqual((reset.page.blocks[0]!.props as { title: string }).title, "Quiet Rooms Studio");
 
 	for (const r of [set, varied, moved, copy, removed, replaced, reset]) if (r.ok) assert.ok(checkPageDoc(r.page).ok);
 });
 
 test("page fields (title, slug, locale, seo) are operations on the document too", () => {
-	const page = landing();
-	for (const [field, value] of [["title", "Beans"], ["slug", "beans"], ["locale", "ru"], ["seo.title", "Beans: coffee"], ["seo.description", "Fresh beans, every day."]] as const) {
+	const page = studio();
+	for (const [field, value] of [["title", "Rooms"], ["slug", "rooms"], ["locale", "ru"], ["seo.title", "Rooms: a studio"], ["seo.description", "Interiors, quietly."]] as const) {
 		const r = run(page, { op: "page", field, value });
 		assert.ok(r.ok, `${field}: ${JSON.stringify(r)}`);
 	}
-	const r = run(page, { op: "page", field: "seo.description", value: "Fresh beans." });
+	const r = run(page, { op: "page", field: "seo.description", value: "Interiors." });
 	assert.ok(r.ok);
-	assert.equal(r.page.seo?.description, "Fresh beans.");
+	assert.equal(r.page.seo?.description, "Interiors.");
 	assert.ok(!run(page, { op: "page", field: "slug", value: "Not A Slug" }).ok);
 });
 
-test("list rows: add (registry row shape), duplicate, up, down, remove", () => {
-	let page = landing();
-	const features = page.blocks.find((b) => b.item === "feature-grid")!;
-	const model = inspectorModel(features);
+test("list rows (team members): add, duplicate, down, up, remove", () => {
+	let page = studio();
+	const team = page.blocks.find((b) => b.item === "team-simple")!;
+	const model = inspectorModel(team);
 	assert.ok(model.ok);
+	if (!model.ok) return;
 	const list = model.fields.find((f) => f.widget === "list")!;
-	assert.ok(list.list && list.rows);
-	const count = () => ((page.blocks.find((b) => b.id === features.id)!.props as Record<string, unknown[]>)[list.name] ?? []).length;
+	assert.equal(list.pointer, "/members");
+	const count = () => ((page.blocks.find((b) => b.id === team.id)!.props as Record<string, unknown[]>).members ?? []).length;
 	const start = count();
 	for (const [action, row] of [["add", 0], ["duplicate", 0], ["down", 0], ["up", 1], ["remove", 0]] as const) {
-		const r = run(page, { op: "list_row", blockId: features.id, pointer: list.pointer, action, row });
+		const r = run(page, { op: "list_row", blockId: team.id, pointer: list.pointer, action, row });
 		assert.ok(r.ok, `${action}: ${JSON.stringify(r)}`);
 		page = r.page;
 		assert.ok(checkPageDoc(page).ok, action);
@@ -178,28 +146,8 @@ test("list rows: add (registry row shape), duplicate, up, down, remove", () => {
 	assert.equal(count(), start + 1, "add + duplicate - remove");
 });
 
-test("a screen dropped on a page adds all its sections in screen order in one result; nothing is skipped for being a second header or footer", () => {
-	const page = landing();
-	const shown = screenItems("screen.theme-marketing-landing/teams");
-	const screen = addScreen(page, "screen.theme-marketing-landing/teams", 2);
-	assert.ok(screen.ok, JSON.stringify(screen));
-	if (screen.ok) {
-		assert.equal(screen.added.length, shown.items.length);
-		assert.deepEqual(screen.skipped, shown.missing);
-		assert.deepEqual(screen.page.blocks.slice(2, 2 + screen.added.length).map((b) => b.item), shown.items.map((entry) => entry.item));
-		assert.ok(checkPageDoc(screen.page).ok);
-		const headers = (items: readonly string[]) => items.filter((item) => itemInfo(item)?.role === "header").length;
-		assert.equal(headers(screen.page.blocks.map((b) => b.item)), headers(page.blocks.map((b) => b.item)) + headers(shown.items.map((entry) => entry.item)), "a second header comes with the screen");
-	}
-	const top = run(page, { op: "add", item: "feature-grid", variant: "grid", at: 0 });
-	assert.ok(top.ok, "a section above the header");
-	const bad = run(page, { op: "add", item: "feature-grid", variant: "grid", at: page.blocks.length + 1 });
-	assert.ok(!bad.ok);
-	if (!bad.ok) assert.equal(bad.code, "index_out_of_range");
-});
-
 test("the inspector model lists exactly the props of the registry item, with the values the block renders", () => {
-	const page = landing();
+	const page = studio();
 	for (const block of page.blocks) {
 		const model = inspectorModel(block);
 		assert.ok(model.ok, block.item);
@@ -219,20 +167,11 @@ test("the inspector model lists exactly the props of the registry item, with the
 	assert.deepEqual(inspectorModel({ id: "block-x", item: "no-such-item", variant: null, props: {} }), { ok: false, blockId: "block-x", title: "no-such-item", reason: "not_in_registry" });
 });
 
-test("header and footer are optional; the position rules apply only when they are there; the family never rejects a block", () => {
-	const start = writePage(emptyPage({ title: "Spring promo", locale: "en", now: NOW }), { page: { version: 2, title: "Spring promo", slug: "spring", locale: "en", blocks: [{ item: "hero-classic", variant: "centered" }, { item: "feature-grid", variant: "grid2" }, { item: "cta-band", variant: "band" }] } }, { now: NOW });
+test("a whole-document write of the two blocks passes, an empty page is a page, an unknown item is refused", () => {
+	const start = writePage(emptyPage({ title: "Studio", locale: "en", now: NOW }), { page: { version: 2, title: "Studio", slug: "studio", locale: "en", blocks: [{ item: "hero-simple", variant: "mediaTop" }, { item: "team-simple", variant: "cards3" }] } }, { now: NOW });
 	assert.ok(start.ok, JSON.stringify(!start.ok && start.issues));
-	if (!start.ok) return;
-	assert.equal(start.page.blocks.length, 3);
-	// a header added later goes to the top, a footer to the end
-	const withHeader = applyOp(start.page, { op: "add", item: "nav-bar", variant: "inline" });
-	assert.ok(withHeader.ok && withHeader.page.blocks[0]!.item === "nav-bar", JSON.stringify(withHeader));
-	const withFooter = applyOp(start.page, { op: "add", item: "sitemap-footer", variant: "columns" });
-	assert.ok(withFooter.ok && withFooter.page.blocks.at(-1)!.item === "sitemap-footer");
-	// a page of landing and dashboard blocks is one page: the family is a feed hint, never a rule
-	const mixed = applyOp(start.page, { op: "add", item: "stats-band", variant: "plain4" });
-	assert.ok(mixed.ok, JSON.stringify(mixed));
-	if (mixed.ok) assert.ok(typeof deriveFamily(mixed.page.blocks) === "string");
-	// an empty page is a page: nothing to render, nothing to refuse
+	if (start.ok) assert.deepEqual(start.page.blocks.map((b) => `${b.item}/${b.variant}`), ["hero-simple/mediaTop", "team-simple/cards3"]);
 	assert.equal(checkPageDoc(emptyPage({ title: "Empty", now: NOW })).ok, true);
+	const unknown = writePage(emptyPage({ title: "Studio", now: NOW }), { page: { version: 2, title: "Studio", slug: "studio", locale: "en", blocks: [{ item: "feature-grid", variant: "grid" }] } }, { now: NOW });
+	assert.ok(!unknown.ok);
 });

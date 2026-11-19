@@ -1,6 +1,6 @@
 /**
  * The Build UI wiring (ADR 0024, 0034): source-level checks that the chat web app keeps its contracts: drag and drop,
- * the inspector slide-over, the Sections list, the empty start and the Stock cards. Every edit goes through the page
+ * the inspector slide-over, the Sections list, the empty start and the prototype cards. Every edit goes through the page
  * operations of builder-core (see page-ops.test.ts); no UI path makes a model call.
  */
 import assert from "node:assert/strict";
@@ -24,8 +24,8 @@ test("drag UI: host drop layer over the preview iframe, Sections list drop, '+' 
 	assert.match(card, /setData\(FEED_DRAG_TYPE, item\.id\)/);
 	assert.match(card, /data-action="feed-add"/, "'+' stays the keyboard path");
 	const drop = web("lib/feed/drop.svelte.ts");
-	assert.match(drop, /inspector\.add\(item\.spec, item\.variant, at\)/);
-	assert.match(drop, /inspector\.addScreen\(item\.id, at\)/, "a screen card drops its sections");
+	assert.match(drop, /inspector\.add\(item\.item, item\.variant, at\)/);
+	assert.doesNotMatch(drop, /addScreen/, "the feed holds blocks only (ADR 0059)");
 	assert.match(drop, /addSlotCheck\(page \? blocksOf\(page\) : \[\], at\)/);
 	assert.doesNotMatch(drop, /no_page/, "no page yet is not a refusal: the drop starts an empty page");
 	const sections = web("app/SectionsList.svelte");
@@ -117,23 +117,23 @@ test("UI: the first '+' or drop starts the page, the preview shows the empty dro
 	for (const lang of ["en", "ru"]) {
 		const messages = JSON.parse(web(`lib/i18n/${lang}.json`)).messages as Record<string, string>;
 		assert.equal(messages["feed.why.no_page"], undefined, `${lang}: the 'No page yet' refusal is gone`);
-		for (const key of ["preview.emptyDrop", "preview.emptyHint", "page.untitled", "feed.why.no_start_screen"]) assert.ok(messages[key], `${lang}: ${key}`);
+		for (const key of ["preview.emptyDrop", "preview.emptyHint", "page.untitled"]) assert.ok(messages[key], `${lang}: ${key}`);
 	}
 	assert.equal(JSON.parse(web("lib/i18n/en.json")).messages["preview.emptyDrop"], "Drag a block here or press +");
 });
 
-test("cards: the Stock thumbnail is full-bleed (no padding around it) and home Stock screens use the feed card in 2 columns", () => {
-	const frame = web("app/StockMediaCard.svelte");
-	assert.match(frame, /overflow-hidden rounded border bg-card/, "the card radius clips the media");
-	assert.match(frame, /<StockThumb src=\{thumb\} title=\{thumbTitle\} bleed/);
-	assert.match(frame, /class="min-w-0 flex-1 gap-1 p-2"/, "only the body is padded (8px)");
-	const thumb = web("app/StockThumb.svelte");
-	assert.match(thumb, /bleed \? "border-border" : "rounded border border-border"/);
+test("cards: the feed shows the prototype of each variant in the page's skin, never a picture (ADR 0059)", () => {
+	const thumb = web("app/PrototypeThumb.svelte");
+	assert.match(thumb, /import\.meta\.glob<.*>\("[^"]*prototypes\/svelte\/blocks\//, "the prototypes are bundled, not fetched");
+	assert.match(thumb, /\{\.\.\.scope\.attrs\}/, "the page skin scope, isolated from the app's own skin");
+	assert.match(thumb, /aria-hidden="true"/);
+	assert.match(thumb, /\sinert/);
+	assert.doesNotMatch(thumb, /<img|\.webp|codegen-x/);
 	const feedCard = web("app/FeedCard.svelte");
-	assert.match(feedCard, /<StockMediaCard\s+tag="li"/);
-	assert.doesNotMatch(feedCard, /p-2", columns === 1/);
+	assert.match(feedCard, /<PrototypeThumb item=\{item\.item\} variant=\{item\.variant\}/);
+	assert.match(feedCard, /overflow-hidden rounded border border-border bg-card/, "the card radius clips the prototype");
+	assert.match(feedCard, /class="min-w-0 flex-1 gap-1 p-2"/, "only the body is padded (8px)");
+	assert.match(web("app/SectionsList.svelte"), /<PrototypeThumb /);
 	const home = web("modules/chat/ui/HomeOnboarding.svelte");
 	assert.doesNotMatch(home, /data-slot="stock-grid"|selectScenario|attachScreen/);
-	const ask = web("modules/chat/ui/AskBlockCards.svelte");
-	assert.match(ask, /<StockThumb src=\{card\.thumb\} title=\{card\.title\} bleed class="w-full border-b" \/>/);
 });

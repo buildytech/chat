@@ -1,12 +1,12 @@
-export { allItems, itemInfo, itemOfSpec, variantOrDefault, type ItemInfo } from "./items.ts";
+export { allItems, itemInfo, variantOrDefault, type ItemInfo } from "./items.ts";
 export { blankRequired, effectiveProps, renderBlock, sampleProps, type BlockRender } from "./render.ts";
 export { checkPageDoc, pointerOfSchemaPath, registryIssues, valueAtPointer, type DocGate, type DocIssue } from "./gate.ts";
 export { applyJsonPatch, type PatchOpLike } from "./jsonpatch.ts";
 export { changedPointers, diffIsEmpty, diffPages, type DiffEntry } from "./diff.ts";
 export { freshBlockId, normalizeBlocks, writePage, type WriteFailure, type WriteInput, type WriteOk, type WriteResult } from "./write.ts";
-export { addSlotCheck, itemRole, moveSlotCheck, naturalIndex, type SlotCheck } from "./slots.ts";
-export { DEFAULT_START_SCREEN, emptyPage, screenBlocks, screenItems, type ScreenItem, type ScreenItems } from "./start.ts";
-export { addScreen, applyOp, checkAdd, setAtPointer, type AddCheck, type OpName, type OpResult, type PageOp } from "./ops.ts";
+export { addSlotCheck, moveSlotCheck, naturalIndex, type SlotCheck } from "./slots.ts";
+export { emptyPage } from "./empty.ts";
+export { applyOp, checkAdd, setAtPointer, type AddCheck, type OpName, type OpResult, type PageOp } from "./ops.ts";
 export { inspectorModel, inspectorShown, inspectorValue, pointerKey, type InspectorField, type InspectorModel, type InspectorWidget } from "./inspect.ts";
 export { installRenderProbe, probeFromModule, probeOutcome, renderProbeInstalled, renderIssues, renderProblems, showsContent, type ProbeIssue, type ProbeOutcome, type ProbeResult, type RenderModule, type RenderProbe } from "./probe.ts";
 export { convertProps, pageForModel, pageFromModel, patchFromModel, writeInputFromModel } from "./money-view.ts";

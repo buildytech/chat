@@ -1,0 +1,387 @@
+{
+	"format": "buildy-catalog-blocks",
+	"version": 1,
+	"registry": "https://registry.buildy.tw/svelte",
+	"prototypes": {
+		"repo": "ui8kit/prototypes",
+		"commit": "716764ea0b500c25c3f2f15e74de540f2f71176e",
+		"generator": "codegen-x/ui8kit packages/prototypes",
+		"inputs": {
+			"sha256": "be8962f5062d4fd041576eebe8bf391d0a88936e31a8375d71f2181ac82faee9"
+		}
+	},
+	"digest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+	"blocks": [
+		{
+			"item": "hero-simple",
+			"title": "Hero Simple",
+			"description": "A badge, the heading, one paragraph and one link as the action, with one picture at the end, at the start or on top.",
+			"category": "hero",
+			"prototype": "hero-simple.svelte",
+			"contract": {
+				"item": "hero-simple",
+				"version": 1,
+				"block": "block.herosimple",
+				"organism": "HeroSimple",
+				"line": "simple",
+				"model": "hero@1",
+				"modelSchema": "https://registry.buildy.tw/models/hero@1.schema.json",
+				"axes": {
+					"media": [
+						"end",
+						"start",
+						"top"
+					]
+				},
+				"defaults": {
+					"media": "end"
+				},
+				"variants": [
+					{
+						"id": "mediaEnd",
+						"label": "Picture at the end",
+						"axes": {
+							"media": "end"
+						}
+					},
+					{
+						"id": "mediaStart",
+						"label": "Picture at the start",
+						"axes": {
+							"media": "start"
+						}
+					},
+					{
+						"id": "mediaTop",
+						"label": "Wide picture on top",
+						"axes": {
+							"media": "top"
+						},
+						"settings": {
+							"align": "center"
+						}
+					}
+				],
+				"defaultVariant": "mediaEnd",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "media",
+						"kind": "media",
+						"fields": [
+							"/image",
+							"/imageAlt",
+							"/imageDark"
+						]
+					},
+					{
+						"place": "badge",
+						"kind": "badge",
+						"fields": [
+							"/badge"
+						]
+					},
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "action",
+						"kind": "action",
+						"fields": [
+							"/actionLabel",
+							"/actionHref"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/hero@1.schema.json",
+				"title": "HeroContent",
+				"description": "Hero content: an optional badge, the heading, a description, one picture (light, optional dark) and one action. One object is valid in every hero layout (media at the end, at the start, on top).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title"
+				],
+				"properties": {
+					"badge": {
+						"description": "a short pill above the heading; empty: no badge",
+						"type": "string",
+						"maxLength": 40
+					},
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"image": {
+						"description": "address of the picture (an https URL or a path); none: the placeholder",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"imageAlt": {
+						"description": "alt text of the picture; none: the title (the placeholder is decorative)",
+						"type": "string",
+						"maxLength": 160
+					},
+					"imageDark": {
+						"description": "address of the picture in the dark theme; none: image",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					}
+				}
+			}
+		},
+		{
+			"item": "team-simple",
+			"title": "Team Simple",
+			"description": "The heading, one paragraph and the people as a list: a portrait, the name and the role, in two, three or four columns, plain or on cards.",
+			"category": "company",
+			"prototype": "team-simple.svelte",
+			"contract": {
+				"item": "team-simple",
+				"version": 1,
+				"block": "block.teamsimple",
+				"organism": "TeamSimple",
+				"line": "simple",
+				"model": "team@1",
+				"modelSchema": "https://registry.buildy.tw/models/team@1.schema.json",
+				"axes": {
+					"cols": [
+						"2",
+						"3",
+						"4"
+					],
+					"surface": [
+						"plain",
+						"cards"
+					]
+				},
+				"defaults": {
+					"cols": "3",
+					"surface": "plain"
+				},
+				"variants": [
+					{
+						"id": "cols3",
+						"label": "Three columns",
+						"axes": {
+							"cols": "3",
+							"surface": "plain"
+						}
+					},
+					{
+						"id": "cols2",
+						"label": "Two columns",
+						"axes": {
+							"cols": "2",
+							"surface": "plain"
+						}
+					},
+					{
+						"id": "cols4",
+						"label": "Four columns",
+						"axes": {
+							"cols": "4",
+							"surface": "plain"
+						}
+					},
+					{
+						"id": "cards3",
+						"label": "Three columns on cards",
+						"axes": {
+							"cols": "3",
+							"surface": "cards"
+						}
+					}
+				],
+				"defaultVariant": "cols3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "members.avatar",
+						"kind": "media",
+						"fields": [
+							"/members/*/avatar"
+						],
+						"list": "members"
+					},
+					{
+						"place": "members.title",
+						"kind": "heading",
+						"fields": [
+							"/members/*/title"
+						],
+						"list": "members"
+					},
+					{
+						"place": "members.description",
+						"kind": "text",
+						"fields": [
+							"/members/*/description"
+						],
+						"list": "members"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/team@1.schema.json",
+				"title": "TeamContent",
+				"description": "Team content: the heading, a description and an ordered list of one to twelve members. One object is valid in every team layout (two, three or four columns, plain or on cards).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"members"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"members": {
+						"description": "the people, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 12,
+						"items": {
+							"title": "SimpleMember",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the member (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"avatar": {
+									"description": "address of the portrait; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								},
+								"title": {
+									"description": "the name of the member",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "the role or a short line about the member; empty: none",
+									"type": "string",
+									"maxLength": 240
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	]
+}

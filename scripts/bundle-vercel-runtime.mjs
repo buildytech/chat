@@ -295,8 +295,8 @@ function collect(startId) {
 }
 
 const ids = collect(entryRel);
-if (!ids.some((id) => id.endsWith("catalog/snapshot.json"))) {
-	throw new Error("bundle graph missing catalog/snapshot.json");
+if (!ids.some((id) => id.endsWith("catalog/blocks.json"))) {
+	throw new Error("bundle graph missing catalog/blocks.json");
 }
 if (!ids.some((id) => id.endsWith("apps/xai-runtime/src/http.ts"))) {
 	throw new Error("bundle graph missing http.ts");

@@ -24,7 +24,7 @@ test("birthday regression: eight reads then write_page, never a no-tools JSON an
 	const out = await runAgentLoop(MODEL, { mode: "build", brief: "A birthday page", page: page(), expectedRevision: 0 }, signal(), async (request) => {
 		choices.push(request.toolChoice);
 		assert.equal(request.cacheKey, "birthday-replay");
-		return choices.length <= 8 ? call(String(choices.length), choices.length <= 2 ? "search_catalog" : "get_block", choices.length <= 2 ? { query: "birthday" } : { item: "hero-classic" }) : call("write", "write_page", { patch: [{ op: "replace", path: "/title", value: "Birthday ready" }] });
+		return choices.length <= 8 ? call(String(choices.length), choices.length <= 2 ? "list_blocks" : "get_block", choices.length <= 2 ? {} : { item: "hero-simple" }) : call("write", "write_page", { patch: [{ op: "replace", path: "/title", value: "Birthday ready" }] });
 	}, "birthday-replay", { scenario: scenario() });
 	assert.ok(out.result.ok && out.result.proposal);
 	assert.equal(choices.length, 9);
@@ -36,9 +36,9 @@ test("twelve blocks may read their schemas, write and repair inside one Build tu
 	let sent = 0;
 	const out = await runAgentLoop(MODEL, { mode: "build", brief: "Twelve sections", page: page(), expectedRevision: 0 }, signal(), async () => {
 		sent += 1;
-		if (sent <= 12) return call(String(sent), "get_block", { item: "hero-classic" });
+		if (sent <= 12) return call(String(sent), "get_block", { item: sent % 2 ? "hero-simple" : "team-simple" });
 		if (sent === 13) return call("invalid", "write_page", { patch: [{ op: "replace", path: "/missing", value: "invalid" }] });
-		return call("fixed", "write_page", { patch: [{ op: "add", path: "/blocks", value: Array.from({ length: 12 }, (_, index) => ({ id: `hero-${index}`, item: "hero-classic", variant: "centered" })) }] });
+		return call("fixed", "write_page", { patch: [{ op: "add", path: "/blocks", value: Array.from({ length: 12 }, (_, index) => ({ id: `section-${index}`, item: index % 2 ? "team-simple" : "hero-simple", variant: index % 2 ? "cols3" : "mediaEnd" })) }] });
 	}, "twelve-blocks", { scenario: scenario() });
 	assert.ok(out.result.ok && out.result.proposal, JSON.stringify(out.result));
 	if (out.result.ok) assert.equal(out.result.proposal?.page.blocks.length, 12);

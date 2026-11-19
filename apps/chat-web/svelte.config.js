@@ -35,6 +35,8 @@ const config = {
 		alias: {
 			// The UI8Kit registry tree exactly as `npx ui8kit init` + `add` writes it (docs/adr/0001).
 			$registry: '../../registry/svelte/src',
+			// The prototypes (prototypes/svelte, ui8kit/prototypes) import the kit as the package does; here it is the registry kit tree.
+			'@ui8kit/kit': '../../registry/svelte/src/kit',
 			// Optional builder modules (src/modules/<name>); core code reaches them only through lib/modules (ADR 0041).
 			$modules: 'src/modules'
 		}

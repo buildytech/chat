@@ -3,10 +3,7 @@
   "dir": "scripts/m4-api-tests",
   "groups": {
     "builder-core": [
-      "catalog-artifacts.test.ts",
-      "catalog-search.test.ts",
-      "catalog-snapshot.test.ts",
-      "money.test.ts",
+      "catalog-blocks.test.ts",
       "page-doc.test.ts",
       "page-ops.test.ts",
       "page-ops.fuzz.test.ts",
@@ -15,10 +12,8 @@
       "render-items.test.ts",
       "render-probe.test.ts",
       "render-recovery.test.ts",
-      "sample-rows.test.ts",
       "view-map.test.ts",
-      "write-drop-props.test.ts",
-      "write-icon-alias.test.ts",
+      "write-rejected.test.ts",
       "write-image.test.ts"
     ],
     "chat-agent": [
@@ -33,8 +28,6 @@
       "trace-retention.test.ts",
       "scenarios.test.ts",
       "xai-codec.test.ts",
-      "collection-intake.test.ts",
-      "food-agent.test.ts",
       "model-switch.test.ts",
       "page-agent.test.ts",
       "runtime-bundle.test.ts",

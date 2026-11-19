@@ -13,7 +13,6 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import fc from "fast-check";
 import {
-	addScreen,
 	allItems,
 	applyOp,
 	checkPageDoc,
@@ -24,16 +23,13 @@ import {
 	type PageOp
 } from "../../packages/builder-core/src/index.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
+import { studioPage } from "./studio-page.ts";
 import { EditHistory } from "../../apps/chat-web/src/lib/inspector/history.ts";
 
 const NOW = "2026-11-13T12:00:00.000Z";
 const ITEMS = allItems().sort();
 
-const start = (): PageV2 => {
-	const r = addScreen(emptyPage({ title: "Fuzz", locale: "en", now: NOW }), "screen.theme-marketing-landing/home");
-	assert.ok(r.ok);
-	return r.page;
-};
+const start = (): PageV2 => studioPage({ title: "Fuzz", now: NOW });
 
 /** Every editable leaf of a block, through objects, lists of records, lists of values and maps. */
 function leaves(fields: InspectorField[]): InspectorField[] {

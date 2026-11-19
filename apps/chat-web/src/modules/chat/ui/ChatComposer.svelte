@@ -9,7 +9,6 @@
 	import Label from "$registry/kit/ui/label/Label.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import Textarea from "$registry/kit/ui/textarea/Textarea.svelte";
-	import CollectionChips from "./CollectionChips.svelte";
 	import ComposerDetails from "./ComposerDetails.svelte";
 	import ComposerModelList from "./ComposerModelList.svelte";
 	import ComposerScope from "./ComposerScope.svelte";
@@ -142,7 +141,6 @@
 	data-slot="composer-region"
 >
 	<Form class="relative flex flex-col gap-2" onsubmit={submit} onkeydown={onKeydown}>
-		<CollectionChips />
 		<ComposerScope />
 		<Stack align="stretch" class="gap-2 rounded border border-input bg-card p-1" data-slot="composer-surface">
 			<Label for="composer" class="sr-only">{t("composer.label")}</Label>

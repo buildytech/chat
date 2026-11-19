@@ -1,12 +1,11 @@
 /**
  * Agent tools of the BuildY builder, read from the one versioned definition file agent-tools.v1.json (name,
  * description, JSON Schema parameters, the chat modes that offer each tool). Hosts send only the tools of the active
- * mode: Ask is read-only, Build may propose. `x-buildy-enum` markers are filled from the pinned catalog and page
+ * mode: Ask is read-only (no write_page), Build writes. `x-buildy-enum` markers are filled from the pinned catalog and page
  * contract here; every `x-*` keyword is stripped before a schema leaves the host. ADR-0011.
  */
 import raw from "./agent-tools.v1.json" with { type: "json" };
-import { facetVocabulary } from "@buildytech/builder-core";
-import { blockLabelVocabulary, vocabularyValues } from "@buildytech/builder-core";
+import { allItems } from "@buildytech/builder-core";
 
 export const AGENT_MODES = ["ask", "build"] as const;
 export type AgentMode = (typeof AGENT_MODES)[number];
@@ -42,19 +41,11 @@ export function isAgentMode(value: unknown): value is AgentMode {
 	return typeof value === "string" && (AGENT_MODES as readonly string[]).includes(value);
 }
 
-/** Value lists named by `x-buildy-enum`: generated from the pinned catalog and the page contract, never typed here. */
+/** Value lists named by `x-buildy-enum`: generated from the pinned catalog, never typed here. */
 function agentEnumSource(name: string): string[] {
 	switch (name) {
-		case "catalog.site":
-			return [...facetVocabulary().site];
-		case "catalog.section":
-			return [...facetVocabulary().section];
-		case "catalog.job":
-			return [...facetVocabulary().job];
-		case "catalog.industry":
-			return vocabularyValues("industry");
-		case "catalog.blocks":
-			return blockLabelVocabulary();
+		case "catalog.items":
+			return allItems();
 		default:
 			throw new Error(`agent-tools: unknown x-buildy-enum source ${name}`);
 	}
@@ -89,13 +80,6 @@ export function toolOffersMode(name: string, mode: AgentMode): boolean {
 	return Boolean(agentTool(name)?.modes.includes(mode));
 }
 
-/** Resolved parameters (object schema) of one tool. */
-function agentToolParameters(name: string): JsonSchemaObject {
-	const tool = agentTool(name);
-	if (!tool) throw new Error(`agent-tools: unknown tool ${name}`);
-	return resolveAgentSchema(tool.parameters);
-}
-
 export type ResolvedAgentTool = { name: string; description: string; parameters: JsonSchemaObject };
 const RESOLVED = new Map<string, ResolvedAgentTool[]>();
 
@@ -114,13 +98,4 @@ export function agentTools(mode: AgentMode, only?: readonly string[]): ResolvedA
 /** Compatibility projection for existing callers; execution uses agentTools. */
 export function agentOpenAiTools(mode: AgentMode, only?: readonly string[]) {
 	return agentTools(mode, only).map((tool) => ({ type: "function" as const, function: tool }));
-}
-
-function properties(name: string): Record<string, unknown> {
-	return (agentToolParameters(name).properties ?? {}) as Record<string, unknown>;
-}
-
-/** search_catalog parameter properties (facet enums from the pinned catalog). */
-export function catalogToolParameterSchema(): Record<string, Record<string, unknown>> {
-	return properties("search_catalog") as Record<string, Record<string, unknown>>;
 }

@@ -90,10 +90,11 @@ test("cancellation during backoff sends no retry; exceptions are never retried",
 });
 
 test("scenario ceilings stop retries and prevent a nudge after the last logical step", async () => {
-	const registered = resolveScenario("build", MODEL, { id: "page.build", version: 2 });
+	const registered = resolveScenario("build", MODEL, { id: "page.build", version: 4 });
 	assert.ok(registered.ok);
 	if (!registered.ok) return;
-	const compiled = compileScenario({ ...registered.scenario.profile, limits: { maxSteps: 1, maxRequests: 1 } }, MODEL);
+	// page-loop@2 (no completion reserve), so a one-step ceiling compiles.
+	const compiled = compileScenario({ ...registered.scenario.profile, execution: "page-loop@2", limits: { maxSteps: 1, maxRequests: 1 } }, MODEL);
 	assert.ok(compiled.ok);
 	if (!compiled.ok) return;
 	let requests = 0;
@@ -126,19 +127,19 @@ test("new defaults use max_completion_tokens while pinned v1 requests keep their
 });
 
 
-test("pinned v1 scenarios do not acquire the new transient retry policy", async () => {
-	const compiled = resolveScenario("ask", MODEL, { id: "page.ask", version: 1 });
+test("a page-loop@1 profile does not acquire the transient retry policy", async () => {
+	const registered = resolveScenario("ask", MODEL);
+	assert.ok(registered.ok);
+	if (!registered.ok) return;
+	const compiled = compileScenario({ ...registered.scenario.profile, execution: "page-loop@1" }, MODEL);
 	assert.ok(compiled.ok);
 	if (!compiled.ok) return;
-	assert.equal(compiled.scenario.fingerprint, "scenario-v1-b12454f2685b37c7");
-	const build = resolveScenario("build", MODEL, { id: "page.build", version: 1 });
-	assert.ok(build.ok && build.scenario.fingerprint === "scenario-v1-0a0d696e52bbe223");
+	assert.notEqual(compiled.scenario.fingerprint, registered.scenario.fingerprint);
 	const execution = createExecution(MODEL, signal(), async () => ({ ok: false, error: { code: "rate_limited", message: "Wait", status: 429, retryable: true } }), "legacy", { scenario: compiled.scenario });
 	await execution.request(input);
 	assert.equal(execution.finish().steps, 1);
 	assert.equal(execution.finish().providerRetries, 0);
 });
-
 
 test("unexpected tool processing and diagnostic errors cannot erase earlier billed usage", async () => {
 	const call = { id: "one", name: "get_page", argumentsJson: "{}" };

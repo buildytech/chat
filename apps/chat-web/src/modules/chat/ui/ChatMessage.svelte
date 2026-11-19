@@ -15,11 +15,8 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 	import { cn } from "$registry/utils/cn";
 	import type { ChatMessage as ChatMessageModel } from "$modules/chat/core";
 	import { formatTokens } from "@buildytech/chat-agent";
-	import CatalogRefsList from "./CatalogRefsList.svelte";
 	import MarkdownText from "./MarkdownText.svelte";
-	import AskBlockCards from "./AskBlockCards.svelte";
 	import ProposalDiff from "./ProposalDiff.svelte";
-	import { applyVariantFromAsk } from "$modules/chat/core";
 
 	let {
 		message,
@@ -129,10 +126,6 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 						{message.mode === "ask" ? t("ask.answerAsk") : proposal ? t("ask.answerBuildProposal") : t("ask.answerBuild")}
 					</Text>
 					<MarkdownText source={message.text} />
-					<AskBlockCards
-						blocks={message.answer.blocks}
-						onApplyVariant={(spec, variant) => applyVariantFromAsk(spec, variant)}
-					/>
 					<!-- An answer without a proposal is a turn with no accepted write_page: the host says so, whatever the text claims (ADR 0035). -->
 					{#if !proposal}
 						<Text tag="p" class="text-xs font-medium text-muted-foreground" data-slot="no-change">{t("message.noChange")}</Text>
@@ -146,9 +139,6 @@ import { Copy, Check, FileText, Pencil, Share2, ThumbsDown, ThumbsUp } from "$li
 			{/if}
 			{#if proposal}
 				<ProposalDiff {message} {onApply} {onDiscard} />
-				{#if !previewSettings.hideServiceLabels && proposal.catalogRefs && (proposal.catalogRefs.blocks.length > 0 || proposal.catalogRefs.screen)}
-					<CatalogRefsList refs={proposal.catalogRefs} demo={Boolean(proposal.demoData)} />
-				{/if}
 			{/if}
 			{#if run && !previewSettings.hideServiceLabels}
 				<Disclosure class="group">

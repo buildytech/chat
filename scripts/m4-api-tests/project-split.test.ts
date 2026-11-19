@@ -1,5 +1,5 @@
 /**
- * ADR 0040: the session is a project (page, skin, collection, history) plus `ext.chat` (messages, mode, model, usage).
+ * ADR 0040: the session is a project (page, skin, history) plus `ext.chat` (messages, mode, model, usage).
  * Pure parts only (doc, transitions, chat view, normalizer) and the structure rules that keep the split from growing back.
  */
 import assert from "node:assert/strict";
@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { sessionDefIssues } from "@buildytech/page-contract/session";
 import { docOfProject, projectOfDoc, registerLegacyKeys } from "../../apps/chat-web/src/lib/project/doc.ts";
-import { bySavedAt, draftPageId, newProject, withApplied, withExt, withSkin, withoutCollectionItem } from "../../apps/chat-web/src/lib/project/transitions.ts";
+import { bySavedAt, draftPageId, newProject, withApplied, withExt, withSkin } from "../../apps/chat-web/src/lib/project/transitions.ts";
 import { CHAT_LEGACY_KEYS, projectOfView, viewOf } from "../../apps/chat-web/src/modules/chat/core/view.ts";
 
 // The chat module registers its keys when it loads; this file tests the project with it loaded (modules.test.ts: without).
@@ -31,7 +31,6 @@ const flatDoc = {
 	pageBound: true,
 	pageRevision: 2,
 	skin: "warm",
-	collection: { id: "c1", title: "Cafe", items: [{ kind: "screen", id: "landing" }] },
 	usage: { runs: 1 },
 	messages: [{ id: "m1", role: "user", text: "hi", createdAt: NOW }],
 	history: [{ revision: 1, at: NOW, cause: "apply" }]
@@ -48,7 +47,6 @@ const legacyDoc = {
 	pageBound: true,
 	pageRevision: 2,
 	skin: "warm",
-	collection: { id: "c1", title: "Cafe", items: [{ kind: "screen", id: "landing" }] },
 	history: [{ revision: 1, at: NOW, cause: "apply" }],
 	ext: { chat: { mode: "build", selectedModelId: "grok-4", usage: { runs: 1 }, messages: [{ id: "m1", role: "user", text: "hi", createdAt: NOW }] } }
 };
@@ -115,9 +113,6 @@ test("transitions: pure, each returns a new project and leaves the old one alone
 	const applied = withApplied(project, { pageId: "page-n", revision: 1, screenId: "landing", now: "2026-11-11T00:00:00.000Z" });
 	assert.equal(applied.pageRevision, 1);
 	assert.equal(project.pageRevision, undefined);
-	const coll = { ...project, collection: { id: "c", title: "C", items: [{ kind: "screen" as const, id: "a" }, { kind: "screen" as const, id: "b" }] } };
-	assert.deepEqual(withoutCollectionItem(coll, 0).collection?.items.map((i) => i.id), ["b"]);
-	assert.equal(withoutCollectionItem(project, 0), project);
 	assert.equal(withExt(withExt(project, "x", { a: 1 }), "x", null).ext.x, undefined);
 	assert.equal(draftPageId({ projectId: "session-123" }), "page-123");
 	assert.equal(draftPageId({ projectId: "project-123" }), "page-123");

@@ -13,6 +13,7 @@ export const json = (value) => `${JSON.stringify(value, null, "\t")}\n`;
 export const SOURCES_JSON = "packages/builder-core/src/catalog/sources.json";
 export const PROPS_JSON = "packages/builder-core/src/catalog/props.json";
 export const MONEY_JSON = "packages/builder-core/src/catalog/money.json";
+export const BLOCKS_JSON = "packages/builder-core/src/catalog/blocks.json";
 
 /** Skins (registry:theme items, `add theme-<skin>`; `add --all` leaves them out): skin id -> item, title and CSS file. */
 export function themesOf(snapshot) {
@@ -185,6 +186,33 @@ export function deriveMoneyNames(root) {
 	return [...names].sort();
 }
 
+/**
+ * The catalog the chat shows (ADR 0059): the configured blocks in config order, each with its registry title and
+ * description, its category (the registry `meta.group`), its block-contract/v1 and its content model. Nothing hand-written.
+ */
+export function deriveBlocks(root, snapshot) {
+	const readJson = (p) => JSON.parse(readFileSync(join(root, p), "utf8"));
+	const blocks = (snapshot.blocks ?? []).map((item) => {
+		const graph = snapshot.items[item];
+		const pins = snapshot.contracts[item];
+		const contract = readJson(pins.contract);
+		const model = readJson(pins.model);
+		if (contract.item !== item) throw new Error(`${pins.contract}: item ${contract.item} != ${item}`);
+		return {
+			item,
+			title: graph.title ?? item,
+			description: graph.description ?? "",
+			category: graph.meta?.group ?? "content",
+			prototype: `${item}.svelte`,
+			contract,
+			model
+		};
+	});
+	// One digest of everything the catalog pins (registry files, contracts, models, prototypes): traces and the contract fingerprint name it.
+	const digest = `sha256:${hex(JSON.stringify({ files: snapshot.files, blocks }))}`;
+	return { format: "buildy-catalog-blocks", version: 1, registry: snapshot.registry, prototypes: snapshot.prototypes, digest, blocks };
+}
+
 export function deriveRegistryArtifacts(root) {
 	const readJson = (p) => JSON.parse(readFileSync(join(root, p), "utf8"));
 	const props = readJson("registry/props.v0.json");
@@ -198,6 +226,7 @@ export function deriveRegistryArtifacts(root) {
 			})
 		),
 		[PROPS_JSON]: `${JSON.stringify(compactProps(props))}\n`,
-		[MONEY_JSON]: json({ format: "buildy-money-names", unit: "minor", names: deriveMoneyNames(root) })
+		[MONEY_JSON]: json({ format: "buildy-money-names", unit: "minor", names: deriveMoneyNames(root) }),
+		[BLOCKS_JSON]: json(deriveBlocks(root, readJson("registry/snapshot.json")))
 	};
 }

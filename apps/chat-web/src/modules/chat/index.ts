@@ -5,18 +5,14 @@
  */
 import "./chat.css";
 import { retainTraces } from "./core/trace-retention.ts";
-import { isCollectionDoc } from "@buildytech/page-contract/collection";
 import { MessageSquare } from "$lib/shell-icons";
 import { t } from "$lib/i18n/dictionary";
 import type { BuilderModule } from "$lib/modules/types";
 import enMessages from "./i18n/en.json";
 import ruMessages from "./i18n/ru.json";
 import { getSelectedModelId, setSelectedModelId } from "./browser/models.svelte.ts";
-import { takeCollectionParam } from "./browser/collection-intake";
 import { hydrateSessionContext } from "./browser/onboarding.svelte.ts";
 import { beforeHydrate, beforeProjectChange, getChatMode, projectOpened, recoverInterruptedRuns, run, setChatMode } from "./core/chat.svelte.ts";
-import { openCollectionFile, openCollectionParam } from "./core/intake";
-import { startPageFromScreen } from "./core/proposal-flow";
 import { CHAT_LEGACY_KEYS, chatOf } from "./core/view";
 import BlockScopeAction from "./ui/BlockScopeAction.svelte";
 import ChatPanel from "./ui/ChatPanel.svelte";
@@ -34,34 +30,17 @@ export const chatModule: BuilderModule = {
 	slots: { "preview.review": ProposalReview, "block.actions": BlockScopeAction },
 	hasActivity: (project) => Boolean(project && chatOf(project)?.messages?.length),
 	editorMode: getChatMode,
-	startPageFromScreen,
 	sessionSettings: {
 		read: () => ({ selectedModelId: getSelectedModelId() }),
 		apply: (settings) => {
 			if (settings.selectedModelId) setSelectedModelId(settings.selectedModelId);
 		}
 	},
-	fileKinds: [
-		{
-			detect: isCollectionDoc,
-			open: async (parsed) => {
-				const result = await openCollectionFile(parsed);
-				return { ...result, note: result.ok ? t("settings.collectionOpened").replace("{count}", String(result.items)) : result.message };
-			}
-		}
-	],
 	hooks: {
 		beforeProjectChange,
 		projectOpened,
-		// Open in BuildY (?collection=, also on /build) is read once before the session query is synced, opened after the projects load.
-		beforeHydrate: () => {
-			beforeHydrate();
-			return takeCollectionParam();
-		},
-		afterHydrate: async (collection) => {
-			recoverInterruptedRuns();
-			if (typeof collection === "string" && collection) await openCollectionParam(collection);
-		},
+		beforeHydrate,
+		afterHydrate: () => recoverInterruptedRuns(),
 		pageStarted: (screenId) => {
 			setChatMode("build");
 			hydrateSessionContext({ scenarioId: null, screenId });

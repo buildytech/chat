@@ -1,5 +1,5 @@
 /**
- * Owner session 5c155d3 (Build, empty page): the model read the catalog (search_catalog, 8x get_block), then printed the whole
+ * Owner session 5c155d3 (Build, empty page): the model read the catalog (list, then get_block), then printed the whole
  * page document as a fenced JSON block in its text and never called write_page; usage complete, page empty. A Build turn that
  * ends with no accepted write_page cannot happen any more: every Build step asks for a tool call (tool_choice "required") and the
  * turn ends with the first accepted write (no extra model step). A step that still answers in text gets the one in-turn nudge and
@@ -11,20 +11,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { after, before, test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { addScreen, emptyPage } from "../../packages/builder-core/src/index.ts";
+import { emptyPage } from "../../packages/builder-core/src/index.ts";
 import { runXaiCatalogTurn } from "../../apps/xai-runtime/src/chat-tools.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
 import { MODEL, installBundleProbe, signal, withProvider, type Scripted } from "./agent-replay.ts";
 
-type Message = { role: string; text: string };
-const session = JSON.parse(readFileSync(fileURLToPath(new URL("./fixtures/shashlyk-printed-5c155d3.json", import.meta.url)), "utf8")) as {
-	sessions: Array<{ ext: { chat: { mode: string; usage: { status: string }; messages: Message[] } } }>;
-};
-const chat = session.sessions[0]!.ext.chat;
-const BRIEF = chat.messages[0]!.text;
-const PRINTED = chat.messages[1]!.text;
-/** The page document the model printed in its text. */
-const printed = JSON.parse(/```json\n([\s\S]*?)\n```/.exec(PRINTED)![1]!) as Record<string, unknown>;
+/** The page document the model prints in its text instead of calling write_page (the shape of owner session 5c155d3, on the simple line). */
+const printed = JSON.parse(readFileSync(fileURLToPath(new URL("./fixtures/studio-fill.json", import.meta.url)), "utf8")) as Record<string, unknown>;
+const BRIEF = "A landing page for a small interior studio: hero and the team.";
+const PRINTED = "Here is the page:\n\n```json\n" + JSON.stringify(printed, null, 2) + "\n```";
 
 let release: () => void;
 before(async () => {
@@ -32,14 +27,10 @@ before(async () => {
 });
 after(() => release());
 
-const blank = (): PageV2 => {
-	const start = addScreen(emptyPage({ title: "x", locale: "ru", now: "2026-11-14T12:00:00.000Z" }), "screen.theme-marketing-landing/home");
-	assert.ok(start.ok);
-	return { ...start.page, blocks: [] };
-};
-const items = ["site-header", "hero-classic", "dish-showcase"];
+const blank = (): PageV2 => emptyPage({ title: "x", locale: "en", now: "2026-11-19T12:00:00.000Z" });
+const items = ["hero-simple", "team-simple"];
 const reads: Scripted[] = [
-	{ calls: [{ name: "search_catalog", arguments: { query: "restaurant delivery landing" } }] },
+	{ calls: [{ name: "list_blocks", arguments: {} }] },
 	{ calls: items.map((item) => ({ name: "get_block", arguments: { item } })) },
 	{ content: PRINTED }
 ];
@@ -47,11 +38,9 @@ const choiceOf = (request: Record<string, unknown>) => request.tool_choice;
 const run = (script: Scripted[], mode: "build" | "ask" = "build") =>
 	withProvider(script, async (seen) => ({ out: await runXaiCatalogTurn("k", MODEL, { brief: BRIEF, mode, page: blank(), expectedRevision: 1 }, signal()), seen }));
 
-test("the session: a Build turn, complete usage, the page document printed in the text", () => {
-	assert.equal(chat.mode, "build");
-	assert.equal(chat.usage.status, "complete");
+test("the printed page: a v2 document of the two catalog blocks", () => {
 	assert.equal(printed.version, 2);
-	assert.equal((printed.blocks as unknown[]).length, 8);
+	assert.equal((printed.blocks as unknown[]).length, 2);
 });
 
 const NAMED = { type: "function", function: { name: "write_page" } };
@@ -67,7 +56,7 @@ test("replay: the printed document ends a turn; the nudge forces write_page by n
 	if (!out.result.ok) return;
 	const proposal = out.result.proposal;
 	assert.ok(proposal, "a proposal");
-	assert.equal(proposal.page.blocks.length, 8);
+	assert.equal(proposal.page.blocks.length, 2);
 	assert.equal(out.result.text, "", "the printed document is not the answer");
 	assert.equal(out.meta.usage.status, "complete");
 	assert.equal(out.meta.steps, 4);

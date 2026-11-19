@@ -32,7 +32,6 @@ export const projectHasActivity = (project: Project | null): boolean => modules.
 /** `build` unless a module with a mode switch says `ask`: the manual editor is always available. */
 export const editorMode = (): "build" | "ask" => modules.find((m) => m.editorMode)?.editorMode?.() ?? "build";
 export const newProjectDefaults = (fallbackTitle: string): { title: string; ext: Project["ext"] } => modules.find((m) => m.newProject)?.newProject?.() ?? { title: fallbackTitle, ext: {} };
-export const startPageHook = (): BuilderModule["startPageFromScreen"] => modules.find((m) => m.startPageFromScreen)?.startPageFromScreen;
 
 type Sync = Exclude<keyof ModuleHooks, "beforeHydrate" | "afterHydrate">;
 export function emit<K extends Sync>(name: K, ...args: Parameters<NonNullable<ModuleHooks[K]>>): void {
