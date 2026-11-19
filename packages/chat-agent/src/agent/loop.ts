@@ -137,8 +137,8 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 	let endedOnCalls = false;
 	// Build asks for a tool call on every step (tool_choice "required"): the model reads with the catalog tools and ends with
 	// write_page, and the turn ends with the first accepted write (no extra model step to summarize it). If a step still comes
-	// back as plain text, the model is told once and the next request forces write_page by name. Ask stays on "auto"; Ask with
-	// blocks that do not render (every block of the current page is probed at turn start) gets the one nudge as well.
+	// back as plain text, the model is told once and the next request forces write_page by name. Ask has no write tool: it stays
+	// on "auto" and is never nudged.
 	const build = ctx.mode === "build";
 	const policy = scenario?.executionPolicy ?? CURRENT_EXECUTION_POLICY;
 	const reserve = build && "buildCompletion" in policy ? policy.buildCompletion : undefined;

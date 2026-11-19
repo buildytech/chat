@@ -9,7 +9,6 @@ export {
 	deleteSession,
 	deleteAllSessions,
 	discardProposal,
-	applyAskProposal,
 	getChatMode,
 	setChatMode,
 	getRuntimeStatus,
@@ -19,8 +18,7 @@ export {
 	listSessions,
 	retryLastFailed,
 	selectSession,
-	sendMessage,
-	type AskApplyResult
+	sendMessage
 } from "./session.svelte.ts";
 export { chatModeOf, turnOutcome, DEFAULT_CHAT_MODE } from "./modes";
 export { parseMarkdown, parseInline, type MdBlock, type MdInline } from "./markdown";

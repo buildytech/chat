@@ -4,7 +4,7 @@ import { createExecution, type ExecutionOptions } from "./execution.ts";
 import { agentReply, runWriteTool, rejectedWrite, type TurnContext } from "./turn.ts";
 import type { AgentProvider, AgentMessage } from "./provider.ts";
 
-export const FIELDS_PROMPT = "Edit the selected registry block props only. Preserve fields the author did not ask to change. Use write_page with exactly one replace operation at the supplied path and the COMPLETE corrected props object for value. Never return page, change item/variant/block identity/order or invent fields, facts or image URLs. On repair correct the candidate using the supplied errors. Money values use major units. No prose. The registry-derived field outline follows. The host validates the full props schema.";
+export const FIELDS_PROMPT = "Edit the selected registry block props only. Preserve fields the author did not ask to change. Use write_page with exactly one replace operation at the supplied path and the COMPLETE corrected props object for value. Never return page, change item/variant/block identity/order or invent fields, facts or image URLs. On repair correct the candidate using the supplied errors. No prose. The registry-derived field outline follows. The host validates the full props schema.";
 function record(value: unknown): value is Record<string, unknown> { return value !== null && typeof value === "object" && !Array.isArray(value); }
 
 export function fieldsContext(ctx: TurnContext): string {

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
 	markPendingProposals,
@@ -60,4 +61,13 @@ test("a new proposal supersedes earlier pending ones", () => {
 	const next = markPendingProposals(messages, "superseded", "all");
 	assert.equal(next[0]?.proposal?.status, "superseded");
 	assert.equal(next[1]?.proposal?.status, "superseded");
+});
+
+test("Ask is read-only (ADR 0059): a reply never carries a proposal and the diff card has no Apply in Build", () => {
+	const src = (path: string) => readFileSync(new URL(`../../apps/chat-web/src/${path}`, import.meta.url), "utf8");
+	assert.match(src("modules/chat/core/turn.ts"), /if \(!result\.proposal \|\| mode === "ask"\) return base;/);
+	const diff = src("modules/chat/ui/ProposalDiff.svelte");
+	assert.doesNotMatch(diff, /apply-in-build|applyAskProposal/);
+	assert.match(diff, /\{#if pending && !ask\}/);
+	assert.doesNotMatch(src("modules/chat/core/proposal-flow.ts"), /applyAskProposal|setChatMode/);
 });

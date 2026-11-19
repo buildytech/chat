@@ -23,12 +23,12 @@ import type { ChatMessage, ChatProposalState, ChatRunRecord, ChatSession } from 
 export const nowIso = (): string => new Date().toISOString();
 export const uid = (prefix: string): string => `${prefix}-${crypto.randomUUID()}`;
 
-export function blankPage(project: Pick<Project, "projectId"> | null): PageV2 {
+function blankPage(project: Pick<Project, "projectId"> | null): PageV2 {
 	return emptyPage({ title: t("page.untitled"), locale: "en", id: draftPageId(project) });
 }
 
 /** The page the author sees (pending proposal, else applied page, else the last proposal kept after Discard), or null. */
-export function shownPageOf(): PageV2 | null {
+function shownPageOf(): PageV2 | null {
 	return getEditBase()?.page ?? null;
 }
 
@@ -179,11 +179,9 @@ export function localizedRunError(code: string | undefined, message: string, mod
 	return message;
 }
 
-export function provenanceFor(screenId: string | null): StoredPageProvenance {
+function provenanceFor(screenId: string | null): StoredPageProvenance {
 	return { screenId, scenarioId: null, missing: [] };
 }
-
-export const diffKey = (diff: readonly unknown[]): string => JSON.stringify(diff);
 
 /**
  * The proposal of a reply, checked again here against the page the author sees (never trusted as sent): the same write
@@ -201,7 +199,7 @@ function checkedProposal(plan: TurnPlan, raw: { page: unknown }): { ok: true; pa
 	return { ok: true, page: written.page, diff: diffPages(plan.shown, written.page), warnings: written.warnings };
 }
 
-export function newProposalState(input: {
+function newProposalState(input: {
 	page: PageV2;
 	diff: DiffEntry[];
 	warnings: string[];
@@ -209,7 +207,6 @@ export function newProposalState(input: {
 	live: boolean;
 	screenId: string | null;
 	origin?: ChatProposalState["origin"];
-	keepPage?: boolean;
 }): ChatProposalState {
 	return {
 		applied: false,
@@ -223,15 +220,13 @@ export function newProposalState(input: {
 		locale: input.page.locale,
 		baseRevision: input.baseRevision,
 		diff: input.diff,
-		...(input.origin ? { origin: input.origin } : {}),
-		...(input.keepPage ? { page: input.page } : {})
+		...(input.origin ? { origin: input.origin } : {})
 	};
 }
 
 /**
- * The assistant message of a finished turn. A reply with a proposal is the same in both modes: the text, the diff card.
- * Build also shows the proposal in Preview as the pending candidate (Apply / Discard); Ask keeps the page in its message
- * and never touches the page: the card "Apply in Build" is its only way in.
+ * The assistant message of a finished turn: the text, and in Build the diff card of the proposal, shown in Preview as the
+ * pending candidate (Apply / Discard). Ask only answers.
  */
 export function replyMessage(out: TurnOutcome): ChatMessage {
 	const { result, plan, modelId, live, usage } = out;
@@ -241,7 +236,8 @@ export function replyMessage(out: TurnOutcome): ChatMessage {
 	}
 	const mode: AgentMode = result.mode;
 	const base = { id: uid("msg"), role: "assistant" as const, text: result.text, createdAt: nowIso(), mode, answer: { blocks: [...result.blocks] }, run };
-	if (!result.proposal) return base;
+	// Ask is read-only (ADR 0059): it has no write tool, and a proposal it would carry anyway is never shown or kept.
+	if (!result.proposal || mode === "ask") return base;
 	const checked = checkedProposal(plan, result.proposal);
 	if (!checked.ok) {
 		return { ...base, text: `${result.text}\n\n${t("proposal.rejected").replace("{code}", checked.code).replace("{message}", checked.message)}`.trim() };
@@ -249,9 +245,6 @@ export function replyMessage(out: TurnOutcome): ChatMessage {
 	if (!checked.diff.length) return base;
 	const screenId = plan.request.screenId ?? null;
 	const baseRevision = plan.request.expectedRevision;
-	if (mode === "ask") {
-		return { ...base, proposal: newProposalState({ ...checked, baseRevision, live, screenId, origin: "ask-proposal", keepPage: true }) };
-	}
 	setCandidatePage(checked.page, provenanceFor(screenId));
 	return { ...base, proposal: newProposalState({ ...checked, baseRevision, live, screenId }) };
 }

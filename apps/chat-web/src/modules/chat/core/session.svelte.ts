@@ -5,4 +5,4 @@
  */
 export { abortInflightRun, applySessionFromUrl, createSession, deleteAllSessions, deleteSession, getChatMode, getRuntimeStatus, getSelectedSession, hydrateSessions, listSessions, selectSession, setChatMode } from "./chat.svelte.ts";
 export { retryLastFailed, sendMessage } from "./send";
-export { applyAskProposal, applyProposal, discardProposal, type AskApplyResult } from "./proposal-flow";
+export { applyProposal, discardProposal } from "./proposal-flow";

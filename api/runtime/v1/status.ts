@@ -8410,7 +8410,7 @@ const { propsOutline } = __req("packages/chat-agent/src/agent/blocks.ts");
 const { pageForModel, propsSchemaFor } = __req("packages/builder-core/src/index.ts");
 const { createExecution } = __req("packages/chat-agent/src/agent/execution.ts");
 const { agentReply, runWriteTool, rejectedWrite } = __req("packages/chat-agent/src/agent/turn.ts");
-const FIELDS_PROMPT = "Edit the selected registry block props only. Preserve fields the author did not ask to change. Use write_page with exactly one replace operation at the supplied path and the COMPLETE corrected props object for value. Never return page, change item/variant/block identity/order or invent fields, facts or image URLs. On repair correct the candidate using the supplied errors. Money values use major units. No prose. The registry-derived field outline follows. The host validates the full props schema.";
+const FIELDS_PROMPT = "Edit the selected registry block props only. Preserve fields the author did not ask to change. Use write_page with exactly one replace operation at the supplied path and the COMPLETE corrected props object for value. Never return page, change item/variant/block identity/order or invent fields, facts or image URLs. On repair correct the candidate using the supplied errors. No prose. The registry-derived field outline follows. The host validates the full props schema.";
 function record(value: unknown): value is Record<string, unknown> { return value !== null && typeof value === "object" && !Array.isArray(value); }
 
 function fieldsContext(ctx: TurnContext): string {
@@ -8629,13 +8629,12 @@ const SYSTEM_COMMON = [
 	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
 	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
 	"- item is a block of the catalog (npx ui8kit add <item>); itemIndex lists every block with its category and variants (list_blocks shows their labels). variant is one of the item's variants: it changes only the layout (where the picture is, how many columns), never the content. Settings such as align, padding and level are props too.",
-	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field; an icon is a real Lucide icon name in kebab-case (old names like smile or home are mapped; a name Lucide does not have is dropped from an optional icon and replaced by the sample icon in a required one, both noted in the answer). A picture is an optional prop: image (an https URL or a relative path) with imageAlt on a block, or image on a list record, where get_block shows it; without it the block shows a placeholder, which is fine, so leave image out by default. Never invent a URL. Set image only when the author gave an address or asked for photos; then use only a direct https image URL of a real public photo you are sure exists (stock sites like images.unsplash.com or images.pexels.com), with a short imageAlt of what it shows; a value that is not https or a relative path is dropped with a note. Never write in the page text that photos were added unless you set image.",
+	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field (team members: id, title, description). A picture is an optional address prop: image with imageAlt on the hero, avatar on a team member, where get_block shows it; without it the block shows a placeholder, which is fine, so leave pictures out by default. Never invent a URL. Set a picture only when the author gave an address or asked for photos; then use only a direct https image URL of a real public photo you are sure exists (stock sites like images.unsplash.com or images.pexels.com), with a short imageAlt of what it shows; a value that is not https or a relative path is dropped with a note. Never write in the page text that photos were added unless you set them.",
 	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision: pick, replace, add, remove and reorder blocks as the request needs; a block may appear several times.",
 	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
 	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
 	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",
 	"- scope.blockIds, when present, are the blocks the author selected: edit only those (props, variant, item). Do not change page fields, other blocks, or the order.",
-	"- currency is an ISO 4217 code (RUB, USD, EUR), never a symbol such as ₽ or $.",
 	"- Write content when asked. A fictional product is fine when the author says so; never present invented facts as real ones when the author gave real ones.",
 	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why."
 ].join("\n");
@@ -8670,16 +8669,13 @@ function userPrompt(ctx: TurnContext, problems: ReturnType<typeof renderProblems
 /**
  * Sent once when a turn that is expected to change the page ends without an accepted write (ADR 0035). Program text, no phrase
  * recognition. In Build the request that follows forces write_page (tool_choice), so the text says the document goes into the
- * call and is never printed; Ask keeps the way out of saying plainly that the page does not change.
+ * call and is never printed. Ask has no write tool and is never nudged.
  */
 function nudgeText(ctx: TurnContext, problems: number): string {
-	const build = ctx.mode === "build";
 	return [
 		"Host notice: nothing on the page has changed in this turn (no write_page was accepted).",
 		problems > 0 ? "The page has blocks that do not render; they are listed in renderProblems (get_page shows them)." : ctx.scopeBlockIds?.length ? "Blocks are selected for this edit." : "",
-		build
-			? "Call write_page with the page document now; the document goes into the call, do not print it in the text. Do not report a change that write_page did not accept."
-			: "Ask cannot change the page: say so plainly and describe the change Build would make."
+		"Call write_page with the page document now; the document goes into the call, do not print it in the text. Do not report a change that write_page did not accept."
 	].filter(Boolean).join(" ");
 }
 
@@ -9370,8 +9366,8 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 	let endedOnCalls = false;
 	// Build asks for a tool call on every step (tool_choice "required"): the model reads with the catalog tools and ends with
 	// write_page, and the turn ends with the first accepted write (no extra model step to summarize it). If a step still comes
-	// back as plain text, the model is told once and the next request forces write_page by name. Ask stays on "auto"; Ask with
-	// blocks that do not render (every block of the current page is probed at turn start) gets the one nudge as well.
+	// back as plain text, the model is told once and the next request forces write_page by name. Ask has no write tool: it stays
+	// on "auto" and is never nudged.
 	const build = ctx.mode === "build";
 	const policy = scenario?.executionPolicy ?? CURRENT_EXECUTION_POLICY;
 	const reserve = build && "buildCompletion" in policy ? policy.buildCompletion : undefined;

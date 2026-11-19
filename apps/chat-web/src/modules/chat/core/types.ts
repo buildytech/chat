@@ -50,8 +50,8 @@ export type ChatProposalState = {
 	/** Stock refs of an older proposal (session 1.x): kept in the file, no longer shown. */
 	catalogRefs?: unknown;
 	/**
-	 * ask-card: Apply variant on an Ask block card; ask-proposal: the proposal of an Ask answer (kept in `page` while the
-	 * message is Ask's) and its Apply in Build; ask-plan: a 1.4.0 plan (old chats only). None of them calls the model.
+	 * Older chats only (Ask is read-only since ADR 0059): ask-card, ask-plan (1.4.0) and ask-proposal (1.8.0) are kept in the
+	 * file and shown without actions.
 	 */
 	origin?: "ask-card" | "ask-plan" | "ask-proposal";
 	/** The page revision the proposal was made for (Apply in Build checks that the page did not move on). */

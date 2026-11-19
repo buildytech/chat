@@ -13,7 +13,7 @@ export function isPendingProposal(proposal: Pick<ChatProposalState, "applied" | 
 	return proposalStatus(proposal) === "pending";
 }
 
-export function withProposalStatus(proposal: ChatProposalState, status: ProposalStatus): ChatProposalState {
+function withProposalStatus(proposal: ChatProposalState, status: ProposalStatus): ChatProposalState {
 	return { ...proposal, status, applied: status === "applied" };
 }
 
