@@ -44,3 +44,27 @@ test("Apply is blocked and the reply is not installed when the base changed by h
 		assert.match(dict, /"proposal\.staleOnReply": "[^"]*\{blocks\}/);
 	}
 });
+
+test("the session file stores lastProposed equal to applied/candidate once, by reference, and import restores it", async () => {
+	const { buildSessionFile, parseSessionFile, splitSessionFile } = await import("../../apps/chat-web/src/lib/browser/session-file.ts");
+	const owner = JSON.parse(readFileSync("scripts/m4-api-tests/fixtures/replay-v2-owner-birthday.json", "utf8"));
+	const parsed = parseSessionFile(owner);
+	assert.ok(parsed.ok);
+	const { chats, pages } = splitSessionFile(parsed.file);
+	const record = Object.values(pages)[0]!;
+	assert.deepEqual(record.lastProposed, record.applied, "the owner's session carries the applied page twice");
+	const file = buildSessionFile({ chats, pages, selectedSessionId: parsed.file.selectedSessionId, app: parsed.file.app, pins: parsed.file.pins, now: parsed.file.exportedAt });
+	const session = file.sessions[0]!;
+	assert.equal(session.page?.lastProposed, null);
+	assert.deepEqual(session.ext && (session.ext as Record<string, unknown>)["chat-page-ref"], { format: "page-ref/1", lastProposed: "applied" });
+	assert.ok(JSON.stringify(file).length < JSON.stringify(owner).length - JSON.stringify(record.applied).length / 2);
+	const again = parseSessionFile(JSON.parse(JSON.stringify(file)));
+	assert.ok(again.ok, "the deduplicated file is valid against the vendored session-v2 / page-spec-v2 0.5.0");
+	const restored = again.file.sessions[0]!;
+	assert.deepEqual(restored.page?.lastProposed, record.applied);
+	assert.deepEqual(restored.page?.lastProposedProvenance, record.lastProposedProvenance);
+	assert.equal("chat-page-ref" in (restored.ext as object), false);
+	// A lastProposed that differs from both pages is kept whole.
+	const own = { ...record, lastProposed: { ...record.applied as object, page: { id: "x", title: "Other", locale: "ru" } } };
+	assert.ok(buildSessionFile({ chats, pages: { [Object.keys(pages)[0]!]: own }, selectedSessionId: null, app: parsed.file.app, pins: parsed.file.pins }).sessions[0]!.page?.lastProposed);
+});

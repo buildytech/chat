@@ -86,6 +86,34 @@ function fileRecord(record: StoredPageRecord | null | undefined): StoredPageReco
 	return cloneJson({ ...record, revision: revisionOf(record) });
 }
 
+/**
+ * Dedup of the page record in the file (t85u step 7): `lastProposed` equal to `candidate` or `applied` goes into the file
+ * as null with a chat-local reference in the session ext (`chat-page-ref`, format page-ref/1); import restores it. The
+ * record stays valid against page-spec-v2 `$defs/record` (vendored 0.5.0) and its provenance stays where it is.
+ */
+const PAGE_REF = "chat-page-ref";
+type PageRef = { format: "page-ref/1"; lastProposed: "candidate" | "applied" };
+function dedupRecord(record: StoredPageRecord | null): { page: StoredPageRecord | null; ref: PageRef | null } {
+	if (!record?.lastProposed) return { page: record, ref: null };
+	const same = JSON.stringify(record.lastProposed);
+	const slot = record.candidate && JSON.stringify(record.candidate) === same ? "candidate" : record.applied && JSON.stringify(record.applied) === same ? "applied" : null;
+	return slot ? { page: { ...record, lastProposed: null }, ref: { format: "page-ref/1", lastProposed: slot } } : { page: record, ref: null };
+}
+function isPageRef(value: unknown): value is PageRef {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+	const v: Record<string, unknown> = { ...value };
+	return v.format === "page-ref/1" && (v.lastProposed === "candidate" || v.lastProposed === "applied");
+}
+/** The chat with its page record whole again (the inverse of dedupRecord); the reference leaves the ext. */
+function restoreRecord(chat: SessionFileChat): SessionFileChat {
+	const ext: Record<string, unknown> | null = chat.ext && typeof chat.ext === "object" && !Array.isArray(chat.ext) ? { ...chat.ext } : null;
+	const ref: unknown = ext?.[PAGE_REF];
+	if (!ext || !(PAGE_REF in ext)) return chat;
+	delete ext[PAGE_REF];
+	const page = chat.page && isPageRef(ref) && chat.page.lastProposed == null && chat.page[ref.lastProposed] ? { ...chat.page, lastProposed: cloneJson(chat.page[ref.lastProposed]) } : chat.page;
+	return { ...chat, ext, page };
+}
+
 export function buildSessionFile(input: {
 	chats: StoredChat[];
 	pages: Record<string, StoredPageRecord | null | undefined>;
@@ -97,9 +125,12 @@ export function buildSessionFile(input: {
 	now?: string;
 }): SessionFile {
 	const sessions = input.chats.map((chat) => {
-		const page = fileRecord(input.pages[projectIdOf(chat)]);
+		const { page, ref } = dedupRecord(fileRecord(input.pages[projectIdOf(chat)]));
 		const synced = reconcileChatRevision(chat, page ?? null);
-		return cloneJson({ ...synced, page });
+		const ext: Record<string, unknown> = synced.ext && typeof synced.ext === "object" && !Array.isArray(synced.ext) ? { ...synced.ext } : {};
+		delete ext[PAGE_REF];
+		if (ref) ext[PAGE_REF] = ref;
+		return cloneJson({ ...synced, ...(ref || synced.ext ? { ext } : {}), page });
 	});
 	const ids = new Set(sessions.map((s) => s.id));
 	return {
@@ -162,5 +193,5 @@ export function splitSessionFile(file: SessionFile): { chats: StoredChat[]; page
 
 /** A session file with the sibling provenance of every page record complete; chats, history and settings are untouched. */
 function normalizeSessionFile(file: SessionFile): SessionFile {
-	return cloneJson({ ...file, sessions: file.sessions.map((chat) => ({ ...chat, page: chat.page ? normalizePageRecord(chat.page) : null })) });
+	return cloneJson({ ...file, sessions: file.sessions.map(restoreRecord).map((chat) => ({ ...chat, page: chat.page ? normalizePageRecord(chat.page) : null })) });
 }
