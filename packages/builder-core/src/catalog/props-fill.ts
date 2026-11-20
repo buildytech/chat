@@ -8,17 +8,42 @@ import { SAMPLE_MINOR, isMoneyName } from "./money.ts";
 import { PLACEHOLDER_ICON, STRING_DEFAULTS, isObject, kindOf, lucideIcons, props, schemaAt, valueOf, type JsonSchema } from "./props-schema.ts";
 
 /**
- * An enum prop written as text (a form select, an agent patch) in the type the schema declares: `level` is 1 | 2, so "2"
- * becomes 2 (also true / false / null). A value that is not an enum member, or a prop that is not an enum, is returned as
- * it came: the props gate still rejects it with the allowed values.
+ * An enum prop in the type the schema declares, both ways: written as text (a form select, an agent patch) `level` is
+ * 1 | 2, so "2" becomes 2 (also true / false / null); written as a number or boolean where the enum holds text (`cols`
+ * is "2" | "3" | "4", a model writes 3) it becomes "3". A value that is not an enum member in either form, or a prop
+ * that is not an enum, is returned as it came: the props gate still rejects it with the allowed values.
  */
 export function coerceEnumValue(item: string, pointer: string, value: unknown): unknown {
-	if (typeof value !== "string") return value;
+	if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") return value;
 	const node = schemaAt(item, pointer);
 	const options = node ? valueOf(node).enum : undefined;
 	if (!Array.isArray(options) || options.includes(value)) return value;
-	const match = options.find((option) => typeof option !== "string" && String(option) === value);
+	const match = options.find((option) => typeof option !== typeof value && option !== null && typeof option !== "object" && String(option) === String(value));
 	return match === undefined ? value : match;
+}
+
+/**
+ * Every enum value of a block's props in the schema's type (`coerceEnumValue` at each pointer, lists and records
+ * included): the agent write path runs it on every block a write touches, as the Inspector does per field. Returns the
+ * props (a copy only when something changed) and the pointers it changed, with the value before.
+ */
+export function coerceEnumProps<T extends Record<string, unknown>>(item: string, value: T): { props: T; changed: Array<{ pointer: string; from: unknown; to: unknown }> } {
+	const changed: Array<{ pointer: string; from: unknown; to: unknown }> = [];
+	const copy = cloneJson(value);
+	const visit = (parent: Record<string, unknown> | unknown[], key: string | number, pointer: string): void => {
+		const node: unknown = Array.isArray(parent) ? parent[Number(key)] : parent[String(key)];
+		if (Array.isArray(node)) node.forEach((_, index) => visit(node, index, `${pointer}/${index}`));
+		else if (isObject(node)) for (const name of Object.keys(node)) visit(node, name, `${pointer}/${name.replace(/~/g, "~0").replace(/\//g, "~1")}`);
+		else {
+			const next = coerceEnumValue(item, pointer, node);
+			if (next === node) return;
+			changed.push({ pointer, from: node, to: next });
+			if (Array.isArray(parent)) parent[Number(key)] = next;
+			else parent[String(key)] = next;
+		}
+	};
+	for (const name of Object.keys(copy)) visit(copy, name, `/${name.replace(/~/g, "~0").replace(/\//g, "~1")}`);
+	return { props: changed.length ? copy : value, changed };
 }
 
 /**

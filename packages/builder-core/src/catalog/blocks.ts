@@ -44,6 +44,36 @@ function variantSettings(item: string, variant: string): Record<string, string |
 	return { ...out, ...(contract.variants.find((v) => v.id === variant)?.settings ?? {}) };
 }
 
+/** The layout axes of a block (block-contract/v1 `axes`: `media`, `cols`, `surface`): the variant sets them, never the content. */
+export function layoutAxes(item: string): string[] {
+	return Object.keys(catalogBlock(item)?.contract.axes ?? {});
+}
+
+/** The axis values of a variant (`cards3` -> cols "3", surface "cards"), the contract defaults under them; null for an unknown variant. */
+export function variantAxisValues(item: string, variant: string): Record<string, string> | null {
+	const contract = catalogBlock(item)?.contract;
+	const found = contract?.variants.find((v) => v.id === variant);
+	if (!contract || !found) return null;
+	const out: Record<string, string> = {};
+	for (const axis of Object.keys(contract.axes ?? {})) {
+		const value = found.axes[axis] ?? contract.defaults?.[axis];
+		if (value !== undefined) out[axis] = String(value);
+	}
+	return out;
+}
+
+/** The setting a variant renders with when the author set none (`align` of mediaTop is "center"), or undefined. */
+export function variantSettingDefault(item: string, variant: string, name: string): string | number | boolean | undefined {
+	return variantSettings(item, variant)[name];
+}
+
+/** The settings any variant of a block sets on its own (hero-simple: `align` of mediaTop). */
+export function variantSettingNames(item: string): string[] {
+	const names = new Set<string>();
+	for (const v of catalogBlock(item)?.contract.variants ?? []) for (const key of Object.keys(v.settings ?? {})) names.add(key);
+	return [...names];
+}
+
 /** Props of a variant's prototype (wireframe): its settings and its axes (block-contract/v1), as the generated prototype takes them. */
 export function prototypeProps(item: string, variant: string): Record<string, string | number | boolean> {
 	const found = catalogBlock(item)?.contract.variants.find((v) => v.id === variant);

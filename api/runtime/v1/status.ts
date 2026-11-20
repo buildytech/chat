@@ -2417,6 +2417,36 @@ function variantSettings(item: string, variant: string): Record<string, string |
 	return { ...out, ...(contract.variants.find((v) => v.id === variant)?.settings ?? {}) };
 }
 
+/** The layout axes of a block (block-contract/v1 `axes`: `media`, `cols`, `surface`): the variant sets them, never the content. */
+function layoutAxes(item: string): string[] {
+	return Object.keys(catalogBlock(item)?.contract.axes ?? {});
+}
+
+/** The axis values of a variant (`cards3` -> cols "3", surface "cards"), the contract defaults under them; null for an unknown variant. */
+function variantAxisValues(item: string, variant: string): Record<string, string> | null {
+	const contract = catalogBlock(item)?.contract;
+	const found = contract?.variants.find((v) => v.id === variant);
+	if (!contract || !found) return null;
+	const out: Record<string, string> = {};
+	for (const axis of Object.keys(contract.axes ?? {})) {
+		const value = found.axes[axis] ?? contract.defaults?.[axis];
+		if (value !== undefined) out[axis] = String(value);
+	}
+	return out;
+}
+
+/** The setting a variant renders with when the author set none (`align` of mediaTop is "center"), or undefined. */
+function variantSettingDefault(item: string, variant: string, name: string): string | number | boolean | undefined {
+	return variantSettings(item, variant)[name];
+}
+
+/** The settings any variant of a block sets on its own (hero-simple: `align` of mediaTop). */
+function variantSettingNames(item: string): string[] {
+	const names = new Set<string>();
+	for (const v of catalogBlock(item)?.contract.variants ?? []) for (const key of Object.keys(v.settings ?? {})) names.add(key);
+	return [...names];
+}
+
 /** Props of a variant's prototype (wireframe): its settings and its axes (block-contract/v1), as the generated prototype takes them. */
 function prototypeProps(item: string, variant: string): Record<string, string | number | boolean> {
 	const found = catalogBlock(item)?.contract.variants.find((v) => v.id === variant);
@@ -2451,6 +2481,10 @@ function catalogDigest(): string {
 
 exports["catalogBlocks"] = catalogBlocks;
 exports["catalogBlock"] = catalogBlock;
+exports["layoutAxes"] = layoutAxes;
+exports["variantAxisValues"] = variantAxisValues;
+exports["variantSettingDefault"] = variantSettingDefault;
+exports["variantSettingNames"] = variantSettingNames;
 exports["prototypeProps"] = prototypeProps;
 exports["catalogSearch"] = catalogSearch;
 exports["catalogDigest"] = catalogDigest;
@@ -4825,12 +4859,36 @@ const { cloneJson } = __req("packages/page-contract/src/index.ts");
 const { SAMPLE_MINOR, isMoneyName } = __req("packages/builder-core/src/catalog/money.ts");
 const { PLACEHOLDER_ICON, STRING_DEFAULTS, isObject, kindOf, lucideIcons, props, schemaAt, valueOf } = __req("packages/builder-core/src/catalog/props-schema.ts");
 function coerceEnumValue(item: string, pointer: string, value: unknown): unknown {
-	if (typeof value !== "string") return value;
+	if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") return value;
 	const node = schemaAt(item, pointer);
 	const options = node ? valueOf(node).enum : undefined;
 	if (!Array.isArray(options) || options.includes(value)) return value;
-	const match = options.find((option) => typeof option !== "string" && String(option) === value);
+	const match = options.find((option) => typeof option !== typeof value && option !== null && typeof option !== "object" && String(option) === String(value));
 	return match === undefined ? value : match;
+}
+
+/**
+ * Every enum value of a block's props in the schema's type (`coerceEnumValue` at each pointer, lists and records
+ * included): the agent write path runs it on every block a write touches, as the Inspector does per field. Returns the
+ * props (a copy only when something changed) and the pointers it changed, with the value before.
+ */
+function coerceEnumProps<T extends Record<string, unknown>>(item: string, value: T): { props: T; changed: Array<{ pointer: string; from: unknown; to: unknown }> } {
+	const changed: Array<{ pointer: string; from: unknown; to: unknown }> = [];
+	const copy = cloneJson(value);
+	const visit = (parent: Record<string, unknown> | unknown[], key: string | number, pointer: string): void => {
+		const node: unknown = Array.isArray(parent) ? parent[Number(key)] : parent[String(key)];
+		if (Array.isArray(node)) node.forEach((_, index) => visit(node, index, `${pointer}/${index}`));
+		else if (isObject(node)) for (const name of Object.keys(node)) visit(node, name, `${pointer}/${name.replace(/~/g, "~0").replace(/\//g, "~1")}`);
+		else {
+			const next = coerceEnumValue(item, pointer, node);
+			if (next === node) return;
+			changed.push({ pointer, from: node, to: next });
+			if (Array.isArray(parent)) parent[Number(key)] = next;
+			else parent[String(key)] = next;
+		}
+	};
+	for (const name of Object.keys(copy)) visit(copy, name, `/${name.replace(/~/g, "~0").replace(/\//g, "~1")}`);
+	return { props: changed.length ? copy : value, changed };
 }
 
 /**
@@ -4991,6 +5049,7 @@ function fillProps(item: string, value: Record<string, unknown>, options: { blan
 }
 
 exports["coerceEnumValue"] = coerceEnumValue;
+exports["coerceEnumProps"] = coerceEnumProps;
 exports["newPropsListRow"] = newPropsListRow;
 exports["newPropsListValue"] = newPropsListValue;
 exports["newPropsMapValue"] = newPropsMapValue;
@@ -6237,6 +6296,7 @@ const { pointerInfo, propsFieldTree, propShapeFor } = __req("packages/builder-co
 const { variantAxisProps, variantPreset } = __req("packages/builder-core/src/catalog/organism.ts");
 const { resolveIconName } = __req("packages/builder-core/src/icon-name.ts");
 const { isImageUrl } = __req("packages/builder-core/src/catalog/image-url.ts");
+const { coerceEnumProps } = __req("packages/builder-core/src/catalog/props-fill.ts");
 const { diffPages } = __req("packages/builder-core/src/page-doc/diff.ts");
 const { renderIssues } = __req("packages/builder-core/src/page-doc/probe.ts");
 const { checkPageDoc, pointerOfSchemaPath, valueAtPointer } = __req("packages/builder-core/src/page-doc/gate.ts");
@@ -6344,6 +6404,14 @@ function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): void {
 		if (prior && same(prior, out)) return prior;
 		const info = itemInfo(out.item);
 		if (!info) return out;
+		// Enum values in the schema's type (`cols: 3` -> "3", `level: "2"` -> 2), as the Inspector writes them.
+		if (isObject(out.props)) {
+			const coerced = coerceEnumProps(out.item, out.props);
+			if (coerced.changed.length) {
+				out.props = coerced.props;
+				notes.push(`${out.id}: ${coerced.changed.map((c) => `${c.pointer.slice(1)} ${JSON.stringify(c.from)} -> ${JSON.stringify(c.to)}`).join(", ")} (enum values are written in the type the schema declares).`);
+			}
+		}
 		let props: Record<string, unknown>;
 		if (!prior) {
 			// A new block: the sample props of its variant under what the write gave it.
@@ -7222,6 +7290,10 @@ exports["catalogBlocks"] = __req("packages/builder-core/src/catalog/blocks.ts")[
 exports["catalogDigest"] = __req("packages/builder-core/src/catalog/blocks.ts")["catalogDigest"];
 exports["catalogSearch"] = __req("packages/builder-core/src/catalog/blocks.ts")["catalogSearch"];
 exports["prototypeProps"] = __req("packages/builder-core/src/catalog/blocks.ts")["prototypeProps"];
+exports["layoutAxes"] = __req("packages/builder-core/src/catalog/blocks.ts")["layoutAxes"];
+exports["variantAxisValues"] = __req("packages/builder-core/src/catalog/blocks.ts")["variantAxisValues"];
+exports["variantSettingDefault"] = __req("packages/builder-core/src/catalog/blocks.ts")["variantSettingDefault"];
+exports["variantSettingNames"] = __req("packages/builder-core/src/catalog/blocks.ts")["variantSettingNames"];
 exports["setPropsValidator"] = __req("packages/builder-core/src/catalog/validator.ts")["setPropsValidator"];
 exports["propsValidatorInstalled"] = __req("packages/builder-core/src/catalog/validator.ts")["propsValidatorInstalled"];
 exports["validateItemProps"] = __req("packages/builder-core/src/catalog/validator.ts")["validateItemProps"];
@@ -7253,6 +7325,7 @@ exports["propsItems"] = __req("packages/builder-core/src/catalog/props-schema.ts
 exports["propsSchemaFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsSchemaFor"];
 exports["propsSummaryFor"] = __req("packages/builder-core/src/catalog/props-schema.ts")["propsSummaryFor"];
 exports["PAGE_KEY_PATTERN"] = __req("packages/builder-core/src/catalog/props-fill.ts")["PAGE_KEY_PATTERN"];
+exports["coerceEnumProps"] = __req("packages/builder-core/src/catalog/props-fill.ts")["coerceEnumProps"];
 exports["coerceEnumValue"] = __req("packages/builder-core/src/catalog/props-fill.ts")["coerceEnumValue"];
 exports["fillProps"] = __req("packages/builder-core/src/catalog/props-fill.ts")["fillProps"];
 exports["mapKeyIssue"] = __req("packages/builder-core/src/catalog/props-fill.ts")["mapKeyIssue"];
@@ -7480,12 +7553,18 @@ exports["agentOpenAiTools"] = agentOpenAiTools;
 
 __def("packages/chat-agent/src/agent/blocks.ts", function (exports) {
 const { LUCIDE_ICON_HINT, propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/index.ts");
-const { allItems, catalogBlock, itemInfo, variantProps } = __req("packages/builder-core/src/index.ts");
+const { allItems, catalogBlock, itemInfo, layoutAxes, variantProps } = __req("packages/builder-core/src/index.ts");
 const { convertProps, sampleProps } = __req("packages/builder-core/src/index.ts");
 const HIDDEN = new Set(["id", "class", "className", "landmarkLabel"]);
 
+/** An enum member as JSON: text in quotes ("3"), numbers and booleans bare (2), so the model writes the schema's type. */
+const member = (value: unknown): string => JSON.stringify(value) ?? String(value);
+
 function kindText(node: PropsFieldNode): string {
-	if (node.kind === "enum") return `enum ${(node.enum ?? []).slice(0, 12).join("|")}${(node.enum?.length ?? 0) > 12 ? "|..." : ""}`;
+	if (node.kind === "enum") {
+		const values = node.enumValues ?? node.enum ?? [];
+		return `enum ${values.slice(0, 12).map(member).join("|")}${values.length > 12 ? "|..." : ""}`;
+	}
 	if (node.kind === "text") return node.maxLength ? `text<=${node.maxLength}` : "text";
 	return node.kind;
 }
@@ -7497,12 +7576,15 @@ function record(fields: PropsFieldNode[] | undefined): string {
 		.join(" ");
 }
 
-/** The props of an item as short lines (`features[]: id:text title:text icon:icon`; `?` marks optional), or null. */
+/**
+ * The props of an item as short lines (`features[]: id:text title:text icon:icon`; `?` marks optional), or null. The
+ * layout axes (`media`, `cols`, `surface`) are not listed: the variant sets them (write.ts), the model writes `variant`.
+ */
 function propsOutline(item: string): string[] | null {
 	const tree = propsFieldTree(item);
 	if (!tree) return null;
 	const { events, slots } = propsEventsFor(item);
-	const skip = new Set([...HIDDEN, ...events, ...slots]);
+	const skip = new Set([...HIDDEN, ...events, ...slots, ...layoutAxes(item)]);
 	return tree
 		.filter((node) => !skip.has(node.name))
 		.map((node) => {
@@ -7521,6 +7603,12 @@ function itemIndex(): string[] {
 	});
 }
 
+function withoutAxes(props: Record<string, unknown>, axes: string[]): Record<string, unknown> {
+	const out = { ...props };
+	for (const axis of axes) delete out[axis];
+	return out;
+}
+
 type BlockReadOk = {
 	ok: true;
 	item: string;
@@ -7533,6 +7621,8 @@ type BlockReadOk = {
 	variants: Array<{ id: string; label: string; axes: Record<string, string>; settings?: Record<string, unknown> }>;
 	/** What each variant sets apart from the default (layout axes). */
 	variantSets: Record<string, string>;
+	/** The layout axes the variant sets (not in props: write `variant`, the host sets them). */
+	layout?: string;
 	/** The props of the item: names, kinds, enums, rows. Write exactly these. */
 	props: string[];
 	/** What a new block of the variant starts with (no invented copy). */
@@ -7555,6 +7645,7 @@ function readBlock(id: unknown, variant?: unknown): BlockRead {
 		return { ok: false, code: "unknown_item", message: `${String(id ?? "") || "(empty)"} is not a block of the catalog. Blocks: ${allItems().join(", ")}.`, near: near.length ? near : allItems() };
 	}
 	const want = typeof variant === "string" && info.variants.includes(variant) ? variant : info.defaultVariant;
+	const axes = layoutAxes(item);
 	const flat = (value: unknown): string[] =>
 		value && typeof value === "object" ? Object.entries(value as Record<string, unknown>).flatMap(([key, inner]) => (inner && typeof inner === "object" ? flat(inner).map((row) => `${key}.${row}`) : [`${key}=${String(inner)}`])) : [];
 	const base = new Set(flat(variantProps(item, info.defaultVariant)));
@@ -7569,9 +7660,10 @@ function readBlock(id: unknown, variant?: unknown): BlockRead {
 		defaultVariant: info.defaultVariant,
 		variants: block.contract.variants.map((v) => ({ id: v.id, label: v.label, axes: v.axes, ...(v.settings ? { settings: { ...v.settings } } : {}) })),
 		variantSets,
+		...(axes.length ? { layout: `variant sets ${axes.join(", ")}; write variant, not these props` } : {}),
 		props: propsOutline(item) ?? [],
-		// The model reads money in major units (the stored sample is in minor units).
-		sample: convertProps(item, sampleProps(item, want, `block-${item}`), "view"),
+		// The model reads money in major units (the stored sample is in minor units). The axes come from the variant.
+		sample: withoutAxes(convertProps(item, sampleProps(item, want, `block-${item}`), "view"), axes),
 		icons: LUCIDE_ICON_HINT
 	};
 }
@@ -8628,7 +8720,7 @@ const { itemIndex, propsOutline } = __req("packages/chat-agent/src/agent/blocks.
 const SYSTEM_COMMON = [
 	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
 	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
-	"- item is a block of the catalog (npx ui8kit add <item>); itemIndex lists every block with its category and variants (list_blocks shows their labels). variant is one of the item's variants: it changes only the layout (where the picture is, how many columns), never the content. Settings such as align, padding and level are props too.",
+	"- item is a block of the catalog (npx ui8kit add <item>); itemIndex lists every block with its category and variants (list_blocks shows their labels). variant is one of the item's variants: it sets the layout (where the picture is, how many columns), never the content; the host writes the layout axes it sets (media, cols, surface), so write variant and leave those props out. Settings such as align, padding and level are props too.",
 	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field (team members: id, title, description). A picture is an optional address prop: image with imageAlt on the hero, avatar on a team member, where get_block shows it; without it the block shows a placeholder, which is fine, so leave pictures out by default. Never invent a URL. Set a picture only when the author gave an address or asked for photos; then use only a direct https image URL of a real public photo you are sure exists (stock sites like images.unsplash.com or images.pexels.com), with a short imageAlt of what it shows; a value that is not https or a relative path is dropped with a note. Never write in the page text that photos were added unless you set them.",
 	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision: pick, replace, add, remove and reorder blocks as the request needs; a block may appear several times.",
 	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",

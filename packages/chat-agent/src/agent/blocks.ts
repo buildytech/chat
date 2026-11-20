@@ -4,13 +4,19 @@
  * registry data (sources.json, props.json, blocks.json: ADR 0059); nothing is hand-written per block.
  */
 import { LUCIDE_ICON_HINT, propsEventsFor, propsFieldTree, type PropsFieldNode } from "@buildytech/builder-core";
-import { allItems, catalogBlock, itemInfo, variantProps } from "@buildytech/builder-core";
+import { allItems, catalogBlock, itemInfo, layoutAxes, variantProps } from "@buildytech/builder-core";
 import { convertProps, sampleProps } from "@buildytech/builder-core";
 
 const HIDDEN = new Set(["id", "class", "className", "landmarkLabel"]);
 
+/** An enum member as JSON: text in quotes ("3"), numbers and booleans bare (2), so the model writes the schema's type. */
+const member = (value: unknown): string => JSON.stringify(value) ?? String(value);
+
 function kindText(node: PropsFieldNode): string {
-	if (node.kind === "enum") return `enum ${(node.enum ?? []).slice(0, 12).join("|")}${(node.enum?.length ?? 0) > 12 ? "|..." : ""}`;
+	if (node.kind === "enum") {
+		const values = node.enumValues ?? node.enum ?? [];
+		return `enum ${values.slice(0, 12).map(member).join("|")}${values.length > 12 ? "|..." : ""}`;
+	}
 	if (node.kind === "text") return node.maxLength ? `text<=${node.maxLength}` : "text";
 	return node.kind;
 }
@@ -22,12 +28,15 @@ function record(fields: PropsFieldNode[] | undefined): string {
 		.join(" ");
 }
 
-/** The props of an item as short lines (`features[]: id:text title:text icon:icon`; `?` marks optional), or null. */
+/**
+ * The props of an item as short lines (`features[]: id:text title:text icon:icon`; `?` marks optional), or null. The
+ * layout axes (`media`, `cols`, `surface`) are not listed: the variant sets them (write.ts), the model writes `variant`.
+ */
 export function propsOutline(item: string): string[] | null {
 	const tree = propsFieldTree(item);
 	if (!tree) return null;
 	const { events, slots } = propsEventsFor(item);
-	const skip = new Set([...HIDDEN, ...events, ...slots]);
+	const skip = new Set([...HIDDEN, ...events, ...slots, ...layoutAxes(item)]);
 	return tree
 		.filter((node) => !skip.has(node.name))
 		.map((node) => {
@@ -46,6 +55,12 @@ export function itemIndex(): string[] {
 	});
 }
 
+function withoutAxes(props: Record<string, unknown>, axes: readonly string[]): Record<string, unknown> {
+	const out = { ...props };
+	for (const axis of axes) delete out[axis];
+	return out;
+}
+
 type BlockReadOk = {
 	ok: true;
 	item: string;
@@ -58,6 +73,8 @@ type BlockReadOk = {
 	variants: Array<{ id: string; label: string; axes: Record<string, string>; settings?: Record<string, unknown> }>;
 	/** What each variant sets apart from the default (layout axes). */
 	variantSets: Record<string, string>;
+	/** The layout axes the variant sets (not in props: write `variant`, the host sets them). */
+	layout?: string;
 	/** The props of the item: names, kinds, enums, rows. Write exactly these. */
 	props: string[];
 	/** What a new block of the variant starts with (no invented copy). */
@@ -80,6 +97,7 @@ export function readBlock(id: unknown, variant?: unknown): BlockRead {
 		return { ok: false, code: "unknown_item", message: `${String(id ?? "") || "(empty)"} is not a block of the catalog. Blocks: ${allItems().join(", ")}.`, near: near.length ? near : allItems() };
 	}
 	const want = typeof variant === "string" && info.variants.includes(variant) ? variant : info.defaultVariant;
+	const axes = layoutAxes(item);
 	const flat = (value: unknown): string[] =>
 		value && typeof value === "object" ? Object.entries(value as Record<string, unknown>).flatMap(([key, inner]) => (inner && typeof inner === "object" ? flat(inner).map((row) => `${key}.${row}`) : [`${key}=${String(inner)}`])) : [];
 	const base = new Set(flat(variantProps(item, info.defaultVariant)));
@@ -94,9 +112,10 @@ export function readBlock(id: unknown, variant?: unknown): BlockRead {
 		defaultVariant: info.defaultVariant,
 		variants: block.contract.variants.map((v) => ({ id: v.id, label: v.label, axes: v.axes, ...(v.settings ? { settings: { ...v.settings } } : {}) })),
 		variantSets,
+		...(axes.length ? { layout: `variant sets ${axes.join(", ")}; write variant, not these props` } : {}),
 		props: propsOutline(item) ?? [],
-		// The model reads money in major units (the stored sample is in minor units).
-		sample: convertProps(item, sampleProps(item, want, `block-${item}`), "view"),
+		// The model reads money in major units (the stored sample is in minor units). The axes come from the variant.
+		sample: withoutAxes(convertProps(item, sampleProps(item, want, `block-${item}`), "view"), axes),
 		icons: LUCIDE_ICON_HINT
 	};
 }

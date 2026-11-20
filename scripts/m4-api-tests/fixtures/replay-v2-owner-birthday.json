@@ -1,0 +1,1532 @@
+{
+  "$schema": "https://schema.buildy.tw/session-v2.schema.json",
+  "format": "buildy:v2",
+  "exportedAt": "2026-11-20T08:15:24.592Z",
+  "app": {
+    "name": "buildy-chat",
+    "version": "0.5.0",
+    "host": "browser",
+    "commit": "9500633e89cccfb3c3625d4f0d9b0418b3689373"
+  },
+  "pins": {
+    "registry": {
+      "url": "https://registry.buildy.tw",
+      "sourceCommit": "716764ea0b500c25c3f2f15e74de540f2f71176e"
+    },
+    "prototypes": {
+      "repo": "ui8kit/prototypes",
+      "commit": "716764ea0b500c25c3f2f15e74de540f2f71176e"
+    },
+    "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d"
+  },
+  "selectedSessionId": "session-d794f33c-885f-461f-9ba7-de9a12870071",
+  "sessions": [
+    {
+      "id": "session-d794f33c-885f-461f-9ba7-de9a12870071",
+      "title": "сайт поздравление с днем рождения Карины 23 года",
+      "updatedAt": "2026-11-20T08:15:14.170Z",
+      "pageId": "page-d794f33c-885f-461f-9ba7-de9a12870071",
+      "pageRevision": 1,
+      "history": [
+        {
+          "revision": 1,
+          "cause": "apply",
+          "pageId": "page-d794f33c-885f-461f-9ba7-de9a12870071",
+          "at": "2026-11-20T08:15:14.145Z"
+        }
+      ],
+      "ext": {
+        "agent-runs": {
+          "attempt-e1b5aaca-6509-4c2c-9e82-ea4a577bfdfc": {
+            "format": "run-attempt/1",
+            "attemptId": "attempt-e1b5aaca-6509-4c2c-9e82-ea4a577bfdfc",
+            "userMessageId": "msg-eaf212e6-34b7-493b-9c5a-133272fe0759",
+            "modelId": "grok-4.20-0309-non-reasoning",
+            "startedAt": "2026-11-20T08:13:23.705Z",
+            "status": "completed",
+            "usage": {
+              "status": "complete",
+              "steps": 5,
+              "reportedSteps": 5,
+              "promptTokens": 11662,
+              "completionTokens": 1174,
+              "totalTokens": 12836,
+              "reportedBy": "provider",
+              "providerId": "xai",
+              "aggregation": "sum-of-tool-loop-requests",
+              "lastStep": {
+                "promptTokens": 3235,
+                "completionTokens": 568,
+                "totalTokens": 3803,
+                "reasoningTokens": 0,
+                "cachedTokens": 2560,
+                "costUsdTicks": "27757500"
+              },
+              "cost": {
+                "available": true,
+                "kind": "billed",
+                "currency": "USD",
+                "ticks": "105237000",
+                "usd": "0.0105237000",
+                "completeness": "complete",
+                "reportedRequests": 5,
+                "requests": 5
+              },
+              "reasoningTokens": 0,
+              "cachedTokens": 6656
+            },
+            "traceState": "received",
+            "runId": "xai-mwopcib7-7a0zvz",
+            "assistantMessageId": "msg-aa9b8149-6ff0-4fda-b4b0-806503be5cbf",
+            "scenario": {
+              "id": "page.build",
+              "version": 4
+            },
+            "provider": "xai",
+            "endedAt": "2026-11-20T08:13:35.856Z",
+            "fingerprint": "scenario-v1-7039e2cad37da33b",
+            "providerVersion": 2,
+            "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+            "gateCodes": [
+              "props_invalid"
+            ],
+            "cost_in_usd_ticks": "105237000",
+            "storage": {
+              "format": "run-storage/1",
+              "capturedAt": "2026-11-20T08:13:35.856Z",
+              "basis": "before-current-save-metrics",
+              "trace": {
+                "jsonUtf8Bytes": 39209,
+                "estimatedUtf16Bytes": 69618
+              },
+              "project": {
+                "jsonUtf8Bytes": 43426,
+                "estimatedUtf16Bytes": 77752
+              },
+              "sessionsJsonUtf8Bytes": 45047,
+              "traceJsonUtf8Bytes": 39209,
+              "originEstimatedUtf16Bytes": 93534,
+              "coverage": "origin"
+            }
+          },
+          "attempt-7a860d05-9110-4d6e-8651-2df164975dcc": {
+            "format": "run-attempt/1",
+            "attemptId": "attempt-7a860d05-9110-4d6e-8651-2df164975dcc",
+            "userMessageId": "msg-e7d38f4d-621a-4e45-af59-b752edb87318",
+            "modelId": "grok-build-0.1",
+            "startedAt": "2026-11-20T08:14:33.537Z",
+            "status": "error",
+            "usage": {
+              "status": "incomplete",
+              "incompleteReason": "error",
+              "steps": 0,
+              "reportedSteps": 0,
+              "promptTokens": "unknown",
+              "completionTokens": "unknown",
+              "totalTokens": "unknown",
+              "reportedBy": "none",
+              "cost": {
+                "available": false,
+                "reason": "not_reported",
+                "note": "Billed cost is unavailable in this usage record. Missing cost is unknown, never zero."
+              }
+            },
+            "traceState": "not_received",
+            "assistantMessageId": "msg-88b3e992-856f-4af1-b320-57a46c77b847",
+            "code": "model_not_enabled_on_account",
+            "endedAt": "2026-11-20T08:14:34.062Z"
+          },
+          "attempt-293e93bb-a325-454e-bf9a-d1b5c6522ee4": {
+            "format": "run-attempt/1",
+            "attemptId": "attempt-293e93bb-a325-454e-bf9a-d1b5c6522ee4",
+            "userMessageId": "msg-c4accfe5-b2b9-4c1a-929f-99889be6afe0",
+            "modelId": "grok-4.20-0309-non-reasoning",
+            "startedAt": "2026-11-20T08:15:07.368Z",
+            "status": "completed",
+            "usage": {
+              "status": "complete",
+              "steps": 1,
+              "reportedSteps": 1,
+              "promptTokens": 871,
+              "completionTokens": 217,
+              "totalTokens": 1088,
+              "reportedBy": "provider",
+              "providerId": "xai",
+              "aggregation": "sum-of-tool-loop-requests",
+              "lastStep": {
+                "promptTokens": 871,
+                "completionTokens": 217,
+                "totalTokens": 1088,
+                "reasoningTokens": 0,
+                "cachedTokens": 128,
+                "costUsdTicks": "14968500"
+              },
+              "cost": {
+                "available": true,
+                "kind": "billed",
+                "currency": "USD",
+                "ticks": "14968500",
+                "usd": "0.0014968500",
+                "completeness": "complete",
+                "reportedRequests": 1,
+                "requests": 1
+              },
+              "reasoningTokens": 0,
+              "cachedTokens": 128
+            },
+            "traceState": "received",
+            "runId": "xai-mwopepb2-x89h1h",
+            "assistantMessageId": "msg-ea2ca227-58ce-4dcd-a5c3-d1d92433e992",
+            "scenario": {
+              "id": "page.edit-fields",
+              "version": 2
+            },
+            "provider": "xai",
+            "endedAt": "2026-11-20T08:15:10.402Z",
+            "fingerprint": "scenario-v1-fe3a3ccf3ae5a66e",
+            "providerVersion": 2,
+            "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+            "gateCodes": [],
+            "cost_in_usd_ticks": "14968500",
+            "storage": {
+              "format": "run-storage/1",
+              "capturedAt": "2026-11-20T08:15:10.403Z",
+              "basis": "before-current-save-metrics",
+              "trace": {
+                "jsonUtf8Bytes": 8556,
+                "estimatedUtf16Bytes": 15006
+              },
+              "project": {
+                "jsonUtf8Bytes": 57413,
+                "estimatedUtf16Bytes": 103390
+              },
+              "sessionsJsonUtf8Bytes": 59034,
+              "traceJsonUtf8Bytes": 47765,
+              "originEstimatedUtf16Bytes": 119266,
+              "coverage": "origin"
+            }
+          }
+        },
+        "agent-trace": {
+          "xai-mwopcib7-7a0zvz": {
+            "format": "run-trace/1",
+            "runId": "xai-mwopcib7-7a0zvz",
+            "modelId": "grok-4.20-0309-non-reasoning",
+            "scenario": {
+              "id": "page.build",
+              "version": 4
+            },
+            "fingerprint": "scenario-v1-7039e2cad37da33b",
+            "providerVersion": 2,
+            "provider": "xai",
+            "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+            "budget": {
+              "maxSteps": 24,
+              "maxRequests": 32,
+              "maxToolCalls": 64,
+              "maxWriteAttempts": 8,
+              "maxTokens": 8192
+            },
+            "startedAt": "2026-11-20T08:13:27.091Z",
+            "deadlineMs": 284999,
+            "stopReason": "proposal_accepted",
+            "prefix": {
+              "systemPrompt": {
+                "hash": "fnv1a64:7bad89a993679528",
+                "bytes": 3755
+              },
+              "tools": {
+                "hash": "fnv1a64:66d8e957fefbadd2",
+                "bytes": 2033
+              },
+              "context": {
+                "request": {
+                  "hash": "fnv1a64:1475f191b23325ac",
+                  "bytes": 177,
+                  "stability": "variable"
+                },
+                "page": {
+                  "hash": "fnv1a64:e3bdf6b3318e937a",
+                  "bytes": 116,
+                  "stability": "variable"
+                },
+                "propsOfBlocksOnPage": {
+                  "hash": "fnv1a64:5465b82524c5ecd4",
+                  "bytes": 2,
+                  "stability": "variable"
+                },
+                "itemIndex": {
+                  "hash": "fnv1a64:f70e06b2a58510d3",
+                  "bytes": 128,
+                  "stability": "stable"
+                }
+              }
+            },
+            "steps": [
+              {
+                "index": 1,
+                "startedAt": "2026-11-20T08:13:27.092Z",
+                "request": {
+                  "retainedMessages": 0,
+                  "transcriptChange": "append",
+                  "phase": "read",
+                  "toolChoice": "required",
+                  "parallelToolCalls": false,
+                  "completionTokenParameter": "max_completion_tokens",
+                  "tools": {
+                    "hash": "fnv1a64:66d8e957fefbadd2",
+                    "bytes": 2033
+                  },
+                  "maxTokens": 8192,
+                  "nudged": false,
+                  "messagesAdded": [
+                    {
+                      "role": "system",
+                      "hash": "fnv1a64:bd16017f993b3402",
+                      "bytes": 3817,
+                      "source": "prefix"
+                    },
+                    {
+                      "role": "user",
+                      "hash": "fnv1a64:c17e96ee0801c7db",
+                      "bytes": 546,
+                      "source": "prefix"
+                    }
+                  ],
+                  "promptCacheKeySent": true
+                },
+                "budgetLeft": {
+                  "steps": 23,
+                  "requests": 31,
+                  "tools": 63,
+                  "writes": 8,
+                  "tokens": "unknown",
+                  "maxCompletionTokensPerRequest": 8192,
+                  "timeMs": 284537
+                },
+                "response": {
+                  "finish_reason": "tool_calls",
+                  "refusal": null,
+                  "content": {
+                    "hash": "fnv1a64:811c9dc5cbf29ce4",
+                    "bytes": 0
+                  },
+                  "tool_calls": [
+                    {
+                      "id": "call-072a86b3-9621-4ae6-8b93-1eaaa7cd24ee-0",
+                      "name": "list_blocks",
+                      "arguments": {
+                        "hash": "fnv1a64:5465b82524c5ecd4",
+                        "bytes": 2
+                      }
+                    }
+                  ],
+                  "latencyMs": 460,
+                  "status": 200,
+                  "error": null
+                },
+                "usage": {
+                  "prompt": 1709,
+                  "completion": 6,
+                  "cached": 128,
+                  "reasoning": 0,
+                  "cost_in_usd_ticks": "20168500",
+                  "cacheHitPercent": 7.489760093622001
+                }
+              },
+              {
+                "index": 2,
+                "startedAt": "2026-11-20T08:13:27.553Z",
+                "request": {
+                  "retainedMessages": 2,
+                  "transcriptChange": "append",
+                  "phase": "read",
+                  "toolChoice": "required",
+                  "parallelToolCalls": false,
+                  "completionTokenParameter": "max_completion_tokens",
+                  "tools": {
+                    "hash": "fnv1a64:66d8e957fefbadd2",
+                    "bytes": 2033
+                  },
+                  "maxTokens": 8192,
+                  "nudged": false,
+                  "messagesAdded": [
+                    {
+                      "role": "assistant",
+                      "hash": "fnv1a64:8e55aa3251cb125f",
+                      "bytes": 135
+                    },
+                    {
+                      "role": "tool",
+                      "hash": "fnv1a64:2aae5ed8dda265d5",
+                      "bytes": 1031
+                    }
+                  ],
+                  "promptCacheKeySent": true
+                },
+                "budgetLeft": {
+                  "steps": 22,
+                  "requests": 30,
+                  "tools": 62,
+                  "writes": 8,
+                  "tokens": "unknown",
+                  "maxCompletionTokensPerRequest": 8192,
+                  "timeMs": 283761
+                },
+                "response": {
+                  "finish_reason": "tool_calls",
+                  "refusal": null,
+                  "content": {
+                    "hash": "fnv1a64:811c9dc5cbf29ce4",
+                    "bytes": 0
+                  },
+                  "tool_calls": [
+                    {
+                      "id": "call-689db861-e2e4-4fa8-9d6e-2e5a2217f462-1",
+                      "name": "get_block",
+                      "arguments": {
+                        "hash": "fnv1a64:faab96bf8c861d42",
+                        "bytes": 43
+                      }
+                    }
+                  ],
+                  "latencyMs": 773,
+                  "status": 200,
+                  "error": null
+                },
+                "usage": {
+                  "prompt": 1918,
+                  "completion": 16,
+                  "cached": 1664,
+                  "reasoning": 0,
+                  "cost_in_usd_ticks": "6903000",
+                  "cacheHitPercent": 86.75703858185611
+                }
+              },
+              {
+                "index": 3,
+                "startedAt": "2026-11-20T08:13:28.330Z",
+                "request": {
+                  "retainedMessages": 4,
+                  "transcriptChange": "append",
+                  "phase": "read",
+                  "toolChoice": "required",
+                  "parallelToolCalls": false,
+                  "completionTokenParameter": "max_completion_tokens",
+                  "tools": {
+                    "hash": "fnv1a64:66d8e957fefbadd2",
+                    "bytes": 2033
+                  },
+                  "maxTokens": 8192,
+                  "nudged": false,
+                  "messagesAdded": [
+                    {
+                      "role": "assistant",
+                      "hash": "fnv1a64:595278123d46fc3b",
+                      "bytes": 182
+                    },
+                    {
+                      "role": "tool",
+                      "hash": "fnv1a64:5e642e6585209414",
+                      "bytes": 1380
+                    }
+                  ],
+                  "promptCacheKeySent": true
+                },
+                "budgetLeft": {
+                  "steps": 21,
+                  "requests": 29,
+                  "tools": 61,
+                  "writes": 8,
+                  "tokens": "unknown",
+                  "maxCompletionTokensPerRequest": 8192,
+                  "timeMs": 283069
+                },
+                "response": {
+                  "finish_reason": "tool_calls",
+                  "refusal": null,
+                  "content": {
+                    "hash": "fnv1a64:811c9dc5cbf29ce4",
+                    "bytes": 0
+                  },
+                  "tool_calls": [
+                    {
+                      "id": "call-570d077e-3449-4e45-92d7-8ecb7e211f88-2",
+                      "name": "get_block",
+                      "arguments": {
+                        "hash": "fnv1a64:b981871da0412748",
+                        "bytes": 41
+                      }
+                    }
+                  ],
+                  "latencyMs": 689,
+                  "status": 200,
+                  "error": null
+                },
+                "usage": {
+                  "prompt": 2221,
+                  "completion": 16,
+                  "cached": 128,
+                  "reasoning": 0,
+                  "cost_in_usd_ticks": "26818500",
+                  "cacheHitPercent": 5.763169743358847
+                }
+              },
+              {
+                "index": 4,
+                "startedAt": "2026-11-20T08:13:29.021Z",
+                "request": {
+                  "retainedMessages": 6,
+                  "transcriptChange": "append",
+                  "phase": "read",
+                  "toolChoice": "required",
+                  "parallelToolCalls": false,
+                  "completionTokenParameter": "max_completion_tokens",
+                  "tools": {
+                    "hash": "fnv1a64:66d8e957fefbadd2",
+                    "bytes": 2033
+                  },
+                  "maxTokens": 8192,
+                  "nudged": false,
+                  "messagesAdded": [
+                    {
+                      "role": "assistant",
+                      "hash": "fnv1a64:094fb8f679ed29d7",
+                      "bytes": 180
+                    },
+                    {
+                      "role": "tool",
+                      "hash": "fnv1a64:35facecec70ee263",
+                      "bytes": 1559
+                    }
+                  ],
+                  "promptCacheKeySent": true
+                },
+                "budgetLeft": {
+                  "steps": 20,
+                  "requests": 28,
+                  "tools": 60,
+                  "writes": 7,
+                  "tokens": "unknown",
+                  "maxCompletionTokensPerRequest": 8192,
+                  "timeMs": 278537
+                },
+                "response": {
+                  "finish_reason": "tool_calls",
+                  "refusal": null,
+                  "content": {
+                    "hash": "fnv1a64:811c9dc5cbf29ce4",
+                    "bytes": 0
+                  },
+                  "tool_calls": [
+                    {
+                      "id": "call-dd58edc5-2ea3-45ae-9b16-a6426f4ded47-3",
+                      "name": "write_page",
+                      "arguments": {
+                        "hash": "fnv1a64:d6b09ce69b9a1417",
+                        "bytes": 2817
+                      }
+                    }
+                  ],
+                  "latencyMs": 4387,
+                  "status": 200,
+                  "error": null
+                },
+                "usage": {
+                  "prompt": 2579,
+                  "completion": 568,
+                  "cached": 2176,
+                  "reasoning": 0,
+                  "cost_in_usd_ticks": "23589500",
+                  "cacheHitPercent": 84.3737882900349
+                }
+              },
+              {
+                "index": 5,
+                "startedAt": "2026-11-20T08:13:33.553Z",
+                "request": {
+                  "retainedMessages": 8,
+                  "transcriptChange": "append",
+                  "phase": "repair",
+                  "toolChoice": "required",
+                  "parallelToolCalls": false,
+                  "completionTokenParameter": "max_completion_tokens",
+                  "tools": {
+                    "hash": "fnv1a64:66d8e957fefbadd2",
+                    "bytes": 2033
+                  },
+                  "maxTokens": 8192,
+                  "nudged": false,
+                  "messagesAdded": [
+                    {
+                      "role": "assistant",
+                      "hash": "fnv1a64:c284dee36d0a3832",
+                      "bytes": 3107
+                    },
+                    {
+                      "role": "tool",
+                      "hash": "fnv1a64:d9877460cdacbfcd",
+                      "bytes": 426
+                    }
+                  ],
+                  "promptCacheKeySent": true
+                },
+                "budgetLeft": {
+                  "steps": 19,
+                  "requests": 27,
+                  "tools": 59,
+                  "writes": 6,
+                  "tokens": "unknown",
+                  "maxCompletionTokensPerRequest": 8192,
+                  "timeMs": 275475
+                },
+                "response": {
+                  "finish_reason": "tool_calls",
+                  "refusal": null,
+                  "content": {
+                    "hash": "fnv1a64:811c9dc5cbf29ce4",
+                    "bytes": 0
+                  },
+                  "tool_calls": [
+                    {
+                      "id": "call-858acd48-e2c8-4be3-b914-17a94dbeebf3-4",
+                      "name": "write_page",
+                      "arguments": {
+                        "hash": "fnv1a64:b088a43007ebf571",
+                        "bytes": 2819
+                      }
+                    }
+                  ],
+                  "latencyMs": 3029,
+                  "status": 200,
+                  "error": null
+                },
+                "usage": {
+                  "prompt": 3235,
+                  "completion": 568,
+                  "cached": 2560,
+                  "reasoning": 0,
+                  "cost_in_usd_ticks": "27757500",
+                  "cacheHitPercent": 79.13446676970634
+                }
+              }
+            ],
+            "toolResults": [
+              {
+                "step": 1,
+                "callId": "call-072a86b3-9621-4ae6-8b93-1eaaa7cd24ee-0",
+                "name": "list_blocks",
+                "evidence": {
+                  "kind": "catalog-list",
+                  "total": 2
+                },
+                "args": {
+                  "hash": "fnv1a64:5465b82524c5ecd4",
+                  "bytes": 2
+                },
+                "ok": true,
+                "result": {
+                  "hash": "fnv1a64:8082492e0276b19f",
+                  "bytes": 826
+                },
+                "durationMs": 0,
+                "execution": "completed"
+              },
+              {
+                "step": 2,
+                "callId": "call-689db861-e2e4-4fa8-9d6e-2e5a2217f462-1",
+                "name": "get_block",
+                "evidence": {
+                  "kind": "catalog-block",
+                  "item": "hero-simple"
+                },
+                "args": {
+                  "hash": "fnv1a64:faab96bf8c861d42",
+                  "bytes": 43
+                },
+                "ok": true,
+                "result": {
+                  "hash": "fnv1a64:95126a9d1ca2f43c",
+                  "bytes": 1145
+                },
+                "durationMs": 2,
+                "execution": "completed"
+              },
+              {
+                "step": 3,
+                "callId": "call-570d077e-3449-4e45-92d7-8ecb7e211f88-2",
+                "name": "get_block",
+                "evidence": {
+                  "kind": "catalog-block",
+                  "item": "team-simple"
+                },
+                "args": {
+                  "hash": "fnv1a64:b981871da0412748",
+                  "bytes": 41
+                },
+                "ok": true,
+                "result": {
+                  "hash": "fnv1a64:0901d5bc5217928d",
+                  "bytes": 1286
+                },
+                "durationMs": 2,
+                "execution": "completed"
+              },
+              {
+                "step": 4,
+                "callId": "call-dd58edc5-2ea3-45ae-9b16-a6426f4ded47-3",
+                "name": "write_page",
+                "args": {
+                  "hash": "fnv1a64:d6b09ce69b9a1417",
+                  "bytes": 2817
+                },
+                "ok": false,
+                "result": {
+                  "hash": "fnv1a64:e5219f068b92b753",
+                  "bytes": 300
+                },
+                "durationMs": 145,
+                "execution": "completed",
+                "accepted": false,
+                "gate": {
+                  "codes": [
+                    "props_invalid"
+                  ],
+                  "issues": [
+                    {
+                      "path": "/blocks/1/props/cols",
+                      "code": "props_invalid"
+                    }
+                  ],
+                  "code": "write_invalid"
+                },
+                "baseRevision": null,
+                "pageRevision": null,
+                "revisionMeaning": "proposal_only_not_applied",
+                "diff": null
+              },
+              {
+                "step": 5,
+                "callId": "call-858acd48-e2c8-4be3-b914-17a94dbeebf3-4",
+                "name": "write_page",
+                "args": {
+                  "hash": "fnv1a64:b088a43007ebf571",
+                  "bytes": 2819
+                },
+                "ok": true,
+                "result": {
+                  "hash": "fnv1a64:4d7cb74dc7ce2e98",
+                  "bytes": 489
+                },
+                "durationMs": 32,
+                "execution": "completed",
+                "accepted": true,
+                "gate": {
+                  "codes": [],
+                  "issues": []
+                },
+                "baseRevision": 0,
+                "pageRevision": null,
+                "revisionMeaning": "proposal_only_not_applied",
+                "diff": {
+                  "hash": "fnv1a64:2c2f7e7e54203cb3",
+                  "bytes": 322
+                }
+              }
+            ]
+          },
+          "xai-mwopepb2-x89h1h": {
+            "format": "run-trace/1",
+            "runId": "xai-mwopepb2-x89h1h",
+            "modelId": "grok-4.20-0309-non-reasoning",
+            "scenario": {
+              "id": "page.edit-fields",
+              "version": 2
+            },
+            "fingerprint": "scenario-v1-fe3a3ccf3ae5a66e",
+            "providerVersion": 2,
+            "provider": "xai",
+            "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+            "budget": {
+              "maxSteps": 3,
+              "maxRequests": 5,
+              "maxToolCalls": 3,
+              "maxWriteAttempts": 3,
+              "maxTokens": 8192
+            },
+            "startedAt": "2026-11-20T08:15:09.470Z",
+            "deadlineMs": 284999,
+            "stopReason": "proposal_accepted",
+            "prefix": {
+              "systemPrompt": {
+                "hash": "fnv1a64:73233d83b012933e",
+                "bytes": 751
+              },
+              "tools": {
+                "hash": "fnv1a64:30df7c8104718828",
+                "bytes": 890
+              },
+              "context": {
+                "request": {
+                  "hash": "fnv1a64:a3332272e2aeaa23",
+                  "bytes": 93,
+                  "stability": "variable"
+                },
+                "locale": {
+                  "hash": "fnv1a64:48545c20acaf699d",
+                  "bytes": 2,
+                  "stability": "variable"
+                },
+                "blockId": {
+                  "hash": "fnv1a64:e355b4d6124937a3",
+                  "bytes": 17,
+                  "stability": "variable"
+                },
+                "item": {
+                  "hash": "fnv1a64:d04b29ee53e81053",
+                  "bytes": 11,
+                  "stability": "variable"
+                },
+                "variant": {
+                  "hash": "fnv1a64:32d1423a50e45fb7",
+                  "bytes": 8,
+                  "stability": "variable"
+                },
+                "path": {
+                  "hash": "fnv1a64:5e0d83069d172073",
+                  "bytes": 15,
+                  "stability": "variable"
+                },
+                "object": {
+                  "hash": "fnv1a64:60178770bbb6f359",
+                  "bytes": 1008,
+                  "stability": "variable"
+                },
+                "errors": {
+                  "hash": "fnv1a64:741638a5802163d4",
+                  "bytes": 2,
+                  "stability": "variable"
+                }
+              }
+            },
+            "steps": [
+              {
+                "index": 1,
+                "startedAt": "2026-11-20T08:15:09.471Z",
+                "request": {
+                  "retainedMessages": 0,
+                  "transcriptChange": "append",
+                  "phase": "write",
+                  "toolChoice": {
+                    "name": "write_page"
+                  },
+                  "parallelToolCalls": false,
+                  "completionTokenParameter": "max_completion_tokens",
+                  "tools": {
+                    "hash": "fnv1a64:30df7c8104718828",
+                    "bytes": 890
+                  },
+                  "maxTokens": 8192,
+                  "nudged": false,
+                  "messagesAdded": [
+                    {
+                      "role": "system",
+                      "hash": "fnv1a64:0297cf4d38f2de5c",
+                      "bytes": 805,
+                      "source": "prefix"
+                    },
+                    {
+                      "role": "user",
+                      "hash": "fnv1a64:1039999c1751db95",
+                      "bytes": 1347,
+                      "source": "prefix"
+                    }
+                  ],
+                  "promptCacheKeySent": true
+                },
+                "budgetLeft": {
+                  "steps": 2,
+                  "requests": 4,
+                  "tools": 2,
+                  "writes": 2,
+                  "tokens": "unknown",
+                  "maxCompletionTokensPerRequest": 8192,
+                  "timeMs": 283216
+                },
+                "response": {
+                  "finish_reason": "tool_calls",
+                  "refusal": null,
+                  "content": {
+                    "hash": "fnv1a64:811c9dc5cbf29ce4",
+                    "bytes": 0
+                  },
+                  "tool_calls": [
+                    {
+                      "id": "call-40bf244d-21e6-4749-8e3b-30f27080e4ea-0",
+                      "name": "write_page",
+                      "arguments": {
+                        "hash": "fnv1a64:c50983ced60ebefb",
+                        "bytes": 1067
+                      }
+                    }
+                  ],
+                  "latencyMs": 1765,
+                  "status": 200,
+                  "error": null
+                },
+                "usage": {
+                  "prompt": 871,
+                  "completion": 217,
+                  "cached": 128,
+                  "reasoning": 0,
+                  "cost_in_usd_ticks": "14968500",
+                  "cacheHitPercent": 14.695752009184845
+                }
+              }
+            ],
+            "toolResults": [
+              {
+                "step": 1,
+                "callId": "call-40bf244d-21e6-4749-8e3b-30f27080e4ea-0",
+                "name": "write_page",
+                "args": {
+                  "hash": "fnv1a64:c50983ced60ebefb",
+                  "bytes": 1067
+                },
+                "ok": true,
+                "result": {
+                  "hash": "fnv1a64:0eea769c83a4f611",
+                  "bytes": 370
+                },
+                "durationMs": 17,
+                "execution": "completed",
+                "accepted": true,
+                "gate": {
+                  "codes": [],
+                  "issues": []
+                },
+                "baseRevision": 0,
+                "pageRevision": null,
+                "revisionMeaning": "proposal_only_not_applied",
+                "diff": {
+                  "hash": "fnv1a64:410e9c4188b85010",
+                  "bytes": 130
+                }
+              }
+            ]
+          }
+        },
+        "chat": {
+          "mode": "build",
+          "selectedModelId": "grok-4.20-0309-non-reasoning",
+          "usage": {
+            "status": "incomplete",
+            "runs": 3,
+            "incompleteRuns": 1,
+            "promptTokens": "unknown",
+            "completionTokens": "unknown",
+            "totalTokens": "unknown",
+            "cost": {
+              "available": true,
+              "kind": "billed",
+              "currency": "USD",
+              "ticks": "120205500",
+              "usd": "0.0120205500",
+              "completeness": "partial",
+              "reportedRequests": 6,
+              "requests": 6
+            },
+            "reasoningTokens": 0,
+            "cachedTokens": 6784
+          },
+          "messages": [
+            {
+              "id": "msg-eaf212e6-34b7-493b-9c5a-133272fe0759",
+              "role": "user",
+              "text": "сайт поздравление с днем рождения Карины 23 года от одноклассников. подбери пару фото с фотостока",
+              "createdAt": "2026-11-20T08:13:23.705Z",
+              "selectedModelId": "grok-4.20-0309-non-reasoning",
+              "mode": "build"
+            },
+            {
+              "id": "msg-aa9b8149-6ff0-4fda-b4b0-806503be5cbf",
+              "role": "assistant",
+              "text": "",
+              "createdAt": "2026-11-20T08:13:35.847Z",
+              "mode": "build",
+              "answer": {
+                "blocks": [
+                  "hero-simple",
+                  "team-simple"
+                ]
+              },
+              "run": {
+                "requestedModelId": "grok-4.20-0309-non-reasoning",
+                "modelId": "grok-4.20-0309-non-reasoning",
+                "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+                "live": true,
+                "policyVersion": "page-agent/13",
+                "modelCatalogVersion": "grok-text-5/2026-11-08",
+                "trialPolicyVersion": "page-agent/13+grok-text-5/2026-11-08",
+                "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+                "path": "chat-completions",
+                "tools": [
+                  "list_blocks",
+                  "get_block",
+                  "get_block",
+                  "write_page",
+                  "write_page"
+                ],
+                "runId": "xai-mwopcib7-7a0zvz",
+                "usage": {
+                  "status": "complete",
+                  "steps": 5,
+                  "reportedSteps": 5,
+                  "promptTokens": 11662,
+                  "completionTokens": 1174,
+                  "totalTokens": 12836,
+                  "reportedBy": "provider",
+                  "providerId": "xai",
+                  "aggregation": "sum-of-tool-loop-requests",
+                  "lastStep": {
+                    "promptTokens": 3235,
+                    "completionTokens": 568,
+                    "totalTokens": 3803,
+                    "reasoningTokens": 0,
+                    "cachedTokens": 2560,
+                    "costUsdTicks": "27757500"
+                  },
+                  "cost": {
+                    "available": true,
+                    "kind": "billed",
+                    "currency": "USD",
+                    "ticks": "105237000",
+                    "usd": "0.0105237000",
+                    "completeness": "complete",
+                    "reportedRequests": 5,
+                    "requests": 5
+                  },
+                  "reasoningTokens": 0,
+                  "cachedTokens": 6656
+                }
+              },
+              "proposal": {
+                "applied": false,
+                "status": "superseded",
+                "source": "write_page",
+                "liveModel": true,
+                "warnings": [],
+                "missing": [],
+                "title": "Поздравление с днем рождения Карины",
+                "locale": "ru",
+                "baseRevision": 0,
+                "diff": [
+                  {
+                    "scope": "page",
+                    "change": "changed",
+                    "paths": [
+                      "/title",
+                      "/slug",
+                      "/locale",
+                      "/seo/title",
+                      "/seo/description"
+                    ]
+                  },
+                  {
+                    "scope": "block",
+                    "change": "added",
+                    "id": "block-hero-simple",
+                    "item": "hero-simple",
+                    "variant": "mediaTop",
+                    "to": 0
+                  },
+                  {
+                    "scope": "block",
+                    "change": "added",
+                    "id": "block-team-simple",
+                    "item": "team-simple",
+                    "variant": "cards3",
+                    "to": 1
+                  }
+                ]
+              }
+            },
+            {
+              "id": "msg-e7d38f4d-621a-4e45-af59-b752edb87318",
+              "role": "user",
+              "text": "отлично. фото с битой ссылкой. попробуй другое фото",
+              "createdAt": "2026-11-20T08:14:33.537Z",
+              "selectedModelId": "grok-build-0.1",
+              "mode": "build"
+            },
+            {
+              "id": "msg-88b3e992-856f-4af1-b320-57a46c77b847",
+              "role": "assistant",
+              "text": "Grok Build 0.1 (grok-build-0.1) is not enabled on this account. No other model was substituted.",
+              "createdAt": "2026-11-20T08:14:34.062Z",
+              "run": {
+                "requestedModelId": "grok-build-0.1",
+                "modelId": "grok-build-0.1",
+                "modelLabel": "Grok Build 0.1 (grok-build-0.1)",
+                "live": false,
+                "policyVersion": "page-agent/13",
+                "modelCatalogVersion": "grok-text-5/2026-11-08",
+                "trialPolicyVersion": "page-agent/13+grok-text-5/2026-11-08",
+                "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+                "usage": {
+                  "status": "incomplete",
+                  "incompleteReason": "error",
+                  "steps": 0,
+                  "reportedSteps": 0,
+                  "promptTokens": "unknown",
+                  "completionTokens": "unknown",
+                  "totalTokens": "unknown",
+                  "reportedBy": "none",
+                  "cost": {
+                    "available": false,
+                    "reason": "not_reported",
+                    "note": "Billed cost is unavailable in this usage record. Missing cost is unknown, never zero."
+                  }
+                }
+              }
+            },
+            {
+              "id": "msg-c4accfe5-b2b9-4c1a-929f-99889be6afe0",
+              "role": "user",
+              "text": "отлично. фото с битой ссылкой. попробуй другое фото",
+              "createdAt": "2026-11-20T08:15:07.368Z",
+              "selectedModelId": "grok-4.20-0309-non-reasoning",
+              "mode": "build"
+            },
+            {
+              "id": "msg-ea2ca227-58ce-4dcd-a5c3-d1d92433e992",
+              "role": "assistant",
+              "text": "",
+              "createdAt": "2026-11-20T08:15:10.397Z",
+              "mode": "build",
+              "answer": {
+                "blocks": [
+                  "hero-simple"
+                ]
+              },
+              "run": {
+                "requestedModelId": "grok-4.20-0309-non-reasoning",
+                "modelId": "grok-4.20-0309-non-reasoning",
+                "modelLabel": "Grok 4.20 Non-reasoning (grok-4.20-0309-non-reasoning)",
+                "live": true,
+                "policyVersion": "page-agent/13",
+                "modelCatalogVersion": "grok-text-5/2026-11-08",
+                "trialPolicyVersion": "page-agent/13+grok-text-5/2026-11-08",
+                "catalogDigest": "sha256:db74aa8db8a3a81690fd275f29b0eafedb19508759963251a711df5fb6bbd27d",
+                "path": "chat-completions",
+                "tools": [
+                  "write_page"
+                ],
+                "runId": "xai-mwopepb2-x89h1h",
+                "usage": {
+                  "status": "complete",
+                  "steps": 1,
+                  "reportedSteps": 1,
+                  "promptTokens": 871,
+                  "completionTokens": 217,
+                  "totalTokens": 1088,
+                  "reportedBy": "provider",
+                  "providerId": "xai",
+                  "aggregation": "sum-of-tool-loop-requests",
+                  "lastStep": {
+                    "promptTokens": 871,
+                    "completionTokens": 217,
+                    "totalTokens": 1088,
+                    "reasoningTokens": 0,
+                    "cachedTokens": 128,
+                    "costUsdTicks": "14968500"
+                  },
+                  "cost": {
+                    "available": true,
+                    "kind": "billed",
+                    "currency": "USD",
+                    "ticks": "14968500",
+                    "usd": "0.0014968500",
+                    "completeness": "complete",
+                    "reportedRequests": 1,
+                    "requests": 1
+                  },
+                  "reasoningTokens": 0,
+                  "cachedTokens": 128
+                }
+              },
+              "proposal": {
+                "applied": true,
+                "status": "applied",
+                "source": "write_page",
+                "liveModel": true,
+                "warnings": [],
+                "missing": [],
+                "title": "Поздравление с днем рождения Карины",
+                "locale": "ru",
+                "baseRevision": 0,
+                "diff": [
+                  {
+                    "scope": "block",
+                    "change": "changed",
+                    "id": "block-hero-simple",
+                    "item": "hero-simple",
+                    "variant": "mediaTop",
+                    "paths": [
+                      "/props/image"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "agent-storage": {
+          "format": "agent-storage/1",
+          "policyVersion": 1,
+          "basis": "project-excludes-own-metrics; origin-before-current-metrics",
+          "project": {
+            "jsonUtf8Bytes": 57830,
+            "estimatedUtf16Bytes": 104224
+          },
+          "sessionsJsonUtf8Bytes": 59782,
+          "traceJsonUtf8Bytes": 47765,
+          "originEstimatedUtf16Bytes": 120758,
+          "budgetExceeded": false,
+          "coverage": "origin"
+        }
+      },
+      "page": {
+        "applied": {
+          "version": 2,
+          "slug": "happy-birthday-karina",
+          "title": "Поздравление с днем рождения Карины",
+          "locale": "ru",
+          "seo": {
+            "title": "Поздравление с 23-летием Карины от одноклассников",
+            "description": "Теплые поздравления с днем рождения для Карины от одноклассников. 23 года – время новых приключений!"
+          },
+          "blocks": [
+            {
+              "item": "hero-simple",
+              "variant": "mediaTop",
+              "props": {
+                "media": "top",
+                "align": "center",
+                "id": "block-hero-simple",
+                "title": "С днем рождения, Карина!",
+                "description": "Дорогая Карина! От всей души поздравляем тебя с 23-летием! Пусть этот год принесет тебе море счастья, успехов в учебе и новых ярких моментов. Ты всегда была душой нашей компании, с тобой каждый день в школе был приключением. Оставайся такой же веселой, доброй и невероятной! Мы, твои одноклассники, всегда рядом. С любовью и лучшими пожеланиями!",
+                "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64",
+                "imageAlt": "Праздничный торт с 23 свечами",
+                "padding": "spacious",
+                "badge": "23 года",
+                "actionLabel": "Пожелать в ответ",
+                "actionHref": "#team",
+                "level": 1
+              },
+              "id": "block-hero-simple"
+            },
+            {
+              "item": "team-simple",
+              "variant": "cards3",
+              "props": {
+                "cols": "3",
+                "surface": "cards",
+                "members": [
+                  {
+                    "id": "member-1",
+                    "title": "Алексей",
+                    "description": "Карина, с днем рождения! Ты всегда заряжаешь всех позитивом. Желаю тебе осуществления всех мечт!",
+                    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d"
+                  },
+                  {
+                    "id": "member-2",
+                    "title": "Мария",
+                    "description": "Дорогая Карина! 23 года — это только начало! Будь счастлива, здоровой и пусть все сбывается. Обнимаем!",
+                    "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+                  },
+                  {
+                    "id": "member-3",
+                    "title": "Дмитрий",
+                    "description": "Карин, поздравляю! С тобой школа была веселее. Желаю крутых путешествий и отличных оценок в жизни!",
+                    "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
+                  }
+                ],
+                "id": "block-team-simple",
+                "title": "Поздравления от одноклассников",
+                "description": "Каждый из нас подготовил теплые слова для тебя, Карина. Мы помним все наши школьные приключения вместе!",
+                "align": "center",
+                "padding": "standard"
+              },
+              "id": "block-team-simple"
+            }
+          ],
+          "id": "page-d794f33c-885f-461f-9ba7-de9a12870071",
+          "status": "draft",
+          "createdAt": "2026-11-20T08:13:23.719Z",
+          "updatedAt": "2026-11-20T08:15:10.402Z"
+        },
+        "candidate": null,
+        "appliedProvenance": {
+          "screenId": null,
+          "scenarioId": null,
+          "missing": []
+        },
+        "candidateProvenance": null,
+        "selectedBlockId": "block-hero-simple",
+        "revision": 1,
+        "lastProposed": {
+          "version": 2,
+          "slug": "happy-birthday-karina",
+          "title": "Поздравление с днем рождения Карины",
+          "locale": "ru",
+          "seo": {
+            "title": "Поздравление с 23-летием Карины от одноклассников",
+            "description": "Теплые поздравления с днем рождения для Карины от одноклассников. 23 года – время новых приключений!"
+          },
+          "blocks": [
+            {
+              "item": "hero-simple",
+              "variant": "mediaTop",
+              "props": {
+                "media": "top",
+                "align": "center",
+                "id": "block-hero-simple",
+                "title": "С днем рождения, Карина!",
+                "description": "Дорогая Карина! От всей души поздравляем тебя с 23-летием! Пусть этот год принесет тебе море счастья, успехов в учебе и новых ярких моментов. Ты всегда была душой нашей компании, с тобой каждый день в школе был приключением. Оставайся такой же веселой, доброй и невероятной! Мы, твои одноклассники, всегда рядом. С любовью и лучшими пожеланиями!",
+                "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64",
+                "imageAlt": "Праздничный торт с 23 свечами",
+                "padding": "spacious",
+                "badge": "23 года",
+                "actionLabel": "Пожелать в ответ",
+                "actionHref": "#team",
+                "level": 1
+              },
+              "id": "block-hero-simple"
+            },
+            {
+              "item": "team-simple",
+              "variant": "cards3",
+              "props": {
+                "cols": "3",
+                "surface": "cards",
+                "members": [
+                  {
+                    "id": "member-1",
+                    "title": "Алексей",
+                    "description": "Карина, с днем рождения! Ты всегда заряжаешь всех позитивом. Желаю тебе осуществления всех мечт!",
+                    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d"
+                  },
+                  {
+                    "id": "member-2",
+                    "title": "Мария",
+                    "description": "Дорогая Карина! 23 года — это только начало! Будь счастлива, здоровой и пусть все сбывается. Обнимаем!",
+                    "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
+                  },
+                  {
+                    "id": "member-3",
+                    "title": "Дмитрий",
+                    "description": "Карин, поздравляю! С тобой школа была веселее. Желаю крутых путешествий и отличных оценок в жизни!",
+                    "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
+                  }
+                ],
+                "id": "block-team-simple",
+                "title": "Поздравления от одноклассников",
+                "description": "Каждый из нас подготовил теплые слова для тебя, Карина. Мы помним все наши школьные приключения вместе!",
+                "align": "center",
+                "padding": "standard"
+              },
+              "id": "block-team-simple"
+            }
+          ],
+          "id": "page-d794f33c-885f-461f-9ba7-de9a12870071",
+          "status": "draft",
+          "createdAt": "2026-11-20T08:13:23.719Z",
+          "updatedAt": "2026-11-20T08:15:10.402Z"
+        },
+        "lastProposedProvenance": {
+          "screenId": null,
+          "scenarioId": null,
+          "missing": []
+        }
+      }
+    },
+    {
+      "id": "session-7135187f-2cfc-49de-b07f-295aad056c48",
+      "title": "New chat",
+      "updatedAt": "2026-11-20T08:09:21.745Z",
+      "pageId": "page-7135187f-2cfc-49de-b07f-295aad056c48",
+      "pageRevision": 8,
+      "history": [
+        {
+          "revision": 1,
+          "cause": "edit",
+          "pageId": "page-7135187f-2cfc-49de-b07f-295aad056c48",
+          "blockId": "block-hero-simple",
+          "op": "insert",
+          "at": "2026-11-20T08:09:21.795Z"
+        },
+        {
+          "revision": 2,
+          "cause": "edit",
+          "pageId": "page-7135187f-2cfc-49de-b07f-295aad056c48",
+          "blockId": "block-team-simple",
+          "op": "insert",
+          "at": "2026-11-20T08:09:40.837Z"
+        },
+        {
+          "revision": 3,
+          "cause": "edit",
+          "pageId": "page-7135187f-2cfc-49de-b07f-295aad056c48",
+          "blockId": "block-hero-simple-2",
+          "op": "insert",
+          "at": "2026-11-20T08:10:17.413Z"
+        },
+        {
+          "revision": 4,
+          "cause": "edit",
+          "pageId": "page-7135187f-2cfc-49de-b07f-295aad056c48",
+          "blockId": "block-hero-simple-2",
+          "op": "set_field",
+          "path": "/media",
+          "at": "2026-11-20T08:10:42.444Z"
+        },
+        {
+          "revision": 5,
+          "cause": "edit",
+          "pageId": "page-7135187f-2cfc-49de-b07f-295aad056c48",
+          "blockId": "block-hero-simple-2",
+          "op": "set_field",
+          "path": "/media",
+          "at": "2026-11-20T08:10:44.810Z"
+        },
+        {
+          "revision": 6,
+          "cause": "edit",
+          "pageId": "page-7135187f-2cfc-49de-b07f-295aad056c48",
+          "blockId": "block-hero-simple-2",
+          "op": "set_field",
+          "path": "/level",
+          "at": "2026-11-20T08:11:14.837Z"
+        },
+        {
+          "revision": 7,
+          "cause": "edit",
+          "pageId": "page-7135187f-2cfc-49de-b07f-295aad056c48",
+          "blockId": "block-hero-simple-2",
+          "op": "set_field",
+          "path": "/align",
+          "at": "2026-11-20T08:11:24.355Z"
+        },
+        {
+          "revision": 8,
+          "cause": "edit",
+          "pageId": "page-7135187f-2cfc-49de-b07f-295aad056c48",
+          "blockId": "block-hero-simple-2",
+          "op": "set_field",
+          "path": "/align",
+          "at": "2026-11-20T08:11:29.139Z"
+        }
+      ],
+      "ext": {
+        "chat": {
+          "messages": [],
+          "mode": "build"
+        }
+      },
+      "page": {
+        "applied": {
+          "version": 2,
+          "id": "page-7135187f-2cfc-49de-b07f-295aad056c48",
+          "slug": "home",
+          "status": "draft",
+          "title": "New page",
+          "locale": "en",
+          "seo": {
+            "title": "New page",
+            "description": ""
+          },
+          "createdAt": "2026-11-20T08:09:21.740Z",
+          "updatedAt": "2026-11-20T08:11:29.139Z",
+          "blocks": [
+            {
+              "item": "hero-simple",
+              "variant": "mediaTop",
+              "id": "block-hero-simple",
+              "props": {
+                "media": "top",
+                "align": "center",
+                "id": "block-hero-simple",
+                "title": "Hero Simple"
+              }
+            },
+            {
+              "item": "team-simple",
+              "variant": "cols4",
+              "id": "block-team-simple",
+              "props": {
+                "cols": "4",
+                "surface": "plain",
+                "members": [
+                  {
+                    "id": "members-1",
+                    "title": "Title 1"
+                  },
+                  {
+                    "id": "members-2",
+                    "title": "Title 2"
+                  }
+                ],
+                "id": "block-team-simple",
+                "title": "Team Simple"
+              }
+            },
+            {
+              "item": "hero-simple",
+              "variant": "mediaEnd",
+              "id": "block-hero-simple-2",
+              "props": {
+                "media": "end",
+                "id": "block-hero-simple-2",
+                "title": "Hero Simple",
+                "level": 1,
+                "align": "start"
+              }
+            }
+          ]
+        },
+        "candidate": null,
+        "appliedProvenance": {
+          "screenId": null,
+          "scenarioId": null,
+          "missing": []
+        },
+        "candidateProvenance": null,
+        "selectedBlockId": "block-hero-simple",
+        "revision": 8,
+        "lastProposed": null,
+        "lastProposedProvenance": null
+      }
+    }
+  ],
+  "settings": {
+    "theme": "dark",
+    "previewHideServiceLabels": false,
+    "selectedModelId": "grok-4.20-0309-non-reasoning"
+  },
+  "prefs": {
+    "layout": {
+      "navWidth": 240,
+      "sideWidth": 440,
+      "inspectorWidth": 304,
+      "layersHeight": 200,
+      "treeWidth": 208,
+      "navCollapsed": false,
+      "sideCollapsed": false,
+      "inspectorCollapsed": false,
+      "layersCollapsed": false,
+      "treeCollapsed": false,
+      "focus": false
+    }
+  }
+}

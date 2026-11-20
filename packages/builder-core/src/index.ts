@@ -14,6 +14,10 @@ export {
 	catalogDigest,
 	catalogSearch,
 	prototypeProps,
+	layoutAxes,
+	variantAxisValues,
+	variantSettingDefault,
+	variantSettingNames,
 	type CatalogBlock,
 	type CatalogCard,
 	type CatalogQuery,
@@ -54,7 +58,7 @@ export {
 	type PropShape,
 	type PropsFieldNode
 } from "./catalog/props-schema.ts";
-export { PAGE_KEY_PATTERN, coerceEnumValue, fillProps, mapKeyIssue, newPropsListValue, newPropsMapValue } from "./catalog/props-fill.ts";
+export { PAGE_KEY_PATTERN, coerceEnumProps, coerceEnumValue, fillProps, mapKeyIssue, newPropsListValue, newPropsMapValue } from "./catalog/props-fill.ts";
 export {
 	fieldAtElement,
 	listRows,

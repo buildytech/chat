@@ -6,6 +6,7 @@
  *   - a block whose `item` changed without props of its own gets the sample props of the new item; text props the two
  *     items share (title, lead, ...) are carried over;
  *   - a block whose `variant` changed without touching the layout axes gets the axes of the new variant's preset;
+ *   - enum values are written in the type the schema declares (`cols: 3` -> "3", `level: "2"` -> 2), with a note;
  *   - icon names are mapped to the published Lucide name (spelling, old Lucide names); a name that matches nothing is dropped (optional icon) or replaced by the sample icon of the field (required), with a note;
  *   - a picture address (a text prop named image) must be an https URL or a relative path; anything else is dropped with a note and the placeholder shows;
  *   - host-managed fields (id, status, createdAt, updatedAt) always come from the base page.
@@ -17,6 +18,7 @@ import { pointerInfo, propsFieldTree, propShapeFor, type PropsFieldNode } from "
 import { variantAxisProps, variantPreset } from "../catalog/organism.ts";
 import { resolveIconName } from "../icon-name.ts";
 import { isImageUrl } from "../catalog/image-url.ts";
+import { coerceEnumProps } from "../catalog/props-fill.ts";
 import { diffPages, type DiffEntry } from "./diff.ts";
 import { renderIssues } from "./probe.ts";
 import { checkPageDoc, pointerOfSchemaPath, valueAtPointer, type DocIssue } from "./gate.ts";
@@ -131,6 +133,14 @@ export function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): vo
 		if (prior && same(prior, out)) return prior;
 		const info = itemInfo(out.item);
 		if (!info) return out;
+		// Enum values in the schema's type (`cols: 3` -> "3", `level: "2"` -> 2), as the Inspector writes them.
+		if (isObject(out.props)) {
+			const coerced = coerceEnumProps(out.item, out.props);
+			if (coerced.changed.length) {
+				out.props = coerced.props;
+				notes.push(`${out.id}: ${coerced.changed.map((c) => `${c.pointer.slice(1)} ${JSON.stringify(c.from)} -> ${JSON.stringify(c.to)}`).join(", ")} (enum values are written in the type the schema declares).`);
+			}
+		}
 		let props: Record<string, unknown>;
 		if (!prior) {
 			// A new block: the sample props of its variant under what the write gave it.
