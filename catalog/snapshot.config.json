@@ -4,12 +4,12 @@
 		"cli": "ui8kit@3.5.0",
 		"registry": "https://registry.buildy.tw",
 		"runtime": "svelte",
-		"blocks": ["hero-simple", "split-simple", "team-simple"],
+		"blocks": ["hero-simple", "intro-simple", "gallery-hero", "split-simple", "features-simple", "stats-simple", "testimonials-simple", "logos-simple", "team-simple", "photos-simple", "stories-simple", "faq-simple", "steps-simple"],
 		"components": ["field"]
 	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "72684245f5159d00bad0301763d58e18db885464",
+		"commit": "87bacb00c2ad5cf57f9be6733f702dfa37513903",
 		"generated": "packages/blocks/src/generated",
 		"tokens": "packages/blocks/src/tokens.css"
 	},

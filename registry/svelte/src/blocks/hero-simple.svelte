@@ -3,7 +3,8 @@
   The simple hero (model hero@1): an optional badge, the heading, a description, up to two links as the actions
   (links styled as buttons, the first primary, the second secondary: each drawn only when its label and its
   address are both set) and one picture. Axes: media (end: the picture after the copy, start: before it, top:
-  above it, wide).
+  above it, wide, bottom: under it, wide), ratio (landscape: 4/3 beside the copy, portrait: narrowed and tall, 3
+  by 4, beside the copy from md up).
 -->
 <script lang="ts" module>
   import type { Snippet } from "svelte";
@@ -23,7 +24,8 @@
     level?: 1 | 2 | 3;
     padding?: "compact" | "standard" | "spacious";
     align?: "start" | "center" | "end";
-    media?: "end" | "start" | "top";
+    media?: "end" | "start" | "top" | "bottom";
+    ratio?: "landscape" | "portrait";
     landmarkLabel?: string;
   };
 </script>
@@ -57,6 +59,7 @@
     padding = "standard",
     align = "start",
     media = "end",
+    ratio = "landscape",
     landmarkLabel,
   }: HeroSimpleProps = $props();
   const titleId = $derived(id + "-title");
@@ -69,6 +72,21 @@
     (align as string) === "center" ? "text-center"
     : (align as string) === "end" ? "text-end"
     : "text-start"
+  );
+  const frame = $derived(
+    ((media as string) === "top") || ((media as string) === "bottom") ? "grid grid-cols-1 gap-8"
+    : "grid grid-cols-1 items-center gap-8 md:grid-cols-2"
+  );
+  const pictureRatio = $derived(
+    ((media as string) === "top") || ((media as string) === "bottom") ? "21/9"
+    : "4/3"
+  );
+  const pictureClass = $derived(
+    ((media as string) === "start") && ((ratio as string) === "portrait") ? "order-first mx-auto w-full max-w-sm md:aspect-auto md:min-h-128"
+    : (media as string) === "start" ? "order-first"
+    : (media as string) === "top" ? "order-first"
+    : ((media as string) === "end") && ((ratio as string) === "portrait") ? "mx-auto w-full max-w-sm md:aspect-auto md:min-h-128"
+    : ""
   );
 </script>
 
@@ -84,20 +102,7 @@
   data-slot="hero-simple"
 >
   <Container class="mx-auto w-full max-w-6xl px-4">
-    <Box
-      class={cn(
-        "grid grid-cols-1 gap-8",
-        (((media as string) === "top") ? "" : "items-center md:grid-cols-2")
-      )}
-    >
-      {#if ((media as string) !== "end")}
-        <MediaFrame
-          alt={(imageAlt ? imageAlt : title)}
-          src={image}
-          darkSrc={imageDark}
-          ratio={(((media as string) === "top") ? "21/9" : "4/3")}
-        />
-      {/if}
+    <Box class={frame}>
       <Stack gap="6" align={column}>
         {#if badge}
           <Badge variant="secondary">
@@ -127,9 +132,13 @@
           </Group>
         {/if}
       </Stack>
-      {#if ((media as string) === "end")}
-        <MediaFrame alt={(imageAlt ? imageAlt : title)} src={image} darkSrc={imageDark} ratio="4/3" />
-      {/if}
+      <MediaFrame
+        alt={(imageAlt ? imageAlt : title)}
+        src={image}
+        darkSrc={imageDark}
+        ratio={pictureRatio}
+        class={pictureClass}
+      />
     </Box>
   </Container>
 </Block>

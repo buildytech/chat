@@ -3,8 +3,9 @@
   The simple hero (model hero@1): an optional badge, the heading, a description, up to two links as the actions
   (links styled as buttons, the first primary, the second secondary: each drawn only when its label and its
   address are both set) and one picture. Axes: media (end: the picture after the copy, start: before it, top:
-  above it, wide). Prototype (packages/prototypes): the wireframe, rectangles only; each shape carries
-  data-place and data-field.
+  above it, wide, bottom: under it, wide), ratio (landscape: 4/3 beside the copy, portrait: narrowed and tall, 3
+  by 4, beside the copy from md up). Prototype (packages/prototypes): the wireframe, rectangles only; each shape
+  carries data-place and data-field.
 -->
 <script lang="ts" module>
   import type { Snippet } from "svelte";
@@ -12,7 +13,8 @@
   export type HeroSimpleProps = {
     padding?: "compact" | "standard" | "spacious";
     align?: "start" | "center" | "end";
-    media?: "end" | "start" | "top";
+    media?: "end" | "start" | "top" | "bottom";
+    ratio?: "landscape" | "portrait";
   };
 </script>
 
@@ -25,7 +27,12 @@
   import ShapeText from "../shapes/shape-text.svelte";
   import { cn } from "@ui8kit/kit/utils";
 
-  let { padding = "standard", align = "start", media = "end" }: HeroSimpleProps = $props();
+  let {
+    padding = "standard",
+    align = "start",
+    media = "end",
+    ratio = "landscape",
+  }: HeroSimpleProps = $props();
 </script>
 
 <Box
@@ -39,18 +46,11 @@
 >
   <Box class="mx-auto w-full max-w-6xl px-4">
     <Box
-      class={cn(
-        "grid grid-cols-1 gap-8",
-        (((media as string) === "top") ? "" : "items-center md:grid-cols-2")
-      )}
+      class={
+        ((media as string) === "top") || ((media as string) === "bottom") ? "grid grid-cols-1 gap-8"
+        : "grid grid-cols-1 items-center gap-8 md:grid-cols-2"
+      }
     >
-      {#if ((media as string) !== "end")}
-        <ShapeMedia
-          aspect={(((media as string) === "top") ? "aspect-21/9" : "aspect-4/3")}
-          place="media"
-          field="/image /imageAlt /imageDark"
-        />
-      {/if}
       <Box
         class={cn(
           "flex w-full flex-col",
@@ -82,9 +82,14 @@
           <ShapeCta tone="secondary" place="secondaryAction" field="/secondaryActionLabel /secondaryActionHref" />
         </Box>
       </Box>
-      {#if ((media as string) === "end")}
-        <ShapeMedia aspect="aspect-4/3" place="media" field="/image /imageAlt /imageDark" />
-      {/if}
+      <ShapeMedia
+        aspect={
+          ((media as string) === "top") || ((media as string) === "bottom") ? "aspect-21/9"
+          : "aspect-4/3"
+        }
+        place="media"
+        field="/image /imageAlt /imageDark"
+      />
     </Box>
   </Box>
 </Box>

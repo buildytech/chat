@@ -5,19 +5,19 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "e4bf47a4fb7a9d8029937f6fce182dbd1f6d13cacea52516396d6475efb23100",
-		"lastUpdated": "2026-11-20T15:45:34+03:00",
+		"sha256": "cf7047630679365349be0578f2083bbef7b293520084d42390d051de4afbb217",
+		"lastUpdated": "2026-11-20T19:16:50+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "64b57e44098f217eeb8a3268c3ea3e52b64e61cb5dfc9c49ed3ce5d4db24a1b7",
-		"digest": "sha256:d3fa7673d9fc9c96c904ff6412492df34e2da40418e38fdbd4f6f894eac75478"
+		"sha256": "c802d3fc0a1aed3d00bdb86dfc2fcaa1507bea82e204236cc6509ae9b74ad023",
+		"digest": "sha256:cb6d7cd5219746c156f881178a3213c5cd8761382580626633c13c06880646ef"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "52cf1a84c91c80615908f9edb8db458b3a790cfe0ada2f0edd1519eb5629552a",
-		"digest": "sha256:76caabd7eff65e2dec45a0c30698a5014270b42508bd2be1ff9b4b726d41cbc9"
+		"sha256": "520c0e4cb37ce269d24ba29dd5b6ca1d35beca22f351a6fc4db6d1e89699e8b0",
+		"digest": "sha256:1a27d06a6dcbf0a871a8b0cc006fb999758cf781c17ee27c9102b5fe4b8673f2"
 	},
 	"manifest": {
 		"url": "https://registry.buildy.tw/manifest.json",
@@ -26,29 +26,79 @@
 	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "72684245f5159d00bad0301763d58e18db885464",
+		"commit": "87bacb00c2ad5cf57f9be6733f702dfa37513903",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "e47892e4b1d796c25ba415e927b2c75d27cab4c6eb29fc6c8c46dfc1fcc4a979"
+			"sha256": "0ce27d6c4cb74734c0582346060c6202b2ada587d488fb4cf9c7b8ef2a91b416"
 		}
 	},
 	"blocks": [
 		"hero-simple",
+		"intro-simple",
+		"gallery-hero",
 		"split-simple",
-		"team-simple"
+		"features-simple",
+		"stats-simple",
+		"testimonials-simple",
+		"logos-simple",
+		"team-simple",
+		"photos-simple",
+		"stories-simple",
+		"faq-simple",
+		"steps-simple"
 	],
 	"contracts": {
 		"hero-simple": {
 			"contract": "registry/contracts/hero-simple/1.json",
 			"model": "registry/models/hero@1.schema.json"
 		},
+		"intro-simple": {
+			"contract": "registry/contracts/intro-simple/1.json",
+			"model": "registry/models/intro@1.schema.json"
+		},
+		"gallery-hero": {
+			"contract": "registry/contracts/gallery-hero/1.json",
+			"model": "registry/models/gallery@1.schema.json"
+		},
 		"split-simple": {
 			"contract": "registry/contracts/split-simple/1.json",
 			"model": "registry/models/split@1.schema.json"
 		},
+		"features-simple": {
+			"contract": "registry/contracts/features-simple/1.json",
+			"model": "registry/models/features@1.schema.json"
+		},
+		"stats-simple": {
+			"contract": "registry/contracts/stats-simple/1.json",
+			"model": "registry/models/stats@1.schema.json"
+		},
+		"testimonials-simple": {
+			"contract": "registry/contracts/testimonials-simple/1.json",
+			"model": "registry/models/testimonials@1.schema.json"
+		},
+		"logos-simple": {
+			"contract": "registry/contracts/logos-simple/1.json",
+			"model": "registry/models/logos@1.schema.json"
+		},
 		"team-simple": {
 			"contract": "registry/contracts/team-simple/1.json",
 			"model": "registry/models/team@1.schema.json"
+		},
+		"photos-simple": {
+			"contract": "registry/contracts/photos-simple/1.json",
+			"model": "registry/models/photos@1.schema.json"
+		},
+		"stories-simple": {
+			"contract": "registry/contracts/stories-simple/1.json",
+			"model": "registry/models/stories@1.schema.json"
+		},
+		"faq-simple": {
+			"contract": "registry/contracts/faq-simple/1.json",
+			"model": "registry/models/faq@1.schema.json"
+		},
+		"steps-simple": {
+			"contract": "registry/contracts/steps-simple/1.json",
+			"model": "registry/models/steps@1.schema.json"
 		}
 	},
 	"initItems": [
@@ -382,6 +432,69 @@
 				"src/compose/Disclosure.svelte"
 			]
 		},
+		"faq-simple": {
+			"type": "registry:block",
+			"title": "Faq Simple",
+			"description": "The heading, one paragraph and the questions with their answers as a list, each under a rule, in two columns or one.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/faq-simple.svelte",
+				"src/blocks/faq-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/faq-simple/1.json",
+				"group": "faq",
+				"kind": "block",
+				"model": "faq@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"features-simple": {
+			"type": "registry:block",
+			"title": "Features Simple",
+			"description": "The heading, one paragraph and the features as a list (an icon disc, a title, a line): in columns under the heading or beside it, the icon on top or at the side.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/features-simple.svelte",
+				"src/blocks/features-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/features-simple/1.json",
+				"group": "features",
+				"kind": "block",
+				"model": "features@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"field": {
 			"type": "registry:component",
 			"title": "Field",
@@ -467,6 +580,41 @@
 				"src/compose/FormMessage.svelte"
 			]
 		},
+		"gallery-hero": {
+			"type": "registry:block",
+			"title": "Gallery Hero",
+			"description": "The heading, one paragraph and up to two links as the actions beside three or four photos: at the end, at the start, or in a row under the copy.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"group",
+				"link-button",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/gallery-hero.svelte",
+				"src/blocks/gallery-hero.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/gallery-hero/1.json",
+				"group": "hero",
+				"kind": "block",
+				"model": "gallery@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"grid": {
 			"type": "registry:ui",
 			"title": "Grid",
@@ -512,7 +660,7 @@
 		"hero-simple": {
 			"type": "registry:block",
 			"title": "Hero Simple",
-			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start or on top.",
+			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start (landscape or portrait), on top or at the bottom.",
 			"registryDependencies": [
 				"badge",
 				"block",
@@ -611,6 +759,37 @@
 			"files": [
 				"src/compose/Input.svelte"
 			]
+		},
+		"intro-simple": {
+			"type": "registry:block",
+			"title": "Intro Simple",
+			"description": "Text only: a badge, a large heading, one paragraph and up to two links as the actions (primary, then secondary), centred or at the start, in the middle of the section or low in a tall one.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"group",
+				"link-button",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/intro-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/intro-simple/1.json",
+				"group": "hero",
+				"kind": "block",
+				"model": "intro@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"kit-box": {
 			"type": "registry:ui",
@@ -963,6 +1142,37 @@
 				"src/compose/ListItem.svelte"
 			]
 		},
+		"logos-simple": {
+			"type": "registry:block",
+			"title": "Logos Simple",
+			"description": "A short heading over the logos as a list: a wrapping row or a grid of cards.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/logos-simple.svelte",
+				"src/blocks/logos-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/logos-simple/1.json",
+				"group": "proof",
+				"kind": "block",
+				"model": "logos@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"lucide-icon": {
 			"type": "registry:ui",
 			"title": "Lucide Icon",
@@ -1023,6 +1233,38 @@
 			"files": [
 				"src/compose/OptGroup.svelte"
 			]
+		},
+		"photos-simple": {
+			"type": "registry:block",
+			"title": "Photos Simple",
+			"description": "The heading, one paragraph and the photos as a list in two, three or four columns.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/photos-simple.svelte",
+				"src/blocks/photos-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/photos-simple/1.json",
+				"group": "company",
+				"kind": "block",
+				"model": "photos@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"presets": {
 			"type": "registry:lib",
@@ -1249,6 +1491,103 @@
 				"src/compose/Stack.svelte"
 			]
 		},
+		"stats-simple": {
+			"type": "registry:block",
+			"title": "Stats Simple",
+			"description": "The heading, one paragraph and the figures as a list (a large value, a label, a note), in two, three or four columns, plain or on cards.",
+			"registryDependencies": [
+				"block",
+				"card",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/stats-simple.svelte",
+				"src/blocks/stats-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/stats-simple/1.json",
+				"group": "proof",
+				"kind": "block",
+				"model": "stats@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"steps-simple": {
+			"type": "registry:block",
+			"title": "Steps Simple",
+			"description": "The heading, one paragraph and the steps as an ordered list (a label, a title, a line), in a row of three or four, or one under the other.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/steps-simple.svelte",
+				"src/blocks/steps-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/steps-simple/1.json",
+				"group": "how-it-works",
+				"kind": "block",
+				"model": "steps@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"stories-simple": {
+			"type": "registry:block",
+			"title": "Stories Simple",
+			"description": "The heading, one paragraph and the stories as a list (a cover, the title as a link, a line): cards in two or three columns, or compact rows on a card surface.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/stories-simple.svelte",
+				"src/blocks/stories-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/stories-simple/1.json",
+				"group": "blog",
+				"kind": "block",
+				"model": "stories@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"summary": {
 			"type": "registry:ui",
 			"title": "Summary",
@@ -1445,6 +1784,39 @@
 				"group": "company",
 				"kind": "block",
 				"model": "team@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"testimonials-simple": {
+			"type": "registry:block",
+			"title": "Testimonials Simple",
+			"description": "The heading, one paragraph and the quotes as a list (the words, a portrait, the name and the role): on cards in two or three columns, in rows with the portrait at the side, or centred.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"group",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/testimonials-simple.svelte",
+				"src/blocks/testimonials-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/testimonials-simple/1.json",
+				"group": "proof",
+				"kind": "block",
+				"model": "testimonials@1",
 				"tags": [
 					"svelte",
 					"block"
@@ -1751,9 +2123,19 @@
 		}
 	},
 	"files": {
-		"prototypes/svelte/blocks/hero-simple.svelte": "0a80a78354d3d250912c1ecfb5c7c8fb90b9fb0ee20cfbbab818ec87f26bdc88",
+		"prototypes/svelte/blocks/faq-simple.svelte": "923667123410905c6e1ca6fef132fa19d0d148a145fe29e06fb4351e43280bbe",
+		"prototypes/svelte/blocks/features-simple.svelte": "bdcb04109388497addc14d32fbfdd180d24badc635c0f6c0929310f4ad8c48a1",
+		"prototypes/svelte/blocks/gallery-hero.svelte": "913013a3cc29f78cb667700f2da9596c2ece4ec065c430344151ba9cbad5372b",
+		"prototypes/svelte/blocks/hero-simple.svelte": "84367da8648e509ec7976314dff75eefd67bf027b368a0d0bafaac100236b1f3",
+		"prototypes/svelte/blocks/intro-simple.svelte": "f6c0a318d582b98eb09b292de157119d2269bbc9bcfbf48488835513181b6e63",
+		"prototypes/svelte/blocks/logos-simple.svelte": "2ea1082d07f7e07d12ed7d48274003e3af53faf853a48f8be1f18964a0bae718",
+		"prototypes/svelte/blocks/photos-simple.svelte": "05578ea02365d7f420a5349e49d9445453d22fbd442d569fc43d7e323afefe21",
 		"prototypes/svelte/blocks/split-simple.svelte": "cd0cab695e4eac4efa77ef38ee254ea202c6465670d5cdfbee8a1fce046162bc",
+		"prototypes/svelte/blocks/stats-simple.svelte": "2c91da85a43247738f0b3ce4c979ce70784995017317ff927348bb77322e34b2",
+		"prototypes/svelte/blocks/steps-simple.svelte": "34e90244540861779e5cf1f03c0ae7a51e4afecdcd0c4ce119208c0caf028a4e",
+		"prototypes/svelte/blocks/stories-simple.svelte": "09fb883e89eb6f747093b6827108375803392e045669b32ee81ba5e08b8a6e8c",
 		"prototypes/svelte/blocks/team-simple.svelte": "3531e2bf3b56bd57080f9a15d2e157aa6ed42bea786bae796ff9515c66b59976",
+		"prototypes/svelte/blocks/testimonials-simple.svelte": "55e4d80cf6835d526bf7a6a30f28d4f3fe03ded65644aac2e01d82b53d25f6f3",
 		"prototypes/svelte/shapes/shape-avatar.svelte": "0cee517413dc4cefdee7d1d31e82033cf3342fdb47a0fd4a6dc58deb53cae3bb",
 		"prototypes/svelte/shapes/shape-badge.svelte": "a4cc87358624d1a2eea97135525f9c073efaaa5f3f67cec75920523ce1eb517a",
 		"prototypes/svelte/shapes/shape-cta.svelte": "cc04ffa611cd2cc460a51c14f1c1aee2f82922bffc9d1fc77b2704cd99818e12",
@@ -1761,13 +2143,33 @@
 		"prototypes/svelte/shapes/shape-media.svelte": "354a114d4804aab821515227393947b790e20571f9632026a1034736fec61301",
 		"prototypes/svelte/shapes/shape-text.svelte": "e35eb73a5d5f7fed824debc745a5a4a0da4e3f9aa91f37a87ad3d7ab198e49d5",
 		"prototypes/tokens.css": "0ebedbe6e20048c59da529e8654fc7efe06a9ebc436a54f29b1d4a72cf750780",
-		"registry/contracts/hero-simple/1.json": "c9e275e63ebe4bd48487c744e4f4b70465fd669749e0c7213c87bd6ef15074da",
+		"registry/contracts/faq-simple/1.json": "ec0badfc25b5820b04f48d24f7d9770713e276d9f8985a283c9281ae2af0cc33",
+		"registry/contracts/features-simple/1.json": "ec9b24f9241923f6d1dfc83a17c14590ff0e229e0416ef2d7bdca704e31c03e1",
+		"registry/contracts/gallery-hero/1.json": "d3d96918a81d9e9ac808cc319cd2fe90ae72458ee830cf77bbda5b747749db69",
+		"registry/contracts/hero-simple/1.json": "688efe720e94b29a5bc2e1cd35eb9024008693737f8e2e81db89d6f6ca63dbef",
+		"registry/contracts/intro-simple/1.json": "8eccd2cf0f2e0e53b6dd1737b1c677da0f4fc82b7c85ada85fc0adbfd83801ab",
+		"registry/contracts/logos-simple/1.json": "84b5b8d142a3bea0319c41f6fa8a70edc1f315e6140b39dad6721f10c6e78378",
+		"registry/contracts/photos-simple/1.json": "21b8f6c36f967c774b79547e82011c9bb57bc05ae724b85c7fc7ebefea657514",
 		"registry/contracts/split-simple/1.json": "cb1936dc7bf74e33036b4051337c47f517fe370cef2d701180dee987e7edbc75",
+		"registry/contracts/stats-simple/1.json": "3f7deae3375323293e3e4781cdac763f13441fb4d0d521bfff24d1b33491d115",
+		"registry/contracts/steps-simple/1.json": "5042753ebe5c3d48ea4947418350e42a4bf40cfb2056bb1d99cb0063f8854f8c",
+		"registry/contracts/stories-simple/1.json": "900b8198869040e7fa2f1a8358cffd2e8c1caeafb4dc1373f2b221e06bf413c2",
 		"registry/contracts/team-simple/1.json": "ff0b83a814f00624ee3200454fc70fd9fde1789e75412e94b2aeac5c172ed9a8",
+		"registry/contracts/testimonials-simple/1.json": "e8bb4ab2a54963fa56dc96a13f79e1dc3b8327020cb0fc1c21fa5f07d9dae38b",
+		"registry/models/faq@1.schema.json": "3c9d703570eaa76184918c515c8253cc1bb708d8af873f6cdee199f6a8b7ed03",
+		"registry/models/features@1.schema.json": "ec97897a5e218914fed908d8c650a57212a8603c5b7c78a061e7e6a1409df8ba",
+		"registry/models/gallery@1.schema.json": "728e408f73900e79639629aaa52698fee31b3a9fc87e73efdb1b11457906b7f2",
 		"registry/models/hero@1.schema.json": "b114d150cc77d9249b8793c9591a6242db9c8d55d94d0dd06bfe6aecd335eee6",
+		"registry/models/intro@1.schema.json": "9ede625f409532dba4ca1f05345afb5b39d69d8945039d38a491618ff7ef5ee6",
+		"registry/models/logos@1.schema.json": "c2ca4e110e46821571e84581123062042b72b3dfbe47c07633449948fef13e1c",
+		"registry/models/photos@1.schema.json": "c17acd5d96bbba505b713274c1482e4a44796ca9e4df7718b74510c07cb25906",
 		"registry/models/split@1.schema.json": "40d6489b3bbaa08ab9f5385ef1b8e1d75432b427f51c2598ec92e9c542aada6d",
+		"registry/models/stats@1.schema.json": "c3ad6ffed0ddde4c362472342dc76b6ec29d77a87b350b2ad878f68aa310154a",
+		"registry/models/steps@1.schema.json": "cb6f8322e1848fdefa7801ca77db581e1611892c605e31a6cf3085ca8153097c",
+		"registry/models/stories@1.schema.json": "ef5881bfa8a7f74aac78fc57497f1237c1228c5c0066604b340392fee6c52bbb",
 		"registry/models/team@1.schema.json": "ac003fe0b80251f4fefe73e39572cd63f3eb58b35c5fdbd337d03e232fcf797c",
-		"registry/props.v0.json": "b0135a4599371d726592ea1ddbac47ed44e2276e9835edc6d120f2081049abdc",
-		"registry/variants.v0.json": "2f07089aa50599b999b8c055f8ea86ceddbfc1b697a13a39da03559b6e92f24b"
+		"registry/models/testimonials@1.schema.json": "e3c1b75c4dd7111f41f7a7bb52c7e297617d8805f51b4cae6b06ca40272003b1",
+		"registry/props.v0.json": "65810b1ed1a70b3f646304acabfb57a436dabe67bea592d80842e2c87ce82041",
+		"registry/variants.v0.json": "2023318b51a5e72a4e4bec07b06b4caf45a0e009c3dc49a4d491d632ee87e182"
 	}
 }

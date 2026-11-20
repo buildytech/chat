@@ -1,8 +1,245 @@
 {
 	"version": "0",
-	"digest": "sha256:d3fa7673d9fc9c96c904ff6412492df34e2da40418e38fdbd4f6f894eac75478",
+	"digest": "sha256:cb6d7cd5219746c156f881178a3213c5cd8761382580626633c13c06880646ef",
 	"registry": "https://registry.buildy.tw",
 	"items": {
+		"faq-simple": {
+			"block": "faqsimple",
+			"spec": "block.faqsimple",
+			"organism": "FaqSimple",
+			"axes": {
+				"columns": [
+					"one",
+					"two"
+				]
+			},
+			"defaults": {
+				"columns": "two"
+			},
+			"defaultVariant": "grid2",
+			"variants": {
+				"grid2": {
+					"asset": "block.faqsimple/grid2",
+					"set": {},
+					"props": {
+						"columns": "two"
+					}
+				},
+				"list": {
+					"asset": "block.faqsimple/list",
+					"set": {
+						"columns": "one"
+					},
+					"props": {
+						"columns": "one"
+					}
+				}
+			}
+		},
+		"features-simple": {
+			"block": "featuressimple",
+			"spec": "block.featuressimple",
+			"organism": "FeaturesSimple",
+			"axes": {
+				"layout": [
+					"stack",
+					"aside"
+				],
+				"cols": [
+					"2",
+					"3",
+					"4"
+				],
+				"marker": [
+					"top",
+					"inline"
+				]
+			},
+			"defaults": {
+				"layout": "stack",
+				"cols": "3",
+				"marker": "top"
+			},
+			"defaultVariant": "cols3",
+			"variants": {
+				"cols3": {
+					"asset": "block.featuressimple/cols3",
+					"set": {},
+					"props": {
+						"layout": "stack",
+						"cols": "3",
+						"marker": "top"
+					}
+				},
+				"cols2": {
+					"asset": "block.featuressimple/cols2",
+					"set": {
+						"cols": "2"
+					},
+					"props": {
+						"layout": "stack",
+						"cols": "2",
+						"marker": "top"
+					}
+				},
+				"cols4": {
+					"asset": "block.featuressimple/cols4",
+					"set": {
+						"cols": "4"
+					},
+					"props": {
+						"layout": "stack",
+						"cols": "4",
+						"marker": "top"
+					}
+				},
+				"summaryRow": {
+					"asset": "block.featuressimple/summaryRow",
+					"set": {
+						"layout": "aside"
+					},
+					"props": {
+						"layout": "aside",
+						"cols": "3",
+						"marker": "top",
+						"align": "start"
+					}
+				},
+				"summaryGrid": {
+					"asset": "block.featuressimple/summaryGrid",
+					"set": {
+						"layout": "aside",
+						"cols": "2"
+					},
+					"props": {
+						"layout": "aside",
+						"cols": "2",
+						"marker": "top",
+						"align": "start"
+					}
+				},
+				"inlineGrid": {
+					"asset": "block.featuressimple/inlineGrid",
+					"set": {
+						"cols": "2",
+						"marker": "inline"
+					},
+					"props": {
+						"layout": "stack",
+						"cols": "2",
+						"marker": "inline"
+					}
+				},
+				"checklist": {
+					"asset": "block.featuressimple/checklist",
+					"set": {
+						"layout": "aside",
+						"cols": "2",
+						"marker": "inline"
+					},
+					"props": {
+						"layout": "aside",
+						"cols": "2",
+						"marker": "inline",
+						"align": "start"
+					}
+				}
+			}
+		},
+		"gallery-hero": {
+			"block": "galleryhero",
+			"spec": "block.galleryhero",
+			"organism": "GalleryHero",
+			"axes": {
+				"media": [
+					"end",
+					"start",
+					"bottom"
+				],
+				"count": [
+					"3",
+					"4"
+				]
+			},
+			"defaults": {
+				"media": "end",
+				"count": "3"
+			},
+			"defaultVariant": "photos3",
+			"variants": {
+				"photos3": {
+					"asset": "block.galleryhero/photos3",
+					"set": {},
+					"props": {
+						"media": "end",
+						"count": "3"
+					}
+				},
+				"photos4": {
+					"asset": "block.galleryhero/photos4",
+					"set": {
+						"count": "4"
+					},
+					"props": {
+						"media": "end",
+						"count": "4",
+						"photos": {
+							"$": "galleryPhotos4"
+						}
+					}
+				},
+				"photos3Start": {
+					"asset": "block.galleryhero/photos3Start",
+					"set": {
+						"media": "start"
+					},
+					"props": {
+						"media": "start",
+						"count": "3"
+					}
+				},
+				"photos4Start": {
+					"asset": "block.galleryhero/photos4Start",
+					"set": {
+						"media": "start",
+						"count": "4"
+					},
+					"props": {
+						"media": "start",
+						"count": "4",
+						"photos": {
+							"$": "galleryPhotos4"
+						}
+					}
+				},
+				"photos3Bottom": {
+					"asset": "block.galleryhero/photos3Bottom",
+					"set": {
+						"media": "bottom"
+					},
+					"props": {
+						"media": "bottom",
+						"count": "3",
+						"align": "center"
+					}
+				},
+				"photos4Bottom": {
+					"asset": "block.galleryhero/photos4Bottom",
+					"set": {
+						"media": "bottom",
+						"count": "4"
+					},
+					"props": {
+						"media": "bottom",
+						"count": "4",
+						"align": "center",
+						"photos": {
+							"$": "galleryPhotos4"
+						}
+					}
+				}
+			}
+		},
 		"hero-simple": {
 			"block": "herosimple",
 			"spec": "block.herosimple",
@@ -11,11 +248,17 @@
 				"media": [
 					"end",
 					"start",
-					"top"
+					"top",
+					"bottom"
+				],
+				"ratio": [
+					"landscape",
+					"portrait"
 				]
 			},
 			"defaults": {
-				"media": "end"
+				"media": "end",
+				"ratio": "landscape"
 			},
 			"defaultVariant": "mediaEnd",
 			"variants": {
@@ -23,7 +266,8 @@
 					"asset": "block.herosimple/mediaEnd",
 					"set": {},
 					"props": {
-						"media": "end"
+						"media": "end",
+						"ratio": "landscape"
 					}
 				},
 				"mediaStart": {
@@ -32,7 +276,8 @@
 						"media": "start"
 					},
 					"props": {
-						"media": "start"
+						"media": "start",
+						"ratio": "landscape"
 					}
 				},
 				"mediaTop": {
@@ -42,7 +287,167 @@
 					},
 					"props": {
 						"media": "top",
+						"ratio": "landscape",
 						"align": "center"
+					}
+				},
+				"mediaBottom": {
+					"asset": "block.herosimple/mediaBottom",
+					"set": {
+						"media": "bottom"
+					},
+					"props": {
+						"media": "bottom",
+						"ratio": "landscape",
+						"align": "center"
+					}
+				},
+				"mediaEndPortrait": {
+					"asset": "block.herosimple/mediaEndPortrait",
+					"set": {
+						"ratio": "portrait"
+					},
+					"props": {
+						"media": "end",
+						"ratio": "portrait"
+					}
+				},
+				"mediaStartPortrait": {
+					"asset": "block.herosimple/mediaStartPortrait",
+					"set": {
+						"media": "start",
+						"ratio": "portrait"
+					},
+					"props": {
+						"media": "start",
+						"ratio": "portrait"
+					}
+				}
+			}
+		},
+		"intro-simple": {
+			"block": "introsimple",
+			"spec": "block.introsimple",
+			"organism": "IntroSimple",
+			"axes": {
+				"place": [
+					"middle",
+					"bottom"
+				]
+			},
+			"defaults": {
+				"place": "middle"
+			},
+			"defaultVariant": "center",
+			"variants": {
+				"center": {
+					"asset": "block.introsimple/center",
+					"set": {},
+					"props": {
+						"place": "middle"
+					}
+				},
+				"start": {
+					"asset": "block.introsimple/start",
+					"set": {},
+					"props": {
+						"place": "middle",
+						"align": "start"
+					}
+				},
+				"bottomStart": {
+					"asset": "block.introsimple/bottomStart",
+					"set": {
+						"place": "bottom"
+					},
+					"props": {
+						"place": "bottom",
+						"align": "start"
+					}
+				},
+				"bottomCenter": {
+					"asset": "block.introsimple/bottomCenter",
+					"set": {
+						"place": "bottom"
+					},
+					"props": {
+						"place": "bottom"
+					}
+				}
+			}
+		},
+		"logos-simple": {
+			"block": "logossimple",
+			"spec": "block.logossimple",
+			"organism": "LogosSimple",
+			"axes": {
+				"surface": [
+					"plain",
+					"cards"
+				]
+			},
+			"defaults": {
+				"surface": "plain"
+			},
+			"defaultVariant": "row",
+			"variants": {
+				"row": {
+					"asset": "block.logossimple/row",
+					"set": {},
+					"props": {
+						"surface": "plain"
+					}
+				},
+				"cards": {
+					"asset": "block.logossimple/cards",
+					"set": {
+						"surface": "cards"
+					},
+					"props": {
+						"surface": "cards"
+					}
+				}
+			}
+		},
+		"photos-simple": {
+			"block": "photossimple",
+			"spec": "block.photossimple",
+			"organism": "PhotosSimple",
+			"axes": {
+				"cols": [
+					"2",
+					"3",
+					"4"
+				]
+			},
+			"defaults": {
+				"cols": "4"
+			},
+			"defaultVariant": "row4",
+			"variants": {
+				"row4": {
+					"asset": "block.photossimple/row4",
+					"set": {},
+					"props": {
+						"cols": "4"
+					}
+				},
+				"grid3": {
+					"asset": "block.photossimple/grid3",
+					"set": {
+						"cols": "3"
+					},
+					"props": {
+						"cols": "3"
+					}
+				},
+				"diptych": {
+					"asset": "block.photossimple/diptych",
+					"set": {
+						"cols": "2"
+					},
+					"props": {
+						"cols": "2"
 					}
 				}
 			}
@@ -76,6 +481,168 @@
 					},
 					"props": {
 						"media": "start"
+					}
+				}
+			}
+		},
+		"stats-simple": {
+			"block": "statssimple",
+			"spec": "block.statssimple",
+			"organism": "StatsSimple",
+			"axes": {
+				"cols": [
+					"2",
+					"3",
+					"4"
+				],
+				"surface": [
+					"plain",
+					"cards"
+				]
+			},
+			"defaults": {
+				"cols": "4",
+				"surface": "plain"
+			},
+			"defaultVariant": "cols4",
+			"variants": {
+				"cols4": {
+					"asset": "block.statssimple/cols4",
+					"set": {},
+					"props": {
+						"cols": "4",
+						"surface": "plain"
+					}
+				},
+				"cols3": {
+					"asset": "block.statssimple/cols3",
+					"set": {
+						"cols": "3"
+					},
+					"props": {
+						"cols": "3",
+						"surface": "plain"
+					}
+				},
+				"cols2": {
+					"asset": "block.statssimple/cols2",
+					"set": {
+						"cols": "2"
+					},
+					"props": {
+						"cols": "2",
+						"surface": "plain"
+					}
+				},
+				"cards4": {
+					"asset": "block.statssimple/cards4",
+					"set": {
+						"surface": "cards"
+					},
+					"props": {
+						"cols": "4",
+						"surface": "cards"
+					}
+				}
+			}
+		},
+		"steps-simple": {
+			"block": "stepssimple",
+			"spec": "block.stepssimple",
+			"organism": "StepsSimple",
+			"axes": {
+				"layout": [
+					"row",
+					"column"
+				],
+				"cols": [
+					"3",
+					"4"
+				]
+			},
+			"defaults": {
+				"layout": "row",
+				"cols": "4"
+			},
+			"defaultVariant": "row4",
+			"variants": {
+				"row4": {
+					"asset": "block.stepssimple/row4",
+					"set": {},
+					"props": {
+						"layout": "row",
+						"cols": "4"
+					}
+				},
+				"row3": {
+					"asset": "block.stepssimple/row3",
+					"set": {
+						"cols": "3"
+					},
+					"props": {
+						"layout": "row",
+						"cols": "3"
+					}
+				},
+				"column": {
+					"asset": "block.stepssimple/column",
+					"set": {
+						"layout": "column"
+					},
+					"props": {
+						"layout": "column",
+						"cols": "4",
+						"align": "start"
+					}
+				}
+			}
+		},
+		"stories-simple": {
+			"block": "storiessimple",
+			"spec": "block.storiessimple",
+			"organism": "StoriesSimple",
+			"axes": {
+				"layout": [
+					"grid",
+					"compact"
+				],
+				"cols": [
+					"2",
+					"3"
+				]
+			},
+			"defaults": {
+				"layout": "grid",
+				"cols": "3"
+			},
+			"defaultVariant": "cols3",
+			"variants": {
+				"cols3": {
+					"asset": "block.storiessimple/cols3",
+					"set": {},
+					"props": {
+						"layout": "grid",
+						"cols": "3"
+					}
+				},
+				"duo": {
+					"asset": "block.storiessimple/duo",
+					"set": {
+						"cols": "2"
+					},
+					"props": {
+						"layout": "grid",
+						"cols": "2"
+					}
+				},
+				"related3": {
+					"asset": "block.storiessimple/related3",
+					"set": {
+						"layout": "compact"
+					},
+					"props": {
+						"layout": "compact",
+						"cols": "3"
 					}
 				}
 			}
@@ -137,6 +704,67 @@
 					"props": {
 						"cols": "3",
 						"surface": "cards"
+					}
+				}
+			}
+		},
+		"testimonials-simple": {
+			"block": "testimonialssimple",
+			"spec": "block.testimonialssimple",
+			"organism": "TestimonialsSimple",
+			"axes": {
+				"layout": [
+					"cards",
+					"rows",
+					"centered"
+				],
+				"cols": [
+					"2",
+					"3"
+				]
+			},
+			"defaults": {
+				"layout": "cards",
+				"cols": "3"
+			},
+			"defaultVariant": "cols3",
+			"variants": {
+				"cols3": {
+					"asset": "block.testimonialssimple/cols3",
+					"set": {},
+					"props": {
+						"layout": "cards",
+						"cols": "3"
+					}
+				},
+				"cards2": {
+					"asset": "block.testimonialssimple/cards2",
+					"set": {
+						"cols": "2"
+					},
+					"props": {
+						"layout": "cards",
+						"cols": "2"
+					}
+				},
+				"portraitRows": {
+					"asset": "block.testimonialssimple/portraitRows",
+					"set": {
+						"layout": "rows"
+					},
+					"props": {
+						"layout": "rows",
+						"cols": "3"
+					}
+				},
+				"centered": {
+					"asset": "block.testimonialssimple/centered",
+					"set": {
+						"layout": "centered"
+					},
+					"props": {
+						"layout": "centered",
+						"cols": "3"
 					}
 				}
 			}
