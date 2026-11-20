@@ -3,7 +3,7 @@
  * reply carries, checked again against the page the author sees. No storage: the callers commit the messages.
  */
 import { catalogDigest, diffPages, emptyPage, writePage, type DiffEntry } from "@buildytech/builder-core";
-import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, formatChatModelChoice, getChatModel, mapChatRunRequest, scopeIssues, unknownUsage, notSentUsage, aggregateSessionUsage, baseHashes, staleBlocks, type ProposalBase, type AgentMode, type RunUsage } from "@buildytech/chat-agent";
+import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, formatChatModelChoice, getChatModel, mapChatRunRequest, scopeIssues, unknownUsage, notSentUsage, aggregateSessionUsage, chatCacheKey, baseHashes, staleBlocks, type ProposalBase, type AgentMode, type RunUsage } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import { t } from "../../../lib/i18n/dictionary";
 import { fetchXaiStatus, runXaiTurn, type TurnRequest, type XaiRunResponse } from "../browser/xai-client";
@@ -61,7 +61,8 @@ function planTurn(brief: string, mode: AgentMode, currentMessageId?: string): Tu
 			shownPage: base === shown ? null : shown,
 			scopeBlockIds: scope,
 			...(mode === "build" && scope.length === 1 && blockScope.fieldId(session?.id) === scope[0] ? { scenario: { id: "page.edit-fields", version: 2 } } : {}),
-			conversation: conversationForTurn(session?.messages ?? [], currentMessageId)
+			conversation: conversationForTurn(session?.messages ?? [], currentMessageId),
+			...(session ? { cacheKey: chatCacheKey(session.id) } : {})
 		}
 	};
 }

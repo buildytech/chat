@@ -166,6 +166,8 @@ type ChatRunRequest = {
 	/** Selected blocks: the agent edits only those. */
 	scopeBlockIds?: string[];
 	conversation: Array<{ role: "user" | "assistant"; text: string }>;
+	/** Opaque prompt-cache routing key of the chat (letters, digits, `:_-`, at most 80); anything else is dropped. */
+	cacheKey?: string;
 };
 
 function parsePageDoc(raw: unknown): PageV2 | undefined {
@@ -192,6 +194,7 @@ export function mapChatRunRequest(
 		mode?: unknown;
 		scopeBlockIds?: unknown;
 		conversation?: unknown;
+		cacheKey?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -218,7 +221,10 @@ export function mapChatRunRequest(
 			scopeBlockIds: Array.isArray(body.scopeBlockIds) ? [...new Set(body.scopeBlockIds.filter((id): id is string => typeof id === "string"))].slice(0, 100) : undefined,
 			conversation: Array.isArray(body.conversation)
 				? body.conversation.slice(-8).flatMap((row) => (row && typeof row === "object" && (row.role === "user" || row.role === "assistant") && typeof row.text === "string" ? [{ role: row.role as "user" | "assistant", text: row.text.slice(0, 2000) }] : []))
-				: []
+				: [],
+			...(typeof body.cacheKey === "string" && CACHE_KEY.test(body.cacheKey) ? { cacheKey: body.cacheKey } : {})
 		}
 	};
 }
+
+const CACHE_KEY = /^[A-Za-z0-9:_-]{1,80}$/;

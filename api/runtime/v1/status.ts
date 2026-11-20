@@ -8125,7 +8125,14 @@ function fnv1a64(text: string): string {
 	return h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
 }
 
+/**
+ * The prompt-cache routing key of a chat (t85u step 8): stable across its turns, so the static prefix (system prompt and
+ * tools) and the turn transcript land on one xAI server; the session id itself is not sent.
+ */
+const chatCacheKey = (sessionId: string): string => `chat-${fnv1a64(`buildy-chat:${sessionId}`)}`;
+
 exports["fnv1a64"] = fnv1a64;
+exports["chatCacheKey"] = chatCacheKey;
 
 });
 
@@ -8578,7 +8585,7 @@ function createExecution(modelId: string, signal: AbortSignal, provider: AgentPr
 				trace.steps = counts.requests;
 				const completed = recorder.request(input, input.nudged ?? false);
 				const started = Date.now();
-				try { result = await provider({ ...input, modelId, signal, cacheKey: policy.id === "page-loop@3" ? runId : undefined, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens }); } catch (error) { completed(null, Date.now() - started); throw error; }
+				try { result = await provider({ ...input, modelId, signal, cacheKey: options.cacheKey ?? (policy.id === "page-loop@3" ? runId : undefined), provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens }); } catch (error) { completed(null, Date.now() - started); throw error; }
 				if (result.usage) stepUsage.push(result.usage);
 				completed(result, Date.now() - started);
 				const after = stopped();
@@ -9115,6 +9122,8 @@ type ChatRunRequest = {
 	/** Selected blocks: the agent edits only those. */
 	scopeBlockIds?: string[];
 	conversation: Array<{ role: "user" | "assistant"; text: string }>;
+	/** Opaque prompt-cache routing key of the chat (letters, digits, `:_-`, at most 80); anything else is dropped. */
+	cacheKey?: string;
 };
 
 function parsePageDoc(raw: unknown): PageV2 | undefined {
@@ -9141,6 +9150,7 @@ function mapChatRunRequest(
 		mode?: unknown;
 		scopeBlockIds?: unknown;
 		conversation?: unknown;
+		cacheKey?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -9167,10 +9177,13 @@ function mapChatRunRequest(
 			scopeBlockIds: Array.isArray(body.scopeBlockIds) ? [...new Set(body.scopeBlockIds.filter((id): id is string => typeof id === "string"))].slice(0, 100) : undefined,
 			conversation: Array.isArray(body.conversation)
 				? body.conversation.slice(-8).flatMap((row) => (row && typeof row === "object" && (row.role === "user" || row.role === "assistant") && typeof row.text === "string" ? [{ role: row.role as "user" | "assistant", text: row.text.slice(0, 2000) }] : []))
-				: []
+				: [],
+			...(typeof body.cacheKey === "string" && CACHE_KEY.test(body.cacheKey) ? { cacheKey: body.cacheKey } : {})
 		}
 	};
 }
+
+const CACHE_KEY = /^[A-Za-z0-9:_-]{1,80}$/;
 
 exports["GROK_CHAT_MODELS"] = GROK_CHAT_MODELS;
 exports["modelRunsToolLoop"] = modelRunsToolLoop;
@@ -9896,6 +9909,7 @@ __def("packages/chat-agent/src/index.ts", function (exports) {
 { const __m = __req("packages/chat-agent/src/agent/turn.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/models.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/proposal-base.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+exports["chatCacheKey"] = __req("packages/chat-agent/src/identity.ts")["chatCacheKey"];
 { const __m = __req("packages/chat-agent/src/usage.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/xai-env.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/protect.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
@@ -10210,7 +10224,7 @@ async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnConte
 	try {
 		const compiled = resolveScenario(ctx.mode, modelId, ctx.scenario);
 		if (!compiled.ok || compiled.scenario.profile.provider !== "xai") return { result: { ok: false, code: "invalid_scenario", message: "The scenario could not be resolved.", issues: (compiled.ok ? [{ path: "/provider", code: "adapter_mismatch" }] : compiled.issues).map((issue) => ({ ...issue, expected: "registered compatible scenario" })) }, meta: turnMeta("chat-completions", modelId, false, 0, [], notSentUsage(), newRunId()) };
-		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { scenario: compiled.scenario, deadline, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
+		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { scenario: compiled.scenario, deadline, cacheKey: ctx.cacheKey, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
 		if (!turn.result.ok && turn.result.code === "provider_failed") return { ...turn, result: { ...turn.result, code: "xai_chat_failed", message: "The xAI chat request could not be completed." } };
 		return turn;
 	} catch (err) {
@@ -10585,7 +10599,8 @@ function turnInput(req: MappedRequest): Parameters<typeof runXaiCatalogTurn>[2] 
 		page: req.currentPage ?? emptyPage({ title: "New page" }),
 		shownPage: req.shownPage ?? null,
 		expectedRevision: req.expectedRevision,
-		scopeBlockIds: req.scopeBlockIds
+		scopeBlockIds: req.scopeBlockIds,
+		cacheKey: req.cacheKey
 	};
 }
 

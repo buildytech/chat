@@ -23,6 +23,8 @@ export type TurnContext = {
 	scopeBlockIds?: string[];
 	/** The page the author sees, when `page` is a draft that is not on screen yet. Default: `page`. */
 	shownPage?: PageV2 | null;
+	/** Opaque, session-stable prompt-cache routing key from the host (x-grok-conv-id); absent: the run id. */
+	cacheKey?: string;
 };
 
 /** What a turn proposes: the whole next page document and what differs from the page the author sees. */

@@ -35,7 +35,8 @@
       "usage.test.ts",
       "owner-replay.test.ts",
       "trace-debug.test.ts",
-      "proposal-base.test.ts"
+      "proposal-base.test.ts",
+      "cache-key.test.ts"
     ],
     "xai-runtime": [
       "provider-xai.test.ts",

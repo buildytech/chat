@@ -24,6 +24,8 @@ If the selected id is missing on the account, the run fails with that id. No sil
 
 Per request/run: actual `prompt` / `completion` / `total` tokens from the provider. Tool loops sum each step's prompt+completion (do not add `total` on top). Reasoning/cache only when the provider sent them. Cancelled or error with no usage object: `UNKNOWN`, not `0`. Session totals include an explicit complete/incomplete status.
 
+Prompt cache: the transcript of a run is append-only and the system prompt and tools are static per mode, so the prefix is stable. Every request of every turn of one chat sends the same `x-grok-conv-id` (the Chat Completions form of `prompt_cache_key`): `chat-<fnv1a64>` of the session id, from the browser (`cacheKey`, checked `^[A-Za-z0-9:_-]{1,80}$` by the runtime). Without it the run id is the key (page-loop@3). Before this, the key was the run id, so the first request of each turn went to a random server (cache 128 tokens = only the minimum block) and edit-fields sent no key at all. A miss in the middle of a run with an unchanged prefix (owner trace: step 3, 5.8%) is server-side eviction, not a prefix change.
+
 Dollar cost is shown only when official current rates for that exact model id are confirmed in-repo, with source and date, marked estimated vs billed. This repo does not pin those rates, so dollars stay unavailable.
 
 Stored with each turn (non-secret): model id, `POLICY_VERSION`, `MODEL_CATALOG_VERSION`, catalog digest. No raw key, request, or error logging.

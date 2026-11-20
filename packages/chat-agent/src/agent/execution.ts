@@ -9,7 +9,8 @@ type ExecutionStep = { ok: true; message: AgentMessage } | { ok: false; result: 
 
 import type { CompiledScenario } from "../scenarios/compile.ts";
 
-export type ExecutionOptions = { scenario?: CompiledScenario; deadline?: number; onProviderError?: (error: unknown) => void };
+/** `cacheKey`: the session-stable prompt-cache routing key; every request of every turn of a chat goes to one server. */
+export type ExecutionOptions = { scenario?: CompiledScenario; deadline?: number; onProviderError?: (error: unknown) => void; cacheKey?: string };
 
 export function createExecution(modelId: string, signal: AbortSignal, provider: AgentProvider, runId: string, options: ExecutionOptions) {
 	const budget = options.scenario?.budget ?? AGENT_BUDGET;
@@ -57,7 +58,7 @@ export function createExecution(modelId: string, signal: AbortSignal, provider: 
 				trace.steps = counts.requests;
 				const completed = recorder.request(input, input.nudged ?? false);
 				const started = Date.now();
-				try { result = await provider({ ...input, modelId, signal, cacheKey: policy.id === "page-loop@3" ? runId : undefined, provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens }); } catch (error) { completed(null, Date.now() - started); throw error; }
+				try { result = await provider({ ...input, modelId, signal, cacheKey: options.cacheKey ?? (policy.id === "page-loop@3" ? runId : undefined), provider: options.scenario ? { id: options.scenario.profile.provider, version: options.scenario.manifestVersion } : undefined, maxTokens: budget.maxTokens }); } catch (error) { completed(null, Date.now() - started); throw error; }
 				if (result.usage) stepUsage.push(result.usage);
 				completed(result, Date.now() - started);
 				const after = stopped();

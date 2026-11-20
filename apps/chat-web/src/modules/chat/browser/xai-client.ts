@@ -43,6 +43,8 @@ export type TurnRequest = {
 	shownPage?: PageV2 | null;
 	scopeBlockIds?: string[];
 	conversation?: Array<{ role: "user" | "assistant"; text: string }>;
+	/** Prompt-cache routing key of the chat (hash of its session id): every turn of the chat goes to one xAI server. */
+	cacheKey?: string;
 };
 
 function runtimeBase(): string {

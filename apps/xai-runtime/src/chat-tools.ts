@@ -20,7 +20,7 @@ export async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: Tu
 	try {
 		const compiled = resolveScenario(ctx.mode, modelId, ctx.scenario);
 		if (!compiled.ok || compiled.scenario.profile.provider !== "xai") return { result: { ok: false, code: "invalid_scenario", message: "The scenario could not be resolved.", issues: (compiled.ok ? [{ path: "/provider", code: "adapter_mismatch" }] : compiled.issues).map((issue) => ({ ...issue, expected: "registered compatible scenario" })) }, meta: turnMeta("chat-completions", modelId, false, 0, [], notSentUsage(), newRunId()) };
-		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { scenario: compiled.scenario, deadline, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
+		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { scenario: compiled.scenario, deadline, cacheKey: ctx.cacheKey, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
 		if (!turn.result.ok && turn.result.code === "provider_failed") return { ...turn, result: { ...turn.result, code: "xai_chat_failed", message: "The xAI chat request could not be completed." } };
 		return turn;
 	} catch (err) {
