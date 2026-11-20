@@ -1,6 +1,6 @@
 {
 	"version": "0",
-	"digest": "sha256:f355ccf988693f0459e1ab44ad51755a420fd8e01701f57b819113a9110cc8d7",
+	"digest": "sha256:d3fa7673d9fc9c96c904ff6412492df34e2da40418e38fdbd4f6f894eac75478",
 	"registry": "https://registry.buildy.tw",
 	"items": {
 		"hero-simple": {
@@ -12,15 +12,10 @@
 					"end",
 					"start",
 					"top"
-				],
-				"frame": [
-					"box",
-					"split"
 				]
 			},
 			"defaults": {
-				"media": "end",
-				"frame": "box"
+				"media": "end"
 			},
 			"defaultVariant": "mediaEnd",
 			"variants": {
@@ -28,8 +23,7 @@
 					"asset": "block.herosimple/mediaEnd",
 					"set": {},
 					"props": {
-						"media": "end",
-						"frame": "box"
+						"media": "end"
 					}
 				},
 				"mediaStart": {
@@ -38,8 +32,7 @@
 						"media": "start"
 					},
 					"props": {
-						"media": "start",
-						"frame": "box"
+						"media": "start"
 					}
 				},
 				"mediaTop": {
@@ -49,29 +42,40 @@
 					},
 					"props": {
 						"media": "top",
-						"frame": "box",
 						"align": "center"
 					}
-				},
-				"splitEnd": {
-					"asset": "block.herosimple/splitEnd",
-					"set": {
-						"frame": "split"
-					},
+				}
+			}
+		},
+		"split-simple": {
+			"block": "splitsimple",
+			"spec": "block.splitsimple",
+			"organism": "SplitSimple",
+			"axes": {
+				"media": [
+					"end",
+					"start"
+				]
+			},
+			"defaults": {
+				"media": "end"
+			},
+			"defaultVariant": "mediaEnd",
+			"variants": {
+				"mediaEnd": {
+					"asset": "block.splitsimple/mediaEnd",
+					"set": {},
 					"props": {
-						"media": "end",
-						"frame": "split"
+						"media": "end"
 					}
 				},
-				"splitStart": {
-					"asset": "block.herosimple/splitStart",
+				"mediaStart": {
+					"asset": "block.splitsimple/mediaStart",
 					"set": {
-						"media": "start",
-						"frame": "split"
+						"media": "start"
 					},
 					"props": {
-						"media": "start",
-						"frame": "split"
+						"media": "start"
 					}
 				}
 			}

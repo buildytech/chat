@@ -4,18 +4,18 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "4dfa59ac1bf1fd7c6aad152d4a699e4483b98576",
+		"commit": "72684245f5159d00bad0301763d58e18db885464",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "06fd928b3442bec3e2e0292da732c1f884110a2abe47a68cf81fa4d6e97f8527"
+			"sha256": "e47892e4b1d796c25ba415e927b2c75d27cab4c6eb29fc6c8c46dfc1fcc4a979"
 		}
 	},
-	"digest": "sha256:b56bc6853f814c857f6b2dd9712a808f537f528fa332ee89f707881f50f3dd70",
+	"digest": "sha256:26f9ba0504ea2d6a3736eb035b2ff7a00e657a06e25e80f0ead22c296d9577bf",
 	"blocks": [
 		{
 			"item": "hero-simple",
 			"title": "Hero Simple",
-			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start or on top, in a box or split to the edge of the screen.",
+			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start or on top.",
 			"category": "hero",
 			"prototype": "hero-simple.svelte",
 			"contract": {
@@ -31,58 +31,34 @@
 						"end",
 						"start",
 						"top"
-					],
-					"frame": [
-						"box",
-						"split"
 					]
 				},
 				"defaults": {
-					"media": "end",
-					"frame": "box"
+					"media": "end"
 				},
 				"variants": [
 					{
 						"id": "mediaEnd",
 						"label": "Picture at the end",
 						"axes": {
-							"media": "end",
-							"frame": "box"
+							"media": "end"
 						}
 					},
 					{
 						"id": "mediaStart",
 						"label": "Picture at the start",
 						"axes": {
-							"media": "start",
-							"frame": "box"
+							"media": "start"
 						}
 					},
 					{
 						"id": "mediaTop",
 						"label": "Wide picture on top",
 						"axes": {
-							"media": "top",
-							"frame": "box"
+							"media": "top"
 						},
 						"settings": {
 							"align": "center"
-						}
-					},
-					{
-						"id": "splitEnd",
-						"label": "Split, picture at the end to the edge",
-						"axes": {
-							"media": "end",
-							"frame": "split"
-						}
-					},
-					{
-						"id": "splitStart",
-						"label": "Split, picture at the start to the edge",
-						"axes": {
-							"media": "start",
-							"frame": "split"
 						}
 					}
 				],
@@ -164,7 +140,7 @@
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"$id": "https://registry.buildy.tw/models/hero@1.schema.json",
 				"title": "HeroContent",
-				"description": "Hero content: an optional badge, the heading, a description, one picture (light, optional dark) and up to two actions (the first drawn as the primary button, the second as the secondary one). One object is valid in every hero layout (media at the end, at the start, on top; in a box or split to the edge).",
+				"description": "Hero content: an optional badge, the heading, a description, one picture (light, optional dark) and up to two actions (the first drawn as the primary button, the second as the secondary one). One object is valid in every hero layout (media at the end, at the start, on top).",
 				"type": "object",
 				"additionalProperties": false,
 				"required": [
@@ -176,6 +152,173 @@
 						"type": "string",
 						"maxLength": 40
 					},
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"image": {
+						"description": "address of the picture (an https URL or a path); none: the placeholder",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"imageAlt": {
+						"description": "alt text of the picture; none: the title (the placeholder is decorative)",
+						"type": "string",
+						"maxLength": 160
+					},
+					"imageDark": {
+						"description": "address of the picture in the dark theme; none: image",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"secondaryActionLabel": {
+						"description": "the label of the second action (the secondary button after the first); drawn when the label and the address are both set; empty: none",
+						"type": "string",
+						"maxLength": 40
+					},
+					"secondaryActionHref": {
+						"description": "the address of the second action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					}
+				}
+			}
+		},
+		{
+			"item": "split-simple",
+			"title": "Split Simple",
+			"description": "Two halves: the heading, one paragraph and up to two links as the actions (primary, then secondary) beside one picture that fills its half to the edge of the screen.",
+			"category": "split",
+			"prototype": "split-simple.svelte",
+			"contract": {
+				"item": "split-simple",
+				"version": 1,
+				"block": "block.splitsimple",
+				"organism": "SplitSimple",
+				"line": "simple",
+				"model": "split@1",
+				"modelSchema": "https://registry.buildy.tw/models/split@1.schema.json",
+				"axes": {
+					"media": [
+						"end",
+						"start"
+					]
+				},
+				"defaults": {
+					"media": "end"
+				},
+				"variants": [
+					{
+						"id": "mediaEnd",
+						"label": "Picture at the end, to the edge",
+						"axes": {
+							"media": "end"
+						}
+					},
+					{
+						"id": "mediaStart",
+						"label": "Picture at the start, to the edge",
+						"axes": {
+							"media": "start"
+						}
+					}
+				],
+				"defaultVariant": "mediaEnd",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "media",
+						"kind": "media",
+						"fields": [
+							"/image",
+							"/imageAlt",
+							"/imageDark"
+						]
+					},
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "action",
+						"kind": "action",
+						"fields": [
+							"/actionLabel",
+							"/actionHref"
+						]
+					},
+					{
+						"place": "secondaryAction",
+						"kind": "action",
+						"fields": [
+							"/secondaryActionLabel",
+							"/secondaryActionHref"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/split@1.schema.json",
+				"title": "SplitContent",
+				"description": "Split content: the copy of one half (the heading, a description and up to two actions: the first drawn as the primary button, the second as the secondary one) and the picture of the other half (light, optional dark), which fills its half. One object is valid in every split layout (the picture at the end, at the start). Other media of the half (video, a sign-in form) are a later version of this model.",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title"
+				],
+				"properties": {
 					"title": {
 						"description": "the heading of the section",
 						"type": "string",

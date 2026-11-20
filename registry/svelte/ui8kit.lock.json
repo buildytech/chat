@@ -279,7 +279,7 @@
       "version": "0.1.0",
       "runtime": "svelte",
       "files": {
-        "src/blocks/hero-simple.svelte": "243c7ae2d30ff2168a7e3508318b06a4bac620cd3053e92697f56c0615d7c338"
+        "src/blocks/hero-simple.svelte": "2fdc9f5c3e64698b2ae83fa604e96819ae7eb292c0f6e9e13f7a68d5de148a5d"
       }
     },
     "registry.buildy.tw|svelte|icon": {
@@ -788,6 +788,16 @@
       "runtime": "svelte",
       "files": {
         "src/compose/Skeleton.svelte": "5d3c9a6b804301675d7364d8f4843bb2b9b32fdec72a60a6a7300a486a12d011"
+      }
+    },
+    "registry.buildy.tw|svelte|split-simple": {
+      "name": "split-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/split-simple.svelte": "b800d59ba9002042cf02f418bde39fa2348d2a0bed241dc848989af394241768"
       }
     },
     "registry.buildy.tw|svelte|stack": {

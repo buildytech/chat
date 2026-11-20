@@ -17,7 +17,7 @@ const config = JSON.parse(read("catalog/snapshot.config.json")) as { ui8kit: { b
 const snapshot = JSON.parse(read("registry/snapshot.json")) as { files: Record<string, string>; blocks: string[]; prototypes: { repo: string; commit: string } };
 
 test("the catalog is exactly the configured blocks, in config order, with contract, model and prototype", () => {
-	assert.deepEqual(config.ui8kit.blocks, ["hero-simple", "team-simple"]);
+	assert.deepEqual(config.ui8kit.blocks, ["hero-simple", "split-simple", "team-simple"]);
 	assert.deepEqual(catalogBlocks().map((block) => block.item), config.ui8kit.blocks);
 	for (const block of catalogBlocks()) {
 		assert.equal(block.contract.item, block.item);
@@ -27,7 +27,7 @@ test("the catalog is exactly the configured blocks, in config order, with contra
 		assert.ok(existsSync(join(ROOT, "prototypes/svelte/blocks", block.prototype)), block.prototype);
 		assert.deepEqual(itemInfo(block.item)?.variants, block.contract.variants.map((v) => v.id), "the registry variants are the contract's");
 	}
-	assert.deepEqual(readdirSync(join(ROOT, "registry/svelte/src/blocks")).filter((name) => name.endsWith(".svelte")).sort(), ["hero-simple.svelte", "team-simple.svelte"], "the registry tree has only the catalog blocks");
+	assert.deepEqual(readdirSync(join(ROOT, "registry/svelte/src/blocks")).filter((name) => name.endsWith(".svelte")).sort(), ["hero-simple.svelte", "split-simple.svelte", "team-simple.svelte"], "the registry tree has only the catalog blocks");
 	for (const gone of ["catalog/coverage.json", "catalog/stock-registry.v0.json", "packages/builder-core/src/catalog/snapshot.json", "packages/builder-core/src/catalog/search-index.json"]) assert.ok(!existsSync(join(ROOT, gone)), `${gone} is gone`);
 });
 
@@ -43,20 +43,22 @@ test("every pinned file matches its sha256, the prototypes come from the configu
 
 test("feed cards: one per block variant, free text and category filters, counts per category", () => {
 	const all = catalogSearch();
-	assert.deepEqual(all.items.map((card) => card.id), ["hero-simple/mediaEnd", "hero-simple/mediaStart", "hero-simple/mediaTop", "hero-simple/splitEnd", "hero-simple/splitStart", "team-simple/cols3", "team-simple/cols2", "team-simple/cols4", "team-simple/cards3"]);
-	assert.deepEqual(all.categories, [{ value: "hero", count: 5 }, { value: "company", count: 4 }]);
-	assert.deepEqual(all.items.filter((card) => card.isDefault).map((card) => card.id), ["hero-simple/mediaEnd", "team-simple/cols3"]);
+	assert.deepEqual(all.items.map((card) => card.id), ["hero-simple/mediaEnd", "hero-simple/mediaStart", "hero-simple/mediaTop", "split-simple/mediaEnd", "split-simple/mediaStart", "team-simple/cols3", "team-simple/cols2", "team-simple/cols4", "team-simple/cards3"]);
+	assert.deepEqual(all.categories, [{ value: "hero", count: 3 }, { value: "split", count: 2 }, { value: "company", count: 4 }]);
+	assert.deepEqual(all.items.filter((card) => card.isDefault).map((card) => card.id), ["hero-simple/mediaEnd", "split-simple/mediaEnd", "team-simple/cols3"]);
 	assert.deepEqual(catalogSearch({ category: "company" }).items.map((card) => card.variant), ["cols3", "cols2", "cols4", "cards3"]);
 	assert.deepEqual(catalogSearch({ q: "cards" }).items.map((card) => card.id), ["team-simple/cards3"]);
 	assert.deepEqual(catalogSearch({ q: "picture top" }).items.map((card) => card.id), ["hero-simple/mediaTop"]);
-	assert.deepEqual(catalogSearch({ q: "split" }).items.map((card) => card.id), ["hero-simple/splitEnd", "hero-simple/splitStart"]);
+	assert.deepEqual(catalogSearch({ q: "split" }).items.map((card) => card.id), ["split-simple/mediaEnd", "split-simple/mediaStart"]);
+	assert.deepEqual(catalogSearch({ category: "split" }).items.map((card) => card.variant), ["mediaEnd", "mediaStart"]);
 	assert.equal(catalogSearch({ q: "pricing" }).total, 0);
 });
 
 test("prototype props: the contract's setting defaults, then the variant's settings and axes", () => {
-	assert.deepEqual(prototypeProps("hero-simple", "mediaEnd"), { level: 2, padding: "standard", align: "start", media: "end", frame: "box" });
-	assert.deepEqual(prototypeProps("hero-simple", "mediaTop"), { level: 2, padding: "standard", align: "center", media: "top", frame: "box" });
-	assert.deepEqual(prototypeProps("hero-simple", "splitStart"), { level: 2, padding: "standard", align: "start", media: "start", frame: "split" });
+	assert.deepEqual(prototypeProps("hero-simple", "mediaEnd"), { level: 2, padding: "standard", align: "start", media: "end" });
+	assert.deepEqual(prototypeProps("hero-simple", "mediaTop"), { level: 2, padding: "standard", align: "center", media: "top" });
+	// split-simple has no align setting (its copy is fixed at the start)
+	assert.deepEqual(prototypeProps("split-simple", "mediaStart"), { level: 2, padding: "standard", media: "start" });
 	assert.deepEqual(prototypeProps("team-simple", "cards3"), { level: 2, padding: "standard", align: "center", cols: "3", surface: "cards" });
 	assert.deepEqual(prototypeProps("team-simple", "nosuch"), {});
 	assert.deepEqual(prototypeProps("nosuch", "x"), {});

@@ -5,19 +5,19 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "058c4985727d2f205598ab6198dfc8457a0a152598fae8bc5a1efbadaf83072c",
-		"lastUpdated": "2026-11-20T14:30:00+03:00",
+		"sha256": "e4bf47a4fb7a9d8029937f6fce182dbd1f6d13cacea52516396d6475efb23100",
+		"lastUpdated": "2026-11-20T15:45:34+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "b0c71a7299040dd45a13c9480d7f91a72603e706f6b4883e600a651d003cb1c3",
-		"digest": "sha256:f355ccf988693f0459e1ab44ad51755a420fd8e01701f57b819113a9110cc8d7"
+		"sha256": "64b57e44098f217eeb8a3268c3ea3e52b64e61cb5dfc9c49ed3ce5d4db24a1b7",
+		"digest": "sha256:d3fa7673d9fc9c96c904ff6412492df34e2da40418e38fdbd4f6f894eac75478"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "b51c23e5f9fc0529f4416fb651e6792edfcfd5d9ab3d652852807cb5994f2b76",
-		"digest": "sha256:461c084b4626e5c9713c4bc85a68baf715254e26e80fe20971cbf71b78aa1e88"
+		"sha256": "52cf1a84c91c80615908f9edb8db458b3a790cfe0ada2f0edd1519eb5629552a",
+		"digest": "sha256:76caabd7eff65e2dec45a0c30698a5014270b42508bd2be1ff9b4b726d41cbc9"
 	},
 	"manifest": {
 		"url": "https://registry.buildy.tw/manifest.json",
@@ -26,20 +26,25 @@
 	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "4dfa59ac1bf1fd7c6aad152d4a699e4483b98576",
+		"commit": "72684245f5159d00bad0301763d58e18db885464",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "06fd928b3442bec3e2e0292da732c1f884110a2abe47a68cf81fa4d6e97f8527"
+			"sha256": "e47892e4b1d796c25ba415e927b2c75d27cab4c6eb29fc6c8c46dfc1fcc4a979"
 		}
 	},
 	"blocks": [
 		"hero-simple",
+		"split-simple",
 		"team-simple"
 	],
 	"contracts": {
 		"hero-simple": {
 			"contract": "registry/contracts/hero-simple/1.json",
 			"model": "registry/models/hero@1.schema.json"
+		},
+		"split-simple": {
+			"contract": "registry/contracts/split-simple/1.json",
+			"model": "registry/models/split@1.schema.json"
 		},
 		"team-simple": {
 			"contract": "registry/contracts/team-simple/1.json",
@@ -507,7 +512,7 @@
 		"hero-simple": {
 			"type": "registry:block",
 			"title": "Hero Simple",
-			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start or on top, in a box or split to the edge of the screen.",
+			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start or on top.",
 			"registryDependencies": [
 				"badge",
 				"block",
@@ -1199,6 +1204,37 @@
 				"src/compose/Skeleton.svelte"
 			]
 		},
+		"split-simple": {
+			"type": "registry:block",
+			"title": "Split Simple",
+			"description": "Two halves: the heading, one paragraph and up to two links as the actions (primary, then secondary) beside one picture that fills its half to the edge of the screen.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"group",
+				"link-button",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/split-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/split-simple/1.json",
+				"group": "split",
+				"kind": "block",
+				"model": "split@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"stack": {
 			"type": "registry:ui",
 			"title": "Stack",
@@ -1715,20 +1751,23 @@
 		}
 	},
 	"files": {
-		"prototypes/svelte/blocks/hero-simple.svelte": "f8bb18becea47fa5dd3ed0044dfefdc6759652f9e3965b68716722954a90f404",
+		"prototypes/svelte/blocks/hero-simple.svelte": "0a80a78354d3d250912c1ecfb5c7c8fb90b9fb0ee20cfbbab818ec87f26bdc88",
+		"prototypes/svelte/blocks/split-simple.svelte": "cd0cab695e4eac4efa77ef38ee254ea202c6465670d5cdfbee8a1fce046162bc",
 		"prototypes/svelte/blocks/team-simple.svelte": "3531e2bf3b56bd57080f9a15d2e157aa6ed42bea786bae796ff9515c66b59976",
 		"prototypes/svelte/shapes/shape-avatar.svelte": "0cee517413dc4cefdee7d1d31e82033cf3342fdb47a0fd4a6dc58deb53cae3bb",
 		"prototypes/svelte/shapes/shape-badge.svelte": "a4cc87358624d1a2eea97135525f9c073efaaa5f3f67cec75920523ce1eb517a",
 		"prototypes/svelte/shapes/shape-cta.svelte": "cc04ffa611cd2cc460a51c14f1c1aee2f82922bffc9d1fc77b2704cd99818e12",
 		"prototypes/svelte/shapes/shape-heading.svelte": "bf81e49747592c4be8601dcf28092592ceb050dc31afad3e718f661d656d906f",
-		"prototypes/svelte/shapes/shape-media.svelte": "501afce11682ed39ff1ce7eae4b88c9d7aff698c58c0fd50d4ef640127448d0d",
+		"prototypes/svelte/shapes/shape-media.svelte": "354a114d4804aab821515227393947b790e20571f9632026a1034736fec61301",
 		"prototypes/svelte/shapes/shape-text.svelte": "e35eb73a5d5f7fed824debc745a5a4a0da4e3f9aa91f37a87ad3d7ab198e49d5",
 		"prototypes/tokens.css": "0ebedbe6e20048c59da529e8654fc7efe06a9ebc436a54f29b1d4a72cf750780",
-		"registry/contracts/hero-simple/1.json": "b1e3ba16dc7718a029f0bc77f0c2b4ba97c971cb71ebcb2f2e96480c0fec7b0d",
+		"registry/contracts/hero-simple/1.json": "c9e275e63ebe4bd48487c744e4f4b70465fd669749e0c7213c87bd6ef15074da",
+		"registry/contracts/split-simple/1.json": "cb1936dc7bf74e33036b4051337c47f517fe370cef2d701180dee987e7edbc75",
 		"registry/contracts/team-simple/1.json": "ff0b83a814f00624ee3200454fc70fd9fde1789e75412e94b2aeac5c172ed9a8",
-		"registry/models/hero@1.schema.json": "fe64b0f574767813e0585c875a7ed23ad419f1f603a37ebfc524272ab5211af5",
+		"registry/models/hero@1.schema.json": "b114d150cc77d9249b8793c9591a6242db9c8d55d94d0dd06bfe6aecd335eee6",
+		"registry/models/split@1.schema.json": "40d6489b3bbaa08ab9f5385ef1b8e1d75432b427f51c2598ec92e9c542aada6d",
 		"registry/models/team@1.schema.json": "ac003fe0b80251f4fefe73e39572cd63f3eb58b35c5fdbd337d03e232fcf797c",
-		"registry/props.v0.json": "3f85ee525d5e662428fc7497225ced3cb93014193440a073e38758e60ddad3a8",
-		"registry/variants.v0.json": "0809d11264e05c9503da59f9604a7f109ab8313dd7766fddac7298f16bcd33d7"
+		"registry/props.v0.json": "b0135a4599371d726592ea1ddbac47ed44e2276e9835edc6d120f2081049abdc",
+		"registry/variants.v0.json": "2f07089aa50599b999b8c055f8ea86ceddbfc1b697a13a39da03559b6e92f24b"
 	}
 }

@@ -3,16 +3,16 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:a5be732e74e59dc4696f748c62b1cf8fbcc42f179831accd73862b82f3f50299",
+	"lockDigest": "sha256:3d7d06e5ea937332369fe63e5240f32530e5d999a829395eb06324a1ede126b9",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "b0c71a7299040dd45a13c9480d7f91a72603e706f6b4883e600a651d003cb1c3",
-		"digest": "sha256:f355ccf988693f0459e1ab44ad51755a420fd8e01701f57b819113a9110cc8d7"
+		"sha256": "64b57e44098f217eeb8a3268c3ea3e52b64e61cb5dfc9c49ed3ce5d4db24a1b7",
+		"digest": "sha256:d3fa7673d9fc9c96c904ff6412492df34e2da40418e38fdbd4f6f894eac75478"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "b51c23e5f9fc0529f4416fb651e6792edfcfd5d9ab3d652852807cb5994f2b76",
-		"digest": "sha256:461c084b4626e5c9713c4bc85a68baf715254e26e80fe20971cbf71b78aa1e88"
+		"sha256": "52cf1a84c91c80615908f9edb8db458b3a790cfe0ada2f0edd1519eb5629552a",
+		"digest": "sha256:76caabd7eff65e2dec45a0c30698a5014270b42508bd2be1ff9b4b726d41cbc9"
 	},
 	"initItems": [
 		"presets",
@@ -475,7 +475,7 @@
 		"hero-simple": {
 			"type": "registry:block",
 			"title": "Hero Simple",
-			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start or on top, in a box or split to the edge of the screen.",
+			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start or on top.",
 			"registryDependencies": [
 				"badge",
 				"block",
@@ -1167,6 +1167,37 @@
 				"src/compose/Skeleton.svelte"
 			]
 		},
+		"split-simple": {
+			"type": "registry:block",
+			"title": "Split Simple",
+			"description": "Two halves: the heading, one paragraph and up to two links as the actions (primary, then secondary) beside one picture that fills its half to the edge of the screen.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"group",
+				"link-button",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/split-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/split-simple/1.json",
+				"group": "split",
+				"kind": "block",
+				"model": "split@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"stack": {
 			"type": "registry:ui",
 			"title": "Stack",
@@ -1781,25 +1812,28 @@
 			"defaultVariant": "mediaEnd",
 			"variants": {
 				"mediaEnd": {
-					"media": "end",
-					"frame": "box"
+					"media": "end"
 				},
 				"mediaStart": {
-					"media": "start",
-					"frame": "box"
+					"media": "start"
 				},
 				"mediaTop": {
 					"media": "top",
-					"frame": "box",
 					"align": "center"
+				}
+			}
+		},
+		"split-simple": {
+			"spec": "block.splitsimple",
+			"organism": "blocks/split-simple.svelte",
+			"organismName": "SplitSimple",
+			"defaultVariant": "mediaEnd",
+			"variants": {
+				"mediaEnd": {
+					"media": "end"
 				},
-				"splitEnd": {
-					"media": "end",
-					"frame": "split"
-				},
-				"splitStart": {
-					"media": "start",
-					"frame": "split"
+				"mediaStart": {
+					"media": "start"
 				}
 			}
 		},
@@ -1841,13 +1875,13 @@
 			"item": "hero-simple",
 			"variant": "mediaTop"
 		},
-		"block.herosimple/splitEnd": {
-			"item": "hero-simple",
-			"variant": "splitEnd"
+		"block.splitsimple/mediaEnd": {
+			"item": "split-simple",
+			"variant": "mediaEnd"
 		},
-		"block.herosimple/splitStart": {
-			"item": "hero-simple",
-			"variant": "splitStart"
+		"block.splitsimple/mediaStart": {
+			"item": "split-simple",
+			"variant": "mediaStart"
 		},
 		"block.teamsimple/cols3": {
 			"item": "team-simple",
@@ -1869,6 +1903,10 @@
 	"specs": {
 		"block.herosimple": {
 			"item": "hero-simple",
+			"variant": "mediaEnd"
+		},
+		"block.splitsimple": {
+			"item": "split-simple",
 			"variant": "mediaEnd"
 		},
 		"block.teamsimple": {

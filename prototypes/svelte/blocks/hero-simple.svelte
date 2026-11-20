@@ -3,8 +3,8 @@
   The simple hero (model hero@1): an optional badge, the heading, a description, up to two links as the actions
   (links styled as buttons, the first primary, the second secondary: each drawn only when its label and its
   address are both set) and one picture. Axes: media (end: the picture after the copy, start: before it, top:
-  above it, wide), frame (box: inside the container; split: two halves, the picture to the edge of the screen).
-  Prototype (packages/prototypes): the wireframe, rectangles only; each shape carries data-place and data-field.
+  above it, wide). Prototype (packages/prototypes): the wireframe, rectangles only; each shape carries
+  data-place and data-field.
 -->
 <script lang="ts" module>
   import type { Snippet } from "svelte";
@@ -13,7 +13,6 @@
     padding?: "compact" | "standard" | "spacious";
     align?: "start" | "center" | "end";
     media?: "end" | "start" | "top";
-    frame?: "box" | "split";
   };
 </script>
 
@@ -26,34 +25,23 @@
   import ShapeText from "../shapes/shape-text.svelte";
   import { cn } from "@ui8kit/kit/utils";
 
-  let { padding = "standard", align = "start", media = "end", frame = "box" }: HeroSimpleProps = $props();
+  let { padding = "standard", align = "start", media = "end" }: HeroSimpleProps = $props();
 </script>
 
 <Box
   tag="section"
   class={
-    ((frame as string) === "split") && ((media as string) !== "top") ? ""
-    : (padding as string) === "compact" ? "py-8 lg:py-16"
+    (padding as string) === "compact" ? "py-8 lg:py-16"
     : (padding as string) === "spacious" ? "py-24 lg:py-40"
     : "py-16 lg:py-32"
   }
   data-slot="hero-simple"
 >
-  <Box
-    class={
-      ((frame as string) === "split") && ((media as string) !== "top") ? "w-full"
-      : "mx-auto w-full max-w-6xl px-4"
-    }
-  >
+  <Box class="mx-auto w-full max-w-6xl px-4">
     <Box
       class={cn(
-        "grid grid-cols-1",
-        ((((frame as string) === "split") && ((media as string) !== "top")) ? "" : "gap-8"),
-        (
-          (media as string) === "top" ? ""
-          : ((frame as string) === "split") && ((media as string) !== "top") ? "md:grid-cols-2"
-          : "items-center md:grid-cols-2"
-        )
+        "grid grid-cols-1 gap-8",
+        (((media as string) === "top") ? "" : "items-center md:grid-cols-2")
       )}
     >
       {#if ((media as string) !== "end")}
@@ -71,10 +59,6 @@
             (align as string) === "center" ? "items-center"
             : (align as string) === "end" ? "items-end"
             : "items-start"
-          ),
-          (
-            ((frame as string) === "split") && ((media as string) !== "top") ? cn("justify-center px-4 md:px-8 lg:px-16", (((padding as string) === "compact") ? "py-8 lg:py-16" : (((padding as string) === "spacious") ? "py-24 lg:py-40" : "py-16 lg:py-32")))
-            : ""
           )
         )}
       >
