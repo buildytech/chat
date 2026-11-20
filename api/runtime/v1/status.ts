@@ -9780,6 +9780,32 @@ exports["resolveScenario"] = resolveScenario;
 
 });
 
+__def("packages/chat-agent/src/agent/build-summary.ts", function (exports) {
+
+function buildSummaryFacts(page: PageV2, trace: RunTrace | undefined): BuildSummaryFacts {
+	const fixed: string[] = [];
+	let rejectedWrites = 0;
+	for (const result of trace?.toolResults ?? []) {
+		if (result.name !== "write_page" || result.accepted !== false) continue;
+		rejectedWrites += 1;
+		for (const issue of result.gate?.issues ?? []) {
+			const text = `${issue.code} ${issue.path}`;
+			if (!fixed.includes(text)) fixed.push(text);
+		}
+	}
+	return {
+		editFields: trace?.scenario?.id === "page.edit-fields",
+		title: page.title,
+		blocks: page.blocks.map((block) => `${block.item}${block.variant ? ` ${block.variant}` : ""}`),
+		fixed,
+		rejectedWrites
+	};
+}
+
+exports["buildSummaryFacts"] = buildSummaryFacts;
+
+});
+
 __def("packages/chat-agent/src/run-attempt.ts", function (exports) {
 const { aggregateSessionUsage, unknownUsage } = __req("packages/chat-agent/src/usage.ts");
 function startAttempt(attemptId: string, userMessageId: string, modelId: string, startedAt: string): RunAttempt {
@@ -9849,6 +9875,7 @@ exports["scenarioProfiles"] = __req("packages/chat-agent/src/scenarios/registry.
 exports["POLICY_VERSION"] = __req("packages/chat-agent/src/policy.ts")["POLICY_VERSION"];
 exports["MODEL_CATALOG_VERSION"] = __req("packages/chat-agent/src/policy.ts")["MODEL_CATALOG_VERSION"];
 exports["TRIAL_POLICY_VERSION"] = __req("packages/chat-agent/src/policy.ts")["TRIAL_POLICY_VERSION"];
+exports["buildSummaryFacts"] = __req("packages/chat-agent/src/agent/build-summary.ts")["buildSummaryFacts"];
 exports["startAttempt"] = __req("packages/chat-agent/src/run-attempt.ts")["startAttempt"];
 exports["endAttempt"] = __req("packages/chat-agent/src/run-attempt.ts")["endAttempt"];
 exports["usageOfAttempts"] = __req("packages/chat-agent/src/run-attempt.ts")["usageOfAttempts"];

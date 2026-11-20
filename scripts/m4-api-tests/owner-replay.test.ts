@@ -67,3 +67,17 @@ test("owner session: get_block writes enums in the schema's type and leaves the 
 	assert.equal("cols" in result.sample || "surface" in result.sample, false);
 	assert.match(result.layout ?? "", /variant sets cols, surface/);
 });
+
+test("owner session: the host summary facts of the Build run name the fixed gate error; the second run was edit-fields", async () => {
+	const { buildSummaryFacts } = await import("../../packages/chat-agent/src/index.ts");
+	const session = file.sessions[0]!;
+	const [build, fields] = Object.values(session.ext["agent-trace"]) as unknown as Array<Parameters<typeof buildSummaryFacts>[1]>;
+	const first = buildSummaryFacts(session.page.applied, build);
+	assert.deepEqual(first.fixed, ["props_invalid /blocks/1/props/cols"]);
+	assert.equal(first.rejectedWrites, 1);
+	assert.equal(first.editFields, false);
+	assert.deepEqual(first.blocks, ["hero-simple mediaTop", "team-simple cards3"]);
+	const second = buildSummaryFacts(session.page.applied, fields);
+	assert.equal(second.editFields, true);
+	assert.deepEqual(second.fixed, []);
+});

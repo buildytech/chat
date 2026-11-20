@@ -16,6 +16,7 @@ import { draftPageId } from "../../../lib/project/transitions.ts";
 import type { Project } from "../../../lib/project/types.ts";
 import { getSelectedSession } from "./chat.svelte.ts";
 import { blockScope } from "./block-scope.svelte.ts";
+import { buildSummary } from "./build-summary";
 import { conversationForTurn } from "./conversation";
 import { firstReason, type RejectedIssue } from "./reason";
 import type { ChatMessage, ChatProposalState, ChatRunRecord, ChatSession } from "./types";
@@ -244,5 +245,7 @@ export function replyMessage(out: TurnOutcome): ChatMessage {
 	const screenId = plan.request.screenId ?? null;
 	const baseRevision = plan.request.expectedRevision;
 	setCandidatePage(checked.page, provenanceFor(screenId));
-	return { ...base, proposal: newProposalState({ ...checked, baseRevision, live }) };
+	// The host's summary line (no model call): what was written, the blocks, the gate errors fixed, edit-fields.
+	const summary = buildSummary({ page: checked.page, diff: checked.diff, trace: out.runTrace, warnings: checked.warnings });
+	return { ...base, text: [result.text.trim(), summary].filter(Boolean).join("\n\n"), proposal: newProposalState({ ...checked, baseRevision, live }) };
 }
