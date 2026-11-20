@@ -166,24 +166,42 @@
             </Box>
           {/if}
         </Box>
-        <Box
-          tag="li"
-          class={
-            (surface as string) === "cards" ? "flex"
-            : cn("flex flex-col gap-4", (((align as string) === "center") ? "items-center" : (((align as string) === "end") ? "items-end" : "items-start")))
-          }
-          data-slot="member"
-        >
-          {#if ((surface as string) === "cards")}
-            <Box
-              tag="div"
-              class={cn(
-                "bg-card border border-border rounded",
-                cn("flex w-full flex-col gap-4 p-6", (((align as string) === "center") ? "items-center" : (((align as string) === "end") ? "items-end" : "items-start")))
-              )}
-              data-slot="card"
-              data-role="surface"
-            >
+        {#if (((cols as string) === "3") || ((cols as string) === "4"))}
+          <Box
+            tag="li"
+            class={
+              (surface as string) === "cards" ? "flex"
+              : cn("flex flex-col gap-4", (((align as string) === "center") ? "items-center" : (((align as string) === "end") ? "items-end" : "items-start")))
+            }
+            data-slot="member"
+          >
+            {#if ((surface as string) === "cards")}
+              <Box
+                tag="div"
+                class={cn(
+                  "bg-card border border-border rounded",
+                  cn("flex w-full flex-col gap-4 p-6", (((align as string) === "center") ? "items-center" : (((align as string) === "end") ? "items-end" : "items-start")))
+                )}
+                data-slot="card"
+                data-role="surface"
+              >
+                <ShapeAvatar place="members.avatar" field="/members/2/avatar" />
+                <Box
+                  class={cn(
+                    "flex w-full flex-col",
+                    "gap-2",
+                    (
+                      (align as string) === "center" ? "items-center"
+                      : (align as string) === "end" ? "items-end"
+                      : "items-start"
+                    )
+                  )}
+                >
+                  <ShapeHeading size="md" width="1/2" place="members.title" field="/members/2/title" />
+                  <ShapeText lines="1" align={align} place="members.description" field="/members/2/description" />
+                </Box>
+              </Box>
+            {:else}
               <ShapeAvatar place="members.avatar" field="/members/2/avatar" />
               <Box
                 class={cn(
@@ -199,25 +217,63 @@
                 <ShapeHeading size="md" width="1/2" place="members.title" field="/members/2/title" />
                 <ShapeText lines="1" align={align} place="members.description" field="/members/2/description" />
               </Box>
-            </Box>
-          {:else}
-            <ShapeAvatar place="members.avatar" field="/members/2/avatar" />
-            <Box
-              class={cn(
-                "flex w-full flex-col",
-                "gap-2",
-                (
-                  (align as string) === "center" ? "items-center"
-                  : (align as string) === "end" ? "items-end"
-                  : "items-start"
-                )
-              )}
-            >
-              <ShapeHeading size="md" width="1/2" place="members.title" field="/members/2/title" />
-              <ShapeText lines="1" align={align} place="members.description" field="/members/2/description" />
-            </Box>
-          {/if}
-        </Box>
+            {/if}
+          </Box>
+        {/if}
+        {#if ((cols as string) === "4")}
+          <Box
+            tag="li"
+            class={
+              (surface as string) === "cards" ? "flex"
+              : cn("flex flex-col gap-4", (((align as string) === "center") ? "items-center" : (((align as string) === "end") ? "items-end" : "items-start")))
+            }
+            data-slot="member"
+          >
+            {#if ((surface as string) === "cards")}
+              <Box
+                tag="div"
+                class={cn(
+                  "bg-card border border-border rounded",
+                  cn("flex w-full flex-col gap-4 p-6", (((align as string) === "center") ? "items-center" : (((align as string) === "end") ? "items-end" : "items-start")))
+                )}
+                data-slot="card"
+                data-role="surface"
+              >
+                <ShapeAvatar place="members.avatar" field="/members/3/avatar" />
+                <Box
+                  class={cn(
+                    "flex w-full flex-col",
+                    "gap-2",
+                    (
+                      (align as string) === "center" ? "items-center"
+                      : (align as string) === "end" ? "items-end"
+                      : "items-start"
+                    )
+                  )}
+                >
+                  <ShapeHeading size="md" width="1/2" place="members.title" field="/members/3/title" />
+                  <ShapeText lines="1" align={align} place="members.description" field="/members/3/description" />
+                </Box>
+              </Box>
+            {:else}
+              <ShapeAvatar place="members.avatar" field="/members/3/avatar" />
+              <Box
+                class={cn(
+                  "flex w-full flex-col",
+                  "gap-2",
+                  (
+                    (align as string) === "center" ? "items-center"
+                    : (align as string) === "end" ? "items-end"
+                    : "items-start"
+                  )
+                )}
+              >
+                <ShapeHeading size="md" width="1/2" place="members.title" field="/members/3/title" />
+                <ShapeText lines="1" align={align} place="members.description" field="/members/3/description" />
+              </Box>
+            {/if}
+          </Box>
+        {/if}
       </Box>
     </Box>
   </Box>

@@ -7,6 +7,7 @@ import { cloneJson, type BlockV2, type PropValueV2 } from "@buildytech/page-cont
 import { fillProps, humanizeName } from "../catalog/props-fill.ts";
 import { propShapeFor, propsEventsFor, propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { variantPreset } from "../catalog/organism.ts";
+import { variantColumns } from "../catalog/blocks.ts";
 import { itemInfo } from "./items.ts";
 
 export type BlockRender = {
@@ -46,7 +47,8 @@ export function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">):
 	return { item: block.item, variant, organism: info.organism, props: effectiveProps(block.item, variant, block.props), events, slots };
 }
 
-/** Rows a new block's required list starts with, so the block shows something. */
+/** Rows a new block's required list starts with, so the block shows something: one per column of the variant (cols4: 4,
+ *  so no column stands empty), else 2. */
 const SAMPLE_ROWS = 2;
 const SAMPLE_TITLE_PROPS = ["title", "heading", "name"];
 
@@ -63,7 +65,8 @@ export function sampleProps(item: string, variant: string | null | undefined, id
 	if (shape?.props.includes("id")) seed.id = id;
 	const heading = shape?.text.find((name) => SAMPLE_TITLE_PROPS.includes(name));
 	if (heading && info) seed[heading] = info.title;
-	return effectiveProps(item, variant, seed, { blank: true, rows: SAMPLE_ROWS }) as Record<string, PropValueV2>;
+	const rows = (info && variantColumns(item, variant && info.variants.includes(variant) ? variant : info.defaultVariant)) || SAMPLE_ROWS;
+	return effectiveProps(item, variant, seed, { blank: true, rows }) as Record<string, PropValueV2>;
 }
 
 /** UI label dictionaries (`labels`, aria strings) are component chrome: reported as one path while none of their words is written. */

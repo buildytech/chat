@@ -2027,13 +2027,13 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 	"registry": "https://registry.buildy.tw/svelte",
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "36c6715eb81b2d90e2b1fd01f4f9d7fc60d99476",
+		"commit": "4dfa59ac1bf1fd7c6aad152d4a699e4483b98576",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "763f698c6111a0c95ef1c34971a1996563279868204061c108781b3ee300e94f"
+			"sha256": "06fd928b3442bec3e2e0292da732c1f884110a2abe47a68cf81fa4d6e97f8527"
 		}
 	},
-	"digest": "sha256:c5d6064ba4f7c2af3075dd1f5e9b360ddfc73cbe566ba4d8f0eac0bc6e888cbe",
+	"digest": "sha256:b56bc6853f814c857f6b2dd9712a808f537f528fa332ee89f707881f50f3dd70",
 	"blocks": [
 		{
 			"item": "hero-simple",
@@ -2498,6 +2498,22 @@ function variantAxisValues(item: string, variant: string): Record<string, string
 	return out;
 }
 
+/** The column axis of a block: the one contract axis whose values are all whole numbers (team-simple `cols`), else null.
+ *  Read from the contract data, never from a block id (the rule of the generated wireframe: codegen-x prototypes `countAxis`). */
+function columnAxis(item: string): string | null {
+	const counts = Object.entries(catalogBlock(item)?.contract.axes ?? {}).filter(
+		([, values]) => Array.isArray(values) && values.length > 0 && values.every((v) => /^[1-9][0-9]?$/.test(String(v))),
+	);
+	return counts.length === 1 ? counts[0]![0] : null;
+}
+
+/** The columns a variant lays its list out in (`cols4` -> 4, `cards3` -> 3), or null when the block has no column axis. */
+function variantColumns(item: string, variant: string): number | null {
+	const axis = columnAxis(item);
+	const value = axis ? variantAxisValues(item, variant)?.[axis] : undefined;
+	return value ? Number(value) : null;
+}
+
 /** The setting a variant renders with when the author set none (`align` of mediaTop is "center"), or undefined. */
 function variantSettingDefault(item: string, variant: string, name: string): string | number | boolean | undefined {
 	return variantSettings(item, variant)[name];
@@ -2546,6 +2562,8 @@ exports["catalogBlocks"] = catalogBlocks;
 exports["catalogBlock"] = catalogBlock;
 exports["layoutAxes"] = layoutAxes;
 exports["variantAxisValues"] = variantAxisValues;
+exports["columnAxis"] = columnAxis;
+exports["variantColumns"] = variantColumns;
 exports["variantSettingDefault"] = variantSettingDefault;
 exports["variantSettingNames"] = variantSettingNames;
 exports["prototypeProps"] = prototypeProps;
@@ -5766,6 +5784,7 @@ const { cloneJson } = __req("packages/page-contract/src/index.ts");
 const { fillProps, humanizeName } = __req("packages/builder-core/src/catalog/props-fill.ts");
 const { propShapeFor, propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { variantPreset } = __req("packages/builder-core/src/catalog/organism.ts");
+const { variantColumns } = __req("packages/builder-core/src/catalog/blocks.ts");
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
 type Json = unknown;
 const isObject = (value: Json): value is Record<string, Json> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -5793,7 +5812,8 @@ function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">): BlockR
 	return { item: block.item, variant, organism: info.organism, props: effectiveProps(block.item, variant, block.props), events, slots };
 }
 
-/** Rows a new block's required list starts with, so the block shows something. */
+/** Rows a new block's required list starts with, so the block shows something: one per column of the variant (cols4: 4,
+ *  so no column stands empty), else 2. */
 const SAMPLE_ROWS = 2;
 const SAMPLE_TITLE_PROPS = ["title", "heading", "name"];
 
@@ -5810,7 +5830,8 @@ function sampleProps(item: string, variant: string | null | undefined, id: strin
 	if (shape?.props.includes("id")) seed.id = id;
 	const heading = shape?.text.find((name) => SAMPLE_TITLE_PROPS.includes(name));
 	if (heading && info) seed[heading] = info.title;
-	return effectiveProps(item, variant, seed, { blank: true, rows: SAMPLE_ROWS }) as Record<string, PropValueV2>;
+	const rows = (info && variantColumns(item, variant && info.variants.includes(variant) ? variant : info.defaultVariant)) || SAMPLE_ROWS;
+	return effectiveProps(item, variant, seed, { blank: true, rows }) as Record<string, PropValueV2>;
 }
 
 /** UI label dictionaries (`labels`, aria strings) are component chrome: reported as one path while none of their words is written. */

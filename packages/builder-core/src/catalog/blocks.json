@@ -4,13 +4,13 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "36c6715eb81b2d90e2b1fd01f4f9d7fc60d99476",
+		"commit": "4dfa59ac1bf1fd7c6aad152d4a699e4483b98576",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "763f698c6111a0c95ef1c34971a1996563279868204061c108781b3ee300e94f"
+			"sha256": "06fd928b3442bec3e2e0292da732c1f884110a2abe47a68cf81fa4d6e97f8527"
 		}
 	},
-	"digest": "sha256:c5d6064ba4f7c2af3075dd1f5e9b360ddfc73cbe566ba4d8f0eac0bc6e888cbe",
+	"digest": "sha256:b56bc6853f814c857f6b2dd9712a808f537f528fa332ee89f707881f50f3dd70",
 	"blocks": [
 		{
 			"item": "hero-simple",

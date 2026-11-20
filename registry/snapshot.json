@@ -5,8 +5,8 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "e370fc187d5014fb73b8b1d97bdf736de3de88ff267966abf098947315f8f9f1",
-		"lastUpdated": "2026-11-20T14:25:01+03:00",
+		"sha256": "058c4985727d2f205598ab6198dfc8457a0a152598fae8bc5a1efbadaf83072c",
+		"lastUpdated": "2026-11-20T14:30:00+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
@@ -26,10 +26,10 @@
 	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "36c6715eb81b2d90e2b1fd01f4f9d7fc60d99476",
+		"commit": "4dfa59ac1bf1fd7c6aad152d4a699e4483b98576",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "763f698c6111a0c95ef1c34971a1996563279868204061c108781b3ee300e94f"
+			"sha256": "06fd928b3442bec3e2e0292da732c1f884110a2abe47a68cf81fa4d6e97f8527"
 		}
 	},
 	"blocks": [
@@ -1716,7 +1716,7 @@
 	},
 	"files": {
 		"prototypes/svelte/blocks/hero-simple.svelte": "f8bb18becea47fa5dd3ed0044dfefdc6759652f9e3965b68716722954a90f404",
-		"prototypes/svelte/blocks/team-simple.svelte": "c45b96eb50cd81ce6df6b49512dd6ea3f37002b767ab7627061c74fddc0983c7",
+		"prototypes/svelte/blocks/team-simple.svelte": "3531e2bf3b56bd57080f9a15d2e157aa6ed42bea786bae796ff9515c66b59976",
 		"prototypes/svelte/shapes/shape-avatar.svelte": "0cee517413dc4cefdee7d1d31e82033cf3342fdb47a0fd4a6dc58deb53cae3bb",
 		"prototypes/svelte/shapes/shape-badge.svelte": "a4cc87358624d1a2eea97135525f9c073efaaa5f3f67cec75920523ce1eb517a",
 		"prototypes/svelte/shapes/shape-cta.svelte": "cc04ffa611cd2cc460a51c14f1c1aee2f82922bffc9d1fc77b2704cd99818e12",

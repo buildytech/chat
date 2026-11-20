@@ -62,6 +62,22 @@ export function variantAxisValues(item: string, variant: string): Record<string,
 	return out;
 }
 
+/** The column axis of a block: the one contract axis whose values are all whole numbers (team-simple `cols`), else null.
+ *  Read from the contract data, never from a block id (the rule of the generated wireframe: codegen-x prototypes `countAxis`). */
+export function columnAxis(item: string): string | null {
+	const counts = Object.entries(catalogBlock(item)?.contract.axes ?? {}).filter(
+		([, values]) => Array.isArray(values) && values.length > 0 && values.every((v) => /^[1-9][0-9]?$/.test(String(v))),
+	);
+	return counts.length === 1 ? counts[0]![0] : null;
+}
+
+/** The columns a variant lays its list out in (`cols4` -> 4, `cards3` -> 3), or null when the block has no column axis. */
+export function variantColumns(item: string, variant: string): number | null {
+	const axis = columnAxis(item);
+	const value = axis ? variantAxisValues(item, variant)?.[axis] : undefined;
+	return value ? Number(value) : null;
+}
+
 /** The setting a variant renders with when the author set none (`align` of mediaTop is "center"), or undefined. */
 export function variantSettingDefault(item: string, variant: string, name: string): string | number | boolean | undefined {
 	return variantSettings(item, variant)[name];

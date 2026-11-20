@@ -108,3 +108,20 @@ test("a swapped item takes the sample props of the new item and keeps the shared
 	assert.equal(entry.change, "changed");
 	assert.ok(entry.paths!.includes("/item"));
 });
+
+test("sample props: a list starts with one row per column of the variant (the contract's whole-number axis), else 2", async () => {
+	const { catalogBlocks, columnAxis, variantAxisValues } = await import("../../packages/builder-core/src/catalog/blocks.ts");
+	let checked = 0;
+	for (const block of catalogBlocks()) {
+		const axis = columnAxis(block.item);
+		for (const v of block.contract.variants) {
+			const props = sampleProps(block.item, v.id, "b1");
+			const lists = Object.values(props).filter(Array.isArray);
+			if (!lists.length) continue;
+			const want = axis ? Number(variantAxisValues(block.item, v.id)![axis]) : 2;
+			for (const list of lists) assert.equal(list.length, want, `${block.item} ${v.id}`);
+			checked++;
+		}
+	}
+	assert.ok(checked > 0);
+});
