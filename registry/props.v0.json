@@ -1,6 +1,6 @@
 {
 	"version": "0",
-	"digest": "sha256:8d07269ba87ec6dcc150010f0708cde183b4e85c5ebe4a7b25c03b24ce4faf0c",
+	"digest": "sha256:ffeeb55ab26b97d8f1fdb67afc79c8a346da0fcf218c7aa2682616e93c54220a",
 	"registry": "https://registry.buildy.tw",
 	"items": {
 		"article-lead": {
@@ -2213,6 +2213,280 @@
 					],
 					"/modules/[]/meta": [
 						{
+							"k": "text"
+						}
+					]
+				}
+			}
+		},
+		"cta-simple": {
+			"organism": "CtaSimple",
+			"events": [],
+			"slots": [],
+			"schema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"title": "CtaSimpleProps",
+				"description": "The simple call to action (model cta@1): one band with an optional badge, the heading, a description and up to two links styled as buttons (the first primary, the second secondary; each drawn when its label and its address are both set). Text only (a picture beside the copy is the split or the hero). Axes: layout (stack: the copy and the actions in one column, placed by the align setting; between: the copy at the start, the actions at the end from md up), surface (muted: a muted band, outline: a bordered card).",
+				"type": "object",
+				"properties": {
+					"id": {
+						"$ref": "#/$defs/text"
+					},
+					"badge": {
+						"description": "a short pill above the heading; empty: no badge",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"title": {
+						"$ref": "#/$defs/text"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"secondaryActionLabel": {
+						"description": "the label of the second action (the secondary button after the first); drawn when the label and the address are both set",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"secondaryActionHref": {
+						"description": "the address of the second action",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"level": {
+						"description": "the level of the heading (1 on the first section of a page)",
+						"enum": [
+							1,
+							2,
+							3
+						],
+						"default": 2
+					},
+					"padding": {
+						"description": "the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)",
+						"type": "string",
+						"enum": [
+							"compact",
+							"standard",
+							"spacious"
+						],
+						"default": "standard"
+					},
+					"align": {
+						"description": "the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text",
+						"type": "string",
+						"enum": [
+							"start",
+							"center",
+							"end"
+						],
+						"default": "center"
+					},
+					"layout": {
+						"type": "string",
+						"enum": [
+							"stack",
+							"between"
+						],
+						"default": "stack"
+					},
+					"surface": {
+						"type": "string",
+						"enum": [
+							"muted",
+							"outline"
+						],
+						"default": "muted"
+					},
+					"landmarkLabel": {
+						"description": "accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one",
+						"$ref": "#/$defs/text"
+					}
+				},
+				"required": [
+					"id",
+					"title"
+				],
+				"additionalProperties": false,
+				"$defs": {
+					"data": {
+						"anyOf": [
+							{
+								"$ref": "#/$defs/dataRef"
+							},
+							{
+								"$ref": "#/$defs/dataOp"
+							}
+						]
+					},
+					"dataOp": {
+						"description": "an operation over the data (packages/compose-gen/screens/src/ir.ts OPS)",
+						"type": "object",
+						"properties": {
+							"op": {
+								"enum": [
+									"add",
+									"and",
+									"at",
+									"cn",
+									"coalesce",
+									"cond",
+									"count",
+									"css",
+									"div",
+									"eq",
+									"firstOf",
+									"fitCols",
+									"ge",
+									"gt",
+									"has",
+									"le",
+									"len",
+									"list",
+									"lt",
+									"match",
+									"max",
+									"maxBy",
+									"min",
+									"money",
+									"mul",
+									"nbsp",
+									"ne",
+									"not",
+									"nth",
+									"num",
+									"or",
+									"pageWindow",
+									"pick",
+									"preset",
+									"range",
+									"recipe",
+									"round",
+									"str",
+									"sub",
+									"sumBy",
+									"tpl",
+									"undef",
+									"uniq",
+									"where",
+									"words"
+								]
+							},
+							"args": {
+								"type": "array"
+							}
+						},
+						"required": [
+							"op",
+							"args"
+						],
+						"additionalProperties": false
+					},
+					"dataRef": {
+						"description": "the data the block reads under this name (data[].as of the block spec)",
+						"type": "object",
+						"properties": {
+							"$": {
+								"type": "string",
+								"not": {
+									"pattern": "^ui\\."
+								}
+							}
+						},
+						"required": [
+							"$"
+						],
+						"additionalProperties": false
+					},
+					"text": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"$ref": "#/$defs/uiRef"
+							},
+							{
+								"$ref": "#/$defs/data"
+							}
+						]
+					},
+					"uiRef": {
+						"description": "a text of the ui dictionary, or a group of its texts for a record of labels",
+						"type": "object",
+						"properties": {
+							"$": {
+								"type": "string",
+								"pattern": "^ui\\."
+							}
+						},
+						"required": [
+							"$"
+						],
+						"additionalProperties": false
+					}
+				}
+			},
+			"viewMap": {
+				"rows": {},
+				"fields": {
+					"/landmarkLabel": [
+						{
+							"k": "attr",
+							"a": "aria-label"
+						}
+					],
+					"/badge": [
+						{
+							"s": "badge",
+							"k": "text"
+						}
+					],
+					"/title": [
+						{
+							"k": "text"
+						}
+					],
+					"/description": [
+						{
+							"k": "text"
+						}
+					],
+					"/actionHref": [
+						{
+							"s": "button",
+							"k": "attr",
+							"a": "href"
+						}
+					],
+					"/actionLabel": [
+						{
+							"s": "button",
+							"k": "text"
+						}
+					],
+					"/secondaryActionHref": [
+						{
+							"s": "button",
+							"k": "attr",
+							"a": "href"
+						}
+					],
+					"/secondaryActionLabel": [
+						{
+							"s": "button",
 							"k": "text"
 						}
 					]
@@ -5673,6 +5947,311 @@
 				}
 			}
 		},
+		"menu-simple": {
+			"organism": "MenuSimple",
+			"events": [],
+			"slots": [],
+			"schema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"title": "MenuSimpleProps",
+				"description": "The simple menu (model menu@1): the heading, a description and the dishes as a list, each with a picture, an optional badge (a new or a spicy dish), the name, the weight or the portion, a line and the price as it is shown. Axes: layout (cards: a card surface per dish, the picture on top; rows: the picture at the start, the price at the end), cols (3, 2, 4 columns of the cards).",
+				"type": "object",
+				"properties": {
+					"id": {
+						"$ref": "#/$defs/text"
+					},
+					"title": {
+						"$ref": "#/$defs/text"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"items": {
+						"description": "the dishes, in the order they are shown (1 to 8)",
+						"anyOf": [
+							{
+								"type": "array",
+								"items": {
+									"anyOf": [
+										{
+											"$ref": "#/$defs/MenuDish"
+										},
+										{
+											"$ref": "#/$defs/uiRef"
+										},
+										{
+											"$ref": "#/$defs/data"
+										}
+									]
+								}
+							},
+							{
+								"$ref": "#/$defs/data"
+							}
+						]
+					},
+					"level": {
+						"description": "the level of the heading (1 on the first section of a page)",
+						"enum": [
+							1,
+							2,
+							3
+						],
+						"default": 2
+					},
+					"padding": {
+						"description": "the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)",
+						"type": "string",
+						"enum": [
+							"compact",
+							"standard",
+							"spacious"
+						],
+						"default": "standard"
+					},
+					"align": {
+						"description": "the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text",
+						"type": "string",
+						"enum": [
+							"start",
+							"center",
+							"end"
+						],
+						"default": "center"
+					},
+					"layout": {
+						"type": "string",
+						"enum": [
+							"cards",
+							"rows"
+						],
+						"default": "cards"
+					},
+					"cols": {
+						"type": "string",
+						"enum": [
+							"3",
+							"2",
+							"4"
+						],
+						"default": "3"
+					},
+					"landmarkLabel": {
+						"description": "accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one",
+						"$ref": "#/$defs/text"
+					}
+				},
+				"required": [
+					"id",
+					"title",
+					"items"
+				],
+				"additionalProperties": false,
+				"$defs": {
+					"MenuDish": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"$ref": "#/$defs/text"
+							},
+							"image": {
+								"$ref": "#/$defs/text"
+							},
+							"title": {
+								"$ref": "#/$defs/text"
+							},
+							"weight": {
+								"$ref": "#/$defs/text"
+							},
+							"price": {
+								"$ref": "#/$defs/text"
+							},
+							"description": {
+								"$ref": "#/$defs/text"
+							},
+							"badge": {
+								"$ref": "#/$defs/text"
+							}
+						},
+						"required": [
+							"id",
+							"title",
+							"price"
+						],
+						"additionalProperties": false
+					},
+					"data": {
+						"anyOf": [
+							{
+								"$ref": "#/$defs/dataRef"
+							},
+							{
+								"$ref": "#/$defs/dataOp"
+							}
+						]
+					},
+					"dataOp": {
+						"description": "an operation over the data (packages/compose-gen/screens/src/ir.ts OPS)",
+						"type": "object",
+						"properties": {
+							"op": {
+								"enum": [
+									"add",
+									"and",
+									"at",
+									"cn",
+									"coalesce",
+									"cond",
+									"count",
+									"css",
+									"div",
+									"eq",
+									"firstOf",
+									"fitCols",
+									"ge",
+									"gt",
+									"has",
+									"le",
+									"len",
+									"list",
+									"lt",
+									"match",
+									"max",
+									"maxBy",
+									"min",
+									"money",
+									"mul",
+									"nbsp",
+									"ne",
+									"not",
+									"nth",
+									"num",
+									"or",
+									"pageWindow",
+									"pick",
+									"preset",
+									"range",
+									"recipe",
+									"round",
+									"str",
+									"sub",
+									"sumBy",
+									"tpl",
+									"undef",
+									"uniq",
+									"where",
+									"words"
+								]
+							},
+							"args": {
+								"type": "array"
+							}
+						},
+						"required": [
+							"op",
+							"args"
+						],
+						"additionalProperties": false
+					},
+					"dataRef": {
+						"description": "the data the block reads under this name (data[].as of the block spec)",
+						"type": "object",
+						"properties": {
+							"$": {
+								"type": "string",
+								"not": {
+									"pattern": "^ui\\."
+								}
+							}
+						},
+						"required": [
+							"$"
+						],
+						"additionalProperties": false
+					},
+					"text": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"$ref": "#/$defs/uiRef"
+							},
+							{
+								"$ref": "#/$defs/data"
+							}
+						]
+					},
+					"uiRef": {
+						"description": "a text of the ui dictionary, or a group of its texts for a record of labels",
+						"type": "object",
+						"properties": {
+							"$": {
+								"type": "string",
+								"pattern": "^ui\\."
+							}
+						},
+						"required": [
+							"$"
+						],
+						"additionalProperties": false
+					}
+				}
+			},
+			"viewMap": {
+				"rows": {
+					"/items": [
+						"dish"
+					]
+				},
+				"fields": {
+					"/landmarkLabel": [
+						{
+							"k": "attr",
+							"a": "aria-label"
+						}
+					],
+					"/title": [
+						{
+							"k": "text"
+						}
+					],
+					"/description": [
+						{
+							"k": "text"
+						}
+					],
+					"/items/[]/badge": [
+						{
+							"s": "badge",
+							"k": "text"
+						}
+					],
+					"/items/[]/title": [
+						{
+							"k": "text"
+						}
+					],
+					"/items/[]/weight": [
+						{
+							"k": "text"
+						}
+					],
+					"/items/[]/description": [
+						{
+							"k": "text"
+						}
+					],
+					"/items/[]/price": [
+						{
+							"k": "text"
+						}
+					]
+				}
+			}
+		},
 		"offers-simple": {
 			"organism": "OffersSimple",
 			"events": [],
@@ -7695,6 +8274,280 @@
 						}
 					],
 					"/links/[]/label": [
+						{
+							"s": "button",
+							"k": "text"
+						}
+					]
+				}
+			}
+		},
+		"promo-simple": {
+			"organism": "PromoSimple",
+			"events": [],
+			"slots": [],
+			"schema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"title": "PromoSimpleProps",
+				"description": "The simple promo (model promo@1): one offer with the discount as a badge, the heading, the deadline as text (no countdown), a description, an optional promo code, one action and a picture. Axes: media (end: the picture after the copy from md up, start: before it, top: above it, wide).",
+				"type": "object",
+				"properties": {
+					"id": {
+						"$ref": "#/$defs/text"
+					},
+					"badge": {
+						"description": "a short pill above the heading; empty: no badge",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"title": {
+						"$ref": "#/$defs/text"
+					},
+					"deadline": {
+						"description": "the deadline of the offer as it is shown (until 31 December)",
+						"$ref": "#/$defs/text"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"code": {
+						"description": "a promo code; empty: none",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"image": {
+						"description": "address of the picture; none: the placeholder",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"imageAlt": {
+						"description": "alt text of the picture",
+						"$ref": "#/$defs/text"
+					},
+					"level": {
+						"description": "the level of the heading (1 on the first section of a page)",
+						"enum": [
+							1,
+							2,
+							3
+						],
+						"default": 2
+					},
+					"padding": {
+						"description": "the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)",
+						"type": "string",
+						"enum": [
+							"compact",
+							"standard",
+							"spacious"
+						],
+						"default": "standard"
+					},
+					"align": {
+						"description": "the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text",
+						"type": "string",
+						"enum": [
+							"start",
+							"center",
+							"end"
+						],
+						"default": "start"
+					},
+					"media": {
+						"type": "string",
+						"enum": [
+							"end",
+							"start",
+							"top"
+						],
+						"default": "end"
+					},
+					"landmarkLabel": {
+						"description": "accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one",
+						"$ref": "#/$defs/text"
+					}
+				},
+				"required": [
+					"id",
+					"title",
+					"deadline",
+					"imageAlt"
+				],
+				"additionalProperties": false,
+				"$defs": {
+					"data": {
+						"anyOf": [
+							{
+								"$ref": "#/$defs/dataRef"
+							},
+							{
+								"$ref": "#/$defs/dataOp"
+							}
+						]
+					},
+					"dataOp": {
+						"description": "an operation over the data (packages/compose-gen/screens/src/ir.ts OPS)",
+						"type": "object",
+						"properties": {
+							"op": {
+								"enum": [
+									"add",
+									"and",
+									"at",
+									"cn",
+									"coalesce",
+									"cond",
+									"count",
+									"css",
+									"div",
+									"eq",
+									"firstOf",
+									"fitCols",
+									"ge",
+									"gt",
+									"has",
+									"le",
+									"len",
+									"list",
+									"lt",
+									"match",
+									"max",
+									"maxBy",
+									"min",
+									"money",
+									"mul",
+									"nbsp",
+									"ne",
+									"not",
+									"nth",
+									"num",
+									"or",
+									"pageWindow",
+									"pick",
+									"preset",
+									"range",
+									"recipe",
+									"round",
+									"str",
+									"sub",
+									"sumBy",
+									"tpl",
+									"undef",
+									"uniq",
+									"where",
+									"words"
+								]
+							},
+							"args": {
+								"type": "array"
+							}
+						},
+						"required": [
+							"op",
+							"args"
+						],
+						"additionalProperties": false
+					},
+					"dataRef": {
+						"description": "the data the block reads under this name (data[].as of the block spec)",
+						"type": "object",
+						"properties": {
+							"$": {
+								"type": "string",
+								"not": {
+									"pattern": "^ui\\."
+								}
+							}
+						},
+						"required": [
+							"$"
+						],
+						"additionalProperties": false
+					},
+					"text": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"$ref": "#/$defs/uiRef"
+							},
+							{
+								"$ref": "#/$defs/data"
+							}
+						]
+					},
+					"uiRef": {
+						"description": "a text of the ui dictionary, or a group of its texts for a record of labels",
+						"type": "object",
+						"properties": {
+							"$": {
+								"type": "string",
+								"pattern": "^ui\\."
+							}
+						},
+						"required": [
+							"$"
+						],
+						"additionalProperties": false
+					}
+				}
+			},
+			"viewMap": {
+				"rows": {},
+				"fields": {
+					"/landmarkLabel": [
+						{
+							"k": "attr",
+							"a": "aria-label"
+						}
+					],
+					"/badge": [
+						{
+							"s": "badge",
+							"k": "text"
+						}
+					],
+					"/title": [
+						{
+							"k": "text"
+						}
+					],
+					"/deadline": [
+						{
+							"k": "text"
+						}
+					],
+					"/description": [
+						{
+							"k": "text"
+						}
+					],
+					"/code": [
+						{
+							"k": "text"
+						}
+					],
+					"/actionHref": [
+						{
+							"s": "button",
+							"k": "attr",
+							"a": "href"
+						}
+					],
+					"/actionLabel": [
 						{
 							"s": "button",
 							"k": "text"

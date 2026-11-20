@@ -4,13 +4,13 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "95e3b1dd46283c892647febe4215954a527b5cb8",
+		"commit": "91e8a57a025a7344c78aeb6b27717fa6622f1586",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "5f758a09de5e184897baedfe297328fdb76477386cdd115c2823763bd3879dca"
+			"sha256": "cf8b21c224e3c4869d4a1188f4421e32f5faec26339c9e4dd238f9017f54bbde"
 		}
 	},
-	"digest": "sha256:0758c35de441d8739a9224eb5f46c947b7b537d788d722ee3be97c979b3f2164",
+	"digest": "sha256:81c4963d45fcdd4ccff237c5f1aaf47bc5424e5d6e4813826bd506036c15a76a",
 	"blocks": [
 		{
 			"item": "hero-simple",
@@ -7340,6 +7340,642 @@
 								}
 							}
 						}
+					}
+				}
+			}
+		},
+		{
+			"item": "menu-simple",
+			"title": "Menu Simple",
+			"description": "The heading, one paragraph and the dishes (a picture, a badge when set, the name, the weight, a line, the price): on cards in three, two or four columns, or menu rows with the price at the end.",
+			"category": "food",
+			"prototype": "menu-simple.svelte",
+			"contract": {
+				"item": "menu-simple",
+				"version": 1,
+				"block": "block.menusimple",
+				"organism": "MenuSimple",
+				"line": "simple",
+				"model": "menu@1",
+				"modelSchema": "https://registry.buildy.tw/models/menu@1.schema.json",
+				"axes": {
+					"layout": [
+						"cards",
+						"rows"
+					],
+					"cols": [
+						"3",
+						"2",
+						"4"
+					]
+				},
+				"defaults": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "cards3",
+						"label": "Three dish cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "cards2",
+						"label": "Two columns",
+						"axes": {
+							"layout": "cards",
+							"cols": "2"
+						}
+					},
+					{
+						"id": "cards4",
+						"label": "Four columns",
+						"axes": {
+							"layout": "cards",
+							"cols": "4"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "Menu rows, the price at the end",
+						"axes": {
+							"layout": "rows",
+							"cols": "3"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "cards3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.image",
+						"kind": "media",
+						"fields": [
+							"/items/*/image"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.badge",
+						"kind": "badge",
+						"fields": [
+							"/items/*/badge"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.weight",
+						"kind": "text",
+						"fields": [
+							"/items/*/weight"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.price",
+						"kind": "text",
+						"fields": [
+							"/items/*/price"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/menu@1.schema.json",
+				"title": "MenuContent",
+				"description": "Menu content: the heading, a description and an ordered list of dishes, each with a picture, the name, the weight or the portion, the price as it is shown, a line and an optional badge. One object is valid in every menu layout (cards in two, three or four columns, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the dishes, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 8,
+						"items": {
+							"title": "MenuDish",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title",
+								"price"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"image": {
+									"description": "address of the dish picture; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								},
+								"title": {
+									"description": "the name of the dish (the alt text of the picture)",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"weight": {
+									"description": "the weight or the portion as it is shown; empty: none",
+									"type": "string",
+									"maxLength": 40
+								},
+								"price": {
+									"description": "the price as it is shown",
+									"type": "string",
+									"maxLength": 24,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one line about the dish; empty: none",
+									"type": "string",
+									"maxLength": 200
+								},
+								"badge": {
+									"description": "a short pill (new, spicy); empty: no badge",
+									"type": "string",
+									"maxLength": 24
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "cta-simple",
+			"title": "Cta Simple",
+			"description": "One band: a badge when set, the heading, one paragraph and up to two buttons; centred or at the start, or the buttons at the end; on a muted or an outlined surface.",
+			"category": "cta",
+			"prototype": "cta-simple.svelte",
+			"contract": {
+				"item": "cta-simple",
+				"version": 1,
+				"block": "block.ctasimple",
+				"organism": "CtaSimple",
+				"line": "simple",
+				"model": "cta@1",
+				"modelSchema": "https://registry.buildy.tw/models/cta@1.schema.json",
+				"axes": {
+					"layout": [
+						"stack",
+						"between"
+					],
+					"surface": [
+						"muted",
+						"outline"
+					]
+				},
+				"defaults": {
+					"layout": "stack",
+					"surface": "muted"
+				},
+				"variants": [
+					{
+						"id": "center",
+						"label": "Centred band",
+						"axes": {
+							"layout": "stack",
+							"surface": "muted"
+						}
+					},
+					{
+						"id": "start",
+						"label": "At the start",
+						"axes": {
+							"layout": "stack",
+							"surface": "muted"
+						},
+						"settings": {
+							"align": "start"
+						}
+					},
+					{
+						"id": "between",
+						"label": "Buttons at the end",
+						"axes": {
+							"layout": "between",
+							"surface": "muted"
+						},
+						"settings": {
+							"align": "start"
+						}
+					},
+					{
+						"id": "centerOutline",
+						"label": "Centred, outlined",
+						"axes": {
+							"layout": "stack",
+							"surface": "outline"
+						}
+					},
+					{
+						"id": "betweenOutline",
+						"label": "Buttons at the end, outlined",
+						"axes": {
+							"layout": "between",
+							"surface": "outline"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "center",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "badge",
+						"kind": "badge",
+						"fields": [
+							"/badge"
+						]
+					},
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "action",
+						"kind": "action",
+						"fields": [
+							"/actionLabel",
+							"/actionHref"
+						]
+					},
+					{
+						"place": "secondaryAction",
+						"kind": "action",
+						"fields": [
+							"/secondaryActionLabel",
+							"/secondaryActionHref"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/cta@1.schema.json",
+				"title": "CtaContent",
+				"description": "Call to action content: an optional badge, the heading, a description, up to two actions. One object is valid in every call to action layout (centred, at the start, the actions at the end; muted or outlined).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title"
+				],
+				"properties": {
+					"badge": {
+						"description": "a short pill above the heading; empty: no badge",
+						"type": "string",
+						"maxLength": 40
+					},
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"secondaryActionLabel": {
+						"description": "the label of the second action; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"secondaryActionHref": {
+						"description": "the address of the second action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					}
+				}
+			}
+		},
+		{
+			"item": "promo-simple",
+			"title": "Promo Simple",
+			"description": "One offer: the discount as a badge, the heading, the deadline as text, one paragraph, a promo code when set and one button, beside a picture at the end or at the start, or under a wide one.",
+			"category": "cta",
+			"prototype": "promo-simple.svelte",
+			"contract": {
+				"item": "promo-simple",
+				"version": 1,
+				"block": "block.promosimple",
+				"organism": "PromoSimple",
+				"line": "simple",
+				"model": "promo@1",
+				"modelSchema": "https://registry.buildy.tw/models/promo@1.schema.json",
+				"axes": {
+					"media": [
+						"end",
+						"start",
+						"top"
+					]
+				},
+				"defaults": {
+					"media": "end"
+				},
+				"variants": [
+					{
+						"id": "mediaEnd",
+						"label": "Picture at the end",
+						"axes": {
+							"media": "end"
+						}
+					},
+					{
+						"id": "mediaStart",
+						"label": "Picture at the start",
+						"axes": {
+							"media": "start"
+						}
+					},
+					{
+						"id": "mediaTop",
+						"label": "Wide picture on top",
+						"axes": {
+							"media": "top"
+						},
+						"settings": {
+							"align": "center"
+						}
+					}
+				],
+				"defaultVariant": "mediaEnd",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "badge",
+						"kind": "badge",
+						"fields": [
+							"/badge"
+						]
+					},
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "deadline",
+						"kind": "text",
+						"fields": [
+							"/deadline"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "code",
+						"kind": "text",
+						"fields": [
+							"/code"
+						]
+					},
+					{
+						"place": "action",
+						"kind": "action",
+						"fields": [
+							"/actionLabel",
+							"/actionHref"
+						]
+					},
+					{
+						"place": "media",
+						"kind": "media",
+						"fields": [
+							"/image",
+							"/imageAlt"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/promo@1.schema.json",
+				"title": "PromoContent",
+				"description": "Promo content: one offer with the discount as a badge, the heading, the deadline as text, a description, an optional promo code, one action and a picture. One object is valid in every promo layout (the picture at the end, at the start, on top).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"deadline",
+					"imageAlt"
+				],
+				"properties": {
+					"badge": {
+						"description": "the discount as a short pill (-20%); empty: no badge",
+						"type": "string",
+						"maxLength": 24
+					},
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"deadline": {
+						"description": "the deadline of the offer as it is shown (until 31 December)",
+						"type": "string",
+						"maxLength": 60,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"code": {
+						"description": "a promo code; empty: none",
+						"type": "string",
+						"maxLength": 24
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"image": {
+						"description": "address of the picture; none: the placeholder",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"imageAlt": {
+						"description": "alt text of the picture",
+						"type": "string",
+						"maxLength": 160,
+						"minLength": 1,
+						"pattern": "\\S"
 					}
 				}
 			}

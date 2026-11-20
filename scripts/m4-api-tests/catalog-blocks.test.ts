@@ -20,6 +20,8 @@ test("the catalog is exactly the configured blocks, in config order, with contra
 	assert.deepEqual(config.ui8kit.blocks, ["hero-simple", "intro-simple", "gallery-hero", "split-simple", "features-simple", "stats-simple", "testimonials-simple", "logos-simple", "team-simple", "photos-simple", "stories-simple", "faq-simple", "steps-simple",
 		// wave 2
 		"feature-showcase-simple", "header-simple", "footer-simple", "event-intro", "profile-intro", "rating-simple", "error-simple", "figure-simple", "pull-quote-simple", "article-simple", "article-lead", "topics-simple", "chapters-simple", "pricing-simple", "contacts-simple", "locations-simple", "offers-simple", "products-simple", "product-simple", "collections-simple", "specs-simple", "compare-simple", "course-outline", "choice-links", "purchase-simple", "store-policies", "product-reviews",
+		// wave 3
+		"menu-simple", "cta-simple", "promo-simple",
 	]);
 	assert.deepEqual(catalogBlocks().map((block) => block.item), config.ui8kit.blocks);
 	for (const block of catalogBlocks()) {
@@ -74,13 +76,15 @@ test("feed cards: one per block variant, free text and category filters, counts 
 		...ids("specs-simple", ["keyValue", "twoColumns"]), ...ids("compare-simple", ["twoProducts", "narrow"]),
 		...ids("course-outline", ["moduleRows", "cards"]), ...ids("choice-links", ["row", "grid"]),
 		...ids("purchase-simple", ["panel", "centered"]), ...ids("store-policies", ["cols3", "rows"]), ...ids("product-reviews", ["cards3", "rows"]),
+		...ids("menu-simple", ["cards3", "cards2", "cards4", "rows"]), ...ids("cta-simple", ["center", "start", "between", "centerOutline", "betweenOutline"]), ...ids("promo-simple", ["mediaEnd", "mediaStart", "mediaTop"]),
 	]);
 	// the category of a card is the registry meta.group of its block (the codegen-x stock groups)
 	assert.deepEqual(all.categories, [
 		{ value: "hero", count: 21 }, { value: "split", count: 2 }, { value: "features", count: 10 }, { value: "proof", count: 12 },
 		{ value: "company", count: 10 }, { value: "blog", count: 6 }, { value: "faq", count: 2 }, { value: "how-it-works", count: 5 },
 		{ value: "navigation", count: 6 }, { value: "states", count: 2 }, { value: "story", count: 12 }, { value: "pricing", count: 3 },
-		{ value: "contact", count: 5 }, { value: "cta", count: 2 }, { value: "catalog", count: 5 }, { value: "product", count: 13 }, { value: "storefront", count: 2 },
+		{ value: "contact", count: 5 }, { value: "cta", count: 10 }, { value: "catalog", count: 5 }, { value: "product", count: 13 },
+		{ value: "storefront", count: 2 }, { value: "food", count: 4 },
 	]);
 	assert.deepEqual(all.items.filter((card) => card.isDefault).map((card) => card.id), [
 		"hero-simple/mediaEnd", "intro-simple/center", "gallery-hero/photos3", "split-simple/mediaEnd", "features-simple/cols3", "stats-simple/cols4",
@@ -90,15 +94,16 @@ test("feed cards: one per block variant, free text and category filters, counts 
 		"topics-simple/cards3", "chapters-simple/illustratedRows", "pricing-simple/cards3", "contacts-simple/cards3", "locations-simple/mediaStart",
 		"offers-simple/duo", "products-simple/cards3", "product-simple/mediaStart", "collections-simple/cards4", "specs-simple/keyValue",
 		"compare-simple/twoProducts", "course-outline/moduleRows", "choice-links/row", "purchase-simple/panel", "store-policies/cols3", "product-reviews/cards3",
+		"menu-simple/cards3", "cta-simple/center", "promo-simple/mediaEnd",
 	]);
 	assert.deepEqual(catalogSearch({ category: "company" }).items.map((card) => card.id), [...ids("team-simple", ["cols3", "cols2", "cols4", "cards3", "portraitRow", "bylineCols3", "sideList"]), ...ids("photos-simple", ["row4", "grid3", "diptych"])]);
 	assert.deepEqual(catalogSearch({ q: "cards" }).items.map((card) => card.id), [
 		"stats-simple/cards4", "testimonials-simple/cols3", "testimonials-simple/cards2", "logos-simple/cards", "team-simple/cards3", "team-simple/bylineCols3",
 		"stories-simple/related3", "topics-simple/cards3", "topics-simple/cards2", "pricing-simple/cards3", "pricing-simple/cards2", "contacts-simple/cards3",
 		"contacts-simple/cards2", "products-simple/cards3", "collections-simple/cards4", "collections-simple/cards2", "course-outline/cards", "store-policies/cols3",
-		"product-reviews/cards3",
+		"product-reviews/cards3", "menu-simple/cards3", "menu-simple/cards2", "menu-simple/cards4",
 	]);
-	assert.deepEqual(catalogSearch({ q: "picture top" }).items.map((card) => card.id), ["hero-simple/mediaTop", "feature-showcase-simple/mediaTop", "product-simple/mediaTop"]);
+	assert.deepEqual(catalogSearch({ q: "picture top" }).items.map((card) => card.id), ["hero-simple/mediaTop", "feature-showcase-simple/mediaTop", "product-simple/mediaTop", "promo-simple/mediaTop"]);
 	assert.deepEqual(catalogSearch({ q: "split" }).items.map((card) => card.id), ["split-simple/mediaEnd", "split-simple/mediaStart"]);
 	assert.deepEqual(catalogSearch({ category: "split" }).items.map((card) => card.variant), ["mediaEnd", "mediaStart"]);
 	assert.deepEqual(catalogSearch({ q: "pricing" }).items.map((card) => card.id), ["pricing-simple/cards3", "pricing-simple/cards2", "pricing-simple/rows"]);

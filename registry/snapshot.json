@@ -5,19 +5,19 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "3046516142c15ccdb81f2fd47a4c2a3c94adbe9038a0453c5b33c5200f263e94",
-		"lastUpdated": "2026-11-20T22:48:08+03:00",
+		"sha256": "798907c6802bfb44048f91b290670728c7e74e9c7b36bc9bda6f8b6b01d1593b",
+		"lastUpdated": "2026-11-21T01:21:48+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "890385335d0f9240b6a1f2c4d3918412ba9baecd94aa246d0408ecdb299ed1e3",
-		"digest": "sha256:b76814541966e1c3e462fd3b15f165e6b6ae9fb7e1547f9e6b9a858c0f6f468e"
+		"sha256": "6b1454980e0837dbf954724055d49aa5cf8f7af928b6c6727bf94c13fd6f9df0",
+		"digest": "sha256:b54c43be6c208df7db0d28d442152ac46be9e2c12745f76fa9d6c4824eaa5f69"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "fafe9e556be48ff9930f4b5abf8226317c6827df271a06e6db302e97fdd466e6",
-		"digest": "sha256:8d07269ba87ec6dcc150010f0708cde183b4e85c5ebe4a7b25c03b24ce4faf0c"
+		"sha256": "76ff108820c7baa6473379cf722874dc7b9bc822ee2a1075c0cb97a8ab106023",
+		"digest": "sha256:ffeeb55ab26b97d8f1fdb67afc79c8a346da0fcf218c7aa2682616e93c54220a"
 	},
 	"manifest": {
 		"url": "https://registry.buildy.tw/manifest.json",
@@ -26,10 +26,10 @@
 	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "95e3b1dd46283c892647febe4215954a527b5cb8",
+		"commit": "91e8a57a025a7344c78aeb6b27717fa6622f1586",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "5f758a09de5e184897baedfe297328fdb76477386cdd115c2823763bd3879dca"
+			"sha256": "cf8b21c224e3c4869d4a1188f4421e32f5faec26339c9e4dd238f9017f54bbde"
 		}
 	},
 	"blocks": [
@@ -72,7 +72,10 @@
 		"choice-links",
 		"purchase-simple",
 		"store-policies",
-		"product-reviews"
+		"product-reviews",
+		"menu-simple",
+		"cta-simple",
+		"promo-simple"
 	],
 	"contracts": {
 		"hero-simple": {
@@ -234,6 +237,18 @@
 		"product-reviews": {
 			"contract": "registry/contracts/product-reviews/1.json",
 			"model": "registry/models/reviews@1.schema.json"
+		},
+		"menu-simple": {
+			"contract": "registry/contracts/menu-simple/1.json",
+			"model": "registry/models/menu@1.schema.json"
+		},
+		"cta-simple": {
+			"contract": "registry/contracts/cta-simple/1.json",
+			"model": "registry/models/cta@1.schema.json"
+		},
+		"promo-simple": {
+			"contract": "registry/contracts/promo-simple/1.json",
+			"model": "registry/models/promo@1.schema.json"
 		}
 	},
 	"initItems": [
@@ -790,6 +805,38 @@
 				"group": "how-it-works",
 				"kind": "block",
 				"model": "curriculum@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"cta-simple": {
+			"type": "registry:block",
+			"title": "Cta Simple",
+			"description": "One band: a badge when set, the heading, one paragraph and up to two buttons; centred or at the start, or the buttons at the end; on a muted or an outlined surface.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"box",
+				"container",
+				"group",
+				"link-button",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/cta-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/cta-simple/1.json",
+				"group": "cta",
+				"kind": "block",
+				"model": "cta@1",
 				"tags": [
 					"svelte",
 					"block"
@@ -1819,6 +1866,39 @@
 				"src/components/media-frame.svelte"
 			]
 		},
+		"menu-simple": {
+			"type": "registry:block",
+			"title": "Menu Simple",
+			"description": "The heading, one paragraph and the dishes (a picture, a badge when set, the name, the weight, a line, the price): on cards in three, two or four columns, or menu rows with the price at the end.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/menu-simple.svelte",
+				"src/blocks/menu-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/menu-simple/1.json",
+				"group": "food",
+				"kind": "block",
+				"model": "menu@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"meter": {
 			"type": "registry:ui",
 			"title": "Meter",
@@ -2103,6 +2183,38 @@
 			"files": [
 				"src/compose/Progress.svelte"
 			]
+		},
+		"promo-simple": {
+			"type": "registry:block",
+			"title": "Promo Simple",
+			"description": "One offer: the discount as a badge, the heading, the deadline as text, one paragraph, a promo code when set and one button, beside a picture at the end or at the start, or under a wide one.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/promo-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/promo-simple/1.json",
+				"group": "cta",
+				"kind": "block",
+				"model": "promo@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"prose": {
 			"type": "registry:ui",
@@ -3127,6 +3239,7 @@
 		"prototypes/svelte/blocks/compare-simple.svelte": "9ec7752735cb5bf5af97c27fa58c38d766466247b246b14a6efb1f2e3bf4e102",
 		"prototypes/svelte/blocks/contacts-simple.svelte": "97595365394bc6f40da251104c4ccffc757f07b98986108f70a86f712b4ba087",
 		"prototypes/svelte/blocks/course-outline.svelte": "da2192957b4b33e75c977c2745eb5d5ba8387df6de5b4e101b29270279952e9a",
+		"prototypes/svelte/blocks/cta-simple.svelte": "9b5757198779d282407e2599d358d7c004467e23fdab6e3925d3104d41d9b612",
 		"prototypes/svelte/blocks/error-simple.svelte": "f3da2c191f40c3f5d44e04e076fdacd4d3b7fcdd87bb20b031d83b50efca3e8f",
 		"prototypes/svelte/blocks/event-intro.svelte": "3a0f3052a5cf32c66d255c3aeba959939b0a5fb7494e93621b11ddd47204eb6e",
 		"prototypes/svelte/blocks/faq-simple.svelte": "923667123410905c6e1ca6fef132fa19d0d148a145fe29e06fb4351e43280bbe",
@@ -3140,6 +3253,7 @@
 		"prototypes/svelte/blocks/intro-simple.svelte": "f6c0a318d582b98eb09b292de157119d2269bbc9bcfbf48488835513181b6e63",
 		"prototypes/svelte/blocks/locations-simple.svelte": "0091f7c4cc5b2f86e6e7aac431ecd561f0092c1bfe3183b1f40edfe82761c885",
 		"prototypes/svelte/blocks/logos-simple.svelte": "2ea1082d07f7e07d12ed7d48274003e3af53faf853a48f8be1f18964a0bae718",
+		"prototypes/svelte/blocks/menu-simple.svelte": "c65d07c74ff585658dce32a1c4655b0a953aba4912df31ec2f5b3caf2382665a",
 		"prototypes/svelte/blocks/offers-simple.svelte": "94a2c945ee4b00ecc52425fb1070fe01543fd284895e53c40271bbebd0605dcb",
 		"prototypes/svelte/blocks/photos-simple.svelte": "05578ea02365d7f420a5349e49d9445453d22fbd442d569fc43d7e323afefe21",
 		"prototypes/svelte/blocks/pricing-simple.svelte": "c5f1bbeceb5bf227409ae05f4e09ccc068c80d06aab178a6ac09bf32d5146164",
@@ -3147,6 +3261,7 @@
 		"prototypes/svelte/blocks/product-simple.svelte": "ea4e07622bdea497a96057932ebc081847a8206d030a83fba9a00bb73a3ea5a6",
 		"prototypes/svelte/blocks/products-simple.svelte": "8e07534ba9c62483533067142222fb99ce2bdc61ac3b9517277b318ffbe4905f",
 		"prototypes/svelte/blocks/profile-intro.svelte": "0dd3178bf54b18ecf553d6bd7e3992b02edcaa25e546e7b055c3e89ccfc7caa8",
+		"prototypes/svelte/blocks/promo-simple.svelte": "0fab144595f08f5af522bbf7fa1c34e54cc5201d48a9c6082909e1ebe46de59a",
 		"prototypes/svelte/blocks/pull-quote-simple.svelte": "e8cc44f70afb206a55e9e0fa48d83c70e877650f544f50c751cb82a0ad87874a",
 		"prototypes/svelte/blocks/purchase-simple.svelte": "1bbe27ad9ff4c01f2bdac70ee757239a9a001a1abbc3af31e94dc2d395118f4b",
 		"prototypes/svelte/blocks/rating-simple.svelte": "8e70a814d5bce856fdb06484b69e876b05f7ee0c018d54a82004482f3c2b321c",
@@ -3174,6 +3289,7 @@
 		"registry/contracts/compare-simple/1.json": "57c800708e9f43a295cfd3487134c759582f78dcb550559791f9fc2da27ff385",
 		"registry/contracts/contacts-simple/1.json": "d2570a7b86865ea57edbc3bbf9c2dd834e24c4f5f3605953796fe6253929f3ba",
 		"registry/contracts/course-outline/1.json": "436339e3a131e62005fd3452f16e857a074cbaec950f3f7a7344cdb927bfcb42",
+		"registry/contracts/cta-simple/1.json": "b7a19d889f9f999e856d2c44413d75f7e0870e283d8a28d6edb53527baf3453f",
 		"registry/contracts/error-simple/1.json": "4c801452ef78381a19de9e8fa7f03722957443012a0635ec483a6ee09b8000ba",
 		"registry/contracts/event-intro/1.json": "e6208f37bd924b293d00e29cd503c7a82d21f5c65df8106ca04ebe134106a654",
 		"registry/contracts/faq-simple/1.json": "ec0badfc25b5820b04f48d24f7d9770713e276d9f8985a283c9281ae2af0cc33",
@@ -3187,6 +3303,7 @@
 		"registry/contracts/intro-simple/1.json": "8eccd2cf0f2e0e53b6dd1737b1c677da0f4fc82b7c85ada85fc0adbfd83801ab",
 		"registry/contracts/locations-simple/1.json": "59ba1a5a5913f7f63b45d7e8b1914c353423ce220d6fff2d355e6caf8a6341d2",
 		"registry/contracts/logos-simple/1.json": "84b5b8d142a3bea0319c41f6fa8a70edc1f315e6140b39dad6721f10c6e78378",
+		"registry/contracts/menu-simple/1.json": "71c12d7fb3af29566937dbbf986c79fdc4f9b15370a6e0f6d051ccf9c42d38f3",
 		"registry/contracts/offers-simple/1.json": "f16e9b3989c79e2dfae8bd9a9b6701deb997950075f9bfeb04f3a0bbfd926083",
 		"registry/contracts/photos-simple/1.json": "21b8f6c36f967c774b79547e82011c9bb57bc05ae724b85c7fc7ebefea657514",
 		"registry/contracts/pricing-simple/1.json": "0733284bc0882044982f4630e873bd1cd8947bbf54e048d485effb6f54a04eed",
@@ -3194,6 +3311,7 @@
 		"registry/contracts/product-simple/1.json": "801238fd31d594209096a15f56f454d8b52bc14c4263c46d749efd93f66d3023",
 		"registry/contracts/products-simple/1.json": "a33961c63684e4ea8511fda430b77030741b4fc7882445ca1cf58129179f0bbc",
 		"registry/contracts/profile-intro/1.json": "5aa5893da2bdf4a4d5e32c661fbaf7767dcd570b2136ceb005d019fc56e9a2b9",
+		"registry/contracts/promo-simple/1.json": "2e0cd68bda7a7d1880c2b52cb1876327d641b7161a947f9e1b5e9eef7bb9e2cc",
 		"registry/contracts/pull-quote-simple/1.json": "d76457c402e1520b7cb40cfe37d25032e86ee55256040679b2da0b49773b38b3",
 		"registry/contracts/purchase-simple/1.json": "20bece6d3641b8357f7bc1cd7410121e96b90a1d80a63f555c35e1c9852d2538",
 		"registry/contracts/rating-simple/1.json": "c8e8f0be71bd9d117759715ae674b67c136df8bb1df43511a4c5a292d042a4db",
@@ -3213,6 +3331,7 @@
 		"registry/models/collections@1.schema.json": "158a1b4a0a52167caa342907ce49169557fa27c7eefad07d8ced8b0569219a2e",
 		"registry/models/compare@1.schema.json": "fcb0692b72e406710315efb8d879bdc478316f4d75163b5a7e1adafbd3fab637",
 		"registry/models/contacts@1.schema.json": "b62f96402d8013ac4563afecfde249e1281647be1fbe5f5377c9eb4a9e5578b7",
+		"registry/models/cta@1.schema.json": "08928cf4407d113ab976afc3c302414374491fd1b8997b0cbc620a2b0efaeafb",
 		"registry/models/curriculum@1.schema.json": "29cb5db578daed45f74a868adc151a15ea48f36f445812eb8be85b83d22d2b23",
 		"registry/models/error@1.schema.json": "937f8eb6791f788a11cb776bf44b81fbaadefc25784892aac87fadc4fecc36d5",
 		"registry/models/event@1.schema.json": "a7befb097c1fb039843a6284228a33b666a6c91ee69ea53b148bf3a30d7f1cac",
@@ -3227,12 +3346,14 @@
 		"registry/models/intro@1.schema.json": "9ede625f409532dba4ca1f05345afb5b39d69d8945039d38a491618ff7ef5ee6",
 		"registry/models/locations@1.schema.json": "666449da698a09ab3f477cec3009752cd51d00dadf919501991a17b933d482eb",
 		"registry/models/logos@1.schema.json": "c2ca4e110e46821571e84581123062042b72b3dfbe47c07633449948fef13e1c",
+		"registry/models/menu@1.schema.json": "3cdb398a9e650633dc56862459f737c8cb1fff4cc69f5cc9e5f367da6a53ff6d",
 		"registry/models/offers@1.schema.json": "cbe2d34366f77c8192c24731957c3ce87b4d29041a05deb8f078a777669e6bdc",
 		"registry/models/photos@1.schema.json": "c17acd5d96bbba505b713274c1482e4a44796ca9e4df7718b74510c07cb25906",
 		"registry/models/pricing@1.schema.json": "d0de495664fa553f3e48001b88a39885d2c6a545d8a609d0cd9e6790f6f5b5c6",
 		"registry/models/product@1.schema.json": "f2be6d8b03f490c21bf0906ef6c1364b2fcce96c046115c401945d4d1a6a2921",
 		"registry/models/products@1.schema.json": "9795ad4e8f2383fe43c91378f37fabd1c05a684a70339700d14f75b2b1a2d7ac",
 		"registry/models/profile@1.schema.json": "0c4283ba562f39a9286a8d1448d034c5d32efe12439bd5ec48f204b6410ac6b3",
+		"registry/models/promo@1.schema.json": "e044e1554d5a0ad2ce81aa851c4861eaf975cc291dfbd5f6ef5cd2ec72117bc7",
 		"registry/models/pull-quote@1.schema.json": "f49e69e6332101fee82160220aea2537871ee3704da5eed2edecc5b130cab776",
 		"registry/models/purchase@1.schema.json": "7416988230846908eaac6965ef974aa58368000fd23a74ebb626e2f99f66bebf",
 		"registry/models/rating@1.schema.json": "0665c268f07988ef87cf7b966883264139af5bbd5dd1508b99caed5ccd3a0297",
@@ -3246,7 +3367,7 @@
 		"registry/models/team@1.schema.json": "ac003fe0b80251f4fefe73e39572cd63f3eb58b35c5fdbd337d03e232fcf797c",
 		"registry/models/testimonials@1.schema.json": "e3c1b75c4dd7111f41f7a7bb52c7e297617d8805f51b4cae6b06ca40272003b1",
 		"registry/models/topics@1.schema.json": "7e85157dcbbeec16b931dcb9dceb9a4ac6a730e74ca632aba69153ac3229ef53",
-		"registry/props.v0.json": "42fb34eccde52612b90b6c919449012e2ed910ec8def9421a9322654b93e14fa",
-		"registry/variants.v0.json": "1d88c923fca470edcc98e02f46a5d77981a7e27afe456af1ab3c03ce3c06198b"
+		"registry/props.v0.json": "586a4a3a49261b681fd6f2ec0b65e6d7213896cd97e20f4aeaeda7baa4101f06",
+		"registry/variants.v0.json": "e3115731a7f1af7ffd25d1b5317de992fad1fa5970995c181766e956cd87dbf6"
 	}
 }

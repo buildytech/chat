@@ -1,6 +1,6 @@
 {
 	"version": "0",
-	"digest": "sha256:b76814541966e1c3e462fd3b15f165e6b6ae9fb7e1547f9e6b9a858c0f6f468e",
+	"digest": "sha256:b54c43be6c208df7db0d28d442152ac46be9e2c12745f76fa9d6c4824eaa5f69",
 	"registry": "https://registry.buildy.tw",
 	"items": {
 		"article-lead": {
@@ -294,6 +294,78 @@
 					},
 					"props": {
 						"layout": "cards"
+					}
+				}
+			}
+		},
+		"cta-simple": {
+			"block": "ctasimple",
+			"spec": "block.ctasimple",
+			"organism": "CtaSimple",
+			"axes": {
+				"layout": [
+					"stack",
+					"between"
+				],
+				"surface": [
+					"muted",
+					"outline"
+				]
+			},
+			"defaults": {
+				"layout": "stack",
+				"surface": "muted"
+			},
+			"defaultVariant": "center",
+			"variants": {
+				"center": {
+					"asset": "block.ctasimple/center",
+					"set": {},
+					"props": {
+						"layout": "stack",
+						"surface": "muted"
+					}
+				},
+				"start": {
+					"asset": "block.ctasimple/start",
+					"set": {},
+					"props": {
+						"layout": "stack",
+						"surface": "muted",
+						"align": "start"
+					}
+				},
+				"between": {
+					"asset": "block.ctasimple/between",
+					"set": {
+						"layout": "between"
+					},
+					"props": {
+						"layout": "between",
+						"surface": "muted",
+						"align": "start"
+					}
+				},
+				"centerOutline": {
+					"asset": "block.ctasimple/centerOutline",
+					"set": {
+						"surface": "outline"
+					},
+					"props": {
+						"layout": "stack",
+						"surface": "outline"
+					}
+				},
+				"betweenOutline": {
+					"asset": "block.ctasimple/betweenOutline",
+					"set": {
+						"layout": "between",
+						"surface": "outline"
+					},
+					"props": {
+						"layout": "between",
+						"surface": "outline",
+						"align": "start"
 					}
 				}
 			}
@@ -954,6 +1026,68 @@
 				}
 			}
 		},
+		"menu-simple": {
+			"block": "menusimple",
+			"spec": "block.menusimple",
+			"organism": "MenuSimple",
+			"axes": {
+				"layout": [
+					"cards",
+					"rows"
+				],
+				"cols": [
+					"3",
+					"2",
+					"4"
+				]
+			},
+			"defaults": {
+				"layout": "cards",
+				"cols": "3"
+			},
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"asset": "block.menusimple/cards3",
+					"set": {},
+					"props": {
+						"layout": "cards",
+						"cols": "3"
+					}
+				},
+				"cards2": {
+					"asset": "block.menusimple/cards2",
+					"set": {
+						"cols": "2"
+					},
+					"props": {
+						"layout": "cards",
+						"cols": "2"
+					}
+				},
+				"cards4": {
+					"asset": "block.menusimple/cards4",
+					"set": {
+						"cols": "4"
+					},
+					"props": {
+						"layout": "cards",
+						"cols": "4"
+					}
+				},
+				"rows": {
+					"asset": "block.menusimple/rows",
+					"set": {
+						"layout": "rows"
+					},
+					"props": {
+						"layout": "rows",
+						"cols": "3",
+						"align": "start"
+					}
+				}
+			}
+		},
 		"offers-simple": {
 			"block": "offerssimple",
 			"spec": "block.offerssimple",
@@ -1251,6 +1385,50 @@
 				},
 				"portraitTop": {
 					"asset": "block.profileintro/portraitTop",
+					"set": {
+						"media": "top"
+					},
+					"props": {
+						"media": "top",
+						"align": "center"
+					}
+				}
+			}
+		},
+		"promo-simple": {
+			"block": "promosimple",
+			"spec": "block.promosimple",
+			"organism": "PromoSimple",
+			"axes": {
+				"media": [
+					"end",
+					"start",
+					"top"
+				]
+			},
+			"defaults": {
+				"media": "end"
+			},
+			"defaultVariant": "mediaEnd",
+			"variants": {
+				"mediaEnd": {
+					"asset": "block.promosimple/mediaEnd",
+					"set": {},
+					"props": {
+						"media": "end"
+					}
+				},
+				"mediaStart": {
+					"asset": "block.promosimple/mediaStart",
+					"set": {
+						"media": "start"
+					},
+					"props": {
+						"media": "start"
+					}
+				},
+				"mediaTop": {
+					"asset": "block.promosimple/mediaTop",
 					"set": {
 						"media": "top"
 					},

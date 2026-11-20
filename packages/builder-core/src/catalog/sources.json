@@ -3,16 +3,16 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:1f43154f1028df720a89225973b0617fa2592029568557e14f02b937e37987e9",
+	"lockDigest": "sha256:32c1988e1c5300c92c6f8fccadbdccf9a1c462eec459b03d156c64767af25867",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "890385335d0f9240b6a1f2c4d3918412ba9baecd94aa246d0408ecdb299ed1e3",
-		"digest": "sha256:b76814541966e1c3e462fd3b15f165e6b6ae9fb7e1547f9e6b9a858c0f6f468e"
+		"sha256": "6b1454980e0837dbf954724055d49aa5cf8f7af928b6c6727bf94c13fd6f9df0",
+		"digest": "sha256:b54c43be6c208df7db0d28d442152ac46be9e2c12745f76fa9d6c4824eaa5f69"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "fafe9e556be48ff9930f4b5abf8226317c6827df271a06e6db302e97fdd466e6",
-		"digest": "sha256:8d07269ba87ec6dcc150010f0708cde183b4e85c5ebe4a7b25c03b24ce4faf0c"
+		"sha256": "76ff108820c7baa6473379cf722874dc7b9bc822ee2a1075c0cb97a8ab106023",
+		"digest": "sha256:ffeeb55ab26b97d8f1fdb67afc79c8a346da0fcf218c7aa2682616e93c54220a"
 	},
 	"initItems": [
 		"presets",
@@ -568,6 +568,38 @@
 				"group": "how-it-works",
 				"kind": "block",
 				"model": "curriculum@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"cta-simple": {
+			"type": "registry:block",
+			"title": "Cta Simple",
+			"description": "One band: a badge when set, the heading, one paragraph and up to two buttons; centred or at the start, or the buttons at the end; on a muted or an outlined surface.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"box",
+				"container",
+				"group",
+				"link-button",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/cta-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/cta-simple/1.json",
+				"group": "cta",
+				"kind": "block",
+				"model": "cta@1",
 				"tags": [
 					"svelte",
 					"block"
@@ -1597,6 +1629,39 @@
 				"src/components/media-frame.svelte"
 			]
 		},
+		"menu-simple": {
+			"type": "registry:block",
+			"title": "Menu Simple",
+			"description": "The heading, one paragraph and the dishes (a picture, a badge when set, the name, the weight, a line, the price): on cards in three, two or four columns, or menu rows with the price at the end.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/menu-simple.svelte",
+				"src/blocks/menu-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/menu-simple/1.json",
+				"group": "food",
+				"kind": "block",
+				"model": "menu@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"meter": {
 			"type": "registry:ui",
 			"title": "Meter",
@@ -1881,6 +1946,38 @@
 			"files": [
 				"src/compose/Progress.svelte"
 			]
+		},
+		"promo-simple": {
+			"type": "registry:block",
+			"title": "Promo Simple",
+			"description": "One offer: the discount as a badge, the heading, the deadline as text, one paragraph, a promo code when set and one button, beside a picture at the end or at the start, or under a wide one.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/promo-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/promo-simple/1.json",
+				"group": "cta",
+				"kind": "block",
+				"model": "promo@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"prose": {
 			"type": "registry:ui",
@@ -3112,6 +3209,37 @@
 				}
 			}
 		},
+		"cta-simple": {
+			"spec": "block.ctasimple",
+			"organism": "blocks/cta-simple.svelte",
+			"organismName": "CtaSimple",
+			"defaultVariant": "center",
+			"variants": {
+				"center": {
+					"layout": "stack",
+					"surface": "muted"
+				},
+				"start": {
+					"layout": "stack",
+					"surface": "muted",
+					"align": "start"
+				},
+				"between": {
+					"layout": "between",
+					"surface": "muted",
+					"align": "start"
+				},
+				"centerOutline": {
+					"layout": "stack",
+					"surface": "outline"
+				},
+				"betweenOutline": {
+					"layout": "between",
+					"surface": "outline",
+					"align": "start"
+				}
+			}
+		},
 		"error-simple": {
 			"spec": "block.errorsimple",
 			"organism": "blocks/error-simple.svelte",
@@ -3392,6 +3520,31 @@
 				}
 			}
 		},
+		"menu-simple": {
+			"spec": "block.menusimple",
+			"organism": "blocks/menu-simple.svelte",
+			"organismName": "MenuSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"cards2": {
+					"layout": "cards",
+					"cols": "2"
+				},
+				"cards4": {
+					"layout": "cards",
+					"cols": "4"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
+				}
+			}
+		},
 		"offers-simple": {
 			"spec": "block.offerssimple",
 			"organism": "blocks/offers-simple.svelte",
@@ -3515,6 +3668,24 @@
 					"media": "start"
 				},
 				"portraitTop": {
+					"media": "top",
+					"align": "center"
+				}
+			}
+		},
+		"promo-simple": {
+			"spec": "block.promosimple",
+			"organism": "blocks/promo-simple.svelte",
+			"organismName": "PromoSimple",
+			"defaultVariant": "mediaEnd",
+			"variants": {
+				"mediaEnd": {
+					"media": "end"
+				},
+				"mediaStart": {
+					"media": "start"
+				},
+				"mediaTop": {
 					"media": "top",
 					"align": "center"
 				}
@@ -3836,6 +4007,26 @@
 			"item": "course-outline",
 			"variant": "cards"
 		},
+		"block.ctasimple/center": {
+			"item": "cta-simple",
+			"variant": "center"
+		},
+		"block.ctasimple/start": {
+			"item": "cta-simple",
+			"variant": "start"
+		},
+		"block.ctasimple/between": {
+			"item": "cta-simple",
+			"variant": "between"
+		},
+		"block.ctasimple/centerOutline": {
+			"item": "cta-simple",
+			"variant": "centerOutline"
+		},
+		"block.ctasimple/betweenOutline": {
+			"item": "cta-simple",
+			"variant": "betweenOutline"
+		},
 		"block.errorsimple/center": {
 			"item": "error-simple",
 			"variant": "center"
@@ -4016,6 +4207,22 @@
 			"item": "logos-simple",
 			"variant": "cards"
 		},
+		"block.menusimple/cards3": {
+			"item": "menu-simple",
+			"variant": "cards3"
+		},
+		"block.menusimple/cards2": {
+			"item": "menu-simple",
+			"variant": "cards2"
+		},
+		"block.menusimple/cards4": {
+			"item": "menu-simple",
+			"variant": "cards4"
+		},
+		"block.menusimple/rows": {
+			"item": "menu-simple",
+			"variant": "rows"
+		},
 		"block.offerssimple/duo": {
 			"item": "offers-simple",
 			"variant": "duo"
@@ -4091,6 +4298,18 @@
 		"block.profileintro/portraitTop": {
 			"item": "profile-intro",
 			"variant": "portraitTop"
+		},
+		"block.promosimple/mediaEnd": {
+			"item": "promo-simple",
+			"variant": "mediaEnd"
+		},
+		"block.promosimple/mediaStart": {
+			"item": "promo-simple",
+			"variant": "mediaStart"
+		},
+		"block.promosimple/mediaTop": {
+			"item": "promo-simple",
+			"variant": "mediaTop"
 		},
 		"block.pullquotesimple/standalone": {
 			"item": "pull-quote-simple",
@@ -4270,6 +4489,10 @@
 			"item": "course-outline",
 			"variant": "moduleRows"
 		},
+		"block.ctasimple": {
+			"item": "cta-simple",
+			"variant": "center"
+		},
 		"block.errorsimple": {
 			"item": "error-simple",
 			"variant": "center"
@@ -4322,6 +4545,10 @@
 			"item": "logos-simple",
 			"variant": "row"
 		},
+		"block.menusimple": {
+			"item": "menu-simple",
+			"variant": "cards3"
+		},
 		"block.offerssimple": {
 			"item": "offers-simple",
 			"variant": "duo"
@@ -4349,6 +4576,10 @@
 		"block.profileintro": {
 			"item": "profile-intro",
 			"variant": "portraitEnd"
+		},
+		"block.promosimple": {
+			"item": "promo-simple",
+			"variant": "mediaEnd"
 		},
 		"block.pullquotesimple": {
 			"item": "pull-quote-simple",

@@ -153,7 +153,7 @@ test("every item variant starts from sample props that pass the registry props s
 			checked += 1;
 		}
 	}
-	assert.equal(checked, 118);
+	assert.equal(checked, 130);
 });
 
 test("shared loop accepts an injected transport without credentials or an xAI HTTP request", async () => {
