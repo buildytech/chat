@@ -48,10 +48,11 @@ test("the registry exposes image and imageAlt as plain text on the section block
 	const members = propsFieldTree("team-simple")!.find((n) => n.name === "members")!;
 	assert.ok(members.fields!.find((f) => f.name === "avatar")?.image, "a member's portrait is an address");
 	assert.ok(tree.find((n) => n.name === "imageDark")?.image, "the dark picture is an address");
-	// every media place of the block contracts is an address the write checks (imageAlt is its text)
+	// every media place of the block contracts is an address the write checks (imageAlt is its text; logos-simple: the logo's
+	// title is its alt text, /logos/*/title)
 	const media = catalogBlocks().flatMap((block) => block.contract.places.filter((place) => place.kind === "media").flatMap((place) => place.fields));
 	assert.ok(media.length >= 4);
-	for (const field of media.filter((f) => !f.endsWith("Alt"))) assert.ok(isImageName(field.split("/").at(-1)!), field);
+	for (const field of media.filter((f) => !f.endsWith("Alt") && !f.endsWith("/title"))) assert.ok(isImageName(field.split("/").at(-1)!), field);
 });
 
 test("write_page without an image: the block shows the decorative placeholder", async () => {
