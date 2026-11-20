@@ -3,16 +3,16 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:3789063af06ba7d0c9861b6ef3818deaafbd10ab9418ae4d9ed0f4ef0fe1900f",
+	"lockDigest": "sha256:a5be732e74e59dc4696f748c62b1cf8fbcc42f179831accd73862b82f3f50299",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "56ad960c25ffaa14db5fff89d87ff7c41f5f77aed13c720fd698a8902c469983",
-		"digest": "sha256:88bf3c5455122327087b154730c14a427c3860e822a882540c0269b9464ae5db"
+		"sha256": "b0c71a7299040dd45a13c9480d7f91a72603e706f6b4883e600a651d003cb1c3",
+		"digest": "sha256:f355ccf988693f0459e1ab44ad51755a420fd8e01701f57b819113a9110cc8d7"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "4ea530101181d7cce5cf6e332fc19bd6696f3aedf8ed57eab7c43d868d0ef43f",
-		"digest": "sha256:fd43f59fc5c2c6ca1abd8a4d8d209f729620dfccf45857bcfcd37570e3f30b65"
+		"sha256": "b51c23e5f9fc0529f4416fb651e6792edfcfd5d9ab3d652852807cb5994f2b76",
+		"digest": "sha256:461c084b4626e5c9713c4bc85a68baf715254e26e80fe20971cbf71b78aa1e88"
 	},
 	"initItems": [
 		"presets",
@@ -475,12 +475,13 @@
 		"hero-simple": {
 			"type": "registry:block",
 			"title": "Hero Simple",
-			"description": "A badge, the heading, one paragraph and one link as the action, with one picture at the end, at the start or on top.",
+			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start or on top, in a box or split to the edge of the screen.",
 			"registryDependencies": [
 				"badge",
 				"block",
 				"box",
 				"container",
+				"group",
 				"link-button",
 				"media-frame",
 				"stack",
@@ -1780,14 +1781,25 @@
 			"defaultVariant": "mediaEnd",
 			"variants": {
 				"mediaEnd": {
-					"media": "end"
+					"media": "end",
+					"frame": "box"
 				},
 				"mediaStart": {
-					"media": "start"
+					"media": "start",
+					"frame": "box"
 				},
 				"mediaTop": {
 					"media": "top",
+					"frame": "box",
 					"align": "center"
+				},
+				"splitEnd": {
+					"media": "end",
+					"frame": "split"
+				},
+				"splitStart": {
+					"media": "start",
+					"frame": "split"
 				}
 			}
 		},
@@ -1828,6 +1840,14 @@
 		"block.herosimple/mediaTop": {
 			"item": "hero-simple",
 			"variant": "mediaTop"
+		},
+		"block.herosimple/splitEnd": {
+			"item": "hero-simple",
+			"variant": "splitEnd"
+		},
+		"block.herosimple/splitStart": {
+			"item": "hero-simple",
+			"variant": "splitStart"
 		},
 		"block.teamsimple/cols3": {
 			"item": "team-simple",

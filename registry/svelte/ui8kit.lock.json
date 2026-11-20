@@ -279,7 +279,7 @@
       "version": "0.1.0",
       "runtime": "svelte",
       "files": {
-        "src/blocks/hero-simple.svelte": "df5dd2cb9f0a44dda393726699b61cb850ddd35ec0e4e1b07be506f3cf58eb89"
+        "src/blocks/hero-simple.svelte": "243c7ae2d30ff2168a7e3508318b06a4bac620cd3053e92697f56c0615d7c338"
       }
     },
     "registry.buildy.tw|svelte|icon": {

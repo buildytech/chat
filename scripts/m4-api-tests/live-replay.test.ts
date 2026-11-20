@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { after, before, test } from "node:test";
-import { checkPageDoc, emptyPage } from "../../packages/builder-core/src/index.ts";
+import { catalogBlock, checkPageDoc, emptyPage } from "../../packages/builder-core/src/index.ts";
 import { aggregateStepUsage, readProviderUsage } from "../../packages/chat-agent/src/usage.ts";
 import type { AgentReply } from "../../packages/chat-agent/src/index.ts";
 import type { PageV2 } from "../../packages/page-contract/src/index.ts";
@@ -77,7 +77,9 @@ for (const [name, { raw, file }] of Object.entries(runs)) {
 		const reply = out.result as AgentReply;
 		assert.ok(reply.ok && reply.proposal, JSON.stringify(out.result).slice(0, 600));
 		const written = reply.proposal!.page;
-		assert.deepEqual(written.blocks.map((b) => [b.item, b.variant, b.props]), blocks.map((b) => [b.item, b.variant, b.props]));
+		// the variant is the source of truth: the host writes its axes into props, an axis added since the recording included (frame)
+		const axesOf = (item: string, variant: string) => catalogBlock(item)!.contract.variants.find((v) => v.id === variant)!.axes;
+		assert.deepEqual(written.blocks.map((b) => [b.item, b.variant, b.props]), blocks.map((b) => [b.item, b.variant, { ...b.props, ...axesOf(b.item, b.variant) }]));
 		assert.ok(checkPageDoc(written).ok);
 	});
 

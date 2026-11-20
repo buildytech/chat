@@ -1,6 +1,6 @@
 {
 	"version": "0",
-	"digest": "sha256:88bf3c5455122327087b154730c14a427c3860e822a882540c0269b9464ae5db",
+	"digest": "sha256:f355ccf988693f0459e1ab44ad51755a420fd8e01701f57b819113a9110cc8d7",
 	"registry": "https://registry.buildy.tw",
 	"items": {
 		"hero-simple": {
@@ -12,10 +12,15 @@
 					"end",
 					"start",
 					"top"
+				],
+				"frame": [
+					"box",
+					"split"
 				]
 			},
 			"defaults": {
-				"media": "end"
+				"media": "end",
+				"frame": "box"
 			},
 			"defaultVariant": "mediaEnd",
 			"variants": {
@@ -23,7 +28,8 @@
 					"asset": "block.herosimple/mediaEnd",
 					"set": {},
 					"props": {
-						"media": "end"
+						"media": "end",
+						"frame": "box"
 					}
 				},
 				"mediaStart": {
@@ -32,7 +38,8 @@
 						"media": "start"
 					},
 					"props": {
-						"media": "start"
+						"media": "start",
+						"frame": "box"
 					}
 				},
 				"mediaTop": {
@@ -42,7 +49,29 @@
 					},
 					"props": {
 						"media": "top",
+						"frame": "box",
 						"align": "center"
+					}
+				},
+				"splitEnd": {
+					"asset": "block.herosimple/splitEnd",
+					"set": {
+						"frame": "split"
+					},
+					"props": {
+						"media": "end",
+						"frame": "split"
+					}
+				},
+				"splitStart": {
+					"asset": "block.herosimple/splitStart",
+					"set": {
+						"media": "start",
+						"frame": "split"
+					},
+					"props": {
+						"media": "start",
+						"frame": "split"
 					}
 				}
 			}

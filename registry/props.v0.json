@@ -1,6 +1,6 @@
 {
 	"version": "0",
-	"digest": "sha256:fd43f59fc5c2c6ca1abd8a4d8d209f729620dfccf45857bcfcd37570e3f30b65",
+	"digest": "sha256:461c084b4626e5c9713c4bc85a68baf715254e26e80fe20971cbf71b78aa1e88",
 	"registry": "https://registry.buildy.tw",
 	"items": {
 		"hero-simple": {
@@ -10,7 +10,7 @@
 			"schema": {
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"title": "HeroSimpleProps",
-				"description": "The simple hero (model hero@1): an optional badge, the heading, a description, one link as the action (a link styled as a button: drawn only when the label and the address are both set) and one picture. Axes: media (end: the picture after the copy, start: before it, top: above it, wide).",
+				"description": "The simple hero (model hero@1): an optional badge, the heading, a description, up to two links as the actions (links styled as buttons, the first primary, the second secondary: each drawn only when its label and its address are both set) and one picture. Axes: media (end: the picture after the copy, start: before it, top: above it, wide), frame (box: inside the container; split: two halves, the picture to the edge of the screen).",
 				"type": "object",
 				"properties": {
 					"id": {
@@ -51,6 +51,16 @@
 						"$ref": "#/$defs/text",
 						"default": ""
 					},
+					"secondaryActionLabel": {
+						"description": "the label of the second action (the secondary button after the first); drawn when the label and the address are both set",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
+					"secondaryActionHref": {
+						"description": "the address of the second action",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
 					"level": {
 						"description": "the level of the heading (1 on the first section of a page)",
 						"enum": [
@@ -88,6 +98,14 @@
 							"top"
 						],
 						"default": "end"
+					},
+					"frame": {
+						"type": "string",
+						"enum": [
+							"box",
+							"split"
+						],
+						"default": "box"
 					},
 					"landmarkLabel": {
 						"description": "accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one",
@@ -251,6 +269,19 @@
 						}
 					],
 					"/actionLabel": [
+						{
+							"s": "button",
+							"k": "text"
+						}
+					],
+					"/secondaryActionHref": [
+						{
+							"s": "button",
+							"k": "attr",
+							"a": "href"
+						}
+					],
+					"/secondaryActionLabel": [
 						{
 							"s": "button",
 							"k": "text"

@@ -117,16 +117,16 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:3789063af06ba7d0c9861b6ef3818deaafbd10ab9418ae4d9ed0f4ef0fe1900f",
+	"lockDigest": "sha256:a5be732e74e59dc4696f748c62b1cf8fbcc42f179831accd73862b82f3f50299",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "56ad960c25ffaa14db5fff89d87ff7c41f5f77aed13c720fd698a8902c469983",
-		"digest": "sha256:88bf3c5455122327087b154730c14a427c3860e822a882540c0269b9464ae5db"
+		"sha256": "b0c71a7299040dd45a13c9480d7f91a72603e706f6b4883e600a651d003cb1c3",
+		"digest": "sha256:f355ccf988693f0459e1ab44ad51755a420fd8e01701f57b819113a9110cc8d7"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "4ea530101181d7cce5cf6e332fc19bd6696f3aedf8ed57eab7c43d868d0ef43f",
-		"digest": "sha256:fd43f59fc5c2c6ca1abd8a4d8d209f729620dfccf45857bcfcd37570e3f30b65"
+		"sha256": "b51c23e5f9fc0529f4416fb651e6792edfcfd5d9ab3d652852807cb5994f2b76",
+		"digest": "sha256:461c084b4626e5c9713c4bc85a68baf715254e26e80fe20971cbf71b78aa1e88"
 	},
 	"initItems": [
 		"presets",
@@ -589,12 +589,13 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 		"hero-simple": {
 			"type": "registry:block",
 			"title": "Hero Simple",
-			"description": "A badge, the heading, one paragraph and one link as the action, with one picture at the end, at the start or on top.",
+			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start or on top, in a box or split to the edge of the screen.",
 			"registryDependencies": [
 				"badge",
 				"block",
 				"box",
 				"container",
+				"group",
 				"link-button",
 				"media-frame",
 				"stack",
@@ -1894,14 +1895,25 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"defaultVariant": "mediaEnd",
 			"variants": {
 				"mediaEnd": {
-					"media": "end"
+					"media": "end",
+					"frame": "box"
 				},
 				"mediaStart": {
-					"media": "start"
+					"media": "start",
+					"frame": "box"
 				},
 				"mediaTop": {
 					"media": "top",
+					"frame": "box",
 					"align": "center"
+				},
+				"splitEnd": {
+					"media": "end",
+					"frame": "split"
+				},
+				"splitStart": {
+					"media": "start",
+					"frame": "split"
 				}
 			}
 		},
@@ -1942,6 +1954,14 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 		"block.herosimple/mediaTop": {
 			"item": "hero-simple",
 			"variant": "mediaTop"
+		},
+		"block.herosimple/splitEnd": {
+			"item": "hero-simple",
+			"variant": "splitEnd"
+		},
+		"block.herosimple/splitStart": {
+			"item": "hero-simple",
+			"variant": "splitStart"
 		},
 		"block.teamsimple/cols3": {
 			"item": "team-simple",
@@ -2007,18 +2027,18 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 	"registry": "https://registry.buildy.tw/svelte",
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "8609fde46be41a103a1a6c5763fff35343a18a34",
+		"commit": "36c6715eb81b2d90e2b1fd01f4f9d7fc60d99476",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "e596d1f7fa60c5e237acc3a4b4bbb23db2b471d9affb35c4be4eb81961cbc47b"
+			"sha256": "763f698c6111a0c95ef1c34971a1996563279868204061c108781b3ee300e94f"
 		}
 	},
-	"digest": "sha256:4cc49a3cf9ed2c5eeb89ae5715e810163f83efe3313b1daa36c7bbe827634f62",
+	"digest": "sha256:c5d6064ba4f7c2af3075dd1f5e9b360ddfc73cbe566ba4d8f0eac0bc6e888cbe",
 	"blocks": [
 		{
 			"item": "hero-simple",
 			"title": "Hero Simple",
-			"description": "A badge, the heading, one paragraph and one link as the action, with one picture at the end, at the start or on top.",
+			"description": "A badge, the heading, one paragraph and up to two links as the actions (primary, then secondary), with one picture at the end, at the start or on top, in a box or split to the edge of the screen.",
 			"category": "hero",
 			"prototype": "hero-simple.svelte",
 			"contract": {
@@ -2034,34 +2054,58 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 						"end",
 						"start",
 						"top"
+					],
+					"frame": [
+						"box",
+						"split"
 					]
 				},
 				"defaults": {
-					"media": "end"
+					"media": "end",
+					"frame": "box"
 				},
 				"variants": [
 					{
 						"id": "mediaEnd",
 						"label": "Picture at the end",
 						"axes": {
-							"media": "end"
+							"media": "end",
+							"frame": "box"
 						}
 					},
 					{
 						"id": "mediaStart",
 						"label": "Picture at the start",
 						"axes": {
-							"media": "start"
+							"media": "start",
+							"frame": "box"
 						}
 					},
 					{
 						"id": "mediaTop",
 						"label": "Wide picture on top",
 						"axes": {
-							"media": "top"
+							"media": "top",
+							"frame": "box"
 						},
 						"settings": {
 							"align": "center"
+						}
+					},
+					{
+						"id": "splitEnd",
+						"label": "Split, picture at the end to the edge",
+						"axes": {
+							"media": "end",
+							"frame": "split"
+						}
+					},
+					{
+						"id": "splitStart",
+						"label": "Split, picture at the start to the edge",
+						"axes": {
+							"media": "start",
+							"frame": "split"
 						}
 					}
 				],
@@ -2125,6 +2169,14 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 							"/actionLabel",
 							"/actionHref"
 						]
+					},
+					{
+						"place": "secondaryAction",
+						"kind": "action",
+						"fields": [
+							"/secondaryActionLabel",
+							"/secondaryActionHref"
+						]
 					}
 				],
 				"wireframe": {
@@ -2135,7 +2187,7 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
 				"$id": "https://registry.buildy.tw/models/hero@1.schema.json",
 				"title": "HeroContent",
-				"description": "Hero content: an optional badge, the heading, a description, one picture (light, optional dark) and one action. One object is valid in every hero layout (media at the end, at the start, on top).",
+				"description": "Hero content: an optional badge, the heading, a description, one picture (light, optional dark) and up to two actions (the first drawn as the primary button, the second as the secondary one). One object is valid in every hero layout (media at the end, at the start, on top; in a box or split to the edge).",
 				"type": "object",
 				"additionalProperties": false,
 				"required": [
@@ -2183,6 +2235,17 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 					},
 					"actionHref": {
 						"description": "the address of the action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"secondaryActionLabel": {
+						"description": "the label of the second action (the secondary button after the first); drawn when the label and the address are both set; empty: none",
+						"type": "string",
+						"maxLength": 40
+					},
+					"secondaryActionHref": {
+						"description": "the address of the second action",
 						"type": "string",
 						"maxLength": 2048,
 						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
@@ -2723,7 +2786,7 @@ exports["isImageUrl"] = isImageUrl;
 });
 
 __def("packages/builder-core/src/catalog/props.json", function (exports) {
-  exports.default = {"format":"buildy-props-compact","version":1,"registry":"https://registry.buildy.tw","propsVersion":"0","digest":"sha256:fd43f59fc5c2c6ca1abd8a4d8d209f729620dfccf45857bcfcd37570e3f30b65","defs":{"data":{"anyOf":[{"$ref":"#/$defs/dataRef"},{"$ref":"#/$defs/dataOp"}]},"dataOp":{"description":"an operation over the data (packages/compose-gen/screens/src/ir.ts OPS)","type":"object","properties":{"op":{"enum":["add","and","at","cn","coalesce","cond","count","css","div","eq","firstOf","fitCols","ge","gt","has","le","len","list","lt","match","max","maxBy","min","money","mul","nbsp","ne","not","nth","num","or","pageWindow","pick","preset","range","recipe","round","str","sub","sumBy","tpl","undef","uniq","where","words"]},"args":{"type":"array"}},"required":["op","args"],"additionalProperties":false},"dataRef":{"description":"the data the block reads under this name (data[].as of the block spec)","type":"object","properties":{"$":{"type":"string","not":{"pattern":"^ui\\."}}},"required":["$"],"additionalProperties":false},"text":{"anyOf":[{"type":"string"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]},"uiRef":{"description":"a text of the ui dictionary, or a group of its texts for a record of labels","type":"object","properties":{"$":{"type":"string","pattern":"^ui\\."}},"required":["$"],"additionalProperties":false},"SimpleMember":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"avatar":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false}},"items":{"hero-simple":{"organism":"HeroSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"HeroSimpleProps","description":"The simple hero (model hero@1): an optional badge, the heading, a description, one link as the action (a link styled as a button: drawn only when the label and the address are both set) and one picture. Axes: media (end: the picture after the copy, start: before it, top: above it, wide).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"badge":{"description":"a short pill above the heading; empty: no badge","$ref":"#/$defs/text","default":""},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"image":{"description":"address of the picture (an https URL or a path); none: the placeholder","$ref":"#/$defs/text"},"imageAlt":{"description":"alt text of the picture; none: the title","$ref":"#/$defs/text"},"imageDark":{"description":"address of the picture in the dark theme; none: image","$ref":"#/$defs/text"},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["end","start","top"],"default":"end"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/badge":[{"s":"badge","k":"text"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}]}}},"team-simple":{"organism":"TeamSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"TeamSimpleProps","description":"The simple team (model team@1): the heading, a description and the members as a list, each with a portrait, the name and a line. Axes: cols (2, 3, 4 columns from md up), surface (plain, cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"members":{"description":"the people, in the order they are shown (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleMember"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"cols":{"type":"string","enum":["2","3","4"],"default":"3"},"surface":{"type":"string","enum":["plain","cards"],"default":"plain"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","members"],"additionalProperties":false},"defs":["SimpleMember","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/members":["member"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/members/[]/title":[{"in":"card","k":"text"},{"k":"text"}],"/members/[]/description":[{"in":"card","k":"text"},{"k":"text"}]}}}}};
+  exports.default = {"format":"buildy-props-compact","version":1,"registry":"https://registry.buildy.tw","propsVersion":"0","digest":"sha256:461c084b4626e5c9713c4bc85a68baf715254e26e80fe20971cbf71b78aa1e88","defs":{"data":{"anyOf":[{"$ref":"#/$defs/dataRef"},{"$ref":"#/$defs/dataOp"}]},"dataOp":{"description":"an operation over the data (packages/compose-gen/screens/src/ir.ts OPS)","type":"object","properties":{"op":{"enum":["add","and","at","cn","coalesce","cond","count","css","div","eq","firstOf","fitCols","ge","gt","has","le","len","list","lt","match","max","maxBy","min","money","mul","nbsp","ne","not","nth","num","or","pageWindow","pick","preset","range","recipe","round","str","sub","sumBy","tpl","undef","uniq","where","words"]},"args":{"type":"array"}},"required":["op","args"],"additionalProperties":false},"dataRef":{"description":"the data the block reads under this name (data[].as of the block spec)","type":"object","properties":{"$":{"type":"string","not":{"pattern":"^ui\\."}}},"required":["$"],"additionalProperties":false},"text":{"anyOf":[{"type":"string"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]},"uiRef":{"description":"a text of the ui dictionary, or a group of its texts for a record of labels","type":"object","properties":{"$":{"type":"string","pattern":"^ui\\."}},"required":["$"],"additionalProperties":false},"SimpleMember":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"avatar":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false}},"items":{"hero-simple":{"organism":"HeroSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"HeroSimpleProps","description":"The simple hero (model hero@1): an optional badge, the heading, a description, up to two links as the actions (links styled as buttons, the first primary, the second secondary: each drawn only when its label and its address are both set) and one picture. Axes: media (end: the picture after the copy, start: before it, top: above it, wide), frame (box: inside the container; split: two halves, the picture to the edge of the screen).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"badge":{"description":"a short pill above the heading; empty: no badge","$ref":"#/$defs/text","default":""},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"image":{"description":"address of the picture (an https URL or a path); none: the placeholder","$ref":"#/$defs/text"},"imageAlt":{"description":"alt text of the picture; none: the title","$ref":"#/$defs/text"},"imageDark":{"description":"address of the picture in the dark theme; none: image","$ref":"#/$defs/text"},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"secondaryActionLabel":{"description":"the label of the second action (the secondary button after the first); drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"secondaryActionHref":{"description":"the address of the second action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["end","start","top"],"default":"end"},"frame":{"type":"string","enum":["box","split"],"default":"box"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/badge":[{"s":"badge","k":"text"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}],"/secondaryActionHref":[{"s":"button","k":"attr","a":"href"}],"/secondaryActionLabel":[{"s":"button","k":"text"}]}}},"team-simple":{"organism":"TeamSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"TeamSimpleProps","description":"The simple team (model team@1): the heading, a description and the members as a list, each with a portrait, the name and a line. Axes: cols (2, 3, 4 columns from md up), surface (plain, cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"members":{"description":"the people, in the order they are shown (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleMember"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"cols":{"type":"string","enum":["2","3","4"],"default":"3"},"surface":{"type":"string","enum":["plain","cards"],"default":"plain"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","members"],"additionalProperties":false},"defs":["SimpleMember","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/members":["member"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/members/[]/title":[{"in":"card","k":"text"},{"k":"text"}],"/members/[]/description":[{"in":"card","k":"text"},{"k":"text"}]}}}}};
 });
 
 __def("packages/builder-core/src/catalog/props-schema.ts", function (exports) {

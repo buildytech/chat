@@ -43,18 +43,20 @@ test("every pinned file matches its sha256, the prototypes come from the configu
 
 test("feed cards: one per block variant, free text and category filters, counts per category", () => {
 	const all = catalogSearch();
-	assert.deepEqual(all.items.map((card) => card.id), ["hero-simple/mediaEnd", "hero-simple/mediaStart", "hero-simple/mediaTop", "team-simple/cols3", "team-simple/cols2", "team-simple/cols4", "team-simple/cards3"]);
-	assert.deepEqual(all.categories, [{ value: "hero", count: 3 }, { value: "company", count: 4 }]);
+	assert.deepEqual(all.items.map((card) => card.id), ["hero-simple/mediaEnd", "hero-simple/mediaStart", "hero-simple/mediaTop", "hero-simple/splitEnd", "hero-simple/splitStart", "team-simple/cols3", "team-simple/cols2", "team-simple/cols4", "team-simple/cards3"]);
+	assert.deepEqual(all.categories, [{ value: "hero", count: 5 }, { value: "company", count: 4 }]);
 	assert.deepEqual(all.items.filter((card) => card.isDefault).map((card) => card.id), ["hero-simple/mediaEnd", "team-simple/cols3"]);
 	assert.deepEqual(catalogSearch({ category: "company" }).items.map((card) => card.variant), ["cols3", "cols2", "cols4", "cards3"]);
 	assert.deepEqual(catalogSearch({ q: "cards" }).items.map((card) => card.id), ["team-simple/cards3"]);
 	assert.deepEqual(catalogSearch({ q: "picture top" }).items.map((card) => card.id), ["hero-simple/mediaTop"]);
+	assert.deepEqual(catalogSearch({ q: "split" }).items.map((card) => card.id), ["hero-simple/splitEnd", "hero-simple/splitStart"]);
 	assert.equal(catalogSearch({ q: "pricing" }).total, 0);
 });
 
 test("prototype props: the contract's setting defaults, then the variant's settings and axes", () => {
-	assert.deepEqual(prototypeProps("hero-simple", "mediaEnd"), { level: 2, padding: "standard", align: "start", media: "end" });
-	assert.deepEqual(prototypeProps("hero-simple", "mediaTop"), { level: 2, padding: "standard", align: "center", media: "top" });
+	assert.deepEqual(prototypeProps("hero-simple", "mediaEnd"), { level: 2, padding: "standard", align: "start", media: "end", frame: "box" });
+	assert.deepEqual(prototypeProps("hero-simple", "mediaTop"), { level: 2, padding: "standard", align: "center", media: "top", frame: "box" });
+	assert.deepEqual(prototypeProps("hero-simple", "splitStart"), { level: 2, padding: "standard", align: "start", media: "start", frame: "split" });
 	assert.deepEqual(prototypeProps("team-simple", "cards3"), { level: 2, padding: "standard", align: "center", cols: "3", surface: "cards" });
 	assert.deepEqual(prototypeProps("team-simple", "nosuch"), {});
 	assert.deepEqual(prototypeProps("nosuch", "x"), {});
