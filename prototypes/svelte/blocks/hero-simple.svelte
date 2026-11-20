@@ -52,7 +52,7 @@
       {/if}
       <Box
         class={cn(
-          "flex flex-col",
+          "flex w-full flex-col",
           "gap-6",
           (
             (align as string) === "center" ? "items-center"

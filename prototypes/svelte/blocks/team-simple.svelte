@@ -35,10 +35,10 @@
   data-slot="team-simple"
 >
   <Box class="mx-auto w-full max-w-6xl px-4">
-    <Box class={cn("flex flex-col", "gap-12", "items-stretch")}>
+    <Box class={cn("flex w-full flex-col", "gap-12", "items-stretch")}>
       <Box
         class={cn(
-          "flex flex-col",
+          "flex w-full flex-col",
           "gap-4",
           (
             (align as string) === "center" ? "items-center"
@@ -83,7 +83,7 @@
               <ShapeAvatar place="members.avatar" field="/members/0/avatar" />
               <Box
                 class={cn(
-                  "flex flex-col",
+                  "flex w-full flex-col",
                   "gap-2",
                   (
                     (align as string) === "center" ? "items-center"
@@ -100,7 +100,7 @@
             <ShapeAvatar place="members.avatar" field="/members/0/avatar" />
             <Box
               class={cn(
-                "flex flex-col",
+                "flex w-full flex-col",
                 "gap-2",
                 (
                   (align as string) === "center" ? "items-center"
@@ -135,7 +135,7 @@
               <ShapeAvatar place="members.avatar" field="/members/1/avatar" />
               <Box
                 class={cn(
-                  "flex flex-col",
+                  "flex w-full flex-col",
                   "gap-2",
                   (
                     (align as string) === "center" ? "items-center"
@@ -152,7 +152,7 @@
             <ShapeAvatar place="members.avatar" field="/members/1/avatar" />
             <Box
               class={cn(
-                "flex flex-col",
+                "flex w-full flex-col",
                 "gap-2",
                 (
                   (align as string) === "center" ? "items-center"
@@ -187,7 +187,7 @@
               <ShapeAvatar place="members.avatar" field="/members/2/avatar" />
               <Box
                 class={cn(
-                  "flex flex-col",
+                  "flex w-full flex-col",
                   "gap-2",
                   (
                     (align as string) === "center" ? "items-center"
@@ -204,7 +204,7 @@
             <ShapeAvatar place="members.avatar" field="/members/2/avatar" />
             <Box
               class={cn(
-                "flex flex-col",
+                "flex w-full flex-col",
                 "gap-2",
                 (
                   (align as string) === "center" ? "items-center"
