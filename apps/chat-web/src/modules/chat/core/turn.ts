@@ -3,14 +3,14 @@
  * reply carries, checked again against the page the author sees. No storage: the callers commit the messages.
  */
 import { catalogDigest, diffPages, emptyPage, writePage, type DiffEntry } from "@buildytech/builder-core";
-import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, formatChatModelChoice, getChatModel, mapChatRunRequest, scopeIssues, unknownUsage, notSentUsage, aggregateSessionUsage, type AgentMode, type RunUsage } from "@buildytech/chat-agent";
+import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, formatChatModelChoice, getChatModel, mapChatRunRequest, scopeIssues, unknownUsage, notSentUsage, aggregateSessionUsage, baseHashes, staleBlocks, type ProposalBase, type AgentMode, type RunUsage } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import { t } from "../../../lib/i18n/dictionary";
 import { fetchXaiStatus, runXaiTurn, type TurnRequest, type XaiRunResponse } from "../browser/xai-client";
 import { getSelectedModelId, noteAccountModels } from "../browser/models.svelte.ts";
 import { getScreenId } from "../browser/onboarding.svelte.ts";
 import type { StoredPageProvenance } from "../../../lib/browser/persist";
-import { getEditBase, getPageRevision, setCandidatePage } from "../../../lib/page-store";
+import { getCandidatePage, getEditBase, getLastAppliedPage, getPageRevision, setCandidatePage } from "../../../lib/page-store";
 import { getSelectedProject } from "../../../lib/project/store.svelte.ts";
 import { draftPageId } from "../../../lib/project/transitions.ts";
 import type { Project } from "../../../lib/project/types.ts";
@@ -33,7 +33,8 @@ function shownPageOf(): PageV2 | null {
 	return getEditBase()?.page ?? null;
 }
 
-type TurnPlan = { request: Omit<TurnRequest, "modelId">; base: PageV2; shown: PageV2 };
+/** `source` / `appliedAtStart`: where the base came from and the applied page when the turn started (baseHash, t85u). */
+type TurnPlan = { request: Omit<TurnRequest, "modelId">; base: PageV2; shown: PageV2; source: ProposalBase["source"]; appliedAtStart: PageV2 | null };
 
 /**
  * What a turn starts from (ADR 0034). The agent edits the page the author sees. A chat with no page starts from an empty
@@ -49,6 +50,8 @@ function planTurn(brief: string, mode: AgentMode, currentMessageId?: string): Tu
 	return {
 		base,
 		shown,
+		source: shownBase ? (getEditBase()?.source === "candidate" ? "candidate" : "applied") : "empty",
+		appliedAtStart: getLastAppliedPage(),
 		request: {
 			brief,
 			mode,
@@ -244,8 +247,20 @@ export function replyMessage(out: TurnOutcome): ChatMessage {
 	if (!checked.diff.length) return base;
 	const screenId = plan.request.screenId ?? null;
 	const baseRevision = plan.request.expectedRevision;
+	// baseHash: the blocks the proposal touches must still be what the turn read; a hand edit during the run is never overwritten.
+	const hashes = baseHashes(plan.base, checked.diff);
+	if (plan.source !== "empty") {
+		const stale = staleBlocks(plan.source === "candidate" ? getCandidatePage() : getLastAppliedPage(), hashes);
+		if (stale.length) return { ...base, text: [result.text.trim(), t("proposal.staleOnReply").replace("{blocks}", stale.join(", "))].filter(Boolean).join("\n\n") };
+	}
 	setCandidatePage(checked.page, provenanceFor(screenId));
 	// The host's summary line (no model call): what was written, the blocks, the gate errors fixed, edit-fields.
 	const summary = buildSummary({ page: checked.page, diff: checked.diff, trace: out.runTrace, warnings: checked.warnings });
-	return { ...base, text: [result.text.trim(), summary].filter(Boolean).join("\n\n"), proposal: newProposalState({ ...checked, baseRevision, live }) };
+	const message: ChatMessage = { ...base, text: [result.text.trim(), summary].filter(Boolean).join("\n\n"), proposal: newProposalState({ ...checked, baseRevision, live }) };
+	proposalBaseOf.set(message, { format: "proposal-base/1", source: plan.source, baseRevision, base: hashes, applied: baseHashes(plan.appliedAtStart, checked.diff) });
+	return message;
 }
+
+/** The baseHash record of a reply that installed a proposal (finishedSession files it under the message id). */
+const proposalBaseOf = new WeakMap<ChatMessage, ProposalBase>();
+export const proposalBaseFor = (message: ChatMessage): ProposalBase | undefined => proposalBaseOf.get(message);

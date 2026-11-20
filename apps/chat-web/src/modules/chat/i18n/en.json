@@ -81,6 +81,8 @@
 		"summary.gateFixed": "Gate: errors fixed after a rejected write: {count} ({issues}).",
 		"summary.gateClean": "Gate: the write was accepted the first time.",
 		"summary.notes": "Host notes: {count} (see the proposal warnings).",
+		"proposal.staleOnReply": "The proposal was not installed: blocks {blocks} were edited by hand while the agent ran. Your edits are kept; send the request again.",
+		"proposal.baseChanged": "Apply is blocked: blocks {blocks} were edited by hand on the applied page after the agent started. Discard the proposal or send the request again.",
 		"proposal.apply": "Apply",
 		"proposal.discard": "Discard",
 		"proposal.notApplied": "Not applied",

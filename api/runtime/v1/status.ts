@@ -9184,6 +9184,45 @@ exports["mapChatRunRequest"] = mapChatRunRequest;
 
 });
 
+__def("packages/chat-agent/src/proposal-base.ts", function (exports) {
+const { fnv1a64 } = __req("packages/chat-agent/src/identity.ts");
+type Diffed = { scope: string; change: string; id?: string };
+type BaseHashes = Record<string, string | null>;
+function blockBaseHash(block: Pick<BlockV2, "item" | "variant" | "props"> | undefined): string | null {
+	return block ? `fnv1a64:${fnv1a64(JSON.stringify({ item: block.item, variant: block.variant ?? null, props: block.props ?? {} }))}` : null;
+}
+
+/** The hashes of the blocks a diff touches (changed, removed, moved; an added block has no base) on a page. */
+function baseHashes(page: PageV2 | null | undefined, diff: Diffed[]): BaseHashes {
+	const ids = [...new Set(diff.flatMap((entry) => (entry.scope === "block" && entry.change !== "added" && entry.id ? [entry.id] : [])))];
+	return Object.fromEntries(ids.map((id) => [id, blockBaseHash(page?.blocks.find((block) => block.id === id))]));
+}
+
+/** The block ids whose content on `page` is no longer what `hashes` recorded (edited, removed or added by hand). */
+function staleBlocks(page: PageV2 | null | undefined, hashes: BaseHashes): string[] {
+	return Object.entries(hashes).flatMap(([id, hash]) => (blockBaseHash(page?.blocks.find((block) => block.id === id)) === hash ? [] : [id]));
+}
+
+const isHashes = (value: unknown): value is BaseHashes => typeof value === "object" && value !== null && !Array.isArray(value) && Object.values(value).every((x) => x === null || typeof x === "string");
+function isProposalBase(value: unknown): value is ProposalBase {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+	const v: Record<string, unknown> = { ...value };
+	return v.format === "proposal-base/1" && typeof v.baseRevision === "number" && ["candidate", "applied", "empty"].includes(String(v.source)) && isHashes(v.base) && isHashes(v.applied);
+}
+
+/** The stored records by message id; an entry that is not a record is left out (never reinterpreted). */
+function readProposalBases(value: unknown): Record<string, ProposalBase> | undefined {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+	return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, ProposalBase] => isProposalBase(entry[1])));
+}
+
+exports["blockBaseHash"] = blockBaseHash;
+exports["baseHashes"] = baseHashes;
+exports["staleBlocks"] = staleBlocks;
+exports["readProposalBases"] = readProposalBases;
+
+});
+
 __def("packages/chat-agent/src/protect.ts", function (exports) {
 const { readEnv } = __req("packages/chat-agent/src/env-map.ts");
 const VERCEL_HOBBY_SAFE_MAX_DURATION_SEC = 60;
@@ -9856,6 +9895,7 @@ __def("packages/chat-agent/src/index.ts", function (exports) {
 { const __m = __req("packages/chat-agent/src/agent/catalog-tools.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/agent/turn.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/models.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+{ const __m = __req("packages/chat-agent/src/proposal-base.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/usage.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/xai-env.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/protect.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }

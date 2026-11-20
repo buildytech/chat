@@ -6,8 +6,8 @@ import { retryMessage } from "./retry-message.ts";
 import { chatModeOf } from "./modes";
 import { abortInflight, commitSession, createSession, currentEpoch, getSelectedSession, getSession, canRunSession, run, startRun } from "./chat.svelte.ts";
 import { loadPropsGate } from "../../../lib/gates";
-import { markPendingProposals } from "./proposals";
-import { localizedRunError, nowIso, replyMessage, runTurn, runtimeNoteFor, sessionUsageFrom, uid } from "./turn";
+import { isPendingProposal, markPendingProposals } from "./proposals";
+import { localizedRunError, nowIso, proposalBaseFor, replyMessage, runTurn, runtimeNoteFor, sessionUsageFrom, uid } from "./turn";
 import type { ChatMessage, ChatSession } from "./types";
 
 /** The session with the user's message appended (a new chat takes its title from the first line). */
@@ -44,7 +44,11 @@ function finishedSession(pending: ChatSession, out: Awaited<ReturnType<typeof ru
 	const reply = replyMessage(out);
 	// A new proposal supersedes the pending ones of its own kind: an Ask proposal the Ask ones, a Build proposal the Build ones.
 	const prior = reply.proposal ? markPendingProposals(pending.messages, "superseded", "all", (m) => (m.mode === "ask") === (reply.mode === "ask")) : pending.messages;
-	return { ...pending, ...(out.runTrace ? { runTraces: { ...pending.runTraces, [out.runTrace.runId]: out.runTrace } } : {}), updatedAt: nowIso(), selectedModelId: modelId, messages: [...prior, reply], usage: sessionUsageFrom(pending, usage) };
+	const messages = [...prior, reply];
+	// baseHash records are kept for pending proposals only (Apply reads the latest one).
+	const bases = { ...pending.proposalBases, ...(proposalBaseFor(reply) ? { [reply.id]: proposalBaseFor(reply)! } : {}) };
+	const proposalBases = Object.fromEntries(Object.entries(bases).filter(([id]) => messages.some((m) => m.id === id && m.proposal && isPendingProposal(m.proposal))));
+	return { ...pending, ...(out.runTrace ? { runTraces: { ...pending.runTraces, [out.runTrace.runId]: out.runTrace } } : {}), proposalBases, updatedAt: nowIso(), selectedModelId: modelId, messages, usage: sessionUsageFrom(pending, usage) };
 }
 
 async function sendMessageText(text: string, retryOf?: string): Promise<ChatSession> {

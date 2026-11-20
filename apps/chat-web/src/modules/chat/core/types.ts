@@ -83,6 +83,8 @@ export type ChatMessage = {
 export type ChatSession = {
 	runAttempts?: import("@buildytech/chat-agent").RunAttempts;
 	runTraces?: Record<string, import("@buildytech/chat-agent").RunTrace>;
+	/** baseHash of the pending Build proposals by message id (session ext `chat-proposal-base`, chat-local; t85u). */
+	proposalBases?: Record<string, import("@buildytech/chat-agent").ProposalBase>;
 	id: string;
 	/** Key of the page record when it differs from `id` (session file 1.9.0). */
 	projectId?: string;

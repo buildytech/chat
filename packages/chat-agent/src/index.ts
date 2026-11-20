@@ -4,6 +4,7 @@ export * from "./agent/blocks.ts";
 export * from "./agent/catalog-tools.ts";
 export * from "./agent/turn.ts";
 export * from "./models.ts";
+export * from "./proposal-base.ts";
 export * from "./usage.ts";
 export * from "./xai-env.ts";
 export * from "./protect.ts";

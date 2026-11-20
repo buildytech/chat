@@ -4,7 +4,7 @@
  * `projectOfView` are inverse for the chat's fields, and a project with no chat stays a project with no chat until the
  * chat writes something.
  */
-import { readRunAttempts } from "@buildytech/chat-agent";
+import { readProposalBases, readRunAttempts } from "@buildytech/chat-agent";
 import type { AgentMode } from "@buildytech/chat-agent";
 import type { Project } from "../../../lib/project/types.ts";
 import type { ChatMessage, ChatSession } from "./types.ts";
@@ -20,18 +20,20 @@ export function viewOf(project: Project): ChatSession {
 	if (view) return view;
 	const { ext: _ext, ...fields } = project;
 	const chat = chatOf(project);
-	view = { ...fields, runAttempts: readRunAttempts(project.ext["agent-runs"]) ?? undefined, runTraces: project.ext["agent-trace"], messages: chat?.messages ?? [], ...(chat?.mode ? { mode: chat.mode } : {}), ...(chat?.selectedModelId ? { selectedModelId: chat.selectedModelId } : {}), ...(chat?.usage ? { usage: chat.usage } : {}) } as ChatSession;
+	view = { ...fields, runAttempts: readRunAttempts(project.ext["agent-runs"]) ?? undefined, runTraces: project.ext["agent-trace"], proposalBases: readProposalBases(project.ext["chat-proposal-base"]), messages: chat?.messages ?? [], ...(chat?.mode ? { mode: chat.mode } : {}), ...(chat?.selectedModelId ? { selectedModelId: chat.selectedModelId } : {}), ...(chat?.usage ? { usage: chat.usage } : {}) } as ChatSession;
 	views.set(project, view);
 	return view;
 }
 
 /** The project a chat view stands for: its project fields, and `ext.chat` when the view or the project before it has a chat. */
 export function projectOfView(view: ChatSession, prev: Project | null): Project {
-	const { runAttempts, runTraces, messages, mode, selectedModelId, usage, projectId, ...fields } = view;
+	const { runAttempts, runTraces, proposalBases, messages, mode, selectedModelId, usage, projectId, ...fields } = view;
 	const kept = { ...(prev?.ext ?? {}) };
 	delete kept.chat;
 	if (runAttempts) kept["agent-runs"] = runAttempts;
 	if (runTraces) kept["agent-trace"] = runTraces;
+	if (proposalBases && Object.keys(proposalBases).length) kept["chat-proposal-base"] = proposalBases;
+	else delete kept["chat-proposal-base"];
 	const hasChat = Boolean(prev?.ext.chat) || messages.length > 0 || mode !== undefined || selectedModelId !== undefined || usage !== undefined;
 	const chat = { ...(mode ? { mode } : {}), ...(selectedModelId ? { selectedModelId } : {}), ...(usage ? { usage } : {}), messages };
 	return { ...fields, projectId: prev?.projectId ?? projectId ?? view.id, ext: hasChat ? { ...kept, chat } : kept } as Project;
