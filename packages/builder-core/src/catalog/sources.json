@@ -3,16 +3,16 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:32c1988e1c5300c92c6f8fccadbdccf9a1c462eec459b03d156c64767af25867",
+	"lockDigest": "sha256:2adab66f634b4e81fa9b643542879e08b365cb039d9ef9acd99461ce76f5737f",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "6b1454980e0837dbf954724055d49aa5cf8f7af928b6c6727bf94c13fd6f9df0",
-		"digest": "sha256:b54c43be6c208df7db0d28d442152ac46be9e2c12745f76fa9d6c4824eaa5f69"
+		"sha256": "ff6d252473322fa8b86c0829b5b4414edcb6f7e19fb578042f3b9361649959a9",
+		"digest": "sha256:69ddffd21a4e36d94b5c2934c41d9d4600cba65127f5bb1068f7209352ef0d49"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "76ff108820c7baa6473379cf722874dc7b9bc822ee2a1075c0cb97a8ab106023",
-		"digest": "sha256:ffeeb55ab26b97d8f1fdb67afc79c8a346da0fcf218c7aa2682616e93c54220a"
+		"sha256": "2c3a1f3d1b15bd608ee95b2c3c15596fedd1c84b3920d4e2b2cb20083f952ff3",
+		"digest": "sha256:e022c7e247a750e3277fbb7a4f349ec3fdceea2e0a20897451389314e90f8094"
 	},
 	"initItems": [
 		"presets",
@@ -1080,6 +1080,39 @@
 				]
 			}
 		},
+		"hours-simple": {
+			"type": "registry:block",
+			"title": "Hours Simple",
+			"description": "The heading, one paragraph, the address (a link to the map), the phone and the opening hours by day: side by side or in one narrow column, plain or on cards.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/hours-simple.svelte",
+				"src/blocks/hours-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/hours-simple/1.json",
+				"group": "contact",
+				"kind": "block",
+				"model": "hours@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"icon": {
 			"type": "registry:ui",
 			"title": "Icon",
@@ -2121,6 +2154,39 @@
 			"files": [
 				"src/compose/recipes.ts"
 			]
+		},
+		"rooms-simple": {
+			"type": "registry:block",
+			"title": "Rooms Simple",
+			"description": "The heading, one paragraph and the rooms (a picture, the name as a link, the guests, a line, the price a night): on cards in three or two columns, or rows with the picture at the start.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/rooms-simple.svelte",
+				"src/blocks/rooms-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/rooms-simple/1.json",
+				"group": "catalog",
+				"kind": "block",
+				"model": "rooms@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"select": {
 			"type": "registry:ui",
@@ -3470,6 +3536,32 @@
 				}
 			}
 		},
+		"hours-simple": {
+			"spec": "block.hourssimple",
+			"organism": "blocks/hours-simple.svelte",
+			"organismName": "HoursSimple",
+			"defaultVariant": "columns",
+			"variants": {
+				"columns": {
+					"layout": "columns",
+					"surface": "plain",
+					"align": "start"
+				},
+				"columnsCard": {
+					"layout": "columns",
+					"surface": "card",
+					"align": "start"
+				},
+				"stack": {
+					"layout": "stack",
+					"surface": "plain"
+				},
+				"stackCard": {
+					"layout": "stack",
+					"surface": "card"
+				}
+			}
+		},
 		"intro-simple": {
 			"spec": "block.introsimple",
 			"organism": "blocks/intro-simple.svelte",
@@ -3730,6 +3822,27 @@
 				},
 				"centered": {
 					"layout": "centered"
+				}
+			}
+		},
+		"rooms-simple": {
+			"spec": "block.roomssimple",
+			"organism": "blocks/rooms-simple.svelte",
+			"organismName": "RoomsSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"cards2": {
+					"layout": "cards",
+					"cols": "2"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
 				}
 			}
 		},
@@ -4175,6 +4288,22 @@
 			"item": "hero-simple",
 			"variant": "mediaStartPortrait"
 		},
+		"block.hourssimple/columns": {
+			"item": "hours-simple",
+			"variant": "columns"
+		},
+		"block.hourssimple/columnsCard": {
+			"item": "hours-simple",
+			"variant": "columnsCard"
+		},
+		"block.hourssimple/stack": {
+			"item": "hours-simple",
+			"variant": "stack"
+		},
+		"block.hourssimple/stackCard": {
+			"item": "hours-simple",
+			"variant": "stackCard"
+		},
 		"block.introsimple/center": {
 			"item": "intro-simple",
 			"variant": "center"
@@ -4334,6 +4463,18 @@
 		"block.ratingsimple/centered": {
 			"item": "rating-simple",
 			"variant": "centered"
+		},
+		"block.roomssimple/cards3": {
+			"item": "rooms-simple",
+			"variant": "cards3"
+		},
+		"block.roomssimple/cards2": {
+			"item": "rooms-simple",
+			"variant": "cards2"
+		},
+		"block.roomssimple/rows": {
+			"item": "rooms-simple",
+			"variant": "rows"
 		},
 		"block.specssimple/keyValue": {
 			"item": "specs-simple",
@@ -4533,6 +4674,10 @@
 			"item": "hero-simple",
 			"variant": "mediaEnd"
 		},
+		"block.hourssimple": {
+			"item": "hours-simple",
+			"variant": "columns"
+		},
 		"block.introsimple": {
 			"item": "intro-simple",
 			"variant": "center"
@@ -4592,6 +4737,10 @@
 		"block.ratingsimple": {
 			"item": "rating-simple",
 			"variant": "inline"
+		},
+		"block.roomssimple": {
+			"item": "rooms-simple",
+			"variant": "cards3"
 		},
 		"block.specssimple": {
 			"item": "specs-simple",

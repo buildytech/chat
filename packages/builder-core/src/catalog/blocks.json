@@ -4,13 +4,13 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "91e8a57a025a7344c78aeb6b27717fa6622f1586",
+		"commit": "8058f83490a356d832b2486f2594d8000ce8bea5",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "cf8b21c224e3c4869d4a1188f4421e32f5faec26339c9e4dd238f9017f54bbde"
+			"sha256": "dd2496e1a17560c4169f37a367a0dea1a372de7022bfdf49c2775455dd65f6fe"
 		}
 	},
-	"digest": "sha256:81c4963d45fcdd4ccff237c5f1aaf47bc5424e5d6e4813826bd506036c15a76a",
+	"digest": "sha256:c0476f4f7589f49228fc1376e02e42e7cda6be2e7312b3d8550fac868f616022",
 	"blocks": [
 		{
 			"item": "hero-simple",
@@ -7976,6 +7976,467 @@
 						"maxLength": 160,
 						"minLength": 1,
 						"pattern": "\\S"
+					}
+				}
+			}
+		},
+		{
+			"item": "hours-simple",
+			"title": "Hours Simple",
+			"description": "The heading, one paragraph, the address (a link to the map), the phone and the opening hours by day: side by side or in one narrow column, plain or on cards.",
+			"category": "contact",
+			"prototype": "hours-simple.svelte",
+			"contract": {
+				"item": "hours-simple",
+				"version": 1,
+				"block": "block.hourssimple",
+				"organism": "HoursSimple",
+				"line": "simple",
+				"model": "hours@1",
+				"modelSchema": "https://registry.buildy.tw/models/hours@1.schema.json",
+				"axes": {
+					"layout": [
+						"columns",
+						"stack"
+					],
+					"surface": [
+						"plain",
+						"card"
+					]
+				},
+				"defaults": {
+					"layout": "columns",
+					"surface": "plain"
+				},
+				"variants": [
+					{
+						"id": "columns",
+						"label": "Address and hours side by side",
+						"axes": {
+							"layout": "columns",
+							"surface": "plain"
+						},
+						"settings": {
+							"align": "start"
+						}
+					},
+					{
+						"id": "columnsCard",
+						"label": "Side by side on cards",
+						"axes": {
+							"layout": "columns",
+							"surface": "card"
+						},
+						"settings": {
+							"align": "start"
+						}
+					},
+					{
+						"id": "stack",
+						"label": "One centred column",
+						"axes": {
+							"layout": "stack",
+							"surface": "plain"
+						}
+					},
+					{
+						"id": "stackCard",
+						"label": "One column on cards",
+						"axes": {
+							"layout": "stack",
+							"surface": "card"
+						}
+					}
+				],
+				"defaultVariant": "columns",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "address",
+						"kind": "text",
+						"fields": [
+							"/address",
+							"/mapHref"
+						]
+					},
+					{
+						"place": "phone",
+						"kind": "text",
+						"fields": [
+							"/phone",
+							"/phoneHref"
+						]
+					},
+					{
+						"place": "items.day",
+						"kind": "text",
+						"fields": [
+							"/items/*/day"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.time",
+						"kind": "text",
+						"fields": [
+							"/items/*/time"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/hours@1.schema.json",
+				"title": "HoursContent",
+				"description": "Opening hours content: the heading, a description, the address, the phone and its link, an optional map address (the address links to it) and the opening hours, a row per day or per days. One object is valid in every hours layout (side by side, one column; plain or on cards).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"address",
+					"phone",
+					"phoneHref",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"address": {
+						"description": "the address as it is shown",
+						"type": "string",
+						"maxLength": 160,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"phone": {
+						"description": "the phone number as it is shown",
+						"type": "string",
+						"maxLength": 40,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"phoneHref": {
+						"description": "the address of the phone link (tel:)",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"mapHref": {
+						"description": "the address of the map; set: the address is a link to it",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"items": {
+						"description": "the opening hours, a row per day or per days",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 7,
+						"items": {
+							"title": "OpeningHour",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"day",
+								"time"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"day": {
+									"description": "the day or the days (Mon to Fri)",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"time": {
+									"description": "the time as it is shown (12:00 to 23:00), or closed",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "rooms-simple",
+			"title": "Rooms Simple",
+			"description": "The heading, one paragraph and the rooms (a picture, the name as a link, the guests, a line, the price a night): on cards in three or two columns, or rows with the picture at the start.",
+			"category": "catalog",
+			"prototype": "rooms-simple.svelte",
+			"contract": {
+				"item": "rooms-simple",
+				"version": 1,
+				"block": "block.roomssimple",
+				"organism": "RoomsSimple",
+				"line": "simple",
+				"model": "rooms@1",
+				"modelSchema": "https://registry.buildy.tw/models/rooms@1.schema.json",
+				"axes": {
+					"layout": [
+						"cards",
+						"rows"
+					],
+					"cols": [
+						"3",
+						"2"
+					]
+				},
+				"defaults": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "cards3",
+						"label": "Three room cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "cards2",
+						"label": "Two columns",
+						"axes": {
+							"layout": "cards",
+							"cols": "2"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "Rows, the picture at the start",
+						"axes": {
+							"layout": "rows",
+							"cols": "3"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "cards3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.image",
+						"kind": "media",
+						"fields": [
+							"/items/*/image"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title",
+							"/items/*/href"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.guests",
+						"kind": "text",
+						"fields": [
+							"/items/*/guests"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.price",
+						"kind": "text",
+						"fields": [
+							"/items/*/price"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/rooms@1.schema.json",
+				"title": "RoomsContent",
+				"description": "Rooms content: the heading, a description and an ordered list of rooms or apartments, each with a picture, the name, the guests or the size, a line, the price a night as it is shown and an optional address. One object is valid in every rooms layout (cards in three or two columns, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the rooms, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 6,
+						"items": {
+							"title": "Room",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title",
+								"price"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"image": {
+									"description": "address of the room picture; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								},
+								"title": {
+									"description": "the name of the room (the alt text of the picture)",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"guests": {
+									"description": "the guests or the size as it is shown (2 guests, 24 m2); empty: none",
+									"type": "string",
+									"maxLength": 60
+								},
+								"description": {
+									"description": "one line about the room; empty: none",
+									"type": "string",
+									"maxLength": 200
+								},
+								"price": {
+									"description": "the price a night as it is shown",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"href": {
+									"description": "the address of the room page; empty: no link",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
 					}
 				}
 			}

@@ -1,6 +1,6 @@
 {
 	"version": "0",
-	"digest": "sha256:b54c43be6c208df7db0d28d442152ac46be9e2c12745f76fa9d6c4824eaa5f69",
+	"digest": "sha256:69ddffd21a4e36d94b5c2934c41d9d4600cba65127f5bb1068f7209352ef0d49",
 	"registry": "https://registry.buildy.tw",
 	"items": {
 		"article-lead": {
@@ -909,6 +909,69 @@
 				}
 			}
 		},
+		"hours-simple": {
+			"block": "hourssimple",
+			"spec": "block.hourssimple",
+			"organism": "HoursSimple",
+			"axes": {
+				"layout": [
+					"columns",
+					"stack"
+				],
+				"surface": [
+					"plain",
+					"card"
+				]
+			},
+			"defaults": {
+				"layout": "columns",
+				"surface": "plain"
+			},
+			"defaultVariant": "columns",
+			"variants": {
+				"columns": {
+					"asset": "block.hourssimple/columns",
+					"set": {},
+					"props": {
+						"layout": "columns",
+						"surface": "plain",
+						"align": "start"
+					}
+				},
+				"columnsCard": {
+					"asset": "block.hourssimple/columnsCard",
+					"set": {
+						"surface": "card"
+					},
+					"props": {
+						"layout": "columns",
+						"surface": "card",
+						"align": "start"
+					}
+				},
+				"stack": {
+					"asset": "block.hourssimple/stack",
+					"set": {
+						"layout": "stack"
+					},
+					"props": {
+						"layout": "stack",
+						"surface": "plain"
+					}
+				},
+				"stackCard": {
+					"asset": "block.hourssimple/stackCard",
+					"set": {
+						"layout": "stack",
+						"surface": "card"
+					},
+					"props": {
+						"layout": "stack",
+						"surface": "card"
+					}
+				}
+			}
+		},
 		"intro-simple": {
 			"block": "introsimple",
 			"spec": "block.introsimple",
@@ -1534,6 +1597,57 @@
 					},
 					"props": {
 						"layout": "centered"
+					}
+				}
+			}
+		},
+		"rooms-simple": {
+			"block": "roomssimple",
+			"spec": "block.roomssimple",
+			"organism": "RoomsSimple",
+			"axes": {
+				"layout": [
+					"cards",
+					"rows"
+				],
+				"cols": [
+					"3",
+					"2"
+				]
+			},
+			"defaults": {
+				"layout": "cards",
+				"cols": "3"
+			},
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"asset": "block.roomssimple/cards3",
+					"set": {},
+					"props": {
+						"layout": "cards",
+						"cols": "3"
+					}
+				},
+				"cards2": {
+					"asset": "block.roomssimple/cards2",
+					"set": {
+						"cols": "2"
+					},
+					"props": {
+						"layout": "cards",
+						"cols": "2"
+					}
+				},
+				"rows": {
+					"asset": "block.roomssimple/rows",
+					"set": {
+						"layout": "rows"
+					},
+					"props": {
+						"layout": "rows",
+						"cols": "3",
+						"align": "start"
 					}
 				}
 			}

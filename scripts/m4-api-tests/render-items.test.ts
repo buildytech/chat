@@ -84,8 +84,8 @@ test("every item + variant: what write_page accepts with its sample props render
 		}
 	}
 	assert.deepEqual(wrong, []);
-	assert.equal(accepted.length + rejected.length, 130, `${accepted.length + rejected.length} combinations`);
-	assert.equal(accepted.length, 130, `${accepted.length} accepted`);
+	assert.equal(accepted.length + rejected.length, 137, `${accepted.length + rejected.length} combinations`);
+	assert.equal(accepted.length, 137, `${accepted.length} accepted`);
 });
 
 test("the studio page (hero with a photo, team of three): every block renders in the preview pipeline", async () => {

@@ -475,6 +475,17 @@
         "src/blocks/hero-simple.svelte": "fdd8bcc3e3c96898e21beae9a22f7f0d978240faf5bdc1443df50d6886fd2834"
       }
     },
+    "registry.buildy.tw|svelte|hours-simple": {
+      "name": "hours-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/hours-simple.svelte": "d9e3f4b22b1cafc80093ec3a62bae8f47cb587e90ba95a105dfffd99d275ff05",
+        "src/blocks/hours-simple.types.ts": "526e00965c00798375302d13fb4917adf3a40e29bfb8d1529d4b0c6f7a36ab31"
+      }
+    },
     "registry.buildy.tw|svelte|icon": {
       "name": "icon",
       "type": "registry:ui",
@@ -1071,6 +1082,17 @@
       "runtime": "svelte",
       "files": {
         "src/compose/recipes.ts": "68e30d8bbe845066b947bc5bfc8a7669e769b3e18f77e6879f86f1d25695df59"
+      }
+    },
+    "registry.buildy.tw|svelte|rooms-simple": {
+      "name": "rooms-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/rooms-simple.svelte": "2fb265abd86b4571a7920b29d3a7ca9e53c6cac2028f9e1bb8f3aa67c670dd02",
+        "src/blocks/rooms-simple.types.ts": "39c8fda2d7d03269f702784a7ceabc439f70f5f1065e26154871ff369de39977"
       }
     },
     "registry.buildy.tw|svelte|select": {
