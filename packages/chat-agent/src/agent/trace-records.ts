@@ -14,5 +14,5 @@ export type TraceToolResult = {
 	durationMs: number; execution: "completed" | "skipped"; evidence?: unknown;
 	accepted?: boolean; baseRevision?: number | null; pageRevision?: null;
 	revisionMeaning?: string; diff?: TraceBody | null;
-	gate?: { codes: string[]; issues: Array<{ path: string; code: string }>; code?: string };
+	gate?: { codes: string[]; issues: Array<{ path: string; code: string; expected?: string; got?: unknown }>; code?: string };
 };

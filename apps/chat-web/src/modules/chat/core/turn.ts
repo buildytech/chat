@@ -3,7 +3,7 @@
  * reply carries, checked again against the page the author sees. No storage: the callers commit the messages.
  */
 import { catalogDigest, diffPages, emptyPage, writePage, type DiffEntry } from "@buildytech/builder-core";
-import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, formatChatModelChoice, getChatModel, mapChatRunRequest, scopeIssues, unknownUsage, aggregateSessionUsage, type AgentMode, type RunUsage } from "@buildytech/chat-agent";
+import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, formatChatModelChoice, getChatModel, mapChatRunRequest, scopeIssues, unknownUsage, notSentUsage, aggregateSessionUsage, type AgentMode, type RunUsage } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
 import { t } from "../../../lib/i18n/dictionary";
 import { fetchXaiStatus, runXaiTurn, type TurnRequest, type XaiRunResponse } from "../browser/xai-client";
@@ -119,7 +119,7 @@ export async function runTurn(brief: string, mode: AgentMode, signal: AbortSigna
 		{ discoveredChatIds: status.models?.listed ? status.models.chatIds ?? [] : undefined, allowUnlistedTrial: !status.ready }
 	);
 	if (!mapped.ok) {
-		return { result: { ok: false, code: mapped.code, message: mapped.message }, plan, status, modelId: mapped.requestedId, live: false, usage: unknownUsage("error", 0) };
+		return { result: { ok: false, code: mapped.code, message: mapped.message }, plan, status, modelId: mapped.requestedId, live: false, usage: notSentUsage() };
 	}
 	if (!status.ready) {
 		return {
@@ -128,7 +128,7 @@ export async function runTurn(brief: string, mode: AgentMode, signal: AbortSigna
 			status,
 			modelId: mapped.request.modelId,
 			live: false,
-			usage: unknownUsage("error", 0)
+			usage: notSentUsage()
 		};
 	}
 	const live = await runXaiTurn({ ...plan.request, modelId: mapped.request.modelId }, signal);

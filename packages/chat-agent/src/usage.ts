@@ -31,6 +31,8 @@ export type RunUsage = {
 	aggregation?: "sum-of-tool-loop-requests";
 	/** Last provider usage object in the loop, when present. */
 	lastStep?: StepUsage;
+	/** The host refused the run before any provider request (model not on the key, runtime not ready): nothing sent, nothing billed. */
+	notSent?: true;
 	cost: UsageCost;
 };
 
@@ -43,6 +45,8 @@ export type SessionUsage = {
 	totalTokens: TokenCount;
 	reasoningTokens?: number;
 	cachedTokens?: number;
+	/** Runs refused before any provider request; they count nowhere else in this total. */
+	notSentRuns?: number;
 	cost: UsageCost;
 };
 
@@ -63,6 +67,15 @@ export function unknownUsage(reason: RunUsage["incompleteReason"], steps = 0): R
 function asCount(value: unknown): number | null {
 	if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) return value;
 	return null;
+}
+
+/**
+ * A run the host refused before it sent anything to the provider (`model_not_enabled_on_account`, runtime not ready, a
+ * scenario that does not resolve): zero requests, zero tokens, no bill. Unlike unknownUsage it is complete: nothing is
+ * unknown about a request that was never made, so the session total stays complete (aggregateSessionUsage skips it).
+ */
+export function notSentUsage(): RunUsage {
+	return { status: "complete", steps: 0, reportedSteps: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, reportedBy: "none", notSent: true, cost: COST_UNAVAILABLE };
 }
 
 /** Read one provider usage object. Missing fields stay absent; never invent 0. */
@@ -156,7 +169,11 @@ export function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, o
 	return run;
 }
 
-export function aggregateSessionUsage(runs: RunUsage[]): SessionUsage {
+export function aggregateSessionUsage(all: RunUsage[]): SessionUsage {
+	// A run refused before any request adds nothing and never makes the total unknown or partial.
+	const runs = all.filter((run) => run.notSent !== true);
+	const notSent = all.length - runs.length;
+	const refused = notSent ? { notSentRuns: notSent } : {};
 	if (runs.length === 0) {
 		return {
 			status: "complete",
@@ -165,6 +182,7 @@ export function aggregateSessionUsage(runs: RunUsage[]): SessionUsage {
 			promptTokens: 0,
 			completionTokens: 0,
 			totalTokens: 0,
+			...refused,
 			cost: COST_UNAVAILABLE
 		};
 	}
@@ -194,6 +212,7 @@ export function aggregateSessionUsage(runs: RunUsage[]): SessionUsage {
 		promptTokens: prompt,
 		completionTokens: completion,
 		totalTokens: prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion,
+		...refused,
 		cost: aggregateBilledCost(runs.map((run) => storedCostPart(run.cost, run.steps)))
 	};
 	if (sawReasoning && Number.isSafeInteger(reasoning)) session.reasoningTokens = reasoning;

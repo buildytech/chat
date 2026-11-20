@@ -12,6 +12,13 @@ function body(value: unknown) {
 	return { hash: `fnv1a64:${fnv1a64(text)}`, bytes: new TextEncoder().encode(text).length, body: value };
 }
 function record(value: unknown): value is Record<string, unknown> { return value !== null && typeof value === "object" && !Array.isArray(value); }
+const ISSUE_TEXT = 1_000;
+/** `got` of an issue as written, folded to a short JSON text when it is large (a whole props object). */
+function foldGot(value: unknown): unknown {
+	if (value === undefined || value === null || typeof value !== "object") return typeof value === "string" ? value.slice(0, ISSUE_TEXT) : value;
+	const text = JSON.stringify(value);
+	return text.length <= ISSUE_TEXT ? value : `${text.slice(0, ISSUE_TEXT)}…`;
+}
 
 export function createRunTrace(runId: string, modelId: string, budget: ExecutionBudget, counts: BudgetCounts, scenario?: CompiledScenario, deadline?: number) {
 	const started = Date.now();
@@ -58,7 +65,8 @@ export function createRunTrace(runId: string, modelId: string, budget: Execution
 		},
 		tool(call: AgentCall, result: unknown, durationMs: number, proposal: PageProposal | null, evidence?: unknown, executed = true) {
 			const failed = record(result) && result.ok === false;
-			const issues = record(result) && Array.isArray(result.issues) ? result.issues.filter(record).map((issue) => ({ path: typeof issue.path === "string" ? issue.path : "unknown", code: typeof issue.code === "string" ? issue.code : "unknown" })) : [];
+			// The whole issue (path, code, expected, got): a rejected write must be readable from a hash-only export.
+		const issues = record(result) && Array.isArray(result.issues) ? result.issues.filter(record).map((issue) => ({ path: typeof issue.path === "string" ? issue.path : "unknown", code: typeof issue.code === "string" ? issue.code : "unknown", ...(typeof issue.expected === "string" ? { expected: issue.expected.slice(0, ISSUE_TEXT) } : {}), ...("got" in issue ? { got: foldGot(issue.got) } : {}) })) : [];
 			trace.toolResults.push({ step: trace.steps.length, callId: call.id, name: call.name, ...(evidence ? { evidence } : {}), args: body(call.argumentsJson), ok: !failed, result: body(result), durationMs, execution: executed ? "completed" : "skipped", ...(call.name === "write_page" ? { accepted: !failed, gate: { codes: issues.map((issue) => issue.code), issues, ...(failed && record(result) && typeof result.code === "string" ? { code: result.code } : {}) }, baseRevision: !failed && proposal ? proposal.baseRevision : null, pageRevision: null, revisionMeaning: "proposal_only_not_applied", diff: !failed && proposal ? body(proposal.diff) : null } : {}) });
 			if (trace.steps.length) trace.steps.at(-1)!.budgetLeft = left();
 		}

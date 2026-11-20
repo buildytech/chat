@@ -8137,6 +8137,13 @@ function body(value: unknown) {
 	return { hash: `fnv1a64:${fnv1a64(text)}`, bytes: new TextEncoder().encode(text).length, body: value };
 }
 function record(value: unknown): value is Record<string, unknown> { return value !== null && typeof value === "object" && !Array.isArray(value); }
+const ISSUE_TEXT = 1_000;
+/** `got` of an issue as written, folded to a short JSON text when it is large (a whole props object). */
+function foldGot(value: unknown): unknown {
+	if (value === undefined || value === null || typeof value !== "object") return typeof value === "string" ? value.slice(0, ISSUE_TEXT) : value;
+	const text = JSON.stringify(value);
+	return text.length <= ISSUE_TEXT ? value : `${text.slice(0, ISSUE_TEXT)}…`;
+}
 
 function createRunTrace(runId: string, modelId: string, budget: ExecutionBudget, counts: BudgetCounts, scenario?: CompiledScenario, deadline?: number) {
 	const started = Date.now();
@@ -8183,7 +8190,8 @@ function createRunTrace(runId: string, modelId: string, budget: ExecutionBudget,
 		},
 		tool(call: AgentCall, result: unknown, durationMs: number, proposal: PageProposal | null, evidence?: unknown, executed = true) {
 			const failed = record(result) && result.ok === false;
-			const issues = record(result) && Array.isArray(result.issues) ? result.issues.filter(record).map((issue) => ({ path: typeof issue.path === "string" ? issue.path : "unknown", code: typeof issue.code === "string" ? issue.code : "unknown" })) : [];
+			// The whole issue (path, code, expected, got): a rejected write must be readable from a hash-only export.
+		const issues = record(result) && Array.isArray(result.issues) ? result.issues.filter(record).map((issue) => ({ path: typeof issue.path === "string" ? issue.path : "unknown", code: typeof issue.code === "string" ? issue.code : "unknown", ...(typeof issue.expected === "string" ? { expected: issue.expected.slice(0, ISSUE_TEXT) } : {}), ...("got" in issue ? { got: foldGot(issue.got) } : {}) })) : [];
 			trace.toolResults.push({ step: trace.steps.length, callId: call.id, name: call.name, ...(evidence ? { evidence } : {}), args: body(call.argumentsJson), ok: !failed, result: body(result), durationMs, execution: executed ? "completed" : "skipped", ...(call.name === "write_page" ? { accepted: !failed, gate: { codes: issues.map((issue) => issue.code), issues, ...(failed && record(result) && typeof result.code === "string" ? { code: result.code } : {}) }, baseRevision: !failed && proposal ? proposal.baseRevision : null, pageRevision: null, revisionMeaning: "proposal_only_not_applied", diff: !failed && proposal ? body(proposal.diff) : null } : {}) });
 			if (trace.steps.length) trace.steps.at(-1)!.budgetLeft = left();
 		}
@@ -8324,6 +8332,15 @@ function asCount(value: unknown): number | null {
 	return null;
 }
 
+/**
+ * A run the host refused before it sent anything to the provider (`model_not_enabled_on_account`, runtime not ready, a
+ * scenario that does not resolve): zero requests, zero tokens, no bill. Unlike unknownUsage it is complete: nothing is
+ * unknown about a request that was never made, so the session total stays complete (aggregateSessionUsage skips it).
+ */
+function notSentUsage(): RunUsage {
+	return { status: "complete", steps: 0, reportedSteps: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, reportedBy: "none", notSent: true, cost: COST_UNAVAILABLE };
+}
+
 /** Read one provider usage object. Missing fields stay absent; never invent 0. */
 function readProviderUsage(raw: unknown): StepUsage | null {
 	if (!raw || typeof raw !== "object") return null;
@@ -8415,7 +8432,11 @@ function aggregateStepUsage(steps: Array<StepUsage | null | undefined>, opts?: {
 	return run;
 }
 
-function aggregateSessionUsage(runs: RunUsage[]): SessionUsage {
+function aggregateSessionUsage(all: RunUsage[]): SessionUsage {
+	// A run refused before any request adds nothing and never makes the total unknown or partial.
+	const runs = all.filter((run) => run.notSent !== true);
+	const notSent = all.length - runs.length;
+	const refused = notSent ? { notSentRuns: notSent } : {};
 	if (runs.length === 0) {
 		return {
 			status: "complete",
@@ -8424,6 +8445,7 @@ function aggregateSessionUsage(runs: RunUsage[]): SessionUsage {
 			promptTokens: 0,
 			completionTokens: 0,
 			totalTokens: 0,
+			...refused,
 			cost: COST_UNAVAILABLE
 		};
 	}
@@ -8453,6 +8475,7 @@ function aggregateSessionUsage(runs: RunUsage[]): SessionUsage {
 		promptTokens: prompt,
 		completionTokens: completion,
 		totalTokens: prompt === "unknown" || completion === "unknown" ? "unknown" : prompt + completion,
+		...refused,
 		cost: aggregateBilledCost(runs.map((run) => storedCostPart(run.cost, run.steps)))
 	};
 	if (sawReasoning && Number.isSafeInteger(reasoning)) session.reasoningTokens = reasoning;
@@ -8470,6 +8493,7 @@ function formatTokens(value: TokenCount): string {
 }
 
 exports["unknownUsage"] = unknownUsage;
+exports["notSentUsage"] = notSentUsage;
 exports["readProviderUsage"] = readProviderUsage;
 exports["aggregateStepUsage"] = aggregateStepUsage;
 exports["aggregateSessionUsage"] = aggregateSessionUsage;
@@ -10098,7 +10122,7 @@ exports["xaiCapabilities"] = __req("packages/provider-xai/src/capabilities.ts")[
 });
 
 __def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { DEFAULT_XAI_BASE_URL, resolveScenario, runAgentLoop, turnMeta, safeErrorMessage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
+const { DEFAULT_XAI_BASE_URL, resolveScenario, runAgentLoop, turnMeta, safeErrorMessage, notSentUsage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
 const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
 const { providerStep } = __req("packages/provider-xai/src/index.ts");
 installPropsGate();
@@ -10118,7 +10142,7 @@ type TurnResult = AgentReply | AgentFailure;
 async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL, deadline?: number): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
 	try {
 		const compiled = resolveScenario(ctx.mode, modelId, ctx.scenario);
-		if (!compiled.ok || compiled.scenario.profile.provider !== "xai") return { result: { ok: false, code: "invalid_scenario", message: "The scenario could not be resolved.", issues: (compiled.ok ? [{ path: "/provider", code: "adapter_mismatch" }] : compiled.issues).map((issue) => ({ ...issue, expected: "registered compatible scenario" })) }, meta: turnMeta("chat-completions", modelId, false, 0, [], unknownUsage("error", 0), newRunId()) };
+		if (!compiled.ok || compiled.scenario.profile.provider !== "xai") return { result: { ok: false, code: "invalid_scenario", message: "The scenario could not be resolved.", issues: (compiled.ok ? [{ path: "/provider", code: "adapter_mismatch" }] : compiled.issues).map((issue) => ({ ...issue, expected: "registered compatible scenario" })) }, meta: turnMeta("chat-completions", modelId, false, 0, [], notSentUsage(), newRunId()) };
 		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { scenario: compiled.scenario, deadline, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
 		if (!turn.result.ok && turn.result.code === "provider_failed") return { ...turn, result: { ...turn.result, code: "xai_chat_failed", message: "The xAI chat request could not be completed." } };
 		return turn;

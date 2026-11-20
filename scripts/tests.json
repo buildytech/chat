@@ -33,7 +33,8 @@
       "page-agent.test.ts",
       "runtime-bundle.test.ts",
       "usage.test.ts",
-      "owner-replay.test.ts"
+      "owner-replay.test.ts",
+      "trace-debug.test.ts"
     ],
     "xai-runtime": [
       "provider-xai.test.ts",
