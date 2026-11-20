@@ -7,6 +7,7 @@
 import type { BlockV2 } from "@buildytech/page-contract";
 import { propsEventsFor, propsFieldTree, type ListItemNode, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { toMajor, toMinor } from "../catalog/money.ts";
+import { layoutAxes } from "../catalog/blocks.ts";
 import { itemInfo } from "./items.ts";
 import { effectiveProps } from "./render.ts";
 
@@ -135,7 +136,8 @@ export function inspectorModel(block: Pick<BlockV2, "id" | "item" | "variant" | 
 	const { events, slots } = propsEventsFor(block.item);
 	const variant = block.variant && info.variants.includes(block.variant) ? block.variant : info.defaultVariant;
 	const props = effectiveProps(block.item, variant, block.props);
-	return { ok: true, ...head, item: block.item, variant, variants: info.variants, fields: fieldsOf(props, tree, "", new Set([...events, ...slots])) };
+	// One layout control: the Variant select. The axes it sets (media, cols, surface) are not fields of their own.
+	return { ok: true, ...head, item: block.item, variant, variants: info.variants, fields: fieldsOf(props, tree, "", new Set([...events, ...slots, ...layoutAxes(block.item)])) };
 }
 
 /**

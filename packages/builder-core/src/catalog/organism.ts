@@ -58,13 +58,6 @@ export function variantPresets(item: string): Record<string, Record<string, unkn
 	return out;
 }
 
-/** Top-level props the named variants of an item set (its layout axes): a variant switch resets their overrides. */
-export function variantAxisProps(item: string): Set<string> {
-	const out = new Set<string>();
-	for (const preset of Object.values(variantPresets(item))) for (const key of Object.keys(preset)) out.add(key);
-	return out;
-}
-
 /** npm packages the registry tree imports (clsx, tailwind-merge; svelte is the framework). */
 export const registryNpmDependencies: readonly string[] = sources.npmDependencies;
 

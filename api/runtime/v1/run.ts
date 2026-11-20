@@ -2566,13 +2566,6 @@ function variantPresets(item: string): Record<string, Record<string, unknown>> {
 	return out;
 }
 
-/** Top-level props the named variants of an item set (its layout axes): a variant switch resets their overrides. */
-function variantAxisProps(item: string): Set<string> {
-	const out = new Set<string>();
-	for (const preset of Object.values(variantPresets(item))) for (const key of Object.keys(preset)) out.add(key);
-	return out;
-}
-
 /** npm packages the registry tree imports (clsx, tailwind-merge; svelte is the framework). */
 const registryNpmDependencies: string[] = sources.npmDependencies;
 
@@ -2645,7 +2638,6 @@ function registryItemClosure(items: string[]): string[] {
 exports["registryItemFor"] = registryItemFor;
 exports["variantPreset"] = variantPreset;
 exports["variantPresets"] = variantPresets;
-exports["variantAxisProps"] = variantAxisProps;
 exports["registryNpmDependencies"] = registryNpmDependencies;
 exports["registryInitItems"] = registryInitItems;
 exports["registryClosure"] = registryClosure;
@@ -6290,10 +6282,101 @@ exports["renderProblems"] = renderProblems;
 
 });
 
+__def("packages/builder-core/src/page-doc/layout.ts", function (exports) {
+const { layoutAxes, variantAxisValues, variantSettingDefault, variantSettingNames } = __req("packages/builder-core/src/catalog/blocks.ts");
+const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
+type Props = Record<string, PropValueV2>;
+type LayoutResult = { ok: true; variant: string | undefined; props: Props | undefined; notes: string[] } | { ok: false; issues: DocIssue[] };
+
+const show = (axes: Record<string, string>) => Object.entries(axes).map(([axis, value]) => `${axis} ${JSON.stringify(value)}`).join(", ");
+
+function variantsText(item: string, variants: string[]): string {
+	return variants.map((name) => `${name} (${show(variantAxisValues(item, name) ?? {})})`).join("; ");
+}
+
+/**
+ * The variant and props of one written block after the layout rule. `prior` is the block as it was (same id and item),
+ * absent for a new block or an item change. Blocks without axes, and unknown variants (the gate says so), pass through.
+ */
+function reconcileLayout(item: string, at: string, prior: Pick<BlockV2, "variant" | "props"> | undefined, variant: string | undefined, props: Props | undefined): LayoutResult {
+	const info = itemInfo(item);
+	const axes = layoutAxes(item);
+	if (!info || !axes.length || (variant !== undefined && !info.variants.includes(variant))) return { ok: true, variant, props, notes: [] };
+	const priorVariant = prior ? (prior.variant && info.variants.includes(prior.variant) ? prior.variant : info.defaultVariant) : undefined;
+	const named = variant !== undefined && (priorVariant === undefined || variant !== priorVariant);
+	const current = variant ?? priorVariant ?? info.defaultVariant;
+	const written: Record<string, string> = {};
+	for (const axis of axes) {
+		const value = props?.[axis];
+		if (value !== undefined && value !== null) written[axis] = String(value);
+	}
+	const target = variantAxisValues(item, current) ?? {};
+	let chosen = current;
+	const notes: string[] = [];
+	if (named) {
+		const priorAxes = priorVariant ? (variantAxisValues(item, priorVariant) ?? {}) : {};
+		const stale = (axis: string, value: string) => prior !== undefined && (value === String(prior.props?.[axis] ?? "") || value === priorAxes[axis]);
+		const clash = axes.filter((axis) => written[axis] !== undefined && written[axis] !== target[axis] && !stale(axis, written[axis]!));
+		if (clash.length) {
+			return {
+				ok: false,
+				issues: clash.map((axis) => ({
+					path: `${at}/props/${axis}`,
+					code: "props_invalid",
+					expected: `${JSON.stringify(target[axis])}: variant ${current} sets ${axis}. Leave ${axes.join(", ")} out (the variant sets them) or pick the variant with that layout: ${variantsText(item, info.variants)}`,
+					got: written[axis]
+				}))
+			};
+		}
+	} else if (axes.some((axis) => written[axis] !== undefined && written[axis] !== target[axis])) {
+		const wanted = { ...target, ...written };
+		const matches = info.variants.filter((name) => {
+			const values = variantAxisValues(item, name) ?? {};
+			return axes.every((axis) => values[axis] === wanted[axis]);
+		});
+		if (matches.length !== 1) {
+			const axis = axes.find((name) => written[name] !== undefined && written[name] !== target[name])!;
+			return {
+				ok: false,
+				issues: [{
+					path: `${at}/props/${axis}`,
+					code: "props_invalid",
+					expected: `a layout of one variant: ${show(wanted)} is none. Set variant instead of the axes: ${variantsText(item, info.variants)}`,
+					got: written[axis]
+				}]
+			};
+		}
+		chosen = matches[0]!;
+		notes.push(`variant ${current} -> ${chosen} (the layout axes ${show(written)} written).`);
+	}
+	if (!props) return { ok: true, variant: chosen === current ? variant : chosen, props, notes };
+	const out: Props = { ...props };
+	const axisValues = variantAxisValues(item, chosen) ?? {};
+	for (const axis of axes) if (axisValues[axis] !== undefined) out[axis] = axisValues[axis]!;
+	const from = priorVariant ?? (named ? undefined : current);
+	if (prior && from !== undefined && from !== chosen) {
+		const kept: string[] = [];
+		for (const name of variantSettingNames(item)) {
+			const value = out[name];
+			const before = variantSettingDefault(item, from, name);
+			if (value === undefined || value === before) {
+				const next = variantSettingDefault(item, chosen, name);
+				if (next === undefined) delete out[name];
+				else out[name] = next;
+			} else kept.push(`${name} ${JSON.stringify(value)}`);
+		}
+		if (kept.length) notes.push(`variant ${from} -> ${chosen}: ${kept.join(", ")} kept (set by hand).`);
+	}
+	return { ok: true, variant: chosen === current ? variant : chosen, props: out, notes };
+}
+
+exports["reconcileLayout"] = reconcileLayout;
+
+});
+
 __def("packages/builder-core/src/page-doc/write.ts", function (exports) {
 const { cloneJson, pagePatchV2Issues } = __req("packages/page-contract/src/index.ts");
 const { pointerInfo, propsFieldTree, propShapeFor } = __req("packages/builder-core/src/catalog/props-schema.ts");
-const { variantAxisProps, variantPreset } = __req("packages/builder-core/src/catalog/organism.ts");
 const { resolveIconName } = __req("packages/builder-core/src/icon-name.ts");
 const { isImageUrl } = __req("packages/builder-core/src/catalog/image-url.ts");
 const { coerceEnumProps } = __req("packages/builder-core/src/catalog/props-fill.ts");
@@ -6302,6 +6385,7 @@ const { renderIssues } = __req("packages/builder-core/src/page-doc/probe.ts");
 const { checkPageDoc, pointerOfSchemaPath, valueAtPointer } = __req("packages/builder-core/src/page-doc/gate.ts");
 const { applyJsonPatch } = __req("packages/builder-core/src/page-doc/jsonpatch.ts");
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
+const { reconcileLayout } = __req("packages/builder-core/src/page-doc/layout.ts");
 const { effectiveProps, sampleProps } = __req("packages/builder-core/src/page-doc/render.ts");
 const BLANK = { blank: true } as const;
 
@@ -6377,22 +6461,8 @@ function carriedText(oldProps: Record<string, unknown> | undefined, item: string
 	return out;
 }
 
-/** The axes of a variant: top-level props every variant preset of the item sets (layout axes). */
-function applyVariantAxes(item: string, variant: string | undefined, props: Record<string, unknown>): Record<string, unknown> {
-	const info = itemInfo(item);
-	const name = variant && info?.variants.includes(variant) ? variant : info?.defaultVariant;
-	if (!name) return props;
-	const preset = variantPreset(item, name);
-	const out = { ...props };
-	for (const axis of variantAxisProps(item)) {
-		if (axis in preset) out[axis] = cloneJson(preset[axis]);
-		else delete out[axis];
-	}
-	return out;
-}
-
 /** Fill, carry and repair the blocks a write touched; blocks identical to the base keep their bytes. */
-function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): void {
+function normalizeBlocks(base: PageV2, next: PageV2, notes: string[], issues: DocIssue[] = []): void {
 	const before = new Map(base.blocks.map((block) => [block.id, block]));
 	const taken = new Set<string>([...(next.id ? [next.id] : []), ...next.blocks.map((block) => block.id).filter((id): id is string => typeof id === "string")]);
 	next.blocks = next.blocks.map((block, index) => {
@@ -6412,27 +6482,34 @@ function normalizeBlocks(base: PageV2, next: PageV2, notes: string[]): void {
 				notes.push(`${out.id}: ${coerced.changed.map((c) => `${c.pointer.slice(1)} ${JSON.stringify(c.from)} -> ${JSON.stringify(c.to)}`).join(", ")} (enum values are written in the type the schema declares).`);
 			}
 		}
+		// The variant of the old item does not exist on the new one: its default variant (said in the notes).
+		if (prior && prior.item !== out.item && out.variant !== undefined && out.variant === prior.variant && !info.variants.includes(out.variant)) {
+			notes.push(`${out.id}: variant ${out.variant} is not a variant of ${out.item}; its default variant ${info.defaultVariant} is used.`);
+			out.variant = info.defaultVariant;
+		}
+		// The variant is the source of truth of the layout axes (layout.ts): stale axes follow it, contradictions are rejected.
+		const kept = prior && prior.item === out.item ? prior : undefined;
+		const layout = reconcileLayout(out.item, at, kept, out.variant, kept ? (out.props ?? kept.props) : out.props);
+		if (!layout.ok) {
+			issues.push(...layout.issues);
+			return out;
+		}
+		if (layout.variant !== undefined) out.variant = layout.variant;
+		for (const note of layout.notes) notes.push(`${out.id}: ${note}`);
+		const written = layout.props;
 		let props: Record<string, unknown>;
 		if (!prior) {
 			// A new block: the sample props of its variant under what the write gave it.
-			props = effectiveProps(out.item, out.variant, { ...sampleProps(out.item, out.variant, out.id), ...(out.props ?? {}) }, BLANK);
+			props = effectiveProps(out.item, out.variant, { ...sampleProps(out.item, out.variant, out.id), ...(written ?? {}) }, BLANK);
 		} else if (prior.item !== out.item) {
-			// The variant of the old item does not exist on the new one: its default variant (said in the notes).
-			if (out.variant !== undefined && out.variant === prior.variant && !info.variants.includes(out.variant)) {
-				notes.push(`${out.id}: variant ${out.variant} is not a variant of ${out.item}; its default variant ${info.defaultVariant} is used.`);
-				out.variant = info.defaultVariant;
-			}
 			const wrote = out.props !== undefined && !same(out.props, prior.props);
 			props = wrote
-				? effectiveProps(out.item, out.variant, out.props, BLANK)
+				? effectiveProps(out.item, out.variant, written ?? out.props, BLANK)
 				: effectiveProps(out.item, out.variant, { ...sampleProps(out.item, out.variant, out.id), ...carriedText(prior.props, out.item) }, BLANK);
 			if (!wrote) notes.push(`${out.id}: item ${prior.item} -> ${out.item}; sample props of the new item, text carried over: ${Object.keys(carriedText(prior.props, out.item)).join(", ") || "none"}.`);
 		} else {
-			const props0 = out.props ?? prior.props ?? {};
-			if ((prior.variant ?? "") !== (out.variant ?? "") && same(prior.props, out.props ?? prior.props)) {
-				props = effectiveProps(out.item, out.variant, applyVariantAxes(out.item, out.variant, props0) as Record<string, PropValueV2>, BLANK);
-				notes.push(`${out.id}: variant ${prior.variant ?? "default"} -> ${out.variant ?? "default"}; layout axes taken from the new variant.`);
-			} else props = effectiveProps(out.item, out.variant, props0, BLANK);
+			if ((prior.variant ?? "") !== (out.variant ?? "") && !layout.notes.length) notes.push(`${out.id}: variant ${prior.variant ?? "default"} -> ${out.variant ?? "default"}; layout axes taken from the new variant.`);
+			props = effectiveProps(out.item, out.variant, written ?? prior.props ?? {}, BLANK);
 		}
 		out.props = repairIcons(out.item, props, sampleProps(out.item, out.variant, out.id), notes, at) as Record<string, PropValueV2>;
 		return out;
@@ -6519,7 +6596,9 @@ function writePage(base: PageV2, input: WriteInput, options: { now?: string } = 
 		if (base[key] !== undefined) (doc as Record<string, unknown>)[key] = base[key];
 		else delete (doc as Record<string, unknown>)[key];
 	}
-	if (Array.isArray(doc.blocks)) normalizeBlocks(base, doc, notes);
+	const layoutIssues: DocIssue[] = [];
+	if (Array.isArray(doc.blocks)) normalizeBlocks(base, doc, notes, layoutIssues);
+	if (layoutIssues.length) return failure(layoutIssues);
 	if (Array.isArray(doc.blocks)) {
 		const dropped = dropUnknownProps(doc);
 		if (dropped.length) notes.push(`Dropped (not in the props schema of the block): ${dropped.join(", ")}.`);
@@ -6699,6 +6778,7 @@ exports["replaceProps"] = replaceProps;
 __def("packages/builder-core/src/page-doc/inspect.ts", function (exports) {
 const { propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { toMajor, toMinor } = __req("packages/builder-core/src/catalog/money.ts");
+const { layoutAxes } = __req("packages/builder-core/src/catalog/blocks.ts");
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
 const { effectiveProps } = __req("packages/builder-core/src/page-doc/render.ts");
 const HIDDEN = new Set(["id", "class", "className"]);
@@ -6792,7 +6872,8 @@ function inspectorModel(block: Pick<BlockV2, "id" | "item" | "variant" | "props"
 	const { events, slots } = propsEventsFor(block.item);
 	const variant = block.variant && info.variants.includes(block.variant) ? block.variant : info.defaultVariant;
 	const props = effectiveProps(block.item, variant, block.props);
-	return { ok: true, ...head, item: block.item, variant, variants: info.variants, fields: fieldsOf(props, tree, "", new Set([...events, ...slots])) };
+	// One layout control: the Variant select. The axes it sets (media, cols, surface) are not fields of their own.
+	return { ok: true, ...head, item: block.item, variant, variants: info.variants, fields: fieldsOf(props, tree, "", new Set([...events, ...slots, ...layoutAxes(block.item)])) };
 }
 
 /**

@@ -14,7 +14,8 @@
       "render-recovery.test.ts",
       "view-map.test.ts",
       "write-rejected.test.ts",
-      "write-image.test.ts"
+      "write-image.test.ts",
+      "variant-layout.test.ts"
     ],
     "chat-agent": [
       "agent-tools.test.ts",
