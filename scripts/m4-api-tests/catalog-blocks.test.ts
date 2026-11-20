@@ -55,7 +55,7 @@ test("feed cards: one per block variant, free text and category filters, counts 
 test("prototype props: the contract's setting defaults, then the variant's settings and axes", () => {
 	assert.deepEqual(prototypeProps("hero-simple", "mediaEnd"), { level: 2, padding: "standard", align: "start", media: "end" });
 	assert.deepEqual(prototypeProps("hero-simple", "mediaTop"), { level: 2, padding: "standard", align: "center", media: "top" });
-	assert.deepEqual(prototypeProps("team-simple", "cards3"), { level: 2, padding: "standard", align: "start", cols: "3", surface: "cards" });
+	assert.deepEqual(prototypeProps("team-simple", "cards3"), { level: 2, padding: "standard", align: "center", cols: "3", surface: "cards" });
 	assert.deepEqual(prototypeProps("team-simple", "nosuch"), {});
 	assert.deepEqual(prototypeProps("nosuch", "x"), {});
 });

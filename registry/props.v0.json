@@ -1,6 +1,6 @@
 {
 	"version": "0",
-	"digest": "sha256:dabd57786df8dbf3bbf1edc3c6465c3b25313b637ba4b9af7b4ff464bb3bd1f7",
+	"digest": "sha256:fd43f59fc5c2c6ca1abd8a4d8d209f729620dfccf45857bcfcd37570e3f30b65",
 	"registry": "https://registry.buildy.tw",
 	"items": {
 		"hero-simple": {
@@ -331,7 +331,7 @@
 							"center",
 							"end"
 						],
-						"default": "start"
+						"default": "center"
 					},
 					"cols": {
 						"type": "string",

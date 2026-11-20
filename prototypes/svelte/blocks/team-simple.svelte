@@ -22,7 +22,7 @@
   import ShapeText from "../shapes/shape-text.svelte";
   import { cn } from "@ui8kit/kit/utils";
 
-  let { padding = "standard", align = "start", cols = "3", surface = "plain" }: TeamSimpleProps = $props();
+  let { padding = "standard", align = "center", cols = "3", surface = "plain" }: TeamSimpleProps = $props();
 </script>
 
 <Box

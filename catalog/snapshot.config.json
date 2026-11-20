@@ -9,7 +9,7 @@
 	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "789447938ed097272bd6ba1d7339951e975fcd01",
+		"commit": "8609fde46be41a103a1a6c5763fff35343a18a34",
 		"generated": "packages/blocks/src/generated",
 		"tokens": "packages/blocks/src/tokens.css"
 	},

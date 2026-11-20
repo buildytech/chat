@@ -927,7 +927,7 @@
       "version": "0.1.0",
       "runtime": "svelte",
       "files": {
-        "src/blocks/team-simple.svelte": "399a12d5ce704404eb7534d7a786639829413f0f38d577bc068c1f15253579ad",
+        "src/blocks/team-simple.svelte": "5d0c64e9e1e0933f5c77044b00c50286b17442524d8e295d96716923ae3fad3d",
         "src/blocks/team-simple.types.ts": "ef6fafb91ec2419f3e782c3a0ceea792a75ea2e0d0068afb9dce4c27f30b0fc2"
       }
     },
