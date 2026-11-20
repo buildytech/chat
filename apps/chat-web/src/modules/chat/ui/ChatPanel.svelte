@@ -9,7 +9,8 @@
 		getSelectedSession,
 		sendMessage
 	} from "../core";
-	import { getSelectedModelId, listChatModels, setSelectedModelId } from "../browser/models.svelte.ts";
+	import { onMount } from "svelte";
+	import { getSelectedModelId, listChatModels, refreshAccountModels, setSelectedModelId } from "../browser/models.svelte.ts";
 	import ChatThread from "./ChatThread.svelte";
 
 	let busy = $state(false);
@@ -20,6 +21,11 @@
 	const selectedModelId = $derived.by(() => {
 		void modelEpoch;
 		return getSelectedModelId();
+	});
+
+	// The selector shows what the runtime's xAI key lists (one status read, no model call); a failed read changes nothing.
+	onMount(() => {
+		void refreshAccountModels().catch(() => undefined);
 	});
 
 	async function onSend(text: string) {

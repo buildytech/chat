@@ -6,6 +6,7 @@ import {
 	assertNoFallback,
 	getChatModel,
 	mapChatRunRequest,
+	modelChoice,
 	modelRunsToolLoop,
 	resolveChatModelRequest
 } from "../../packages/chat-agent/src/models.ts";
@@ -107,4 +108,18 @@ test("unknown ids and silent switches are rejected", () => {
 	const switched = assertNoFallback("grok-4.7", "grok-4.20-0309-non-reasoning");
 	assert.ok(switched);
 	assert.equal(switched.code, "silent_fallback_forbidden");
+});
+
+test("selector: a model the key does not list is off with its own reason, not the multi-agent one (grok-build-0.1, 2026-11-20)", () => {
+	// The box key's /v1/models and /v1/language-models of 2026-11-20: the four grok-4.x ids, no grok-build-0.1.
+	const listed = ["grok-4.20-0309-non-reasoning", "grok-4.20-0309-reasoning", "grok-4.20-multi-agent-0309", "grok-4.7"];
+	const build = getChatModel("grok-build-0.1")!;
+	assert.deepEqual(modelChoice(build, listed), { enabled: false, code: "model_not_enabled_on_account" });
+	assert.deepEqual(modelChoice(build, null), { enabled: true }, "before the key is listed the manifest decides");
+	assert.deepEqual(modelChoice(getChatModel("grok-4.20-0309-non-reasoning"), listed), { enabled: true });
+	assert.deepEqual(modelChoice(getChatModel("grok-4.20-multi-agent-0309"), listed), { enabled: false, code: "multi_agent_tools_unavailable" });
+	assert.deepEqual(modelChoice(getChatModel("grok-4.7"), listed), { enabled: false, code: "model_too_slow" });
+	const sent = resolveChatModelRequest({ requestedId: "grok-build-0.1", discoveredChatIds: listed });
+	assert.equal(sent.ok, false);
+	assert.equal(!sent.ok && sent.code, "model_not_enabled_on_account");
 });

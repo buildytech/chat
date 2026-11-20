@@ -7,7 +7,7 @@ import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, formatChat
 import type { PageV2 } from "@buildytech/page-contract";
 import { t } from "../../../lib/i18n/dictionary";
 import { fetchXaiStatus, runXaiTurn, type TurnRequest, type XaiRunResponse } from "../browser/xai-client";
-import { getSelectedModelId } from "../browser/models.svelte.ts";
+import { getSelectedModelId, noteAccountModels } from "../browser/models.svelte.ts";
 import { getScreenId } from "../browser/onboarding.svelte.ts";
 import type { StoredPageProvenance } from "../../../lib/browser/persist";
 import { getEditBase, getPageRevision, setCandidatePage } from "../../../lib/page-store";
@@ -113,6 +113,7 @@ export async function runTurn(brief: string, mode: AgentMode, signal: AbortSigna
 	const plan = planTurn(brief, mode, selection?.userMessageId);
 	const requestedModelId = selection?.modelId ?? getSelectedModelId();
 	const status = await fetchXaiStatus(signal);
+	noteAccountModels(status);
 	const mapped = mapChatRunRequest(
 		{ modelId: requestedModelId },
 		{ discoveredChatIds: status.models?.listed ? status.models.chatIds ?? [] : undefined, allowUnlistedTrial: !status.ready }
@@ -166,6 +167,7 @@ export function localizedRunError(code: string | undefined, message: string, mod
 	}
 	if (code === "client_outdated") return t("runtime.clientOutdated");
 	if (code === "model_too_slow") return t("runtime.modelTooSlow").replace("{label}", label);
+	if (code === "model_not_enabled_on_account") return t("runtime.modelNotOnKey").replace("{label}", label).replace("{id}", modelId);
 	if (code === "tools_unsupported") return t("runtime.toolsUnsupported");
 	if (code === "xai_runtime_unreachable") return t("runtime.unreachable");
 	if (code === "aborted") return t("runtime.cancelled");

@@ -15,9 +15,21 @@ export function modelRunsToolLoop(model: GrokChatModel | null | undefined): bool
 	return manifestModelStatus("xai", model.id).status === "enabled";
 }
 
-export function modelUnavailableCode(model: GrokChatModel | null | undefined): string | null {
+function modelUnavailableCode(model: GrokChatModel | null | undefined): string | null {
 	if (!model || modelRunsToolLoop(model)) return null;
 	return manifestModelStatus("xai", model.id).code;
+}
+
+/**
+ * Whether the selector offers a model: first the manifest (the tool loop runs on it), then the key's own model list
+ * when the runtime has listed it (`status.models.chatIds`). `model_not_enabled_on_account` is the key's answer, not
+ * the manifest's: the model is fine here but this xAI key does not list it (grok-build-0.1 on the box key, 2026-11-20).
+ */
+export function modelChoice(model: GrokChatModel | null | undefined, accountChatIds?: readonly string[] | null): { enabled: true } | { enabled: false; code: string } {
+	if (!model) return { enabled: false, code: "unknown_chat_model" };
+	if (!modelRunsToolLoop(model)) return { enabled: false, code: modelUnavailableCode(model) ?? "model_tools_unavailable" };
+	if (Array.isArray(accountChatIds) && !accountChatIds.includes(model.id)) return { enabled: false, code: "model_not_enabled_on_account" };
+	return { enabled: true };
 }
 
 export const DEFAULT_CHAT_MODEL_ID: GrokChatModelId = CANDIDATE_CHAT_MODEL;

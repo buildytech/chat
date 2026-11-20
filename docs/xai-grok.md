@@ -12,7 +12,7 @@ The built-in selector list (`GROK_CHAT_MODELS`); the runtime narrows it to the i
 | Grok 4.20 Reasoning | `grok-4.20-0309-reasoning` | block selection |
 | Grok 4.20 Multi-agent | `grok-4.20-multi-agent-0309` | task distribution |
 | Grok 4.7 | `grok-4.7` | consulting |
-| Grok Build 0.1 | `grok-build-0.1` | assembly |
+| Grok Build 0.1 | `grok-build-0.1` | assembly (kept in the manifest; off in the selector when the key does not list it: `model_not_enabled_on_account`, the box key of 2026-11-20 does not) |
 
 Default selector: `grok-4.20-0309-non-reasoning` (`CANDIDATE_CHAT_MODEL`, used when discovery lists it; otherwise the first listed chat model). Tool calling is reported per turn (`toolCallingProven`), never assumed.
 
