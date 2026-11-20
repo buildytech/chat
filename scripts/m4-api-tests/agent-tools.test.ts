@@ -59,7 +59,7 @@ test("catalog tools: an unknown tool is refused; list_blocks names every block; 
 	if (block.ok) {
 		assert.equal(block.item, "team-simple");
 		assert.match(block.install, /^npx ui8kit add team-simple/);
-		assert.deepEqual(block.variants.map((variant) => variant.id), ["cols3", "cols2", "cols4", "cards3"]);
+		assert.deepEqual(block.variants.map((variant) => variant.id), ["cols3", "cols2", "cols4", "cards3", "portraitRow", "bylineCols3", "sideList"]);
 		assert.equal(block.defaultVariant, "cols3");
 		assert.ok(block.props.some((line) => line.startsWith("members")));
 	}

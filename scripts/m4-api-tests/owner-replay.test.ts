@@ -63,9 +63,9 @@ test("owner session: get_block writes enums in the schema's type and leaves the 
 	const result = read.result as { props: string[]; sample: Record<string, unknown>; layout?: string };
 	assert.ok(result.props.includes("level?: enum 1|2|3"), result.props.join(" | "));
 	assert.ok(result.props.includes('align?: enum "start"|"center"|"end"'), result.props.join(" | "));
-	assert.ok(!result.props.some((line) => /^(cols|surface)\??:/.test(line)), "axes are not props of the outline");
-	assert.equal("cols" in result.sample || "surface" in result.sample, false);
-	assert.match(result.layout ?? "", /variant sets cols, surface/);
+	assert.ok(!result.props.some((line) => /^(layout|cols|surface)\??:/.test(line)), "axes are not props of the outline");
+	assert.equal("layout" in result.sample || "cols" in result.sample || "surface" in result.sample, false);
+	assert.match(result.layout ?? "", /variant sets layout, cols, surface/);
 });
 
 test("owner session: the host summary facts of the Build run name the fixed gate error; the second run was edit-fields", async () => {

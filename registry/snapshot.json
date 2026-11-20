@@ -5,19 +5,19 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "cf7047630679365349be0578f2083bbef7b293520084d42390d051de4afbb217",
-		"lastUpdated": "2026-11-20T19:16:50+03:00",
+		"sha256": "3046516142c15ccdb81f2fd47a4c2a3c94adbe9038a0453c5b33c5200f263e94",
+		"lastUpdated": "2026-11-20T22:48:08+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "c802d3fc0a1aed3d00bdb86dfc2fcaa1507bea82e204236cc6509ae9b74ad023",
-		"digest": "sha256:cb6d7cd5219746c156f881178a3213c5cd8761382580626633c13c06880646ef"
+		"sha256": "890385335d0f9240b6a1f2c4d3918412ba9baecd94aa246d0408ecdb299ed1e3",
+		"digest": "sha256:b76814541966e1c3e462fd3b15f165e6b6ae9fb7e1547f9e6b9a858c0f6f468e"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "520c0e4cb37ce269d24ba29dd5b6ca1d35beca22f351a6fc4db6d1e89699e8b0",
-		"digest": "sha256:1a27d06a6dcbf0a871a8b0cc006fb999758cf781c17ee27c9102b5fe4b8673f2"
+		"sha256": "fafe9e556be48ff9930f4b5abf8226317c6827df271a06e6db302e97fdd466e6",
+		"digest": "sha256:8d07269ba87ec6dcc150010f0708cde183b4e85c5ebe4a7b25c03b24ce4faf0c"
 	},
 	"manifest": {
 		"url": "https://registry.buildy.tw/manifest.json",
@@ -26,10 +26,10 @@
 	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "87bacb00c2ad5cf57f9be6733f702dfa37513903",
+		"commit": "95e3b1dd46283c892647febe4215954a527b5cb8",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "0ce27d6c4cb74734c0582346060c6202b2ada587d488fb4cf9c7b8ef2a91b416"
+			"sha256": "5f758a09de5e184897baedfe297328fdb76477386cdd115c2823763bd3879dca"
 		}
 	},
 	"blocks": [
@@ -45,7 +45,34 @@
 		"photos-simple",
 		"stories-simple",
 		"faq-simple",
-		"steps-simple"
+		"steps-simple",
+		"feature-showcase-simple",
+		"header-simple",
+		"footer-simple",
+		"event-intro",
+		"profile-intro",
+		"rating-simple",
+		"error-simple",
+		"figure-simple",
+		"pull-quote-simple",
+		"article-simple",
+		"article-lead",
+		"topics-simple",
+		"chapters-simple",
+		"pricing-simple",
+		"contacts-simple",
+		"locations-simple",
+		"offers-simple",
+		"products-simple",
+		"product-simple",
+		"collections-simple",
+		"specs-simple",
+		"compare-simple",
+		"course-outline",
+		"choice-links",
+		"purchase-simple",
+		"store-policies",
+		"product-reviews"
 	],
 	"contracts": {
 		"hero-simple": {
@@ -99,6 +126,114 @@
 		"steps-simple": {
 			"contract": "registry/contracts/steps-simple/1.json",
 			"model": "registry/models/steps@1.schema.json"
+		},
+		"feature-showcase-simple": {
+			"contract": "registry/contracts/feature-showcase-simple/1.json",
+			"model": "registry/models/feature-showcase@1.schema.json"
+		},
+		"header-simple": {
+			"contract": "registry/contracts/header-simple/1.json",
+			"model": "registry/models/header@1.schema.json"
+		},
+		"footer-simple": {
+			"contract": "registry/contracts/footer-simple/1.json",
+			"model": "registry/models/footer@1.schema.json"
+		},
+		"event-intro": {
+			"contract": "registry/contracts/event-intro/1.json",
+			"model": "registry/models/event@1.schema.json"
+		},
+		"profile-intro": {
+			"contract": "registry/contracts/profile-intro/1.json",
+			"model": "registry/models/profile@1.schema.json"
+		},
+		"rating-simple": {
+			"contract": "registry/contracts/rating-simple/1.json",
+			"model": "registry/models/rating@1.schema.json"
+		},
+		"error-simple": {
+			"contract": "registry/contracts/error-simple/1.json",
+			"model": "registry/models/error@1.schema.json"
+		},
+		"figure-simple": {
+			"contract": "registry/contracts/figure-simple/1.json",
+			"model": "registry/models/figure@1.schema.json"
+		},
+		"pull-quote-simple": {
+			"contract": "registry/contracts/pull-quote-simple/1.json",
+			"model": "registry/models/pull-quote@1.schema.json"
+		},
+		"article-simple": {
+			"contract": "registry/contracts/article-simple/1.json",
+			"model": "registry/models/article@1.schema.json"
+		},
+		"article-lead": {
+			"contract": "registry/contracts/article-lead/1.json",
+			"model": "registry/models/article-lead@1.schema.json"
+		},
+		"topics-simple": {
+			"contract": "registry/contracts/topics-simple/1.json",
+			"model": "registry/models/topics@1.schema.json"
+		},
+		"chapters-simple": {
+			"contract": "registry/contracts/chapters-simple/1.json",
+			"model": "registry/models/chapters@1.schema.json"
+		},
+		"pricing-simple": {
+			"contract": "registry/contracts/pricing-simple/1.json",
+			"model": "registry/models/pricing@1.schema.json"
+		},
+		"contacts-simple": {
+			"contract": "registry/contracts/contacts-simple/1.json",
+			"model": "registry/models/contacts@1.schema.json"
+		},
+		"locations-simple": {
+			"contract": "registry/contracts/locations-simple/1.json",
+			"model": "registry/models/locations@1.schema.json"
+		},
+		"offers-simple": {
+			"contract": "registry/contracts/offers-simple/1.json",
+			"model": "registry/models/offers@1.schema.json"
+		},
+		"products-simple": {
+			"contract": "registry/contracts/products-simple/1.json",
+			"model": "registry/models/products@1.schema.json"
+		},
+		"product-simple": {
+			"contract": "registry/contracts/product-simple/1.json",
+			"model": "registry/models/product@1.schema.json"
+		},
+		"collections-simple": {
+			"contract": "registry/contracts/collections-simple/1.json",
+			"model": "registry/models/collections@1.schema.json"
+		},
+		"specs-simple": {
+			"contract": "registry/contracts/specs-simple/1.json",
+			"model": "registry/models/specs@1.schema.json"
+		},
+		"compare-simple": {
+			"contract": "registry/contracts/compare-simple/1.json",
+			"model": "registry/models/compare@1.schema.json"
+		},
+		"course-outline": {
+			"contract": "registry/contracts/course-outline/1.json",
+			"model": "registry/models/curriculum@1.schema.json"
+		},
+		"choice-links": {
+			"contract": "registry/contracts/choice-links/1.json",
+			"model": "registry/models/choices@1.schema.json"
+		},
+		"purchase-simple": {
+			"contract": "registry/contracts/purchase-simple/1.json",
+			"model": "registry/models/purchase@1.schema.json"
+		},
+		"store-policies": {
+			"contract": "registry/contracts/store-policies/1.json",
+			"model": "registry/models/store-policy@1.schema.json"
+		},
+		"product-reviews": {
+			"contract": "registry/contracts/product-reviews/1.json",
+			"model": "registry/models/reviews@1.schema.json"
 		}
 	},
 	"initItems": [
@@ -125,6 +260,68 @@
 			"files": [
 				"src/compose/Alert.svelte"
 			]
+		},
+		"article-lead": {
+			"type": "registry:block",
+			"title": "Article Lead",
+			"description": "The head of an article: the heading, the lead paragraph and the byline (the portrait, the author, the date) under a wide cover, or beside it.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"group",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/article-lead.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/article-lead/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "article-lead@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"article-simple": {
+			"type": "registry:block",
+			"title": "Article Simple",
+			"description": "The heading, one paragraph and the sections of a text (a subheading and its paragraph): one reading column, or two columns under a centred head.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/article-simple.svelte",
+				"src/blocks/article-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/article-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "article@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"badge": {
 			"type": "registry:ui",
@@ -295,6 +492,39 @@
 				"src/compose/CardTitle.svelte"
 			]
 		},
+		"chapters-simple": {
+			"type": "registry:block",
+			"title": "Chapters Simple",
+			"description": "The heading, one paragraph and the chapters (a picture, a label, the title, a paragraph): rows with the picture at the side, or a pair with the picture under the copy.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/chapters-simple.svelte",
+				"src/blocks/chapters-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/chapters-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "chapters@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"checkbox": {
 			"type": "registry:ui",
 			"title": "Checkbox",
@@ -308,6 +538,103 @@
 			"files": [
 				"src/compose/Checkbox.svelte"
 			]
+		},
+		"choice-links": {
+			"type": "registry:block",
+			"title": "Choice Links",
+			"description": "The heading, one paragraph and the options (sizes, versions) as outline links: a wrapping row, or a grid of four.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/choice-links.svelte",
+				"src/blocks/choice-links.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/choice-links/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "choices@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"collections-simple": {
+			"type": "registry:block",
+			"title": "Collections Simple",
+			"description": "The heading, one paragraph and the collections (a picture and the name as one link) in four or two columns.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/collections-simple.svelte",
+				"src/blocks/collections-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/collections-simple/1.json",
+				"group": "catalog",
+				"kind": "block",
+				"model": "collections@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"compare-simple": {
+			"type": "registry:block",
+			"title": "Compare Simple",
+			"description": "The heading, one paragraph and two options side by side: their names in a header row, then a row per feature with the value of each.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/compare-simple.svelte",
+				"src/blocks/compare-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/compare-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "compare@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"compose": {
 			"type": "registry:ui",
@@ -390,6 +717,39 @@
 				"src/compose/index.ts"
 			]
 		},
+		"contacts-simple": {
+			"type": "registry:block",
+			"title": "Contacts Simple",
+			"description": "The heading, one paragraph and the teams to reach on cards (an icon, the name, a line, an action): in three or two columns, or rows with the icon at the side.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/contacts-simple.svelte",
+				"src/blocks/contacts-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/contacts-simple/1.json",
+				"group": "contact",
+				"kind": "block",
+				"model": "contacts@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"container": {
 			"type": "registry:ui",
 			"title": "Container",
@@ -403,6 +763,38 @@
 			"files": [
 				"src/compose/Container.svelte"
 			]
+		},
+		"course-outline": {
+			"type": "registry:block",
+			"title": "Course Outline",
+			"description": "The heading, one paragraph and the modules in order (a label, the title, a line, the length): rows in a narrow column, or two columns of cards.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/course-outline.svelte",
+				"src/blocks/course-outline.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/course-outline/1.json",
+				"group": "how-it-works",
+				"kind": "block",
+				"model": "curriculum@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"dialog": {
 			"type": "registry:ui",
@@ -432,6 +824,67 @@
 				"src/compose/Disclosure.svelte"
 			]
 		},
+		"error-simple": {
+			"type": "registry:block",
+			"title": "Error Simple",
+			"description": "A page for something that went wrong: the code, the heading, one paragraph and one action back; centred or at the start.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/error-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/error-simple/1.json",
+				"group": "states",
+				"kind": "block",
+				"model": "error@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"event-intro": {
+			"type": "registry:block",
+			"title": "Event Intro",
+			"description": "The first screen of an event: a badge, the name as a large heading, one paragraph, the date and the place, and one action; centred or at the start.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/event-intro.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/event-intro/1.json",
+				"group": "hero",
+				"kind": "block",
+				"model": "event@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"faq-simple": {
 			"type": "registry:block",
 			"title": "Faq Simple",
@@ -457,6 +910,39 @@
 				"group": "faq",
 				"kind": "block",
 				"model": "faq@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"feature-showcase-simple": {
+			"type": "registry:block",
+			"title": "Feature Showcase Simple",
+			"description": "The heading, one paragraph and the key points as a list beside one picture (at the end or the start), or the head over a wide picture with the points in three columns under it.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/feature-showcase-simple.svelte",
+				"src/blocks/feature-showcase-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/feature-showcase-simple/1.json",
+				"group": "features",
+				"kind": "block",
+				"model": "feature-showcase@1",
 				"tags": [
 					"svelte",
 					"block"
@@ -523,6 +1009,67 @@
 			"files": [
 				"src/compose/Fieldset.svelte"
 			]
+		},
+		"figure-simple": {
+			"type": "registry:block",
+			"title": "Figure Simple",
+			"description": "One large picture with its caption (a title, a line, the credit): wide with the caption under it, or the caption at the side.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"media-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/figure-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/figure-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "figure@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"footer-simple": {
+			"type": "registry:block",
+			"title": "Footer Simple",
+			"description": "The brand and one line beside the links (a row or a grid of columns), or everything centred; the copyright line under them.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/footer-simple.svelte",
+				"src/blocks/footer-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/footer-simple/1.json",
+				"group": "navigation",
+				"kind": "block",
+				"model": "footer@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"form": {
 			"type": "registry:ui",
@@ -656,6 +1203,39 @@
 			"files": [
 				"src/compose/Group.svelte"
 			]
+		},
+		"header-simple": {
+			"type": "registry:block",
+			"title": "Header Simple",
+			"description": "The brand as the link home, the navigation links and one action in a bar: the links in the middle, at the end beside the action, or centred under the brand. No menu button: the links wrap on a narrow screen.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"group",
+				"link-button",
+				"link-plain",
+				"list",
+				"list-item",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/header-simple.svelte",
+				"src/blocks/header-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/header-simple/1.json",
+				"group": "navigation",
+				"kind": "block",
+				"model": "header@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"hero-simple": {
 			"type": "registry:block",
@@ -1142,6 +1722,39 @@
 				"src/compose/ListItem.svelte"
 			]
 		},
+		"locations-simple": {
+			"type": "registry:block",
+			"title": "Locations Simple",
+			"description": "The heading, one paragraph and the offices (the name, the address) in two columns beside one picture, at the start or the end.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/locations-simple.svelte",
+				"src/blocks/locations-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/locations-simple/1.json",
+				"group": "contact",
+				"kind": "block",
+				"model": "locations@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"logos-simple": {
 			"type": "registry:block",
 			"title": "Logos Simple",
@@ -1220,6 +1833,38 @@
 				"src/compose/Meter.svelte"
 			]
 		},
+		"offers-simple": {
+			"type": "registry:block",
+			"title": "Offers Simple",
+			"description": "The heading, one paragraph and two or three offers on cards, each with a title, a line and an action.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/offers-simple.svelte",
+				"src/blocks/offers-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/offers-simple/1.json",
+				"group": "cta",
+				"kind": "block",
+				"model": "offers@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"opt-group": {
 			"type": "registry:ui",
 			"title": "Opt Group",
@@ -1278,6 +1923,173 @@
 				"src/presets/defaults.ts"
 			]
 		},
+		"pricing-simple": {
+			"type": "registry:block",
+			"title": "Pricing Simple",
+			"description": "The heading, one paragraph and the plans on cards (the name, a badge on the highlighted plan, a line, the price, an action): in three or two columns, or one row each.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/pricing-simple.svelte",
+				"src/blocks/pricing-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/pricing-simple/1.json",
+				"group": "pricing",
+				"kind": "block",
+				"model": "pricing@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"product-reviews": {
+			"type": "registry:block",
+			"title": "Product Reviews",
+			"description": "The heading, one paragraph and the reviews on cards (the rating, the words, the reviewer with the portrait): in three or two columns, or one under the other.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"group",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/product-reviews.svelte",
+				"src/blocks/product-reviews.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/product-reviews/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "reviews@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"product-simple": {
+			"type": "registry:block",
+			"title": "Product Simple",
+			"description": "One product: the main picture and thumbnails beside the name, the price, one paragraph and the action; the pictures at the start, at the end or above.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/product-simple.svelte",
+				"src/blocks/product-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/product-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "product@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"products-simple": {
+			"type": "registry:block",
+			"title": "Products Simple",
+			"description": "The heading, one paragraph and the products (a picture, the name as a link, the price): in three or four columns, or rows with the picture at the side.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/products-simple.svelte",
+				"src/blocks/products-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/products-simple/1.json",
+				"group": "catalog",
+				"kind": "block",
+				"model": "products@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"profile-intro": {
+			"type": "registry:block",
+			"title": "Profile Intro",
+			"description": "A person: the name, the role, one paragraph and the links beside the portrait (at the end or the start), or under a round portrait.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/profile-intro.svelte",
+				"src/blocks/profile-intro.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/profile-intro/1.json",
+				"group": "hero",
+				"kind": "block",
+				"model": "profile@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"progress": {
 			"type": "registry:ui",
 			"title": "Progress",
@@ -1306,6 +2118,65 @@
 				"src/compose/Prose.svelte"
 			]
 		},
+		"pull-quote-simple": {
+			"type": "registry:block",
+			"title": "Pull Quote Simple",
+			"description": "The words of a quote in large type with the author, a role line and the source under them: a bar at the side, or centred.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-plain",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/pull-quote-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/pull-quote-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "pull-quote@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"purchase-simple": {
+			"type": "registry:block",
+			"title": "Purchase Simple",
+			"description": "On a card surface: the heading and one paragraph beside the price, the action and a note; or all centred.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/purchase-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/purchase-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "purchase@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"radio": {
 			"type": "registry:ui",
 			"title": "Radio",
@@ -1333,6 +2204,36 @@
 			"files": [
 				"src/compose/Range.svelte"
 			]
+		},
+		"rating-simple": {
+			"type": "registry:block",
+			"title": "Rating Simple",
+			"description": "The score, what it is and the source as a link: one bar on a card surface, or centred.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-plain",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/rating-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/rating-simple/1.json",
+				"group": "proof",
+				"kind": "block",
+				"model": "rating@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"recipes": {
 			"type": "registry:lib",
@@ -1446,6 +2347,37 @@
 				"src/compose/Skeleton.svelte"
 			]
 		},
+		"specs-simple": {
+			"type": "registry:block",
+			"title": "Specs Simple",
+			"description": "The heading, one paragraph and the specifications as name and value rows on a muted surface, in one narrow column or two columns.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/specs-simple.svelte",
+				"src/blocks/specs-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/specs-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "specs@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"split-simple": {
 			"type": "registry:block",
 			"title": "Split Simple",
@@ -1549,6 +2481,38 @@
 				"group": "how-it-works",
 				"kind": "block",
 				"model": "steps@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"store-policies": {
+			"type": "registry:block",
+			"title": "Store Policies",
+			"description": "The heading, one paragraph and the policies (payment, delivery, returns), each with an icon, a title and a line: on cards in columns, or rows.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/store-policies.svelte",
+				"src/blocks/store-policies.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/store-policies/1.json",
+				"group": "storefront",
+				"kind": "block",
+				"model": "store-policy@1",
 				"tags": [
 					"svelte",
 					"block"
@@ -1763,7 +2727,6 @@
 			"description": "The heading, one paragraph and the people as a list: a portrait, the name and the role, in two, three or four columns, plain or on cards.",
 			"registryDependencies": [
 				"block",
-				"card",
 				"container",
 				"list",
 				"list-item",
@@ -2083,6 +3046,39 @@
 				"src/compose/Title.svelte"
 			]
 		},
+		"topics-simple": {
+			"type": "registry:block",
+			"title": "Topics Simple",
+			"description": "The heading, one paragraph and the rubrics of a blog on cards (a label, the title as a link, a line): in two or three columns, or one under the other.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/topics-simple.svelte",
+				"src/blocks/topics-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/topics-simple/1.json",
+				"group": "blog",
+				"kind": "block",
+				"model": "topics@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"utils": {
 			"type": "registry:utils",
 			"title": "Utils",
@@ -2123,19 +3119,46 @@
 		}
 	},
 	"files": {
+		"prototypes/svelte/blocks/article-lead.svelte": "85fbac037c9ad5ad289f29379e8a6ccf423d487289eab51492ca4bd804ea13a9",
+		"prototypes/svelte/blocks/article-simple.svelte": "081b0a3a8e057e39c848c488e7baf1a50ed282340e28ebb6747a94f5a81cfa95",
+		"prototypes/svelte/blocks/chapters-simple.svelte": "fd50c7e9c1eed63f30991ee0f4f4d12c53c3b29fb4c2c78b15a806072de3ea0b",
+		"prototypes/svelte/blocks/choice-links.svelte": "89407c9ef17f12d33166e876399f9dc2d6d2ff2e192d9bdf4dd834c9c0aab09a",
+		"prototypes/svelte/blocks/collections-simple.svelte": "4c1b869077d02bbe7efa77f5c31b26a828a62eaa2a1a6bcb5603846fa925c783",
+		"prototypes/svelte/blocks/compare-simple.svelte": "9ec7752735cb5bf5af97c27fa58c38d766466247b246b14a6efb1f2e3bf4e102",
+		"prototypes/svelte/blocks/contacts-simple.svelte": "97595365394bc6f40da251104c4ccffc757f07b98986108f70a86f712b4ba087",
+		"prototypes/svelte/blocks/course-outline.svelte": "da2192957b4b33e75c977c2745eb5d5ba8387df6de5b4e101b29270279952e9a",
+		"prototypes/svelte/blocks/error-simple.svelte": "f3da2c191f40c3f5d44e04e076fdacd4d3b7fcdd87bb20b031d83b50efca3e8f",
+		"prototypes/svelte/blocks/event-intro.svelte": "3a0f3052a5cf32c66d255c3aeba959939b0a5fb7494e93621b11ddd47204eb6e",
 		"prototypes/svelte/blocks/faq-simple.svelte": "923667123410905c6e1ca6fef132fa19d0d148a145fe29e06fb4351e43280bbe",
+		"prototypes/svelte/blocks/feature-showcase-simple.svelte": "06bddf1700b436f7cf28abb17903478acdb13333cc3129deeca36ee9a9521c70",
 		"prototypes/svelte/blocks/features-simple.svelte": "bdcb04109388497addc14d32fbfdd180d24badc635c0f6c0929310f4ad8c48a1",
+		"prototypes/svelte/blocks/figure-simple.svelte": "a9dabeeda9eee8e98029b1ddb140505b44c817b6bc22bf9f0cfbc7bfba13ec3d",
+		"prototypes/svelte/blocks/footer-simple.svelte": "99075daa9de8ff393b67140b8e1bfce53fd8d063199acc1f0417553813e38eb5",
 		"prototypes/svelte/blocks/gallery-hero.svelte": "913013a3cc29f78cb667700f2da9596c2ece4ec065c430344151ba9cbad5372b",
+		"prototypes/svelte/blocks/header-simple.svelte": "5b12b263729bfe5c1edbd2dc7d76756542afe27cccc5baa7a7cb6fd05b9024c0",
 		"prototypes/svelte/blocks/hero-simple.svelte": "84367da8648e509ec7976314dff75eefd67bf027b368a0d0bafaac100236b1f3",
 		"prototypes/svelte/blocks/intro-simple.svelte": "f6c0a318d582b98eb09b292de157119d2269bbc9bcfbf48488835513181b6e63",
+		"prototypes/svelte/blocks/locations-simple.svelte": "0091f7c4cc5b2f86e6e7aac431ecd561f0092c1bfe3183b1f40edfe82761c885",
 		"prototypes/svelte/blocks/logos-simple.svelte": "2ea1082d07f7e07d12ed7d48274003e3af53faf853a48f8be1f18964a0bae718",
+		"prototypes/svelte/blocks/offers-simple.svelte": "94a2c945ee4b00ecc52425fb1070fe01543fd284895e53c40271bbebd0605dcb",
 		"prototypes/svelte/blocks/photos-simple.svelte": "05578ea02365d7f420a5349e49d9445453d22fbd442d569fc43d7e323afefe21",
+		"prototypes/svelte/blocks/pricing-simple.svelte": "c5f1bbeceb5bf227409ae05f4e09ccc068c80d06aab178a6ac09bf32d5146164",
+		"prototypes/svelte/blocks/product-reviews.svelte": "4b787668364405e35ae1e8bca61cf713bf5e54746fe16dc55a67c60bbd75c4e6",
+		"prototypes/svelte/blocks/product-simple.svelte": "ea4e07622bdea497a96057932ebc081847a8206d030a83fba9a00bb73a3ea5a6",
+		"prototypes/svelte/blocks/products-simple.svelte": "8e07534ba9c62483533067142222fb99ce2bdc61ac3b9517277b318ffbe4905f",
+		"prototypes/svelte/blocks/profile-intro.svelte": "0dd3178bf54b18ecf553d6bd7e3992b02edcaa25e546e7b055c3e89ccfc7caa8",
+		"prototypes/svelte/blocks/pull-quote-simple.svelte": "e8cc44f70afb206a55e9e0fa48d83c70e877650f544f50c751cb82a0ad87874a",
+		"prototypes/svelte/blocks/purchase-simple.svelte": "1bbe27ad9ff4c01f2bdac70ee757239a9a001a1abbc3af31e94dc2d395118f4b",
+		"prototypes/svelte/blocks/rating-simple.svelte": "8e70a814d5bce856fdb06484b69e876b05f7ee0c018d54a82004482f3c2b321c",
+		"prototypes/svelte/blocks/specs-simple.svelte": "2edbc561997622ca3191d83430f977b4198930f61d29aac5959a7e13d7299cd8",
 		"prototypes/svelte/blocks/split-simple.svelte": "cd0cab695e4eac4efa77ef38ee254ea202c6465670d5cdfbee8a1fce046162bc",
 		"prototypes/svelte/blocks/stats-simple.svelte": "2c91da85a43247738f0b3ce4c979ce70784995017317ff927348bb77322e34b2",
 		"prototypes/svelte/blocks/steps-simple.svelte": "34e90244540861779e5cf1f03c0ae7a51e4afecdcd0c4ce119208c0caf028a4e",
+		"prototypes/svelte/blocks/store-policies.svelte": "5a761e78cec3e02954aafef9a8d9a98119504554ea422edf77cd1704eb470743",
 		"prototypes/svelte/blocks/stories-simple.svelte": "09fb883e89eb6f747093b6827108375803392e045669b32ee81ba5e08b8a6e8c",
-		"prototypes/svelte/blocks/team-simple.svelte": "3531e2bf3b56bd57080f9a15d2e157aa6ed42bea786bae796ff9515c66b59976",
+		"prototypes/svelte/blocks/team-simple.svelte": "2f220b154e02ed246cfc0a3510ec51cfd6135c9c1f2ab928b3d65399d6f917c9",
 		"prototypes/svelte/blocks/testimonials-simple.svelte": "55e4d80cf6835d526bf7a6a30f28d4f3fe03ded65644aac2e01d82b53d25f6f3",
+		"prototypes/svelte/blocks/topics-simple.svelte": "791965527a3fa8332bfa7b32c77557e53df8b705413363166c771dd8b787352e",
 		"prototypes/svelte/shapes/shape-avatar.svelte": "0cee517413dc4cefdee7d1d31e82033cf3342fdb47a0fd4a6dc58deb53cae3bb",
 		"prototypes/svelte/shapes/shape-badge.svelte": "a4cc87358624d1a2eea97135525f9c073efaaa5f3f67cec75920523ce1eb517a",
 		"prototypes/svelte/shapes/shape-cta.svelte": "cc04ffa611cd2cc460a51c14f1c1aee2f82922bffc9d1fc77b2704cd99818e12",
@@ -2143,33 +3166,87 @@
 		"prototypes/svelte/shapes/shape-media.svelte": "354a114d4804aab821515227393947b790e20571f9632026a1034736fec61301",
 		"prototypes/svelte/shapes/shape-text.svelte": "e35eb73a5d5f7fed824debc745a5a4a0da4e3f9aa91f37a87ad3d7ab198e49d5",
 		"prototypes/tokens.css": "0ebedbe6e20048c59da529e8654fc7efe06a9ebc436a54f29b1d4a72cf750780",
+		"registry/contracts/article-lead/1.json": "8b293a8e7cec0f45fe744e31c5183fea0047725854cbdb7f1c8e38dee4456c9b",
+		"registry/contracts/article-simple/1.json": "70aa68c9337171d17c036cd4664dec4145f900c9119a7a7721995a09d4fe581a",
+		"registry/contracts/chapters-simple/1.json": "60553aa6ca6eb5105d5f49aaeae9cbe2727ccfae384a9d14b38af21d556ba282",
+		"registry/contracts/choice-links/1.json": "b6b5faea3d6d703860983a8ae8170c5821f0c2813ade955efc4541a1b7d27e15",
+		"registry/contracts/collections-simple/1.json": "27cff23f85f0d090be605c1a08856fe71ad7446b4d64e32f2c61d5725d582543",
+		"registry/contracts/compare-simple/1.json": "57c800708e9f43a295cfd3487134c759582f78dcb550559791f9fc2da27ff385",
+		"registry/contracts/contacts-simple/1.json": "d2570a7b86865ea57edbc3bbf9c2dd834e24c4f5f3605953796fe6253929f3ba",
+		"registry/contracts/course-outline/1.json": "436339e3a131e62005fd3452f16e857a074cbaec950f3f7a7344cdb927bfcb42",
+		"registry/contracts/error-simple/1.json": "4c801452ef78381a19de9e8fa7f03722957443012a0635ec483a6ee09b8000ba",
+		"registry/contracts/event-intro/1.json": "e6208f37bd924b293d00e29cd503c7a82d21f5c65df8106ca04ebe134106a654",
 		"registry/contracts/faq-simple/1.json": "ec0badfc25b5820b04f48d24f7d9770713e276d9f8985a283c9281ae2af0cc33",
+		"registry/contracts/feature-showcase-simple/1.json": "c276dc1f5cdc5fbbea559e49b7cd3e495568605a15a984ebea937fe61611a435",
 		"registry/contracts/features-simple/1.json": "ec9b24f9241923f6d1dfc83a17c14590ff0e229e0416ef2d7bdca704e31c03e1",
+		"registry/contracts/figure-simple/1.json": "9f73d7bb0cc05518e5174b6687bd5c4bdc6335c7fc196e023dbd18f009632f95",
+		"registry/contracts/footer-simple/1.json": "041524efb5280fc5da3ce7ec9846542d76e3cc1fbd1fe23261ec01042b773208",
 		"registry/contracts/gallery-hero/1.json": "d3d96918a81d9e9ac808cc319cd2fe90ae72458ee830cf77bbda5b747749db69",
+		"registry/contracts/header-simple/1.json": "39a8ab5a8661c344672b84a187760dbaffa9490457434d371aedd9a74e01b9a4",
 		"registry/contracts/hero-simple/1.json": "688efe720e94b29a5bc2e1cd35eb9024008693737f8e2e81db89d6f6ca63dbef",
 		"registry/contracts/intro-simple/1.json": "8eccd2cf0f2e0e53b6dd1737b1c677da0f4fc82b7c85ada85fc0adbfd83801ab",
+		"registry/contracts/locations-simple/1.json": "59ba1a5a5913f7f63b45d7e8b1914c353423ce220d6fff2d355e6caf8a6341d2",
 		"registry/contracts/logos-simple/1.json": "84b5b8d142a3bea0319c41f6fa8a70edc1f315e6140b39dad6721f10c6e78378",
+		"registry/contracts/offers-simple/1.json": "f16e9b3989c79e2dfae8bd9a9b6701deb997950075f9bfeb04f3a0bbfd926083",
 		"registry/contracts/photos-simple/1.json": "21b8f6c36f967c774b79547e82011c9bb57bc05ae724b85c7fc7ebefea657514",
+		"registry/contracts/pricing-simple/1.json": "0733284bc0882044982f4630e873bd1cd8947bbf54e048d485effb6f54a04eed",
+		"registry/contracts/product-reviews/1.json": "d738977857a856a826a79945ff07d9da5f53487ee7102a4a7874e0cfacbfae8b",
+		"registry/contracts/product-simple/1.json": "801238fd31d594209096a15f56f454d8b52bc14c4263c46d749efd93f66d3023",
+		"registry/contracts/products-simple/1.json": "a33961c63684e4ea8511fda430b77030741b4fc7882445ca1cf58129179f0bbc",
+		"registry/contracts/profile-intro/1.json": "5aa5893da2bdf4a4d5e32c661fbaf7767dcd570b2136ceb005d019fc56e9a2b9",
+		"registry/contracts/pull-quote-simple/1.json": "d76457c402e1520b7cb40cfe37d25032e86ee55256040679b2da0b49773b38b3",
+		"registry/contracts/purchase-simple/1.json": "20bece6d3641b8357f7bc1cd7410121e96b90a1d80a63f555c35e1c9852d2538",
+		"registry/contracts/rating-simple/1.json": "c8e8f0be71bd9d117759715ae674b67c136df8bb1df43511a4c5a292d042a4db",
+		"registry/contracts/specs-simple/1.json": "e884c806e09ae5dae83c4561c6999f76282dd2a9f7bb1eaf460ea00958647ab8",
 		"registry/contracts/split-simple/1.json": "cb1936dc7bf74e33036b4051337c47f517fe370cef2d701180dee987e7edbc75",
 		"registry/contracts/stats-simple/1.json": "3f7deae3375323293e3e4781cdac763f13441fb4d0d521bfff24d1b33491d115",
 		"registry/contracts/steps-simple/1.json": "5042753ebe5c3d48ea4947418350e42a4bf40cfb2056bb1d99cb0063f8854f8c",
+		"registry/contracts/store-policies/1.json": "bc877e4e37ceac03b7d7fba7bb19949823ee2d5722a6f1431ce0fd832bc43d91",
 		"registry/contracts/stories-simple/1.json": "900b8198869040e7fa2f1a8358cffd2e8c1caeafb4dc1373f2b221e06bf413c2",
-		"registry/contracts/team-simple/1.json": "ff0b83a814f00624ee3200454fc70fd9fde1789e75412e94b2aeac5c172ed9a8",
+		"registry/contracts/team-simple/1.json": "ef54b5212cdea45399540b146b13b9d4829c63e01083ce980acc74f8bf0415ed",
 		"registry/contracts/testimonials-simple/1.json": "e8bb4ab2a54963fa56dc96a13f79e1dc3b8327020cb0fc1c21fa5f07d9dae38b",
+		"registry/contracts/topics-simple/1.json": "33879d4d7bd937e453a35ad094e18c0762cc4ba10026dedad144f0932013bd5d",
+		"registry/models/article-lead@1.schema.json": "eae6233434a9bd8330b253110fc4731ab270c38a7e165c00bd0f111384ee3db6",
+		"registry/models/article@1.schema.json": "7c6e6ac7fff67a42cb47d4487af5245cb72fd9ba179cf5cd0a4dc7504408c48e",
+		"registry/models/chapters@1.schema.json": "edde4300654538c9cceb7e039bb354f34b57c32d9a2914b37e4bd0e45e446611",
+		"registry/models/choices@1.schema.json": "e36ae84277e771cdc1677e6509c23578f42797b8f2158a730f5027e07eb810ea",
+		"registry/models/collections@1.schema.json": "158a1b4a0a52167caa342907ce49169557fa27c7eefad07d8ced8b0569219a2e",
+		"registry/models/compare@1.schema.json": "fcb0692b72e406710315efb8d879bdc478316f4d75163b5a7e1adafbd3fab637",
+		"registry/models/contacts@1.schema.json": "b62f96402d8013ac4563afecfde249e1281647be1fbe5f5377c9eb4a9e5578b7",
+		"registry/models/curriculum@1.schema.json": "29cb5db578daed45f74a868adc151a15ea48f36f445812eb8be85b83d22d2b23",
+		"registry/models/error@1.schema.json": "937f8eb6791f788a11cb776bf44b81fbaadefc25784892aac87fadc4fecc36d5",
+		"registry/models/event@1.schema.json": "a7befb097c1fb039843a6284228a33b666a6c91ee69ea53b148bf3a30d7f1cac",
 		"registry/models/faq@1.schema.json": "3c9d703570eaa76184918c515c8253cc1bb708d8af873f6cdee199f6a8b7ed03",
+		"registry/models/feature-showcase@1.schema.json": "57b1d9f9526b4a659f92d1038a217860d17f7b0cc7d13fee184c86425d2db9a2",
 		"registry/models/features@1.schema.json": "ec97897a5e218914fed908d8c650a57212a8603c5b7c78a061e7e6a1409df8ba",
+		"registry/models/figure@1.schema.json": "605106092c330a874c580a163fdae8d14fad2aead88fa0c921f1294fdf34dbe8",
+		"registry/models/footer@1.schema.json": "082e96e5712953dd0d91e4d1a6574dd0a92065a2e1f40853074a84d8bf5ca6c3",
 		"registry/models/gallery@1.schema.json": "728e408f73900e79639629aaa52698fee31b3a9fc87e73efdb1b11457906b7f2",
+		"registry/models/header@1.schema.json": "2e59a18850b32bf3816f4f85299d372d771bf746102a94b94826c46a5537a9ff",
 		"registry/models/hero@1.schema.json": "b114d150cc77d9249b8793c9591a6242db9c8d55d94d0dd06bfe6aecd335eee6",
 		"registry/models/intro@1.schema.json": "9ede625f409532dba4ca1f05345afb5b39d69d8945039d38a491618ff7ef5ee6",
+		"registry/models/locations@1.schema.json": "666449da698a09ab3f477cec3009752cd51d00dadf919501991a17b933d482eb",
 		"registry/models/logos@1.schema.json": "c2ca4e110e46821571e84581123062042b72b3dfbe47c07633449948fef13e1c",
+		"registry/models/offers@1.schema.json": "cbe2d34366f77c8192c24731957c3ce87b4d29041a05deb8f078a777669e6bdc",
 		"registry/models/photos@1.schema.json": "c17acd5d96bbba505b713274c1482e4a44796ca9e4df7718b74510c07cb25906",
+		"registry/models/pricing@1.schema.json": "d0de495664fa553f3e48001b88a39885d2c6a545d8a609d0cd9e6790f6f5b5c6",
+		"registry/models/product@1.schema.json": "f2be6d8b03f490c21bf0906ef6c1364b2fcce96c046115c401945d4d1a6a2921",
+		"registry/models/products@1.schema.json": "9795ad4e8f2383fe43c91378f37fabd1c05a684a70339700d14f75b2b1a2d7ac",
+		"registry/models/profile@1.schema.json": "0c4283ba562f39a9286a8d1448d034c5d32efe12439bd5ec48f204b6410ac6b3",
+		"registry/models/pull-quote@1.schema.json": "f49e69e6332101fee82160220aea2537871ee3704da5eed2edecc5b130cab776",
+		"registry/models/purchase@1.schema.json": "7416988230846908eaac6965ef974aa58368000fd23a74ebb626e2f99f66bebf",
+		"registry/models/rating@1.schema.json": "0665c268f07988ef87cf7b966883264139af5bbd5dd1508b99caed5ccd3a0297",
+		"registry/models/reviews@1.schema.json": "9a4f774744074c2d6a3ee633f2879acc1569c802fd847aa04c801e7c160a968a",
+		"registry/models/specs@1.schema.json": "190ead29f6da241d6c9fd255aa6b9937477af0ace8f1940378fda9b7e48e5cd9",
 		"registry/models/split@1.schema.json": "40d6489b3bbaa08ab9f5385ef1b8e1d75432b427f51c2598ec92e9c542aada6d",
 		"registry/models/stats@1.schema.json": "c3ad6ffed0ddde4c362472342dc76b6ec29d77a87b350b2ad878f68aa310154a",
 		"registry/models/steps@1.schema.json": "cb6f8322e1848fdefa7801ca77db581e1611892c605e31a6cf3085ca8153097c",
+		"registry/models/store-policy@1.schema.json": "58e7b00f090a84da9b3f1c63649259fefb913e43f861069c96467b6d94381d1e",
 		"registry/models/stories@1.schema.json": "ef5881bfa8a7f74aac78fc57497f1237c1228c5c0066604b340392fee6c52bbb",
 		"registry/models/team@1.schema.json": "ac003fe0b80251f4fefe73e39572cd63f3eb58b35c5fdbd337d03e232fcf797c",
 		"registry/models/testimonials@1.schema.json": "e3c1b75c4dd7111f41f7a7bb52c7e297617d8805f51b4cae6b06ca40272003b1",
-		"registry/props.v0.json": "65810b1ed1a70b3f646304acabfb57a436dabe67bea592d80842e2c87ce82041",
-		"registry/variants.v0.json": "2023318b51a5e72a4e4bec07b06b4caf45a0e009c3dc49a4d491d632ee87e182"
+		"registry/models/topics@1.schema.json": "7e85157dcbbeec16b931dcb9dceb9a4ac6a730e74ca632aba69153ac3229ef53",
+		"registry/props.v0.json": "42fb34eccde52612b90b6c919449012e2ed910ec8def9421a9322654b93e14fa",
+		"registry/variants.v0.json": "1d88c923fca470edcc98e02f46a5d77981a7e27afe456af1ab3c03ce3c06198b"
 	}
 }

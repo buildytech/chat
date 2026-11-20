@@ -3,16 +3,16 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:9569068ae381464071786058b69ef637ecaf7f398dea2abbe746ac6f1974d404",
+	"lockDigest": "sha256:1f43154f1028df720a89225973b0617fa2592029568557e14f02b937e37987e9",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "c802d3fc0a1aed3d00bdb86dfc2fcaa1507bea82e204236cc6509ae9b74ad023",
-		"digest": "sha256:cb6d7cd5219746c156f881178a3213c5cd8761382580626633c13c06880646ef"
+		"sha256": "890385335d0f9240b6a1f2c4d3918412ba9baecd94aa246d0408ecdb299ed1e3",
+		"digest": "sha256:b76814541966e1c3e462fd3b15f165e6b6ae9fb7e1547f9e6b9a858c0f6f468e"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "520c0e4cb37ce269d24ba29dd5b6ca1d35beca22f351a6fc4db6d1e89699e8b0",
-		"digest": "sha256:1a27d06a6dcbf0a871a8b0cc006fb999758cf781c17ee27c9102b5fe4b8673f2"
+		"sha256": "fafe9e556be48ff9930f4b5abf8226317c6827df271a06e6db302e97fdd466e6",
+		"digest": "sha256:8d07269ba87ec6dcc150010f0708cde183b4e85c5ebe4a7b25c03b24ce4faf0c"
 	},
 	"initItems": [
 		"presets",
@@ -38,6 +38,68 @@
 			"files": [
 				"src/compose/Alert.svelte"
 			]
+		},
+		"article-lead": {
+			"type": "registry:block",
+			"title": "Article Lead",
+			"description": "The head of an article: the heading, the lead paragraph and the byline (the portrait, the author, the date) under a wide cover, or beside it.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"group",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/article-lead.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/article-lead/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "article-lead@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"article-simple": {
+			"type": "registry:block",
+			"title": "Article Simple",
+			"description": "The heading, one paragraph and the sections of a text (a subheading and its paragraph): one reading column, or two columns under a centred head.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/article-simple.svelte",
+				"src/blocks/article-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/article-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "article@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"badge": {
 			"type": "registry:ui",
@@ -208,6 +270,39 @@
 				"src/compose/CardTitle.svelte"
 			]
 		},
+		"chapters-simple": {
+			"type": "registry:block",
+			"title": "Chapters Simple",
+			"description": "The heading, one paragraph and the chapters (a picture, a label, the title, a paragraph): rows with the picture at the side, or a pair with the picture under the copy.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/chapters-simple.svelte",
+				"src/blocks/chapters-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/chapters-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "chapters@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"checkbox": {
 			"type": "registry:ui",
 			"title": "Checkbox",
@@ -221,6 +316,103 @@
 			"files": [
 				"src/compose/Checkbox.svelte"
 			]
+		},
+		"choice-links": {
+			"type": "registry:block",
+			"title": "Choice Links",
+			"description": "The heading, one paragraph and the options (sizes, versions) as outline links: a wrapping row, or a grid of four.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/choice-links.svelte",
+				"src/blocks/choice-links.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/choice-links/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "choices@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"collections-simple": {
+			"type": "registry:block",
+			"title": "Collections Simple",
+			"description": "The heading, one paragraph and the collections (a picture and the name as one link) in four or two columns.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/collections-simple.svelte",
+				"src/blocks/collections-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/collections-simple/1.json",
+				"group": "catalog",
+				"kind": "block",
+				"model": "collections@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"compare-simple": {
+			"type": "registry:block",
+			"title": "Compare Simple",
+			"description": "The heading, one paragraph and two options side by side: their names in a header row, then a row per feature with the value of each.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/compare-simple.svelte",
+				"src/blocks/compare-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/compare-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "compare@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"compose": {
 			"type": "registry:ui",
@@ -303,6 +495,39 @@
 				"src/compose/index.ts"
 			]
 		},
+		"contacts-simple": {
+			"type": "registry:block",
+			"title": "Contacts Simple",
+			"description": "The heading, one paragraph and the teams to reach on cards (an icon, the name, a line, an action): in three or two columns, or rows with the icon at the side.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/contacts-simple.svelte",
+				"src/blocks/contacts-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/contacts-simple/1.json",
+				"group": "contact",
+				"kind": "block",
+				"model": "contacts@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"container": {
 			"type": "registry:ui",
 			"title": "Container",
@@ -316,6 +541,38 @@
 			"files": [
 				"src/compose/Container.svelte"
 			]
+		},
+		"course-outline": {
+			"type": "registry:block",
+			"title": "Course Outline",
+			"description": "The heading, one paragraph and the modules in order (a label, the title, a line, the length): rows in a narrow column, or two columns of cards.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/course-outline.svelte",
+				"src/blocks/course-outline.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/course-outline/1.json",
+				"group": "how-it-works",
+				"kind": "block",
+				"model": "curriculum@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"dialog": {
 			"type": "registry:ui",
@@ -345,6 +602,67 @@
 				"src/compose/Disclosure.svelte"
 			]
 		},
+		"error-simple": {
+			"type": "registry:block",
+			"title": "Error Simple",
+			"description": "A page for something that went wrong: the code, the heading, one paragraph and one action back; centred or at the start.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/error-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/error-simple/1.json",
+				"group": "states",
+				"kind": "block",
+				"model": "error@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"event-intro": {
+			"type": "registry:block",
+			"title": "Event Intro",
+			"description": "The first screen of an event: a badge, the name as a large heading, one paragraph, the date and the place, and one action; centred or at the start.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/event-intro.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/event-intro/1.json",
+				"group": "hero",
+				"kind": "block",
+				"model": "event@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"faq-simple": {
 			"type": "registry:block",
 			"title": "Faq Simple",
@@ -370,6 +688,39 @@
 				"group": "faq",
 				"kind": "block",
 				"model": "faq@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"feature-showcase-simple": {
+			"type": "registry:block",
+			"title": "Feature Showcase Simple",
+			"description": "The heading, one paragraph and the key points as a list beside one picture (at the end or the start), or the head over a wide picture with the points in three columns under it.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/feature-showcase-simple.svelte",
+				"src/blocks/feature-showcase-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/feature-showcase-simple/1.json",
+				"group": "features",
+				"kind": "block",
+				"model": "feature-showcase@1",
 				"tags": [
 					"svelte",
 					"block"
@@ -436,6 +787,67 @@
 			"files": [
 				"src/compose/Fieldset.svelte"
 			]
+		},
+		"figure-simple": {
+			"type": "registry:block",
+			"title": "Figure Simple",
+			"description": "One large picture with its caption (a title, a line, the credit): wide with the caption under it, or the caption at the side.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"media-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/figure-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/figure-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "figure@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"footer-simple": {
+			"type": "registry:block",
+			"title": "Footer Simple",
+			"description": "The brand and one line beside the links (a row or a grid of columns), or everything centred; the copyright line under them.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/footer-simple.svelte",
+				"src/blocks/footer-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/footer-simple/1.json",
+				"group": "navigation",
+				"kind": "block",
+				"model": "footer@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"form": {
 			"type": "registry:ui",
@@ -569,6 +981,39 @@
 			"files": [
 				"src/compose/Group.svelte"
 			]
+		},
+		"header-simple": {
+			"type": "registry:block",
+			"title": "Header Simple",
+			"description": "The brand as the link home, the navigation links and one action in a bar: the links in the middle, at the end beside the action, or centred under the brand. No menu button: the links wrap on a narrow screen.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"group",
+				"link-button",
+				"link-plain",
+				"list",
+				"list-item",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/header-simple.svelte",
+				"src/blocks/header-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/header-simple/1.json",
+				"group": "navigation",
+				"kind": "block",
+				"model": "header@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"hero-simple": {
 			"type": "registry:block",
@@ -1055,6 +1500,39 @@
 				"src/compose/ListItem.svelte"
 			]
 		},
+		"locations-simple": {
+			"type": "registry:block",
+			"title": "Locations Simple",
+			"description": "The heading, one paragraph and the offices (the name, the address) in two columns beside one picture, at the start or the end.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/locations-simple.svelte",
+				"src/blocks/locations-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/locations-simple/1.json",
+				"group": "contact",
+				"kind": "block",
+				"model": "locations@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"logos-simple": {
 			"type": "registry:block",
 			"title": "Logos Simple",
@@ -1133,6 +1611,38 @@
 				"src/compose/Meter.svelte"
 			]
 		},
+		"offers-simple": {
+			"type": "registry:block",
+			"title": "Offers Simple",
+			"description": "The heading, one paragraph and two or three offers on cards, each with a title, a line and an action.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/offers-simple.svelte",
+				"src/blocks/offers-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/offers-simple/1.json",
+				"group": "cta",
+				"kind": "block",
+				"model": "offers@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"opt-group": {
 			"type": "registry:ui",
 			"title": "Opt Group",
@@ -1191,6 +1701,173 @@
 				"src/presets/defaults.ts"
 			]
 		},
+		"pricing-simple": {
+			"type": "registry:block",
+			"title": "Pricing Simple",
+			"description": "The heading, one paragraph and the plans on cards (the name, a badge on the highlighted plan, a line, the price, an action): in three or two columns, or one row each.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/pricing-simple.svelte",
+				"src/blocks/pricing-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/pricing-simple/1.json",
+				"group": "pricing",
+				"kind": "block",
+				"model": "pricing@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"product-reviews": {
+			"type": "registry:block",
+			"title": "Product Reviews",
+			"description": "The heading, one paragraph and the reviews on cards (the rating, the words, the reviewer with the portrait): in three or two columns, or one under the other.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"group",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/product-reviews.svelte",
+				"src/blocks/product-reviews.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/product-reviews/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "reviews@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"product-simple": {
+			"type": "registry:block",
+			"title": "Product Simple",
+			"description": "One product: the main picture and thumbnails beside the name, the price, one paragraph and the action; the pictures at the start, at the end or above.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/product-simple.svelte",
+				"src/blocks/product-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/product-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "product@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"products-simple": {
+			"type": "registry:block",
+			"title": "Products Simple",
+			"description": "The heading, one paragraph and the products (a picture, the name as a link, the price): in three or four columns, or rows with the picture at the side.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/products-simple.svelte",
+				"src/blocks/products-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/products-simple/1.json",
+				"group": "catalog",
+				"kind": "block",
+				"model": "products@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"profile-intro": {
+			"type": "registry:block",
+			"title": "Profile Intro",
+			"description": "A person: the name, the role, one paragraph and the links beside the portrait (at the end or the start), or under a round portrait.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/profile-intro.svelte",
+				"src/blocks/profile-intro.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/profile-intro/1.json",
+				"group": "hero",
+				"kind": "block",
+				"model": "profile@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"progress": {
 			"type": "registry:ui",
 			"title": "Progress",
@@ -1219,6 +1896,65 @@
 				"src/compose/Prose.svelte"
 			]
 		},
+		"pull-quote-simple": {
+			"type": "registry:block",
+			"title": "Pull Quote Simple",
+			"description": "The words of a quote in large type with the author, a role line and the source under them: a bar at the side, or centred.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-plain",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/pull-quote-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/pull-quote-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "pull-quote@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"purchase-simple": {
+			"type": "registry:block",
+			"title": "Purchase Simple",
+			"description": "On a card surface: the heading and one paragraph beside the price, the action and a note; or all centred.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/purchase-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/purchase-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "purchase@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"radio": {
 			"type": "registry:ui",
 			"title": "Radio",
@@ -1246,6 +1982,36 @@
 			"files": [
 				"src/compose/Range.svelte"
 			]
+		},
+		"rating-simple": {
+			"type": "registry:block",
+			"title": "Rating Simple",
+			"description": "The score, what it is and the source as a link: one bar on a card surface, or centred.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-plain",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/rating-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/rating-simple/1.json",
+				"group": "proof",
+				"kind": "block",
+				"model": "rating@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"recipes": {
 			"type": "registry:lib",
@@ -1359,6 +2125,37 @@
 				"src/compose/Skeleton.svelte"
 			]
 		},
+		"specs-simple": {
+			"type": "registry:block",
+			"title": "Specs Simple",
+			"description": "The heading, one paragraph and the specifications as name and value rows on a muted surface, in one narrow column or two columns.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/specs-simple.svelte",
+				"src/blocks/specs-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/specs-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "specs@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"split-simple": {
 			"type": "registry:block",
 			"title": "Split Simple",
@@ -1462,6 +2259,38 @@
 				"group": "how-it-works",
 				"kind": "block",
 				"model": "steps@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"store-policies": {
+			"type": "registry:block",
+			"title": "Store Policies",
+			"description": "The heading, one paragraph and the policies (payment, delivery, returns), each with an icon, a title and a line: on cards in columns, or rows.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/store-policies.svelte",
+				"src/blocks/store-policies.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/store-policies/1.json",
+				"group": "storefront",
+				"kind": "block",
+				"model": "store-policy@1",
 				"tags": [
 					"svelte",
 					"block"
@@ -1676,7 +2505,6 @@
 			"description": "The heading, one paragraph and the people as a list: a portrait, the name and the role, in two, three or four columns, plain or on cards.",
 			"registryDependencies": [
 				"block",
-				"card",
 				"container",
 				"list",
 				"list-item",
@@ -1996,6 +2824,39 @@
 				"src/compose/Title.svelte"
 			]
 		},
+		"topics-simple": {
+			"type": "registry:block",
+			"title": "Topics Simple",
+			"description": "The heading, one paragraph and the rubrics of a blog on cards (a label, the title as a link, a line): in two or three columns, or one under the other.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/topics-simple.svelte",
+				"src/blocks/topics-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/topics-simple/1.json",
+				"group": "blog",
+				"kind": "block",
+				"model": "topics@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"utils": {
 			"type": "registry:utils",
 			"title": "Utils",
@@ -2127,6 +2988,154 @@
 		}
 	},
 	"blocks": {
+		"article-lead": {
+			"spec": "block.articlelead",
+			"organism": "blocks/article-lead.svelte",
+			"organismName": "ArticleLead",
+			"defaultVariant": "mediaTop",
+			"variants": {
+				"mediaTop": {
+					"media": "top"
+				},
+				"mediaStart": {
+					"media": "start"
+				},
+				"mediaEnd": {
+					"media": "end"
+				}
+			}
+		},
+		"article-simple": {
+			"spec": "block.articlesimple",
+			"organism": "blocks/article-simple.svelte",
+			"organismName": "ArticleSimple",
+			"defaultVariant": "column",
+			"variants": {
+				"column": {
+					"layout": "column",
+					"align": "start"
+				},
+				"twoColumns": {
+					"layout": "columns",
+					"align": "center"
+				}
+			}
+		},
+		"chapters-simple": {
+			"spec": "block.chapterssimple",
+			"organism": "blocks/chapters-simple.svelte",
+			"organismName": "ChaptersSimple",
+			"defaultVariant": "illustratedRows",
+			"variants": {
+				"illustratedRows": {
+					"layout": "rows"
+				},
+				"paired": {
+					"layout": "paired"
+				}
+			}
+		},
+		"choice-links": {
+			"spec": "block.choicelinks",
+			"organism": "blocks/choice-links.svelte",
+			"organismName": "ChoiceLinks",
+			"defaultVariant": "row",
+			"variants": {
+				"row": {
+					"layout": "row"
+				},
+				"grid": {
+					"layout": "grid"
+				}
+			}
+		},
+		"collections-simple": {
+			"spec": "block.collectionssimple",
+			"organism": "blocks/collections-simple.svelte",
+			"organismName": "CollectionsSimple",
+			"defaultVariant": "cards4",
+			"variants": {
+				"cards4": {
+					"cols": "4"
+				},
+				"cards2": {
+					"cols": "2"
+				}
+			}
+		},
+		"compare-simple": {
+			"spec": "block.comparesimple",
+			"organism": "blocks/compare-simple.svelte",
+			"organismName": "CompareSimple",
+			"defaultVariant": "twoProducts",
+			"variants": {
+				"twoProducts": {
+					"width": "wide"
+				},
+				"narrow": {
+					"width": "narrow"
+				}
+			}
+		},
+		"contacts-simple": {
+			"spec": "block.contactssimple",
+			"organism": "blocks/contacts-simple.svelte",
+			"organismName": "ContactsSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"cards2": {
+					"layout": "cards",
+					"cols": "2"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
+				}
+			}
+		},
+		"course-outline": {
+			"spec": "block.courseoutline",
+			"organism": "blocks/course-outline.svelte",
+			"organismName": "CourseOutline",
+			"defaultVariant": "moduleRows",
+			"variants": {
+				"moduleRows": {
+					"layout": "rows"
+				},
+				"cards": {
+					"layout": "cards"
+				}
+			}
+		},
+		"error-simple": {
+			"spec": "block.errorsimple",
+			"organism": "blocks/error-simple.svelte",
+			"organismName": "ErrorSimple",
+			"defaultVariant": "center",
+			"variants": {
+				"center": {},
+				"start": {
+					"align": "start"
+				}
+			}
+		},
+		"event-intro": {
+			"spec": "block.eventintro",
+			"organism": "blocks/event-intro.svelte",
+			"organismName": "EventIntro",
+			"defaultVariant": "center",
+			"variants": {
+				"center": {},
+				"start": {
+					"align": "start"
+				}
+			}
+		},
 		"faq-simple": {
 			"spec": "block.faqsimple",
 			"organism": "blocks/faq-simple.svelte",
@@ -2138,6 +3147,24 @@
 				},
 				"list": {
 					"columns": "one"
+				}
+			}
+		},
+		"feature-showcase-simple": {
+			"spec": "block.featureshowcasesimple",
+			"organism": "blocks/feature-showcase-simple.svelte",
+			"organismName": "FeatureShowcaseSimple",
+			"defaultVariant": "mediaEnd",
+			"variants": {
+				"mediaEnd": {
+					"media": "end"
+				},
+				"mediaStart": {
+					"media": "start"
+				},
+				"mediaTop": {
+					"media": "top",
+					"align": "center"
 				}
 			}
 		},
@@ -2187,6 +3214,40 @@
 				}
 			}
 		},
+		"figure-simple": {
+			"spec": "block.figuresimple",
+			"organism": "blocks/figure-simple.svelte",
+			"organismName": "FigureSimple",
+			"defaultVariant": "wide",
+			"variants": {
+				"wide": {
+					"layout": "wide"
+				},
+				"captionEnd": {
+					"layout": "end"
+				},
+				"captionStart": {
+					"layout": "start"
+				}
+			}
+		},
+		"footer-simple": {
+			"spec": "block.footersimple",
+			"organism": "blocks/footer-simple.svelte",
+			"organismName": "FooterSimple",
+			"defaultVariant": "brandLinks",
+			"variants": {
+				"brandLinks": {
+					"layout": "row"
+				},
+				"linkGrid": {
+					"layout": "grid"
+				},
+				"centered": {
+					"layout": "centered"
+				}
+			}
+		},
 		"gallery-hero": {
 			"spec": "block.galleryhero",
 			"organism": "blocks/gallery-hero.svelte",
@@ -2227,6 +3288,23 @@
 					"photos": {
 						"$": "galleryPhotos4"
 					}
+				}
+			}
+		},
+		"header-simple": {
+			"spec": "block.headersimple",
+			"organism": "blocks/header-simple.svelte",
+			"organismName": "HeaderSimple",
+			"defaultVariant": "inline",
+			"variants": {
+				"inline": {
+					"layout": "inline"
+				},
+				"linksEnd": {
+					"layout": "end"
+				},
+				"centered": {
+					"layout": "centered"
 				}
 			}
 		},
@@ -2286,6 +3364,20 @@
 				}
 			}
 		},
+		"locations-simple": {
+			"spec": "block.locationssimple",
+			"organism": "blocks/locations-simple.svelte",
+			"organismName": "LocationsSimple",
+			"defaultVariant": "mediaStart",
+			"variants": {
+				"mediaStart": {
+					"media": "start"
+				},
+				"mediaEnd": {
+					"media": "end"
+				}
+			}
+		},
 		"logos-simple": {
 			"spec": "block.logossimple",
 			"organism": "blocks/logos-simple.svelte",
@@ -2297,6 +3389,21 @@
 				},
 				"cards": {
 					"surface": "cards"
+				}
+			}
+		},
+		"offers-simple": {
+			"spec": "block.offerssimple",
+			"organism": "blocks/offers-simple.svelte",
+			"organismName": "OffersSimple",
+			"defaultVariant": "duo",
+			"variants": {
+				"duo": {
+					"cols": "2"
+				},
+				"duoStart": {
+					"cols": "2",
+					"align": "start"
 				}
 			}
 		},
@@ -2314,6 +3421,158 @@
 				},
 				"diptych": {
 					"cols": "2"
+				}
+			}
+		},
+		"pricing-simple": {
+			"spec": "block.pricingsimple",
+			"organism": "blocks/pricing-simple.svelte",
+			"organismName": "PricingSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"cards2": {
+					"layout": "cards",
+					"cols": "2",
+					"plans": {
+						"$": "pricingPlans2"
+					}
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
+				}
+			}
+		},
+		"product-reviews": {
+			"spec": "block.productreviews",
+			"organism": "blocks/product-reviews.svelte",
+			"organismName": "ProductReviews",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3"
+				}
+			}
+		},
+		"product-simple": {
+			"spec": "block.productsimple",
+			"organism": "blocks/product-simple.svelte",
+			"organismName": "ProductSimple",
+			"defaultVariant": "mediaStart",
+			"variants": {
+				"mediaStart": {
+					"media": "start"
+				},
+				"mediaEnd": {
+					"media": "end"
+				},
+				"mediaTop": {
+					"media": "top"
+				}
+			}
+		},
+		"products-simple": {
+			"spec": "block.productssimple",
+			"organism": "blocks/products-simple.svelte",
+			"organismName": "ProductsSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "grid",
+					"cols": "3"
+				},
+				"denseGrid": {
+					"layout": "grid",
+					"cols": "4"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
+				}
+			}
+		},
+		"profile-intro": {
+			"spec": "block.profileintro",
+			"organism": "blocks/profile-intro.svelte",
+			"organismName": "ProfileIntro",
+			"defaultVariant": "portraitEnd",
+			"variants": {
+				"portraitEnd": {
+					"media": "end"
+				},
+				"portraitStart": {
+					"media": "start"
+				},
+				"portraitTop": {
+					"media": "top",
+					"align": "center"
+				}
+			}
+		},
+		"pull-quote-simple": {
+			"spec": "block.pullquotesimple",
+			"organism": "blocks/pull-quote-simple.svelte",
+			"organismName": "PullQuoteSimple",
+			"defaultVariant": "standalone",
+			"variants": {
+				"standalone": {
+					"layout": "rule"
+				},
+				"centered": {
+					"layout": "centered"
+				}
+			}
+		},
+		"purchase-simple": {
+			"spec": "block.purchasesimple",
+			"organism": "blocks/purchase-simple.svelte",
+			"organismName": "PurchaseSimple",
+			"defaultVariant": "panel",
+			"variants": {
+				"panel": {
+					"layout": "panel"
+				},
+				"centered": {
+					"layout": "centered"
+				}
+			}
+		},
+		"rating-simple": {
+			"spec": "block.ratingsimple",
+			"organism": "blocks/rating-simple.svelte",
+			"organismName": "RatingSimple",
+			"defaultVariant": "inline",
+			"variants": {
+				"inline": {
+					"layout": "bar"
+				},
+				"centered": {
+					"layout": "centered"
+				}
+			}
+		},
+		"specs-simple": {
+			"spec": "block.specssimple",
+			"organism": "blocks/specs-simple.svelte",
+			"organismName": "SpecsSimple",
+			"defaultVariant": "keyValue",
+			"variants": {
+				"keyValue": {
+					"layout": "rows"
+				},
+				"twoColumns": {
+					"layout": "columns"
 				}
 			}
 		},
@@ -2376,6 +3635,23 @@
 				}
 			}
 		},
+		"store-policies": {
+			"spec": "block.storepolicies",
+			"organism": "blocks/store-policies.svelte",
+			"organismName": "StorePolicies",
+			"defaultVariant": "cols3",
+			"variants": {
+				"cols3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
+				}
+			}
+		},
 		"stories-simple": {
 			"spec": "block.storiessimple",
 			"organism": "blocks/stories-simple.svelte",
@@ -2403,20 +3679,42 @@
 			"defaultVariant": "cols3",
 			"variants": {
 				"cols3": {
+					"layout": "grid",
 					"cols": "3",
 					"surface": "plain"
 				},
 				"cols2": {
+					"layout": "grid",
 					"cols": "2",
 					"surface": "plain"
 				},
 				"cols4": {
+					"layout": "grid",
 					"cols": "4",
 					"surface": "plain"
 				},
 				"cards3": {
+					"layout": "grid",
 					"cols": "3",
 					"surface": "cards"
+				},
+				"portraitRow": {
+					"layout": "aside",
+					"cols": "3",
+					"surface": "plain",
+					"align": "start"
+				},
+				"bylineCols3": {
+					"layout": "byline",
+					"cols": "3",
+					"surface": "cards",
+					"align": "start"
+				},
+				"sideList": {
+					"layout": "list",
+					"cols": "2",
+					"surface": "plain",
+					"align": "start"
 				}
 			}
 		},
@@ -2443,9 +3741,117 @@
 					"cols": "3"
 				}
 			}
+		},
+		"topics-simple": {
+			"spec": "block.topicssimple",
+			"organism": "blocks/topics-simple.svelte",
+			"organismName": "TopicsSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"cards2": {
+					"layout": "cards",
+					"cols": "2"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3"
+				}
+			}
 		}
 	},
 	"assets": {
+		"block.articlelead/mediaTop": {
+			"item": "article-lead",
+			"variant": "mediaTop"
+		},
+		"block.articlelead/mediaStart": {
+			"item": "article-lead",
+			"variant": "mediaStart"
+		},
+		"block.articlelead/mediaEnd": {
+			"item": "article-lead",
+			"variant": "mediaEnd"
+		},
+		"block.articlesimple/column": {
+			"item": "article-simple",
+			"variant": "column"
+		},
+		"block.articlesimple/twoColumns": {
+			"item": "article-simple",
+			"variant": "twoColumns"
+		},
+		"block.chapterssimple/illustratedRows": {
+			"item": "chapters-simple",
+			"variant": "illustratedRows"
+		},
+		"block.chapterssimple/paired": {
+			"item": "chapters-simple",
+			"variant": "paired"
+		},
+		"block.choicelinks/row": {
+			"item": "choice-links",
+			"variant": "row"
+		},
+		"block.choicelinks/grid": {
+			"item": "choice-links",
+			"variant": "grid"
+		},
+		"block.collectionssimple/cards4": {
+			"item": "collections-simple",
+			"variant": "cards4"
+		},
+		"block.collectionssimple/cards2": {
+			"item": "collections-simple",
+			"variant": "cards2"
+		},
+		"block.comparesimple/twoProducts": {
+			"item": "compare-simple",
+			"variant": "twoProducts"
+		},
+		"block.comparesimple/narrow": {
+			"item": "compare-simple",
+			"variant": "narrow"
+		},
+		"block.contactssimple/cards3": {
+			"item": "contacts-simple",
+			"variant": "cards3"
+		},
+		"block.contactssimple/cards2": {
+			"item": "contacts-simple",
+			"variant": "cards2"
+		},
+		"block.contactssimple/rows": {
+			"item": "contacts-simple",
+			"variant": "rows"
+		},
+		"block.courseoutline/moduleRows": {
+			"item": "course-outline",
+			"variant": "moduleRows"
+		},
+		"block.courseoutline/cards": {
+			"item": "course-outline",
+			"variant": "cards"
+		},
+		"block.errorsimple/center": {
+			"item": "error-simple",
+			"variant": "center"
+		},
+		"block.errorsimple/start": {
+			"item": "error-simple",
+			"variant": "start"
+		},
+		"block.eventintro/center": {
+			"item": "event-intro",
+			"variant": "center"
+		},
+		"block.eventintro/start": {
+			"item": "event-intro",
+			"variant": "start"
+		},
 		"block.faqsimple/grid2": {
 			"item": "faq-simple",
 			"variant": "grid2"
@@ -2453,6 +3859,18 @@
 		"block.faqsimple/list": {
 			"item": "faq-simple",
 			"variant": "list"
+		},
+		"block.featureshowcasesimple/mediaEnd": {
+			"item": "feature-showcase-simple",
+			"variant": "mediaEnd"
+		},
+		"block.featureshowcasesimple/mediaStart": {
+			"item": "feature-showcase-simple",
+			"variant": "mediaStart"
+		},
+		"block.featureshowcasesimple/mediaTop": {
+			"item": "feature-showcase-simple",
+			"variant": "mediaTop"
 		},
 		"block.featuressimple/cols3": {
 			"item": "features-simple",
@@ -2482,6 +3900,30 @@
 			"item": "features-simple",
 			"variant": "checklist"
 		},
+		"block.figuresimple/wide": {
+			"item": "figure-simple",
+			"variant": "wide"
+		},
+		"block.figuresimple/captionEnd": {
+			"item": "figure-simple",
+			"variant": "captionEnd"
+		},
+		"block.figuresimple/captionStart": {
+			"item": "figure-simple",
+			"variant": "captionStart"
+		},
+		"block.footersimple/brandLinks": {
+			"item": "footer-simple",
+			"variant": "brandLinks"
+		},
+		"block.footersimple/linkGrid": {
+			"item": "footer-simple",
+			"variant": "linkGrid"
+		},
+		"block.footersimple/centered": {
+			"item": "footer-simple",
+			"variant": "centered"
+		},
 		"block.galleryhero/photos3": {
 			"item": "gallery-hero",
 			"variant": "photos3"
@@ -2505,6 +3947,18 @@
 		"block.galleryhero/photos4Bottom": {
 			"item": "gallery-hero",
 			"variant": "photos4Bottom"
+		},
+		"block.headersimple/inline": {
+			"item": "header-simple",
+			"variant": "inline"
+		},
+		"block.headersimple/linksEnd": {
+			"item": "header-simple",
+			"variant": "linksEnd"
+		},
+		"block.headersimple/centered": {
+			"item": "header-simple",
+			"variant": "centered"
 		},
 		"block.herosimple/mediaEnd": {
 			"item": "hero-simple",
@@ -2546,6 +4000,14 @@
 			"item": "intro-simple",
 			"variant": "bottomCenter"
 		},
+		"block.locationssimple/mediaStart": {
+			"item": "locations-simple",
+			"variant": "mediaStart"
+		},
+		"block.locationssimple/mediaEnd": {
+			"item": "locations-simple",
+			"variant": "mediaEnd"
+		},
 		"block.logossimple/row": {
 			"item": "logos-simple",
 			"variant": "row"
@@ -2553,6 +4015,14 @@
 		"block.logossimple/cards": {
 			"item": "logos-simple",
 			"variant": "cards"
+		},
+		"block.offerssimple/duo": {
+			"item": "offers-simple",
+			"variant": "duo"
+		},
+		"block.offerssimple/duoStart": {
+			"item": "offers-simple",
+			"variant": "duoStart"
 		},
 		"block.photossimple/row4": {
 			"item": "photos-simple",
@@ -2565,6 +4035,94 @@
 		"block.photossimple/diptych": {
 			"item": "photos-simple",
 			"variant": "diptych"
+		},
+		"block.pricingsimple/cards3": {
+			"item": "pricing-simple",
+			"variant": "cards3"
+		},
+		"block.pricingsimple/cards2": {
+			"item": "pricing-simple",
+			"variant": "cards2"
+		},
+		"block.pricingsimple/rows": {
+			"item": "pricing-simple",
+			"variant": "rows"
+		},
+		"block.productreviews/cards3": {
+			"item": "product-reviews",
+			"variant": "cards3"
+		},
+		"block.productreviews/rows": {
+			"item": "product-reviews",
+			"variant": "rows"
+		},
+		"block.productsimple/mediaStart": {
+			"item": "product-simple",
+			"variant": "mediaStart"
+		},
+		"block.productsimple/mediaEnd": {
+			"item": "product-simple",
+			"variant": "mediaEnd"
+		},
+		"block.productsimple/mediaTop": {
+			"item": "product-simple",
+			"variant": "mediaTop"
+		},
+		"block.productssimple/cards3": {
+			"item": "products-simple",
+			"variant": "cards3"
+		},
+		"block.productssimple/denseGrid": {
+			"item": "products-simple",
+			"variant": "denseGrid"
+		},
+		"block.productssimple/rows": {
+			"item": "products-simple",
+			"variant": "rows"
+		},
+		"block.profileintro/portraitEnd": {
+			"item": "profile-intro",
+			"variant": "portraitEnd"
+		},
+		"block.profileintro/portraitStart": {
+			"item": "profile-intro",
+			"variant": "portraitStart"
+		},
+		"block.profileintro/portraitTop": {
+			"item": "profile-intro",
+			"variant": "portraitTop"
+		},
+		"block.pullquotesimple/standalone": {
+			"item": "pull-quote-simple",
+			"variant": "standalone"
+		},
+		"block.pullquotesimple/centered": {
+			"item": "pull-quote-simple",
+			"variant": "centered"
+		},
+		"block.purchasesimple/panel": {
+			"item": "purchase-simple",
+			"variant": "panel"
+		},
+		"block.purchasesimple/centered": {
+			"item": "purchase-simple",
+			"variant": "centered"
+		},
+		"block.ratingsimple/inline": {
+			"item": "rating-simple",
+			"variant": "inline"
+		},
+		"block.ratingsimple/centered": {
+			"item": "rating-simple",
+			"variant": "centered"
+		},
+		"block.specssimple/keyValue": {
+			"item": "specs-simple",
+			"variant": "keyValue"
+		},
+		"block.specssimple/twoColumns": {
+			"item": "specs-simple",
+			"variant": "twoColumns"
 		},
 		"block.splitsimple/mediaEnd": {
 			"item": "split-simple",
@@ -2602,6 +4160,14 @@
 			"item": "steps-simple",
 			"variant": "column"
 		},
+		"block.storepolicies/cols3": {
+			"item": "store-policies",
+			"variant": "cols3"
+		},
+		"block.storepolicies/rows": {
+			"item": "store-policies",
+			"variant": "rows"
+		},
 		"block.storiessimple/cols3": {
 			"item": "stories-simple",
 			"variant": "cols3"
@@ -2630,6 +4196,18 @@
 			"item": "team-simple",
 			"variant": "cards3"
 		},
+		"block.teamsimple/portraitRow": {
+			"item": "team-simple",
+			"variant": "portraitRow"
+		},
+		"block.teamsimple/bylineCols3": {
+			"item": "team-simple",
+			"variant": "bylineCols3"
+		},
+		"block.teamsimple/sideList": {
+			"item": "team-simple",
+			"variant": "sideList"
+		},
 		"block.testimonialssimple/cols3": {
 			"item": "testimonials-simple",
 			"variant": "cols3"
@@ -2645,20 +4223,88 @@
 		"block.testimonialssimple/centered": {
 			"item": "testimonials-simple",
 			"variant": "centered"
+		},
+		"block.topicssimple/cards3": {
+			"item": "topics-simple",
+			"variant": "cards3"
+		},
+		"block.topicssimple/cards2": {
+			"item": "topics-simple",
+			"variant": "cards2"
+		},
+		"block.topicssimple/rows": {
+			"item": "topics-simple",
+			"variant": "rows"
 		}
 	},
 	"specs": {
+		"block.articlelead": {
+			"item": "article-lead",
+			"variant": "mediaTop"
+		},
+		"block.articlesimple": {
+			"item": "article-simple",
+			"variant": "column"
+		},
+		"block.chapterssimple": {
+			"item": "chapters-simple",
+			"variant": "illustratedRows"
+		},
+		"block.choicelinks": {
+			"item": "choice-links",
+			"variant": "row"
+		},
+		"block.collectionssimple": {
+			"item": "collections-simple",
+			"variant": "cards4"
+		},
+		"block.comparesimple": {
+			"item": "compare-simple",
+			"variant": "twoProducts"
+		},
+		"block.contactssimple": {
+			"item": "contacts-simple",
+			"variant": "cards3"
+		},
+		"block.courseoutline": {
+			"item": "course-outline",
+			"variant": "moduleRows"
+		},
+		"block.errorsimple": {
+			"item": "error-simple",
+			"variant": "center"
+		},
+		"block.eventintro": {
+			"item": "event-intro",
+			"variant": "center"
+		},
 		"block.faqsimple": {
 			"item": "faq-simple",
 			"variant": "grid2"
+		},
+		"block.featureshowcasesimple": {
+			"item": "feature-showcase-simple",
+			"variant": "mediaEnd"
 		},
 		"block.featuressimple": {
 			"item": "features-simple",
 			"variant": "cols3"
 		},
+		"block.figuresimple": {
+			"item": "figure-simple",
+			"variant": "wide"
+		},
+		"block.footersimple": {
+			"item": "footer-simple",
+			"variant": "brandLinks"
+		},
 		"block.galleryhero": {
 			"item": "gallery-hero",
 			"variant": "photos3"
+		},
+		"block.headersimple": {
+			"item": "header-simple",
+			"variant": "inline"
 		},
 		"block.herosimple": {
 			"item": "hero-simple",
@@ -2668,13 +4314,57 @@
 			"item": "intro-simple",
 			"variant": "center"
 		},
+		"block.locationssimple": {
+			"item": "locations-simple",
+			"variant": "mediaStart"
+		},
 		"block.logossimple": {
 			"item": "logos-simple",
 			"variant": "row"
 		},
+		"block.offerssimple": {
+			"item": "offers-simple",
+			"variant": "duo"
+		},
 		"block.photossimple": {
 			"item": "photos-simple",
 			"variant": "row4"
+		},
+		"block.pricingsimple": {
+			"item": "pricing-simple",
+			"variant": "cards3"
+		},
+		"block.productreviews": {
+			"item": "product-reviews",
+			"variant": "cards3"
+		},
+		"block.productsimple": {
+			"item": "product-simple",
+			"variant": "mediaStart"
+		},
+		"block.productssimple": {
+			"item": "products-simple",
+			"variant": "cards3"
+		},
+		"block.profileintro": {
+			"item": "profile-intro",
+			"variant": "portraitEnd"
+		},
+		"block.pullquotesimple": {
+			"item": "pull-quote-simple",
+			"variant": "standalone"
+		},
+		"block.purchasesimple": {
+			"item": "purchase-simple",
+			"variant": "panel"
+		},
+		"block.ratingsimple": {
+			"item": "rating-simple",
+			"variant": "inline"
+		},
+		"block.specssimple": {
+			"item": "specs-simple",
+			"variant": "keyValue"
 		},
 		"block.splitsimple": {
 			"item": "split-simple",
@@ -2688,6 +4378,10 @@
 			"item": "steps-simple",
 			"variant": "row4"
 		},
+		"block.storepolicies": {
+			"item": "store-policies",
+			"variant": "cols3"
+		},
 		"block.storiessimple": {
 			"item": "stories-simple",
 			"variant": "cols3"
@@ -2699,6 +4393,10 @@
 		"block.testimonialssimple": {
 			"item": "testimonials-simple",
 			"variant": "cols3"
+		},
+		"block.topicssimple": {
+			"item": "topics-simple",
+			"variant": "cards3"
 		}
 	}
 }

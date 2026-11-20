@@ -117,16 +117,16 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:9569068ae381464071786058b69ef637ecaf7f398dea2abbe746ac6f1974d404",
+	"lockDigest": "sha256:1f43154f1028df720a89225973b0617fa2592029568557e14f02b937e37987e9",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "c802d3fc0a1aed3d00bdb86dfc2fcaa1507bea82e204236cc6509ae9b74ad023",
-		"digest": "sha256:cb6d7cd5219746c156f881178a3213c5cd8761382580626633c13c06880646ef"
+		"sha256": "890385335d0f9240b6a1f2c4d3918412ba9baecd94aa246d0408ecdb299ed1e3",
+		"digest": "sha256:b76814541966e1c3e462fd3b15f165e6b6ae9fb7e1547f9e6b9a858c0f6f468e"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "520c0e4cb37ce269d24ba29dd5b6ca1d35beca22f351a6fc4db6d1e89699e8b0",
-		"digest": "sha256:1a27d06a6dcbf0a871a8b0cc006fb999758cf781c17ee27c9102b5fe4b8673f2"
+		"sha256": "fafe9e556be48ff9930f4b5abf8226317c6827df271a06e6db302e97fdd466e6",
+		"digest": "sha256:8d07269ba87ec6dcc150010f0708cde183b4e85c5ebe4a7b25c03b24ce4faf0c"
 	},
 	"initItems": [
 		"presets",
@@ -152,6 +152,68 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"files": [
 				"src/compose/Alert.svelte"
 			]
+		},
+		"article-lead": {
+			"type": "registry:block",
+			"title": "Article Lead",
+			"description": "The head of an article: the heading, the lead paragraph and the byline (the portrait, the author, the date) under a wide cover, or beside it.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"group",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/article-lead.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/article-lead/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "article-lead@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"article-simple": {
+			"type": "registry:block",
+			"title": "Article Simple",
+			"description": "The heading, one paragraph and the sections of a text (a subheading and its paragraph): one reading column, or two columns under a centred head.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/article-simple.svelte",
+				"src/blocks/article-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/article-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "article@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"badge": {
 			"type": "registry:ui",
@@ -322,6 +384,39 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/compose/CardTitle.svelte"
 			]
 		},
+		"chapters-simple": {
+			"type": "registry:block",
+			"title": "Chapters Simple",
+			"description": "The heading, one paragraph and the chapters (a picture, a label, the title, a paragraph): rows with the picture at the side, or a pair with the picture under the copy.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/chapters-simple.svelte",
+				"src/blocks/chapters-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/chapters-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "chapters@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"checkbox": {
 			"type": "registry:ui",
 			"title": "Checkbox",
@@ -335,6 +430,103 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"files": [
 				"src/compose/Checkbox.svelte"
 			]
+		},
+		"choice-links": {
+			"type": "registry:block",
+			"title": "Choice Links",
+			"description": "The heading, one paragraph and the options (sizes, versions) as outline links: a wrapping row, or a grid of four.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/choice-links.svelte",
+				"src/blocks/choice-links.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/choice-links/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "choices@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"collections-simple": {
+			"type": "registry:block",
+			"title": "Collections Simple",
+			"description": "The heading, one paragraph and the collections (a picture and the name as one link) in four or two columns.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/collections-simple.svelte",
+				"src/blocks/collections-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/collections-simple/1.json",
+				"group": "catalog",
+				"kind": "block",
+				"model": "collections@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"compare-simple": {
+			"type": "registry:block",
+			"title": "Compare Simple",
+			"description": "The heading, one paragraph and two options side by side: their names in a header row, then a row per feature with the value of each.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/compare-simple.svelte",
+				"src/blocks/compare-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/compare-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "compare@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"compose": {
 			"type": "registry:ui",
@@ -417,6 +609,39 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/compose/index.ts"
 			]
 		},
+		"contacts-simple": {
+			"type": "registry:block",
+			"title": "Contacts Simple",
+			"description": "The heading, one paragraph and the teams to reach on cards (an icon, the name, a line, an action): in three or two columns, or rows with the icon at the side.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/contacts-simple.svelte",
+				"src/blocks/contacts-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/contacts-simple/1.json",
+				"group": "contact",
+				"kind": "block",
+				"model": "contacts@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"container": {
 			"type": "registry:ui",
 			"title": "Container",
@@ -430,6 +655,38 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"files": [
 				"src/compose/Container.svelte"
 			]
+		},
+		"course-outline": {
+			"type": "registry:block",
+			"title": "Course Outline",
+			"description": "The heading, one paragraph and the modules in order (a label, the title, a line, the length): rows in a narrow column, or two columns of cards.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/course-outline.svelte",
+				"src/blocks/course-outline.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/course-outline/1.json",
+				"group": "how-it-works",
+				"kind": "block",
+				"model": "curriculum@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"dialog": {
 			"type": "registry:ui",
@@ -459,6 +716,67 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/compose/Disclosure.svelte"
 			]
 		},
+		"error-simple": {
+			"type": "registry:block",
+			"title": "Error Simple",
+			"description": "A page for something that went wrong: the code, the heading, one paragraph and one action back; centred or at the start.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/error-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/error-simple/1.json",
+				"group": "states",
+				"kind": "block",
+				"model": "error@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"event-intro": {
+			"type": "registry:block",
+			"title": "Event Intro",
+			"description": "The first screen of an event: a badge, the name as a large heading, one paragraph, the date and the place, and one action; centred or at the start.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/event-intro.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/event-intro/1.json",
+				"group": "hero",
+				"kind": "block",
+				"model": "event@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"faq-simple": {
 			"type": "registry:block",
 			"title": "Faq Simple",
@@ -484,6 +802,39 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"group": "faq",
 				"kind": "block",
 				"model": "faq@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"feature-showcase-simple": {
+			"type": "registry:block",
+			"title": "Feature Showcase Simple",
+			"description": "The heading, one paragraph and the key points as a list beside one picture (at the end or the start), or the head over a wide picture with the points in three columns under it.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/feature-showcase-simple.svelte",
+				"src/blocks/feature-showcase-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/feature-showcase-simple/1.json",
+				"group": "features",
+				"kind": "block",
+				"model": "feature-showcase@1",
 				"tags": [
 					"svelte",
 					"block"
@@ -550,6 +901,67 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"files": [
 				"src/compose/Fieldset.svelte"
 			]
+		},
+		"figure-simple": {
+			"type": "registry:block",
+			"title": "Figure Simple",
+			"description": "One large picture with its caption (a title, a line, the credit): wide with the caption under it, or the caption at the side.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"media-frame",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/figure-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/figure-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "figure@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"footer-simple": {
+			"type": "registry:block",
+			"title": "Footer Simple",
+			"description": "The brand and one line beside the links (a row or a grid of columns), or everything centred; the copyright line under them.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/footer-simple.svelte",
+				"src/blocks/footer-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/footer-simple/1.json",
+				"group": "navigation",
+				"kind": "block",
+				"model": "footer@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"form": {
 			"type": "registry:ui",
@@ -683,6 +1095,39 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"files": [
 				"src/compose/Group.svelte"
 			]
+		},
+		"header-simple": {
+			"type": "registry:block",
+			"title": "Header Simple",
+			"description": "The brand as the link home, the navigation links and one action in a bar: the links in the middle, at the end beside the action, or centred under the brand. No menu button: the links wrap on a narrow screen.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"group",
+				"link-button",
+				"link-plain",
+				"list",
+				"list-item",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/header-simple.svelte",
+				"src/blocks/header-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/header-simple/1.json",
+				"group": "navigation",
+				"kind": "block",
+				"model": "header@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"hero-simple": {
 			"type": "registry:block",
@@ -1169,6 +1614,39 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/compose/ListItem.svelte"
 			]
 		},
+		"locations-simple": {
+			"type": "registry:block",
+			"title": "Locations Simple",
+			"description": "The heading, one paragraph and the offices (the name, the address) in two columns beside one picture, at the start or the end.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/locations-simple.svelte",
+				"src/blocks/locations-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/locations-simple/1.json",
+				"group": "contact",
+				"kind": "block",
+				"model": "locations@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"logos-simple": {
 			"type": "registry:block",
 			"title": "Logos Simple",
@@ -1247,6 +1725,38 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/compose/Meter.svelte"
 			]
 		},
+		"offers-simple": {
+			"type": "registry:block",
+			"title": "Offers Simple",
+			"description": "The heading, one paragraph and two or three offers on cards, each with a title, a line and an action.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/offers-simple.svelte",
+				"src/blocks/offers-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/offers-simple/1.json",
+				"group": "cta",
+				"kind": "block",
+				"model": "offers@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"opt-group": {
 			"type": "registry:ui",
 			"title": "Opt Group",
@@ -1305,6 +1815,173 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/presets/defaults.ts"
 			]
 		},
+		"pricing-simple": {
+			"type": "registry:block",
+			"title": "Pricing Simple",
+			"description": "The heading, one paragraph and the plans on cards (the name, a badge on the highlighted plan, a line, the price, an action): in three or two columns, or one row each.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/pricing-simple.svelte",
+				"src/blocks/pricing-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/pricing-simple/1.json",
+				"group": "pricing",
+				"kind": "block",
+				"model": "pricing@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"product-reviews": {
+			"type": "registry:block",
+			"title": "Product Reviews",
+			"description": "The heading, one paragraph and the reviews on cards (the rating, the words, the reviewer with the portrait): in three or two columns, or one under the other.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"group",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/product-reviews.svelte",
+				"src/blocks/product-reviews.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/product-reviews/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "reviews@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"product-simple": {
+			"type": "registry:block",
+			"title": "Product Simple",
+			"description": "One product: the main picture and thumbnails beside the name, the price, one paragraph and the action; the pictures at the start, at the end or above.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/product-simple.svelte",
+				"src/blocks/product-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/product-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "product@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"products-simple": {
+			"type": "registry:block",
+			"title": "Products Simple",
+			"description": "The heading, one paragraph and the products (a picture, the name as a link, the price): in three or four columns, or rows with the picture at the side.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/products-simple.svelte",
+				"src/blocks/products-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/products-simple/1.json",
+				"group": "catalog",
+				"kind": "block",
+				"model": "products@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"profile-intro": {
+			"type": "registry:block",
+			"title": "Profile Intro",
+			"description": "A person: the name, the role, one paragraph and the links beside the portrait (at the end or the start), or under a round portrait.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/profile-intro.svelte",
+				"src/blocks/profile-intro.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/profile-intro/1.json",
+				"group": "hero",
+				"kind": "block",
+				"model": "profile@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"progress": {
 			"type": "registry:ui",
 			"title": "Progress",
@@ -1333,6 +2010,65 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/compose/Prose.svelte"
 			]
 		},
+		"pull-quote-simple": {
+			"type": "registry:block",
+			"title": "Pull Quote Simple",
+			"description": "The words of a quote in large type with the author, a role line and the source under them: a bar at the side, or centred.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-plain",
+				"stack",
+				"text",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/pull-quote-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/pull-quote-simple/1.json",
+				"group": "story",
+				"kind": "block",
+				"model": "pull-quote@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"purchase-simple": {
+			"type": "registry:block",
+			"title": "Purchase Simple",
+			"description": "On a card surface: the heading and one paragraph beside the price, the action and a note; or all centred.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-button",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/purchase-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/purchase-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "purchase@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"radio": {
 			"type": "registry:ui",
 			"title": "Radio",
@@ -1360,6 +2096,36 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"files": [
 				"src/compose/Range.svelte"
 			]
+		},
+		"rating-simple": {
+			"type": "registry:block",
+			"title": "Rating Simple",
+			"description": "The score, what it is and the source as a link: one bar on a card surface, or centred.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"link-plain",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/rating-simple.svelte"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/rating-simple/1.json",
+				"group": "proof",
+				"kind": "block",
+				"model": "rating@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"recipes": {
 			"type": "registry:lib",
@@ -1473,6 +2239,37 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/compose/Skeleton.svelte"
 			]
 		},
+		"specs-simple": {
+			"type": "registry:block",
+			"title": "Specs Simple",
+			"description": "The heading, one paragraph and the specifications as name and value rows on a muted surface, in one narrow column or two columns.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/specs-simple.svelte",
+				"src/blocks/specs-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/specs-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "specs@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"split-simple": {
 			"type": "registry:block",
 			"title": "Split Simple",
@@ -1576,6 +2373,38 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"group": "how-it-works",
 				"kind": "block",
 				"model": "steps@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
+		"store-policies": {
+			"type": "registry:block",
+			"title": "Store Policies",
+			"description": "The heading, one paragraph and the policies (payment, delivery, returns), each with an icon, a title and a line: on cards in columns, or rows.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/store-policies.svelte",
+				"src/blocks/store-policies.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/store-policies/1.json",
+				"group": "storefront",
+				"kind": "block",
+				"model": "store-policy@1",
 				"tags": [
 					"svelte",
 					"block"
@@ -1790,7 +2619,6 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"description": "The heading, one paragraph and the people as a list: a portrait, the name and the role, in two, three or four columns, plain or on cards.",
 			"registryDependencies": [
 				"block",
-				"card",
 				"container",
 				"list",
 				"list-item",
@@ -2110,6 +2938,39 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				"src/compose/Title.svelte"
 			]
 		},
+		"topics-simple": {
+			"type": "registry:block",
+			"title": "Topics Simple",
+			"description": "The heading, one paragraph and the rubrics of a blog on cards (a label, the title as a link, a line): in two or three columns, or one under the other.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/topics-simple.svelte",
+				"src/blocks/topics-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/topics-simple/1.json",
+				"group": "blog",
+				"kind": "block",
+				"model": "topics@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"utils": {
 			"type": "registry:utils",
 			"title": "Utils",
@@ -2241,6 +3102,154 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 		}
 	},
 	"blocks": {
+		"article-lead": {
+			"spec": "block.articlelead",
+			"organism": "blocks/article-lead.svelte",
+			"organismName": "ArticleLead",
+			"defaultVariant": "mediaTop",
+			"variants": {
+				"mediaTop": {
+					"media": "top"
+				},
+				"mediaStart": {
+					"media": "start"
+				},
+				"mediaEnd": {
+					"media": "end"
+				}
+			}
+		},
+		"article-simple": {
+			"spec": "block.articlesimple",
+			"organism": "blocks/article-simple.svelte",
+			"organismName": "ArticleSimple",
+			"defaultVariant": "column",
+			"variants": {
+				"column": {
+					"layout": "column",
+					"align": "start"
+				},
+				"twoColumns": {
+					"layout": "columns",
+					"align": "center"
+				}
+			}
+		},
+		"chapters-simple": {
+			"spec": "block.chapterssimple",
+			"organism": "blocks/chapters-simple.svelte",
+			"organismName": "ChaptersSimple",
+			"defaultVariant": "illustratedRows",
+			"variants": {
+				"illustratedRows": {
+					"layout": "rows"
+				},
+				"paired": {
+					"layout": "paired"
+				}
+			}
+		},
+		"choice-links": {
+			"spec": "block.choicelinks",
+			"organism": "blocks/choice-links.svelte",
+			"organismName": "ChoiceLinks",
+			"defaultVariant": "row",
+			"variants": {
+				"row": {
+					"layout": "row"
+				},
+				"grid": {
+					"layout": "grid"
+				}
+			}
+		},
+		"collections-simple": {
+			"spec": "block.collectionssimple",
+			"organism": "blocks/collections-simple.svelte",
+			"organismName": "CollectionsSimple",
+			"defaultVariant": "cards4",
+			"variants": {
+				"cards4": {
+					"cols": "4"
+				},
+				"cards2": {
+					"cols": "2"
+				}
+			}
+		},
+		"compare-simple": {
+			"spec": "block.comparesimple",
+			"organism": "blocks/compare-simple.svelte",
+			"organismName": "CompareSimple",
+			"defaultVariant": "twoProducts",
+			"variants": {
+				"twoProducts": {
+					"width": "wide"
+				},
+				"narrow": {
+					"width": "narrow"
+				}
+			}
+		},
+		"contacts-simple": {
+			"spec": "block.contactssimple",
+			"organism": "blocks/contacts-simple.svelte",
+			"organismName": "ContactsSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"cards2": {
+					"layout": "cards",
+					"cols": "2"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
+				}
+			}
+		},
+		"course-outline": {
+			"spec": "block.courseoutline",
+			"organism": "blocks/course-outline.svelte",
+			"organismName": "CourseOutline",
+			"defaultVariant": "moduleRows",
+			"variants": {
+				"moduleRows": {
+					"layout": "rows"
+				},
+				"cards": {
+					"layout": "cards"
+				}
+			}
+		},
+		"error-simple": {
+			"spec": "block.errorsimple",
+			"organism": "blocks/error-simple.svelte",
+			"organismName": "ErrorSimple",
+			"defaultVariant": "center",
+			"variants": {
+				"center": {},
+				"start": {
+					"align": "start"
+				}
+			}
+		},
+		"event-intro": {
+			"spec": "block.eventintro",
+			"organism": "blocks/event-intro.svelte",
+			"organismName": "EventIntro",
+			"defaultVariant": "center",
+			"variants": {
+				"center": {},
+				"start": {
+					"align": "start"
+				}
+			}
+		},
 		"faq-simple": {
 			"spec": "block.faqsimple",
 			"organism": "blocks/faq-simple.svelte",
@@ -2252,6 +3261,24 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				},
 				"list": {
 					"columns": "one"
+				}
+			}
+		},
+		"feature-showcase-simple": {
+			"spec": "block.featureshowcasesimple",
+			"organism": "blocks/feature-showcase-simple.svelte",
+			"organismName": "FeatureShowcaseSimple",
+			"defaultVariant": "mediaEnd",
+			"variants": {
+				"mediaEnd": {
+					"media": "end"
+				},
+				"mediaStart": {
+					"media": "start"
+				},
+				"mediaTop": {
+					"media": "top",
+					"align": "center"
 				}
 			}
 		},
@@ -2301,6 +3328,40 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				}
 			}
 		},
+		"figure-simple": {
+			"spec": "block.figuresimple",
+			"organism": "blocks/figure-simple.svelte",
+			"organismName": "FigureSimple",
+			"defaultVariant": "wide",
+			"variants": {
+				"wide": {
+					"layout": "wide"
+				},
+				"captionEnd": {
+					"layout": "end"
+				},
+				"captionStart": {
+					"layout": "start"
+				}
+			}
+		},
+		"footer-simple": {
+			"spec": "block.footersimple",
+			"organism": "blocks/footer-simple.svelte",
+			"organismName": "FooterSimple",
+			"defaultVariant": "brandLinks",
+			"variants": {
+				"brandLinks": {
+					"layout": "row"
+				},
+				"linkGrid": {
+					"layout": "grid"
+				},
+				"centered": {
+					"layout": "centered"
+				}
+			}
+		},
 		"gallery-hero": {
 			"spec": "block.galleryhero",
 			"organism": "blocks/gallery-hero.svelte",
@@ -2341,6 +3402,23 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 					"photos": {
 						"$": "galleryPhotos4"
 					}
+				}
+			}
+		},
+		"header-simple": {
+			"spec": "block.headersimple",
+			"organism": "blocks/header-simple.svelte",
+			"organismName": "HeaderSimple",
+			"defaultVariant": "inline",
+			"variants": {
+				"inline": {
+					"layout": "inline"
+				},
+				"linksEnd": {
+					"layout": "end"
+				},
+				"centered": {
+					"layout": "centered"
 				}
 			}
 		},
@@ -2400,6 +3478,20 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				}
 			}
 		},
+		"locations-simple": {
+			"spec": "block.locationssimple",
+			"organism": "blocks/locations-simple.svelte",
+			"organismName": "LocationsSimple",
+			"defaultVariant": "mediaStart",
+			"variants": {
+				"mediaStart": {
+					"media": "start"
+				},
+				"mediaEnd": {
+					"media": "end"
+				}
+			}
+		},
 		"logos-simple": {
 			"spec": "block.logossimple",
 			"organism": "blocks/logos-simple.svelte",
@@ -2411,6 +3503,21 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				},
 				"cards": {
 					"surface": "cards"
+				}
+			}
+		},
+		"offers-simple": {
+			"spec": "block.offerssimple",
+			"organism": "blocks/offers-simple.svelte",
+			"organismName": "OffersSimple",
+			"defaultVariant": "duo",
+			"variants": {
+				"duo": {
+					"cols": "2"
+				},
+				"duoStart": {
+					"cols": "2",
+					"align": "start"
 				}
 			}
 		},
@@ -2428,6 +3535,158 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				},
 				"diptych": {
 					"cols": "2"
+				}
+			}
+		},
+		"pricing-simple": {
+			"spec": "block.pricingsimple",
+			"organism": "blocks/pricing-simple.svelte",
+			"organismName": "PricingSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"cards2": {
+					"layout": "cards",
+					"cols": "2",
+					"plans": {
+						"$": "pricingPlans2"
+					}
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
+				}
+			}
+		},
+		"product-reviews": {
+			"spec": "block.productreviews",
+			"organism": "blocks/product-reviews.svelte",
+			"organismName": "ProductReviews",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3"
+				}
+			}
+		},
+		"product-simple": {
+			"spec": "block.productsimple",
+			"organism": "blocks/product-simple.svelte",
+			"organismName": "ProductSimple",
+			"defaultVariant": "mediaStart",
+			"variants": {
+				"mediaStart": {
+					"media": "start"
+				},
+				"mediaEnd": {
+					"media": "end"
+				},
+				"mediaTop": {
+					"media": "top"
+				}
+			}
+		},
+		"products-simple": {
+			"spec": "block.productssimple",
+			"organism": "blocks/products-simple.svelte",
+			"organismName": "ProductsSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "grid",
+					"cols": "3"
+				},
+				"denseGrid": {
+					"layout": "grid",
+					"cols": "4"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
+				}
+			}
+		},
+		"profile-intro": {
+			"spec": "block.profileintro",
+			"organism": "blocks/profile-intro.svelte",
+			"organismName": "ProfileIntro",
+			"defaultVariant": "portraitEnd",
+			"variants": {
+				"portraitEnd": {
+					"media": "end"
+				},
+				"portraitStart": {
+					"media": "start"
+				},
+				"portraitTop": {
+					"media": "top",
+					"align": "center"
+				}
+			}
+		},
+		"pull-quote-simple": {
+			"spec": "block.pullquotesimple",
+			"organism": "blocks/pull-quote-simple.svelte",
+			"organismName": "PullQuoteSimple",
+			"defaultVariant": "standalone",
+			"variants": {
+				"standalone": {
+					"layout": "rule"
+				},
+				"centered": {
+					"layout": "centered"
+				}
+			}
+		},
+		"purchase-simple": {
+			"spec": "block.purchasesimple",
+			"organism": "blocks/purchase-simple.svelte",
+			"organismName": "PurchaseSimple",
+			"defaultVariant": "panel",
+			"variants": {
+				"panel": {
+					"layout": "panel"
+				},
+				"centered": {
+					"layout": "centered"
+				}
+			}
+		},
+		"rating-simple": {
+			"spec": "block.ratingsimple",
+			"organism": "blocks/rating-simple.svelte",
+			"organismName": "RatingSimple",
+			"defaultVariant": "inline",
+			"variants": {
+				"inline": {
+					"layout": "bar"
+				},
+				"centered": {
+					"layout": "centered"
+				}
+			}
+		},
+		"specs-simple": {
+			"spec": "block.specssimple",
+			"organism": "blocks/specs-simple.svelte",
+			"organismName": "SpecsSimple",
+			"defaultVariant": "keyValue",
+			"variants": {
+				"keyValue": {
+					"layout": "rows"
+				},
+				"twoColumns": {
+					"layout": "columns"
 				}
 			}
 		},
@@ -2490,6 +3749,23 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 				}
 			}
 		},
+		"store-policies": {
+			"spec": "block.storepolicies",
+			"organism": "blocks/store-policies.svelte",
+			"organismName": "StorePolicies",
+			"defaultVariant": "cols3",
+			"variants": {
+				"cols3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
+				}
+			}
+		},
 		"stories-simple": {
 			"spec": "block.storiessimple",
 			"organism": "blocks/stories-simple.svelte",
@@ -2517,20 +3793,42 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"defaultVariant": "cols3",
 			"variants": {
 				"cols3": {
+					"layout": "grid",
 					"cols": "3",
 					"surface": "plain"
 				},
 				"cols2": {
+					"layout": "grid",
 					"cols": "2",
 					"surface": "plain"
 				},
 				"cols4": {
+					"layout": "grid",
 					"cols": "4",
 					"surface": "plain"
 				},
 				"cards3": {
+					"layout": "grid",
 					"cols": "3",
 					"surface": "cards"
+				},
+				"portraitRow": {
+					"layout": "aside",
+					"cols": "3",
+					"surface": "plain",
+					"align": "start"
+				},
+				"bylineCols3": {
+					"layout": "byline",
+					"cols": "3",
+					"surface": "cards",
+					"align": "start"
+				},
+				"sideList": {
+					"layout": "list",
+					"cols": "2",
+					"surface": "plain",
+					"align": "start"
 				}
 			}
 		},
@@ -2557,9 +3855,117 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 					"cols": "3"
 				}
 			}
+		},
+		"topics-simple": {
+			"spec": "block.topicssimple",
+			"organism": "blocks/topics-simple.svelte",
+			"organismName": "TopicsSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"cards2": {
+					"layout": "cards",
+					"cols": "2"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3"
+				}
+			}
 		}
 	},
 	"assets": {
+		"block.articlelead/mediaTop": {
+			"item": "article-lead",
+			"variant": "mediaTop"
+		},
+		"block.articlelead/mediaStart": {
+			"item": "article-lead",
+			"variant": "mediaStart"
+		},
+		"block.articlelead/mediaEnd": {
+			"item": "article-lead",
+			"variant": "mediaEnd"
+		},
+		"block.articlesimple/column": {
+			"item": "article-simple",
+			"variant": "column"
+		},
+		"block.articlesimple/twoColumns": {
+			"item": "article-simple",
+			"variant": "twoColumns"
+		},
+		"block.chapterssimple/illustratedRows": {
+			"item": "chapters-simple",
+			"variant": "illustratedRows"
+		},
+		"block.chapterssimple/paired": {
+			"item": "chapters-simple",
+			"variant": "paired"
+		},
+		"block.choicelinks/row": {
+			"item": "choice-links",
+			"variant": "row"
+		},
+		"block.choicelinks/grid": {
+			"item": "choice-links",
+			"variant": "grid"
+		},
+		"block.collectionssimple/cards4": {
+			"item": "collections-simple",
+			"variant": "cards4"
+		},
+		"block.collectionssimple/cards2": {
+			"item": "collections-simple",
+			"variant": "cards2"
+		},
+		"block.comparesimple/twoProducts": {
+			"item": "compare-simple",
+			"variant": "twoProducts"
+		},
+		"block.comparesimple/narrow": {
+			"item": "compare-simple",
+			"variant": "narrow"
+		},
+		"block.contactssimple/cards3": {
+			"item": "contacts-simple",
+			"variant": "cards3"
+		},
+		"block.contactssimple/cards2": {
+			"item": "contacts-simple",
+			"variant": "cards2"
+		},
+		"block.contactssimple/rows": {
+			"item": "contacts-simple",
+			"variant": "rows"
+		},
+		"block.courseoutline/moduleRows": {
+			"item": "course-outline",
+			"variant": "moduleRows"
+		},
+		"block.courseoutline/cards": {
+			"item": "course-outline",
+			"variant": "cards"
+		},
+		"block.errorsimple/center": {
+			"item": "error-simple",
+			"variant": "center"
+		},
+		"block.errorsimple/start": {
+			"item": "error-simple",
+			"variant": "start"
+		},
+		"block.eventintro/center": {
+			"item": "event-intro",
+			"variant": "center"
+		},
+		"block.eventintro/start": {
+			"item": "event-intro",
+			"variant": "start"
+		},
 		"block.faqsimple/grid2": {
 			"item": "faq-simple",
 			"variant": "grid2"
@@ -2567,6 +3973,18 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 		"block.faqsimple/list": {
 			"item": "faq-simple",
 			"variant": "list"
+		},
+		"block.featureshowcasesimple/mediaEnd": {
+			"item": "feature-showcase-simple",
+			"variant": "mediaEnd"
+		},
+		"block.featureshowcasesimple/mediaStart": {
+			"item": "feature-showcase-simple",
+			"variant": "mediaStart"
+		},
+		"block.featureshowcasesimple/mediaTop": {
+			"item": "feature-showcase-simple",
+			"variant": "mediaTop"
 		},
 		"block.featuressimple/cols3": {
 			"item": "features-simple",
@@ -2596,6 +4014,30 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"item": "features-simple",
 			"variant": "checklist"
 		},
+		"block.figuresimple/wide": {
+			"item": "figure-simple",
+			"variant": "wide"
+		},
+		"block.figuresimple/captionEnd": {
+			"item": "figure-simple",
+			"variant": "captionEnd"
+		},
+		"block.figuresimple/captionStart": {
+			"item": "figure-simple",
+			"variant": "captionStart"
+		},
+		"block.footersimple/brandLinks": {
+			"item": "footer-simple",
+			"variant": "brandLinks"
+		},
+		"block.footersimple/linkGrid": {
+			"item": "footer-simple",
+			"variant": "linkGrid"
+		},
+		"block.footersimple/centered": {
+			"item": "footer-simple",
+			"variant": "centered"
+		},
 		"block.galleryhero/photos3": {
 			"item": "gallery-hero",
 			"variant": "photos3"
@@ -2619,6 +4061,18 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 		"block.galleryhero/photos4Bottom": {
 			"item": "gallery-hero",
 			"variant": "photos4Bottom"
+		},
+		"block.headersimple/inline": {
+			"item": "header-simple",
+			"variant": "inline"
+		},
+		"block.headersimple/linksEnd": {
+			"item": "header-simple",
+			"variant": "linksEnd"
+		},
+		"block.headersimple/centered": {
+			"item": "header-simple",
+			"variant": "centered"
 		},
 		"block.herosimple/mediaEnd": {
 			"item": "hero-simple",
@@ -2660,6 +4114,14 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"item": "intro-simple",
 			"variant": "bottomCenter"
 		},
+		"block.locationssimple/mediaStart": {
+			"item": "locations-simple",
+			"variant": "mediaStart"
+		},
+		"block.locationssimple/mediaEnd": {
+			"item": "locations-simple",
+			"variant": "mediaEnd"
+		},
 		"block.logossimple/row": {
 			"item": "logos-simple",
 			"variant": "row"
@@ -2667,6 +4129,14 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 		"block.logossimple/cards": {
 			"item": "logos-simple",
 			"variant": "cards"
+		},
+		"block.offerssimple/duo": {
+			"item": "offers-simple",
+			"variant": "duo"
+		},
+		"block.offerssimple/duoStart": {
+			"item": "offers-simple",
+			"variant": "duoStart"
 		},
 		"block.photossimple/row4": {
 			"item": "photos-simple",
@@ -2679,6 +4149,94 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 		"block.photossimple/diptych": {
 			"item": "photos-simple",
 			"variant": "diptych"
+		},
+		"block.pricingsimple/cards3": {
+			"item": "pricing-simple",
+			"variant": "cards3"
+		},
+		"block.pricingsimple/cards2": {
+			"item": "pricing-simple",
+			"variant": "cards2"
+		},
+		"block.pricingsimple/rows": {
+			"item": "pricing-simple",
+			"variant": "rows"
+		},
+		"block.productreviews/cards3": {
+			"item": "product-reviews",
+			"variant": "cards3"
+		},
+		"block.productreviews/rows": {
+			"item": "product-reviews",
+			"variant": "rows"
+		},
+		"block.productsimple/mediaStart": {
+			"item": "product-simple",
+			"variant": "mediaStart"
+		},
+		"block.productsimple/mediaEnd": {
+			"item": "product-simple",
+			"variant": "mediaEnd"
+		},
+		"block.productsimple/mediaTop": {
+			"item": "product-simple",
+			"variant": "mediaTop"
+		},
+		"block.productssimple/cards3": {
+			"item": "products-simple",
+			"variant": "cards3"
+		},
+		"block.productssimple/denseGrid": {
+			"item": "products-simple",
+			"variant": "denseGrid"
+		},
+		"block.productssimple/rows": {
+			"item": "products-simple",
+			"variant": "rows"
+		},
+		"block.profileintro/portraitEnd": {
+			"item": "profile-intro",
+			"variant": "portraitEnd"
+		},
+		"block.profileintro/portraitStart": {
+			"item": "profile-intro",
+			"variant": "portraitStart"
+		},
+		"block.profileintro/portraitTop": {
+			"item": "profile-intro",
+			"variant": "portraitTop"
+		},
+		"block.pullquotesimple/standalone": {
+			"item": "pull-quote-simple",
+			"variant": "standalone"
+		},
+		"block.pullquotesimple/centered": {
+			"item": "pull-quote-simple",
+			"variant": "centered"
+		},
+		"block.purchasesimple/panel": {
+			"item": "purchase-simple",
+			"variant": "panel"
+		},
+		"block.purchasesimple/centered": {
+			"item": "purchase-simple",
+			"variant": "centered"
+		},
+		"block.ratingsimple/inline": {
+			"item": "rating-simple",
+			"variant": "inline"
+		},
+		"block.ratingsimple/centered": {
+			"item": "rating-simple",
+			"variant": "centered"
+		},
+		"block.specssimple/keyValue": {
+			"item": "specs-simple",
+			"variant": "keyValue"
+		},
+		"block.specssimple/twoColumns": {
+			"item": "specs-simple",
+			"variant": "twoColumns"
 		},
 		"block.splitsimple/mediaEnd": {
 			"item": "split-simple",
@@ -2716,6 +4274,14 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"item": "steps-simple",
 			"variant": "column"
 		},
+		"block.storepolicies/cols3": {
+			"item": "store-policies",
+			"variant": "cols3"
+		},
+		"block.storepolicies/rows": {
+			"item": "store-policies",
+			"variant": "rows"
+		},
 		"block.storiessimple/cols3": {
 			"item": "stories-simple",
 			"variant": "cols3"
@@ -2744,6 +4310,18 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"item": "team-simple",
 			"variant": "cards3"
 		},
+		"block.teamsimple/portraitRow": {
+			"item": "team-simple",
+			"variant": "portraitRow"
+		},
+		"block.teamsimple/bylineCols3": {
+			"item": "team-simple",
+			"variant": "bylineCols3"
+		},
+		"block.teamsimple/sideList": {
+			"item": "team-simple",
+			"variant": "sideList"
+		},
 		"block.testimonialssimple/cols3": {
 			"item": "testimonials-simple",
 			"variant": "cols3"
@@ -2759,20 +4337,88 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 		"block.testimonialssimple/centered": {
 			"item": "testimonials-simple",
 			"variant": "centered"
+		},
+		"block.topicssimple/cards3": {
+			"item": "topics-simple",
+			"variant": "cards3"
+		},
+		"block.topicssimple/cards2": {
+			"item": "topics-simple",
+			"variant": "cards2"
+		},
+		"block.topicssimple/rows": {
+			"item": "topics-simple",
+			"variant": "rows"
 		}
 	},
 	"specs": {
+		"block.articlelead": {
+			"item": "article-lead",
+			"variant": "mediaTop"
+		},
+		"block.articlesimple": {
+			"item": "article-simple",
+			"variant": "column"
+		},
+		"block.chapterssimple": {
+			"item": "chapters-simple",
+			"variant": "illustratedRows"
+		},
+		"block.choicelinks": {
+			"item": "choice-links",
+			"variant": "row"
+		},
+		"block.collectionssimple": {
+			"item": "collections-simple",
+			"variant": "cards4"
+		},
+		"block.comparesimple": {
+			"item": "compare-simple",
+			"variant": "twoProducts"
+		},
+		"block.contactssimple": {
+			"item": "contacts-simple",
+			"variant": "cards3"
+		},
+		"block.courseoutline": {
+			"item": "course-outline",
+			"variant": "moduleRows"
+		},
+		"block.errorsimple": {
+			"item": "error-simple",
+			"variant": "center"
+		},
+		"block.eventintro": {
+			"item": "event-intro",
+			"variant": "center"
+		},
 		"block.faqsimple": {
 			"item": "faq-simple",
 			"variant": "grid2"
+		},
+		"block.featureshowcasesimple": {
+			"item": "feature-showcase-simple",
+			"variant": "mediaEnd"
 		},
 		"block.featuressimple": {
 			"item": "features-simple",
 			"variant": "cols3"
 		},
+		"block.figuresimple": {
+			"item": "figure-simple",
+			"variant": "wide"
+		},
+		"block.footersimple": {
+			"item": "footer-simple",
+			"variant": "brandLinks"
+		},
 		"block.galleryhero": {
 			"item": "gallery-hero",
 			"variant": "photos3"
+		},
+		"block.headersimple": {
+			"item": "header-simple",
+			"variant": "inline"
 		},
 		"block.herosimple": {
 			"item": "hero-simple",
@@ -2782,13 +4428,57 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"item": "intro-simple",
 			"variant": "center"
 		},
+		"block.locationssimple": {
+			"item": "locations-simple",
+			"variant": "mediaStart"
+		},
 		"block.logossimple": {
 			"item": "logos-simple",
 			"variant": "row"
 		},
+		"block.offerssimple": {
+			"item": "offers-simple",
+			"variant": "duo"
+		},
 		"block.photossimple": {
 			"item": "photos-simple",
 			"variant": "row4"
+		},
+		"block.pricingsimple": {
+			"item": "pricing-simple",
+			"variant": "cards3"
+		},
+		"block.productreviews": {
+			"item": "product-reviews",
+			"variant": "cards3"
+		},
+		"block.productsimple": {
+			"item": "product-simple",
+			"variant": "mediaStart"
+		},
+		"block.productssimple": {
+			"item": "products-simple",
+			"variant": "cards3"
+		},
+		"block.profileintro": {
+			"item": "profile-intro",
+			"variant": "portraitEnd"
+		},
+		"block.pullquotesimple": {
+			"item": "pull-quote-simple",
+			"variant": "standalone"
+		},
+		"block.purchasesimple": {
+			"item": "purchase-simple",
+			"variant": "panel"
+		},
+		"block.ratingsimple": {
+			"item": "rating-simple",
+			"variant": "inline"
+		},
+		"block.specssimple": {
+			"item": "specs-simple",
+			"variant": "keyValue"
 		},
 		"block.splitsimple": {
 			"item": "split-simple",
@@ -2802,6 +4492,10 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 			"item": "steps-simple",
 			"variant": "row4"
 		},
+		"block.storepolicies": {
+			"item": "store-policies",
+			"variant": "cols3"
+		},
 		"block.storiessimple": {
 			"item": "stories-simple",
 			"variant": "cols3"
@@ -2813,6 +4507,10 @@ __def("packages/builder-core/src/catalog/sources.json", function (exports) {
 		"block.testimonialssimple": {
 			"item": "testimonials-simple",
 			"variant": "cols3"
+		},
+		"block.topicssimple": {
+			"item": "topics-simple",
+			"variant": "cards3"
 		}
 	}
 };
@@ -2852,13 +4550,13 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 	"registry": "https://registry.buildy.tw/svelte",
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "87bacb00c2ad5cf57f9be6733f702dfa37513903",
+		"commit": "95e3b1dd46283c892647febe4215954a527b5cb8",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "0ce27d6c4cb74734c0582346060c6202b2ada587d488fb4cf9c7b8ef2a91b416"
+			"sha256": "5f758a09de5e184897baedfe297328fdb76477386cdd115c2823763bd3879dca"
 		}
 	},
-	"digest": "sha256:6d2a84ad40c38b353a6980829cfb5f23e7150f715e29bc023342f2dca0ee7d28",
+	"digest": "sha256:0758c35de441d8739a9224eb5f46c947b7b537d788d722ee3be97c979b3f2164",
 	"blocks": [
 		{
 			"item": "hero-simple",
@@ -4476,6 +6174,12 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 				"model": "team@1",
 				"modelSchema": "https://registry.buildy.tw/models/team@1.schema.json",
 				"axes": {
+					"layout": [
+						"grid",
+						"aside",
+						"byline",
+						"list"
+					],
 					"cols": [
 						"2",
 						"3",
@@ -4487,6 +6191,7 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 					]
 				},
 				"defaults": {
+					"layout": "grid",
 					"cols": "3",
 					"surface": "plain"
 				},
@@ -4495,6 +6200,7 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 						"id": "cols3",
 						"label": "Three columns",
 						"axes": {
+							"layout": "grid",
 							"cols": "3",
 							"surface": "plain"
 						}
@@ -4503,6 +6209,7 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 						"id": "cols2",
 						"label": "Two columns",
 						"axes": {
+							"layout": "grid",
 							"cols": "2",
 							"surface": "plain"
 						}
@@ -4511,6 +6218,7 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 						"id": "cols4",
 						"label": "Four columns",
 						"axes": {
+							"layout": "grid",
 							"cols": "4",
 							"surface": "plain"
 						}
@@ -4519,8 +6227,45 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 						"id": "cards3",
 						"label": "Three columns on cards",
 						"axes": {
+							"layout": "grid",
 							"cols": "3",
 							"surface": "cards"
+						}
+					},
+					{
+						"id": "portraitRow",
+						"label": "The heading beside large portraits",
+						"axes": {
+							"layout": "aside",
+							"cols": "3",
+							"surface": "plain"
+						},
+						"settings": {
+							"align": "start"
+						}
+					},
+					{
+						"id": "bylineCols3",
+						"label": "Small portraits beside the names, on cards",
+						"axes": {
+							"layout": "byline",
+							"cols": "3",
+							"surface": "cards"
+						},
+						"settings": {
+							"align": "start"
+						}
+					},
+					{
+						"id": "sideList",
+						"label": "A compact list in two columns",
+						"axes": {
+							"layout": "list",
+							"cols": "2",
+							"surface": "plain"
+						},
+						"settings": {
+							"align": "start"
 						}
 					}
 				],
@@ -5363,6 +7108,4787 @@ __def("packages/builder-core/src/catalog/blocks.json", function (exports) {
 					}
 				}
 			}
+		},
+		{
+			"item": "feature-showcase-simple",
+			"title": "Feature Showcase Simple",
+			"description": "The heading, one paragraph and the key points as a list beside one picture (at the end or the start), or the head over a wide picture with the points in three columns under it.",
+			"category": "features",
+			"prototype": "feature-showcase-simple.svelte",
+			"contract": {
+				"item": "feature-showcase-simple",
+				"version": 1,
+				"block": "block.featureshowcasesimple",
+				"organism": "FeatureShowcaseSimple",
+				"line": "simple",
+				"model": "feature-showcase@1",
+				"modelSchema": "https://registry.buildy.tw/models/feature-showcase@1.schema.json",
+				"axes": {
+					"media": [
+						"end",
+						"start",
+						"top"
+					]
+				},
+				"defaults": {
+					"media": "end"
+				},
+				"variants": [
+					{
+						"id": "mediaEnd",
+						"label": "Picture at the end",
+						"axes": {
+							"media": "end"
+						}
+					},
+					{
+						"id": "mediaStart",
+						"label": "Picture at the start",
+						"axes": {
+							"media": "start"
+						}
+					},
+					{
+						"id": "mediaTop",
+						"label": "Picture above the points",
+						"axes": {
+							"media": "top"
+						},
+						"settings": {
+							"align": "center"
+						}
+					}
+				],
+				"defaultVariant": "mediaEnd",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					},
+					{
+						"place": "media",
+						"kind": "media",
+						"fields": [
+							"/image",
+							"/imageAlt"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/feature-showcase@1.schema.json",
+				"title": "FeatureShowcaseContent",
+				"description": "Feature showcase content: the heading, a description, one picture and an ordered list of two to six key points, each with a title and a line. One object is valid in every showcase layout (the picture at the end, at the start, above the points).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"imageAlt",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"image": {
+						"description": "address of the picture; none: the placeholder",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"imageAlt": {
+						"description": "alt text of the picture",
+						"type": "string",
+						"maxLength": 160,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"items": {
+						"description": "the key points, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 6,
+						"items": {
+							"title": "ShowcaseItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the title of the point",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one line about the point; empty: none",
+									"type": "string",
+									"maxLength": 240
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "header-simple",
+			"title": "Header Simple",
+			"description": "The brand as the link home, the navigation links and one action in a bar: the links in the middle, at the end beside the action, or centred under the brand. No menu button: the links wrap on a narrow screen.",
+			"category": "navigation",
+			"prototype": "header-simple.svelte",
+			"contract": {
+				"item": "header-simple",
+				"version": 1,
+				"block": "block.headersimple",
+				"organism": "HeaderSimple",
+				"line": "simple",
+				"model": "header@1",
+				"modelSchema": "https://registry.buildy.tw/models/header@1.schema.json",
+				"axes": {
+					"layout": [
+						"inline",
+						"end",
+						"centered"
+					]
+				},
+				"defaults": {
+					"layout": "inline"
+				},
+				"variants": [
+					{
+						"id": "inline",
+						"label": "Links in the middle",
+						"axes": {
+							"layout": "inline"
+						}
+					},
+					{
+						"id": "linksEnd",
+						"label": "Links at the end",
+						"axes": {
+							"layout": "end"
+						}
+					},
+					{
+						"id": "centered",
+						"label": "Centred under the brand",
+						"axes": {
+							"layout": "centered"
+						}
+					}
+				],
+				"defaultVariant": "inline",
+				"settings": {
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "brand",
+						"kind": "text",
+						"fields": [
+							"/brand",
+							"/brandHref"
+						]
+					},
+					{
+						"place": "links.label",
+						"kind": "text",
+						"fields": [
+							"/links/*/label",
+							"/links/*/href"
+						],
+						"list": "links"
+					},
+					{
+						"place": "action",
+						"kind": "action",
+						"fields": [
+							"/actionLabel",
+							"/actionHref"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/header@1.schema.json",
+				"title": "HeaderContent",
+				"description": "Header content: the brand (a link home), an ordered list of navigation links and one action. One object is valid in every header layout (inline, the links at the end, centred).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"brand",
+					"brandHref",
+					"links"
+				],
+				"properties": {
+					"brand": {
+						"description": "the name of the site (the link home)",
+						"type": "string",
+						"maxLength": 40,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"brandHref": {
+						"description": "the address of the home page",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"links": {
+						"description": "the navigation links, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 6,
+						"items": {
+							"title": "HeaderLink",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"label",
+								"href"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"label": {
+									"description": "the text of the link",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"href": {
+									"description": "the address of the link",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					}
+				}
+			}
+		},
+		{
+			"item": "footer-simple",
+			"title": "Footer Simple",
+			"description": "The brand and one line beside the links (a row or a grid of columns), or everything centred; the copyright line under them.",
+			"category": "navigation",
+			"prototype": "footer-simple.svelte",
+			"contract": {
+				"item": "footer-simple",
+				"version": 1,
+				"block": "block.footersimple",
+				"organism": "FooterSimple",
+				"line": "simple",
+				"model": "footer@1",
+				"modelSchema": "https://registry.buildy.tw/models/footer@1.schema.json",
+				"axes": {
+					"layout": [
+						"row",
+						"grid",
+						"centered"
+					]
+				},
+				"defaults": {
+					"layout": "row"
+				},
+				"variants": [
+					{
+						"id": "brandLinks",
+						"label": "The brand beside a row of links",
+						"axes": {
+							"layout": "row"
+						}
+					},
+					{
+						"id": "linkGrid",
+						"label": "Links in columns",
+						"axes": {
+							"layout": "grid"
+						}
+					},
+					{
+						"id": "centered",
+						"label": "Centred",
+						"axes": {
+							"layout": "centered"
+						}
+					}
+				],
+				"defaultVariant": "brandLinks",
+				"settings": {
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "compact"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "brand",
+						"kind": "text",
+						"fields": [
+							"/brand"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "links.label",
+						"kind": "text",
+						"fields": [
+							"/links/*/label",
+							"/links/*/href"
+						],
+						"list": "links"
+					},
+					{
+						"place": "copyright",
+						"kind": "text",
+						"fields": [
+							"/copyright"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/footer@1.schema.json",
+				"title": "FooterContent",
+				"description": "Footer content: the brand, one line about the site, an ordered list of links and the copyright line. One object is valid in every footer layout (the brand beside the links, a grid of links, centred).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"brand",
+					"links",
+					"copyright"
+				],
+				"properties": {
+					"brand": {
+						"description": "the name of the site",
+						"type": "string",
+						"maxLength": 40,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one line about the site; empty: none",
+						"type": "string",
+						"maxLength": 240
+					},
+					"links": {
+						"description": "the links, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 12,
+						"items": {
+							"title": "FooterLink",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"label",
+								"href"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"label": {
+									"description": "the text of the link",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"href": {
+									"description": "the address of the link",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					},
+					"copyright": {
+						"description": "the copyright line",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					}
+				}
+			}
+		},
+		{
+			"item": "event-intro",
+			"title": "Event Intro",
+			"description": "The first screen of an event: a badge, the name as a large heading, one paragraph, the date and the place, and one action; centred or at the start.",
+			"category": "hero",
+			"prototype": "event-intro.svelte",
+			"contract": {
+				"item": "event-intro",
+				"version": 1,
+				"block": "block.eventintro",
+				"organism": "EventIntro",
+				"line": "simple",
+				"model": "event@1",
+				"modelSchema": "https://registry.buildy.tw/models/event@1.schema.json",
+				"axes": {},
+				"defaults": {},
+				"variants": [
+					{
+						"id": "center",
+						"label": "Centred",
+						"axes": {}
+					},
+					{
+						"id": "start",
+						"label": "At the start",
+						"axes": {},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "center",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "badge",
+						"kind": "badge",
+						"fields": [
+							"/badge"
+						]
+					},
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "date",
+						"kind": "text",
+						"fields": [
+							"/date"
+						]
+					},
+					{
+						"place": "place",
+						"kind": "text",
+						"fields": [
+							"/place"
+						]
+					},
+					{
+						"place": "action",
+						"kind": "action",
+						"fields": [
+							"/actionLabel",
+							"/actionHref"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/event@1.schema.json",
+				"title": "EventContent",
+				"description": "Event intro content: an optional badge, the name of the event as the heading, a description, the date, the place and one action. One object is valid in every event intro layout (centred, at the start).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"date",
+					"place"
+				],
+				"properties": {
+					"badge": {
+						"description": "a short pill above the heading; empty: no badge",
+						"type": "string",
+						"maxLength": 40
+					},
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"date": {
+						"description": "the date and the time as they are shown",
+						"type": "string",
+						"maxLength": 60,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"place": {
+						"description": "the place or the city, or online",
+						"type": "string",
+						"maxLength": 80,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					}
+				}
+			}
+		},
+		{
+			"item": "profile-intro",
+			"title": "Profile Intro",
+			"description": "A person: the name, the role, one paragraph and the links beside the portrait (at the end or the start), or under a round portrait.",
+			"category": "hero",
+			"prototype": "profile-intro.svelte",
+			"contract": {
+				"item": "profile-intro",
+				"version": 1,
+				"block": "block.profileintro",
+				"organism": "ProfileIntro",
+				"line": "simple",
+				"model": "profile@1",
+				"modelSchema": "https://registry.buildy.tw/models/profile@1.schema.json",
+				"axes": {
+					"media": [
+						"end",
+						"start",
+						"top"
+					]
+				},
+				"defaults": {
+					"media": "end"
+				},
+				"variants": [
+					{
+						"id": "portraitEnd",
+						"label": "Portrait at the end",
+						"axes": {
+							"media": "end"
+						}
+					},
+					{
+						"id": "portraitStart",
+						"label": "Portrait at the start",
+						"axes": {
+							"media": "start"
+						}
+					},
+					{
+						"id": "portraitTop",
+						"label": "Round portrait above",
+						"axes": {
+							"media": "top"
+						},
+						"settings": {
+							"align": "center"
+						}
+					}
+				],
+				"defaultVariant": "portraitEnd",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "role",
+						"kind": "text",
+						"fields": [
+							"/role"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "links.label",
+						"kind": "action",
+						"fields": [
+							"/links/*/label",
+							"/links/*/href"
+						],
+						"list": "links"
+					},
+					{
+						"place": "media",
+						"kind": "media",
+						"fields": [
+							"/image",
+							"/imageAlt"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/profile@1.schema.json",
+				"title": "ProfileContent",
+				"description": "Profile intro content: the name as the heading, the role, a description, a portrait and an ordered list of links (a site, social profiles). One object is valid in every profile layout (the portrait at the end, at the start, above the name).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"role",
+					"imageAlt",
+					"links"
+				],
+				"properties": {
+					"title": {
+						"description": "the name of the person (the heading)",
+						"type": "string",
+						"maxLength": 80,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"role": {
+						"description": "the role and the company",
+						"type": "string",
+						"maxLength": 80,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"image": {
+						"description": "address of the portrait; none: the placeholder",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"imageAlt": {
+						"description": "alt text of the portrait",
+						"type": "string",
+						"maxLength": 160,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"links": {
+						"description": "the links of the person, in the order they are shown",
+						"type": "array",
+						"minItems": 0,
+						"maxItems": 4,
+						"items": {
+							"title": "ProfileLink",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"label",
+								"href"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"label": {
+									"description": "the text of the link",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"href": {
+									"description": "the address of the link",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "rating-simple",
+			"title": "Rating Simple",
+			"description": "The score, what it is and the source as a link: one bar on a card surface, or centred.",
+			"category": "proof",
+			"prototype": "rating-simple.svelte",
+			"contract": {
+				"item": "rating-simple",
+				"version": 1,
+				"block": "block.ratingsimple",
+				"organism": "RatingSimple",
+				"line": "simple",
+				"model": "rating@1",
+				"modelSchema": "https://registry.buildy.tw/models/rating@1.schema.json",
+				"axes": {
+					"layout": [
+						"bar",
+						"centered"
+					]
+				},
+				"defaults": {
+					"layout": "bar"
+				},
+				"variants": [
+					{
+						"id": "inline",
+						"label": "A bar",
+						"axes": {
+							"layout": "bar"
+						}
+					},
+					{
+						"id": "centered",
+						"label": "Centred",
+						"axes": {
+							"layout": "centered"
+						}
+					}
+				],
+				"defaultVariant": "inline",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "value",
+						"kind": "text",
+						"fields": [
+							"/value"
+						]
+					},
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "sourceLabel",
+						"kind": "text",
+						"fields": [
+							"/sourceLabel",
+							"/sourceHref"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/rating@1.schema.json",
+				"title": "RatingContent",
+				"description": "Rating content: the score, a heading that names it, a line (the count, the scale) and the source as a link. One object is valid in every rating layout (a bar, centred).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"value",
+					"title"
+				],
+				"properties": {
+					"value": {
+						"description": "the score as it is shown (4.9, 98%)",
+						"type": "string",
+						"maxLength": 8,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "the count and the scale (out of 5, from 1,240 reviews); empty: none",
+						"type": "string",
+						"maxLength": 160
+					},
+					"sourceLabel": {
+						"description": "the label of the source; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"sourceHref": {
+						"description": "the address of the source",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					}
+				}
+			}
+		},
+		{
+			"item": "error-simple",
+			"title": "Error Simple",
+			"description": "A page for something that went wrong: the code, the heading, one paragraph and one action back; centred or at the start.",
+			"category": "states",
+			"prototype": "error-simple.svelte",
+			"contract": {
+				"item": "error-simple",
+				"version": 1,
+				"block": "block.errorsimple",
+				"organism": "ErrorSimple",
+				"line": "simple",
+				"model": "error@1",
+				"modelSchema": "https://registry.buildy.tw/models/error@1.schema.json",
+				"axes": {},
+				"defaults": {},
+				"variants": [
+					{
+						"id": "center",
+						"label": "Centred",
+						"axes": {}
+					},
+					{
+						"id": "start",
+						"label": "At the start",
+						"axes": {},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "center",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "code",
+						"kind": "text",
+						"fields": [
+							"/code"
+						]
+					},
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "action",
+						"kind": "action",
+						"fields": [
+							"/actionLabel",
+							"/actionHref"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/error@1.schema.json",
+				"title": "ErrorContent",
+				"description": "Error content: the code (404, 500), a heading, a description and one action back. One object is valid in every error layout (centred, at the start).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"code",
+					"title"
+				],
+				"properties": {
+					"code": {
+						"description": "the code as it is shown (404)",
+						"type": "string",
+						"maxLength": 8,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					}
+				}
+			}
+		},
+		{
+			"item": "figure-simple",
+			"title": "Figure Simple",
+			"description": "One large picture with its caption (a title, a line, the credit): wide with the caption under it, or the caption at the side.",
+			"category": "story",
+			"prototype": "figure-simple.svelte",
+			"contract": {
+				"item": "figure-simple",
+				"version": 1,
+				"block": "block.figuresimple",
+				"organism": "FigureSimple",
+				"line": "simple",
+				"model": "figure@1",
+				"modelSchema": "https://registry.buildy.tw/models/figure@1.schema.json",
+				"axes": {
+					"layout": [
+						"wide",
+						"end",
+						"start"
+					]
+				},
+				"defaults": {
+					"layout": "wide"
+				},
+				"variants": [
+					{
+						"id": "wide",
+						"label": "Wide, the caption under it",
+						"axes": {
+							"layout": "wide"
+						}
+					},
+					{
+						"id": "captionEnd",
+						"label": "The caption at the end",
+						"axes": {
+							"layout": "end"
+						}
+					},
+					{
+						"id": "captionStart",
+						"label": "The caption at the start",
+						"axes": {
+							"layout": "start"
+						}
+					}
+				],
+				"defaultVariant": "wide",
+				"settings": {
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "media",
+						"kind": "media",
+						"fields": [
+							"/image",
+							"/imageAlt"
+						]
+					},
+					{
+						"place": "title",
+						"kind": "text",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "credit",
+						"kind": "text",
+						"fields": [
+							"/credit"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/figure@1.schema.json",
+				"title": "FigureContent",
+				"description": "Figure content: one large picture with its caption: a title, a line and the credit. One object is valid in every figure layout (wide with the caption under it, the caption at the side).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"imageAlt",
+					"title"
+				],
+				"properties": {
+					"image": {
+						"description": "address of the picture; none: the placeholder",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"imageAlt": {
+						"description": "alt text of the picture",
+						"type": "string",
+						"maxLength": 160,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"title": {
+						"description": "the title of the caption (names the section)",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "the caption; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"credit": {
+						"description": "the credit of the picture; empty: none",
+						"type": "string",
+						"maxLength": 80
+					}
+				}
+			}
+		},
+		{
+			"item": "pull-quote-simple",
+			"title": "Pull Quote Simple",
+			"description": "The words of a quote in large type with the author, a role line and the source under them: a bar at the side, or centred.",
+			"category": "story",
+			"prototype": "pull-quote-simple.svelte",
+			"contract": {
+				"item": "pull-quote-simple",
+				"version": 1,
+				"block": "block.pullquotesimple",
+				"organism": "PullQuoteSimple",
+				"line": "simple",
+				"model": "pull-quote@1",
+				"modelSchema": "https://registry.buildy.tw/models/pull-quote@1.schema.json",
+				"axes": {
+					"layout": [
+						"rule",
+						"centered"
+					]
+				},
+				"defaults": {
+					"layout": "rule"
+				},
+				"variants": [
+					{
+						"id": "standalone",
+						"label": "A bar at the side",
+						"axes": {
+							"layout": "rule"
+						}
+					},
+					{
+						"id": "centered",
+						"label": "Centred",
+						"axes": {
+							"layout": "centered"
+						}
+					}
+				],
+				"defaultVariant": "standalone",
+				"settings": {
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "quote",
+						"kind": "text",
+						"fields": [
+							"/quote"
+						]
+					},
+					{
+						"place": "title",
+						"kind": "text",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "sourceLabel",
+						"kind": "text",
+						"fields": [
+							"/sourceLabel",
+							"/sourceHref"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/pull-quote@1.schema.json",
+				"title": "PullQuoteContent",
+				"description": "Pull quote content: the words, the author, a role line and the source as a link. One object is valid in every pull quote layout (a rule at the side, centred).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"quote",
+					"title"
+				],
+				"properties": {
+					"quote": {
+						"description": "the words that are quoted",
+						"type": "string",
+						"maxLength": 400,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"title": {
+						"description": "the name of the author (names the section)",
+						"type": "string",
+						"maxLength": 80,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "the role of the author; empty: none",
+						"type": "string",
+						"maxLength": 120
+					},
+					"sourceLabel": {
+						"description": "the label of the source; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"sourceHref": {
+						"description": "the address of the source",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					}
+				}
+			}
+		},
+		{
+			"item": "article-simple",
+			"title": "Article Simple",
+			"description": "The heading, one paragraph and the sections of a text (a subheading and its paragraph): one reading column, or two columns under a centred head.",
+			"category": "story",
+			"prototype": "article-simple.svelte",
+			"contract": {
+				"item": "article-simple",
+				"version": 1,
+				"block": "block.articlesimple",
+				"organism": "ArticleSimple",
+				"line": "simple",
+				"model": "article@1",
+				"modelSchema": "https://registry.buildy.tw/models/article@1.schema.json",
+				"axes": {
+					"layout": [
+						"column",
+						"columns"
+					]
+				},
+				"defaults": {
+					"layout": "column"
+				},
+				"variants": [
+					{
+						"id": "column",
+						"label": "One reading column",
+						"axes": {
+							"layout": "column"
+						},
+						"settings": {
+							"align": "start"
+						}
+					},
+					{
+						"id": "twoColumns",
+						"label": "Two columns",
+						"axes": {
+							"layout": "columns"
+						},
+						"settings": {
+							"align": "center"
+						}
+					}
+				],
+				"defaultVariant": "column",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "sections.title",
+						"kind": "heading",
+						"fields": [
+							"/sections/*/title"
+						],
+						"list": "sections"
+					},
+					{
+						"place": "sections.description",
+						"kind": "text",
+						"fields": [
+							"/sections/*/description"
+						],
+						"list": "sections"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/article@1.schema.json",
+				"title": "ArticleContent",
+				"description": "Article content: the heading, a description and an ordered list of sections, each with a subheading and its text. One object is valid in every article layout (one column, two columns).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"sections"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"sections": {
+						"description": "the sections, in the order they are read",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 8,
+						"items": {
+							"title": "ArticleSection",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title",
+								"description"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the subheading of the section",
+									"type": "string",
+									"maxLength": 120,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "the text of the section",
+									"type": "string",
+									"maxLength": 1200,
+									"minLength": 1,
+									"pattern": "\\S"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "article-lead",
+			"title": "Article Lead",
+			"description": "The head of an article: the heading, the lead paragraph and the byline (the portrait, the author, the date) under a wide cover, or beside it.",
+			"category": "story",
+			"prototype": "article-lead.svelte",
+			"contract": {
+				"item": "article-lead",
+				"version": 1,
+				"block": "block.articlelead",
+				"organism": "ArticleLead",
+				"line": "simple",
+				"model": "article-lead@1",
+				"modelSchema": "https://registry.buildy.tw/models/article-lead@1.schema.json",
+				"axes": {
+					"media": [
+						"top",
+						"start",
+						"end"
+					]
+				},
+				"defaults": {
+					"media": "top"
+				},
+				"variants": [
+					{
+						"id": "mediaTop",
+						"label": "Cover above",
+						"axes": {
+							"media": "top"
+						}
+					},
+					{
+						"id": "mediaStart",
+						"label": "Cover at the start",
+						"axes": {
+							"media": "start"
+						}
+					},
+					{
+						"id": "mediaEnd",
+						"label": "Cover at the end",
+						"axes": {
+							"media": "end"
+						}
+					}
+				],
+				"defaultVariant": "mediaTop",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "avatar",
+						"kind": "media",
+						"fields": [
+							"/avatar",
+							"/author"
+						]
+					},
+					{
+						"place": "author",
+						"kind": "text",
+						"fields": [
+							"/author"
+						]
+					},
+					{
+						"place": "date",
+						"kind": "text",
+						"fields": [
+							"/date"
+						]
+					},
+					{
+						"place": "media",
+						"kind": "media",
+						"fields": [
+							"/image",
+							"/imageAlt"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/article-lead@1.schema.json",
+				"title": "ArticleLeadContent",
+				"description": "Article lead content: the heading, the lead paragraph, a cover picture, the author with the portrait and the date. One object is valid in every article lead layout (the cover above, at the start, at the end).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"imageAlt",
+					"author",
+					"date"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"image": {
+						"description": "address of the cover picture; none: the placeholder",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"imageAlt": {
+						"description": "alt text of the cover picture",
+						"type": "string",
+						"maxLength": 160,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"author": {
+						"description": "the name of the author",
+						"type": "string",
+						"maxLength": 80,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"avatar": {
+						"description": "address of the portrait of the author; none: the placeholder",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"date": {
+						"description": "the date as it is shown",
+						"type": "string",
+						"maxLength": 40,
+						"minLength": 1,
+						"pattern": "\\S"
+					}
+				}
+			}
+		},
+		{
+			"item": "topics-simple",
+			"title": "Topics Simple",
+			"description": "The heading, one paragraph and the rubrics of a blog on cards (a label, the title as a link, a line): in two or three columns, or one under the other.",
+			"category": "blog",
+			"prototype": "topics-simple.svelte",
+			"contract": {
+				"item": "topics-simple",
+				"version": 1,
+				"block": "block.topicssimple",
+				"organism": "TopicsSimple",
+				"line": "simple",
+				"model": "topics@1",
+				"modelSchema": "https://registry.buildy.tw/models/topics@1.schema.json",
+				"axes": {
+					"layout": [
+						"cards",
+						"rows"
+					],
+					"cols": [
+						"2",
+						"3"
+					]
+				},
+				"defaults": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "cards3",
+						"label": "Three columns",
+						"axes": {
+							"layout": "cards",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "cards2",
+						"label": "Two columns",
+						"axes": {
+							"layout": "cards",
+							"cols": "2"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "One under the other",
+						"axes": {
+							"layout": "rows",
+							"cols": "3"
+						}
+					}
+				],
+				"defaultVariant": "cards3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.label",
+						"kind": "badge",
+						"fields": [
+							"/items/*/label"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title",
+							"/items/*/href"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/topics@1.schema.json",
+				"title": "TopicsContent",
+				"description": "Topics content: the heading, a description and an ordered list of topics (blog rubrics), each with a short label, a title as a link and a line. One object is valid in every topics layout (cards in two or three columns, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the topics, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 8,
+						"items": {
+							"title": "TopicItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"label",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"label": {
+									"description": "the short label (the count, the kind)",
+									"type": "string",
+									"maxLength": 24,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"title": {
+									"description": "the name of the topic",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one line about the topic; empty: none",
+									"type": "string",
+									"maxLength": 240
+								},
+								"href": {
+									"description": "the address of the topic; none: the title is plain text",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "chapters-simple",
+			"title": "Chapters Simple",
+			"description": "The heading, one paragraph and the chapters (a picture, a label, the title, a paragraph): rows with the picture at the side, or a pair with the picture under the copy.",
+			"category": "story",
+			"prototype": "chapters-simple.svelte",
+			"contract": {
+				"item": "chapters-simple",
+				"version": 1,
+				"block": "block.chapterssimple",
+				"organism": "ChaptersSimple",
+				"line": "simple",
+				"model": "chapters@1",
+				"modelSchema": "https://registry.buildy.tw/models/chapters@1.schema.json",
+				"axes": {
+					"layout": [
+						"rows",
+						"paired"
+					]
+				},
+				"defaults": {
+					"layout": "rows"
+				},
+				"variants": [
+					{
+						"id": "illustratedRows",
+						"label": "Rows with pictures",
+						"axes": {
+							"layout": "rows"
+						}
+					},
+					{
+						"id": "paired",
+						"label": "A pair",
+						"axes": {
+							"layout": "paired"
+						}
+					}
+				],
+				"defaultVariant": "illustratedRows",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.image",
+						"kind": "media",
+						"fields": [
+							"/items/*/image"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.label",
+						"kind": "badge",
+						"fields": [
+							"/items/*/label"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/chapters@1.schema.json",
+				"title": "ChaptersContent",
+				"description": "Chapters content: the heading, a description and an ordered list of chapters, each with a picture, a short label, a title and a line. One object is valid in every chapters layout (rows with the picture at the side, a pair).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the chapters, in the order they are read",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 6,
+						"items": {
+							"title": "ChapterItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"label",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"image": {
+									"description": "address of the picture of the chapter; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								},
+								"label": {
+									"description": "the short label (Chapter 1)",
+									"type": "string",
+									"maxLength": 24,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"title": {
+									"description": "the title of the chapter (the alt text of the picture)",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one paragraph about the chapter; empty: none",
+									"type": "string",
+									"maxLength": 400
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "pricing-simple",
+			"title": "Pricing Simple",
+			"description": "The heading, one paragraph and the plans on cards (the name, a badge on the highlighted plan, a line, the price, an action): in three or two columns, or one row each.",
+			"category": "pricing",
+			"prototype": "pricing-simple.svelte",
+			"contract": {
+				"item": "pricing-simple",
+				"version": 1,
+				"block": "block.pricingsimple",
+				"organism": "PricingSimple",
+				"line": "simple",
+				"model": "pricing@1",
+				"modelSchema": "https://registry.buildy.tw/models/pricing@1.schema.json",
+				"axes": {
+					"layout": [
+						"cards",
+						"rows"
+					],
+					"cols": [
+						"3",
+						"2"
+					]
+				},
+				"defaults": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "cards3",
+						"label": "Three plans on cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "cards2",
+						"label": "Two plans on cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "2"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "One row per plan",
+						"axes": {
+							"layout": "rows",
+							"cols": "3"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "cards3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "plans.badge",
+						"kind": "badge",
+						"fields": [
+							"/plans/*/badge"
+						],
+						"list": "plans"
+					},
+					{
+						"place": "plans.title",
+						"kind": "heading",
+						"fields": [
+							"/plans/*/title"
+						],
+						"list": "plans"
+					},
+					{
+						"place": "plans.description",
+						"kind": "text",
+						"fields": [
+							"/plans/*/description"
+						],
+						"list": "plans"
+					},
+					{
+						"place": "plans.price",
+						"kind": "text",
+						"fields": [
+							"/plans/*/price"
+						],
+						"list": "plans"
+					},
+					{
+						"place": "plans.action",
+						"kind": "action",
+						"fields": [
+							"/plans/*/actionLabel",
+							"/plans/*/actionHref"
+						],
+						"list": "plans"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/pricing@1.schema.json",
+				"title": "PricingContent",
+				"description": "Pricing content: the heading, a description and an ordered list of two to four plans, each with a name, the price as it is shown, a line, an optional badge (the highlighted plan) and an action. One object is valid in every pricing layout (cards in two or three columns, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"plans"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"plans": {
+						"description": "the plans, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 4,
+						"items": {
+							"title": "PricingPlan",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title",
+								"price"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the name of the plan",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"price": {
+									"description": "the price as it is shown ($12 / month)",
+									"type": "string",
+									"maxLength": 24,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one line about the plan; empty: none",
+									"type": "string",
+									"maxLength": 240
+								},
+								"badge": {
+									"description": "a short pill on the highlighted plan; empty: none",
+									"type": "string",
+									"maxLength": 24
+								},
+								"actionLabel": {
+									"description": "the label of the action; the link is drawn when the label and the address are both set",
+									"type": "string",
+									"maxLength": 40
+								},
+								"actionHref": {
+									"description": "the address of the action",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "contacts-simple",
+			"title": "Contacts Simple",
+			"description": "The heading, one paragraph and the teams to reach on cards (an icon, the name, a line, an action): in three or two columns, or rows with the icon at the side.",
+			"category": "contact",
+			"prototype": "contacts-simple.svelte",
+			"contract": {
+				"item": "contacts-simple",
+				"version": 1,
+				"block": "block.contactssimple",
+				"organism": "ContactsSimple",
+				"line": "simple",
+				"model": "contacts@1",
+				"modelSchema": "https://registry.buildy.tw/models/contacts@1.schema.json",
+				"axes": {
+					"layout": [
+						"cards",
+						"rows"
+					],
+					"cols": [
+						"3",
+						"2"
+					]
+				},
+				"defaults": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "cards3",
+						"label": "Three cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "cards2",
+						"label": "Two columns",
+						"axes": {
+							"layout": "cards",
+							"cols": "2"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "Icons at the side",
+						"axes": {
+							"layout": "rows",
+							"cols": "3"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "cards3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.image",
+						"kind": "media",
+						"fields": [
+							"/items/*/image"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.action",
+						"kind": "action",
+						"fields": [
+							"/items/*/actionLabel",
+							"/items/*/actionHref"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/contacts@1.schema.json",
+				"title": "ContactsContent",
+				"description": "Contacts content: the heading, a description and an ordered list of teams or channels to reach, each with an icon picture, a name, a line and an action. One object is valid in every contacts layout (cards in two or three columns, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the contacts, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 6,
+						"items": {
+							"title": "ContactItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"image": {
+									"description": "address of the icon picture; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								},
+								"title": {
+									"description": "the name of the team or the channel",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one line: the address, the phone or the hours; empty: none",
+									"type": "string",
+									"maxLength": 240
+								},
+								"actionLabel": {
+									"description": "the label of the action; the link is drawn when the label and the address are both set",
+									"type": "string",
+									"maxLength": 40
+								},
+								"actionHref": {
+									"description": "the address of the action",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "locations-simple",
+			"title": "Locations Simple",
+			"description": "The heading, one paragraph and the offices (the name, the address) in two columns beside one picture, at the start or the end.",
+			"category": "contact",
+			"prototype": "locations-simple.svelte",
+			"contract": {
+				"item": "locations-simple",
+				"version": 1,
+				"block": "block.locationssimple",
+				"organism": "LocationsSimple",
+				"line": "simple",
+				"model": "locations@1",
+				"modelSchema": "https://registry.buildy.tw/models/locations@1.schema.json",
+				"axes": {
+					"media": [
+						"start",
+						"end"
+					]
+				},
+				"defaults": {
+					"media": "start"
+				},
+				"variants": [
+					{
+						"id": "mediaStart",
+						"label": "Picture at the start",
+						"axes": {
+							"media": "start"
+						}
+					},
+					{
+						"id": "mediaEnd",
+						"label": "Picture at the end",
+						"axes": {
+							"media": "end"
+						}
+					}
+				],
+				"defaultVariant": "mediaStart",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					},
+					{
+						"place": "media",
+						"kind": "media",
+						"fields": [
+							"/image",
+							"/imageAlt"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/locations@1.schema.json",
+				"title": "LocationsContent",
+				"description": "Locations content: the heading, a description, one picture (a map or a place) and an ordered list of offices, each with a name and the address. One object is valid in every locations layout (the picture at the start, at the end).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"imageAlt",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"image": {
+						"description": "address of the picture; none: the placeholder",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"imageAlt": {
+						"description": "alt text of the picture",
+						"type": "string",
+						"maxLength": 160,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"items": {
+						"description": "the offices, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 6,
+						"items": {
+							"title": "LocationItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the name of the office or the city",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "the address and the hours; empty: none",
+									"type": "string",
+									"maxLength": 240
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "offers-simple",
+			"title": "Offers Simple",
+			"description": "The heading, one paragraph and two or three offers on cards, each with a title, a line and an action.",
+			"category": "cta",
+			"prototype": "offers-simple.svelte",
+			"contract": {
+				"item": "offers-simple",
+				"version": 1,
+				"block": "block.offerssimple",
+				"organism": "OffersSimple",
+				"line": "simple",
+				"model": "offers@1",
+				"modelSchema": "https://registry.buildy.tw/models/offers@1.schema.json",
+				"axes": {
+					"cols": [
+						"2",
+						"3"
+					]
+				},
+				"defaults": {
+					"cols": "2"
+				},
+				"variants": [
+					{
+						"id": "duo",
+						"label": "Two offers",
+						"axes": {
+							"cols": "2"
+						}
+					},
+					{
+						"id": "duoStart",
+						"label": "Two offers, the heading at the start",
+						"axes": {
+							"cols": "2"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "duo",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.action",
+						"kind": "action",
+						"fields": [
+							"/items/*/actionLabel",
+							"/items/*/actionHref"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 2
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/offers@1.schema.json",
+				"title": "OffersContent",
+				"description": "Offers content: the heading, a description and an ordered list of two or three offers, each with a title, a line and an action. One object is valid in every offers layout (two or three cards).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the offers, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 3,
+						"items": {
+							"title": "OfferItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the title of the offer",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one line about the offer; empty: none",
+									"type": "string",
+									"maxLength": 240
+								},
+								"actionLabel": {
+									"description": "the label of the action; the link is drawn when the label and the address are both set",
+									"type": "string",
+									"maxLength": 40
+								},
+								"actionHref": {
+									"description": "the address of the action",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "products-simple",
+			"title": "Products Simple",
+			"description": "The heading, one paragraph and the products (a picture, the name as a link, the price): in three or four columns, or rows with the picture at the side.",
+			"category": "catalog",
+			"prototype": "products-simple.svelte",
+			"contract": {
+				"item": "products-simple",
+				"version": 1,
+				"block": "block.productssimple",
+				"organism": "ProductsSimple",
+				"line": "simple",
+				"model": "products@1",
+				"modelSchema": "https://registry.buildy.tw/models/products@1.schema.json",
+				"axes": {
+					"layout": [
+						"grid",
+						"rows"
+					],
+					"cols": [
+						"3",
+						"4"
+					]
+				},
+				"defaults": {
+					"layout": "grid",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "cards3",
+						"label": "Three columns",
+						"axes": {
+							"layout": "grid",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "denseGrid",
+						"label": "Four columns, compact",
+						"axes": {
+							"layout": "grid",
+							"cols": "4"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "Rows",
+						"axes": {
+							"layout": "rows",
+							"cols": "3"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "cards3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.image",
+						"kind": "media",
+						"fields": [
+							"/items/*/image"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title",
+							"/items/*/href"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.price",
+						"kind": "text",
+						"fields": [
+							"/items/*/price"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/products@1.schema.json",
+				"title": "ProductsContent",
+				"description": "Products content: the heading, a description and an ordered list of products, each with a picture, a name as a link and the price as it is shown. One object is valid in every products layout (three or four columns, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the products, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 8,
+						"items": {
+							"title": "ProductItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title",
+								"price"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"image": {
+									"description": "address of the product picture; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								},
+								"title": {
+									"description": "the name of the product (the alt text of the picture)",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"price": {
+									"description": "the price as it is shown",
+									"type": "string",
+									"maxLength": 24,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"href": {
+									"description": "the address of the product; none: the name is plain text",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "product-simple",
+			"title": "Product Simple",
+			"description": "One product: the main picture and thumbnails beside the name, the price, one paragraph and the action; the pictures at the start, at the end or above.",
+			"category": "product",
+			"prototype": "product-simple.svelte",
+			"contract": {
+				"item": "product-simple",
+				"version": 1,
+				"block": "block.productsimple",
+				"organism": "ProductSimple",
+				"line": "simple",
+				"model": "product@1",
+				"modelSchema": "https://registry.buildy.tw/models/product@1.schema.json",
+				"axes": {
+					"media": [
+						"start",
+						"end",
+						"top"
+					]
+				},
+				"defaults": {
+					"media": "start"
+				},
+				"variants": [
+					{
+						"id": "mediaStart",
+						"label": "Pictures at the start",
+						"axes": {
+							"media": "start"
+						}
+					},
+					{
+						"id": "mediaEnd",
+						"label": "Pictures at the end",
+						"axes": {
+							"media": "end"
+						}
+					},
+					{
+						"id": "mediaTop",
+						"label": "Pictures above",
+						"axes": {
+							"media": "top"
+						}
+					}
+				],
+				"defaultVariant": "mediaStart",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "price",
+						"kind": "text",
+						"fields": [
+							"/price"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "action",
+						"kind": "action",
+						"fields": [
+							"/actionLabel",
+							"/actionHref"
+						]
+					},
+					{
+						"place": "media",
+						"kind": "media",
+						"fields": [
+							"/image",
+							"/imageAlt"
+						]
+					},
+					{
+						"place": "photos.image",
+						"kind": "media",
+						"fields": [
+							"/photos/*/image"
+						],
+						"list": "photos"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/product@1.schema.json",
+				"title": "ProductContent",
+				"description": "Product content: the name as the heading, a description, the price as it is shown, the main picture, up to four more pictures and one action. One object is valid in every product layout (the pictures at the start, at the end, above).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"price",
+					"imageAlt",
+					"photos"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"price": {
+						"description": "the price as it is shown",
+						"type": "string",
+						"maxLength": 24,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"image": {
+						"description": "address of the main picture; none: the placeholder",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"imageAlt": {
+						"description": "alt text of the main picture",
+						"type": "string",
+						"maxLength": 160,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					},
+					"photos": {
+						"description": "more pictures of the product, thumbnails under the main picture (named by the product)",
+						"type": "array",
+						"minItems": 0,
+						"maxItems": 4,
+						"items": {
+							"title": "ProductPhoto",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"image": {
+									"description": "address of the picture; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "collections-simple",
+			"title": "Collections Simple",
+			"description": "The heading, one paragraph and the collections (a picture and the name as one link) in four or two columns.",
+			"category": "catalog",
+			"prototype": "collections-simple.svelte",
+			"contract": {
+				"item": "collections-simple",
+				"version": 1,
+				"block": "block.collectionssimple",
+				"organism": "CollectionsSimple",
+				"line": "simple",
+				"model": "collections@1",
+				"modelSchema": "https://registry.buildy.tw/models/collections@1.schema.json",
+				"axes": {
+					"cols": [
+						"4",
+						"3",
+						"2"
+					]
+				},
+				"defaults": {
+					"cols": "4"
+				},
+				"variants": [
+					{
+						"id": "cards4",
+						"label": "Four columns",
+						"axes": {
+							"cols": "4"
+						}
+					},
+					{
+						"id": "cards2",
+						"label": "Two columns",
+						"axes": {
+							"cols": "2"
+						}
+					}
+				],
+				"defaultVariant": "cards4",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.image",
+						"kind": "media",
+						"fields": [
+							"/items/*/image"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "text",
+						"fields": [
+							"/items/*/title",
+							"/items/*/href"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 4
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/collections@1.schema.json",
+				"title": "CollectionsContent",
+				"description": "Collections content: the heading, a description and an ordered list of collections (categories), each a picture and a name as one link. One object is valid in every collections layout (two, three or four columns).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the collections, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 8,
+						"items": {
+							"title": "CollectionItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title",
+								"href"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"image": {
+									"description": "address of the picture of the collection; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								},
+								"title": {
+									"description": "the name of the collection",
+									"type": "string",
+									"maxLength": 60,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"href": {
+									"description": "the address of the collection",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "specs-simple",
+			"title": "Specs Simple",
+			"description": "The heading, one paragraph and the specifications as name and value rows on a muted surface, in one narrow column or two columns.",
+			"category": "product",
+			"prototype": "specs-simple.svelte",
+			"contract": {
+				"item": "specs-simple",
+				"version": 1,
+				"block": "block.specssimple",
+				"organism": "SpecsSimple",
+				"line": "simple",
+				"model": "specs@1",
+				"modelSchema": "https://registry.buildy.tw/models/specs@1.schema.json",
+				"axes": {
+					"layout": [
+						"rows",
+						"columns"
+					]
+				},
+				"defaults": {
+					"layout": "rows"
+				},
+				"variants": [
+					{
+						"id": "keyValue",
+						"label": "Rows",
+						"axes": {
+							"layout": "rows"
+						}
+					},
+					{
+						"id": "twoColumns",
+						"label": "Two columns",
+						"axes": {
+							"layout": "columns"
+						}
+					}
+				],
+				"defaultVariant": "keyValue",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.title",
+						"kind": "text",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/specs@1.schema.json",
+				"title": "SpecsContent",
+				"description": "Specs content: the heading, a description and an ordered list of specifications, each a name and its value. One object is valid in every specs layout (rows, two columns).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the specifications, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 16,
+						"items": {
+							"title": "SpecItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title",
+								"description"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the name of the specification",
+									"type": "string",
+									"maxLength": 60,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "the value as it is shown",
+									"type": "string",
+									"maxLength": 120,
+									"minLength": 1,
+									"pattern": "\\S"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "compare-simple",
+			"title": "Compare Simple",
+			"description": "The heading, one paragraph and two options side by side: their names in a header row, then a row per feature with the value of each.",
+			"category": "product",
+			"prototype": "compare-simple.svelte",
+			"contract": {
+				"item": "compare-simple",
+				"version": 1,
+				"block": "block.comparesimple",
+				"organism": "CompareSimple",
+				"line": "simple",
+				"model": "compare@1",
+				"modelSchema": "https://registry.buildy.tw/models/compare@1.schema.json",
+				"axes": {
+					"width": [
+						"wide",
+						"narrow"
+					]
+				},
+				"defaults": {
+					"width": "wide"
+				},
+				"variants": [
+					{
+						"id": "twoProducts",
+						"label": "Two options",
+						"axes": {
+							"width": "wide"
+						}
+					},
+					{
+						"id": "narrow",
+						"label": "Two options, narrow",
+						"axes": {
+							"width": "narrow"
+						}
+					}
+				],
+				"defaultVariant": "twoProducts",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "firstLabel",
+						"kind": "text",
+						"fields": [
+							"/firstLabel"
+						]
+					},
+					{
+						"place": "secondLabel",
+						"kind": "text",
+						"fields": [
+							"/secondLabel"
+						]
+					},
+					{
+						"place": "rows.title",
+						"kind": "text",
+						"fields": [
+							"/rows/*/title"
+						],
+						"list": "rows"
+					},
+					{
+						"place": "rows.first",
+						"kind": "text",
+						"fields": [
+							"/rows/*/first"
+						],
+						"list": "rows"
+					},
+					{
+						"place": "rows.second",
+						"kind": "text",
+						"fields": [
+							"/rows/*/second"
+						],
+						"list": "rows"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/compare@1.schema.json",
+				"title": "CompareContent",
+				"description": "Compare content: the heading, a description, the names of the two options and an ordered list of rows, each a feature with the value of each option. One object is valid in every compare layout (a table, cards).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"firstLabel",
+					"secondLabel",
+					"rows"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"firstLabel": {
+						"description": "the name of the first option",
+						"type": "string",
+						"maxLength": 40,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"secondLabel": {
+						"description": "the name of the second option",
+						"type": "string",
+						"maxLength": 40,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"rows": {
+						"description": "the rows, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 12,
+						"items": {
+							"title": "CompareLine",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title",
+								"first",
+								"second"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the feature that is compared",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"first": {
+									"description": "the value of the first option",
+									"type": "string",
+									"maxLength": 60,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"second": {
+									"description": "the value of the second option",
+									"type": "string",
+									"maxLength": 60,
+									"minLength": 1,
+									"pattern": "\\S"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "course-outline",
+			"title": "Course Outline",
+			"description": "The heading, one paragraph and the modules in order (a label, the title, a line, the length): rows in a narrow column, or two columns of cards.",
+			"category": "how-it-works",
+			"prototype": "course-outline.svelte",
+			"contract": {
+				"item": "course-outline",
+				"version": 1,
+				"block": "block.courseoutline",
+				"organism": "CourseOutline",
+				"line": "simple",
+				"model": "curriculum@1",
+				"modelSchema": "https://registry.buildy.tw/models/curriculum@1.schema.json",
+				"axes": {
+					"layout": [
+						"rows",
+						"cards"
+					]
+				},
+				"defaults": {
+					"layout": "rows"
+				},
+				"variants": [
+					{
+						"id": "moduleRows",
+						"label": "Rows",
+						"axes": {
+							"layout": "rows"
+						}
+					},
+					{
+						"id": "cards",
+						"label": "Two columns of cards",
+						"axes": {
+							"layout": "cards"
+						}
+					}
+				],
+				"defaultVariant": "moduleRows",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "modules.label",
+						"kind": "badge",
+						"fields": [
+							"/modules/*/label"
+						],
+						"list": "modules"
+					},
+					{
+						"place": "modules.title",
+						"kind": "heading",
+						"fields": [
+							"/modules/*/title"
+						],
+						"list": "modules"
+					},
+					{
+						"place": "modules.description",
+						"kind": "text",
+						"fields": [
+							"/modules/*/description"
+						],
+						"list": "modules"
+					},
+					{
+						"place": "modules.meta",
+						"kind": "text",
+						"fields": [
+							"/modules/*/meta"
+						],
+						"list": "modules"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/curriculum@1.schema.json",
+				"title": "CurriculumContent",
+				"description": "Curriculum content: the heading, a description and an ordered list of modules, each with a short label, a title, a line and a meta line (the length). One object is valid in every curriculum layout (rows, two columns of cards).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"modules"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"modules": {
+						"description": "the modules, in the order they are taken",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 12,
+						"items": {
+							"title": "CourseModule",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"label",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"label": {
+									"description": "the short label (Module 1)",
+									"type": "string",
+									"maxLength": 24,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"title": {
+									"description": "the title of the module",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one line about the module; empty: none",
+									"type": "string",
+									"maxLength": 240
+								},
+								"meta": {
+									"description": "the meta line (2 hours, 5 lessons); empty: none",
+									"type": "string",
+									"maxLength": 40
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "choice-links",
+			"title": "Choice Links",
+			"description": "The heading, one paragraph and the options (sizes, versions) as outline links: a wrapping row, or a grid of four.",
+			"category": "product",
+			"prototype": "choice-links.svelte",
+			"contract": {
+				"item": "choice-links",
+				"version": 1,
+				"block": "block.choicelinks",
+				"organism": "ChoiceLinks",
+				"line": "simple",
+				"model": "choices@1",
+				"modelSchema": "https://registry.buildy.tw/models/choices@1.schema.json",
+				"axes": {
+					"layout": [
+						"row",
+						"grid"
+					]
+				},
+				"defaults": {
+					"layout": "row"
+				},
+				"variants": [
+					{
+						"id": "row",
+						"label": "A row",
+						"axes": {
+							"layout": "row"
+						}
+					},
+					{
+						"id": "grid",
+						"label": "A grid",
+						"axes": {
+							"layout": "grid"
+						}
+					}
+				],
+				"defaultVariant": "row",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.label",
+						"kind": "action",
+						"fields": [
+							"/items/*/label",
+							"/items/*/href"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/choices@1.schema.json",
+				"title": "ChoicesContent",
+				"description": "Choices content: the heading, a description and an ordered list of options as links (sizes, versions, plans). One object is valid in every choices layout (a row, a grid).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the options, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 8,
+						"items": {
+							"title": "ChoiceItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"label",
+								"href"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"label": {
+									"description": "the text of the link",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"href": {
+									"description": "the address of the link",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "purchase-simple",
+			"title": "Purchase Simple",
+			"description": "On a card surface: the heading and one paragraph beside the price, the action and a note; or all centred.",
+			"category": "product",
+			"prototype": "purchase-simple.svelte",
+			"contract": {
+				"item": "purchase-simple",
+				"version": 1,
+				"block": "block.purchasesimple",
+				"organism": "PurchaseSimple",
+				"line": "simple",
+				"model": "purchase@1",
+				"modelSchema": "https://registry.buildy.tw/models/purchase@1.schema.json",
+				"axes": {
+					"layout": [
+						"panel",
+						"centered"
+					]
+				},
+				"defaults": {
+					"layout": "panel"
+				},
+				"variants": [
+					{
+						"id": "panel",
+						"label": "A panel",
+						"axes": {
+							"layout": "panel"
+						}
+					},
+					{
+						"id": "centered",
+						"label": "Centred",
+						"axes": {
+							"layout": "centered"
+						}
+					}
+				],
+				"defaultVariant": "panel",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "price",
+						"kind": "text",
+						"fields": [
+							"/price"
+						]
+					},
+					{
+						"place": "action",
+						"kind": "action",
+						"fields": [
+							"/actionLabel",
+							"/actionHref"
+						]
+					},
+					{
+						"place": "note",
+						"kind": "text",
+						"fields": [
+							"/note"
+						]
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/purchase@1.schema.json",
+				"title": "PurchaseContent",
+				"description": "Purchase content: the heading, a description, the price as it is shown, a note (delivery, returns) and one action. One object is valid in every purchase layout (a panel, centred).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"price"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"price": {
+						"description": "the price as it is shown",
+						"type": "string",
+						"maxLength": 24,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"note": {
+						"description": "a short note under the action; empty: none",
+						"type": "string",
+						"maxLength": 120
+					},
+					"actionLabel": {
+						"description": "the label of the action; the link is drawn when the label and the address are both set",
+						"type": "string",
+						"maxLength": 40
+					},
+					"actionHref": {
+						"description": "the address of the action",
+						"type": "string",
+						"maxLength": 2048,
+						"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+					}
+				}
+			}
+		},
+		{
+			"item": "store-policies",
+			"title": "Store Policies",
+			"description": "The heading, one paragraph and the policies (payment, delivery, returns), each with an icon, a title and a line: on cards in columns, or rows.",
+			"category": "storefront",
+			"prototype": "store-policies.svelte",
+			"contract": {
+				"item": "store-policies",
+				"version": 1,
+				"block": "block.storepolicies",
+				"organism": "StorePolicies",
+				"line": "simple",
+				"model": "store-policy@1",
+				"modelSchema": "https://registry.buildy.tw/models/store-policy@1.schema.json",
+				"axes": {
+					"layout": [
+						"cards",
+						"rows"
+					],
+					"cols": [
+						"3",
+						"2"
+					]
+				},
+				"defaults": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "cols3",
+						"label": "Three cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "Icons at the side",
+						"axes": {
+							"layout": "rows",
+							"cols": "3"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "cols3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.image",
+						"kind": "media",
+						"fields": [
+							"/items/*/image"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/store-policy@1.schema.json",
+				"title": "StorePolicyContent",
+				"description": "Store policy content: the heading, a description and an ordered list of policies (payment, delivery, returns), each with an icon picture, a title and a line. One object is valid in every store policy layout (three columns on cards, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the policies, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 6,
+						"items": {
+							"title": "PolicyItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"image": {
+									"description": "address of the icon picture; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								},
+								"title": {
+									"description": "the title of the policy",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one line about the policy; empty: none",
+									"type": "string",
+									"maxLength": 240
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "product-reviews",
+			"title": "Product Reviews",
+			"description": "The heading, one paragraph and the reviews on cards (the rating, the words, the reviewer with the portrait): in three or two columns, or one under the other.",
+			"category": "product",
+			"prototype": "product-reviews.svelte",
+			"contract": {
+				"item": "product-reviews",
+				"version": 1,
+				"block": "block.productreviews",
+				"organism": "ProductReviews",
+				"line": "simple",
+				"model": "reviews@1",
+				"modelSchema": "https://registry.buildy.tw/models/reviews@1.schema.json",
+				"axes": {
+					"layout": [
+						"cards",
+						"rows"
+					],
+					"cols": [
+						"3",
+						"2"
+					]
+				},
+				"defaults": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "cards3",
+						"label": "Three cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "One under the other",
+						"axes": {
+							"layout": "rows",
+							"cols": "3"
+						}
+					}
+				],
+				"defaultVariant": "cards3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.rating",
+						"kind": "text",
+						"fields": [
+							"/items/*/rating"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.quote",
+						"kind": "text",
+						"fields": [
+							"/items/*/quote"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.avatar",
+						"kind": "media",
+						"fields": [
+							"/items/*/avatar"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/reviews@1.schema.json",
+				"title": "ReviewsContent",
+				"description": "Reviews content: the heading, a description and an ordered list of reviews, each with the rating as it is shown, the words, the portrait, the name and a line (the date, the product). One object is valid in every reviews layout (cards in two or three columns, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the reviews, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 6,
+						"items": {
+							"title": "ReviewItem",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"rating",
+								"quote",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"rating": {
+									"description": "the rating as it is shown (5 / 5)",
+									"type": "string",
+									"maxLength": 16,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"quote": {
+									"description": "the words of the review",
+									"type": "string",
+									"maxLength": 400,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"avatar": {
+									"description": "address of the portrait; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								},
+								"title": {
+									"description": "the name of the reviewer",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "a line: the date or the product; empty: none",
+									"type": "string",
+									"maxLength": 80
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	]
 };
@@ -5719,7 +12245,7 @@ exports["isImageUrl"] = isImageUrl;
 });
 
 __def("packages/builder-core/src/catalog/props.json", function (exports) {
-  exports.default = {"format":"buildy-props-compact","version":1,"registry":"https://registry.buildy.tw","propsVersion":"0","digest":"sha256:1a27d06a6dcbf0a871a8b0cc006fb999758cf781c17ee27c9102b5fe4b8673f2","defs":{"SimpleQuestion":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title","description"],"additionalProperties":false},"data":{"anyOf":[{"$ref":"#/$defs/dataRef"},{"$ref":"#/$defs/dataOp"}]},"dataOp":{"description":"an operation over the data (packages/compose-gen/screens/src/ir.ts OPS)","type":"object","properties":{"op":{"enum":["add","and","at","cn","coalesce","cond","count","css","div","eq","firstOf","fitCols","ge","gt","has","le","len","list","lt","match","max","maxBy","min","money","mul","nbsp","ne","not","nth","num","or","pageWindow","pick","preset","range","recipe","round","str","sub","sumBy","tpl","undef","uniq","where","words"]},"args":{"type":"array"}},"required":["op","args"],"additionalProperties":false},"dataRef":{"description":"the data the block reads under this name (data[].as of the block spec)","type":"object","properties":{"$":{"type":"string","not":{"pattern":"^ui\\."}}},"required":["$"],"additionalProperties":false},"text":{"anyOf":[{"type":"string"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]},"uiRef":{"description":"a text of the ui dictionary, or a group of its texts for a record of labels","type":"object","properties":{"$":{"type":"string","pattern":"^ui\\."}},"required":["$"],"additionalProperties":false},"SimpleFeature":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"GalleryPhoto":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"imageAlt":{"$ref":"#/$defs/text"}},"required":["id","imageAlt"],"additionalProperties":false},"SimpleLogo":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"SimplePhoto":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"imageAlt":{"$ref":"#/$defs/text"}},"required":["id","imageAlt"],"additionalProperties":false},"SimpleStat":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"value":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","value","title"],"additionalProperties":false},"SimpleStep":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"label":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","label","title"],"additionalProperties":false},"SimpleStory":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"},"href":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"SimpleMember":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"avatar":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"SimpleQuote":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"quote":{"$ref":"#/$defs/text"},"avatar":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","quote","title"],"additionalProperties":false}},"items":{"faq-simple":{"organism":"FaqSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"FaqSimpleProps","description":"The simple FAQ (model faq@1): the heading, a description and the questions as a list, each with its answer. Axes: columns (one, two from md up).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the questions, in the order they are shown (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleQuestion"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"columns":{"type":"string","enum":["one","two"],"default":"two"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["SimpleQuestion","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["question"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}},"features-simple":{"organism":"FeaturesSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"FeaturesSimpleProps","description":"The simple features (model features@1): the heading, a description and the features as a list, each with an icon picture (a disc), a title and a line. Axes: layout (stack: the head over the list, aside: the head beside it from md up), cols (2, 3, 4 columns), marker (top: the icon over the copy, inline: beside it).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the features, in the order they are shown (1 to 8)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleFeature"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["stack","aside"],"default":"stack"},"cols":{"type":"string","enum":["2","3","4"],"default":"3"},"marker":{"type":"string","enum":["top","inline"],"default":"top"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["SimpleFeature","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["feature"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}},"gallery-hero":{"organism":"GalleryHero","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"GalleryHeroProps","description":"The gallery hero (model gallery@1): the heading, a description, up to two links as the actions and three or four photos as a list. Axes: media (end: the photos after the copy, start: before it from md up, bottom: in a row under it), count (3: three square photos in a row, 4: a 2 x 2 grid, a row of four under the copy).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"secondaryActionLabel":{"description":"the label of the second action (the secondary button after the first); drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"secondaryActionHref":{"description":"the address of the second action","$ref":"#/$defs/text","default":""},"photos":{"description":"the photos, in the order they are shown (3 or 4)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/GalleryPhoto"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["end","start","bottom"],"default":"end"},"count":{"type":"string","enum":["3","4"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","photos"],"additionalProperties":false},"defs":["GalleryPhoto","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/photos":["photo"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}],"/secondaryActionHref":[{"s":"button","k":"attr","a":"href"}],"/secondaryActionLabel":[{"s":"button","k":"text"}]}}},"hero-simple":{"organism":"HeroSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"HeroSimpleProps","description":"The simple hero (model hero@1): an optional badge, the heading, a description, up to two links as the actions (links styled as buttons, the first primary, the second secondary: each drawn only when its label and its address are both set) and one picture. Axes: media (end: the picture after the copy, start: before it, top: above it, wide, bottom: under it, wide), ratio (landscape: 4/3 beside the copy, portrait: narrowed and tall, 3 by 4, beside the copy from md up).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"badge":{"description":"a short pill above the heading; empty: no badge","$ref":"#/$defs/text","default":""},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"image":{"description":"address of the picture (an https URL or a path); none: the placeholder","$ref":"#/$defs/text"},"imageAlt":{"description":"alt text of the picture; none: the title","$ref":"#/$defs/text"},"imageDark":{"description":"address of the picture in the dark theme; none: image","$ref":"#/$defs/text"},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"secondaryActionLabel":{"description":"the label of the second action (the secondary button after the first); drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"secondaryActionHref":{"description":"the address of the second action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["end","start","top","bottom"],"default":"end"},"ratio":{"type":"string","enum":["landscape","portrait"],"default":"landscape"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/badge":[{"s":"badge","k":"text"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}],"/secondaryActionHref":[{"s":"button","k":"attr","a":"href"}],"/secondaryActionLabel":[{"s":"button","k":"text"}]}}},"intro-simple":{"organism":"IntroSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"IntroSimpleProps","description":"The simple intro (model intro@1): an optional badge, a large heading, a description and up to two links as the actions (the first primary, the second secondary, each drawn only when its label and its address are both set). Text only. Axes: place (middle: the copy in the middle of the section, bottom: low in a tall section, min-h-96).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"badge":{"description":"a short pill above the heading; empty: no badge","$ref":"#/$defs/text","default":""},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"secondaryActionLabel":{"description":"the label of the second action (the secondary button after the first); drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"secondaryActionHref":{"description":"the address of the second action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"place":{"type":"string","enum":["middle","bottom"],"default":"middle"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/badge":[{"s":"badge","k":"text"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}],"/secondaryActionHref":[{"s":"button","k":"attr","a":"href"}],"/secondaryActionLabel":[{"s":"button","k":"text"}]}}},"logos-simple":{"organism":"LogosSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"LogosSimpleProps","description":"The simple logos (model logos@1): a short heading and the logos as a list, each a picture named by the company. Axes: surface (plain: a wrapping row, cards: a grid on a card surface).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"logos":{"description":"the logos, in the order they are shown (1 to 8)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleLogo"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"surface":{"type":"string","enum":["plain","cards"],"default":"plain"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","logos"],"additionalProperties":false},"defs":["SimpleLogo","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/logos":["logo"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}]}}},"photos-simple":{"organism":"PhotosSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"PhotosSimpleProps","description":"The simple photos (model photos@1): the heading, a description and the photos as a list. Axes: cols (2, 3, 4 columns from md up; a pair at 4/3, more as squares).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"photos":{"description":"the photos, in the order they are shown (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimplePhoto"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"cols":{"type":"string","enum":["2","3","4"],"default":"4"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","photos"],"additionalProperties":false},"defs":["SimplePhoto","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/photos":["photo"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}]}}},"split-simple":{"organism":"SplitSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"SplitSimpleProps","description":"The simple split (model split@1): two halves of the section, the copy (the heading, a description, up to two links as the actions: the first primary, the second secondary, each drawn only when its label and its address are both set) and one picture that fills its half to the edge of the screen (no rounding). Axes: media (end: the picture after the copy, start: before it).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"image":{"description":"address of the picture (an https URL or a path); none: the placeholder","$ref":"#/$defs/text"},"imageAlt":{"description":"alt text of the picture; none: the title","$ref":"#/$defs/text"},"imageDark":{"description":"address of the picture in the dark theme; none: image","$ref":"#/$defs/text"},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"secondaryActionLabel":{"description":"the label of the second action (the secondary button after the first); drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"secondaryActionHref":{"description":"the address of the second action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"media":{"type":"string","enum":["end","start"],"default":"end"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}],"/secondaryActionHref":[{"s":"button","k":"attr","a":"href"}],"/secondaryActionLabel":[{"s":"button","k":"text"}]}}},"stats-simple":{"organism":"StatsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"StatsSimpleProps","description":"The simple stats (model stats@1): the heading, a description and the figures as a list, each with the value (large, the primary token), a label and a note. Axes: cols (2, 3, 4 columns from md up), surface (plain, cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the figures, in the order they are shown (1 to 4)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleStat"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"cols":{"type":"string","enum":["2","3","4"],"default":"4"},"surface":{"type":"string","enum":["plain","cards"],"default":"plain"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["SimpleStat","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["stat"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/value":[{"in":"card","k":"text"},{"k":"text"}],"/items/[]/title":[{"in":"card","k":"text"},{"k":"text"}],"/items/[]/description":[{"in":"card","k":"text"},{"k":"text"}]}}},"steps-simple":{"organism":"StepsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"StepsSimpleProps","description":"The simple steps (model steps@1): the heading, a description and the steps as an ordered list, each with its short label (a badge), a title and a line. Axes: layout (row: the steps in columns, column: one under the other with the label at the side), cols (3, 4 columns of the row).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"steps":{"description":"the steps, in the order they are taken (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleStep"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["row","column"],"default":"row"},"cols":{"type":"string","enum":["3","4"],"default":"4"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","steps"],"additionalProperties":false},"defs":["SimpleStep","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/steps":["step"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/steps/[]/label":[{"s":"badge","k":"text"}],"/steps/[]/title":[{"k":"text"}],"/steps/[]/description":[{"k":"text"}]}}},"stories-simple":{"organism":"StoriesSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"StoriesSimpleProps","description":"The simple stories (model stories@1): the heading, a description and the stories (posts) as a list, each with a cover picture, the title (a link when the story has an address) and a line. Axes: layout (grid: cards in columns, compact: small covers beside the copy on a card surface), cols (2, 3 columns).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"stories":{"description":"the stories, in the order they are shown (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleStory"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["grid","compact"],"default":"grid"},"cols":{"type":"string","enum":["2","3"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","stories"],"additionalProperties":false},"defs":["SimpleStory","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/stories":["story"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/stories/[]/href":[{"k":"attr","a":"href"}],"/stories/[]/title":[{"k":"text"}],"/stories/[]/description":[{"k":"text"}]}}},"team-simple":{"organism":"TeamSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"TeamSimpleProps","description":"The simple team (model team@1): the heading, a description and the members as a list, each with a portrait, the name and a line. Axes: cols (2, 3, 4 columns from md up), surface (plain, cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"members":{"description":"the people, in the order they are shown (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleMember"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"cols":{"type":"string","enum":["2","3","4"],"default":"3"},"surface":{"type":"string","enum":["plain","cards"],"default":"plain"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","members"],"additionalProperties":false},"defs":["SimpleMember","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/members":["member"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/members/[]/title":[{"in":"card","k":"text"},{"k":"text"}],"/members/[]/description":[{"in":"card","k":"text"},{"k":"text"}]}}},"testimonials-simple":{"organism":"TestimonialsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"TestimonialsSimpleProps","description":"The simple testimonials (model testimonials@1): the heading, a description and the quotes as a list, each with the words, then the author: the portrait, the name and a role line. Axes: layout (cards: the quotes on a card surface in columns, rows: the author beside the quote from md up, centered: the quotes centred, one under the other), cols (2, 3 columns of the cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"quotes":{"description":"the quotes, in the order they are shown (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleQuote"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["cards","rows","centered"],"default":"cards"},"cols":{"type":"string","enum":["2","3"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","quotes"],"additionalProperties":false},"defs":["SimpleQuote","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/quotes":["quote"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/quotes/[]/quote":[{"k":"text"}],"/quotes/[]/title":[{"k":"text"}],"/quotes/[]/description":[{"k":"text"}]}}}}};
+  exports.default = {"format":"buildy-props-compact","version":1,"registry":"https://registry.buildy.tw","propsVersion":"0","digest":"sha256:8d07269ba87ec6dcc150010f0708cde183b4e85c5ebe4a7b25c03b24ce4faf0c","defs":{"data":{"anyOf":[{"$ref":"#/$defs/dataRef"},{"$ref":"#/$defs/dataOp"}]},"dataOp":{"description":"an operation over the data (packages/compose-gen/screens/src/ir.ts OPS)","type":"object","properties":{"op":{"enum":["add","and","at","cn","coalesce","cond","count","css","div","eq","firstOf","fitCols","ge","gt","has","le","len","list","lt","match","max","maxBy","min","money","mul","nbsp","ne","not","nth","num","or","pageWindow","pick","preset","range","recipe","round","str","sub","sumBy","tpl","undef","uniq","where","words"]},"args":{"type":"array"}},"required":["op","args"],"additionalProperties":false},"dataRef":{"description":"the data the block reads under this name (data[].as of the block spec)","type":"object","properties":{"$":{"type":"string","not":{"pattern":"^ui\\."}}},"required":["$"],"additionalProperties":false},"text":{"anyOf":[{"type":"string"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]},"uiRef":{"description":"a text of the ui dictionary, or a group of its texts for a record of labels","type":"object","properties":{"$":{"type":"string","pattern":"^ui\\."}},"required":["$"],"additionalProperties":false},"ArticleSection":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title","description"],"additionalProperties":false},"ChapterItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"label":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","label","title"],"additionalProperties":false},"ChoiceItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"label":{"$ref":"#/$defs/text"},"href":{"$ref":"#/$defs/text"}},"required":["id","label","href"],"additionalProperties":false},"CollectionItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"href":{"$ref":"#/$defs/text"}},"required":["id","title","href"],"additionalProperties":false},"CompareLine":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"first":{"$ref":"#/$defs/text"},"second":{"$ref":"#/$defs/text"}},"required":["id","title","first","second"],"additionalProperties":false},"ContactItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"},"actionLabel":{"$ref":"#/$defs/text"},"actionHref":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"CourseModule":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"label":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"},"meta":{"$ref":"#/$defs/text"}},"required":["id","label","title"],"additionalProperties":false},"SimpleQuestion":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title","description"],"additionalProperties":false},"ShowcaseItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"SimpleFeature":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"FooterLink":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"label":{"$ref":"#/$defs/text"},"href":{"$ref":"#/$defs/text"}},"required":["id","label","href"],"additionalProperties":false},"GalleryPhoto":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"imageAlt":{"$ref":"#/$defs/text"}},"required":["id","imageAlt"],"additionalProperties":false},"HeaderLink":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"label":{"$ref":"#/$defs/text"},"href":{"$ref":"#/$defs/text"}},"required":["id","label","href"],"additionalProperties":false},"LocationItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"SimpleLogo":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"OfferItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"},"actionLabel":{"$ref":"#/$defs/text"},"actionHref":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"SimplePhoto":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"imageAlt":{"$ref":"#/$defs/text"}},"required":["id","imageAlt"],"additionalProperties":false},"PricingPlan":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"price":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"},"badge":{"$ref":"#/$defs/text"},"actionLabel":{"$ref":"#/$defs/text"},"actionHref":{"$ref":"#/$defs/text"}},"required":["id","title","price"],"additionalProperties":false},"ReviewItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"rating":{"$ref":"#/$defs/text"},"quote":{"$ref":"#/$defs/text"},"avatar":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","rating","quote","title"],"additionalProperties":false},"ProductPhoto":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"}},"required":["id"],"additionalProperties":false},"ProductItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"price":{"$ref":"#/$defs/text"},"href":{"$ref":"#/$defs/text"}},"required":["id","title","price"],"additionalProperties":false},"ProfileLink":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"label":{"$ref":"#/$defs/text"},"href":{"$ref":"#/$defs/text"}},"required":["id","label","href"],"additionalProperties":false},"SpecItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title","description"],"additionalProperties":false},"SimpleStat":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"value":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","value","title"],"additionalProperties":false},"SimpleStep":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"label":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","label","title"],"additionalProperties":false},"PolicyItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"SimpleStory":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"},"href":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"SimpleMember":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"avatar":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"SimpleQuote":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"quote":{"$ref":"#/$defs/text"},"avatar":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"}},"required":["id","quote","title"],"additionalProperties":false},"TopicItem":{"type":"object","properties":{"id":{"$ref":"#/$defs/text"},"label":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"$ref":"#/$defs/text"},"href":{"$ref":"#/$defs/text"}},"required":["id","label","title"],"additionalProperties":false}},"items":{"article-lead":{"organism":"ArticleLead","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ArticleLeadProps","description":"The article lead (model article-lead@1): the heading, the lead paragraph, the byline (the portrait, the author, the date) and the cover picture. Axes: media (top: the cover over the copy, wide, start: the cover before the copy from md up, end: after it).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"image":{"description":"address of the picture; none: the placeholder","$ref":"#/$defs/text","default":""},"imageAlt":{"description":"alt text of the picture","$ref":"#/$defs/text"},"author":{"description":"the name of the author","$ref":"#/$defs/text"},"avatar":{"description":"address of the portrait of the author; none: the placeholder","$ref":"#/$defs/text","default":""},"date":{"description":"the date as it is shown","$ref":"#/$defs/text"},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["top","start","end"],"default":"top"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","imageAlt","author","date"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/author":[{"k":"text"}],"/date":[{"k":"text"}]}}},"article-simple":{"organism":"ArticleSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ArticleSimpleProps","description":"The simple article (model article@1): the heading, a description and the sections of the text as a list, each a subheading and its paragraph. Axes: layout (column: one reading column, max-w-3xl, columns: two columns under the head from md up).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"sections":{"description":"the sections, in the order they are read (1 to 8)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/ArticleSection"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"layout":{"type":"string","enum":["column","columns"],"default":"column"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","sections"],"additionalProperties":false},"defs":["ArticleSection","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/sections":["article-section"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/sections/[]/title":[{"k":"text"}],"/sections/[]/description":[{"k":"text"}]}}},"chapters-simple":{"organism":"ChaptersSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ChaptersSimpleProps","description":"The simple chapters (model chapters@1): the heading, a description and the chapters as a list, each with a picture, a short label (a badge), the title and a paragraph. Axes: layout (rows: the picture at the start of each row, a third of it, paired: two columns, the picture under the copy).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the chapters, in the order they are read (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/ChapterItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["rows","paired"],"default":"rows"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["ChapterItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["chapter"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/label":[{"s":"badge","k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}},"choice-links":{"organism":"ChoiceLinks","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ChoiceLinksProps","description":"The choice links (model choices@1): the heading, a description and the options as a list of outline links (sizes, versions, plans). Axes: layout (row: a wrapping row placed by the align setting, grid: two columns, four from md up, each link the full width of its cell).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the options, in the order they are shown (1 to 8)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/ChoiceItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["row","grid"],"default":"row"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["ChoiceItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["choice"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/href":[{"s":"button","k":"attr","a":"href"}],"/items/[]/label":[{"s":"button","k":"text"}]}}},"collections-simple":{"organism":"CollectionsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"CollectionsSimpleProps","description":"The simple collections (model collections@1): the heading, a description and the collections as a list, each a picture and the name inside one link. Axes: cols (2, 3, 4 columns from md up).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the collections, in the order they are shown (1 to 8)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/CollectionItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"cols":{"type":"string","enum":["4","3","2"],"default":"4"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["CollectionItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["collection"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/href":[{"k":"attr","a":"href"}],"/items/[]/title":[{"k":"text"}]}}},"compare-simple":{"organism":"CompareSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"CompareSimpleProps","description":"The simple compare (model compare@1): the heading, a description, a header row with the names of the two options, then the rows as a list, each a feature with the value of each option, in three columns on a bordered surface. Axes: width (wide: the full container, narrow: max-w-3xl).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"firstLabel":{"description":"the name of the first option","$ref":"#/$defs/text"},"secondLabel":{"description":"the name of the second option","$ref":"#/$defs/text"},"rows":{"description":"the rows, in the order they are shown (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/CompareLine"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"width":{"type":"string","enum":["wide","narrow"],"default":"wide"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","firstLabel","secondLabel","rows"],"additionalProperties":false},"defs":["CompareLine","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/rows":["compare-row"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/firstLabel":[{"k":"text"}],"/secondLabel":[{"k":"text"}],"/rows/[]/title":[{"k":"text"}],"/rows/[]/first":[{"k":"text"}],"/rows/[]/second":[{"k":"text"}]}}},"contacts-simple":{"organism":"ContactsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ContactsSimpleProps","description":"The simple contacts (model contacts@1): the heading, a description and the contacts as a list on a card surface, each with an icon picture (a disc), the name, a line and an action. Axes: layout (cards: columns, the copy centred by the align setting, rows: the icon beside the copy), cols (2, 3 columns).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the contacts, in the order they are shown (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/ContactItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["cards","rows"],"default":"cards"},"cols":{"type":"string","enum":["3","2"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["ContactItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["contact"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}],"/items/[]/actionHref":[{"s":"button","k":"attr","a":"href"}],"/items/[]/actionLabel":[{"s":"button","k":"text"}]}}},"course-outline":{"organism":"CourseOutline","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"CourseOutlineProps","description":"The course outline (model curriculum@1): the heading, a description and the modules as an ordered list, each with a short label (a badge), the title, a line and a meta line (the length). Axes: layout (rows: one under the other in a narrow column, cards: two columns on a card surface from md up).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"modules":{"description":"the modules, in the order they are taken (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/CourseModule"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"layout":{"type":"string","enum":["rows","cards"],"default":"rows"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","modules"],"additionalProperties":false},"defs":["CourseModule","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/modules":["module"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/modules/[]/label":[{"s":"badge","k":"text"}],"/modules/[]/title":[{"k":"text"}],"/modules/[]/description":[{"k":"text"}],"/modules/[]/meta":[{"k":"text"}]}}},"error-simple":{"organism":"ErrorSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ErrorSimpleProps","description":"The simple error (model error@1): the code (large, the primary token), the heading, a description and one action back. Text only. The align setting places it: centred or at the start.","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"code":{"description":"the code as it is shown (404)","$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","code","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/code":[{"k":"text"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}]}}},"event-intro":{"organism":"EventIntro","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"EventIntroProps","description":"The event intro (model event@1): an optional badge, the name of the event as a large heading, a description, the date and the place as a list of two facts, and one action. Text only. The align setting places it: centred or at the start.","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"badge":{"description":"a short pill above the heading; empty: no badge","$ref":"#/$defs/text","default":""},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"date":{"description":"the date and the time as they are shown","$ref":"#/$defs/text"},"place":{"description":"the place or the city, or online","$ref":"#/$defs/text"},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","date","place"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/badge":[{"s":"badge","k":"text"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/date":[{"in":"event-date","k":"text"}],"/place":[{"in":"event-place","k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}]}}},"faq-simple":{"organism":"FaqSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"FaqSimpleProps","description":"The simple FAQ (model faq@1): the heading, a description and the questions as a list, each with its answer. Axes: columns (one, two from md up).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the questions, in the order they are shown (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleQuestion"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"columns":{"type":"string","enum":["one","two"],"default":"two"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["SimpleQuestion","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["question"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}},"feature-showcase-simple":{"organism":"FeatureShowcaseSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"FeatureShowcaseSimpleProps","description":"The simple feature showcase (model feature-showcase@1): the heading, a description, one picture and the key points as a list (a title, a line). Axes: media (end: the picture after the copy, start: before it from md up, top: the head over a wide picture, the points in three columns under it).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"image":{"description":"address of the picture; none: the placeholder","$ref":"#/$defs/text","default":""},"imageAlt":{"description":"alt text of the picture","$ref":"#/$defs/text"},"items":{"description":"the key points, in the order they are shown (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/ShowcaseItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["end","start","top"],"default":"end"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","imageAlt","items"],"additionalProperties":false},"defs":["ShowcaseItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["point"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}},"features-simple":{"organism":"FeaturesSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"FeaturesSimpleProps","description":"The simple features (model features@1): the heading, a description and the features as a list, each with an icon picture (a disc), a title and a line. Axes: layout (stack: the head over the list, aside: the head beside it from md up), cols (2, 3, 4 columns), marker (top: the icon over the copy, inline: beside it).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the features, in the order they are shown (1 to 8)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleFeature"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["stack","aside"],"default":"stack"},"cols":{"type":"string","enum":["2","3","4"],"default":"3"},"marker":{"type":"string","enum":["top","inline"],"default":"top"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["SimpleFeature","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["feature"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}},"figure-simple":{"organism":"FigureSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"FigureSimpleProps","description":"The simple figure (model figure@1): one large picture with its caption in a figure: the title (it names the section), a line and the credit. Axes: layout (wide: the caption centred under the picture, end: the caption beside it at the end from md up, start: at the start).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"image":{"description":"address of the picture; none: the placeholder","$ref":"#/$defs/text","default":""},"imageAlt":{"description":"alt text of the picture","$ref":"#/$defs/text"},"title":{"description":"the title of the caption (names the section)","$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"credit":{"description":"the credit of the picture; empty: none","$ref":"#/$defs/text","default":""},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"layout":{"type":"string","enum":["wide","end","start"],"default":"wide"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","imageAlt","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/credit":[{"k":"text"}]}}},"footer-simple":{"organism":"FooterSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"FooterSimpleProps","description":"The simple footer (model footer@1): the brand, one line about the site, the links as a list in a nav and the copyright line. Axes: layout (row: the brand beside a row of links, grid: the brand beside the links in two or three columns, centered: everything centred).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"brand":{"description":"the name of the site","$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"links":{"description":"the links, in the order they are shown (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/FooterLink"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"copyright":{"description":"the copyright line","$ref":"#/$defs/text"},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"compact"},"layout":{"type":"string","enum":["row","grid","centered"],"default":"row"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","brand","links","copyright"],"additionalProperties":false},"defs":["FooterLink","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/links":["footer-link"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/brand":[{"k":"text"}],"/description":[{"k":"text"}],"/links/[]/href":[{"k":"attr","a":"href"}],"/links/[]/label":[{"k":"text"}],"/copyright":[{"k":"text"}]}}},"gallery-hero":{"organism":"GalleryHero","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"GalleryHeroProps","description":"The gallery hero (model gallery@1): the heading, a description, up to two links as the actions and three or four photos as a list. Axes: media (end: the photos after the copy, start: before it from md up, bottom: in a row under it), count (3: three square photos in a row, 4: a 2 x 2 grid, a row of four under the copy).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"secondaryActionLabel":{"description":"the label of the second action (the secondary button after the first); drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"secondaryActionHref":{"description":"the address of the second action","$ref":"#/$defs/text","default":""},"photos":{"description":"the photos, in the order they are shown (3 or 4)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/GalleryPhoto"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["end","start","bottom"],"default":"end"},"count":{"type":"string","enum":["3","4"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","photos"],"additionalProperties":false},"defs":["GalleryPhoto","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/photos":["photo"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}],"/secondaryActionHref":[{"s":"button","k":"attr","a":"href"}],"/secondaryActionLabel":[{"s":"button","k":"text"}]}}},"header-simple":{"organism":"HeaderSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"HeaderSimpleProps","description":"The simple header (model header@1): the brand as the link home, the navigation links as a list in a nav and one action. No menu button: the links wrap under the brand on a narrow screen. Axes: layout (inline: the links in the middle, end: the links beside the action, centered: the brand over the links).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"brand":{"description":"the name of the site (the link home)","$ref":"#/$defs/text"},"brandHref":{"description":"the address of the home page","$ref":"#/$defs/text"},"links":{"description":"the navigation links, in the order they are shown (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/HeaderLink"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"layout":{"type":"string","enum":["inline","end","centered"],"default":"inline"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","brand","brandHref","links"],"additionalProperties":false},"defs":["HeaderLink","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/links":["nav-link"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/brandHref":[{"k":"attr","a":"href"}],"/brand":[{"k":"text"}],"/links/[]/href":[{"k":"attr","a":"href"}],"/links/[]/label":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}]}}},"hero-simple":{"organism":"HeroSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"HeroSimpleProps","description":"The simple hero (model hero@1): an optional badge, the heading, a description, up to two links as the actions (links styled as buttons, the first primary, the second secondary: each drawn only when its label and its address are both set) and one picture. Axes: media (end: the picture after the copy, start: before it, top: above it, wide, bottom: under it, wide), ratio (landscape: 4/3 beside the copy, portrait: narrowed and tall, 3 by 4, beside the copy from md up).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"badge":{"description":"a short pill above the heading; empty: no badge","$ref":"#/$defs/text","default":""},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"image":{"description":"address of the picture (an https URL or a path); none: the placeholder","$ref":"#/$defs/text"},"imageAlt":{"description":"alt text of the picture; none: the title","$ref":"#/$defs/text"},"imageDark":{"description":"address of the picture in the dark theme; none: image","$ref":"#/$defs/text"},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"secondaryActionLabel":{"description":"the label of the second action (the secondary button after the first); drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"secondaryActionHref":{"description":"the address of the second action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["end","start","top","bottom"],"default":"end"},"ratio":{"type":"string","enum":["landscape","portrait"],"default":"landscape"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/badge":[{"s":"badge","k":"text"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}],"/secondaryActionHref":[{"s":"button","k":"attr","a":"href"}],"/secondaryActionLabel":[{"s":"button","k":"text"}]}}},"intro-simple":{"organism":"IntroSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"IntroSimpleProps","description":"The simple intro (model intro@1): an optional badge, a large heading, a description and up to two links as the actions (the first primary, the second secondary, each drawn only when its label and its address are both set). Text only. Axes: place (middle: the copy in the middle of the section, bottom: low in a tall section, min-h-96).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"badge":{"description":"a short pill above the heading; empty: no badge","$ref":"#/$defs/text","default":""},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"secondaryActionLabel":{"description":"the label of the second action (the secondary button after the first); drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"secondaryActionHref":{"description":"the address of the second action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"place":{"type":"string","enum":["middle","bottom"],"default":"middle"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/badge":[{"s":"badge","k":"text"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}],"/secondaryActionHref":[{"s":"button","k":"attr","a":"href"}],"/secondaryActionLabel":[{"s":"button","k":"text"}]}}},"locations-simple":{"organism":"LocationsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"LocationsSimpleProps","description":"The simple locations (model locations@1): the heading, a description, the offices as a list (the name, the address) and one picture (a map or a place). Axes: media (start: the picture before the copy from md up, end: after it).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"image":{"description":"address of the picture; none: the placeholder","$ref":"#/$defs/text","default":""},"imageAlt":{"description":"alt text of the picture","$ref":"#/$defs/text"},"items":{"description":"the offices, in the order they are shown (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/LocationItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["start","end"],"default":"start"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","imageAlt","items"],"additionalProperties":false},"defs":["LocationItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["location"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}},"logos-simple":{"organism":"LogosSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"LogosSimpleProps","description":"The simple logos (model logos@1): a short heading and the logos as a list, each a picture named by the company. Axes: surface (plain: a wrapping row, cards: a grid on a card surface).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"logos":{"description":"the logos, in the order they are shown (1 to 8)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleLogo"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"surface":{"type":"string","enum":["plain","cards"],"default":"plain"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","logos"],"additionalProperties":false},"defs":["SimpleLogo","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/logos":["logo"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}]}}},"offers-simple":{"organism":"OffersSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"OffersSimpleProps","description":"The simple offers (model offers@1): the heading, a description and the offers as a list on a card surface, each with a title, a line and an action. Axes: cols (2, 3 columns from md up).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the offers, in the order they are shown (1 to 3)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/OfferItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"cols":{"type":"string","enum":["2","3"],"default":"2"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["OfferItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["offer"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}],"/items/[]/actionHref":[{"s":"button","k":"attr","a":"href"}],"/items/[]/actionLabel":[{"s":"button","k":"text"}]}}},"photos-simple":{"organism":"PhotosSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"PhotosSimpleProps","description":"The simple photos (model photos@1): the heading, a description and the photos as a list. Axes: cols (2, 3, 4 columns from md up; a pair at 4/3, more as squares).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"photos":{"description":"the photos, in the order they are shown (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimplePhoto"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"cols":{"type":"string","enum":["2","3","4"],"default":"4"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","photos"],"additionalProperties":false},"defs":["SimplePhoto","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/photos":["photo"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}]}}},"pricing-simple":{"organism":"PricingSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"PricingSimpleProps","description":"The simple pricing (model pricing@1): the heading, a description and the plans as a list on a card surface, each with the name, an optional badge (the highlighted plan), a line, the price and an action. Axes: layout (cards: columns, rows: one under the other, a row each from md up), cols (2, 3 columns of the cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"plans":{"description":"the plans, in the order they are shown (1 to 4)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/PricingPlan"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["cards","rows"],"default":"cards"},"cols":{"type":"string","enum":["3","2"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","plans"],"additionalProperties":false},"defs":["PricingPlan","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/plans":["plan"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/plans/[]/badge":[{"s":"badge","k":"text"}],"/plans/[]/title":[{"k":"text"}],"/plans/[]/description":[{"k":"text"}],"/plans/[]/price":[{"k":"text"}],"/plans/[]/actionHref":[{"s":"button","k":"attr","a":"href"}],"/plans/[]/actionLabel":[{"s":"button","k":"text"}]}}},"product-reviews":{"organism":"ProductReviews","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ProductReviewsProps","description":"The product reviews (model reviews@1): the heading, a description and the reviews as a list on a card surface, each with the rating as it is shown (the primary token), the words, then the reviewer: the portrait, the name and a line. Axes: layout (cards: columns, rows: one under the other in a narrow column), cols (2, 3 columns of the cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the reviews, in the order they are shown (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/ReviewItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["cards","rows"],"default":"cards"},"cols":{"type":"string","enum":["3","2"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["ReviewItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["review"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/rating":[{"k":"text"}],"/items/[]/quote":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}},"product-simple":{"organism":"ProductSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ProductSimpleProps","description":"The simple product (model product@1): the main picture and up to four thumbnails as a list (named by the product), beside the name as the heading, the price, a description and one action. Axes: media (start: the pictures before the copy from md up, end: after it, top: above it, wide).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"price":{"description":"the price as it is shown","$ref":"#/$defs/text"},"image":{"description":"address of the main picture; none: the placeholder","$ref":"#/$defs/text","default":""},"imageAlt":{"description":"alt text of the main picture","$ref":"#/$defs/text"},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"photos":{"description":"more pictures, thumbnails under the main one (0 to 4)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/ProductPhoto"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["start","end","top"],"default":"start"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","price","imageAlt","photos"],"additionalProperties":false},"defs":["ProductPhoto","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/photos":["thumb"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/price":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}]}}},"products-simple":{"organism":"ProductsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ProductsSimpleProps","description":"The simple products (model products@1): the heading, a description and the products as a list, each with a picture, the name (a link when the product has an address) and the price. Axes: layout (grid: columns, rows: the picture at the start of each row, a quarter of it), cols (3, 4 columns of the grid).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the products, in the order they are shown (1 to 8)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/ProductItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["grid","rows"],"default":"grid"},"cols":{"type":"string","enum":["3","4"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["ProductItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["product"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/href":[{"k":"attr","a":"href"}],"/items/[]/title":[{"k":"text"}],"/items/[]/price":[{"k":"text"}]}}},"profile-intro":{"organism":"ProfileIntro","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ProfileIntroProps","description":"The profile intro (model profile@1): the name as the heading, the role (the primary token), a description, the links of the person as a list of small outline links, and the portrait. Axes: media (end: the portrait after the copy, start: before it from md up, top: a disc over the copy).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"description":"the name of the person (the heading)","$ref":"#/$defs/text"},"role":{"description":"the role and the company","$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"image":{"description":"address of the picture; none: the placeholder","$ref":"#/$defs/text","default":""},"imageAlt":{"description":"alt text of the picture","$ref":"#/$defs/text"},"links":{"description":"the links of the person, in the order they are shown (0 to 4)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/ProfileLink"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"start"},"media":{"type":"string","enum":["end","start","top"],"default":"end"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","role","imageAlt","links"],"additionalProperties":false},"defs":["ProfileLink","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/links":["profile-link"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/role":[{"k":"text"}],"/description":[{"k":"text"}],"/links/[]/href":[{"s":"button","k":"attr","a":"href"}],"/links/[]/label":[{"s":"button","k":"text"}]}}},"pull-quote-simple":{"organism":"PullQuoteSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"PullQuoteSimpleProps","description":"The simple pull quote (model pull-quote@1): the words in a blockquote, then the author (names the section), a role line and the source as a link, in a figure. Axes: layout (rule: a bar in the primary token at the start, centered: centred, no bar).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"quote":{"description":"the words that are quoted","$ref":"#/$defs/text"},"title":{"description":"the name of the author (names the section)","$ref":"#/$defs/text"},"description":{"description":"the role of the author; empty: none","$ref":"#/$defs/text","default":""},"sourceLabel":{"description":"the label of the source; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"sourceHref":{"description":"the address of the source","$ref":"#/$defs/text","default":""},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"layout":{"type":"string","enum":["rule","centered"],"default":"rule"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","quote","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/quote":[{"k":"text"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/sourceHref":[{"k":"attr","a":"href"}],"/sourceLabel":[{"k":"text"}]}}},"purchase-simple":{"organism":"PurchaseSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"PurchaseSimpleProps","description":"The simple purchase (model purchase@1): on a card surface, the heading and a description beside the price, one action and a note. Axes: layout (panel: the copy at the start, the price and the action at the end from md up, centered: one centred column).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"price":{"description":"the price as it is shown","$ref":"#/$defs/text"},"note":{"description":"a short note under the action; empty: none","$ref":"#/$defs/text","default":""},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"layout":{"type":"string","enum":["panel","centered"],"default":"panel"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","price"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/price":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}],"/note":[{"k":"text"}]}}},"rating-simple":{"organism":"RatingSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"RatingSimpleProps","description":"The simple rating (model rating@1): the score (large), the heading that names it, a line (the count, the scale) and the source as a link. Axes: layout (bar: one row on a card surface from md up, centered: centred, one under the other).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"value":{"description":"the score as it is shown (4.9, 98%)","$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"the count and the scale; empty: none","$ref":"#/$defs/text","default":""},"sourceLabel":{"description":"the label of the source; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"sourceHref":{"description":"the address of the source","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"layout":{"type":"string","enum":["bar","centered"],"default":"bar"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","value","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/value":[{"k":"text"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/sourceHref":[{"k":"attr","a":"href"}],"/sourceLabel":[{"k":"text"}]}}},"specs-simple":{"organism":"SpecsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"SpecsSimpleProps","description":"The simple specs (model specs@1): the heading, a description and the specifications as a list of rows on a muted surface, each the name and its value. Axes: layout (rows: one narrow column, columns: two columns from md up).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the specifications, in the order they are shown (1 to 16)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SpecItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["rows","columns"],"default":"rows"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["SpecItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["spec"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}},"split-simple":{"organism":"SplitSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"SplitSimpleProps","description":"The simple split (model split@1): two halves of the section, the copy (the heading, a description, up to two links as the actions: the first primary, the second secondary, each drawn only when its label and its address are both set) and one picture that fills its half to the edge of the screen (no rounding). Axes: media (end: the picture after the copy, start: before it).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"image":{"description":"address of the picture (an https URL or a path); none: the placeholder","$ref":"#/$defs/text"},"imageAlt":{"description":"alt text of the picture; none: the title","$ref":"#/$defs/text"},"imageDark":{"description":"address of the picture in the dark theme; none: image","$ref":"#/$defs/text"},"actionLabel":{"description":"the label of the action; the link is drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"actionHref":{"description":"the address of the action","$ref":"#/$defs/text","default":""},"secondaryActionLabel":{"description":"the label of the second action (the secondary button after the first); drawn when the label and the address are both set","$ref":"#/$defs/text","default":""},"secondaryActionHref":{"description":"the address of the second action","$ref":"#/$defs/text","default":""},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"media":{"type":"string","enum":["end","start"],"default":"end"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title"],"additionalProperties":false},"defs":["data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/actionHref":[{"s":"button","k":"attr","a":"href"}],"/actionLabel":[{"s":"button","k":"text"}],"/secondaryActionHref":[{"s":"button","k":"attr","a":"href"}],"/secondaryActionLabel":[{"s":"button","k":"text"}]}}},"stats-simple":{"organism":"StatsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"StatsSimpleProps","description":"The simple stats (model stats@1): the heading, a description and the figures as a list, each with the value (large, the primary token), a label and a note. Axes: cols (2, 3, 4 columns from md up), surface (plain, cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the figures, in the order they are shown (1 to 4)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleStat"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"cols":{"type":"string","enum":["2","3","4"],"default":"4"},"surface":{"type":"string","enum":["plain","cards"],"default":"plain"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["SimpleStat","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["stat"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/value":[{"in":"card","k":"text"},{"k":"text"}],"/items/[]/title":[{"in":"card","k":"text"},{"k":"text"}],"/items/[]/description":[{"in":"card","k":"text"},{"k":"text"}]}}},"steps-simple":{"organism":"StepsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"StepsSimpleProps","description":"The simple steps (model steps@1): the heading, a description and the steps as an ordered list, each with its short label (a badge), a title and a line. Axes: layout (row: the steps in columns, column: one under the other with the label at the side), cols (3, 4 columns of the row).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"steps":{"description":"the steps, in the order they are taken (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleStep"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["row","column"],"default":"row"},"cols":{"type":"string","enum":["3","4"],"default":"4"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","steps"],"additionalProperties":false},"defs":["SimpleStep","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/steps":["step"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/steps/[]/label":[{"s":"badge","k":"text"}],"/steps/[]/title":[{"k":"text"}],"/steps/[]/description":[{"k":"text"}]}}},"store-policies":{"organism":"StorePolicies","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"StorePoliciesProps","description":"The store policies (model store-policy@1): the heading, a description and the policies as a list, each with an icon picture (a small rounded square), a title and a line. Axes: layout (cards: columns on a card surface, rows: the icon beside the copy, two columns), cols (2, 3 columns of the cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the policies, in the order they are shown (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/PolicyItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["cards","rows"],"default":"cards"},"cols":{"type":"string","enum":["3","2"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["PolicyItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["policy"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}},"stories-simple":{"organism":"StoriesSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"StoriesSimpleProps","description":"The simple stories (model stories@1): the heading, a description and the stories (posts) as a list, each with a cover picture, the title (a link when the story has an address) and a line. Axes: layout (grid: cards in columns, compact: small covers beside the copy on a card surface), cols (2, 3 columns).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"stories":{"description":"the stories, in the order they are shown (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleStory"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["grid","compact"],"default":"grid"},"cols":{"type":"string","enum":["2","3"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","stories"],"additionalProperties":false},"defs":["SimpleStory","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/stories":["story"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/stories/[]/href":[{"k":"attr","a":"href"}],"/stories/[]/title":[{"k":"text"}],"/stories/[]/description":[{"k":"text"}]}}},"team-simple":{"organism":"TeamSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"TeamSimpleProps","description":"The simple team (model team@1): the heading, a description and the members as a list, each with a portrait, the name and a line. Axes: layout (grid: the portrait over the copy, aside: the head beside large square portraits from md up, byline: a small disc beside the copy, list: a larger disc beside the copy, two columns), cols (2, 3, 4 columns from md up), surface (plain, cards: each member on a card surface).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"members":{"description":"the people, in the order they are shown (1 to 12)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleMember"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["grid","aside","byline","list"],"default":"grid"},"cols":{"type":"string","enum":["2","3","4"],"default":"3"},"surface":{"type":"string","enum":["plain","cards"],"default":"plain"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","members"],"additionalProperties":false},"defs":["SimpleMember","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/members":["member"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/members/[]/title":[{"k":"text"}],"/members/[]/description":[{"k":"text"}]}}},"testimonials-simple":{"organism":"TestimonialsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"TestimonialsSimpleProps","description":"The simple testimonials (model testimonials@1): the heading, a description and the quotes as a list, each with the words, then the author: the portrait, the name and a role line. Axes: layout (cards: the quotes on a card surface in columns, rows: the author beside the quote from md up, centered: the quotes centred, one under the other), cols (2, 3 columns of the cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"quotes":{"description":"the quotes, in the order they are shown (1 to 6)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/SimpleQuote"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["cards","rows","centered"],"default":"cards"},"cols":{"type":"string","enum":["2","3"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","quotes"],"additionalProperties":false},"defs":["SimpleQuote","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/quotes":["quote"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/quotes/[]/quote":[{"k":"text"}],"/quotes/[]/title":[{"k":"text"}],"/quotes/[]/description":[{"k":"text"}]}}},"topics-simple":{"organism":"TopicsSimple","events":[],"slots":[],"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"TopicsSimpleProps","description":"The simple topics (model topics@1): the heading, a description and the topics as a list on a card surface, each with a short label (a badge), the title (a link when the topic has an address) and a line. Axes: layout (cards: columns, rows: one under the other), cols (2, 3 columns of the cards).","type":"object","properties":{"id":{"$ref":"#/$defs/text"},"title":{"$ref":"#/$defs/text"},"description":{"description":"one paragraph under the heading; empty: none","$ref":"#/$defs/text","default":""},"items":{"description":"the topics, in the order they are shown (1 to 8)","anyOf":[{"type":"array","items":{"anyOf":[{"$ref":"#/$defs/TopicItem"},{"$ref":"#/$defs/uiRef"},{"$ref":"#/$defs/data"}]}},{"$ref":"#/$defs/data"}]},"level":{"description":"the level of the heading (1 on the first section of a page)","enum":[1,2,3],"default":2},"padding":{"description":"the vertical padding of the section: compact (py-8 lg:py-16), standard (py-16 lg:py-32), spacious (py-24 lg:py-40)","type":"string","enum":["compact","standard","spacious"],"default":"standard"},"align":{"description":"the alignment of the copy: start, center or end (logical, follows the writing direction): items-* on the column, text-* on the text","type":"string","enum":["start","center","end"],"default":"center"},"layout":{"type":"string","enum":["cards","rows"],"default":"cards"},"cols":{"type":"string","enum":["2","3"],"default":"3"},"landmarkLabel":{"description":"accessible name of the landmark of this component when the page shows it more than once (a variant); replaces the heading name of the root landmark, follows the name of a nested one","$ref":"#/$defs/text"}},"required":["id","title","items"],"additionalProperties":false},"defs":["TopicItem","data","dataOp","dataRef","text","uiRef"],"viewMap":{"rows":{"/items":["topic"]},"fields":{"/landmarkLabel":[{"k":"attr","a":"aria-label"}],"/title":[{"k":"text"}],"/description":[{"k":"text"}],"/items/[]/label":[{"s":"badge","k":"text"}],"/items/[]/href":[{"k":"attr","a":"href"}],"/items/[]/title":[{"k":"text"}],"/items/[]/description":[{"k":"text"}]}}}}};
 });
 
 __def("packages/builder-core/src/catalog/props-schema.ts", function (exports) {

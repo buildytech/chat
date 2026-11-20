@@ -12,6 +12,27 @@
         "src/compose/Alert.svelte": "37e342bfd9dbabc0abd650871b82addd8be3016997ae9f802ff1f65bf42c85aa"
       }
     },
+    "registry.buildy.tw|svelte|article-lead": {
+      "name": "article-lead",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/article-lead.svelte": "6b8dadc63eefb6828f72e8d1d81ba15ba4642123f316f25c190c2091a217cd76"
+      }
+    },
+    "registry.buildy.tw|svelte|article-simple": {
+      "name": "article-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/article-simple.svelte": "13e366b82f8f18fed4c720f153d051e5e1f7921bf5a6dc17bdce8b8f32e62b86",
+        "src/blocks/article-simple.types.ts": "cd2cb6dfbec1f30516f00c0234ad7057d054a34d0427cd942f81d13f44618303"
+      }
+    },
     "registry.buildy.tw|svelte|badge": {
       "name": "badge",
       "type": "registry:ui",
@@ -132,6 +153,17 @@
         "src/compose/CardTitle.svelte": "3d3f94fffe728ebf849661c0dbd61da5ae9b920bebb2e03fc4d84f34b3358e60"
       }
     },
+    "registry.buildy.tw|svelte|chapters-simple": {
+      "name": "chapters-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/chapters-simple.svelte": "ab4b6751911b08ba88c57af348d30117ae8ce981b0f180a4c3a0c4971c9b6718",
+        "src/blocks/chapters-simple.types.ts": "9918774c55f4036f2774955e88679f24989a5f19f8bca4ef5f7c2296ebb35851"
+      }
+    },
     "registry.buildy.tw|svelte|checkbox": {
       "name": "checkbox",
       "type": "registry:ui",
@@ -140,6 +172,39 @@
       "runtime": "svelte",
       "files": {
         "src/compose/Checkbox.svelte": "d129c801a6f9e9a804bce3d6784318d7cdc9cdc05944021ddd40e878a3025b23"
+      }
+    },
+    "registry.buildy.tw|svelte|choice-links": {
+      "name": "choice-links",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/choice-links.svelte": "9470376a0389c97c29e1f2a9108d7a1cb0cba95946217ef7bc5416257f31e94a",
+        "src/blocks/choice-links.types.ts": "45fac604423f4d3eb5c661bf4525c683bdbe5397e5e8abd34f212aad0e60216d"
+      }
+    },
+    "registry.buildy.tw|svelte|collections-simple": {
+      "name": "collections-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/collections-simple.svelte": "d25e829ccf225e6ab7257b4674967ec4ad50ada17fdae7b1ba001f45381f32a8",
+        "src/blocks/collections-simple.types.ts": "e91439cbde46d9118aa4e86deb6f950abde895dc043f7cc61933dfb616c4853e"
+      }
+    },
+    "registry.buildy.tw|svelte|compare-simple": {
+      "name": "compare-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/compare-simple.svelte": "1e361ba15762f793503bc6c8b0dcdcef07848598eb2e27f20e769ec42e195d19",
+        "src/blocks/compare-simple.types.ts": "a8e754f6a889a0f3ad6b7a2cde108f20e2d7e1bf459a4f71837adcae43cb3433"
       }
     },
     "registry.buildy.tw|svelte|compose": {
@@ -152,6 +217,17 @@
         "src/compose/index.ts": "0f58c8f50bfee44637732ba24434f63914755f13b625a7854d0dccee13b008c3"
       }
     },
+    "registry.buildy.tw|svelte|contacts-simple": {
+      "name": "contacts-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/contacts-simple.svelte": "48bd39e41c664af29c860f85daa618017bf2817cfdbda6ac93b443a6cfe614bb",
+        "src/blocks/contacts-simple.types.ts": "763b1d9001a5c1e5295520b5610a5e9b844ed37bd1255f0d130bffe90b192dd6"
+      }
+    },
     "registry.buildy.tw|svelte|container": {
       "name": "container",
       "type": "registry:ui",
@@ -160,6 +236,17 @@
       "runtime": "svelte",
       "files": {
         "src/compose/Container.svelte": "6209b25b4bb7dada3437533e1c2fca9faab1ccccfc3117d5606c9e75c08062c1"
+      }
+    },
+    "registry.buildy.tw|svelte|course-outline": {
+      "name": "course-outline",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/course-outline.svelte": "cf637bfc1fd2b07b70df0d16e7441f9e4912c0624f0e5d1f5ea70edd32f11a36",
+        "src/blocks/course-outline.types.ts": "78e78a7e4199f70d2e34fdfd4f60c2173586fa4d9932f358365d6f1001f797fb"
       }
     },
     "registry.buildy.tw|svelte|dialog": {
@@ -182,6 +269,26 @@
         "src/compose/Disclosure.svelte": "e561da4516695815e57f8a8b74e42306904cbff2d462b492fb317cbacdc600b9"
       }
     },
+    "registry.buildy.tw|svelte|error-simple": {
+      "name": "error-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/error-simple.svelte": "7eb285f0968b948da8417882013258a37bef97b315c6b7ef45467bb0ac2e3643"
+      }
+    },
+    "registry.buildy.tw|svelte|event-intro": {
+      "name": "event-intro",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/event-intro.svelte": "bc7a6b5d8af82c2859c27a495d8b9361eac67549aa2991f1fdd59aa8a890a705"
+      }
+    },
     "registry.buildy.tw|svelte|faq-simple": {
       "name": "faq-simple",
       "type": "registry:block",
@@ -191,6 +298,17 @@
       "files": {
         "src/blocks/faq-simple.svelte": "b0be260e46778ee9b5314ee5c46cf38df2847760355c7ed35b6c20d480793493",
         "src/blocks/faq-simple.types.ts": "99e5b3d3afaf2e0cde95ca75f7746cba75c354af6894a5b103cbebe1e77d7353"
+      }
+    },
+    "registry.buildy.tw|svelte|feature-showcase-simple": {
+      "name": "feature-showcase-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/feature-showcase-simple.svelte": "efcfd4a1dc3b8e2ac0b18ef40c5cfebf8d353bfb8e44c2f0f7d8e96776b2f8a5",
+        "src/blocks/feature-showcase-simple.types.ts": "a882694f7d7826175ece3b3107faff4f6a343db672422e972acbb1406497fb8b"
       }
     },
     "registry.buildy.tw|svelte|features-simple": {
@@ -222,6 +340,27 @@
       "runtime": "svelte",
       "files": {
         "src/compose/Fieldset.svelte": "52d49e7d60da047523b8c3257565b9addb58d450f129e94ac6032b4edd17eee7"
+      }
+    },
+    "registry.buildy.tw|svelte|figure-simple": {
+      "name": "figure-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/figure-simple.svelte": "29fbc017285b3df9702bc24549668024fabf092343417d3335298e011f74bb76"
+      }
+    },
+    "registry.buildy.tw|svelte|footer-simple": {
+      "name": "footer-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/footer-simple.svelte": "c1a627eb186882ed497d4cab10c7301b4b083c51a9592ac31ba86a3649e6c6bc",
+        "src/blocks/footer-simple.types.ts": "d87252f4b1f4d9513c0acbdb16610075d2dc8dc1f78fa4aae07df289404e6262"
       }
     },
     "registry.buildy.tw|svelte|form": {
@@ -303,6 +442,17 @@
       "runtime": "svelte",
       "files": {
         "src/compose/Group.svelte": "78244f1faeb454f3b504f154698bf6a014ee8f50c114c2e3b8e0c4d3e5101da7"
+      }
+    },
+    "registry.buildy.tw|svelte|header-simple": {
+      "name": "header-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/header-simple.svelte": "a43be0a46decad2c1ae37205c3b57de57d2c4660feb5683cdab4261ac1a084da",
+        "src/blocks/header-simple.types.ts": "0b5740a008d11c20234fc3cccead070ad902ce3ced1ee501b75ddeed2c094ca2"
       }
     },
     "registry.buildy.tw|svelte|hero-simple": {
@@ -660,6 +810,17 @@
         "src/compose/ListItem.svelte": "8acb86cf5d8dd93186961c0c1ec4c1596764e07b0b688f06a15e2266c8d5bd1f"
       }
     },
+    "registry.buildy.tw|svelte|locations-simple": {
+      "name": "locations-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/locations-simple.svelte": "cb633841f74ab2849145e741521a172c4baf13e1f5601af9a0f0e94b0df4597e",
+        "src/blocks/locations-simple.types.ts": "cded6185e2104c61d2b1b8638faff63f942b563c2b6305e4cbc1c52cc77f5c39"
+      }
+    },
     "registry.buildy.tw|svelte|logos-simple": {
       "name": "logos-simple",
       "type": "registry:block",
@@ -704,6 +865,17 @@
         "src/compose/Meter.svelte": "0523e58b99cf95534d57ce45d515f10c72089072bb793b4f19395912e84f02ab"
       }
     },
+    "registry.buildy.tw|svelte|offers-simple": {
+      "name": "offers-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/offers-simple.svelte": "ae9e56b8f3de428757a4db3c01f24526cbd43fc21dd5d6093bc7b48b16752898",
+        "src/blocks/offers-simple.types.ts": "29c69bf8feb4b0d1861e0764685936b11dadd6b24aca168dbf1291fb061c9640"
+      }
+    },
     "registry.buildy.tw|svelte|opt-group": {
       "name": "opt-group",
       "type": "registry:ui",
@@ -735,6 +907,61 @@
         "src/presets/defaults.ts": "9e7d55493ed83147ad96adaf84a491b8796dc8cb64ac60d8ef6973aa940ea237"
       }
     },
+    "registry.buildy.tw|svelte|pricing-simple": {
+      "name": "pricing-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/pricing-simple.svelte": "69100bbba4cdd9651bb0eeaab1a5887d880fe581f69c896a332b46315601c416",
+        "src/blocks/pricing-simple.types.ts": "4c5473b5e0d1a29f7e54d27397dfc4b2c779ca4f277d6eb7a6830371838a1d27"
+      }
+    },
+    "registry.buildy.tw|svelte|product-reviews": {
+      "name": "product-reviews",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/product-reviews.svelte": "3e64525b5df75f0fac30d36b7c18dc2b829dc2832d428fddfd8f1644a6dd7cf4",
+        "src/blocks/product-reviews.types.ts": "1697716f2a2543983232c61f26e0996932519d039b5862ec0a6761c100f3b4e5"
+      }
+    },
+    "registry.buildy.tw|svelte|product-simple": {
+      "name": "product-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/product-simple.svelte": "7c86290552df23bb13af5806b028b2fe0db5b862205bcbea42b3c6b65d04f5fc",
+        "src/blocks/product-simple.types.ts": "f3e4b40336861fa819267499927906c81b122cd073b38774d90134bac996468a"
+      }
+    },
+    "registry.buildy.tw|svelte|products-simple": {
+      "name": "products-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/products-simple.svelte": "07ec38e882dc37720f4fc298a7bf2b2331c72bd187ecc58c91b3828760039421",
+        "src/blocks/products-simple.types.ts": "9687fee7b50af30c60c6910430ba2487ec0099892b95f1f3b0a0de6b280fa451"
+      }
+    },
+    "registry.buildy.tw|svelte|profile-intro": {
+      "name": "profile-intro",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/profile-intro.svelte": "0384270089f5ace2412b08c0582c06a7741b9f227049bb9169155fdef070e1cf",
+        "src/blocks/profile-intro.types.ts": "34caa8f0848af7884a19b3dd53172db7b457c330c29e6aab973ad22d46306eca"
+      }
+    },
     "registry.buildy.tw|svelte|progress": {
       "name": "progress",
       "type": "registry:ui",
@@ -755,6 +982,26 @@
         "src/compose/Prose.svelte": "269fe1891a602007370bc6d189ee1f33b5ae8f0a78bfcdac03992b4c895a64c4"
       }
     },
+    "registry.buildy.tw|svelte|pull-quote-simple": {
+      "name": "pull-quote-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/pull-quote-simple.svelte": "9f18584a9a85addc90ce3b06d648f414ef8b6d5a495936b03b272759728ae7cd"
+      }
+    },
+    "registry.buildy.tw|svelte|purchase-simple": {
+      "name": "purchase-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/purchase-simple.svelte": "3d98890a7e63d209998b03fe7faba6da22394546a34af6d71ce161b4c3d83497"
+      }
+    },
     "registry.buildy.tw|svelte|radio": {
       "name": "radio",
       "type": "registry:ui",
@@ -773,6 +1020,16 @@
       "runtime": "svelte",
       "files": {
         "src/compose/Range.svelte": "2d0d57dbc33e282c32dc2ea76169da2afed2f8798071de3e8abe41d94b7770df"
+      }
+    },
+    "registry.buildy.tw|svelte|rating-simple": {
+      "name": "rating-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/rating-simple.svelte": "e8a1a569bc722c634f16866d3e13b636750290d4d177a05360670c06fb24cf15"
       }
     },
     "registry.buildy.tw|svelte|recipes": {
@@ -855,6 +1112,17 @@
         "src/compose/Skeleton.svelte": "5d3c9a6b804301675d7364d8f4843bb2b9b32fdec72a60a6a7300a486a12d011"
       }
     },
+    "registry.buildy.tw|svelte|specs-simple": {
+      "name": "specs-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/specs-simple.svelte": "bbd7f2a7667d610bacac4d0c44d4633d44e0851d60e5ce61b62d6bf6a1719630",
+        "src/blocks/specs-simple.types.ts": "160fe877db70d79761454b65d9d2833839c9054713ed5d31c3b24be781666626"
+      }
+    },
     "registry.buildy.tw|svelte|split-simple": {
       "name": "split-simple",
       "type": "registry:block",
@@ -895,6 +1163,17 @@
       "files": {
         "src/blocks/steps-simple.svelte": "f888bf1850793402a01b42ca914590174bb001a81edfd99f346ad79b34d7b49d",
         "src/blocks/steps-simple.types.ts": "62dd903748f978d0cdc156dc5f7cbc5f0c6d60bdb3748671394e41dd060e6a52"
+      }
+    },
+    "registry.buildy.tw|svelte|store-policies": {
+      "name": "store-policies",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/store-policies.svelte": "3d2a5c338928d57b4f351e8c65e50d7dd757ff80f0548d76f22f445661f5c5eb",
+        "src/blocks/store-policies.types.ts": "b52c5e5467db9a5fbf745cf37073adb9ecc7ec41b99d1f8553b947c9d5bc9fd8"
       }
     },
     "registry.buildy.tw|svelte|stories-simple": {
@@ -1035,7 +1314,7 @@
       "version": "0.1.0",
       "runtime": "svelte",
       "files": {
-        "src/blocks/team-simple.svelte": "5d0c64e9e1e0933f5c77044b00c50286b17442524d8e295d96716923ae3fad3d",
+        "src/blocks/team-simple.svelte": "26cd0f742fb28019e736dc44e38e94aa920879040d25a921e6f6f4277755ac81",
         "src/blocks/team-simple.types.ts": "ef6fafb91ec2419f3e782c3a0ceea792a75ea2e0d0068afb9dce4c27f30b0fc2"
       }
     },
@@ -1259,6 +1538,17 @@
       "runtime": "svelte",
       "files": {
         "src/compose/Title.svelte": "32f6e41c3d1a191cb39ece59e7a5dbdd2b166839c750b89a0543d80468096a54"
+      }
+    },
+    "registry.buildy.tw|svelte|topics-simple": {
+      "name": "topics-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/topics-simple.svelte": "f6f614ed8fd2c7019ff8e4235c0300160c30c6be7bbc2a430ba770050576c90b",
+        "src/blocks/topics-simple.types.ts": "8559de4c8b2dc7d2f3ccc648beb867c0adb117662953069cca3d46f8fbc9bf2a"
       }
     },
     "registry.buildy.tw|svelte|utils": {

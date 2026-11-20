@@ -63,7 +63,7 @@ test("a write that names a variant with contradicting axes is rejected at the ax
 	assert.equal(issue?.code, "props_invalid");
 	assert.equal(issue?.got, "2");
 	assert.match(String(issue?.expected), /variant cards3 sets cols/);
-	assert.match(String(issue?.expected), /cols2 \(cols "2", surface "plain"\)/);
+	assert.match(String(issue?.expected), /cols2 \(layout "grid", cols "2", surface "plain"\)/);
 });
 
 test("axes written without a variant pick the one variant that has them; none is rejected", () => {
@@ -88,5 +88,5 @@ test("the Inspector has one layout control: the Variant select, no axis fields",
 	const model = inspectorModel(page.blocks[0]!);
 	assert.ok(model.ok);
 	assert.deepEqual(model.fields.filter((f) => ["cols", "surface", "media"].includes(f.name)), []);
-	assert.deepEqual(model.variants, ["cols3", "cols2", "cols4", "cards3"]);
+	assert.deepEqual(model.variants, ["cols3", "cols2", "cols4", "cards3", "portraitRow", "bylineCols3", "sideList"]);
 });
