@@ -1,0 +1,222 @@
+{
+	"$comment": "The router of the runtime (apps/xai-runtime/src/http.ts): health, unknown paths, preflight, the body checks of /v1/run on the web hosts.",
+	"cases": [
+		{
+			"name": "health answers ok without a key",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/healthz"
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"runtime": "xai-grok"
+				}
+			}
+		},
+		{
+			"name": "health alias /runtime/health",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/health"
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"runtime": "xai-grok"
+				}
+			}
+		},
+		{
+			"name": "an unknown runtime path is 404 not_found",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/nope"
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "status is GET only: POST is an unknown path",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/status",
+				"json": {}
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "preflight OPTIONS answers 204 with no body",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "OPTIONS",
+				"path": "/runtime/v1/media"
+			},
+			"expect": {
+				"status": 204
+			}
+		},
+		{
+			"name": "run: a body that is not JSON is 400 invalid_json",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/run",
+				"text": "{not json"
+			},
+			"expect": {
+				"status": 400,
+				"json": {
+					"error": {
+						"code": "invalid_json"
+					},
+					"liveModel": false
+				}
+			}
+		},
+		{
+			"name": "run: a body over 256 KB is 413 too_large",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/run",
+				"text": {
+					"$repeat": [
+						"x",
+						256001
+					]
+				}
+			},
+			"expect": {
+				"status": 413,
+				"json": {
+					"error": {
+						"code": "too_large"
+					},
+					"liveModel": false
+				}
+			}
+		},
+		{
+			"name": "run: another contract fingerprint is 409 client_outdated before any model call",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/run",
+				"json": {
+					"contract": "cf1-0000000000000000",
+					"modelId": "grok-4.20-0309-non-reasoning",
+					"mode": "ask",
+					"brief": "Hi"
+				}
+			},
+			"expect": {
+				"status": 409,
+				"json": {
+					"ok": false,
+					"code": "client_outdated",
+					"modelId": "grok-4.20-0309-non-reasoning",
+					"liveModel": false
+				}
+			}
+		},
+		{
+			"name": "run: the current contract without a key is 503 xai_api_key_missing, no provider call",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/run",
+				"json": {
+					"contract": "$CONTRACT",
+					"modelId": "grok-4.20-0309-non-reasoning",
+					"mode": "ask",
+					"brief": "Hi"
+				}
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"error": {
+						"code": "xai_api_key_missing"
+					},
+					"liveModel": false
+				}
+			}
+		},
+		{
+			"name": "vercel: a request without Basic auth is 401 unauthorized (the desktop has no network surface and no Basic auth)",
+			"surfaces": [
+				"vercel"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status",
+				"noAuth": true
+			},
+			"expect": {
+				"status": 401,
+				"json": {
+					"error": {
+						"code": "unauthorized"
+					}
+				}
+			}
+		}
+	]
+}

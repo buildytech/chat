@@ -1,0 +1,364 @@
+{
+	"$comment": "POST /runtime/v1/media?action=encode (apps/xai-runtime/src/media-encode.ts, ADR 0062): WebP sizes of one picture. Sizes, qualities and the grade are exact; encoded bytes are not compared (each host's encoder may differ slightly).",
+	"cases": [
+		{
+			"name": "encode: a wide original gets 960 q72, 1280 q78 sharpened, 1920 q82 and the default grade",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode",
+				"headers": {
+					"content-type": "image/jpeg"
+				},
+				"bytes": {
+					"picture": "wide-2400x1350.jpg"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"original": {
+						"width": 2400,
+						"height": 1350,
+						"type": "image/jpeg"
+					},
+					"filters": {
+						"contrast": -0.06,
+						"cool": 0.03
+					},
+					"variants": [
+						{
+							"width": 960,
+							"height": 540,
+							"quality": 72,
+							"sharpen": 0,
+							"type": "image/webp"
+						},
+						{
+							"width": 1280,
+							"height": 720,
+							"quality": 78,
+							"sharpen": 0.6,
+							"type": "image/webp"
+						},
+						{
+							"width": 1920,
+							"height": 1080,
+							"quality": 82,
+							"sharpen": 0,
+							"type": "image/webp"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "encode: never upscales; tiers above the original collapse to its width, the smaller tier wins",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode",
+				"headers": {
+					"content-type": "image/jpeg"
+				},
+				"bytes": {
+					"picture": "mid-1152x864.jpg"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"variants": [
+						{
+							"width": 960,
+							"height": 720,
+							"quality": 72,
+							"sharpen": 0,
+							"type": "image/webp"
+						},
+						{
+							"width": 1152,
+							"height": 864,
+							"quality": 78,
+							"sharpen": 0.6,
+							"type": "image/webp"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "encode: a small original gets one size of its own width",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode",
+				"headers": {
+					"content-type": "image/jpeg"
+				},
+				"bytes": {
+					"picture": "small-640x480.jpg"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"variants": [
+						{
+							"width": 640,
+							"height": 480,
+							"quality": 72,
+							"sharpen": 0,
+							"type": "image/webp"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "encode: the grade is overridable inside its limits (clamped)",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode&contrast=-5&cool=9",
+				"headers": {
+					"content-type": "image/png"
+				},
+				"bytes": {
+					"picture": "warm-64.png"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"filters": {
+						"contrast": -0.2,
+						"cool": 0.1
+					},
+					"variants": [
+						{
+							"width": 64,
+							"height": 64,
+							"quality": 72,
+							"sharpen": 0,
+							"type": "image/webp"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "encode: zero grade is accepted as given",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode&contrast=0&cool=0",
+				"headers": {
+					"content-type": "image/png"
+				},
+				"bytes": {
+					"picture": "warm-64.png"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"filters": {
+						"contrast": 0,
+						"cool": 0
+					}
+				}
+			}
+		},
+		{
+			"name": "encode: a body that is not a picture type is 415 encode_not_image",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode",
+				"headers": {
+					"content-type": "text/plain"
+				},
+				"bytes": {
+					"hex": "0102"
+				}
+			},
+			"expect": {
+				"status": 415,
+				"json": {
+					"ok": false,
+					"code": "encode_not_image"
+				}
+			}
+		},
+		{
+			"name": "encode: an empty body is 413 encode_too_large",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode",
+				"headers": {
+					"content-type": "image/jpeg"
+				},
+				"bytes": {
+					"size": 0,
+					"fill": 0
+				}
+			},
+			"expect": {
+				"status": 413,
+				"json": {
+					"ok": false,
+					"code": "encode_too_large"
+				}
+			}
+		},
+		{
+			"name": "encode: a body over 4 MB is 413 encode_too_large",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode",
+				"headers": {
+					"content-type": "image/jpeg"
+				},
+				"bytes": {
+					"size": 4000001,
+					"fill": 0
+				}
+			},
+			"expect": {
+				"status": 413,
+				"json": {
+					"ok": false,
+					"code": "encode_too_large"
+				}
+			}
+		},
+		{
+			"name": "encode: an unreadable picture is 422 encode_*, the caller keeps the original",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode",
+				"headers": {
+					"content-type": "image/jpeg"
+				},
+				"bytes": {
+					"hex": "ffd8ffe00102030405"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "$prefix:encode_"
+				}
+			}
+		},
+		{
+			"name": "encode by address: another host is 422 asset_not_allowed, no fetch",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode&url=https%3A%2F%2Fexample.com%2Fa.png"
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "asset_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "encode by address: the host reads an xAI picture itself",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode&url=https%3A%2F%2Fimgen.x.ai%2Fxai-imgen%2Fmid.jpg"
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"original": {
+						"width": 1152,
+						"height": 864
+					},
+					"variants": [
+						{
+							"width": 960,
+							"height": 720,
+							"quality": 72,
+							"sharpen": 0,
+							"type": "image/webp"
+						},
+						{
+							"width": 1152,
+							"height": 864,
+							"quality": 78,
+							"sharpen": 0.6,
+							"type": "image/webp"
+						}
+					]
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://imgen.x.ai/xai-imgen/mid.jpg"
+					},
+					"reply": {
+						"status": 200,
+						"headers": {
+							"content-type": "image/jpeg"
+						},
+						"bytes": {
+							"picture": "mid-1152x864.jpg"
+						}
+					}
+				}
+			]
+		}
+	]
+}

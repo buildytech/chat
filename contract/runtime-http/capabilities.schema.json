@@ -1,0 +1,14 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://github.com/buildytech/chat/contract/runtime-http/capabilities.schema.json",
+	"title": "Runtime capabilities (ADR 0065)",
+	"description": "Optional `capabilities` of GET /runtime/v1/status. The web hosts (Vercel, the node runtime) never send it, so the web app keeps its current behaviour. The desktop host sends it.",
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["loop", "files", "saveFile"],
+	"properties": {
+		"loop": { "enum": ["server", "client"], "description": "server: POST /runtime/v1/run runs the agent turn. client: the app runs the turn itself and the host forwards provider calls with its key (POST /runtime/v1/xai/*)." },
+		"files": { "type": "boolean", "description": "The host keeps generated pictures and serves them at /runtime/v1/files/<sha256>.<ext>." },
+		"saveFile": { "type": "boolean", "description": "The host saves a file through a native dialog (POST /runtime/v1/export)." }
+	}
+}

@@ -1,0 +1,494 @@
+{
+	"$comment": "GET /runtime/v1/status: the readiness of the host (apps/xai-runtime/src/status.ts). Desktop answers the same fields plus `capabilities`.",
+	"cases": [
+		{
+			"name": "status without a key: 503, not ready, the default candidate, the contract, no provider call",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"runtime": "xai-grok",
+					"ready": false,
+					"liveModel": false,
+					"code": "xai_api_key_missing",
+					"key": {
+						"present": false
+					},
+					"models": {
+						"listed": false,
+						"chatIds": [],
+						"imageIds": [],
+						"candidate": "$CANDIDATE",
+						"toolCallingProven": false
+					},
+					"contract": "$CONTRACT"
+				}
+			}
+		},
+		{
+			"name": "status alias /v1/runtime answers the same document",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/runtime"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"runtime": "xai-grok",
+					"code": "xai_api_key_missing",
+					"contract": "$CONTRACT"
+				}
+			}
+		},
+		{
+			"name": "status with a key: discovery of chat and image models, ready, the default model as candidate",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "grok-4.20-0309-non-reasoning"
+								},
+								{
+									"id": "grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"models": [
+								{
+									"id": "grok-4.7"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"models": [
+								{
+									"id": "grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"runtime": "xai-grok",
+					"ready": true,
+					"liveModel": true,
+					"code": "xai_runtime_ready",
+					"key": {
+						"present": true
+					},
+					"models": {
+						"listed": true,
+						"chatIds": [
+							"grok-4.20-0309-non-reasoning",
+							"grok-4.7"
+						],
+						"imageIds": [
+							"grok-imagine-image-2.0"
+						],
+						"candidate": "grok-4.20-0309-non-reasoning",
+						"toolCallingProven": false
+					},
+					"contract": "$CONTRACT"
+				}
+			}
+		},
+		{
+			"name": "status with a key: without the default model the first listed chat model is the candidate",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								"grok-build-0.1",
+								"grok-4.7"
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ready": true,
+					"code": "xai_runtime_ready",
+					"models": {
+						"listed": true,
+						"chatIds": [
+							"grok-build-0.1",
+							"grok-4.7"
+						],
+						"imageIds": [],
+						"candidate": "grok-build-0.1"
+					}
+				}
+			}
+		},
+		{
+			"name": "status with a key: both model lists fail, not ready, nothing listed",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 500,
+						"text": "boom"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 500,
+						"text": "boom"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 500,
+						"text": "boom"
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ready": false,
+					"liveModel": false,
+					"code": "xai_models_list_failed",
+					"key": {
+						"present": true
+					},
+					"models": {
+						"listed": false,
+						"chatIds": [],
+						"imageIds": [],
+						"candidate": null
+					}
+				}
+			}
+		},
+		{
+			"name": "status with a key: the provider rejects the key, not ready",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": "bad key"
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": "bad key"
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": "bad key"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"ready": false,
+					"code": "xai_models_list_failed",
+					"models": {
+						"listed": false
+					}
+				}
+			}
+		},
+		{
+			"name": "status with a key: only image models listed, no chat model, not ready",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"models": []
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"models": [
+								{
+									"id": "grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ready": false,
+					"code": "xai_no_chat_models",
+					"models": {
+						"listed": true,
+						"chatIds": [],
+						"imageIds": [
+							"grok-imagine-image-2.0"
+						],
+						"candidate": null
+					}
+				}
+			}
+		},
+		{
+			"name": "status with a key: the provider is unreachable, not ready",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"throw": "network"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"throw": "network"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"throw": "network"
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ready": false,
+					"code": "xai_models_list_unavailable",
+					"models": {
+						"listed": false,
+						"candidate": null
+					}
+				}
+			}
+		},
+		{
+			"name": "web hosts never send capabilities (the web app keeps the server loop)",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"capabilities": "$absent"
+				}
+			}
+		},
+		{
+			"name": "desktop sends capabilities: the agent loop runs in the webview",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"capabilities": {
+						"loop": "client",
+						"files": "$boolean",
+						"saveFile": "$boolean"
+					}
+				}
+			}
+		}
+	]
+}

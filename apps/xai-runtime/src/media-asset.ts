@@ -4,9 +4,9 @@
  * xAI file CDN), https only, no redirects, a picture type, at most MAX_ASSET_BYTES (under the 4.5 MB Vercel response
  * cap). It sits behind the same gate as every runtime path; it needs no key and never logs the address.
  */
-const ASSET_HOSTS = new Set(["imgen.x.ai", "files-cdn.x.ai"]);
-const MAX_ASSET_BYTES = 4_000_000;
-const ASSET_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
+export const ASSET_HOSTS = new Set(["imgen.x.ai", "files-cdn.x.ai"]);
+export const MAX_ASSET_BYTES = 4_000_000;
+export const ASSET_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
 const ASSET_TIMEOUT_MS = 20_000;
 
 type AssetFailure = { status: number; code: string };

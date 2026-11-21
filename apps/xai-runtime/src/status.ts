@@ -1,6 +1,7 @@
 import { CANDIDATE_CHAT_MODEL, RUNTIME_AUTH_ENV, XAI_RUNTIME_NOTES, XAI_SECRET_ENV, hasPublicSecretLeak, isSharedPublicSurface, readBasicAuthConfig, readEnv, readXaiKeyState, type EnvMap } from "@buildytech/chat-agent";
 import { discoverAccountModels } from "./discover.ts";
 
+/** Web hosts never send `capabilities`; the optional desktop extension is documented in contract/runtime-http/capabilities.schema.json (ADR 0065). */
 type XaiRuntimeStatus = {
 	runtime: "xai-grok";
 	ready: boolean;

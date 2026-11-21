@@ -42,7 +42,8 @@
     "test:live": "node scripts/run-tests.mjs live",
     "lint:dead": "node scripts/check-dead.mjs",
     "secrets:check": "node scripts/check-secrets.mjs",
-    "audit:prod": "npm audit --omit=dev --audit-level=moderate"
+    "audit:prod": "npm audit --omit=dev --audit-level=moderate",
+    "contract:runtime": "node --experimental-strip-types --import ./packages/builder-core/src/catalog/props-gate.ts scripts/runtime-contract.mjs"
   },
   "engines": {
     "node": "22.x"

@@ -70,6 +70,9 @@
       "ui-skin.test.ts",
       "media-slots.test.ts",
       "pack-images.test.ts"
+    ],
+    "runtime-contract": [
+      "runtime-http-contract.test.ts"
     ]
   },
   "live": [

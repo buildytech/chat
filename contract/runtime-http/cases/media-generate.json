@@ -1,0 +1,516 @@
+{
+	"$comment": "POST /runtime/v1/media { action: generate | result } (apps/xai-runtime/src/media.ts, packages/provider-xai/src/images.ts): the deferred Grok Imagine flow. The key stays on the host.",
+	"cases": [
+		{
+			"name": "generate without a key is 503 xai_api_key_missing, no provider call",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": "Шашлык на углях",
+					"aspect": "4:3"
+				}
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"ok": false,
+					"code": "xai_api_key_missing"
+				}
+			}
+		},
+		{
+			"name": "generate with an empty prompt is 422 invalid_request, no provider call",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": "  ",
+					"aspect": "4:3"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"ok": false,
+					"code": "invalid_request"
+				}
+			}
+		},
+		{
+			"name": "generate with an unknown aspect is 422 invalid_request",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": "x",
+					"aspect": "7:5"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_request"
+				}
+			}
+		},
+		{
+			"name": "generate with a prompt over 4000 characters is 422 invalid_request",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": {
+						"$repeat": [
+							"a",
+							4001
+						]
+					},
+					"aspect": "1:1"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_request"
+				}
+			}
+		},
+		{
+			"name": "generate sends one deferred request (model, trimmed prompt, n capped at 3) and answers 202 with the request id",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Сочный шашлык из свиной шеи на шампурах ",
+					"aspect": "21:9",
+					"n": 7
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations",
+						"auth": "bearer",
+						"json": {
+							"model": "$IMAGE_MODEL",
+							"prompt": "Сочный шашлык из свиной шеи на шампурах",
+							"n": 3,
+							"aspect_ratio": "21:9",
+							"response_format": "url",
+							"deferred": true
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"request_id": "8d6f4017-db06-9c5d"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 202,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"ok": true,
+					"requestId": "8d6f4017-db06-9c5d",
+					"model": "$IMAGE_MODEL"
+				}
+			}
+		},
+		{
+			"name": "generate without n asks for 3 candidates",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": "Кофе на подоконнике",
+					"aspect": "1:1"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations",
+						"json": {
+							"n": 3,
+							"aspect_ratio": "1:1"
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"request_id": "req-12345678"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 202,
+				"json": {
+					"ok": true,
+					"requestId": "req-12345678"
+				}
+			}
+		},
+		{
+			"name": "generate: an answer without a request id is 502 malformed_response",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": "x",
+					"aspect": "16:9",
+					"n": 1
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"id": "x"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "malformed_response"
+				}
+			}
+		},
+		{
+			"name": "generate: a rate limit is 502 rate_limited, nothing retried",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": "x",
+					"aspect": "3:4",
+					"n": 1
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations"
+					},
+					"reply": {
+						"status": 429,
+						"json": {
+							"error": "slow down"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "rate_limited"
+				}
+			}
+		},
+		{
+			"name": "result: 404 while pending reads as pending",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "result",
+					"requestId": "8d6f4017-db06-9c5d"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/images/8d6f4017-db06-9c5d",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"status": "pending",
+					"model": "$IMAGE_MODEL"
+				}
+			}
+		},
+		{
+			"name": "result: 202 pending",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "result",
+					"requestId": "8d6f4017-db06-9c5d"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/images/8d6f4017-db06-9c5d"
+					},
+					"reply": {
+						"status": 202,
+						"json": {
+							"status": "pending"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"status": "pending"
+				}
+			}
+		},
+		{
+			"name": "result: done answers the https URLs (others dropped) and the billed cost",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "result",
+					"requestId": "8d6f4017-db06-9c5d"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/images/8d6f4017-db06-9c5d"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"status": "done",
+							"data": [
+								{
+									"url": "https://imgen.x.ai/a.jpeg"
+								},
+								{
+									"url": "http://bad"
+								}
+							],
+							"usage": {
+								"cost_in_usd_ticks": 800000000
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"status": "done",
+					"urls": [
+						"https://imgen.x.ai/a.jpeg"
+					],
+					"costUsdTicks": 800000000
+				}
+			}
+		},
+		{
+			"name": "result: failed answers 502 with the provider code",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "result",
+					"requestId": "8d6f4017-db06-9c5d"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/images/8d6f4017-db06-9c5d"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"status": "failed",
+							"error": {
+								"code": "invalid_argument",
+								"message": "x"
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "image_invalid_argument"
+				}
+			}
+		},
+		{
+			"name": "result: an unknown request id is refused before any provider call",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "result",
+					"requestId": "../models"
+				}
+			},
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "bad_request_id"
+				}
+			}
+		},
+		{
+			"name": "media: an unknown action is 422 unknown_action",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "nope"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"ok": false,
+					"code": "unknown_action"
+				}
+			}
+		},
+		{
+			"name": "media: a body that is not one JSON object is 400 invalid_body",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": [
+					1,
+					2
+				]
+			},
+			"expect": {
+				"status": 400,
+				"json": {
+					"ok": false,
+					"code": "invalid_body"
+				}
+			}
+		},
+		{
+			"name": "media: a body over 16 KB is 400 invalid_body",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"text": {
+					"$repeat": [
+						"x",
+						16001
+					]
+				}
+			},
+			"expect": {
+				"status": 400,
+				"json": {
+					"ok": false,
+					"code": "invalid_body"
+				}
+			}
+		}
+	]
+}

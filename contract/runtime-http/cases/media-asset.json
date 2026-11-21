@@ -1,0 +1,398 @@
+{
+	"$comment": "POST /runtime/v1/media { action: asset } (apps/xai-runtime/src/media-asset.ts, ADR 0061): the picture proxy of the ZIP export. https xAI image hosts only, no redirects, picture types, 4 MB.",
+	"cases": [
+		{
+			"name": "asset: 'http://imgen.x.ai/a.jpeg' is not an allowed picture address (422 asset_not_allowed, no fetch)",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "http://imgen.x.ai/a.jpeg"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "asset_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "asset: 'https://evil.test/a.jpeg' is not an allowed picture address (422 asset_not_allowed, no fetch)",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://evil.test/a.jpeg"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "asset_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "asset: 'https://imgen.x.ai:8443/a.jpeg' is not an allowed picture address (422 asset_not_allowed, no fetch)",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://imgen.x.ai:8443/a.jpeg"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "asset_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "asset: 'https://u:p@imgen.x.ai/a.jpeg' is not an allowed picture address (422 asset_not_allowed, no fetch)",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://u:p@imgen.x.ai/a.jpeg"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "asset_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "asset: 'https://imgen.x.ai.evil.test/a.jpeg' is not an allowed picture address (422 asset_not_allowed, no fetch)",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://imgen.x.ai.evil.test/a.jpeg"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "asset_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "asset: 42 is not an allowed picture address (422 asset_not_allowed, no fetch)",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": 42
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "asset_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "asset: an xAI picture passes through with its type, nosniff, no key needed",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://imgen.x.ai/xai-imgen/a.jpeg"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://imgen.x.ai/xai-imgen/a.jpeg",
+						"auth": "none"
+					},
+					"reply": {
+						"status": 200,
+						"headers": {
+							"content-type": "image/jpeg"
+						},
+						"bytes": {
+							"hex": "ffd8ff010203"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"headers": {
+					"content-type": "image/jpeg",
+					"x-content-type-options": "nosniff",
+					"cache-control": "no-store"
+				},
+				"bytes": {
+					"hex": "ffd8ff010203"
+				}
+			}
+		},
+		{
+			"name": "asset: not a picture type is 415 asset_not_image",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://files-cdn.x.ai/secret-path/a.png"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://files-cdn.x.ai/secret-path/a.png"
+					},
+					"reply": {
+						"status": 200,
+						"headers": {
+							"content-type": "text/html"
+						},
+						"bytes": {
+							"hex": "3c"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 415,
+				"notContains": [
+					"secret-path"
+				],
+				"json": {
+					"ok": false,
+					"code": "asset_not_image"
+				}
+			}
+		},
+		{
+			"name": "asset: a declared length over 4 MB is 413 asset_too_large",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://files-cdn.x.ai/secret-path/a.png"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://files-cdn.x.ai/secret-path/a.png"
+					},
+					"reply": {
+						"status": 200,
+						"headers": {
+							"content-type": "image/png",
+							"content-length": "9000000"
+						},
+						"bytes": {
+							"size": 1,
+							"fill": 0
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 413,
+				"json": {
+					"ok": false,
+					"code": "asset_too_large"
+				}
+			}
+		},
+		{
+			"name": "asset: a body over 4 MB is 413 asset_too_large",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://files-cdn.x.ai/secret-path/a.png"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://files-cdn.x.ai/secret-path/a.png"
+					},
+					"reply": {
+						"status": 200,
+						"headers": {
+							"content-type": "image/png"
+						},
+						"bytes": {
+							"size": 4000001,
+							"fill": 0
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 413,
+				"json": {
+					"ok": false,
+					"code": "asset_too_large"
+				}
+			}
+		},
+		{
+			"name": "asset: an expired picture (410) is 404 asset_upstream_410",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://files-cdn.x.ai/secret-path/a.png"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://files-cdn.x.ai/secret-path/a.png"
+					},
+					"reply": {
+						"status": 410,
+						"headers": {
+							"content-type": "image/png"
+						},
+						"bytes": {
+							"size": 0,
+							"fill": 0
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 404,
+				"json": {
+					"ok": false,
+					"code": "asset_upstream_410"
+				}
+			}
+		},
+		{
+			"name": "asset: an upstream 500 is 502 asset_upstream_500",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://files-cdn.x.ai/secret-path/a.png"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://files-cdn.x.ai/secret-path/a.png"
+					},
+					"reply": {
+						"status": 500,
+						"text": "boom"
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "asset_upstream_500"
+				}
+			}
+		},
+		{
+			"name": "asset: an unreachable host (or a redirect) is 502 asset_unreachable",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "https://files-cdn.x.ai/secret-path/a.png"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://files-cdn.x.ai/secret-path/a.png"
+					},
+					"reply": {
+						"throw": "network"
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "asset_unreachable"
+				}
+			}
+		}
+	]
+}

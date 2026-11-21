@@ -9,15 +9,15 @@
  */
 import { fetchAllowedPicture } from "./media-asset.ts";
 
-const MAX_ENCODE_BYTES = 4_000_000;
-const MAX_URL_BYTES = 24_000_000;
+export const MAX_ENCODE_BYTES = 4_000_000;
+export const MAX_URL_BYTES = 24_000_000;
 /** The base64 answer must stay under Vercel's 4.5 MB response cap. */
 const MAX_ANSWER_BYTES = 3_200_000;
-const ENCODE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
+export const ENCODE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
 
 type Tier = { width: number; quality: number; sharpen: number };
 /** 1920 q82; 1280 q78 with a mild sharpen (sigma); 960 q72. */
-const TIERS: readonly Tier[] = [
+export const TIERS: readonly Tier[] = [
 	{ width: 960, quality: 72, sharpen: 0 },
 	{ width: 1280, quality: 78, sharpen: 0.6 },
 	{ width: 1920, quality: 82, sharpen: 0 }
@@ -26,8 +26,8 @@ const TIERS: readonly Tier[] = [
  * The grade before encoding. `contrast`: -0.06 is 6% less contrast around mid grey. `cool`: 0.03 lowers red and raises blue
  * by 3% (a slightly cooler white balance). Subtle on purpose: page art direction may be warm (embers, candle light).
  */
-const FILTERS = { contrast: -0.06, cool: 0.03 } as const;
-const FILTER_LIMITS = { contrast: [-0.2, 0.1], cool: [-0.1, 0.1] } as const;
+export const FILTERS = { contrast: -0.06, cool: 0.03 } as const;
+export const FILTER_LIMITS = { contrast: [-0.2, 0.1], cool: [-0.1, 0.1] } as const;
 
 type Filters = { contrast: number; cool: number };
 type Variant = { width: number; height: number; bytes: number; quality: number; sharpen: number; type: "image/webp"; data: string };
