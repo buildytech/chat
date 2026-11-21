@@ -8,6 +8,7 @@
  * and, where the block takes it, every size as `imageSrcset`. A failed encode keeps the original file (reported).
  */
 import type { BlockV2, PageV2 } from "@buildytech/page-contract";
+import { isRuntimePicture } from "../runtime-files.ts";
 
 /** Props that carry a picture address, wherever they sit in a block's props. */
 const IMAGE_KEYS = new Set(["image", "imageDark", "avatar"]);
@@ -47,7 +48,7 @@ type LocalImage = {
 type RemoteImage = { url: string; reason: string; refs: ImageRef[] };
 export type LocalImages = { local: LocalImage[]; remote: RemoteImage[] };
 
-const isRemoteImage = (value: unknown): value is string => typeof value === "string" && /^https?:\/\/[^\s]+$/i.test(value.trim());
+const isRemoteImage = (value: unknown): value is string => typeof value === "string" && (/^https?:\/\/[^\s]+$/i.test(value.trim()) || isRuntimePicture(value));
 const isRecord = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === "object" && !Array.isArray(value);
 const escapePointer = (key: string): string => key.replace(/~/g, "~0").replace(/\//g, "~1");
 

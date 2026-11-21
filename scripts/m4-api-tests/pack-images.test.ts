@@ -203,3 +203,25 @@ test("the unzipped project builds with the pictures as fingerprinted assets unde
 		rmSync(dir, { recursive: true, force: true });
 	}
 });
+
+test("ADR 0065: desktop pictures enter the ZIP plan only when the host advertises files:true", async () => {
+	const { noteRuntimeFiles, isRuntimePicture } = await import("../../apps/chat-web/src/lib/runtime-files.ts");
+	const local = `/runtime/v1/files/${"a".repeat(64)}.jpg`;
+	const page = emptyPage({ title: "Desktop pictures" });
+	page.blocks = [{ id: "hero", item: "hero-simple", variant: "mediaStart", props: { image: local } }];
+	try {
+		noteRuntimeFiles(false);
+		assert.deepEqual(planImages(page), []);
+		noteRuntimeFiles(true);
+		assert.equal(planImages(page)[0]?.url, local);
+		for (const bad of ["/photo.jpg", "/runtime/v1/files/../private.jpg", `${local}?x=1`, `${local}#x`, `https://elsewhere.test${local}`, `/runtime/v1/files/${"b".repeat(63)}.png`]) assert.equal(isRuntimePicture(bad), false);
+		const { runtimeImageSource, runtimeImageEncoder } = await import("../../apps/chat-web/src/modules/chat/media/client.ts");
+		assert.equal(runtimeImageSource.handles(local), true);
+		assert.equal(runtimeImageEncoder.url.handles(local), true);
+		noteRuntimeFiles(false);
+		assert.equal(runtimeImageSource.handles(local), false);
+		assert.equal(runtimeImageSource.handles("https://imgen.x.ai/a.jpg"), true, "web path unchanged");
+	} finally {
+		noteRuntimeFiles(false);
+	}
+});

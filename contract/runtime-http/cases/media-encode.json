@@ -128,6 +128,43 @@
 			}
 		},
 		{
+			"name": "encode: the EXIF orientation is applied first (stored 900x600, orientation 6: shown and encoded 600x900)",
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode",
+				"headers": {
+					"content-type": "image/jpeg"
+				},
+				"bytes": {
+					"picture": "rotated-6-900x600.jpg"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"original": {
+						"width": 600,
+						"height": 900,
+						"type": "image/jpeg"
+					},
+					"variants": [
+						{
+							"width": 600,
+							"height": 900,
+							"quality": 72,
+							"sharpen": 0,
+							"type": "image/webp"
+						}
+					]
+				}
+			}
+		},
+		{
 			"name": "encode: the grade is overridable inside its limits (clamped)",
 			"env": {
 				"key": false

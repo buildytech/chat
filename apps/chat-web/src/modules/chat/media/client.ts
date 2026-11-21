@@ -1,8 +1,9 @@
 /**
  * Browser side of `POST /runtime/v1/media` (t109u): start one generation, then poll until its candidates are ready. The
- * runtime holds the xAI key; this file only sends the prompt and reads temporary https URLs.
+ * runtime holds the xAI key; this file only sends the prompt and reads picture addresses (https on web hosts, content-addressed local files on the desktop).
  */
 import type { MediaAspect } from "./slots.ts";
+import { isRuntimePicture } from "../../../lib/runtime-files.ts";
 
 type MediaResult = { ok: true; urls: string[]; costUsdTicks: number | null; ms: number } | { ok: false; code: string; message: string };
 
@@ -59,6 +60,7 @@ export async function generateCandidates(prompt: string, aspect: MediaAspect, n:
 const PROXIED_HOSTS = new Set(["imgen.x.ai", "files-cdn.x.ai"]);
 
 function proxiedHost(url: string): boolean {
+	if (isRuntimePicture(url)) return true;
 	try {
 		const parsed = new URL(url);
 		return parsed.protocol === "https:" && PROXIED_HOSTS.has(parsed.hostname);

@@ -2,18 +2,21 @@
 /**
  * Generator of the runtime HTTP contract's derived files (ADR 0065): `contract/runtime-http/constants.json` (the values a
  * second host must agree with, read from the sources) and the test pictures in `contract/runtime-http/pictures/` (made by
- * sharp, never by hand). The cases in `contract/runtime-http/cases/` are written by hand and read these files.
+ * sharp, never by hand), and the encode goldens in `contract/runtime-http/encode/`: what this runtime's encoder (sharp)
+ * answers for those pictures with the default grade, the reference a second encoder is held to by tolerance (sizes and
+ * structural similarity, never bytes; `encode/index.json` says how). The cases in `contract/runtime-http/cases/` are written
+ * by hand and read these files.
  *   npm run contract:runtime          write
  *   npm run contract:runtime -- --check   fail when a file is missing or constants.json is out of date
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { CANDIDATE_CHAT_MODEL, DEFAULT_XAI_BASE_URL, contractFingerprint } from "../packages/chat-agent/src/index.ts";
 import { IMAGE_ASPECTS, MAX_IMAGE_CANDIDATES, MAX_IMAGE_PROMPT, XAI_IMAGE_MODEL } from "../packages/provider-xai/src/images.ts";
 import { ASSET_HOSTS, ASSET_TYPES, MAX_ASSET_BYTES } from "../apps/xai-runtime/src/media-asset.ts";
-import { ENCODE_TYPES, FILTERS, FILTER_LIMITS, MAX_ENCODE_BYTES, MAX_URL_BYTES, TIERS } from "../apps/xai-runtime/src/media-encode.ts";
+import { ENCODE_TYPES, FILTERS, FILTER_LIMITS, MAX_ENCODE_BYTES, MAX_URL_BYTES, TIERS, handleEncode } from "../apps/xai-runtime/src/media-encode.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dir = join(root, "contract/runtime-http");
@@ -45,12 +48,71 @@ async function gradient(width, height) {
 	return sharp(raw, { raw: { width, height, channels: 3 } }).jpeg({ quality: 85 }).toBuffer();
 }
 
+/** Photo-like detail (stripes, rings, seeded noise): what a resize kernel, a sharpen and the WebP quality act on. */
+async function texture(width, height, orientation) {
+	const raw = Buffer.alloc(width * height * 3);
+	let seed = 20261122;
+	const noise = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 2 ** 32 - 0.5) * 14;
+	for (let y = 0; y < height; y++)
+		for (let x = 0; x < width; x++) {
+			const i = (y * width + x) * 3;
+			const ring = Math.hypot(x - width * 0.62, y - height * 0.45);
+			const base = 128 + 70 * Math.sin(x / 9) * Math.cos(y / 23) + 40 * Math.sin(ring / 14);
+			raw[i] = Math.max(0, Math.min(255, Math.round(base + 40 * (x / width) + noise())));
+			raw[i + 1] = Math.max(0, Math.min(255, Math.round(base * 0.85 + 30 * (y / height) + noise())));
+			raw[i + 2] = Math.max(0, Math.min(255, Math.round(255 - base * 0.7 + noise())));
+		}
+	const image = sharp(raw, { raw: { width, height, channels: 3 } });
+	return (orientation ? image.withMetadata({ orientation }) : image).jpeg({ quality: 85 }).toBuffer();
+}
+
 const PICTURES = {
 	"wide-2400x1350.jpg": () => gradient(2400, 1350),
 	"mid-1152x864.jpg": () => gradient(1152, 864),
 	"small-640x480.jpg": () => gradient(640, 480),
-	"warm-64.png": () => sharp({ create: { width: 64, height: 64, channels: 3, background: { r: 230, g: 160, b: 90 } } }).png().toBuffer()
+	"warm-64.png": () => sharp({ create: { width: 64, height: 64, channels: 3, background: { r: 230, g: 160, b: 90 } } }).png().toBuffer(),
+	"texture-1400x900.jpg": () => texture(1400, 900),
+	/** Stored 900x600 with EXIF orientation 6: shown (and encoded) 600x900. */
+	"rotated-6-900x600.jpg": () => texture(900, 600, 6)
 };
+
+/** The pictures the goldens are made from, and the tolerance a second encoder must meet against them. */
+const GOLDEN_PICTURES = ["wide-2400x1350.jpg", "texture-1400x900.jpg", "rotated-6-900x600.jpg", "warm-64.png"];
+const TOLERANCE = { ssimMin: 0.97, bytesRatio: [0.85, 1.15], ssim: "mean SSIM of the luma (BT.601) over 8x8 windows, stride 4, of both decoded WebPs at the variant size" };
+
+/** This runtime's encode answer for one picture (the default grade), through the same handler the hosts call. */
+async function encodeOf(name) {
+	const bytes = readFileSync(join(dir, "pictures", name));
+	const type = name.endsWith(".png") ? "image/png" : "image/jpeg";
+	const res = await handleEncode(new Request("http://contract.test/runtime/v1/media?action=encode", { method: "POST", headers: { "content-type": type }, body: bytes }));
+	const body = await res.json();
+	if (!body.ok) throw new Error(`encode ${name}: ${body.code}`);
+	return body;
+}
+
+async function goldens() {
+	const entries = [];
+	const files = [];
+	for (const picture of GOLDEN_PICTURES) {
+		const body = await encodeOf(picture);
+		const stem = picture.replace(/\.[a-z]+$/, "");
+		entries.push({
+			picture,
+			original: body.original,
+			filters: body.filters,
+			variants: body.variants.map((v) => {
+				const file = `${stem}-${v.width}.webp`;
+				files.push([file, Buffer.from(v.data, "base64")]);
+				return { file, width: v.width, height: v.height, bytes: v.bytes, quality: v.quality, sharpen: v.sharpen };
+			})
+		});
+	}
+	const index = { $comment: "Generated by scripts/runtime-contract.mjs (npm run contract:runtime) from sharp. Do not edit. A second encoder passes when, for every variant, width, height, quality and sharpen are equal, its WebP is within bytesRatio of the golden size and the SSIM of the two decoded pictures is at least ssimMin.", tolerance: TOLERANCE, pictures: entries };
+	return { index: `${JSON.stringify(index, null, "\t")}\n`, files };
+}
+
+/** The golden index without the encoded sizes (bytes differ between libwebp builds; the plan and the grade must not). */
+const shape = (text) => JSON.stringify(JSON.parse(text).pictures.map((p) => ({ ...p, variants: p.variants.map(({ bytes, ...rest }) => rest) })));
 
 const text = `${JSON.stringify(constants(), null, "\t")}\n`;
 const file = join(dir, "constants.json");
@@ -58,14 +120,25 @@ const problems = [];
 if (check) {
 	if (!existsSync(file) || readFileSync(file, "utf8") !== text) problems.push("contract/runtime-http/constants.json is out of date");
 	for (const name of Object.keys(PICTURES)) if (!existsSync(join(dir, "pictures", name))) problems.push(`contract/runtime-http/pictures/${name} is missing`);
+	const indexFile = join(dir, "encode", "index.json");
+	if (!problems.length) {
+		const { index, files } = await goldens();
+		if (!existsSync(indexFile) || shape(readFileSync(indexFile, "utf8")) !== shape(index)) problems.push("contract/runtime-http/encode/index.json is out of date");
+		for (const [file] of files) if (!existsSync(join(dir, "encode", file))) problems.push(`contract/runtime-http/encode/${file} is missing`);
+	}
 	if (problems.length) {
 		console.error(`${problems.join("\n")}\nRun npm run contract:runtime and commit the result.`);
 		process.exit(1);
 	}
-	console.log("runtime contract: constants and pictures are current");
+	console.log("runtime contract: constants, pictures and encode goldens are current");
 } else {
 	mkdirSync(join(dir, "pictures"), { recursive: true });
 	writeFileSync(file, text);
 	for (const [name, make] of Object.entries(PICTURES)) writeFileSync(join(dir, "pictures", name), await make());
-	console.log(`runtime contract: wrote constants.json and ${Object.keys(PICTURES).length} pictures`);
+	const { index, files } = await goldens();
+	rmSync(join(dir, "encode"), { recursive: true, force: true });
+	mkdirSync(join(dir, "encode"), { recursive: true });
+	writeFileSync(join(dir, "encode", "index.json"), index);
+	for (const [file, bytes] of files) writeFileSync(join(dir, "encode", file), bytes);
+	console.log(`runtime contract: wrote constants.json, ${Object.keys(PICTURES).length} pictures and ${files.length} encode goldens`);
 }

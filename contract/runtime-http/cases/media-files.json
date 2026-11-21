@@ -1,0 +1,463 @@
+{
+	"$comment": "The desktop host's picture store (ADR 0065, capabilities.files): Media results are downloaded at once into a content-addressed store and answered as `/runtime/v1/files/<sha256>.<ext>` (the xAI URLs expire), served read-only and immutable, and read by the asset proxy and the encoder like an xAI picture. `$FILE:<picture>` is the store address of a file of pictures/ (sha256 of its bytes); `store` lists the pictures a case starts with.",
+	"cases": [
+		{
+			"name": "result done on the desktop: every candidate is stored at once and answered as a local file address (the temporary URL expires)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "result",
+					"requestId": "8d6f4017-db06-9c5d"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/images/8d6f4017-db06-9c5d",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"status": "done",
+							"data": [
+								{
+									"url": "https://imgen.x.ai/xai-imgen/a.jpeg"
+								},
+								{
+									"url": "https://imgen.x.ai/xai-imgen/b.png"
+								}
+							],
+							"usage": {
+								"cost_in_usd_ticks": 400000000
+							}
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://imgen.x.ai/xai-imgen/a.jpeg",
+						"auth": "none"
+					},
+					"reply": {
+						"status": 200,
+						"headers": {
+							"content-type": "image/jpeg"
+						},
+						"bytes": {
+							"picture": "mid-1152x864.jpg"
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://imgen.x.ai/xai-imgen/b.png",
+						"auth": "none"
+					},
+					"reply": {
+						"status": 200,
+						"headers": {
+							"content-type": "image/png"
+						},
+						"bytes": {
+							"picture": "warm-64.png"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$KEY",
+					"imgen.x.ai"
+				],
+				"json": {
+					"ok": true,
+					"status": "done",
+					"urls": [
+						"$FILE:mid-1152x864.jpg",
+						"$FILE:warm-64.png"
+					],
+					"costUsdTicks": 400000000,
+					"model": "$IMAGE_MODEL"
+				}
+			}
+		},
+		{
+			"name": "result done on the desktop: a candidate that cannot be downloaded keeps its https address, the others are stored",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "result",
+					"requestId": "8d6f4017-db06-9c5d"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/images/8d6f4017-db06-9c5d",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"status": "done",
+							"data": [
+								{
+									"url": "https://imgen.x.ai/xai-imgen/a.jpeg"
+								},
+								{
+									"url": "https://imgen.x.ai/xai-imgen/gone.jpeg"
+								}
+							],
+							"usage": {
+								"cost_in_usd_ticks": 400000000
+							}
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://imgen.x.ai/xai-imgen/a.jpeg",
+						"auth": "none"
+					},
+					"reply": {
+						"status": 200,
+						"headers": {
+							"content-type": "image/jpeg"
+						},
+						"bytes": {
+							"picture": "mid-1152x864.jpg"
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "https://imgen.x.ai/xai-imgen/gone.jpeg"
+					},
+					"reply": {
+						"status": 500,
+						"text": "oops"
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"status": "done",
+					"urls": [
+						"$FILE:mid-1152x864.jpg",
+						"https://imgen.x.ai/xai-imgen/gone.jpeg"
+					]
+				}
+			}
+		},
+		{
+			"name": "files: a stored picture is served from disk with its type, immutable, nosniff, no key needed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"store": [
+				"mid-1152x864.jpg"
+			],
+			"request": {
+				"method": "GET",
+				"path": "$FILE:mid-1152x864.jpg"
+			},
+			"expect": {
+				"status": 200,
+				"headers": {
+					"content-type": "image/jpeg",
+					"cache-control": "public, max-age=31536000, immutable",
+					"x-content-type-options": "nosniff"
+				},
+				"bytes": {
+					"picture": "mid-1152x864.jpg"
+				}
+			}
+		},
+		{
+			"name": "files: a PNG keeps its type",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"store": [
+				"warm-64.png"
+			],
+			"request": {
+				"method": "GET",
+				"path": "$FILE:warm-64.png"
+			},
+			"expect": {
+				"status": 200,
+				"headers": {
+					"content-type": "image/png"
+				},
+				"bytes": {
+					"picture": "warm-64.png"
+				}
+			}
+		},
+		{
+			"name": "files: a name that is not stored is 404 not_found",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/files/0000000000000000000000000000000000000000000000000000000000000000.jpg"
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "files: only content-addressed names (64 hex, a picture extension): a path out of the store is 404",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"store": [
+				"mid-1152x864.jpg"
+			],
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/files/../../constants.json"
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "files: upper-case hex or another extension is 404",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/files/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.exe"
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "files: the store is read-only over HTTP (POST is 405)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "$FILE:mid-1152x864.jpg",
+				"bytes": {
+					"picture": "mid-1152x864.jpg"
+				}
+			},
+			"expect": {
+				"status": 405,
+				"json": {
+					"error": {
+						"code": "method_not_allowed"
+					}
+				}
+			}
+		},
+		{
+			"name": "asset: a stored picture is answered from disk (the ZIP export reads it like an xAI picture)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"store": [
+				"mid-1152x864.jpg"
+			],
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "$FILE:mid-1152x864.jpg"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"headers": {
+					"content-type": "image/jpeg",
+					"x-content-type-options": "nosniff"
+				},
+				"bytes": {
+					"picture": "mid-1152x864.jpg"
+				}
+			}
+		},
+		{
+			"name": "asset: a local address that is not stored is 404 asset_missing, no fetch",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "/runtime/v1/files/1111111111111111111111111111111111111111111111111111111111111111.png"
+				}
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"ok": false,
+					"code": "asset_missing"
+				}
+			}
+		},
+		{
+			"name": "asset: any other relative address is 422 asset_not_allowed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "asset",
+					"url": "/runtime/v1/files/../constants.json"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "asset_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "encode by address: a stored picture is read from disk",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"store": [
+				"mid-1152x864.jpg"
+			],
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"query": "action=encode&url=$FILE:mid-1152x864.jpg"
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"original": {
+						"width": 1152,
+						"height": 864,
+						"type": "image/jpeg"
+					},
+					"variants": [
+						{
+							"width": 960,
+							"height": 720,
+							"quality": 72,
+							"sharpen": 0,
+							"type": "image/webp"
+						},
+						{
+							"width": 1152,
+							"height": 864,
+							"quality": 78,
+							"sharpen": 0.6,
+							"type": "image/webp"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "desktop status advertises its picture store (capabilities.files)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"capabilities": {
+						"loop": "client",
+						"files": true
+					}
+				}
+			}
+		}
+	]
+}
