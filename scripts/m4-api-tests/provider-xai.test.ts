@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import { providerStep, xaiCapabilities } from "@buildytech/provider-xai";
 import { GROK_CHAT_MODELS, modelRunsToolLoop, type ProviderRequest } from "../../packages/chat-agent/src/index.ts";
 import { boundaryViolations } from "../lib/module-boundary.mjs";
@@ -43,4 +44,30 @@ test("server providers cannot be imported by the browser shell or its modules", 
 	assert.ok(boundaryViolations(root).some((problem: string) => problem.includes("browser imports a server provider")));
 	const manifest = JSON.parse(readFileSync(new URL("../../packages/provider-xai/package.json", import.meta.url), "utf8"));
 	assert.equal(manifest.exports["."].browser, null);
+});
+
+test("ADR 0065: only the desktop webview turn may import the key-free wire, and the wire reads no environment", () => {
+	const root = mkdtempSync(join(tmpdir(), "buildy-provider-wire-"));
+	const dir = join(root, "apps/chat-web/src/modules/chat/browser");
+	mkdirSync(dir, { recursive: true });
+	writeFileSync(join(dir, "local-turn.ts"), 'import { runCatalogTurn } from "@buildytech/provider-xai/wire";');
+	assert.deepEqual(boundaryViolations(root).filter((p: string) => p.includes("provider")), []);
+	writeFileSync(join(dir, "local-turn.ts"), 'import { generateImages } from "@buildytech/provider-xai";');
+	assert.ok(boundaryViolations(root).some((p: string) => p.includes("browser imports a server provider")), "the root stays server-only, even here");
+	writeFileSync(join(dir, "local-turn.ts"), "");
+	writeFileSync(join(dir, "other.ts"), 'import { providerStep } from "@buildytech/provider-xai/wire";');
+	assert.ok(boundaryViolations(root).some((p: string) => p.includes("other.ts: browser imports a server provider")));
+	const wire = join(root, "packages/provider-xai/src");
+	mkdirSync(wire, { recursive: true });
+	writeFileSync(join(wire, "wire.ts"), 'export * from "./step.ts";');
+	writeFileSync(join(wire, "step.ts"), 'export const key = process.env.XAI_API_KEY; import "./images.ts";');
+	writeFileSync(join(wire, "images.ts"), "console.log(1);");
+	const problems = boundaryViolations(root).filter((p: string) => p.includes("webview wire"));
+	assert.ok(problems.some((p: string) => p.includes("step.ts: the webview wire reads the environment")));
+	assert.ok(problems.some((p: string) => p.includes("images.ts: the webview wire reaches the image transport")));
+	assert.ok(problems.some((p: string) => p.includes("images.ts: the webview wire logs")));
+	const repo = fileURLToPath(new URL("../..", import.meta.url));
+	assert.deepEqual(boundaryViolations(repo), [], "this repo: the wire is clean and only local-turn.ts imports it");
+	const manifest = JSON.parse(readFileSync(new URL("../../packages/provider-xai/package.json", import.meta.url), "utf8"));
+	assert.equal(manifest.exports["./wire"], "./src/wire.ts");
 });

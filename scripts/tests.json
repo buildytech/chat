@@ -65,6 +65,7 @@
       "contract-vendor.test.ts",
       "session-replay.test.ts",
       "live-replay.test.ts",
+      "local-turn-parity.test.ts",
       "session-url.test.ts",
       "svelte-code.test.ts",
       "ui-skin.test.ts",

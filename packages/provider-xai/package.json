@@ -4,15 +4,17 @@
   "private": true,
   "type": "module",
   "license": "Apache-2.0",
-  "description": "Server-only xAI transport adapter for the neutral BuildY agent protocol",
+  "description": "xAI transport adapter for the neutral BuildY agent protocol: the root export is server-only; ./wire (key-free transport and turn) also runs in the desktop webview (ADR 0065)",
   "exports": {
     ".": {
       "browser": null,
       "default": "./src/index.ts"
-    }
+    },
+    "./wire": "./src/wire.ts"
   },
   "dependencies": {
     "@buildytech/chat-agent": "0.0.0",
-    "@buildytech/agent-manifests": "0.0.0"
+    "@buildytech/agent-manifests": "0.0.0",
+    "@buildytech/builder-core": "0.0.0"
   }
 }

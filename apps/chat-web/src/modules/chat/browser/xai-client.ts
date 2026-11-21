@@ -16,7 +16,12 @@ type XaiClientStatus = {
 		toolCallingProven?: boolean;
 	};
 	error?: { code: string; message: string };
+	/** What the host runs (ADR 0065); web hosts send none (the runtime runs the loop). */
+	capabilities?: { loop: "server" | "client"; files: boolean; saveFile: boolean };
 };
+
+/** The last status read: a host that runs no loop (`capabilities.loop: "client"`) gets its turns run here (local-turn). */
+let lastStatus: XaiClientStatus | null = null;
 
 export type XaiRunResponse = (AgentReply | AgentFailure) & {
 	modelId?: string;
@@ -63,13 +68,15 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 		const code =
 			body.code ||
 			(res.ok ? "ok" : res.status === 404 ? "xai_runtime_unreachable" : "xai_status_error");
-		return {
+		lastStatus = {
 			...body,
 			liveModel: Boolean(body.liveModel ?? body.ready),
 			ready: Boolean(body.ready),
 			code
 		};
+		return lastStatus;
 	} catch {
+		lastStatus = null;
 		return {
 			runtime: "xai-grok",
 			ready: false,
@@ -113,28 +120,44 @@ function platformCode(status: number, code?: string): string {
 	return "runtime_platform_error";
 }
 
+/** The body of POST /v1/run; the desktop host's local turn reads the same object. */
+export function runBody(ctx: TurnRequest): Record<string, unknown> {
+	return {
+		...(ctx.scenario ? { scenario: ctx.scenario } : {}),
+		modelId: ctx.modelId,
+		contract: contractFingerprint(),
+		brief: ctx.brief,
+		screenId: ctx.screenId ?? null,
+		expectedRevision: ctx.expectedRevision,
+		currentPage: ctx.currentPage,
+		shownPage: ctx.shownPage ?? null,
+		scopeBlockIds: ctx.scopeBlockIds?.length ? ctx.scopeBlockIds : undefined,
+		conversation: ctx.conversation ?? [],
+		mode: ctx.mode,
+		...(ctx.cacheKey ? { cacheKey: ctx.cacheKey } : {})
+	};
+}
+
+async function sendRun(ctx: TurnRequest, signal?: AbortSignal): Promise<Response> {
+	const status = lastStatus;
+	if (status?.capabilities?.loop === "client") {
+		const { runLocalTurn } = await import("./local-turn.ts");
+		// the wire body (undefined fields dropped, a copy): what the runtime would read
+		return runLocalTurn(JSON.parse(JSON.stringify(runBody(ctx))), status, signal);
+	}
+	return fetch(`${runtimeBase()}/v1/run`, {
+		method: "POST",
+		credentials: "same-origin",
+		cache: "no-store",
+		headers: { "Content-Type": "application/json", Accept: "application/json" },
+		body: JSON.stringify(runBody(ctx)),
+		signal
+	});
+}
+
 export async function runXaiTurn(ctx: TurnRequest, signal?: AbortSignal): Promise<XaiRunResponse> {
 	try {
-		const res = await fetch(`${runtimeBase()}/v1/run`, {
-			method: "POST",
-			credentials: "same-origin",
-			cache: "no-store",
-			headers: { "Content-Type": "application/json", Accept: "application/json" },
-			body: JSON.stringify({
-				...(ctx.scenario ? { scenario: ctx.scenario } : {}),
-				modelId: ctx.modelId,
-				contract: contractFingerprint(),
-				brief: ctx.brief,
-				screenId: ctx.screenId ?? null,
-				expectedRevision: ctx.expectedRevision,
-				currentPage: ctx.currentPage,
-				shownPage: ctx.shownPage ?? null,
-				scopeBlockIds: ctx.scopeBlockIds?.length ? ctx.scopeBlockIds : undefined,
-				conversation: ctx.conversation ?? [],
-				mode: ctx.mode
-			}),
-			signal
-		});
+		const res = await sendRun(ctx, signal);
 		const body = await readRuntimeBody(res);
 		if (body && "ok" in body && typeof body.ok === "boolean") return body as XaiRunResponse;
 		const runtimeError = body && "error" in body ? body.error : undefined;

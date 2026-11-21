@@ -1,0 +1,1097 @@
+{
+	"$comment": "POST /runtime/v1/xai/chat/completions: the desktop host's forward of one xAI Chat Completions request for the agent loop that runs in its webview (capabilities.loop \"client\", ADR 0065). The webview sends the placeholder key `host-held`; the host puts its own key on the request, accepts only a model its key lists, caps the body at 256000 bytes, follows no redirect and never answers with the key. The web runtimes run the loop themselves and have no forward.",
+	"cases": [
+		{
+			"name": "forward without a key is 503 xai_api_key_missing, no provider call",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"error": {
+						"code": "xai_api_key_missing"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward sends the chat request with the host's key (the webview's placeholder is replaced) and passes the answer through",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								},
+								{
+									"id": "grok-build-0.1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "/chat/completions",
+						"auth": "bearer",
+						"json": {
+							"model": "$CANDIDATE",
+							"messages": [
+								{
+									"role": "system",
+									"content": "BuildY page agent"
+								},
+								{
+									"role": "user",
+									"content": "Hi"
+								}
+							],
+							"tools": [],
+							"tool_choice": "auto",
+							"stream": false
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"id": "chatcmpl-1",
+							"model": "$CANDIDATE",
+							"choices": [
+								{
+									"index": 0,
+									"message": {
+										"role": "assistant",
+										"content": "Hello."
+									},
+									"finish_reason": "stop"
+								}
+							],
+							"usage": {
+								"prompt_tokens": 12,
+								"completion_tokens": 3,
+								"total_tokens": 15
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$KEY"
+				],
+				"headers": {
+					"content-type": "application/json",
+					"cache-control": "no-store"
+				},
+				"json": {
+					"id": "chatcmpl-1",
+					"model": "$CANDIDATE",
+					"choices": [
+						{
+							"index": 0,
+							"message": {
+								"role": "assistant",
+								"content": "Hello."
+							},
+							"finish_reason": "stop"
+						}
+					],
+					"usage": {
+						"prompt_tokens": 12,
+						"completion_tokens": 3,
+						"total_tokens": 15
+					}
+				}
+			}
+		},
+		{
+			"name": "forward passes a provider refusal through with its status and retry-after (the loop's retry policy reads them)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "/chat/completions",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 429,
+						"headers": {
+							"retry-after": "7"
+						},
+						"json": {
+							"error": {
+								"message": "rate limited"
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 429,
+				"headers": {
+					"retry-after": "7"
+				},
+				"json": {
+					"error": {
+						"message": "rate limited"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward never answers with the key, even when the provider echoes it",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "/chat/completions",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": {
+								"message": "$KEY"
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 401,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"error": {
+						"message": "[redacted]"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward refuses a model the key does not list: 422 model_not_listed, no chat request",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "grok-unlisted",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 422,
+				"json": {
+					"error": {
+						"code": "model_not_listed"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward refuses an image model on the chat path: 422 model_not_listed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$IMAGE_MODEL",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 422,
+				"json": {
+					"error": {
+						"code": "model_not_listed"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward without a model list is 503 with the discovery code, no chat request",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 500,
+						"text": "down"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 500,
+						"text": "down"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 500,
+						"text": "down"
+					}
+				}
+			],
+			"expect": {
+				"status": 503,
+				"json": {
+					"error": {
+						"code": "xai_models_list_failed"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward does not follow a redirect: 502 xai_forward_failed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "/chat/completions",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 307,
+						"headers": {
+							"location": "https://elsewhere.test/v1/chat/completions"
+						},
+						"text": ""
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"error": {
+						"code": "xai_forward_failed"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward on a network failure is 502 xai_forward_failed, nothing else said",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "/chat/completions",
+						"auth": "bearer"
+					},
+					"reply": {
+						"throw": "network"
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"notContains": [
+					"stubbed"
+				],
+				"json": {
+					"error": {
+						"code": "xai_forward_failed"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward body over 256000 bytes is 413 too_large, no provider call",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "user",
+							"content": {
+								"$repeat": [
+									"a",
+									256001
+								]
+							}
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"expect": {
+				"status": 413,
+				"json": {
+					"error": {
+						"code": "too_large"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward body that is not JSON is 400 invalid_json",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k",
+					"content-type": "application/json"
+				},
+				"text": "{not json"
+			},
+			"expect": {
+				"status": 400,
+				"json": {
+					"error": {
+						"code": "invalid_json"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward body without a model is 400 invalid_request",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"messages": []
+				}
+			},
+			"expect": {
+				"status": 400,
+				"json": {
+					"error": {
+						"code": "invalid_request"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward answers only POST: GET is 405 method_not_allowed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/xai/chat/completions"
+			},
+			"expect": {
+				"status": 405,
+				"json": {
+					"error": {
+						"code": "method_not_allowed"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward has one path: /v1/xai/models is 404 not_found, no provider call",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/xai/models"
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward has one path: images go through /v1/media, /v1/xai/images/generations is 404",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/images/generations",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$IMAGE_MODEL",
+					"prompt": "x"
+				}
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward path tricks stay on the one path: /v1/xai/chat/completions/../../models is 404",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions/%2e%2e/%2e%2e/models",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "the web runtimes have no forward: /v1/xai/chat/completions is 404 not_found there",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false
+				}
+			},
+			"expect": {
+				"status": 404,
+				"notContains": [
+					"$KEY"
+				]
+			}
+		}
+	]
+}

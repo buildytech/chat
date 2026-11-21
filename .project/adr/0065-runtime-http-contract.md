@@ -1,6 +1,6 @@
 # ADR 0065: One frontend, a runtime HTTP contract, a Go desktop host
 
-Status: accepted, 2026-11-22 (owner t127u, t127s644).
+Status: accepted, 2026-11-22 (owner t127u, t127s644); phase 2 implemented 2026-11-22 (t128u).
 
 ## Decision
 
@@ -14,3 +14,13 @@ Status: accepted, 2026-11-22 (owner t127u, t127s644).
 ## Consequences
 
 The second host does not duplicate the agent, prompts or frontend. It must preserve the status readiness and discovery behavior (including HTTP 200 with `ready: false` when a key is present but discovery failed). Phase 1 advertises the future loop location but does not run a live turn yet. A submodule update is the only way the desktop app receives chat changes; its gate runs the cases from that exact pin. The generated `constants.json` is checked against TS sources and `contractFingerprint()` by the TS runner, and also stamps the desktop status.
+
+## Phase 2 as built (t128u)
+
+- **One turn function.** The catalog turn (`runCatalogTurn`, formerly the body of `runXaiCatalogTurn`), `turnInput` and `turnAnswer` (the POST /v1/run body) live in `@buildytech/provider-xai/wire` (`packages/provider-xai/src/turn.ts`). The runtime binds its key and log sink (`runXaiCatalogTurn` in `apps/xai-runtime/src/chat-tools.ts`); the desktop webview calls the same function from `apps/chat-web/src/modules/chat/browser/local-turn.ts`, which mirrors `handleRun` (contract check, request mapping with the host's discovered models, readiness, run budget) and answers a `Response` with the same status and body.
+- **Module boundary.** The package root (images, server-only) stays `browser: null`. `./wire` is the one provider entry a browser file may import, and only `modules/chat/browser/local-turn.ts` may import it (`scripts/lib/module-boundary.mjs`). The files `./wire` reaches read no environment, log nothing and do not reach the image transport (checked by the same script).
+- **Switch.** `xai-client.ts` keeps the last status; with `capabilities.loop: "client"` the turn runs in the webview (lazy chunk), else POST /v1/run as before. The web hosts send no capabilities, so the web path is unchanged. The /v1/run body now carries the chat's `cacheKey`, which the runtime already accepts (it was dropped before).
+- **Strict writes.** `setRenderEmptyPolicy` (builder-core) switches the render probe's empty policy without clearing its cache. With `strictRenderWrites` the turn judges its own writes with "reject" (as the runtime does) and puts the page's policy ("allow" in the browser) back while it waits for the model, so Inspector edits between model calls keep theirs.
+- **Forward.** The webview sends `Authorization: Bearer host-held` to `POST /runtime/v1/xai/chat/completions`. The desktop host forwards only that path and method, only a model its key lists (chat ids, not image ids), at most 256000 bytes, follows no redirect, sets its own key, passes status, `content-type`, `retry-after` and the body through with the key redacted (`contract/runtime-http/cases/xai-forward.json`). The web runtimes have no forward (404, tested).
+- **Parity.** `scripts/m4-api-tests/local-turn-parity.test.ts` runs the same scripted turns (Ask; the two live Build replays; an empty write refused then fixed; an empty write only) through the runtime and through the webview path with the browser's probe: same status, same body (run id and clock aside), same model requests, and the webview never sends a key.
+- **Model policy is unchanged.** A manifest refusal (grok-4.7: `model_too_slow`) happens before any request on both paths.

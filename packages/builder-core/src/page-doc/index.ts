@@ -8,5 +8,5 @@ export { addSlotCheck, moveSlotCheck, naturalIndex, type SlotCheck } from "./slo
 export { emptyPage } from "./empty.ts";
 export { applyOp, checkAdd, setAtPointer, type AddCheck, type OpName, type OpResult, type PageOp } from "./ops.ts";
 export { inspectorModel, inspectorShown, inspectorValue, pointerKey, type InspectorField, type InspectorModel, type InspectorWidget } from "./inspect.ts";
-export { installRenderProbe, probeFromModule, probeOutcome, renderProbeInstalled, renderIssues, renderProblems, showsContent, type ProbeIssue, type ProbeOutcome, type ProbeResult, type RenderModule, type RenderProbe } from "./probe.ts";
+export { installRenderProbe, probeFromModule, probeOutcome, renderProbeInstalled, renderIssues, renderProblems, setRenderEmptyPolicy, showsContent, type ProbeIssue, type ProbeOutcome, type ProbeResult, type RenderModule, type RenderProbe } from "./probe.ts";
 export { convertProps, pageForModel, pageFromModel, patchFromModel, writeInputFromModel } from "./money-view.ts";

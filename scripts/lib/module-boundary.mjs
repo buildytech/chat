@@ -51,14 +51,51 @@ function reachesModules(file, spec, base) {
 	return spec.startsWith(".") && resolve(dirname(file), spec).startsWith(join(base, "modules") + sep);
 }
 
+/**
+ * ADR 0065: the one browser file that may import a provider, and the one entry it may take: the key-free transport and
+ * catalog turn the desktop webview runs (its host adds the key). The wire files read no environment and reach no image
+ * transport, checked below, so the exception cannot carry a key or a server path into the browser.
+ */
+export const WEBVIEW_TURN = "modules/chat/browser/local-turn.ts";
+export const WEBVIEW_WIRE = "@buildytech/provider-xai/wire";
+const WIRE_SRC = "packages/provider-xai/src";
+
+/** The files `@buildytech/provider-xai/wire` reaches inside its package (relative imports from wire.ts). */
+export function wireFiles(root) {
+	const seen = new Set();
+	const todo = [join(root, WIRE_SRC, "wire.ts")];
+	while (todo.length) {
+		const path = todo.pop();
+		if (seen.has(path) || !existsSync(path)) continue;
+		seen.add(path);
+		for (const spec of specifiersOf(readFileSync(path, "utf8"))) if (spec.startsWith(".")) todo.push(resolve(dirname(path), spec));
+	}
+	return [...seen];
+}
+
+function wireViolations(root) {
+	const problems = [];
+	for (const path of wireFiles(root)) {
+		const rel = relative(root, path).replaceAll("\\", "/");
+		const text = readFileSync(path, "utf8");
+		if (/\bprocess\b|\breadEnv\b|\bimport\.meta\.env\b|\bXAI_API_KEY\b/.test(text)) problems.push(`${rel}: the webview wire reads the environment`);
+		if (/(?:^|\/)images\.ts$/.test(rel)) problems.push(`${rel}: the webview wire reaches the image transport`);
+		if (/\bconsole\./.test(text)) problems.push(`${rel}: the webview wire logs (the host passes its sink)`);
+	}
+	return problems;
+}
+
 export function boundaryViolations(root) {
 	const problems = [];
 	const names = moduleNames(root);
 	const base = join(root, WEB_SRC);
+	if (existsSync(join(root, WIRE_SRC))) problems.push(...wireViolations(root));
 	for (const path of walk(base, isSource)) {
 		for (const spec of specifiersOf(readFileSync(path, "utf8"))) {
 			const target = spec.startsWith(".") ? relative(root, resolve(dirname(path), spec)).replaceAll("\\", "/") : "";
-			if (spec.startsWith("@buildytech/provider-") || /^packages\/provider-[^/]+(?:\/|$)/.test(target)) problems.push(`${relative(base, path)}: browser imports a server provider (${spec})`);
+			const rel = relative(base, path).replaceAll("\\", "/");
+			if (rel === WEBVIEW_TURN && spec === WEBVIEW_WIRE) continue;
+			if (spec.startsWith("@buildytech/provider-") || /^packages\/provider-[^/]+(?:\/|$)/.test(target)) problems.push(`${rel}: browser imports a server provider (${spec})`);
 		}
 	}
 	for (const path of coreFiles(root)) {

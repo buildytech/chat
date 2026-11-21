@@ -17,7 +17,7 @@ test("the chat's prompt-cache key is stable per session, opaque, and checked by 
 		assert.ok(out.ok && !("cacheKey" in out.request), String(bad));
 	}
 	assert.match(readFileSync("apps/chat-web/src/modules/chat/core/turn.ts", "utf8"), /cacheKey: chatCacheKey\(session\.id\)/);
-	assert.match(readFileSync("apps/xai-runtime/src/chat-tools.ts", "utf8"), /cacheKey: ctx\.cacheKey/);
+	assert.match(readFileSync("packages/provider-xai/src/turn.ts", "utf8"), /cacheKey: ctx\.cacheKey/);
 });
 
 test("every request of a run carries the session key; without one the run id is the key (page-loop@3)", async () => {

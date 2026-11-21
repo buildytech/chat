@@ -19299,6 +19299,17 @@ function installRenderProbe(fn: RenderProbe | null, options: { required?: boolea
 	CACHE.clear();
 }
 
+/**
+ * Switch the empty policy and return the one it replaces. The desktop webview runs the agent loop next to the preview:
+ * the loop judges its own writes strictly ("reject", like the agent host) and puts the page's policy back while it waits
+ * for the model (ADR 0065). The cache holds raw outcomes, so a switch never clears it.
+ */
+function setRenderEmptyPolicy(policy: "reject" | "allow"): "reject" | "allow" {
+	const previous = emptyPolicy;
+	emptyPolicy = policy;
+	return previous;
+}
+
 function renderProbeInstalled(): boolean {
 	return probe !== null;
 }
@@ -19420,6 +19431,7 @@ function renderProblems(page: PageV2): ProbeIssue[] {
 exports["probeFromModule"] = probeFromModule;
 exports["probeOutcome"] = probeOutcome;
 exports["installRenderProbe"] = installRenderProbe;
+exports["setRenderEmptyPolicy"] = setRenderEmptyPolicy;
 exports["renderProbeInstalled"] = renderProbeInstalled;
 exports["showsContent"] = showsContent;
 exports["renderIssues"] = renderIssues;
@@ -20491,6 +20503,7 @@ exports["probeOutcome"] = __req("packages/builder-core/src/page-doc/probe.ts")["
 exports["renderProbeInstalled"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderProbeInstalled"];
 exports["renderIssues"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderIssues"];
 exports["renderProblems"] = __req("packages/builder-core/src/page-doc/probe.ts")["renderProblems"];
+exports["setRenderEmptyPolicy"] = __req("packages/builder-core/src/page-doc/probe.ts")["setRenderEmptyPolicy"];
 exports["showsContent"] = __req("packages/builder-core/src/page-doc/probe.ts")["showsContent"];
 exports["convertProps"] = __req("packages/builder-core/src/page-doc/money-view.ts")["convertProps"];
 exports["pageForModel"] = __req("packages/builder-core/src/page-doc/money-view.ts")["pageForModel"];
@@ -23341,136 +23354,46 @@ exports["providerStep"] = providerStep;
 
 });
 
-__def("packages/provider-xai/src/images.ts", function (exports) {
-const { classifyProviderFailure } = __req("packages/provider-xai/src/errors.ts");
-const XAI_IMAGE_MODEL = "grok-imagine-image-2.0";
-/** Aspect ratios the generations endpoint accepts that the page blocks use. */
-const IMAGE_ASPECTS = ["1:1", "4:3", "3:4", "16:9", "21:9"] as const;
-const MAX_IMAGE_CANDIDATES = 3;
-const MAX_IMAGE_PROMPT = 4000;
+__def("packages/provider-xai/src/turn.ts", function (exports) {
+const { DEFAULT_XAI_BASE_URL, isAgentReply, resolveScenario, runAgentLoop, turnMeta, safeErrorMessage, notSentUsage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
+const { emptyPage, setRenderEmptyPolicy } = __req("packages/builder-core/src/index.ts");
+const { providerStep } = __req("packages/provider-xai/src/provider.ts");
+const HOST_HELD_KEY = "host-held";
 
-type Transport = { apiKey: string; baseUrl: string; signal?: AbortSignal };
-type Failure = { ok: false; code: string; message: string; status?: number };
-
-function isImageAspect(value: unknown): value is ImageAspect {
-	return IMAGE_ASPECTS.some((aspect) => aspect === value);
-}
-
-type Json = Record<string, unknown>;
-const isJson = (value: unknown): value is Json => Boolean(value) && typeof value === "object" && !Array.isArray(value);
-const field = (value: unknown, key: string): unknown => (isJson(value) ? value[key] : undefined);
-
-const REQUEST_ID = /^[A-Za-z0-9-]{8,80}$/;
-const isImageRequestId = (value: unknown): value is string => typeof value === "string" && REQUEST_ID.test(value);
-
-async function failure(res: Response): Promise<Failure> {
-	const body = await res.text().catch(() => "");
-	const failed = classifyProviderFailure(res.status, body.slice(0, 240));
-	return { ok: false, code: failed.code, message: failed.message, status: res.status };
-}
-
-/** Start one deferred generation of `n` candidates. Nothing is retried. */
-async function submitImages(input: Transport & { prompt: string; aspect: ImageAspect; n: number }): Promise<ImageSubmit> {
-	const n = Math.min(Math.max(Math.trunc(input.n), 1), MAX_IMAGE_CANDIDATES);
-	const prompt = input.prompt.trim().slice(0, MAX_IMAGE_PROMPT);
-	if (!prompt) return { ok: false, code: "empty_prompt", message: "The image brief is empty. No request was sent." };
-	const res = await fetch(`${input.baseUrl}/images/generations`, {
-		method: "POST",
-		headers: { Authorization: `Bearer ${input.apiKey}`, "Content-Type": "application/json", Accept: "application/json" },
-		body: JSON.stringify({ model: XAI_IMAGE_MODEL, prompt, n, aspect_ratio: input.aspect, response_format: "url", deferred: true }),
-		signal: input.signal
-	});
-	if (!res.ok) return failure(res);
-	const requestId = field(await res.json().catch(() => null), "request_id");
-	if (!isImageRequestId(requestId)) return { ok: false, code: "malformed_response", message: "The image request returned no request id." };
-	return { ok: true, requestId };
-}
-
-function httpsUrls(data: unknown): string[] {
-	if (!Array.isArray(data)) return [];
-	return data.map((item) => field(item, "url")).filter((url): url is string => typeof url === "string" && url.startsWith("https://") && url.length <= 2048);
-}
-
-/** Read one deferred request: pending, done (temporary https URLs and the billed cost), or failed. */
-async function pollImages(input: Transport & { requestId: string }): Promise<ImagePoll> {
-	if (!isImageRequestId(input.requestId)) return { ok: false, code: "bad_request_id", message: "Unknown image request." };
-	const res = await fetch(`${input.baseUrl}/images/${encodeURIComponent(input.requestId)}`, {
-		headers: { Authorization: `Bearer ${input.apiKey}`, Accept: "application/json" },
-		signal: input.signal
-	});
-	if (res.status === 202 || res.status === 404) {
-		await res.body?.cancel().catch(() => undefined);
-		return { ok: true, status: "pending" };
-	}
-	if (!res.ok) return failure(res);
-	const payload: unknown = await res.json().catch(() => null);
-	const status = field(payload, "status");
-	if (status === "pending") return { ok: true, status: "pending" };
-	const code = field(field(payload, "error"), "code");
-	if (status === "failed") return { ok: false, code: typeof code === "string" ? `image_${code}` : "image_failed", message: "The image model could not draw this brief." };
-	const urls = httpsUrls(field(payload, "data"));
-	if (!urls.length) return { ok: false, code: "malformed_response", message: "The image request finished without pictures." };
-	const ticks = field(field(payload, "usage"), "cost_in_usd_ticks");
-	return { ok: true, status: "done", urls, costUsdTicks: typeof ticks === "number" && Number.isFinite(ticks) ? ticks : null };
-}
-
-exports["XAI_IMAGE_MODEL"] = XAI_IMAGE_MODEL;
-exports["IMAGE_ASPECTS"] = IMAGE_ASPECTS;
-exports["MAX_IMAGE_CANDIDATES"] = MAX_IMAGE_CANDIDATES;
-exports["MAX_IMAGE_PROMPT"] = MAX_IMAGE_PROMPT;
-exports["isImageAspect"] = isImageAspect;
-exports["isImageRequestId"] = isImageRequestId;
-exports["submitImages"] = submitImages;
-exports["pollImages"] = pollImages;
-
-});
-
-__def("packages/provider-xai/src/index.ts", function (exports) {
-exports["providerStep"] = __req("packages/provider-xai/src/provider.ts")["providerStep"];
-exports["xaiCapabilities"] = __req("packages/provider-xai/src/capabilities.ts")["xaiCapabilities"];
-exports["IMAGE_ASPECTS"] = __req("packages/provider-xai/src/images.ts")["IMAGE_ASPECTS"];
-exports["MAX_IMAGE_CANDIDATES"] = __req("packages/provider-xai/src/images.ts")["MAX_IMAGE_CANDIDATES"];
-exports["MAX_IMAGE_PROMPT"] = __req("packages/provider-xai/src/images.ts")["MAX_IMAGE_PROMPT"];
-exports["XAI_IMAGE_MODEL"] = __req("packages/provider-xai/src/images.ts")["XAI_IMAGE_MODEL"];
-exports["isImageAspect"] = __req("packages/provider-xai/src/images.ts")["isImageAspect"];
-exports["isImageRequestId"] = __req("packages/provider-xai/src/images.ts")["isImageRequestId"];
-exports["pollImages"] = __req("packages/provider-xai/src/images.ts")["pollImages"];
-exports["submitImages"] = __req("packages/provider-xai/src/images.ts")["submitImages"];
-
-
-
-});
-
-__def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
-const { DEFAULT_XAI_BASE_URL, resolveScenario, runAgentLoop, turnMeta, safeErrorMessage, notSentUsage, unknownUsage } = __req("packages/chat-agent/src/index.ts");
-const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
-const { providerStep } = __req("packages/provider-xai/src/index.ts");
-installPropsGate();
-
+type TurnResult = AgentReply | AgentFailure;
+type TurnLog = (event: Record<string, unknown>) => void;
 function newRunId(): string {
 	return `xai-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-
-function logException(err: unknown, apiKey: string, modelId: string, signal: AbortSignal): void {
+function logException(log: TurnLog | undefined, err: unknown, apiKey: string, modelId: string, signal: AbortSignal): void {
 	const safe = safeErrorMessage(err, [apiKey]);
-	if (!signal.aborted) console.error(JSON.stringify({ runtime: "xai-grok", event: "xai_run_exception", modelId, name: err instanceof Error ? err.name : typeof err, code: safe.code, message: safe.message }));
+	if (!signal.aborted) log?.({ runtime: "xai-grok", event: "xai_run_exception", modelId, name: err instanceof Error ? err.name : typeof err, code: safe.code, message: safe.message });
 }
 
-type TurnResult = AgentReply | AgentFailure;
-
-async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL, deadline?: number): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
+async function runCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL, deadline?: number, options: CatalogTurnOptions = {}): Promise<{ result: TurnResult; meta: LiveTurnMeta }> {
+	const previous = options.strictRenderWrites ? setRenderEmptyPolicy("reject") : null;
+	const step: Parameters<typeof runAgentLoop>[3] = previous
+		? async (input) => {
+				setRenderEmptyPolicy(previous);
+				try {
+					return await providerStep({ ...input, apiKey, baseUrl });
+				} finally {
+					setRenderEmptyPolicy("reject");
+				}
+			}
+		: (input) => providerStep({ ...input, apiKey, baseUrl });
 	try {
 		const compiled = resolveScenario(ctx.mode, modelId, ctx.scenario);
 		if (!compiled.ok || compiled.scenario.profile.provider !== "xai") return { result: { ok: false, code: "invalid_scenario", message: "The scenario could not be resolved.", issues: (compiled.ok ? [{ path: "/provider", code: "adapter_mismatch" }] : compiled.issues).map((issue) => ({ ...issue, expected: "registered compatible scenario" })) }, meta: turnMeta("chat-completions", modelId, false, 0, [], notSentUsage(), newRunId()) };
-		const turn = await runAgentLoop(modelId, ctx, signal, (input) => providerStep({ ...input, apiKey, baseUrl }), newRunId(), { scenario: compiled.scenario, deadline, cacheKey: ctx.cacheKey, onProviderError: (error) => logException(error, apiKey, modelId, signal) });
+		const turn = await runAgentLoop(modelId, ctx, signal, step, newRunId(), { scenario: compiled.scenario, deadline, cacheKey: ctx.cacheKey, onProviderError: (error) => logException(options.log, error, apiKey, modelId, signal) });
 		if (!turn.result.ok && turn.result.code === "provider_failed") return { ...turn, result: { ...turn.result, code: "xai_chat_failed", message: "The xAI chat request could not be completed." } };
 		return turn;
 	} catch (err) {
 		const safe = safeErrorMessage(err, [apiKey]);
 		const aborted = safe.code === "AbortError" || safe.message.toLowerCase().includes("abort") || signal.aborted;
-		// The caller only sees a generic failure; the function log must name the exception (redacted, 280 chars).
-		if (!aborted) logException(err, apiKey, modelId, signal);
+		// The caller only sees a generic failure; the host log must name the exception (redacted, 280 chars).
+		if (!aborted) logException(options.log, err, apiKey, modelId, signal);
 		return {
 			result: {
 				ok: false,
@@ -23479,7 +23402,93 @@ async function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnConte
 			},
 			meta: turnMeta("chat-completions", modelId, false, 0, [], unknownUsage(aborted ? "cancelled" : "error", 0), newRunId())
 		};
+	} finally {
+		if (previous) setRenderEmptyPolicy(previous);
 	}
+}
+
+type MappedRequest = Extract<ReturnType<typeof mapChatRunRequest>, { ok: true }>["request"];
+
+/** What the model turn needs from the mapped request (an empty page when none came). */
+function turnInput(req: MappedRequest): TurnContext {
+	return {
+		brief: req.brief,
+		scenario: req.scenario,
+		mode: req.mode,
+		conversation: req.conversation,
+		page: req.currentPage ?? emptyPage({ title: "New page" }),
+		shownPage: req.shownPage ?? null,
+		expectedRevision: req.expectedRevision,
+		scopeBlockIds: req.scopeBlockIds,
+		cacheKey: req.cacheKey
+	};
+}
+
+/**
+ * The answer of one finished turn, the body of POST /v1/run: the result (our own run budget firing, not a client cancel,
+ * becomes runtime_timeout) with what the run proved and used. `status` is the HTTP status the runtime sends.
+ */
+function turnAnswer(req: MappedRequest, turn: { result: TurnResult; meta: LiveTurnMeta }, budgetMs: number, clientAborted: boolean) {
+	const { meta } = turn;
+	const checked =
+		!turn.result.ok && (turn.result.code === "aborted" || turn.result.code === "runtime_timeout") && !clientAborted
+			? { ok: false as const, code: "runtime_timeout", message: `The model did not finish within ${Math.round(budgetMs / 1000)} s. Try again or pick a faster model. No other model was substituted.` }
+			: turn.result;
+	const live = Boolean(checked.ok && (meta.toolCallingWorked || isAgentReply(checked)));
+	return {
+		status: checked.ok ? 200 : 422,
+		checked,
+		live,
+		body: {
+			...checked,
+			liveModel: live,
+			liveXai: live,
+			toolCallingProven: meta.toolCallingWorked,
+			mode: req.mode,
+			runtime: "xai-grok" as const,
+			modelId: meta.modelId,
+			requestedModelId: req.modelId,
+			path: meta.path,
+			runId: meta.runId,
+			toolsUsed: meta.toolsCalled,
+			scenario: meta.scenario,
+			providerRetries: meta.providerRetries,
+			runTrace: meta.runTrace,
+			usage: meta.usage
+		}
+	};
+}
+
+exports["HOST_HELD_KEY"] = HOST_HELD_KEY;
+exports["runCatalogTurn"] = runCatalogTurn;
+exports["turnInput"] = turnInput;
+exports["turnAnswer"] = turnAnswer;
+
+});
+
+__def("packages/provider-xai/src/wire.ts", function (exports) {
+exports["providerStep"] = __req("packages/provider-xai/src/provider.ts")["providerStep"];
+exports["HOST_HELD_KEY"] = __req("packages/provider-xai/src/turn.ts")["HOST_HELD_KEY"];
+exports["runCatalogTurn"] = __req("packages/provider-xai/src/turn.ts")["runCatalogTurn"];
+exports["turnAnswer"] = __req("packages/provider-xai/src/turn.ts")["turnAnswer"];
+exports["turnInput"] = __req("packages/provider-xai/src/turn.ts")["turnInput"];
+
+
+
+});
+
+__def("apps/xai-runtime/src/chat-tools.ts", function (exports) {
+const { DEFAULT_XAI_BASE_URL } = __req("packages/chat-agent/src/index.ts");
+const { installPropsGate } = __req("packages/builder-core/src/catalog/props-gate.ts");
+const { runCatalogTurn } = __req("packages/provider-xai/src/wire.ts");
+exports["turnAnswer"] = __req("packages/provider-xai/src/wire.ts")["turnAnswer"];
+exports["turnInput"] = __req("packages/provider-xai/src/wire.ts")["turnInput"];
+installPropsGate();
+
+const log = (event: Record<string, unknown>) => console.error(JSON.stringify(event));
+
+function runXaiCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext, signal: AbortSignal, baseUrl: string = DEFAULT_XAI_BASE_URL, deadline?: number) {
+	return runCatalogTurn(apiKey, modelId, ctx, signal, baseUrl, deadline, { log });
 }
 
 exports["runXaiCatalogTurn"] = runXaiCatalogTurn;
@@ -23938,6 +23947,110 @@ exports["handleEncode"] = handleEncode;
 
 });
 
+__def("packages/provider-xai/src/images.ts", function (exports) {
+const { classifyProviderFailure } = __req("packages/provider-xai/src/errors.ts");
+const XAI_IMAGE_MODEL = "grok-imagine-image-2.0";
+/** Aspect ratios the generations endpoint accepts that the page blocks use. */
+const IMAGE_ASPECTS = ["1:1", "4:3", "3:4", "16:9", "21:9"] as const;
+const MAX_IMAGE_CANDIDATES = 3;
+const MAX_IMAGE_PROMPT = 4000;
+
+type Transport = { apiKey: string; baseUrl: string; signal?: AbortSignal };
+type Failure = { ok: false; code: string; message: string; status?: number };
+
+function isImageAspect(value: unknown): value is ImageAspect {
+	return IMAGE_ASPECTS.some((aspect) => aspect === value);
+}
+
+type Json = Record<string, unknown>;
+const isJson = (value: unknown): value is Json => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+const field = (value: unknown, key: string): unknown => (isJson(value) ? value[key] : undefined);
+
+const REQUEST_ID = /^[A-Za-z0-9-]{8,80}$/;
+const isImageRequestId = (value: unknown): value is string => typeof value === "string" && REQUEST_ID.test(value);
+
+async function failure(res: Response): Promise<Failure> {
+	const body = await res.text().catch(() => "");
+	const failed = classifyProviderFailure(res.status, body.slice(0, 240));
+	return { ok: false, code: failed.code, message: failed.message, status: res.status };
+}
+
+/** Start one deferred generation of `n` candidates. Nothing is retried. */
+async function submitImages(input: Transport & { prompt: string; aspect: ImageAspect; n: number }): Promise<ImageSubmit> {
+	const n = Math.min(Math.max(Math.trunc(input.n), 1), MAX_IMAGE_CANDIDATES);
+	const prompt = input.prompt.trim().slice(0, MAX_IMAGE_PROMPT);
+	if (!prompt) return { ok: false, code: "empty_prompt", message: "The image brief is empty. No request was sent." };
+	const res = await fetch(`${input.baseUrl}/images/generations`, {
+		method: "POST",
+		headers: { Authorization: `Bearer ${input.apiKey}`, "Content-Type": "application/json", Accept: "application/json" },
+		body: JSON.stringify({ model: XAI_IMAGE_MODEL, prompt, n, aspect_ratio: input.aspect, response_format: "url", deferred: true }),
+		signal: input.signal
+	});
+	if (!res.ok) return failure(res);
+	const requestId = field(await res.json().catch(() => null), "request_id");
+	if (!isImageRequestId(requestId)) return { ok: false, code: "malformed_response", message: "The image request returned no request id." };
+	return { ok: true, requestId };
+}
+
+function httpsUrls(data: unknown): string[] {
+	if (!Array.isArray(data)) return [];
+	return data.map((item) => field(item, "url")).filter((url): url is string => typeof url === "string" && url.startsWith("https://") && url.length <= 2048);
+}
+
+/** Read one deferred request: pending, done (temporary https URLs and the billed cost), or failed. */
+async function pollImages(input: Transport & { requestId: string }): Promise<ImagePoll> {
+	if (!isImageRequestId(input.requestId)) return { ok: false, code: "bad_request_id", message: "Unknown image request." };
+	const res = await fetch(`${input.baseUrl}/images/${encodeURIComponent(input.requestId)}`, {
+		headers: { Authorization: `Bearer ${input.apiKey}`, Accept: "application/json" },
+		signal: input.signal
+	});
+	if (res.status === 202 || res.status === 404) {
+		await res.body?.cancel().catch(() => undefined);
+		return { ok: true, status: "pending" };
+	}
+	if (!res.ok) return failure(res);
+	const payload: unknown = await res.json().catch(() => null);
+	const status = field(payload, "status");
+	if (status === "pending") return { ok: true, status: "pending" };
+	const code = field(field(payload, "error"), "code");
+	if (status === "failed") return { ok: false, code: typeof code === "string" ? `image_${code}` : "image_failed", message: "The image model could not draw this brief." };
+	const urls = httpsUrls(field(payload, "data"));
+	if (!urls.length) return { ok: false, code: "malformed_response", message: "The image request finished without pictures." };
+	const ticks = field(field(payload, "usage"), "cost_in_usd_ticks");
+	return { ok: true, status: "done", urls, costUsdTicks: typeof ticks === "number" && Number.isFinite(ticks) ? ticks : null };
+}
+
+exports["XAI_IMAGE_MODEL"] = XAI_IMAGE_MODEL;
+exports["IMAGE_ASPECTS"] = IMAGE_ASPECTS;
+exports["MAX_IMAGE_CANDIDATES"] = MAX_IMAGE_CANDIDATES;
+exports["MAX_IMAGE_PROMPT"] = MAX_IMAGE_PROMPT;
+exports["isImageAspect"] = isImageAspect;
+exports["isImageRequestId"] = isImageRequestId;
+exports["submitImages"] = submitImages;
+exports["pollImages"] = pollImages;
+
+});
+
+__def("packages/provider-xai/src/index.ts", function (exports) {
+exports["providerStep"] = __req("packages/provider-xai/src/provider.ts")["providerStep"];
+exports["xaiCapabilities"] = __req("packages/provider-xai/src/capabilities.ts")["xaiCapabilities"];
+exports["IMAGE_ASPECTS"] = __req("packages/provider-xai/src/images.ts")["IMAGE_ASPECTS"];
+exports["MAX_IMAGE_CANDIDATES"] = __req("packages/provider-xai/src/images.ts")["MAX_IMAGE_CANDIDATES"];
+exports["MAX_IMAGE_PROMPT"] = __req("packages/provider-xai/src/images.ts")["MAX_IMAGE_PROMPT"];
+exports["XAI_IMAGE_MODEL"] = __req("packages/provider-xai/src/images.ts")["XAI_IMAGE_MODEL"];
+exports["isImageAspect"] = __req("packages/provider-xai/src/images.ts")["isImageAspect"];
+exports["isImageRequestId"] = __req("packages/provider-xai/src/images.ts")["isImageRequestId"];
+exports["pollImages"] = __req("packages/provider-xai/src/images.ts")["pollImages"];
+exports["submitImages"] = __req("packages/provider-xai/src/images.ts")["submitImages"];
+exports["HOST_HELD_KEY"] = __req("packages/provider-xai/src/turn.ts")["HOST_HELD_KEY"];
+exports["runCatalogTurn"] = __req("packages/provider-xai/src/turn.ts")["runCatalogTurn"];
+exports["turnAnswer"] = __req("packages/provider-xai/src/turn.ts")["turnAnswer"];
+exports["turnInput"] = __req("packages/provider-xai/src/turn.ts")["turnInput"];
+
+
+
+});
+
 __def("apps/xai-runtime/src/media.ts", function (exports) {
 const { readXaiKeyState, safeErrorMessage, secretValues, xaiBaseUrl } = __req("packages/chat-agent/src/index.ts");
 const { handleAsset } = __req("apps/xai-runtime/src/media-asset.ts");
@@ -24002,9 +24115,9 @@ exports["handleMedia"] = handleMedia;
 });
 
 __def("apps/xai-runtime/src/http.ts", function (exports) {
-const { emptyPage, installRenderProbe, probeFromModule } = __req("packages/builder-core/src/index.ts");
-const { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, xaiBaseUrl, secretValues, stripRuntimePrefix } = __req("packages/chat-agent/src/index.ts");
-const { runXaiCatalogTurn } = __req("apps/xai-runtime/src/chat-tools.ts");
+const { installRenderProbe, probeFromModule } = __req("packages/builder-core/src/index.ts");
+const { clampRunBudgetMs, contractFingerprint, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, xaiBaseUrl, secretValues, stripRuntimePrefix } = __req("packages/chat-agent/src/index.ts");
+const { runXaiCatalogTurn, turnAnswer, turnInput } = __req("apps/xai-runtime/src/chat-tools.ts");
 const { runtimeStatus } = __req("apps/xai-runtime/src/status.ts");
 const { handleMedia } = __req("apps/xai-runtime/src/media.ts");
 exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = __req("packages/chat-agent/src/index.ts")["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"];
@@ -24127,23 +24240,6 @@ function notReadyResponse(env: EnvMap, status: Awaited<ReturnType<typeof runtime
 	});
 }
 
-type MappedRequest = Extract<ReturnType<typeof mapChatRunRequest>, { ok: true }>["request"];
-
-/** What the model turn needs from the mapped request (an empty page when none came). */
-function turnInput(req: MappedRequest): Parameters<typeof runXaiCatalogTurn>[2] {
-	return {
-		brief: req.brief,
-		scenario: req.scenario,
-		mode: req.mode,
-		conversation: req.conversation,
-		page: req.currentPage ?? emptyPage({ title: "New page" }),
-		shownPage: req.shownPage ?? null,
-		expectedRevision: req.expectedRevision,
-		scopeBlockIds: req.scopeBlockIds,
-		cacheKey: req.cacheKey
-	};
-}
-
 async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promise<Response> {
 	const status = await runtimeStatus(env);
 	const read = await readRunBody(request);
@@ -24177,35 +24273,10 @@ async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promi
 	const signal = combinedAbort(request, ms);
 	try {
 		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal, xaiBaseUrl(env), deadline);
-		const { meta } = turn;
 		// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
-		const checked =
-			!turn.result.ok && (turn.result.code === "aborted" || turn.result.code === "runtime_timeout") && !request.signal.aborted
-				? {
-						ok: false as const,
-						code: "runtime_timeout",
-						message: `The model did not finish within ${Math.round(ms / 1000)} s. Try again or pick a faster model. No other model was substituted.`
-					}
-				: turn.result;
-		const live = Boolean(checked.ok && (meta.toolCallingWorked || isAgentReply(checked)));
-		logRun(opts.surface, mapped.request.mode, checked, meta, live);
-		return jsonResponse(checked.ok ? 200 : 422, {
-			...checked,
-			liveModel: live,
-			liveXai: live,
-			toolCallingProven: meta.toolCallingWorked,
-			mode: mapped.request.mode,
-			runtime: "xai-grok",
-			modelId: meta.modelId,
-			requestedModelId: mapped.request.modelId,
-			path: meta.path,
-			runId: meta.runId,
-			toolsUsed: meta.toolsCalled,
-			scenario: meta.scenario,
-			providerRetries: meta.providerRetries,
-			runTrace: meta.runTrace,
-			usage: meta.usage
-		});
+		const answer = turnAnswer(mapped.request, turn, ms, request.signal.aborted);
+		logRun(opts.surface, mapped.request.mode, answer.checked, turn.meta, answer.live);
+		return jsonResponse(answer.status, answer.body);
 	} catch (err) {
 		const safe = safeErrorMessage(err, secretValues(env));
 		const aborted = signal.aborted || safe.code === "AbortError" || safe.message.toLowerCase().includes("abort");

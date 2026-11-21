@@ -57,6 +57,17 @@ export function installRenderProbe(fn: RenderProbe | null, options: { required?:
 	CACHE.clear();
 }
 
+/**
+ * Switch the empty policy and return the one it replaces. The desktop webview runs the agent loop next to the preview:
+ * the loop judges its own writes strictly ("reject", like the agent host) and puts the page's policy back while it waits
+ * for the model (ADR 0065). The cache holds raw outcomes, so a switch never clears it.
+ */
+export function setRenderEmptyPolicy(policy: "reject" | "allow"): "reject" | "allow" {
+	const previous = emptyPolicy;
+	emptyPolicy = policy;
+	return previous;
+}
+
 export function renderProbeInstalled(): boolean {
 	return probe !== null;
 }

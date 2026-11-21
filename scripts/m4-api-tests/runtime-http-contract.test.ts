@@ -101,10 +101,11 @@ function replyOf(reply: Reply): Response {
 	const headers = new Headers(reply.headers ?? {});
 	if (reply.json !== undefined) {
 		if (!headers.has("content-type")) headers.set("content-type", "application/json");
-		return new Response(JSON.stringify(reply.json), { status: reply.status ?? 200, headers });
+		return new Response(JSON.stringify(expand(reply.json)), { status: reply.status ?? 200, headers });
 	}
 	if (reply.bytes) return new Response(bytesOf(reply.bytes), { status: reply.status ?? 200, headers });
-	return new Response(typeof reply.text === "string" ? reply.text : "", { status: reply.status ?? 200, headers });
+	const text = reply.text === undefined ? "" : expand(reply.text);
+	return new Response(typeof text === "string" ? text : "", { status: reply.status ?? 200, headers });
 }
 
 async function runCase(c: Case, surface: Surface): Promise<string[]> {

@@ -1,6 +1,6 @@
-import { emptyPage, installRenderProbe, probeFromModule, type RenderModule } from "@buildytech/builder-core";
-import { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, xaiBaseUrl, secretValues, stripRuntimePrefix, type EnvMap } from "@buildytech/chat-agent";
-import { runXaiCatalogTurn } from "./chat-tools.ts";
+import { installRenderProbe, probeFromModule, type RenderModule } from "@buildytech/builder-core";
+import { clampRunBudgetMs, contractFingerprint, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, xaiBaseUrl, secretValues, stripRuntimePrefix, type EnvMap } from "@buildytech/chat-agent";
+import { runXaiCatalogTurn, turnAnswer, turnInput } from "./chat-tools.ts";
 import { runtimeStatus } from "./status.ts";
 import { handleMedia } from "./media.ts";
 
@@ -125,23 +125,6 @@ function notReadyResponse(env: EnvMap, status: Awaited<ReturnType<typeof runtime
 	});
 }
 
-type MappedRequest = Extract<ReturnType<typeof mapChatRunRequest>, { ok: true }>["request"];
-
-/** What the model turn needs from the mapped request (an empty page when none came). */
-function turnInput(req: MappedRequest): Parameters<typeof runXaiCatalogTurn>[2] {
-	return {
-		brief: req.brief,
-		scenario: req.scenario,
-		mode: req.mode,
-		conversation: req.conversation,
-		page: req.currentPage ?? emptyPage({ title: "New page" }),
-		shownPage: req.shownPage ?? null,
-		expectedRevision: req.expectedRevision,
-		scopeBlockIds: req.scopeBlockIds,
-		cacheKey: req.cacheKey
-	};
-}
-
 async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promise<Response> {
 	const status = await runtimeStatus(env);
 	const read = await readRunBody(request);
@@ -175,35 +158,10 @@ async function handleRun(request: Request, env: EnvMap, opts: RunSurface): Promi
 	const signal = combinedAbort(request, ms);
 	try {
 		const turn = await runXaiCatalogTurn(env.XAI_API_KEY!.trim(), mapped.request.modelId, turnInput(mapped.request), signal, xaiBaseUrl(env), deadline);
-		const { meta } = turn;
 		// Our own run budget fired (not a client cancel): a clean timeout code, never platform text.
-		const checked =
-			!turn.result.ok && (turn.result.code === "aborted" || turn.result.code === "runtime_timeout") && !request.signal.aborted
-				? {
-						ok: false as const,
-						code: "runtime_timeout",
-						message: `The model did not finish within ${Math.round(ms / 1000)} s. Try again or pick a faster model. No other model was substituted.`
-					}
-				: turn.result;
-		const live = Boolean(checked.ok && (meta.toolCallingWorked || isAgentReply(checked)));
-		logRun(opts.surface, mapped.request.mode, checked, meta, live);
-		return jsonResponse(checked.ok ? 200 : 422, {
-			...checked,
-			liveModel: live,
-			liveXai: live,
-			toolCallingProven: meta.toolCallingWorked,
-			mode: mapped.request.mode,
-			runtime: "xai-grok",
-			modelId: meta.modelId,
-			requestedModelId: mapped.request.modelId,
-			path: meta.path,
-			runId: meta.runId,
-			toolsUsed: meta.toolsCalled,
-			scenario: meta.scenario,
-			providerRetries: meta.providerRetries,
-			runTrace: meta.runTrace,
-			usage: meta.usage
-		});
+		const answer = turnAnswer(mapped.request, turn, ms, request.signal.aborted);
+		logRun(opts.surface, mapped.request.mode, answer.checked, turn.meta, answer.live);
+		return jsonResponse(answer.status, answer.body);
 	} catch (err) {
 		const safe = safeErrorMessage(err, secretValues(env));
 		const aborted = signal.aborted || safe.code === "AbortError" || safe.message.toLowerCase().includes("abort");
