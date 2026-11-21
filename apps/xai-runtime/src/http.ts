@@ -2,6 +2,7 @@ import { emptyPage, installRenderProbe, probeFromModule, type RenderModule } fro
 import { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, xaiBaseUrl, secretValues, stripRuntimePrefix, type EnvMap } from "@buildytech/chat-agent";
 import { runXaiCatalogTurn } from "./chat-tools.ts";
 import { runtimeStatus } from "./status.ts";
+import { handleMedia } from "./media.ts";
 
 export { VERCEL_HOBBY_SAFE_MAX_DURATION_SEC } from "@buildytech/chat-agent";
 
@@ -236,6 +237,7 @@ export async function handleRuntimeFetch(request: Request, env: EnvMap = readEnv
 			return jsonResponse(status.key.present ? 200 : 503, { ...status, contract: contractFingerprint() });
 		}
 		if (method === "POST" && path === "/v1/run") return await handleRun(request, env, opts);
+		if (method === "POST" && (path === "/v1/media" || path.startsWith("/v1/media/"))) return await handleMedia(request, env);
 		return jsonResponse(404, { error: { code: "not_found", message: "Unknown runtime path." } });
 	} catch (err) {
 		const safe = safeErrorMessage(err, secretValues(env));

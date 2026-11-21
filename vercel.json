@@ -10,6 +10,9 @@
 		},
 		"api/runtime/v1/run.ts": {
 			"maxDuration": 300
+		},
+		"api/runtime/v1/media.ts": {
+			"maxDuration": 60
 		}
 	},
 	"rewrites": [
@@ -24,6 +27,10 @@
 		{
 			"source": "/runtime/v1/run",
 			"destination": "/api/runtime/v1/run"
+		},
+		{
+			"source": "/runtime/v1/media",
+			"destination": "/api/runtime/v1/media"
 		},
 		{
 			"source": "/((?!api(?:/|$)|runtime(?:/|$)|_app(?:/|$)).*)",

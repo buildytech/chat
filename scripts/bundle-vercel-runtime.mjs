@@ -345,7 +345,7 @@ export default __entry.default;
 const outDir = join(root, "api/runtime/v1");
 mkdirSync(outDir, { recursive: true });
 const bundled = `${header}\n${factories.join("\n\n")}\n${footer}`;
-for (const name of ["status.ts", "run.ts"]) {
+for (const name of ["status.ts", "run.ts", "media.ts"]) {
 	writeFileSync(join(outDir, name), bundled);
 }
-process.stdout.write(`bundled ${ids.length} modules -> api/runtime/v1/status.ts and run.ts\n`);
+process.stdout.write(`bundled ${ids.length} modules -> api/runtime/v1/status.ts, run.ts and media.ts\n`);
