@@ -133,7 +133,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "$lib/shell-icons";
 					size="sm"
 					value={text(field.value)}
 					data-pointer={field.pointer}
-					onchange={(event: Event) => handlers.onedit(field, (event.currentTarget as HTMLSelectElement).value, false)}
+					onchange={(event: Event) => handlers.onedit(field, valueOf(event), false)}
 				>
 					{#if field.value === undefined}
 						<SelectOption value="">{t("inspector.unset")}</SelectOption>

@@ -21,7 +21,7 @@ type SlotRecord = { candidates: string[]; alt: string; aspect: string; extra?: s
 type MediaExt = { active?: boolean; style?: string; slots?: Record<string, SlotRecord> };
 
 let pendingMedia = $state(false);
-/** In-flight work per block id (memory only: a reload ends it). */
+/** In-flight work per slot key (memory only: a reload ends it). */
 let running = $state<Record<string, { error?: string } | undefined>>({});
 let errors = $state<Record<string, string>>({});
 
@@ -53,10 +53,10 @@ export function setComposerMode(mode: ComposerMode): void {
 
 export const mediaStyle = (): string => mediaExt().style ?? defaultStyle(getSelectedProject()?.skin ?? null);
 export const setMediaStyle = (style: string): void => writeExt((prev) => ({ ...prev, style: style.trim() }));
-export const slotRecord = (blockId: string): SlotRecord | null => mediaExt().slots?.[blockId] ?? null;
+export const slotRecord = (key: string): SlotRecord | null => mediaExt().slots?.[key] ?? null;
 export const pageSlots = (): ImageSlot[] => imageSlots(getCurrentPage());
-export const isRunning = (blockId: string): boolean => Boolean(running[blockId]);
-export const slotError = (blockId: string): string | null => errors[blockId] ?? null;
+export const isRunning = (key: string): boolean => Boolean(running[key]);
+export const slotError = (key: string): string | null => errors[key] ?? null;
 
 /** The total billed cost of every drawn slot of this page, in USD (null when nothing reported one). */
 export function mediaCostUsd(): number | null {
@@ -64,47 +64,48 @@ export function mediaCostUsd(): number | null {
 	return ticks > 0 ? ticks / 1e10 : null;
 }
 
-export function setSlotExtra(blockId: string, extra: string): void {
+export function setSlotExtra(key: string, extra: string): void {
 	writeExt((prev) => {
-		const rec = prev.slots?.[blockId];
-		return { ...prev, slots: { ...prev.slots, [blockId]: { ...(rec ?? { candidates: [], alt: "", aspect: "", at: "" }), extra: extra.trim() } } };
+		const rec = prev.slots?.[key];
+		return { ...prev, slots: { ...prev.slots, [key]: { ...(rec ?? { candidates: [], alt: "", aspect: "", at: "" }), extra: extra.trim() } } };
 	});
 }
 
 /** Draw candidates for one slot (replaces its earlier candidates; the picked picture on the page stays until a new pick). */
-export async function generateSlot(blockId: string): Promise<boolean> {
-	const slot = pageSlots().find((s) => s.blockId === blockId);
-	if (!slot || running[blockId]) return false;
-	running = { ...running, [blockId]: {} };
-	errors = { ...errors, [blockId]: "" };
-	const extra = slotRecord(blockId)?.extra ?? "";
+export async function generateSlot(key: string): Promise<boolean> {
+	const slot = pageSlots().find((s) => s.key === key);
+	if (!slot || running[key]) return false;
+	running = { ...running, [key]: {} };
+	errors = { ...errors, [key]: "" };
+	const extra = slotRecord(key)?.extra ?? "";
 	try {
 		const out = await generateCandidates(mediaPrompt(slot, mediaStyle(), extra), slot.aspect, CANDIDATES_PER_SLOT);
 		if (!out.ok) {
-			errors = { ...errors, [blockId]: `${out.code}: ${out.message}` };
+			errors = { ...errors, [key]: `${out.code}: ${out.message}` };
 			return false;
 		}
-		writeExt((prev) => ({ ...prev, slots: { ...prev.slots, [blockId]: { candidates: out.urls, alt: slot.alt, aspect: slot.aspect, ...(extra ? { extra } : {}), ...(out.costUsdTicks !== null ? { costUsdTicks: out.costUsdTicks } : {}), ms: out.ms, at: new Date().toISOString() } } }));
+		writeExt((prev) => ({ ...prev, slots: { ...prev.slots, [key]: { candidates: out.urls, alt: slot.alt, aspect: slot.aspect, ...(extra ? { extra } : {}), ...(out.costUsdTicks !== null ? { costUsdTicks: out.costUsdTicks } : {}), ms: out.ms, at: new Date().toISOString() } } }));
 		return true;
 	} catch (err) {
-		errors = { ...errors, [blockId]: err instanceof Error ? err.message : String(err) };
+		errors = { ...errors, [key]: err instanceof Error ? err.message : String(err) };
 		return false;
 	} finally {
-		running = { ...running, [blockId]: undefined };
+		running = { ...running, [key]: undefined };
 	}
 }
 
 /** Every slot of the page at once (each slot is its own deferred request on the server). */
 export async function generatePage(): Promise<void> {
-	await Promise.all(pageSlots().map((slot) => generateSlot(slot.blockId)));
+	await Promise.all(pageSlots().map((slot) => generateSlot(slot.key)));
 }
 
-/** Put a candidate on the page: the block's `image` prop, through the page gate (one undo step). */
-export function pickCandidate(blockId: string, url: string): boolean {
-	if (!inspector.run({ op: "set", blockId, pointer: "/image", value: url })) return false;
+/** Put a candidate on the page: the slot's `image` prop, through the page gate (one undo step). */
+export function pickCandidate(key: string, url: string): boolean {
+	const slot = pageSlots().find((s) => s.key === key);
+	if (!slot || !inspector.run({ op: "set", blockId: slot.blockId, pointer: slot.pointer, value: url })) return false;
 	writeExt((prev) => {
-		const rec = prev.slots?.[blockId];
-		return rec ? { ...prev, slots: { ...prev.slots, [blockId]: { ...rec, picked: url } } } : prev;
+		const rec = prev.slots?.[key];
+		return rec ? { ...prev, slots: { ...prev.slots, [key]: { ...rec, picked: url } } } : prev;
 	});
 	return true;
 }

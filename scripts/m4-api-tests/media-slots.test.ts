@@ -15,13 +15,16 @@ const page = {
 		{ id: "b", item: "hero-simple", variant: "mediaTop", props: { title: "Шашлык", media: "top", ratio: "landscape" } },
 		{ id: "c", item: "hero-simple", variant: "mediaEndPortrait", props: { title: "Шашлык", media: "end", ratio: "portrait" } },
 		{ id: "d", item: "promo-simple", variant: "mediaTop", props: { title: "Скидка", media: "top" } },
-		{ id: "e", item: "figure-simple", variant: "wide", props: { title: "Кухня", layout: "wide", image: "https://imgen.x.ai/x.jpeg" } }
+		{ id: "e", item: "figure-simple", variant: "wide", props: { title: "Кухня", layout: "wide", image: "https://imgen.x.ai/x.jpeg" } },
+		{ id: "m", item: "menu-simple", variant: "cards3", props: { items: [{ id: "1", title: "Шашлык из баранины", description: "Нежная баранина с пряностями" }, { id: "2", title: "Люля-кебаб" }] } }
 	]
 } as const;
 
 test("picture slots: only blocks that draw one picture, with the frame of their layout", () => {
 	const slots = imageSlots(page);
-	assert.deepEqual(slots.map((s) => [s.blockId, s.aspect]), [["a", "4:3"], ["b", "21:9"], ["c", "3:4"], ["d", "21:9"], ["e", "16:9"]]);
+	assert.deepEqual(slots.map((s) => [s.key, s.aspect, s.pointer]), [["a", "4:3", "/image"], ["b", "21:9", "/image"], ["c", "3:4", "/image"], ["d", "21:9", "/image"], ["e", "16:9", "/image"], ["m/items/0", "4:3", "/items/0/image"], ["m/items/1", "4:3", "/items/1/image"]]);
+	assert.equal(slots[5].alt, "Шашлык из баранины: Нежная баранина с пряностями");
+	assert.equal(slots[6].alt, "Люля-кебаб");
 	assert.equal(slots[0].alt, "Сочный шашлык из свиной шеи на шампурах над углями мангала");
 	assert.equal(slots[4].image, "https://imgen.x.ai/x.jpeg");
 	assert.deepEqual(imageSlots(null), []);

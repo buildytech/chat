@@ -15,7 +15,7 @@
 
 	const slots = $derived(pageSlots());
 	const cost = $derived(mediaCostUsd());
-	const anyBusy = $derived(slots.some((s) => isRunning(s.blockId)));
+	const anyBusy = $derived(slots.some((s) => isRunning(s.key)));
 </script>
 
 <Stack align="stretch" class="min-h-0 flex-1 gap-4 overflow-y-auto p-4" data-slot="media-panel">
@@ -29,17 +29,17 @@
 		<Button size="sm" disabled={!slots.length || anyBusy} data-action="media-generate-page" onclick={() => void generatePage()}>{anyBusy ? t("media.drawing") : t("media.generatePage")}</Button>
 	</Group>
 	{#if !slots.length}<Text tag="p" class="text-xs text-muted-foreground">{t("media.none")}</Text>{/if}
-	{#each slots as slot (slot.blockId)}
-		{@const record = slotRecord(slot.blockId)}
+	{#each slots as slot (slot.key)}
+		{@const record = slotRecord(slot.key)}
 		{@const stale = staleReason(slot, record)}
-		<Group class="items-start gap-2 rounded border border-border p-2" data-slot="media-slot" data-block={slot.blockId}>
+		<Group class="items-start gap-2 rounded border border-border p-2" data-slot="media-slot" data-block={slot.key}>
 			{#if slot.image}<Image src={slot.image} alt={slot.alt || slot.title} class="size-16 shrink-0 rounded object-cover" />{/if}
 			<Stack align="stretch" gap="1" class="min-w-0 flex-1">
-				<Button variant="link" size="sm" class="h-auto justify-start p-0 text-xs" onclick={() => selectBlock(slot.blockId)}>{slot.item} · {slot.aspect}</Button>
+				<Button variant="link" size="sm" class="h-auto justify-start p-0 text-xs" onclick={() => selectBlock(slot.blockId)}>{slot.key === slot.blockId ? slot.item : `${slot.item} · ${slot.title}`} · {slot.aspect}</Button>
 				<Text tag="p" class="text-xs text-muted-foreground">{slot.alt || t("media.noAlt")}</Text>
 				{#if stale}<Text tag="p" class="text-xs text-destructive">{t(`media.stale.${stale}`)}</Text>{/if}
 			</Stack>
-			<Button size="sm" variant="outline" disabled={isRunning(slot.blockId)} onclick={() => void generateSlot(slot.blockId)}>{isRunning(slot.blockId) ? t("media.drawing") : record?.candidates.length ? t("media.regenerate") : t("media.generate")}</Button>
+			<Button size="sm" variant="outline" disabled={isRunning(slot.key)} onclick={() => void generateSlot(slot.key)}>{isRunning(slot.key) ? t("media.drawing") : record?.candidates.length ? t("media.regenerate") : t("media.generate")}</Button>
 		</Group>
 	{/each}
 </Stack>

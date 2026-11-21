@@ -22,18 +22,35 @@ const ASPECT_OF: Record<string, (props: Props) => MediaAspect> = {
 	"profile-intro": () => "1:1"
 };
 
-export type ImageSlot = { blockId: string; item: string; variant: string; aspect: MediaAspect; alt: string; title: string; image: string };
+/** Items whose list records each draw one picture (`items[i].image`, 4:3, alt = the record title in the block). */
+const LIST_ITEMS: ReadonlySet<string> = new Set(["menu-simple", "products-simple", "rooms-simple"]);
+
+/** One picture slot: `key` names it in `ext.media` (the block id, or `<block id>/items/<i>` for a list record), `pointer` is the prop it fills. */
+export type ImageSlot = { key: string; blockId: string; pointer: string; item: string; variant: string; aspect: MediaAspect; alt: string; title: string; image: string };
 
 const text = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
 
-/** The picture slots of a page in page order: blocks whose item draws one top-level picture. */
+const isRecord = (value: unknown): value is Props => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+function listSlots(blockId: string, item: string, variant: string, props: Props): ImageSlot[] {
+	const items = Array.isArray(props.items) ? props.items : [];
+	return items.filter(isRecord).map((row, index) => {
+		const title = text(row.title);
+		const detail = text(row.description);
+		return { key: `${blockId}/items/${index}`, blockId, pointer: `/items/${index}/image`, item, variant, aspect: "4:3", alt: detail ? `${title}: ${detail}` : title, title, image: text(row.image) };
+	});
+}
+
+/** The picture slots of a page in page order: blocks that draw one picture, then each record of a picture list. */
 export function imageSlots(page: PageV2 | null | undefined): ImageSlot[] {
 	if (!page) return [];
 	return page.blocks.flatMap((block) => {
+		const props: Props = block.props ?? {};
+		const variant = block.variant ?? "";
+		if (LIST_ITEMS.has(block.item)) return listSlots(block.id, block.item, variant, props);
 		const aspectOf = ASPECT_OF[block.item];
 		if (!aspectOf) return [];
-		const props: Props = block.props ?? {};
-		return [{ blockId: block.id, item: block.item, variant: block.variant ?? "", aspect: aspectOf(props), alt: text(props.imageAlt), title: text(props.title), image: text(props.image) }];
+		return [{ key: block.id, blockId: block.id, pointer: "/image", item: block.item, variant, aspect: aspectOf(props), alt: text(props.imageAlt), title: text(props.title), image: text(props.image) }];
 	});
 }
 

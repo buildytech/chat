@@ -7,7 +7,7 @@
 	import { cn } from "$registry/utils/cn";
 	import { pickCandidate } from "../media/media.svelte.ts";
 
-	let { blockId, candidates, current, alt }: { blockId: string; candidates: readonly string[]; current: string; alt: string } = $props();
+	let { slotKey, candidates, current, alt }: { slotKey: string; candidates: readonly string[]; current: string; alt: string } = $props();
 </script>
 
 <Grid class="grid-cols-3 gap-1" data-slot="media-candidates">
@@ -19,7 +19,7 @@
 			pressed={url === current}
 			aria-label={t("media.pick").replace("{n}", String(index + 1))}
 			data-action="media-pick"
-			onclick={() => pickCandidate(blockId, url)}
+			onclick={() => pickCandidate(slotKey, url)}
 		>
 			<Image src={url} {alt} loading="lazy" class="aspect-square w-full rounded object-cover" />
 		</Button>
