@@ -14,6 +14,7 @@ export const SOURCES_JSON = "packages/builder-core/src/catalog/sources.json";
 export const PROPS_JSON = "packages/builder-core/src/catalog/props.json";
 export const MONEY_JSON = "packages/builder-core/src/catalog/money.json";
 export const BLOCKS_JSON = "packages/builder-core/src/catalog/blocks.json";
+export const PICTURES_JSON = "packages/builder-core/src/catalog/pictures.json";
 
 /** Skins (registry:theme items, `add theme-<skin>`; `add --all` leaves them out): skin id -> item, title and CSS file. */
 export function themesOf(snapshot) {
@@ -186,6 +187,83 @@ export function deriveMoneyNames(root) {
 	return [...names].sort();
 }
 
+/** A string a block computes from one layout prop: a literal, or `(prop as string) === "v" ? "a" : ... : "z"` (a `$derived` chain). */
+function stringExpr(text) {
+	const literal = /^\s*"([^"]*)"\s*$/.exec(text);
+	if (literal) return { value: literal[1] };
+	const cases = [];
+	const step = /\(*\s*\(?\s*([\w$]+) as string\s*\)?\s*===\s*"([^"]*)"\s*\)*\s*\?\s*"([^"]*)"\s*:/y;
+	let rest = text.trim();
+	for (;;) {
+		step.lastIndex = 0;
+		const m = step.exec(rest);
+		if (!m) break;
+		cases.push({ prop: m[1], eq: m[2], value: m[3] });
+		rest = rest.slice(step.lastIndex).trim();
+	}
+	const last = /^"([^"]*)"$/.exec(rest);
+	return cases.length && last ? { cases, else: last[1] } : null;
+}
+
+/** The value of an attribute expression in a block: a literal, a `$derived` const of the block, or `cn(...)` of those (joined). */
+function attrExpr(text, raw) {
+	if (raw === undefined) return { value: "" };
+	if (raw.startsWith('"')) return { value: raw.slice(1, -1) };
+	const inner = raw.slice(1, -1).trim();
+	const derived = (name) => {
+		const m = new RegExp(`const ${name.replace(/\$/g, "\\$")} = \\$derived\\(([\\s\\S]*?)\\);\\s*$`, "m").exec(text);
+		return m ? stringExpr(m[1]) : null;
+	};
+	const parts = /^cn\(([\s\S]*)\)$/.exec(inner)?.[1].split(",").map((part) => part.trim()) ?? [inner];
+	const exprs = parts.map((part) => (part.startsWith('"') ? { value: part.slice(1, -1) } : derived(part)));
+	if (exprs.some((expr) => expr === null)) return null;
+	const conds = exprs.filter((expr) => expr.cases);
+	const fixed = exprs.filter((expr) => !expr.cases).map((expr) => expr.value).join(" ");
+	if (conds.length > 1) return null;
+	if (!conds.length) return { value: fixed };
+	const join = (value) => `${fixed} ${value}`.trim();
+	return { cases: conds[0].cases.map((c) => ({ ...c, value: join(c.value) })), else: join(conds[0].else) };
+}
+
+const SMALL = /\bsize-(\d+)\b/;
+/** small: an icon-size frame (a fixed `size-N`, N <= 12, i.e. up to 48px); large: every other frame (it follows its column). */
+const sizeOf = (cls) => {
+	const m = SMALL.exec(cls);
+	return m && Number(m[1]) <= 12 ? "small" : "large";
+};
+const mapExpr = (expr, fn) => (expr.cases ? { cases: expr.cases.map((c) => ({ ...c, value: fn(c.value) })), else: fn(expr.else) } : { value: fn(expr.value) });
+
+/**
+ * The pictures each list record of a block draws, read from the registry block itself (every `<MediaFrame>` inside an
+ * `{#each <list> as <row>}` whose src is a row field): the list prop, the picture field, the alt field, the frame ratio and
+ * its size class (small = icon size, a fixed size-N up to 48px; large = a frame that follows its column; logo = a brand logo,
+ * the loop body marks it data-slot="logo"), each a literal or a case of one layout prop. Never listed by hand: Media mode draws the large ones (ADR 0063).
+ */
+export function derivePictures(root, snapshot) {
+	const out = {};
+	for (const item of snapshot.blocks ?? []) {
+		const text = readFileSync(join(root, "registry/svelte/src/blocks", `${item}.svelte`), "utf8");
+		const loops = [...text.matchAll(/\{#each\s+([\w$]+)\s+as\s+([\w$]+)/g)].map((m) => ({ at: m.index, list: m[1], row: m[2] }));
+		const records = [];
+		for (const frame of text.matchAll(/<MediaFrame\b([^>]*?)\/>/g)) {
+			const attrs = Object.fromEntries([...frame[1].matchAll(/([\w-]+)=("[^"]*"|\{[^}]*\}(?:\))?)/g)].map((m) => [m[1], m[2]]));
+			const src = /^\{([\w$]+)\.([\w$]+)\}$/.exec(attrs.src ?? "");
+			if (!src) continue;
+			const loop = loops.filter((l) => l.at < frame.index && l.row === src[1]).at(-1);
+			if (!loop) continue;
+			const alt = /^\{[\w$]+\.([\w$]+)\}$/.exec(attrs.alt ?? "")?.[1] ?? "title";
+			const ratio = attrs.ratio ? attrExpr(text, attrs.ratio) : { value: "16/9" };
+			const cls = attrExpr(text, attrs.class) ?? { value: "" };
+			if (!ratio) throw new Error(`${item}: MediaFrame ratio ${attrs.ratio} is not a literal or a one-prop case`);
+			// a brand logo is the brand's own asset, never drawn: the loop body marks it data-slot="logo"
+			const logo = /data-slot="logo"/.test(text.slice(loop.at, frame.index));
+			records.push({ list: loop.list, field: src[2], alt, ratio, size: logo ? { value: "logo" } : mapExpr(cls, sizeOf) });
+		}
+		if (records.length) out[item] = records;
+	}
+	return { format: "buildy-record-pictures", version: 1, blocks: out };
+}
+
 /**
  * The catalog the chat shows (ADR 0059): the configured blocks in config order, each with its registry title and
  * description, its category (the registry `meta.group`), its block-contract/v1 and its content model. Nothing hand-written.
@@ -227,6 +305,7 @@ export function deriveRegistryArtifacts(root) {
 		),
 		[PROPS_JSON]: `${JSON.stringify(compactProps(props))}\n`,
 		[MONEY_JSON]: json({ format: "buildy-money-names", unit: "minor", names: deriveMoneyNames(root) }),
-		[BLOCKS_JSON]: json(deriveBlocks(root, readJson("registry/snapshot.json")))
+		[BLOCKS_JSON]: json(deriveBlocks(root, readJson("registry/snapshot.json"))),
+		[PICTURES_JSON]: json(derivePictures(root, readJson("registry/snapshot.json")))
 	};
 }

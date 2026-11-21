@@ -1,6 +1,7 @@
 /** Media mode (t109u), pure part: picture slots of a page, the frame from the variant, the prompt from imageAlt, staleness. */
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { recordPictures } from "../../packages/builder-core/src/index.ts";
 import { defaultStyle, imageSlots, mediaPrompt, staleReason } from "../../apps/chat-web/src/modules/chat/media/slots.ts";
 
 const page = {
@@ -28,6 +29,38 @@ test("picture slots: only blocks that draw one picture, with the frame of their 
 	assert.equal(slots[0].alt, "Сочный шашлык из свиной шеи на шампурах над углями мангала");
 	assert.equal(slots[4].image, "https://imgen.x.ai/x.jpeg");
 	assert.deepEqual(imageSlots(null), []);
+});
+
+test("record pictures come from the registry blocks: large ones are slots, icon-size ones and logos keep the placeholder", () => {
+	const two = [{ id: "1", title: "Анна Смирнова", description: "Мастер маникюра", avatar: "", image: "" }, { id: "2", title: "Мария", image: "", avatar: "" }];
+	const records = {
+		...page,
+		blocks: [
+			{ id: "t", item: "team-simple", variant: "cols3", props: { layout: "grid", members: two } },
+			{ id: "tb", item: "team-simple", variant: "byline", props: { layout: "byline", members: two } },
+			{ id: "f", item: "features-simple", variant: "cols3", props: { items: two } },
+			{ id: "q", item: "testimonials-simple", variant: "cols3", props: { quotes: two } },
+			{ id: "c", item: "contacts-simple", variant: "cards3", props: { items: two } },
+			{ id: "l", item: "logos-simple", variant: "row", props: { logos: two } },
+			{ id: "p", item: "photos-simple", variant: "cols2", props: { cols: "2", photos: [{ id: "1", image: "", imageAlt: "Витрина с букетами" }] } },
+			{ id: "r", item: "products-simple", variant: "cards3", props: { items: [{ id: "1", title: "Букет", image: "https://imgen.x.ai/b.jpeg" }] } }
+		]
+	};
+	const slots = imageSlots(records);
+	assert.deepEqual(slots.map((s) => [s.key, s.pointer, s.aspect]), [
+		["t/members/0", "/members/0/avatar", "1:1"],
+		["t/members/1", "/members/1/avatar", "1:1"],
+		["p/photos/0", "/photos/0/image", "4:3"],
+		["r/items/0", "/items/0/image", "4:3"]
+	]);
+	assert.equal(slots[0].alt, "Portrait photo of a person: Анна Смирнова: Мастер маникюра");
+	assert.equal(slots[2].alt, "Витрина с букетами", "the alt field of the record (imageAlt) describes it");
+	assert.equal(slots[3].image, "https://imgen.x.ai/b.jpeg");
+	assert.deepEqual(recordPictures("features-simple").map((p) => p.size), ["small"]);
+	assert.deepEqual(recordPictures("team-simple", { layout: "byline" }).map((p) => p.size), ["small"]);
+	assert.deepEqual(recordPictures("logos-simple").map((p) => p.size), ["logo"]);
+	assert.deepEqual(recordPictures("photos-simple", { cols: "3" }).map((p) => p.ratio), ["1/1"]);
+	assert.deepEqual(recordPictures("hero-simple"), []);
 });
 
 test("prompt = imageAlt (else the title) + extra + art direction + frame + no text", () => {

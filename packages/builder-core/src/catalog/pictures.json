@@ -1,0 +1,305 @@
+{
+	"format": "buildy-record-pictures",
+	"version": 1,
+	"blocks": {
+		"gallery-hero": [
+			{
+				"list": "photos",
+				"field": "image",
+				"alt": "imageAlt",
+				"ratio": {
+					"cases": [
+						{
+							"prop": "media",
+							"eq": "bottom",
+							"value": "4/3"
+						},
+						{
+							"prop": "count",
+							"eq": "4",
+							"value": "4/3"
+						}
+					],
+					"else": "1/1"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		],
+		"features-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "small"
+				}
+			}
+		],
+		"testimonials-simple": [
+			{
+				"list": "quotes",
+				"field": "avatar",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "small"
+				}
+			}
+		],
+		"logos-simple": [
+			{
+				"list": "logos",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "16/9"
+				},
+				"size": {
+					"value": "logo"
+				}
+			}
+		],
+		"team-simple": [
+			{
+				"list": "members",
+				"field": "avatar",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "aside",
+							"value": "large"
+						},
+						{
+							"prop": "layout",
+							"eq": "byline",
+							"value": "small"
+						}
+					],
+					"else": "large"
+				}
+			}
+		],
+		"photos-simple": [
+			{
+				"list": "photos",
+				"field": "image",
+				"alt": "imageAlt",
+				"ratio": {
+					"cases": [
+						{
+							"prop": "cols",
+							"eq": "2",
+							"value": "4/3"
+						}
+					],
+					"else": "1/1"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		],
+		"stories-simple": [
+			{
+				"list": "stories",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "compact",
+							"value": "1/1"
+						},
+						{
+							"prop": "cols",
+							"eq": "2",
+							"value": "16/9"
+						}
+					],
+					"else": "4/3"
+				},
+				"size": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "compact",
+							"value": "large"
+						}
+					],
+					"else": "large"
+				}
+			}
+		],
+		"chapters-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "paired",
+							"value": "16/9"
+						}
+					],
+					"else": "4/3"
+				},
+				"size": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "paired",
+							"value": "large"
+						}
+					],
+					"else": "large"
+				}
+			}
+		],
+		"contacts-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "small"
+				}
+			}
+		],
+		"products-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "4/3"
+				},
+				"size": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "rows",
+							"value": "large"
+						}
+					],
+					"else": "large"
+				}
+			}
+		],
+		"product-simple": [
+			{
+				"list": "photos",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		],
+		"collections-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		],
+		"store-policies": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "small"
+				}
+			}
+		],
+		"product-reviews": [
+			{
+				"list": "items",
+				"field": "avatar",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "small"
+				}
+			}
+		],
+		"menu-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "4/3"
+				},
+				"size": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "rows",
+							"value": "large"
+						}
+					],
+					"else": "large"
+				}
+			}
+		],
+		"rooms-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "4/3"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		],
+		"cases-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "16/9"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		]
+	}
+}

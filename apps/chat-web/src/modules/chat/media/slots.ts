@@ -1,9 +1,11 @@
 /**
- * Media mode (t109u), pure part: which blocks of a page have a picture slot (`image` + `imageAlt` props), the aspect each
+ * Media mode (t109u), pure part: which pictures of a page have a slot (a block's `image` + `imageAlt`, and every large record
+ * picture the registry block draws, ADR 0063), the aspect each
  * one draws at (from the block's layout props, the same expressions the registry blocks use for their `MediaFrame`
  * ratio), and the prompt sent to the image model. The prompt is the slot's `imageAlt` (the author-facing description,
  * written by Build) + the page art direction + the aspect + "no text". Nothing here writes the page.
  */
+import { recordPictures } from "@buildytech/builder-core";
 import type { PageV2 } from "@buildytech/page-contract";
 
 export type MediaAspect = "1:1" | "4:3" | "3:4" | "16:9" | "21:9";
@@ -22,35 +24,48 @@ const ASPECT_OF: Record<string, (props: Props) => MediaAspect> = {
 	"profile-intro": () => "1:1"
 };
 
-/** Items whose list records each draw one picture (`items[i].image`, 4:3, alt = the record title in the block). */
-const LIST_ITEMS: ReadonlySet<string> = new Set(["menu-simple", "products-simple", "rooms-simple"]);
+/** A registry frame ratio ("4/3") -> the frame Media mode draws at; an unknown ratio draws landscape. */
+const ASPECT_OF_RATIO: Record<string, MediaAspect> = { "1/1": "1:1", "4/3": "4:3", "3/4": "3:4", "16/9": "16:9", "21/9": "21:9" };
 
-/** One picture slot: `key` names it in `ext.media` (the block id, or `<block id>/items/<i>` for a list record), `pointer` is the prop it fills. */
+/** One picture slot: `key` names it in `ext.media` (the block id, or `<block id>/<list>/<i>` for a list record), `pointer` is the prop it fills. */
 export type ImageSlot = { key: string; blockId: string; pointer: string; item: string; variant: string; aspect: MediaAspect; alt: string; title: string; image: string };
 
 const text = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
 
 const isRecord = (value: unknown): value is Props => Boolean(value) && typeof value === "object" && !Array.isArray(value);
 
+/**
+ * The slots of the list records of a block: every record picture the registry block draws large (pictures.json, derived from
+ * the block; ADR 0063). Icon-size pictures (feature icons, reviewer avatars, contact icons) and brand logos keep the
+ * placeholder: they are not drawn. A portrait (an `avatar` field) is described as one.
+ */
 function listSlots(blockId: string, item: string, variant: string, props: Props): ImageSlot[] {
-	const items = Array.isArray(props.items) ? props.items : [];
-	return items.filter(isRecord).map((row, index) => {
-		const title = text(row.title);
-		const detail = text(row.description);
-		return { key: `${blockId}/items/${index}`, blockId, pointer: `/items/${index}/image`, item, variant, aspect: "4:3", alt: detail ? `${title}: ${detail}` : title, title, image: text(row.image) };
-	});
+	return recordPictures(item, props)
+		.filter((picture) => picture.size === "large")
+		.flatMap((picture) => {
+			const list = props[picture.list];
+			const rows: unknown[] = Array.isArray(list) ? list : [];
+			return rows.flatMap((row, index) => {
+				if (!isRecord(row)) return [];
+				const title = text(row.title);
+				const detail = text(row.description);
+				const described = picture.alt === "title" ? (detail ? `${title}: ${detail}` : title) : text(row[picture.alt]) || title;
+				const alt = picture.field === "avatar" && described ? `Portrait photo of a person: ${described}` : described;
+				const aspect = ASPECT_OF_RATIO[picture.ratio] ?? "4:3";
+				return [{ key: `${blockId}/${picture.list}/${index}`, blockId, pointer: `/${picture.list}/${index}/${picture.field}`, item, variant, aspect, alt, title, image: text(row[picture.field]) }];
+			});
+		});
 }
 
-/** The picture slots of a page in page order: blocks that draw one picture, then each record of a picture list. */
+/** The picture slots of a page in page order: per block its own picture, then each large record picture. */
 export function imageSlots(page: PageV2 | null | undefined): ImageSlot[] {
 	if (!page) return [];
 	return page.blocks.flatMap((block) => {
 		const props: Props = block.props ?? {};
 		const variant = block.variant ?? "";
-		if (LIST_ITEMS.has(block.item)) return listSlots(block.id, block.item, variant, props);
 		const aspectOf = ASPECT_OF[block.item];
-		if (!aspectOf) return [];
-		return [{ key: block.id, blockId: block.id, pointer: "/image", item: block.item, variant, aspect: aspectOf(props), alt: text(props.imageAlt), title: text(props.title), image: text(props.image) }];
+		const own: ImageSlot[] = aspectOf ? [{ key: block.id, blockId: block.id, pointer: "/image", item: block.item, variant, aspect: aspectOf(props), alt: text(props.imageAlt), title: text(props.title), image: text(props.image) }] : [];
+		return [...own, ...listSlots(block.id, block.item, variant, props)];
 	});
 }
 

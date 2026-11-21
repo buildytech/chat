@@ -15481,6 +15481,335 @@ exports["toMinor"] = toMinor;
 
 });
 
+__def("packages/builder-core/src/catalog/pictures.json", function (exports) {
+  exports.default = {
+	"format": "buildy-record-pictures",
+	"version": 1,
+	"blocks": {
+		"gallery-hero": [
+			{
+				"list": "photos",
+				"field": "image",
+				"alt": "imageAlt",
+				"ratio": {
+					"cases": [
+						{
+							"prop": "media",
+							"eq": "bottom",
+							"value": "4/3"
+						},
+						{
+							"prop": "count",
+							"eq": "4",
+							"value": "4/3"
+						}
+					],
+					"else": "1/1"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		],
+		"features-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "small"
+				}
+			}
+		],
+		"testimonials-simple": [
+			{
+				"list": "quotes",
+				"field": "avatar",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "small"
+				}
+			}
+		],
+		"logos-simple": [
+			{
+				"list": "logos",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "16/9"
+				},
+				"size": {
+					"value": "logo"
+				}
+			}
+		],
+		"team-simple": [
+			{
+				"list": "members",
+				"field": "avatar",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "aside",
+							"value": "large"
+						},
+						{
+							"prop": "layout",
+							"eq": "byline",
+							"value": "small"
+						}
+					],
+					"else": "large"
+				}
+			}
+		],
+		"photos-simple": [
+			{
+				"list": "photos",
+				"field": "image",
+				"alt": "imageAlt",
+				"ratio": {
+					"cases": [
+						{
+							"prop": "cols",
+							"eq": "2",
+							"value": "4/3"
+						}
+					],
+					"else": "1/1"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		],
+		"stories-simple": [
+			{
+				"list": "stories",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "compact",
+							"value": "1/1"
+						},
+						{
+							"prop": "cols",
+							"eq": "2",
+							"value": "16/9"
+						}
+					],
+					"else": "4/3"
+				},
+				"size": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "compact",
+							"value": "large"
+						}
+					],
+					"else": "large"
+				}
+			}
+		],
+		"chapters-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "paired",
+							"value": "16/9"
+						}
+					],
+					"else": "4/3"
+				},
+				"size": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "paired",
+							"value": "large"
+						}
+					],
+					"else": "large"
+				}
+			}
+		],
+		"contacts-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "small"
+				}
+			}
+		],
+		"products-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "4/3"
+				},
+				"size": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "rows",
+							"value": "large"
+						}
+					],
+					"else": "large"
+				}
+			}
+		],
+		"product-simple": [
+			{
+				"list": "photos",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		],
+		"collections-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		],
+		"store-policies": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "small"
+				}
+			}
+		],
+		"product-reviews": [
+			{
+				"list": "items",
+				"field": "avatar",
+				"alt": "title",
+				"ratio": {
+					"value": "1/1"
+				},
+				"size": {
+					"value": "small"
+				}
+			}
+		],
+		"menu-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "4/3"
+				},
+				"size": {
+					"cases": [
+						{
+							"prop": "layout",
+							"eq": "rows",
+							"value": "large"
+						}
+					],
+					"else": "large"
+				}
+			}
+		],
+		"rooms-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "4/3"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		],
+		"cases-simple": [
+			{
+				"list": "items",
+				"field": "image",
+				"alt": "title",
+				"ratio": {
+					"value": "16/9"
+				},
+				"size": {
+					"value": "large"
+				}
+			}
+		]
+	}
+};
+});
+
+__def("packages/builder-core/src/catalog/pictures.ts", function (exports) {
+const raw = __req("packages/builder-core/src/catalog/pictures.json").default;
+type Expr = { value: string } | { cases: Array<{ prop: string; eq: string; value: string }>; else: string };
+type Entry = { list: string; field: string; alt: string; ratio: Expr; size: Expr };
+const BLOCKS: Record<string, Entry[]> = raw.blocks;
+const sizeOf = (value: string): PictureSize => (value === "small" || value === "logo" ? value : "large");
+
+function valueOf(expr: Expr, props: Record<string, unknown>): string {
+	if ("value" in expr) return expr.value;
+	return expr.cases.find((c) => String(props[c.prop] ?? "") === c.eq)?.value ?? expr.else;
+}
+
+/** The record pictures of an item for the given block props (layout props pick the case), in block order. */
+function recordPictures(item: string, props: Record<string, unknown> = {}): RecordPicture[] {
+	return (BLOCKS[item] ?? []).map((e) => ({ list: e.list, field: e.field, alt: e.alt, ratio: valueOf(e.ratio, props), size: sizeOf(valueOf(e.size, props)) }));
+}
+
+exports["recordPictures"] = recordPictures;
+
+});
+
 __def("packages/builder-core/src/catalog/image-url.ts", function (exports) {
 
 const IMAGE_NAMES: ReadonlySet<string> = new Set(["image", "imageDark", "avatar"]);
@@ -20187,6 +20516,7 @@ exports["isMoneyName"] = __req("packages/builder-core/src/catalog/money.ts")["is
 exports["minorDigits"] = __req("packages/builder-core/src/catalog/money.ts")["minorDigits"];
 exports["toMajor"] = __req("packages/builder-core/src/catalog/money.ts")["toMajor"];
 exports["toMinor"] = __req("packages/builder-core/src/catalog/money.ts")["toMinor"];
+exports["recordPictures"] = __req("packages/builder-core/src/catalog/pictures.ts")["recordPictures"];
 exports["hasPropsSchema"] = __req("packages/builder-core/src/catalog/props-schema.ts")["hasPropsSchema"];
 exports["lucideIcons"] = __req("packages/builder-core/src/catalog/props-schema.ts")["lucideIcons"];
 exports["LUCIDE_ICON_HINT"] = __req("packages/builder-core/src/catalog/props-schema.ts")["LUCIDE_ICON_HINT"];

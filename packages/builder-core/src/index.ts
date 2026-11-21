@@ -41,6 +41,7 @@ export {
 	type RegistryRender
 } from "./catalog/organism.ts";
 export { SAMPLE_MINOR, isMoneyName, minorDigits, toMajor, toMinor } from "./catalog/money.ts";
+export { recordPictures, type PictureSize, type RecordPicture } from "./catalog/pictures.ts";
 export {
 	hasPropsSchema,
 	lucideIcons,
