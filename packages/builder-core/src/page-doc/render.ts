@@ -1,13 +1,16 @@
 /**
  * Render of a page-spec/v2 block (ADR 0034): the props the registry component receives are the block's props merged
  * over the preset of its variant and filled with what the props schema requires. The preview, the code pane and the ZIP
- * export call this one function (`renderBlock`); there is no copy slot, row or children mapping any more.
+ * export call this one function (`renderBlock`); there is no copy slot, row or children mapping any more. A picture field whose
+ * value is not a picture address (`isImageUrl`: an icon name, free text, http:) renders empty, so the registry placeholder shows
+ * instead of a broken request, in the preview, the export and after a reload alike (ADR 0064).
  */
 import { cloneJson, type BlockV2, type PropValueV2 } from "@buildytech/page-contract";
 import { fillProps, humanizeName } from "../catalog/props-fill.ts";
 import { propShapeFor, propsEventsFor, propsFieldTree, type PropsFieldNode } from "../catalog/props-schema.ts";
 import { variantPreset } from "../catalog/organism.ts";
 import { variantColumns } from "../catalog/blocks.ts";
+import { isImageUrl } from "../catalog/image-url.ts";
 import { itemInfo } from "./items.ts";
 
 export type BlockRender = {
@@ -38,13 +41,30 @@ export function effectiveProps(item: string, variant: string | null | undefined,
 	return fillProps(item, merge(variantPreset(item, name), cloneJson(props ?? {})) as Record<string, unknown>, options);
 }
 
+/** Props with every picture field (`image`, `imageDark`, `avatar` at any depth) that is not a picture address set to "" (the placeholder). */
+function blankBadPictures(item: string, props: Record<string, unknown>): Record<string, unknown> {
+	const walk = (value: Record<string, unknown>, nodes: PropsFieldNode[]): Record<string, unknown> => {
+		const out: Record<string, unknown> = { ...value };
+		for (const node of nodes) {
+			const inner = value[node.name];
+			const fields = node.fields ?? [];
+			if (node.image && typeof inner === "string" && !isImageUrl(inner.trim())) out[node.name] = "";
+			else if (node.kind === "list" && Array.isArray(inner)) out[node.name] = inner.map((row) => (isObject(row) ? walk(row, fields) : row));
+			else if (node.kind === "object" && isObject(inner)) out[node.name] = walk(inner, fields);
+		}
+		return out;
+	};
+	const tree = propsFieldTree(item);
+	return tree ? walk(props, tree) : props;
+}
+
 /** The registry block a v2 block renders as, or null when the registry has no such item (the host rejects those on write). */
 export function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">): BlockRender | null {
 	const info = itemInfo(block.item);
 	if (!info) return null;
 	const variant = block.variant && info.variants.includes(block.variant) ? block.variant : info.defaultVariant;
 	const { events, slots } = propsEventsFor(block.item);
-	return { item: block.item, variant, organism: info.organism, props: effectiveProps(block.item, variant, block.props), events, slots };
+	return { item: block.item, variant, organism: info.organism, props: blankBadPictures(block.item, effectiveProps(block.item, variant, block.props)), events, slots };
 }
 
 /** Rows a new block's required list starts with, so the block shows something: one per column of the variant (cols4: 4,

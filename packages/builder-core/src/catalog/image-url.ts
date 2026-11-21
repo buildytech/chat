@@ -13,7 +13,13 @@ export const isImageName = (name: string): boolean => IMAGE_NAMES.has(name);
 
 const MAX_LENGTH = 2048;
 
-/** An https URL with a host, or a relative path (`/photos/a.jpg`, `./a.jpg`, `../a.jpg`, `photos/a.jpg`). Empty is "no picture" and is fine. */
+/** A relative path names a picture file: its last segment ends in a picture extension (a bare word like `phone` or `map-pin` is not one). */
+const PICTURE_FILE = /\.(?:jpe?g|png|webp|gif|avif|svg)(?:[?#].*)?$/i;
+
+/**
+ * An https URL with a host, or a relative path to a picture file (`/photos/a.jpg`, `./a.jpg`, `../a.jpg`, `photos/a.jpg`).
+ * Empty is "no picture" and is fine. A word with no picture extension (`phone`, `clock`: an icon name in a picture field) is not an address.
+ */
 export function isImageUrl(value: string): boolean {
 	if (value === "") return true;
 	if (value.length > MAX_LENGTH || /[\s"'<>\\`]/.test(value) || [...value].some((ch) => ch.charCodeAt(0) < 32)) return false;
@@ -26,5 +32,5 @@ export function isImageUrl(value: string): boolean {
 			return false;
 		}
 	}
-	return true;
+	return PICTURE_FILE.test(value);
 }

@@ -15819,7 +15819,13 @@ const isImageName = (name: string): boolean => IMAGE_NAMES.has(name);
 
 const MAX_LENGTH = 2048;
 
-/** An https URL with a host, or a relative path (`/photos/a.jpg`, `./a.jpg`, `../a.jpg`, `photos/a.jpg`). Empty is "no picture" and is fine. */
+/** A relative path names a picture file: its last segment ends in a picture extension (a bare word like `phone` or `map-pin` is not one). */
+const PICTURE_FILE = /\.(?:jpe?g|png|webp|gif|avif|svg)(?:[?#].*)?$/i;
+
+/**
+ * An https URL with a host, or a relative path to a picture file (`/photos/a.jpg`, `./a.jpg`, `../a.jpg`, `photos/a.jpg`).
+ * Empty is "no picture" and is fine. A word with no picture extension (`phone`, `clock`: an icon name in a picture field) is not an address.
+ */
 function isImageUrl(value: string): boolean {
 	if (value === "") return true;
 	if (value.length > MAX_LENGTH || /[\s"'<>\\`]/.test(value) || [...value].some((ch) => ch.charCodeAt(0) < 32)) return false;
@@ -15832,7 +15838,7 @@ function isImageUrl(value: string): boolean {
 			return false;
 		}
 	}
-	return true;
+	return PICTURE_FILE.test(value);
 }
 
 exports["isImageName"] = isImageName;
@@ -18822,6 +18828,7 @@ const { fillProps, humanizeName } = __req("packages/builder-core/src/catalog/pro
 const { propShapeFor, propsEventsFor, propsFieldTree } = __req("packages/builder-core/src/catalog/props-schema.ts");
 const { variantPreset } = __req("packages/builder-core/src/catalog/organism.ts");
 const { variantColumns } = __req("packages/builder-core/src/catalog/blocks.ts");
+const { isImageUrl } = __req("packages/builder-core/src/catalog/image-url.ts");
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
 type Json = unknown;
 const isObject = (value: Json): value is Record<string, Json> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -18840,13 +18847,30 @@ function effectiveProps(item: string, variant: string | null | undefined, props:
 	return fillProps(item, merge(variantPreset(item, name), cloneJson(props ?? {})) as Record<string, unknown>, options);
 }
 
+/** Props with every picture field (`image`, `imageDark`, `avatar` at any depth) that is not a picture address set to "" (the placeholder). */
+function blankBadPictures(item: string, props: Record<string, unknown>): Record<string, unknown> {
+	const walk = (value: Record<string, unknown>, nodes: PropsFieldNode[]): Record<string, unknown> => {
+		const out: Record<string, unknown> = { ...value };
+		for (const node of nodes) {
+			const inner = value[node.name];
+			const fields = node.fields ?? [];
+			if (node.image && typeof inner === "string" && !isImageUrl(inner.trim())) out[node.name] = "";
+			else if (node.kind === "list" && Array.isArray(inner)) out[node.name] = inner.map((row) => (isObject(row) ? walk(row, fields) : row));
+			else if (node.kind === "object" && isObject(inner)) out[node.name] = walk(inner, fields);
+		}
+		return out;
+	};
+	const tree = propsFieldTree(item);
+	return tree ? walk(props, tree) : props;
+}
+
 /** The registry block a v2 block renders as, or null when the registry has no such item (the host rejects those on write). */
 function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">): BlockRender | null {
 	const info = itemInfo(block.item);
 	if (!info) return null;
 	const variant = block.variant && info.variants.includes(block.variant) ? block.variant : info.defaultVariant;
 	const { events, slots } = propsEventsFor(block.item);
-	return { item: block.item, variant, organism: info.organism, props: effectiveProps(block.item, variant, block.props), events, slots };
+	return { item: block.item, variant, organism: info.organism, props: blankBadPictures(block.item, effectiveProps(block.item, variant, block.props)), events, slots };
 }
 
 /** Rows a new block's required list starts with, so the block shows something: one per column of the variant (cols4: 4,
@@ -21955,7 +21979,7 @@ const SYSTEM_COMMON = [
 	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
 	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
 	"- item is a block of the catalog (npx ui8kit add <item>); itemIndex lists every block with its category and variants (list_blocks shows their labels). variant is one of the item's variants: it sets the layout (where the picture is, how many columns), never the content; the host writes the layout axes it sets (media, cols, surface), so write variant and leave those props out. Settings such as align, padding and level are props too.",
-	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field (team members: id, title, description). A picture is an optional address prop: image with imageAlt on a section, image on list records (dishes, products, rooms), avatar on a team member, where get_block shows it. Leave image empty by default: the block shows its placeholder and Media mode then draws every picture from its description. Use an address only when the author gave one; a value that is not https or a relative path is dropped with a note. Never write in the page text that photos were added unless you set them.",
+	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field (team members: id, title, description). A picture is an optional address prop: image with imageAlt on a section, image on list records (dishes, products, rooms), avatar on a team member, where get_block shows it. Leave image empty by default: the block shows its placeholder and Media mode then draws every picture from its description. Use an address only when the author gave one; a value that is not https or a relative path to a picture file is dropped with a note. Picture fields (image, imageDark, avatar) hold only an image URL or stay empty: never an icon name or a word there (phone, map-pin, clock); icons go in icon props. Never write in the page text that photos were added unless you set them.",
 	"- imageAlt: on every block whose props have imageAlt, write it even when image is empty (Media mode draws the picture from it; a list record is drawn from its title and description, so make those concrete). One natural, descriptive sentence in the page language, 8 to 20 words, saying what is in the frame: the subject, its key details and the setting (light, place, mood), the way a careful SEO alt text reads. Never start with 'image of' or 'photo of', never stuff keywords or repeat the heading, never describe text, logos or the layout.",
 	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision: pick, replace, add, remove and reorder blocks as the request needs; a block may appear several times.",
 	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
@@ -22560,7 +22584,7 @@ exports["safeErrorMessage"] = safeErrorMessage;
 
 __def("packages/chat-agent/src/policy.ts", function (exports) {
 
-const POLICY_VERSION = "page-agent/14";
+const POLICY_VERSION = "page-agent/15";
 /** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
 const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
 const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;

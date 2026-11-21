@@ -32,8 +32,8 @@ async function html(page: PageV2, index = 0): Promise<string> {
 const block = (props: Record<string, unknown>, item = "hero-simple") => ({ ...base(), blocks: [{ item, props }] });
 
 test("isImageUrl: https URLs and relative paths pass; other schemes, protocol-relative, spaces and markup do not", () => {
-	for (const ok of ["", URL_A, "https://cdn.example.com/a.jpg", "/photos/a.jpg", "./a.jpg", "../a.jpg", "photos/a.jpg"]) assert.ok(isImageUrl(ok), ok);
-	for (const bad of ["http://example.com/a.jpg", "data:image/svg+xml;base64,PHN2Zz4=", "javascript:alert(1)", "//example.com/a.jpg", "a photo of a cake", "https://example/a.jpg", "https://x.com/a b.jpg", 'https://x.com/"><script>', "ftp://x.com/a.jpg", `https://x.com/${"a".repeat(2100)}`]) assert.ok(!isImageUrl(bad), bad);
+	for (const ok of ["", URL_A, "https://cdn.example.com/a.jpg", "https://imgen.x.ai/xai-imgen/xai-tmp-imgen-c48c443f", "/photos/a.jpg", "./a.jpg", "../a.jpg", "photos/a.jpg", "photos/a.WEBP?v=2"]) assert.ok(isImageUrl(ok), ok);
+	for (const bad of ["http://example.com/a.jpg", "data:image/svg+xml;base64,PHN2Zz4=", "javascript:alert(1)", "//example.com/a.jpg", "a photo of a cake", "https://example/a.jpg", "https://x.com/a b.jpg", 'https://x.com/"><script>', "ftp://x.com/a.jpg", "phone", "map-pin", "clock", "/phone", "./icons/clock", `https://x.com/${"a".repeat(2100)}`]) assert.ok(!isImageUrl(bad), bad);
 });
 
 test("the registry exposes image and imageAlt as plain text on the section blocks and image on the records", () => {
@@ -126,4 +126,25 @@ test("the Inspector: image is a text field; a set writes it, a bad address is dr
 	if (!bad.ok) return;
 	assert.ok(!("image" in (bad.page.blocks[0]!.props ?? {})));
 	assert.ok(bad.warnings.some((w) => /image "not a url" is not an https URL/.test(w)), JSON.stringify(bad.warnings));
+});
+
+const CONTACTS = (image: string): PageV2 => ({ ...base(), blocks: [{ id: "c", item: "contacts-simple", variant: "rows", props: { layout: "rows", items: [{ id: "contact-1", image, title: "Phone", description: "+7 495 123-45-67" }] } }] });
+
+test("an icon name in a picture field (ADR 0064): the write drops it with a note; a stored one renders empty, so the placeholder shows", async () => {
+	const written = writePage(base(), { page: CONTACTS("map-pin") });
+	assert.ok(written.ok, JSON.stringify(!written.ok && written.issues));
+	if (written.ok) {
+		assert.ok(!JSON.stringify(written.page.blocks[0]!.props).includes("map-pin"));
+		assert.ok(written.warnings.some((w) => w.startsWith("/blocks/0/props/items/0/image: image \"map-pin\"")), JSON.stringify(written.warnings));
+	}
+	// A page saved before the rule (session, reload, export) still carries the word: renderBlock, which the preview, the code pane and the ZIP export share, blanks it.
+	for (const word of ["phone", "map-pin", "clock"]) {
+		const rendered = renderBlock(CONTACTS(word).blocks[0]!)!;
+		assert.deepEqual(rendered.props.items, [{ ...(Array.isArray(rendered.props.items) ? rendered.props.items[0] : {}), image: "" }], word);
+		const body = await html(CONTACTS(word));
+		assert.ok(!imgs(body).some((tag) => attr(tag, "src") === word), body);
+	}
+	const kept = renderBlock(CONTACTS(URL_A).blocks[0]!)!;
+	assert.ok(JSON.stringify(kept.props.items).includes(URL_A));
+	assert.equal(renderBlock({ item: "hero-simple", props: { title: "t", image: "clock" } })!.props.image, "");
 });
