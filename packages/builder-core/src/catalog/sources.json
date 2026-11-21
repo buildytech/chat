@@ -3,16 +3,16 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:2adab66f634b4e81fa9b643542879e08b365cb039d9ef9acd99461ce76f5737f",
+	"lockDigest": "sha256:8a2d6236201c8eee275a0d16a2eed7a519ea80b9f90ecdc858935f55c9d0f99a",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "ff6d252473322fa8b86c0829b5b4414edcb6f7e19fb578042f3b9361649959a9",
-		"digest": "sha256:69ddffd21a4e36d94b5c2934c41d9d4600cba65127f5bb1068f7209352ef0d49"
+		"sha256": "a2caa4d699a1cd25cd3d109803b8c38663e102efacb1ed77ba744127567d0d49",
+		"digest": "sha256:ded7096648297e4deb79683289b4bb2f1c5e4a7f68283337961abbc38afe027b"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "2c3a1f3d1b15bd608ee95b2c3c15596fedd1c84b3920d4e2b2cb20083f952ff3",
-		"digest": "sha256:e022c7e247a750e3277fbb7a4f349ec3fdceea2e0a20897451389314e90f8094"
+		"sha256": "b3beca3f924d5911be22fbf6147ee8987aa7231b959d2ba4cd10fc8885912c5c",
+		"digest": "sha256:3920d4cfc5ca1efd310fe549faa5e2d770d43f48b41c216a1fb20f94c465948a"
 	},
 	"initItems": [
 		"presets",
@@ -1013,6 +1013,38 @@
 			"files": [
 				"src/compose/Group.svelte"
 			]
+		},
+		"guarantees-simple": {
+			"type": "registry:block",
+			"title": "Guarantees Simple",
+			"description": "The heading, one paragraph and the promises (delivery, quality, returns), each a short title and a line: side by side on one muted band, or on cards, in four or three columns.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/guarantees-simple.svelte",
+				"src/blocks/guarantees-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/guarantees-simple/1.json",
+				"group": "features",
+				"kind": "block",
+				"model": "guarantees@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"header-simple": {
 			"type": "registry:block",
@@ -2229,6 +2261,38 @@
 			"files": [
 				"src/compose/Separator.svelte"
 			]
+		},
+		"services-simple": {
+			"type": "registry:block",
+			"title": "Services Simple",
+			"description": "The heading, one paragraph and the services (the name as a link, a line, the starting price): on cards in three or two columns, or rows with the price at the end.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/services-simple.svelte",
+				"src/blocks/services-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/services-simple/1.json",
+				"group": "features",
+				"kind": "block",
+				"model": "services@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"sheet": {
 			"type": "registry:ui",
@@ -3485,6 +3549,30 @@
 				}
 			}
 		},
+		"guarantees-simple": {
+			"spec": "block.guaranteessimple",
+			"organism": "blocks/guarantees-simple.svelte",
+			"organismName": "GuaranteesSimple",
+			"defaultVariant": "strip4",
+			"variants": {
+				"strip4": {
+					"layout": "strip",
+					"cols": "4"
+				},
+				"strip3": {
+					"layout": "strip",
+					"cols": "3"
+				},
+				"cards4": {
+					"layout": "cards",
+					"cols": "4"
+				},
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				}
+			}
+		},
 		"header-simple": {
 			"spec": "block.headersimple",
 			"organism": "blocks/header-simple.svelte",
@@ -3829,6 +3917,27 @@
 			"spec": "block.roomssimple",
 			"organism": "blocks/rooms-simple.svelte",
 			"organismName": "RoomsSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"cards2": {
+					"layout": "cards",
+					"cols": "2"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
+				}
+			}
+		},
+		"services-simple": {
+			"spec": "block.servicessimple",
+			"organism": "blocks/services-simple.svelte",
+			"organismName": "ServicesSimple",
 			"defaultVariant": "cards3",
 			"variants": {
 				"cards3": {
@@ -4252,6 +4361,22 @@
 			"item": "gallery-hero",
 			"variant": "photos4Bottom"
 		},
+		"block.guaranteessimple/strip4": {
+			"item": "guarantees-simple",
+			"variant": "strip4"
+		},
+		"block.guaranteessimple/strip3": {
+			"item": "guarantees-simple",
+			"variant": "strip3"
+		},
+		"block.guaranteessimple/cards4": {
+			"item": "guarantees-simple",
+			"variant": "cards4"
+		},
+		"block.guaranteessimple/cards3": {
+			"item": "guarantees-simple",
+			"variant": "cards3"
+		},
 		"block.headersimple/inline": {
 			"item": "header-simple",
 			"variant": "inline"
@@ -4476,6 +4601,18 @@
 			"item": "rooms-simple",
 			"variant": "rows"
 		},
+		"block.servicessimple/cards3": {
+			"item": "services-simple",
+			"variant": "cards3"
+		},
+		"block.servicessimple/cards2": {
+			"item": "services-simple",
+			"variant": "cards2"
+		},
+		"block.servicessimple/rows": {
+			"item": "services-simple",
+			"variant": "rows"
+		},
 		"block.specssimple/keyValue": {
 			"item": "specs-simple",
 			"variant": "keyValue"
@@ -4666,6 +4803,10 @@
 			"item": "gallery-hero",
 			"variant": "photos3"
 		},
+		"block.guaranteessimple": {
+			"item": "guarantees-simple",
+			"variant": "strip4"
+		},
 		"block.headersimple": {
 			"item": "header-simple",
 			"variant": "inline"
@@ -4740,6 +4881,10 @@
 		},
 		"block.roomssimple": {
 			"item": "rooms-simple",
+			"variant": "cards3"
+		},
+		"block.servicessimple": {
+			"item": "services-simple",
 			"variant": "cards3"
 		},
 		"block.specssimple": {

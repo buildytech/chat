@@ -4,13 +4,13 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "8058f83490a356d832b2486f2594d8000ce8bea5",
+		"commit": "f82cefdabd946dd13d631016881b89e1a27500ee",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "dd2496e1a17560c4169f37a367a0dea1a372de7022bfdf49c2775455dd65f6fe"
+			"sha256": "6f3654b056c232a035a19f569e3b102fa0245bd41bb8b68c18f67337c294ebe1"
 		}
 	},
-	"digest": "sha256:c0476f4f7589f49228fc1376e02e42e7cda6be2e7312b3d8550fac868f616022",
+	"digest": "sha256:8f3b9cdcacb671119f5171b25aa7ebf4993d88e3f0cb861226c9a9ac551001a7",
 	"blocks": [
 		{
 			"item": "hero-simple",
@@ -8431,6 +8431,383 @@
 								},
 								"href": {
 									"description": "the address of the room page; empty: no link",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "guarantees-simple",
+			"title": "Guarantees Simple",
+			"description": "The heading, one paragraph and the promises (delivery, quality, returns), each a short title and a line: side by side on one muted band, or on cards, in four or three columns.",
+			"category": "features",
+			"prototype": "guarantees-simple.svelte",
+			"contract": {
+				"item": "guarantees-simple",
+				"version": 1,
+				"block": "block.guaranteessimple",
+				"organism": "GuaranteesSimple",
+				"line": "simple",
+				"model": "guarantees@1",
+				"modelSchema": "https://registry.buildy.tw/models/guarantees@1.schema.json",
+				"axes": {
+					"layout": [
+						"strip",
+						"cards"
+					],
+					"cols": [
+						"4",
+						"3"
+					]
+				},
+				"defaults": {
+					"layout": "strip",
+					"cols": "4"
+				},
+				"variants": [
+					{
+						"id": "strip4",
+						"label": "A strip of four",
+						"axes": {
+							"layout": "strip",
+							"cols": "4"
+						}
+					},
+					{
+						"id": "strip3",
+						"label": "A strip of three",
+						"axes": {
+							"layout": "strip",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "cards4",
+						"label": "Four cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "4"
+						}
+					},
+					{
+						"id": "cards3",
+						"label": "Three cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "3"
+						}
+					}
+				],
+				"defaultVariant": "strip4",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.text",
+						"kind": "text",
+						"fields": [
+							"/items/*/text"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 4
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/guarantees@1.schema.json",
+				"title": "GuaranteesContent",
+				"description": "Guarantees content: the heading, a description and an ordered list of promises, each with a short title and a line. One object is valid in every guarantees layout (a strip, cards; four or three columns).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the promises, in the order they are shown",
+						"type": "array",
+						"minItems": 2,
+						"maxItems": 8,
+						"items": {
+							"title": "Guarantee",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the promise in a few words",
+									"type": "string",
+									"maxLength": 60,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"text": {
+									"description": "one line about the promise; empty: none",
+									"type": "string",
+									"maxLength": 160
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "services-simple",
+			"title": "Services Simple",
+			"description": "The heading, one paragraph and the services (the name as a link, a line, the starting price): on cards in three or two columns, or rows with the price at the end.",
+			"category": "features",
+			"prototype": "services-simple.svelte",
+			"contract": {
+				"item": "services-simple",
+				"version": 1,
+				"block": "block.servicessimple",
+				"organism": "ServicesSimple",
+				"line": "simple",
+				"model": "services@1",
+				"modelSchema": "https://registry.buildy.tw/models/services@1.schema.json",
+				"axes": {
+					"layout": [
+						"cards",
+						"rows"
+					],
+					"cols": [
+						"3",
+						"2"
+					]
+				},
+				"defaults": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "cards3",
+						"label": "Three service cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "cards2",
+						"label": "Two columns",
+						"axes": {
+							"layout": "cards",
+							"cols": "2"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "Rows, the price at the end",
+						"axes": {
+							"layout": "rows",
+							"cols": "3"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "cards3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title",
+							"/items/*/href"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.price",
+						"kind": "text",
+						"fields": [
+							"/items/*/price"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/services@1.schema.json",
+				"title": "ServicesContent",
+				"description": "Services content: the heading, a description and an ordered list of services, each with the name, a line, the price as it is shown and an optional address. One object is valid in every services layout (cards in three or two columns, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the services, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 9,
+						"items": {
+							"title": "Service",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the name of the service",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one line about the service; empty: none",
+									"type": "string",
+									"maxLength": 200
+								},
+								"price": {
+									"description": "the price as it is shown (from 90 000 per project); empty: none",
+									"type": "string",
+									"maxLength": 40
+								},
+								"href": {
+									"description": "the address of the service page; empty: no link",
 									"type": "string",
 									"maxLength": 2048,
 									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"

@@ -5,19 +5,19 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "cd1f7e27e361208b10d8435b20ddf6bdf5584806353d490fc18eecab87d038ff",
-		"lastUpdated": "2026-11-21T02:11:14+03:00",
+		"sha256": "3e6bc644c94c6d2fa7052151122a627adf35f49fe1714ffab4b4fad30b23e559",
+		"lastUpdated": "2026-11-21T02:56:01+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "ff6d252473322fa8b86c0829b5b4414edcb6f7e19fb578042f3b9361649959a9",
-		"digest": "sha256:69ddffd21a4e36d94b5c2934c41d9d4600cba65127f5bb1068f7209352ef0d49"
+		"sha256": "a2caa4d699a1cd25cd3d109803b8c38663e102efacb1ed77ba744127567d0d49",
+		"digest": "sha256:ded7096648297e4deb79683289b4bb2f1c5e4a7f68283337961abbc38afe027b"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "2c3a1f3d1b15bd608ee95b2c3c15596fedd1c84b3920d4e2b2cb20083f952ff3",
-		"digest": "sha256:e022c7e247a750e3277fbb7a4f349ec3fdceea2e0a20897451389314e90f8094"
+		"sha256": "b3beca3f924d5911be22fbf6147ee8987aa7231b959d2ba4cd10fc8885912c5c",
+		"digest": "sha256:3920d4cfc5ca1efd310fe549faa5e2d770d43f48b41c216a1fb20f94c465948a"
 	},
 	"manifest": {
 		"url": "https://registry.buildy.tw/manifest.json",
@@ -26,10 +26,10 @@
 	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "8058f83490a356d832b2486f2594d8000ce8bea5",
+		"commit": "f82cefdabd946dd13d631016881b89e1a27500ee",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "dd2496e1a17560c4169f37a367a0dea1a372de7022bfdf49c2775455dd65f6fe"
+			"sha256": "6f3654b056c232a035a19f569e3b102fa0245bd41bb8b68c18f67337c294ebe1"
 		}
 	},
 	"blocks": [
@@ -77,7 +77,9 @@
 		"cta-simple",
 		"promo-simple",
 		"hours-simple",
-		"rooms-simple"
+		"rooms-simple",
+		"guarantees-simple",
+		"services-simple"
 	],
 	"contracts": {
 		"hero-simple": {
@@ -259,6 +261,14 @@
 		"rooms-simple": {
 			"contract": "registry/contracts/rooms-simple/1.json",
 			"model": "registry/models/rooms@1.schema.json"
+		},
+		"guarantees-simple": {
+			"contract": "registry/contracts/guarantees-simple/1.json",
+			"model": "registry/models/guarantees@1.schema.json"
+		},
+		"services-simple": {
+			"contract": "registry/contracts/services-simple/1.json",
+			"model": "registry/models/services@1.schema.json"
 		}
 	},
 	"initItems": [
@@ -1260,6 +1270,38 @@
 			"files": [
 				"src/compose/Group.svelte"
 			]
+		},
+		"guarantees-simple": {
+			"type": "registry:block",
+			"title": "Guarantees Simple",
+			"description": "The heading, one paragraph and the promises (delivery, quality, returns), each a short title and a line: side by side on one muted band, or on cards, in four or three columns.",
+			"registryDependencies": [
+				"block",
+				"box",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/guarantees-simple.svelte",
+				"src/blocks/guarantees-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/guarantees-simple/1.json",
+				"group": "features",
+				"kind": "block",
+				"model": "guarantees@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"header-simple": {
 			"type": "registry:block",
@@ -2477,6 +2519,38 @@
 				"src/compose/Separator.svelte"
 			]
 		},
+		"services-simple": {
+			"type": "registry:block",
+			"title": "Services Simple",
+			"description": "The heading, one paragraph and the services (the name as a link, a line, the starting price): on cards in three or two columns, or rows with the price at the end.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/services-simple.svelte",
+				"src/blocks/services-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/services-simple/1.json",
+				"group": "features",
+				"kind": "block",
+				"model": "services@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"sheet": {
 			"type": "registry:ui",
 			"title": "Sheet",
@@ -3324,6 +3398,7 @@
 		"prototypes/svelte/blocks/figure-simple.svelte": "a9dabeeda9eee8e98029b1ddb140505b44c817b6bc22bf9f0cfbc7bfba13ec3d",
 		"prototypes/svelte/blocks/footer-simple.svelte": "99075daa9de8ff393b67140b8e1bfce53fd8d063199acc1f0417553813e38eb5",
 		"prototypes/svelte/blocks/gallery-hero.svelte": "913013a3cc29f78cb667700f2da9596c2ece4ec065c430344151ba9cbad5372b",
+		"prototypes/svelte/blocks/guarantees-simple.svelte": "d06981ef78ae77a61aa8690d7b2652a2ddc07a2150076285d73d89ec2ab7a6c2",
 		"prototypes/svelte/blocks/header-simple.svelte": "5b12b263729bfe5c1edbd2dc7d76756542afe27cccc5baa7a7cb6fd05b9024c0",
 		"prototypes/svelte/blocks/hero-simple.svelte": "84367da8648e509ec7976314dff75eefd67bf027b368a0d0bafaac100236b1f3",
 		"prototypes/svelte/blocks/hours-simple.svelte": "8290bfc90e3742cde5168dae02c291d48abf8a80e5adc79a72bb6e8020d6c12b",
@@ -3343,6 +3418,7 @@
 		"prototypes/svelte/blocks/purchase-simple.svelte": "1bbe27ad9ff4c01f2bdac70ee757239a9a001a1abbc3af31e94dc2d395118f4b",
 		"prototypes/svelte/blocks/rating-simple.svelte": "8e70a814d5bce856fdb06484b69e876b05f7ee0c018d54a82004482f3c2b321c",
 		"prototypes/svelte/blocks/rooms-simple.svelte": "0cabf95a60c2b0c3051a7b01dff94429770e429041842b22b075523a6006cf90",
+		"prototypes/svelte/blocks/services-simple.svelte": "b82d46d7651d57589c12f9abcabf47f869bbc6983c516654d2adbdca38cf3979",
 		"prototypes/svelte/blocks/specs-simple.svelte": "2edbc561997622ca3191d83430f977b4198930f61d29aac5959a7e13d7299cd8",
 		"prototypes/svelte/blocks/split-simple.svelte": "cd0cab695e4eac4efa77ef38ee254ea202c6465670d5cdfbee8a1fce046162bc",
 		"prototypes/svelte/blocks/stats-simple.svelte": "2c91da85a43247738f0b3ce4c979ce70784995017317ff927348bb77322e34b2",
@@ -3376,6 +3452,7 @@
 		"registry/contracts/figure-simple/1.json": "9f73d7bb0cc05518e5174b6687bd5c4bdc6335c7fc196e023dbd18f009632f95",
 		"registry/contracts/footer-simple/1.json": "041524efb5280fc5da3ce7ec9846542d76e3cc1fbd1fe23261ec01042b773208",
 		"registry/contracts/gallery-hero/1.json": "d3d96918a81d9e9ac808cc319cd2fe90ae72458ee830cf77bbda5b747749db69",
+		"registry/contracts/guarantees-simple/1.json": "5d589c249adc92a4dfd82a1eccb2f63ab9b5c3e1703a2f6e8acaa69515329b0e",
 		"registry/contracts/header-simple/1.json": "39a8ab5a8661c344672b84a187760dbaffa9490457434d371aedd9a74e01b9a4",
 		"registry/contracts/hero-simple/1.json": "688efe720e94b29a5bc2e1cd35eb9024008693737f8e2e81db89d6f6ca63dbef",
 		"registry/contracts/hours-simple/1.json": "69c709c07fb55db0c7d411dd28ae9055b60b96aede921b5cab9c8331a3cc7c4e",
@@ -3395,6 +3472,7 @@
 		"registry/contracts/purchase-simple/1.json": "20bece6d3641b8357f7bc1cd7410121e96b90a1d80a63f555c35e1c9852d2538",
 		"registry/contracts/rating-simple/1.json": "c8e8f0be71bd9d117759715ae674b67c136df8bb1df43511a4c5a292d042a4db",
 		"registry/contracts/rooms-simple/1.json": "d8b7b384d17c5306873aaa2949e4cd8c645c3d9308b0a6cb456a3eb4db304703",
+		"registry/contracts/services-simple/1.json": "54436e130dcf26d3047d8f995724c3bfcc6f3311626c8460009b9c1b20bf6cf9",
 		"registry/contracts/specs-simple/1.json": "e884c806e09ae5dae83c4561c6999f76282dd2a9f7bb1eaf460ea00958647ab8",
 		"registry/contracts/split-simple/1.json": "cb1936dc7bf74e33036b4051337c47f517fe370cef2d701180dee987e7edbc75",
 		"registry/contracts/stats-simple/1.json": "3f7deae3375323293e3e4781cdac763f13441fb4d0d521bfff24d1b33491d115",
@@ -3421,6 +3499,7 @@
 		"registry/models/figure@1.schema.json": "605106092c330a874c580a163fdae8d14fad2aead88fa0c921f1294fdf34dbe8",
 		"registry/models/footer@1.schema.json": "082e96e5712953dd0d91e4d1a6574dd0a92065a2e1f40853074a84d8bf5ca6c3",
 		"registry/models/gallery@1.schema.json": "728e408f73900e79639629aaa52698fee31b3a9fc87e73efdb1b11457906b7f2",
+		"registry/models/guarantees@1.schema.json": "4e1c0cbdf9f66c16db84e608bb7990f6fa08fdf0ff6171beae18df91759854f6",
 		"registry/models/header@1.schema.json": "2e59a18850b32bf3816f4f85299d372d771bf746102a94b94826c46a5537a9ff",
 		"registry/models/hero@1.schema.json": "b114d150cc77d9249b8793c9591a6242db9c8d55d94d0dd06bfe6aecd335eee6",
 		"registry/models/hours@1.schema.json": "92011a5a6ecf77b47936e8dd39a2de7a652fc847f28697fbc22dc565ac695e34",
@@ -3440,6 +3519,7 @@
 		"registry/models/rating@1.schema.json": "0665c268f07988ef87cf7b966883264139af5bbd5dd1508b99caed5ccd3a0297",
 		"registry/models/reviews@1.schema.json": "9a4f774744074c2d6a3ee633f2879acc1569c802fd847aa04c801e7c160a968a",
 		"registry/models/rooms@1.schema.json": "2612627b469c7dbeceaf312201e47c722e4a1e121733e47e8f56b8776ef4a5b6",
+		"registry/models/services@1.schema.json": "d2c08e64a0787cc57731503025854a7ce4ad8a4427312818653bdbd6f1adb828",
 		"registry/models/specs@1.schema.json": "190ead29f6da241d6c9fd255aa6b9937477af0ace8f1940378fda9b7e48e5cd9",
 		"registry/models/split@1.schema.json": "40d6489b3bbaa08ab9f5385ef1b8e1d75432b427f51c2598ec92e9c542aada6d",
 		"registry/models/stats@1.schema.json": "c3ad6ffed0ddde4c362472342dc76b6ec29d77a87b350b2ad878f68aa310154a",
@@ -3449,7 +3529,7 @@
 		"registry/models/team@1.schema.json": "ac003fe0b80251f4fefe73e39572cd63f3eb58b35c5fdbd337d03e232fcf797c",
 		"registry/models/testimonials@1.schema.json": "e3c1b75c4dd7111f41f7a7bb52c7e297617d8805f51b4cae6b06ca40272003b1",
 		"registry/models/topics@1.schema.json": "7e85157dcbbeec16b931dcb9dceb9a4ac6a730e74ca632aba69153ac3229ef53",
-		"registry/props.v0.json": "f51a9a494bd21ad31929d093682fb37194856d788294b8d0a74881aa43bcf3da",
-		"registry/variants.v0.json": "421c066cb4a37c7e943c4f29c3acf307cca6d6909c87f44acc3ca6e75e0b1130"
+		"registry/props.v0.json": "de9eca3b2767d930d7310c4b39ebb961366551a67b72f5a49d6a78e7de43797c",
+		"registry/variants.v0.json": "597d62741855d7d839fcb523540c7442ef5525b1fb22f55700c65e0666741002"
 	}
 }

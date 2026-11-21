@@ -454,6 +454,17 @@
         "src/compose/Group.svelte": "78244f1faeb454f3b504f154698bf6a014ee8f50c114c2e3b8e0c4d3e5101da7"
       }
     },
+    "registry.buildy.tw|svelte|guarantees-simple": {
+      "name": "guarantees-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/guarantees-simple.svelte": "3d3f0b87defe603f32c12604e474aa78c80464f58d637ebb579e5e9f0a0dc318",
+        "src/blocks/guarantees-simple.types.ts": "f6f2ad72da6adc3275ed2a1cf32350a4dded65606f3085cd61c8e6ae60c02910"
+      }
+    },
     "registry.buildy.tw|svelte|header-simple": {
       "name": "header-simple",
       "type": "registry:block",
@@ -1123,6 +1134,17 @@
       "runtime": "svelte",
       "files": {
         "src/compose/Separator.svelte": "f3b56f09f15e9f16f6ce77f5c2f0eeadb398db5faab92acec166ba641fbb1da5"
+      }
+    },
+    "registry.buildy.tw|svelte|services-simple": {
+      "name": "services-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/services-simple.svelte": "b0a6b492efea1fa00ff030a48aee31b7b78fcbd0a57e916a1a9cf521dd5d1420",
+        "src/blocks/services-simple.types.ts": "506562b53f0a225e5fbdd6068cf6f21fed66959f534246ddf50e53dd3b7522d1"
       }
     },
     "registry.buildy.tw|svelte|sheet": {

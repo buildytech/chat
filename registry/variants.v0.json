@@ -1,6 +1,6 @@
 {
 	"version": "0",
-	"digest": "sha256:69ddffd21a4e36d94b5c2934c41d9d4600cba65127f5bb1068f7209352ef0d49",
+	"digest": "sha256:ded7096648297e4deb79683289b4bb2f1c5e4a7f68283337961abbc38afe027b",
 	"registry": "https://registry.buildy.tw",
 	"items": {
 		"article-lead": {
@@ -777,6 +777,67 @@
 						"photos": {
 							"$": "galleryPhotos4"
 						}
+					}
+				}
+			}
+		},
+		"guarantees-simple": {
+			"block": "guaranteessimple",
+			"spec": "block.guaranteessimple",
+			"organism": "GuaranteesSimple",
+			"axes": {
+				"layout": [
+					"strip",
+					"cards"
+				],
+				"cols": [
+					"4",
+					"3"
+				]
+			},
+			"defaults": {
+				"layout": "strip",
+				"cols": "4"
+			},
+			"defaultVariant": "strip4",
+			"variants": {
+				"strip4": {
+					"asset": "block.guaranteessimple/strip4",
+					"set": {},
+					"props": {
+						"layout": "strip",
+						"cols": "4"
+					}
+				},
+				"strip3": {
+					"asset": "block.guaranteessimple/strip3",
+					"set": {
+						"cols": "3"
+					},
+					"props": {
+						"layout": "strip",
+						"cols": "3"
+					}
+				},
+				"cards4": {
+					"asset": "block.guaranteessimple/cards4",
+					"set": {
+						"layout": "cards"
+					},
+					"props": {
+						"layout": "cards",
+						"cols": "4"
+					}
+				},
+				"cards3": {
+					"asset": "block.guaranteessimple/cards3",
+					"set": {
+						"layout": "cards",
+						"cols": "3"
+					},
+					"props": {
+						"layout": "cards",
+						"cols": "3"
 					}
 				}
 			}
@@ -1641,6 +1702,57 @@
 				},
 				"rows": {
 					"asset": "block.roomssimple/rows",
+					"set": {
+						"layout": "rows"
+					},
+					"props": {
+						"layout": "rows",
+						"cols": "3",
+						"align": "start"
+					}
+				}
+			}
+		},
+		"services-simple": {
+			"block": "servicessimple",
+			"spec": "block.servicessimple",
+			"organism": "ServicesSimple",
+			"axes": {
+				"layout": [
+					"cards",
+					"rows"
+				],
+				"cols": [
+					"3",
+					"2"
+				]
+			},
+			"defaults": {
+				"layout": "cards",
+				"cols": "3"
+			},
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"asset": "block.servicessimple/cards3",
+					"set": {},
+					"props": {
+						"layout": "cards",
+						"cols": "3"
+					}
+				},
+				"cards2": {
+					"asset": "block.servicessimple/cards2",
+					"set": {
+						"cols": "2"
+					},
+					"props": {
+						"layout": "cards",
+						"cols": "2"
+					}
+				},
+				"rows": {
+					"asset": "block.servicessimple/rows",
 					"set": {
 						"layout": "rows"
 					},
