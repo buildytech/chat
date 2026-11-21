@@ -3,12 +3,16 @@ import { registrySkin } from "@buildytech/builder-core";
 import chatPackage from "../../../package.json" with { type: "json" };
 import { configText, CUSTOM_SKIN_BASE_CSS, renderCustomSkin, type ThemeConfig } from "../theme/custom-skin.ts";
 import { CUSTOM_SKIN_CSS, THEME_FILE, scaffold } from "./pack-scaffold.ts";
+import { imagesManifest, type LocalImages } from "./pack-images.ts";
 import { registryItemsOf, registryLockItemsOf, registryPathsOf, svelteFromPage, sveltePackFiles } from "./svelte-code.ts";
 
 export type PackFile = {
 	path: string;
 	content: string;
 };
+/** A binary file of the exported project (a downloaded picture). */
+type PackAsset = { path: string; bytes: Uint8Array };
+export type PackEntry = PackFile | PackAsset;
 
 function crcTable(): Uint32Array {
 	const table = new Uint32Array(256);
@@ -56,7 +60,7 @@ function concat(parts: Uint8Array[]): Uint8Array {
 }
 
 /** Uncompressed ZIP (STORE). No extra dependency. */
-export function buildStoreZip(files: PackFile[]): Uint8Array {
+export function buildStoreZip(files: readonly PackEntry[]): Uint8Array {
 	const encoder = new TextEncoder();
 	const locals: Uint8Array[] = [];
 	const centrals: Uint8Array[] = [];
@@ -64,7 +68,7 @@ export function buildStoreZip(files: PackFile[]): Uint8Array {
 
 	for (const file of files) {
 		const name = encoder.encode(file.path.replace(/\\/g, "/"));
-		const data = encoder.encode(file.content);
+		const data = "bytes" in file ? file.bytes : encoder.encode(file.content);
 		const crc = crc32(data);
 		const utf8Flag = 0x0800;
 		const local = concat([
@@ -185,7 +189,10 @@ export type RegistryReader = (paths: string[]) => Promise<Record<string, string>
  * Export options: the chat's skin (session `skin`, ADR 0016); null or unknown is the default theme. `theme`: the Custom
  * Skin (ADR 0025), a magazine-theme v2 config; its base skin is the registry skin, the rest goes on <html> and in theme.json.
  */
-export type PackOptions = { skin?: string | null; theme?: ThemeConfig | null };
+export type PackOptions = { skin?: string | null; theme?: ThemeConfig | null; images?: LocalImages | null };
+
+/** `vite/client` types for the picture imports of the sections (only when the export carries pictures). */
+const VITE_ENV = { path: "src/vite-env.d.ts", content: '/// <reference types="vite/client" />\n' };
 
 function generatorOf(page: CreatorPage, skin: string | null) {
 	return {
@@ -210,7 +217,9 @@ export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}):
 	const custom = options.theme ? renderCustomSkin(options.theme) : null;
 	const theme = registrySkin(custom ? custom.skin : options.skin);
 	const skin = theme?.id ?? null;
-	const files: PackFile[] = [...scaffold(valid.slug || "page", valid.title, theme, custom), ...sveltePackFiles(valid)];
+	const images = options.images ?? null;
+	const files: PackFile[] = [...scaffold(valid.slug || "page", valid.title, theme, custom, images), ...sveltePackFiles(valid, images)];
+	if (images?.local.length) files.push(VITE_ENV);
 	files.push({ path: "page.json", content: `${JSON.stringify(valid, null, 2)}\n` });
 	if (options.theme) {
 		files.push({ path: THEME_FILE, content: `${configText(options.theme)}\n` });
@@ -218,7 +227,8 @@ export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}):
 	}
 	const generator = generatorOf(valid, skin);
 	files.push({ path: "GENERATOR.json", content: `${JSON.stringify(generator, null, 2)}\n` });
-	const paths = [...files.map((file) => file.path), CLI_CONFIG, CLI_LOCK, ...registryPathsOf(valid, skin), "manifest.json"];
+	const paths = [...files.map((file) => file.path), ...(images?.local ?? []).map((image) => image.path), CLI_CONFIG, CLI_LOCK, ...registryPathsOf(valid, skin), "manifest.json"];
+	const pictures = imagesManifest(images);
 	const manifest = {
 		id: valid.id,
 		slug: valid.slug,
@@ -229,6 +239,7 @@ export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}):
 		skin,
 		...(options.theme ? { customSkin: { file: THEME_FILE, format: options.theme.format, version: options.theme.version } } : {}),
 		files: paths,
+		...(pictures ? { images: pictures } : {}),
 		generator: { name: generator.name, emitter: generator.emitter, appSvelteSha256: generator.appSvelteSha256 }
 	};
 	files.push({ path: "manifest.json", content: `${JSON.stringify(manifest, null, 2)}\n` });
@@ -243,11 +254,14 @@ function lockFor(fullLock: string, items: readonly string[]): string {
 	return `${JSON.stringify({ ...lock, items: picked }, null, 2)}\n`;
 }
 
-/** The whole exported project: packFilesFromPage plus the registry files of the page, read from the pinned snapshot. */
-export async function packZipFiles(page: CreatorPage, read: RegistryReader, options: PackOptions = {}): Promise<PackFile[]> {
+/**
+ * The whole exported project: packFilesFromPage plus the registry files of the page, read from the pinned snapshot, and
+ * the downloaded pictures (`options.images`, from localizeImages) as binary entries.
+ */
+export async function packZipFiles(page: CreatorPage, read: RegistryReader, options: PackOptions = {}): Promise<PackEntry[]> {
 	const valid = parsePage(page);
 	const skin = registrySkin(options.theme ? renderCustomSkin(options.theme).skin : options.skin)?.id ?? null;
-	const own = packFilesFromPage(valid, { skin, theme: options.theme ?? null });
+	const own = packFilesFromPage(valid, { skin, theme: options.theme ?? null, images: options.images ?? null });
 	const registryPaths = registryPathsOf(valid, skin);
 	const registry = await read([CLI_CONFIG, CLI_LOCK, ...registryPaths]);
 	for (const path of [CLI_CONFIG, CLI_LOCK, ...registryPaths]) {
@@ -256,6 +270,7 @@ export async function packZipFiles(page: CreatorPage, read: RegistryReader, opti
 	const manifest = own.pop()!;
 	return [
 		...own,
+		...(options.images?.local ?? []).map((image) => ({ path: image.path, bytes: image.bytes })),
 		{ path: CLI_CONFIG, content: registry[CLI_CONFIG]! },
 		{ path: CLI_LOCK, content: lockFor(registry[CLI_LOCK]!, registryLockItemsOf(valid, skin)) },
 		...registryPaths.map((path) => ({ path, content: registry[path]! })),

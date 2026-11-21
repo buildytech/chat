@@ -44,6 +44,8 @@
 		"workspace.version": "Version",
 		"workspace.versionSoon": "Version history will arrive later",
 		"workspace.downloadZip": "Download ZIP",
+		"workspace.zipImagesRemote": "{count} picture(s) stayed remote: see manifest.json",
+		"workspace.zipPreparing": "Preparing ZIP…",
 		"preview.runtime": "Svelte preview of this Page. It renders the sections in the browser. It is not a compiled site.",
 		"preview.noScreen": "none attached",
 		"preview.registryRenderer": "UI8Kit organism",

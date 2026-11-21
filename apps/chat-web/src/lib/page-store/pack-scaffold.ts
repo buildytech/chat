@@ -2,6 +2,7 @@ import type { RegistrySkin } from "@buildytech/builder-core";
 import { renderStyleText, type CustomSkinRender } from "../theme/custom-skin.ts";
 import { INSTALL_ROOT } from "./svelte-code.ts";
 import type { PackFile } from "./pack.ts";
+import { IMAGES_DIR, type LocalImages } from "./pack-images.ts";
 
 /**
  * npm packages of the exported project, pinned to the exact versions the chat builds with (a unit test compares them
@@ -23,7 +24,14 @@ export const CUSTOM_SKIN_CSS = `${INSTALL_ROOT}/custom-skin.css`;
 const attr = (value: string): string => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
 /** The README of the exported project: how to run it, what each folder is, the skin and Custom Skin notes. */
-function readmeText(safeTitle: string, skin: RegistrySkin | null, custom: CustomSkinRender | null): string {
+function picturesNote(images: LocalImages | null): string {
+	if (!images || (!images.local.length && !images.remote.length)) return "";
+	const local = images.local.length ? `- Pictures: \`${IMAGES_DIR}/\` holds the ${images.local.length} picture(s) of the page, downloaded with the export; each section imports its files, so Vite fingerprints them into \`dist/assets/\` and resolves them under any \`base\`. Replace a file in place to change a picture.\n` : "";
+	const remote = images.remote.length ? `- ${images.remote.length} picture(s) could not be downloaded and still load from their remote address (\`manifest.json\` \`images.remote\` lists them and why).\n` : "";
+	return local + remote;
+}
+
+function readmeText(safeTitle: string, skin: RegistrySkin | null, custom: CustomSkinRender | null, images: LocalImages | null): string {
 	return `# ${safeTitle}
 
 Svelte 5 + Vite + Tailwind CSS 4 page exported from BuildY.
@@ -39,10 +47,10 @@ npm i && npm run dev
   \`ui8kit.config.json\` / \`ui8kit.lock.json\` are exactly what \`npx ui8kit init\` + \`npx ui8kit add\` write for
   the items in \`GENERATOR.json\` (\`registryItems\`). Check them with \`npx ui8kit check\`; do not edit them.
 - Dark theme: \`class="dark"\` or \`data-theme="dark"\` on \`<html>\`.
-${skin ? `- Skin: ${skin.title} (\`npx ui8kit add ${skin.item}\`): \`${skin.file}\` is imported in \`${INSTALL_ROOT}/main.ts\` and \`<html data-skin="${skin.id}">\` turns it on. Remove both lines for the default theme.\n` : ""}${custom ? `- Custom Skin: \`${THEME_FILE}\` is the theme as the Stock theme editor exports it (format magazine-theme, version 2; import it again in BuildY Settings or in Stock). \`index.html\` carries what it sets on \`<html>\`: ${skin ? "the base skin above, " : ""}the density attributes, the inline variables (radius, fonts, per-element tokens, palette, type scale), its ${custom.mode} mode and the Google Fonts links.\n` : ""}`;
+${skin ? `- Skin: ${skin.title} (\`npx ui8kit add ${skin.item}\`): \`${skin.file}\` is imported in \`${INSTALL_ROOT}/main.ts\` and \`<html data-skin="${skin.id}">\` turns it on. Remove both lines for the default theme.\n` : ""}${custom ? `- Custom Skin: \`${THEME_FILE}\` is the theme as the Stock theme editor exports it (format magazine-theme, version 2; import it again in BuildY Settings or in Stock). \`index.html\` carries what it sets on \`<html>\`: ${skin ? "the base skin above, " : ""}the density attributes, the inline variables (radius, fonts, per-element tokens, palette, type scale), its ${custom.mode} mode and the Google Fonts links.\n` : ""}${picturesNote(images)}`;
 }
 
-export function scaffold(slug: string, title: string, skin: RegistrySkin | null, custom: CustomSkinRender | null = null): PackFile[] {
+export function scaffold(slug: string, title: string, skin: RegistrySkin | null, custom: CustomSkinRender | null = null, images: LocalImages | null = null): PackFile[] {
 	// A skin is on with its CSS after the styles entry and data-skin on <html> (what `npx ui8kit add theme-<skin>` prints).
 	// A Custom Skin adds what Stock puts on its root: density attributes, the inline variables, its fixed mode, fonts.
 	const htmlAttrs = custom
@@ -122,6 +130,6 @@ export default defineConfig({
 `
 		},
 		{ path: "package.json", content: `${JSON.stringify(pkg, null, 2)}\n` },
-		{ path: "README.md", content: readmeText(safeTitle, skin, custom) }
+		{ path: "README.md", content: readmeText(safeTitle, skin, custom, images) }
 	];
 }

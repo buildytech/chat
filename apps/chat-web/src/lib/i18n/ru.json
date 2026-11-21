@@ -44,6 +44,8 @@
 		"workspace.version": "Версия",
 		"workspace.versionSoon": "История версий появится позже",
 		"workspace.downloadZip": "Скачать ZIP",
+		"workspace.zipImagesRemote": "Не скачано картинок: {count}, они остались по ссылкам (manifest.json)",
+		"workspace.zipPreparing": "Готовим ZIP…",
 		"preview.runtime": "Превью страницы на Svelte. Секции рисуются в браузере. Это не собранный сайт.",
 		"preview.noScreen": "экран не прикреплён",
 		"preview.registryRenderer": "Организм UI8Kit",

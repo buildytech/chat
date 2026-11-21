@@ -54,3 +54,32 @@ export async function generateCandidates(prompt: string, aspect: MediaAspect, n:
 	}
 	return { ok: false, code: "media_timeout", message: "The pictures were not ready in time. Try again." };
 }
+
+/** Image hosts the runtime proxies for the ZIP export (apps/xai-runtime/src/media-asset.ts keeps the same list). */
+const PROXIED_HOSTS = new Set(["imgen.x.ai", "files-cdn.x.ai"]);
+
+function proxiedHost(url: string): boolean {
+	try {
+		const parsed = new URL(url);
+		return parsed.protocol === "https:" && PROXIED_HOSTS.has(parsed.hostname);
+	} catch {
+		return false;
+	}
+}
+
+/** The ZIP export's reader for xAI pictures (no CORS there): the bytes through the runtime, or null. ADR 0061. */
+async function fetchViaRuntime(url: string): Promise<{ bytes: Uint8Array; type: string } | null> {
+	const res = await fetch("/runtime/v1/media", {
+		method: "POST",
+		credentials: "same-origin",
+		cache: "no-store",
+		headers: { "content-type": "application/json", accept: "image/*" },
+		body: JSON.stringify({ action: "asset", url }),
+		signal: AbortSignal.timeout(30_000)
+	});
+	const type = res.headers.get("content-type") ?? "";
+	if (!res.ok || !type.startsWith("image/")) return null;
+	return { bytes: new Uint8Array(await res.arrayBuffer()), type };
+}
+
+export const runtimeImageSource = { handles: proxiedHost, fetch: fetchViaRuntime };

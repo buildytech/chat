@@ -1,9 +1,43 @@
 /**
  * Browser-only: ZIP download of the exported project. The registry files are read lazily from the pinned snapshot
- * (registry/svelte, raw text, bundled as separate chunks), so the main bundle does not carry them.
+ * (registry/svelte, raw text, bundled as separate chunks), so the main bundle does not carry them. Remote pictures are
+ * downloaded into the project (ADR 0061): straight from the browser when the host allows it (CORS), else through the
+ * sources a module offers (the chat proxies its own image hosts through its runtime).
  */
 import type { CreatorPage } from "./page.ts";
 import { buildStoreZip, packZipFiles, type PackOptions, type RegistryReader } from "./pack.ts";
+import { imageExtension, localizeImages, type ImageFetch, type LocalImages } from "./pack-images.ts";
+
+/** Largest picture the export keeps (bytes); a larger one stays remote. */
+const MAX_IMAGE_BYTES = 8_000_000;
+
+async function fetchDirect(url: string): Promise<{ bytes: Uint8Array; type: string } | null> {
+	try {
+		const res = await fetch(url, { mode: "cors", credentials: "omit", redirect: "follow", signal: AbortSignal.timeout(20_000) });
+		const type = res.headers.get("content-type") ?? "";
+		if (!res.ok || !imageExtension(type)) return null;
+		const bytes = new Uint8Array(await res.arrayBuffer());
+		return bytes.length > 0 && bytes.length <= MAX_IMAGE_BYTES ? { bytes, type } : null;
+	} catch {
+		return null;
+	}
+}
+
+/** A module's way to read pictures of hosts it knows (the chat's runtime proxy for its image hosts). */
+export type ImageSource = { handles: (url: string) => boolean; fetch: ImageFetch };
+
+/** The sources that know the host first (no doomed cross-origin attempt), then the browser directly. */
+function chain(sources: readonly ImageSource[]): ImageFetch {
+	return async (url) => {
+		for (const source of sources.filter((s) => s.handles(url))) {
+			const image = await source.fetch(url).catch(() => null);
+			if (image && image.bytes.length > 0 && image.bytes.length <= MAX_IMAGE_BYTES) return image;
+		}
+		const direct = await fetchDirect(url);
+		if (direct) return direct;
+		throw new Error("not reachable from the browser (CORS or network)");
+	};
+}
 
 const ROOT = "registry/svelte/";
 
@@ -23,9 +57,11 @@ const readSnapshot: RegistryReader = async (paths) => {
 	return out;
 };
 
-export async function downloadPageZip(page: CreatorPage, options: PackOptions = {}): Promise<void> {
-	if (typeof document === "undefined") return;
-	const bytes = buildStoreZip(await packZipFiles(page, readSnapshot, options));
+/** Builds and saves the ZIP; answers the pictures report (what stayed remote), or null outside a browser. */
+export async function downloadPageZip(page: CreatorPage, options: PackOptions = {}, imageSources: readonly ImageSource[] = []): Promise<LocalImages | null> {
+	if (typeof document === "undefined") return null;
+	const images = await localizeImages(page, chain(imageSources));
+	const bytes = buildStoreZip(await packZipFiles(page, readSnapshot, { ...options, images }));
 	const buffer = new ArrayBuffer(bytes.byteLength);
 	new Uint8Array(buffer).set(bytes);
 	const blob = new Blob([buffer], { type: "application/zip" });
@@ -37,4 +73,5 @@ export async function downloadPageZip(page: CreatorPage, options: PackOptions = 
 	anchor.click();
 	anchor.remove();
 	URL.revokeObjectURL(href);
+	return images;
 }

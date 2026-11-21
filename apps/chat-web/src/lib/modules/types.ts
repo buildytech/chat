@@ -69,6 +69,8 @@ export type BuilderModule = {
 	/** Settings the module keeps in a session file (`settings`). */
 	sessionSettings?: { read: () => Partial<SessionSettings>; apply: (settings: SessionSettings) => void };
 	fileKinds?: readonly ModuleFileKind[];
+	/** Reads pictures of hosts the module knows for the ZIP export when the browser cannot (CORS); ADR 0061. */
+	imageSource?: { handles: (url: string) => boolean; fetch: (url: string) => Promise<{ bytes: Uint8Array; type: string } | null> };
 	/** Run once when the module registers (browser only). */
 	install?: () => void;
 };

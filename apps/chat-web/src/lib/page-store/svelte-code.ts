@@ -5,6 +5,7 @@
  */
 import { itemInfo, registryClosure, registryItemClosure, registrySkin, renderBlock, skinItem, type BlockRender } from "@buildytech/builder-core";
 import type { BlockV2, PageV2 } from "@buildytech/page-contract";
+import { IMAGES_DIR, propsWithImports, type LocalImages } from "./pack-images.ts";
 
 /** CLI install root of the exported project (ui8kit.config.json `dir`, the CLI default). */
 export const INSTALL_ROOT = "src";
@@ -33,8 +34,16 @@ function jsonProps(value: unknown): string {
  * Events and slots of the block come from its published props schema (`events`, `slots` next to `schema`): they are
  * not data, so the section wires each event to a handler stub the project fills in and names the slots it may pass.
  */
-function sectionForRegistry(render: BlockRender): string {
+function sectionForRegistry(render: BlockRender, images: LocalImages | null): string {
 	const ident = organismIdent(render.organism);
+	const local = propsWithImports(render.props, images);
+	let propsText = jsonProps(local.props);
+	const pictures = new Map<string, string>();
+	for (const [marker, file] of local.imports) {
+		propsText = propsText.split(JSON.stringify(marker)).join(file.name);
+		pictures.set(file.name, `\n\timport ${file.name} from "../${file.path.slice(INSTALL_ROOT.length + 1)}";`);
+	}
+	const pictureImports = [...pictures.values()].join("");
 	const handlers = render.events.map((event) => `on${event}`);
 	const wiring = handlers.length
 		? `\n\n\t// Events of ${render.item} (registry props schema): connect them to the app.\n${handlers
@@ -44,9 +53,9 @@ function sectionForRegistry(render: BlockRender): string {
 	const slots = render.slots.length ? `\n<!-- Slots of ${render.item}: ${render.slots.join(", ")} (Svelte snippets, optional). -->` : "";
 	return `<!-- ${render.item} / ${render.variant}: UI8Kit registry block (npx ui8kit add ${render.item}). -->
 <script lang="ts">
-	import ${ident} from "../${render.organism}";
+	import ${ident} from "../${render.organism}";${pictureImports ? `\n\t// Pictures downloaded with the export (${IMAGES_DIR}); Vite fingerprints them and resolves them under its base.${pictureImports}` : ""}
 
-	const props = ${jsonProps(render.props)};${wiring}
+	const props = ${propsText};${wiring}
 </script>
 ${slots}
 <${ident} {...props}${handlers.map((name) => ` {${name}}`).join("")} />
@@ -54,10 +63,10 @@ ${slots}
 }
 
 /** Section source of one page block (the gate guarantees its item renders; an unknown item is a programming error). */
-export function svelteForBlock(block: BlockV2): string {
+export function svelteForBlock(block: BlockV2, images: LocalImages | null = null): string {
 	const render = renderBlock(block);
 	if (!render) throw new Error(`page block ${block.id}: ${block.item} is not a registry item`);
-	return sectionForRegistry(render);
+	return sectionForRegistry(render, images);
 }
 
 export function svelteFromPage(page: PageV2): string {
@@ -74,10 +83,10 @@ ${tags}
 }
 
 /** App.svelte and one section per top-level block (children are the props of their block). */
-export function sveltePackFiles(page: PageV2): SourceFile[] {
+export function sveltePackFiles(page: PageV2, images: LocalImages | null = null): SourceFile[] {
 	return [
 		{ path: APP_FILE, content: svelteFromPage(page) },
-		...page.blocks.map((block) => ({ path: `${SECTIONS_DIR}/${block.id}.svelte`, content: svelteForBlock(block) }))
+		...page.blocks.map((block) => ({ path: `${SECTIONS_DIR}/${block.id}.svelte`, content: svelteForBlock(block, images) }))
 	];
 }
 
