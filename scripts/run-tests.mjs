@@ -5,7 +5,7 @@
  * script runs its group (`npm test -w @buildytech/builder-core`). Fails when a test file is in no group or in two.
  */
 import { spawnSync } from "node:child_process";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -32,6 +32,14 @@ const files = names.flatMap((name) => {
 	}
 	return group.map((file) => `${manifest.dir}/${file}`);
 });
+
+// The compiled registry blocks (api/runtime/_render/blocks.mjs, gitignored) are built once here, before the test files
+// start in parallel: a test that finds it missing builds it itself, and two such builds at once empty the folder under
+// each other's import (ERR_MODULE_NOT_FOUND on a fresh checkout, as in CI).
+if (!existsSync(join(root, "api/runtime/_render/blocks.mjs"))) {
+	const bundle = spawnSync(process.execPath, [join(root, "scripts/build-render-bundle.mjs")], { cwd: root, stdio: "inherit" });
+	if (bundle.status !== 0) process.exit(bundle.status ?? 1);
+}
 
 const run = spawnSync(
 	process.execPath,
