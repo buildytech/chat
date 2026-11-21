@@ -69,6 +69,7 @@
         >
           <ShapeMedia
             aspect={(((layout as string) === "paired") ? "aspect-video" : "aspect-4/3")}
+            class={(((layout as string) === "paired") ? "order-last" : "sm:w-1/3")}
             place="items.image"
             field="/items/0/image"
           />
@@ -88,6 +89,7 @@
         >
           <ShapeMedia
             aspect={(((layout as string) === "paired") ? "aspect-video" : "aspect-4/3")}
+            class={(((layout as string) === "paired") ? "order-last" : "sm:w-1/3")}
             place="items.image"
             field="/items/1/image"
           />
@@ -107,6 +109,7 @@
         >
           <ShapeMedia
             aspect={(((layout as string) === "paired") ? "aspect-video" : "aspect-4/3")}
+            class={(((layout as string) === "paired") ? "order-last" : "sm:w-1/3")}
             place="items.image"
             field="/items/2/image"
           />

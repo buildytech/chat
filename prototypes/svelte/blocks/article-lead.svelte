@@ -64,6 +64,11 @@
       </Box>
       <ShapeMedia
         aspect={(((media as string) === "top") ? "aspect-21/9" : "aspect-4/3")}
+        class={
+          (media as string) === "start" ? "order-first"
+          : (media as string) === "top" ? "order-first"
+          : ""
+        }
         place="media"
         field="/image /imageAlt"
       />

@@ -81,7 +81,12 @@
           : "w-full"
         }
       >
-        <ShapeMedia aspect="aspect-square" place="media" field="/image /imageAlt" />
+        <ShapeMedia
+          aspect="aspect-square"
+          class={(((media as string) === "top") ? "mx-auto" : "mx-auto max-w-sm")}
+          place="media"
+          field="/image /imageAlt"
+        />
       </Box>
     </Box>
   </Box>

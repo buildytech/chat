@@ -100,7 +100,12 @@
           </Box>
         </Box>
       </Box>
-      <ShapeMedia aspect="aspect-square" place="media" field="/image /imageAlt" />
+      <ShapeMedia
+        aspect="aspect-square"
+        class={(((media as string) === "start") ? "md:order-first" : "")}
+        place="media"
+        field="/image /imageAlt"
+      />
     </Box>
   </Box>
 </Box>
