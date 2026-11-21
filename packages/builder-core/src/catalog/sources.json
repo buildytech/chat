@@ -3,16 +3,16 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:8a2d6236201c8eee275a0d16a2eed7a519ea80b9f90ecdc858935f55c9d0f99a",
+	"lockDigest": "sha256:74db5b1826bd9c7c3097216893c97e3f5b960e0de561dbafad90d3fbfabf9973",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "a2caa4d699a1cd25cd3d109803b8c38663e102efacb1ed77ba744127567d0d49",
-		"digest": "sha256:ded7096648297e4deb79683289b4bb2f1c5e4a7f68283337961abbc38afe027b"
+		"sha256": "fa24c8b72432b9ddbba07b5c4f8f18b9d38e1e3c4f370d5f94dfaddbe8de0d41",
+		"digest": "sha256:6404facd90203894d83aeb118a20add2751e93533fe9414833d88586d338ab4c"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "b3beca3f924d5911be22fbf6147ee8987aa7231b959d2ba4cd10fc8885912c5c",
-		"digest": "sha256:3920d4cfc5ca1efd310fe549faa5e2d770d43f48b41c216a1fb20f94c465948a"
+		"sha256": "e923b3bc352c707b3613be83d4c776e489a1b2eb9be53d28f6de672b28ae0d79",
+		"digest": "sha256:66b0720a9228528de20b4a5607fb4cbb81b0d2a198563f6d26f6cf758b6ae5b6"
 	},
 	"initItems": [
 		"presets",
@@ -269,6 +269,39 @@
 			"files": [
 				"src/compose/CardTitle.svelte"
 			]
+		},
+		"cases-simple": {
+			"type": "registry:block",
+			"title": "Cases Simple",
+			"description": "The heading, one paragraph and the case studies (a picture, the client, the title as a link, the result in one line): on cards in three or two columns, or rows with the picture at the start.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/cases-simple.svelte",
+				"src/blocks/cases-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/cases-simple/1.json",
+				"group": "proof",
+				"kind": "block",
+				"model": "cases@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"chapters-simple": {
 			"type": "registry:block",
@@ -3037,6 +3070,37 @@
 				"src/styles/skins/violet-bloom.css"
 			]
 		},
+		"timeline-simple": {
+			"type": "registry:block",
+			"title": "Timeline Simple",
+			"description": "The heading, one paragraph and the steps of a process or a history (the date or the stage, a title, a line) as an ordered list: one column of muted steps, or side by side in two or four columns.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/timeline-simple.svelte",
+				"src/blocks/timeline-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/timeline-simple/1.json",
+				"group": "how-it-works",
+				"kind": "block",
+				"model": "timeline@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"title": {
 			"type": "registry:ui",
 			"title": "Title",
@@ -3245,6 +3309,27 @@
 				"twoColumns": {
 					"layout": "columns",
 					"align": "center"
+				}
+			}
+		},
+		"cases-simple": {
+			"spec": "block.casessimple",
+			"organism": "blocks/cases-simple.svelte",
+			"organismName": "CasesSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"cards2": {
+					"layout": "cards",
+					"cols": "2"
+				},
+				"rows": {
+					"layout": "rows",
+					"cols": "3",
+					"align": "start"
 				}
 			}
 		},
@@ -4135,6 +4220,27 @@
 				}
 			}
 		},
+		"timeline-simple": {
+			"spec": "block.timelinesimple",
+			"organism": "blocks/timeline-simple.svelte",
+			"organismName": "TimelineSimple",
+			"defaultVariant": "column",
+			"variants": {
+				"column": {
+					"layout": "column",
+					"cols": "2"
+				},
+				"grid2": {
+					"layout": "grid",
+					"cols": "2"
+				},
+				"grid4": {
+					"layout": "grid",
+					"cols": "4",
+					"align": "center"
+				}
+			}
+		},
 		"topics-simple": {
 			"spec": "block.topicssimple",
 			"organism": "blocks/topics-simple.svelte",
@@ -4176,6 +4282,18 @@
 		"block.articlesimple/twoColumns": {
 			"item": "article-simple",
 			"variant": "twoColumns"
+		},
+		"block.casessimple/cards3": {
+			"item": "cases-simple",
+			"variant": "cards3"
+		},
+		"block.casessimple/cards2": {
+			"item": "cases-simple",
+			"variant": "cards2"
+		},
+		"block.casessimple/rows": {
+			"item": "cases-simple",
+			"variant": "rows"
 		},
 		"block.chapterssimple/illustratedRows": {
 			"item": "chapters-simple",
@@ -4721,6 +4839,18 @@
 			"item": "testimonials-simple",
 			"variant": "centered"
 		},
+		"block.timelinesimple/column": {
+			"item": "timeline-simple",
+			"variant": "column"
+		},
+		"block.timelinesimple/grid2": {
+			"item": "timeline-simple",
+			"variant": "grid2"
+		},
+		"block.timelinesimple/grid4": {
+			"item": "timeline-simple",
+			"variant": "grid4"
+		},
 		"block.topicssimple/cards3": {
 			"item": "topics-simple",
 			"variant": "cards3"
@@ -4742,6 +4872,10 @@
 		"block.articlesimple": {
 			"item": "article-simple",
 			"variant": "column"
+		},
+		"block.casessimple": {
+			"item": "cases-simple",
+			"variant": "cards3"
 		},
 		"block.chapterssimple": {
 			"item": "chapters-simple",
@@ -4918,6 +5052,10 @@
 		"block.testimonialssimple": {
 			"item": "testimonials-simple",
 			"variant": "cols3"
+		},
+		"block.timelinesimple": {
+			"item": "timeline-simple",
+			"variant": "column"
 		},
 		"block.topicssimple": {
 			"item": "topics-simple",

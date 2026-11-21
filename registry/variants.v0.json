@@ -1,6 +1,6 @@
 {
 	"version": "0",
-	"digest": "sha256:ded7096648297e4deb79683289b4bb2f1c5e4a7f68283337961abbc38afe027b",
+	"digest": "sha256:6404facd90203894d83aeb118a20add2751e93533fe9414833d88586d338ab4c",
 	"registry": "https://registry.buildy.tw",
 	"items": {
 		"article-lead": {
@@ -77,6 +77,57 @@
 					"props": {
 						"layout": "columns",
 						"align": "center"
+					}
+				}
+			}
+		},
+		"cases-simple": {
+			"block": "casessimple",
+			"spec": "block.casessimple",
+			"organism": "CasesSimple",
+			"axes": {
+				"layout": [
+					"cards",
+					"rows"
+				],
+				"cols": [
+					"3",
+					"2"
+				]
+			},
+			"defaults": {
+				"layout": "cards",
+				"cols": "3"
+			},
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"asset": "block.casessimple/cards3",
+					"set": {},
+					"props": {
+						"layout": "cards",
+						"cols": "3"
+					}
+				},
+				"cards2": {
+					"asset": "block.casessimple/cards2",
+					"set": {
+						"cols": "2"
+					},
+					"props": {
+						"layout": "cards",
+						"cols": "2"
+					}
+				},
+				"rows": {
+					"asset": "block.casessimple/rows",
+					"set": {
+						"layout": "rows"
+					},
+					"props": {
+						"layout": "rows",
+						"cols": "3",
+						"align": "start"
 					}
 				}
 			}
@@ -2200,6 +2251,58 @@
 					"props": {
 						"layout": "centered",
 						"cols": "3"
+					}
+				}
+			}
+		},
+		"timeline-simple": {
+			"block": "timelinesimple",
+			"spec": "block.timelinesimple",
+			"organism": "TimelineSimple",
+			"axes": {
+				"layout": [
+					"column",
+					"grid"
+				],
+				"cols": [
+					"2",
+					"4"
+				]
+			},
+			"defaults": {
+				"layout": "column",
+				"cols": "2"
+			},
+			"defaultVariant": "column",
+			"variants": {
+				"column": {
+					"asset": "block.timelinesimple/column",
+					"set": {},
+					"props": {
+						"layout": "column",
+						"cols": "2"
+					}
+				},
+				"grid2": {
+					"asset": "block.timelinesimple/grid2",
+					"set": {
+						"layout": "grid"
+					},
+					"props": {
+						"layout": "grid",
+						"cols": "2"
+					}
+				},
+				"grid4": {
+					"asset": "block.timelinesimple/grid4",
+					"set": {
+						"layout": "grid",
+						"cols": "4"
+					},
+					"props": {
+						"layout": "grid",
+						"cols": "4",
+						"align": "center"
 					}
 				}
 			}

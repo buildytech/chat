@@ -5,19 +5,19 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "3e6bc644c94c6d2fa7052151122a627adf35f49fe1714ffab4b4fad30b23e559",
-		"lastUpdated": "2026-11-21T02:56:01+03:00",
+		"sha256": "a4edc678d173b6d7d1ca30de1329595de59247d0d632934b0a831ddf5f3b7be6",
+		"lastUpdated": "2026-11-21T03:02:41+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "a2caa4d699a1cd25cd3d109803b8c38663e102efacb1ed77ba744127567d0d49",
-		"digest": "sha256:ded7096648297e4deb79683289b4bb2f1c5e4a7f68283337961abbc38afe027b"
+		"sha256": "fa24c8b72432b9ddbba07b5c4f8f18b9d38e1e3c4f370d5f94dfaddbe8de0d41",
+		"digest": "sha256:6404facd90203894d83aeb118a20add2751e93533fe9414833d88586d338ab4c"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "b3beca3f924d5911be22fbf6147ee8987aa7231b959d2ba4cd10fc8885912c5c",
-		"digest": "sha256:3920d4cfc5ca1efd310fe549faa5e2d770d43f48b41c216a1fb20f94c465948a"
+		"sha256": "e923b3bc352c707b3613be83d4c776e489a1b2eb9be53d28f6de672b28ae0d79",
+		"digest": "sha256:66b0720a9228528de20b4a5607fb4cbb81b0d2a198563f6d26f6cf758b6ae5b6"
 	},
 	"manifest": {
 		"url": "https://registry.buildy.tw/manifest.json",
@@ -26,10 +26,10 @@
 	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "f82cefdabd946dd13d631016881b89e1a27500ee",
+		"commit": "4f3d059851db449788210ced05101eeae85ed60f",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "6f3654b056c232a035a19f569e3b102fa0245bd41bb8b68c18f67337c294ebe1"
+			"sha256": "da15fa85bb1f8117787810a9402ab2ea865b5a613f1a8844435c303de1097358"
 		}
 	},
 	"blocks": [
@@ -79,7 +79,9 @@
 		"hours-simple",
 		"rooms-simple",
 		"guarantees-simple",
-		"services-simple"
+		"services-simple",
+		"cases-simple",
+		"timeline-simple"
 	],
 	"contracts": {
 		"hero-simple": {
@@ -269,6 +271,14 @@
 		"services-simple": {
 			"contract": "registry/contracts/services-simple/1.json",
 			"model": "registry/models/services@1.schema.json"
+		},
+		"cases-simple": {
+			"contract": "registry/contracts/cases-simple/1.json",
+			"model": "registry/models/cases@1.schema.json"
+		},
+		"timeline-simple": {
+			"contract": "registry/contracts/timeline-simple/1.json",
+			"model": "registry/models/timeline@1.schema.json"
 		}
 	},
 	"initItems": [
@@ -526,6 +536,39 @@
 			"files": [
 				"src/compose/CardTitle.svelte"
 			]
+		},
+		"cases-simple": {
+			"type": "registry:block",
+			"title": "Cases Simple",
+			"description": "The heading, one paragraph and the case studies (a picture, the client, the title as a link, the result in one line): on cards in three or two columns, or rows with the picture at the start.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"media-frame",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/cases-simple.svelte",
+				"src/blocks/cases-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/cases-simple/1.json",
+				"group": "proof",
+				"kind": "block",
+				"model": "cases@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"chapters-simple": {
 			"type": "registry:block",
@@ -3294,6 +3337,37 @@
 				"src/styles/skins/violet-bloom.css"
 			]
 		},
+		"timeline-simple": {
+			"type": "registry:block",
+			"title": "Timeline Simple",
+			"description": "The heading, one paragraph and the steps of a process or a history (the date or the stage, a title, a line) as an ordered list: one column of muted steps, or side by side in two or four columns.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/timeline-simple.svelte",
+				"src/blocks/timeline-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/timeline-simple/1.json",
+				"group": "how-it-works",
+				"kind": "block",
+				"model": "timeline@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"title": {
 			"type": "registry:ui",
 			"title": "Title",
@@ -3383,6 +3457,7 @@
 	"files": {
 		"prototypes/svelte/blocks/article-lead.svelte": "85fbac037c9ad5ad289f29379e8a6ccf423d487289eab51492ca4bd804ea13a9",
 		"prototypes/svelte/blocks/article-simple.svelte": "081b0a3a8e057e39c848c488e7baf1a50ed282340e28ebb6747a94f5a81cfa95",
+		"prototypes/svelte/blocks/cases-simple.svelte": "c88cc2a2b714d99c9afc541a1901426515a2629e10c54430a417e1ab2b85c138",
 		"prototypes/svelte/blocks/chapters-simple.svelte": "fd50c7e9c1eed63f30991ee0f4f4d12c53c3b29fb4c2c78b15a806072de3ea0b",
 		"prototypes/svelte/blocks/choice-links.svelte": "89407c9ef17f12d33166e876399f9dc2d6d2ff2e192d9bdf4dd834c9c0aab09a",
 		"prototypes/svelte/blocks/collections-simple.svelte": "4c1b869077d02bbe7efa77f5c31b26a828a62eaa2a1a6bcb5603846fa925c783",
@@ -3427,6 +3502,7 @@
 		"prototypes/svelte/blocks/stories-simple.svelte": "09fb883e89eb6f747093b6827108375803392e045669b32ee81ba5e08b8a6e8c",
 		"prototypes/svelte/blocks/team-simple.svelte": "2f220b154e02ed246cfc0a3510ec51cfd6135c9c1f2ab928b3d65399d6f917c9",
 		"prototypes/svelte/blocks/testimonials-simple.svelte": "55e4d80cf6835d526bf7a6a30f28d4f3fe03ded65644aac2e01d82b53d25f6f3",
+		"prototypes/svelte/blocks/timeline-simple.svelte": "1b2132c671314a6f1286dd97d87633e04a17cc9bf5391f3b71df1304a327a571",
 		"prototypes/svelte/blocks/topics-simple.svelte": "791965527a3fa8332bfa7b32c77557e53df8b705413363166c771dd8b787352e",
 		"prototypes/svelte/shapes/shape-avatar.svelte": "0cee517413dc4cefdee7d1d31e82033cf3342fdb47a0fd4a6dc58deb53cae3bb",
 		"prototypes/svelte/shapes/shape-badge.svelte": "a4cc87358624d1a2eea97135525f9c073efaaa5f3f67cec75920523ce1eb517a",
@@ -3437,6 +3513,7 @@
 		"prototypes/tokens.css": "0ebedbe6e20048c59da529e8654fc7efe06a9ebc436a54f29b1d4a72cf750780",
 		"registry/contracts/article-lead/1.json": "8b293a8e7cec0f45fe744e31c5183fea0047725854cbdb7f1c8e38dee4456c9b",
 		"registry/contracts/article-simple/1.json": "70aa68c9337171d17c036cd4664dec4145f900c9119a7a7721995a09d4fe581a",
+		"registry/contracts/cases-simple/1.json": "9031d3c041b98dbb9f7cd72807b5ce6efb9697750703b245b35504a3e6d08912",
 		"registry/contracts/chapters-simple/1.json": "60553aa6ca6eb5105d5f49aaeae9cbe2727ccfae384a9d14b38af21d556ba282",
 		"registry/contracts/choice-links/1.json": "b6b5faea3d6d703860983a8ae8170c5821f0c2813ade955efc4541a1b7d27e15",
 		"registry/contracts/collections-simple/1.json": "27cff23f85f0d090be605c1a08856fe71ad7446b4d64e32f2c61d5725d582543",
@@ -3481,9 +3558,11 @@
 		"registry/contracts/stories-simple/1.json": "900b8198869040e7fa2f1a8358cffd2e8c1caeafb4dc1373f2b221e06bf413c2",
 		"registry/contracts/team-simple/1.json": "ef54b5212cdea45399540b146b13b9d4829c63e01083ce980acc74f8bf0415ed",
 		"registry/contracts/testimonials-simple/1.json": "e8bb4ab2a54963fa56dc96a13f79e1dc3b8327020cb0fc1c21fa5f07d9dae38b",
+		"registry/contracts/timeline-simple/1.json": "990c60012326a52ca013e677344ba3edb60f7b0acf6ad09bf4a9bc27ce9251ed",
 		"registry/contracts/topics-simple/1.json": "33879d4d7bd937e453a35ad094e18c0762cc4ba10026dedad144f0932013bd5d",
 		"registry/models/article-lead@1.schema.json": "eae6233434a9bd8330b253110fc4731ab270c38a7e165c00bd0f111384ee3db6",
 		"registry/models/article@1.schema.json": "7c6e6ac7fff67a42cb47d4487af5245cb72fd9ba179cf5cd0a4dc7504408c48e",
+		"registry/models/cases@1.schema.json": "3de8d6233fde5c74b5242bbe415e25339c1b7c15f20ffefa329cc12bb86efaf9",
 		"registry/models/chapters@1.schema.json": "edde4300654538c9cceb7e039bb354f34b57c32d9a2914b37e4bd0e45e446611",
 		"registry/models/choices@1.schema.json": "e36ae84277e771cdc1677e6509c23578f42797b8f2158a730f5027e07eb810ea",
 		"registry/models/collections@1.schema.json": "158a1b4a0a52167caa342907ce49169557fa27c7eefad07d8ced8b0569219a2e",
@@ -3528,8 +3607,9 @@
 		"registry/models/stories@1.schema.json": "ef5881bfa8a7f74aac78fc57497f1237c1228c5c0066604b340392fee6c52bbb",
 		"registry/models/team@1.schema.json": "ac003fe0b80251f4fefe73e39572cd63f3eb58b35c5fdbd337d03e232fcf797c",
 		"registry/models/testimonials@1.schema.json": "e3c1b75c4dd7111f41f7a7bb52c7e297617d8805f51b4cae6b06ca40272003b1",
+		"registry/models/timeline@1.schema.json": "3a02a147eb16f2b01ed3aa3ffb41e6fbc274242d6f73bc5f049a1ab39d9b5f72",
 		"registry/models/topics@1.schema.json": "7e85157dcbbeec16b931dcb9dceb9a4ac6a730e74ca632aba69153ac3229ef53",
-		"registry/props.v0.json": "de9eca3b2767d930d7310c4b39ebb961366551a67b72f5a49d6a78e7de43797c",
-		"registry/variants.v0.json": "597d62741855d7d839fcb523540c7442ef5525b1fb22f55700c65e0666741002"
+		"registry/props.v0.json": "3764192269b81932e466c6c733b083e4a05238405c7d77ccb5be52d433832900",
+		"registry/variants.v0.json": "a4cf4c55910d22a599f429c31806240a89b886e75080e27577ae88573e1fa483"
 	}
 }

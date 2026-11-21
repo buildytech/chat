@@ -153,6 +153,17 @@
         "src/compose/CardTitle.svelte": "3d3f94fffe728ebf849661c0dbd61da5ae9b920bebb2e03fc4d84f34b3358e60"
       }
     },
+    "registry.buildy.tw|svelte|cases-simple": {
+      "name": "cases-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/cases-simple.svelte": "8131c36202ab583cde6235eeaae67c2575272984682cb0d6a0e6cd46b1c57c39",
+        "src/blocks/cases-simple.types.ts": "5bb9b37d9909aa2b3f718b74dc79fa1c077563a2fc540ac8c64340699e568a23"
+      }
+    },
     "registry.buildy.tw|svelte|chapters-simple": {
       "name": "chapters-simple",
       "type": "registry:block",
@@ -1603,6 +1614,17 @@
       "runtime": "svelte",
       "files": {
         "src/styles/skins/violet-bloom.css": "e5e3758f99ba249544312abbcd7d57b0314df35d11c98b8e7bd8d273c2047ea0"
+      }
+    },
+    "registry.buildy.tw|svelte|timeline-simple": {
+      "name": "timeline-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/timeline-simple.svelte": "6195495df05574c9836ac50b9af7f817fd2884b9eaf2ca3fe490dfaf9a4d5581",
+        "src/blocks/timeline-simple.types.ts": "e8e8b365416f0514f3de2602b5091c1887f56b1e53335fc59e100f43571779b2"
       }
     },
     "registry.buildy.tw|svelte|title": {

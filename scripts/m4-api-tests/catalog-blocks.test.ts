@@ -21,7 +21,7 @@ test("the catalog is exactly the configured blocks, in config order, with contra
 		// wave 2
 		"feature-showcase-simple", "header-simple", "footer-simple", "event-intro", "profile-intro", "rating-simple", "error-simple", "figure-simple", "pull-quote-simple", "article-simple", "article-lead", "topics-simple", "chapters-simple", "pricing-simple", "contacts-simple", "locations-simple", "offers-simple", "products-simple", "product-simple", "collections-simple", "specs-simple", "compare-simple", "course-outline", "choice-links", "purchase-simple", "store-policies", "product-reviews",
 		// wave 3
-		"menu-simple", "cta-simple", "promo-simple", "hours-simple", "rooms-simple", "guarantees-simple", "services-simple",
+		"menu-simple", "cta-simple", "promo-simple", "hours-simple", "rooms-simple", "guarantees-simple", "services-simple", "cases-simple", "timeline-simple",
 	]);
 	assert.deepEqual(catalogBlocks().map((block) => block.item), config.ui8kit.blocks);
 	for (const block of catalogBlocks()) {
@@ -79,11 +79,12 @@ test("feed cards: one per block variant, free text and category filters, counts 
 		...ids("menu-simple", ["cards3", "cards2", "cards4", "rows"]), ...ids("cta-simple", ["center", "start", "between", "centerOutline", "betweenOutline"]), ...ids("promo-simple", ["mediaEnd", "mediaStart", "mediaTop"]),
 		...ids("hours-simple", ["columns", "columnsCard", "stack", "stackCard"]), ...ids("rooms-simple", ["cards3", "cards2", "rows"]),
 		...ids("guarantees-simple", ["strip4", "strip3", "cards4", "cards3"]), ...ids("services-simple", ["cards3", "cards2", "rows"]),
+		...ids("cases-simple", ["cards3", "cards2", "rows"]), ...ids("timeline-simple", ["column", "grid2", "grid4"]),
 	]);
 	// the category of a card is the registry meta.group of its block (the codegen-x stock groups)
 	assert.deepEqual(all.categories, [
-		{ value: "hero", count: 21 }, { value: "split", count: 2 }, { value: "features", count: 17 }, { value: "proof", count: 12 },
-		{ value: "company", count: 10 }, { value: "blog", count: 6 }, { value: "faq", count: 2 }, { value: "how-it-works", count: 5 },
+		{ value: "hero", count: 21 }, { value: "split", count: 2 }, { value: "features", count: 17 }, { value: "proof", count: 15 },
+		{ value: "company", count: 10 }, { value: "blog", count: 6 }, { value: "faq", count: 2 }, { value: "how-it-works", count: 8 },
 		{ value: "navigation", count: 6 }, { value: "states", count: 2 }, { value: "story", count: 12 }, { value: "pricing", count: 3 },
 		{ value: "contact", count: 9 }, { value: "cta", count: 10 }, { value: "catalog", count: 8 }, { value: "product", count: 13 },
 		{ value: "storefront", count: 2 }, { value: "food", count: 4 },
@@ -99,6 +100,7 @@ test("feed cards: one per block variant, free text and category filters, counts 
 		"menu-simple/cards3", "cta-simple/center", "promo-simple/mediaEnd",
 		"hours-simple/columns", "rooms-simple/cards3",
 		"guarantees-simple/strip4", "services-simple/cards3",
+		"cases-simple/cards3", "timeline-simple/column",
 	]);
 	assert.deepEqual(catalogSearch({ category: "company" }).items.map((card) => card.id), [...ids("team-simple", ["cols3", "cols2", "cols4", "cards3", "portraitRow", "bylineCols3", "sideList"]), ...ids("photos-simple", ["row4", "grid3", "diptych"])]);
 	assert.deepEqual(catalogSearch({ q: "cards" }).items.map((card) => card.id), [
@@ -107,6 +109,7 @@ test("feed cards: one per block variant, free text and category filters, counts 
 		"contacts-simple/cards2", "products-simple/cards3", "collections-simple/cards4", "collections-simple/cards2", "course-outline/cards", "store-policies/cols3",
 		"product-reviews/cards3", "menu-simple/cards3", "menu-simple/cards2", "menu-simple/cards4", "hours-simple/columnsCard", "hours-simple/stackCard",
 		"rooms-simple/cards3", "rooms-simple/cards2", "guarantees-simple/cards4", "guarantees-simple/cards3", "services-simple/cards3", "services-simple/cards2",
+		"cases-simple/cards3", "cases-simple/cards2",
 	]);
 	assert.deepEqual(catalogSearch({ q: "picture top" }).items.map((card) => card.id), ["hero-simple/mediaTop", "feature-showcase-simple/mediaTop", "product-simple/mediaTop", "promo-simple/mediaTop"]);
 	assert.deepEqual(catalogSearch({ q: "split" }).items.map((card) => card.id), ["split-simple/mediaEnd", "split-simple/mediaStart"]);

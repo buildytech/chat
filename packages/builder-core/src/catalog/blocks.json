@@ -4,13 +4,13 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "f82cefdabd946dd13d631016881b89e1a27500ee",
+		"commit": "4f3d059851db449788210ced05101eeae85ed60f",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "6f3654b056c232a035a19f569e3b102fa0245bd41bb8b68c18f67337c294ebe1"
+			"sha256": "da15fa85bb1f8117787810a9402ab2ea865b5a613f1a8844435c303de1097358"
 		}
 	},
-	"digest": "sha256:8f3b9cdcacb671119f5171b25aa7ebf4993d88e3f0cb861226c9a9ac551001a7",
+	"digest": "sha256:7bb1ee4be3349e0b349066dd71696f22f31746c8d305e9392992adb78b42f043",
 	"blocks": [
 		{
 			"item": "hero-simple",
@@ -8811,6 +8811,408 @@
 									"type": "string",
 									"maxLength": 2048,
 									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "cases-simple",
+			"title": "Cases Simple",
+			"description": "The heading, one paragraph and the case studies (a picture, the client, the title as a link, the result in one line): on cards in three or two columns, or rows with the picture at the start.",
+			"category": "proof",
+			"prototype": "cases-simple.svelte",
+			"contract": {
+				"item": "cases-simple",
+				"version": 1,
+				"block": "block.casessimple",
+				"organism": "CasesSimple",
+				"line": "simple",
+				"model": "cases@1",
+				"modelSchema": "https://registry.buildy.tw/models/cases@1.schema.json",
+				"axes": {
+					"layout": [
+						"cards",
+						"rows"
+					],
+					"cols": [
+						"3",
+						"2"
+					]
+				},
+				"defaults": {
+					"layout": "cards",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "cards3",
+						"label": "Three case cards",
+						"axes": {
+							"layout": "cards",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "cards2",
+						"label": "Two columns",
+						"axes": {
+							"layout": "cards",
+							"cols": "2"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "Rows, the picture at the start",
+						"axes": {
+							"layout": "rows",
+							"cols": "3"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "cards3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.image",
+						"kind": "media",
+						"fields": [
+							"/items/*/image"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.client",
+						"kind": "text",
+						"fields": [
+							"/items/*/client"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title",
+							"/items/*/href"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.result",
+						"kind": "text",
+						"fields": [
+							"/items/*/result"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/cases@1.schema.json",
+				"title": "CasesContent",
+				"description": "Case studies content: the heading, a description and an ordered list of cases, each with a picture, the client, the title, the result in one line and an optional address. One object is valid in every cases layout (cards in three or two columns, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the cases, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 6,
+						"items": {
+							"title": "CaseStudy",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"image": {
+									"description": "address of the case picture; none: the placeholder",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:https?:|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								},
+								"client": {
+									"description": "the client or the industry; empty: none",
+									"type": "string",
+									"maxLength": 60
+								},
+								"title": {
+									"description": "the title of the case (the alt text of the picture)",
+									"type": "string",
+									"maxLength": 100,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"result": {
+									"description": "the result in one line; empty: none",
+									"type": "string",
+									"maxLength": 200
+								},
+								"href": {
+									"description": "the address of the case page; empty: no link",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "timeline-simple",
+			"title": "Timeline Simple",
+			"description": "The heading, one paragraph and the steps of a process or a history (the date or the stage, a title, a line) as an ordered list: one column of muted steps, or side by side in two or four columns.",
+			"category": "how-it-works",
+			"prototype": "timeline-simple.svelte",
+			"contract": {
+				"item": "timeline-simple",
+				"version": 1,
+				"block": "block.timelinesimple",
+				"organism": "TimelineSimple",
+				"line": "simple",
+				"model": "timeline@1",
+				"modelSchema": "https://registry.buildy.tw/models/timeline@1.schema.json",
+				"axes": {
+					"layout": [
+						"column",
+						"grid"
+					],
+					"cols": [
+						"2",
+						"4"
+					]
+				},
+				"defaults": {
+					"layout": "column",
+					"cols": "2"
+				},
+				"variants": [
+					{
+						"id": "column",
+						"label": "One column",
+						"axes": {
+							"layout": "column",
+							"cols": "2"
+						}
+					},
+					{
+						"id": "grid2",
+						"label": "Two columns",
+						"axes": {
+							"layout": "grid",
+							"cols": "2"
+						}
+					},
+					{
+						"id": "grid4",
+						"label": "Four columns",
+						"axes": {
+							"layout": "grid",
+							"cols": "4"
+						},
+						"settings": {
+							"align": "center"
+						}
+					}
+				],
+				"defaultVariant": "column",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "start"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.date",
+						"kind": "text",
+						"fields": [
+							"/items/*/date"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.text",
+						"kind": "text",
+						"fields": [
+							"/items/*/text"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 2
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/timeline@1.schema.json",
+				"title": "TimelineContent",
+				"description": "Timeline content: the heading, a description and the steps of a process or a history, each with the date or the stage, a title and a line. One object is valid in every timeline layout (one column, two or four columns).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the steps, in their order",
+						"type": "array",
+						"minItems": 2,
+						"maxItems": 8,
+						"items": {
+							"title": "TimelineStep",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"date",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"date": {
+									"description": "the date or the stage as it is shown (Week 1, 2024)",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"title": {
+									"description": "the title of the step",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"text": {
+									"description": "one line about the step; empty: none",
+									"type": "string",
+									"maxLength": 200
 								}
 							}
 						}
