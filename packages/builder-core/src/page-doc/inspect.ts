@@ -44,8 +44,8 @@ export type InspectorModel =
 	| { ok: true; blockId: string; title: string; item: string; variant: string; variants: string[]; fields: InspectorField[] }
 	| { ok: false; blockId: string; title: string; reason: "not_in_registry" | "no_schema" };
 
-/** Never edited in the inspector: identity and host wiring. */
-const HIDDEN = new Set(["id", "class", "className"]);
+/** Never edited in the inspector: identity, host wiring and what the export writes (imageSrcset: the WebP sizes of image, ADR 0062). */
+const HIDDEN = new Set(["id", "class", "className", "imageSrcset"]);
 const LONG_TEXT = 200;
 const LONG_NAMES = /^(?:lede|summary|description|text|body|answer|quote)$/;
 const MAX_ROWS = 24;

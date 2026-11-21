@@ -5,8 +5,8 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"index": {
 		"url": "https://registry.buildy.tw/svelte/index.json",
-		"sha256": "2347be4c36451c96828c62e022d3e3c60939cfab505a2fbad74fb86a7296becb",
-		"lastUpdated": "2026-11-21T03:43:16+03:00",
+		"sha256": "448baa90acb1463c4c0d127afba09d5306788ebc2c419198ca621191ac2ad301",
+		"lastUpdated": "2026-11-21T22:17:37+03:00",
 		"version": "0.1.0"
 	},
 	"variants": {
@@ -16,8 +16,8 @@
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "448efc44a97129375c724e40145a812bc1931cd2356d431b628b914fa6be27fa",
-		"digest": "sha256:f1d6a911b010c8cc50a53011c220a398fe7db35e20b54d4d15dc14e211ce0722"
+		"sha256": "856ff7aa2b2c0ef21a8b7fea3c30c07aa576c6a6fc97f630841b5a2e1870c18c",
+		"digest": "sha256:6b23550c053ab0735abb93c87808380962555f589ac9dc2cf71a5e11e11e3a2f"
 	},
 	"manifest": {
 		"url": "https://registry.buildy.tw/manifest.json",
@@ -3728,7 +3728,7 @@
 		"registry/models/testimonials@1.schema.json": "e3c1b75c4dd7111f41f7a7bb52c7e297617d8805f51b4cae6b06ca40272003b1",
 		"registry/models/timeline@1.schema.json": "3a02a147eb16f2b01ed3aa3ffb41e6fbc274242d6f73bc5f049a1ab39d9b5f72",
 		"registry/models/topics@1.schema.json": "7e85157dcbbeec16b931dcb9dceb9a4ac6a730e74ca632aba69153ac3229ef53",
-		"registry/props.v0.json": "5909ba87c5bd99094cb912314f710c2443d243e13df200e762d297c6110ce356",
+		"registry/props.v0.json": "f312199cb5bab0c20722214b84324c2c579b2a6ccc7986d702c220545426e4d3",
 		"registry/variants.v0.json": "d0c79d6f9fbcc4584097db5911b1b89e787bdae2a263a620c0c1d3c9f3504056"
 	}
 }

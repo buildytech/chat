@@ -7,7 +7,8 @@ import { LUCIDE_ICON_HINT, propsEventsFor, propsFieldTree, type PropsFieldNode }
 import { allItems, catalogBlock, itemInfo, layoutAxes, variantProps } from "@buildytech/builder-core";
 import { convertProps, sampleProps } from "@buildytech/builder-core";
 
-const HIDDEN = new Set(["id", "class", "className", "landmarkLabel"]);
+/** Not written by the model: identity, host wiring, and imageSrcset (the export writes the WebP sizes of image, ADR 0062). */
+const HIDDEN = new Set(["id", "class", "className", "landmarkLabel", "imageSrcset"]);
 
 /** An enum member as JSON: text in quotes ("3"), numbers and booleans bare (2), so the model writes the schema's type. */
 const member = (value: unknown): string => JSON.stringify(value) ?? String(value);
@@ -23,7 +24,7 @@ function kindText(node: PropsFieldNode): string {
 
 function record(fields: PropsFieldNode[] | undefined): string {
 	return (fields ?? [])
-		.filter((field) => field.name !== "class" && field.name !== "className")
+		.filter((field) => !HIDDEN.has(field.name) || field.name === "id")
 		.map((field) => `${field.name}${field.required ? "" : "?"}:${field.kind === "object" ? `{${record(field.fields)}}` : field.kind === "list" ? `[${field.fields ? `{${record(field.fields)}}` : "text"}]` : kindText(field)}`)
 		.join(" ");
 }

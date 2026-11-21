@@ -3,6 +3,7 @@
 export type ProductItem = {
   id: string;
   image?: string;
+  imageSrcset?: string;
   title: string;
   price: string;
   href?: string;

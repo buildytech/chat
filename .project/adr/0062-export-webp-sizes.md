@@ -26,3 +26,9 @@ Status: accepted, 2026-11-21 (owner t117u-t119u).
 
 The media function carries sharp (~20 MB of node_modules traced into the function bundle). `srcset` needs the block to take `imageSrcset`
 (codegen-x MediaFrame `srcset` / `sizes`, registry, snapshot); until a block does, it gets the middle size as `image`.
+Since codegen-x 63e01c9a / ui8kit/site 65277dd (snapshot pinned here) the simple line pictures Media mode fills take it: sections
+hero, split, promo, feature-showcase, figure, article-lead, profile-intro, product, locations, and the records of menu, products and
+rooms. One flat optional `imageSrcset` next to `image` (not counted by the props budget, a DERIVED prop with no content-model field)
+rather than an object or a second prop: the primitive Image already takes `srcset` / `sizes` on all 8 runtimes, so only MediaFrame
+passes them (dark picture only without `darkSrc`). `sizes` stays the MediaFrame default `100vw`; per-layout sizes are later work.
+The inspector and the agent outline hide `imageSrcset`: the export writes it, never the model.

@@ -3,7 +3,7 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:a6fecdbc99f25d9036fc38a0ceaf82664b5919d76a16a5bbd2c67ac8fae4f1c5",
+	"lockDigest": "sha256:6039c50d32dbe0ae2a1da10a600a1efa96714213110724b08815212c1fa5b227",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
 		"sha256": "1f134afb31893ab74650e2f80083a3bdb592359d55f0d14ee2108bca24bde02b",
@@ -11,8 +11,8 @@
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "448efc44a97129375c724e40145a812bc1931cd2356d431b628b914fa6be27fa",
-		"digest": "sha256:f1d6a911b010c8cc50a53011c220a398fe7db35e20b54d4d15dc14e211ce0722"
+		"sha256": "856ff7aa2b2c0ef21a8b7fea3c30c07aa576c6a6fc97f630841b5a2e1870c18c",
+		"digest": "sha256:6b23550c053ab0735abb93c87808380962555f589ac9dc2cf71a5e11e11e3a2f"
 	},
 	"initItems": [
 		"presets",

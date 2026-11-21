@@ -16,6 +16,7 @@
     description?: string;
     image?: string;
     imageAlt?: string;
+    imageSrcset?: string;
     imageDark?: string;
     actionLabel?: string;
     actionHref?: string;
@@ -50,6 +51,7 @@
     description = "",
     image,
     imageAlt,
+    imageSrcset,
     imageDark,
     actionLabel = "",
     actionHref = "",
@@ -136,6 +138,7 @@
         alt={(imageAlt ? imageAlt : title)}
         src={image}
         darkSrc={imageDark}
+        srcset={imageSrcset}
         ratio={pictureRatio}
         class={pictureClass}
       />

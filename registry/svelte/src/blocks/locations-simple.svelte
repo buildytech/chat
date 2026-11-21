@@ -14,6 +14,7 @@
     description?: string;
     image?: string;
     imageAlt: string;
+    imageSrcset?: string;
     items: LocationItem[];
     level?: 1 | 2 | 3;
     padding?: "compact" | "standard" | "spacious";
@@ -41,6 +42,7 @@
     description = "",
     image = "",
     imageAlt,
+    imageSrcset = "",
     items,
     level = 2,
     padding = "standard",
@@ -111,7 +113,7 @@
           {/each}
         </List>
       </Stack>
-      <MediaFrame alt={imageAlt} src={image} ratio="1/1" class={pictureClass} />
+      <MediaFrame alt={imageAlt} src={image} srcset={imageSrcset} ratio="1/1" class={pictureClass} />
     </Box>
   </Container>
 </Block>

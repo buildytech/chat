@@ -3,6 +3,7 @@
 export type Room = {
   id: string;
   image?: string;
+  imageSrcset?: string;
   title: string;
   guests?: string;
   price: string;

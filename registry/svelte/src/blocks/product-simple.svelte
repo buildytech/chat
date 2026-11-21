@@ -15,6 +15,7 @@
     price: string;
     image?: string;
     imageAlt: string;
+    imageSrcset?: string;
     actionLabel?: string;
     actionHref?: string;
     photos: ProductPhoto[];
@@ -46,6 +47,7 @@
     price,
     image = "",
     imageAlt,
+    imageSrcset = "",
     actionLabel = "",
     actionHref = "",
     photos,
@@ -110,7 +112,7 @@
         {/if}
       </Stack>
       <Stack gap="4" align="stretch" class={gallery}>
-        <MediaFrame alt={imageAlt} src={image} ratio={ratio} />
+        <MediaFrame alt={imageAlt} src={image} srcset={imageSrcset} ratio={ratio} />
         <List tag="ul" class={cn("m-0 w-full list-none p-0", cn("grid gap-4", thumbs))}>
           {#each photos as t (t.id)}
             <ListItem data-slot="thumb">

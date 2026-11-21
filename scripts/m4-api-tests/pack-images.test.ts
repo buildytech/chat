@@ -131,6 +131,18 @@ test("srcset: where the block takes imageSrcset, the section passes every size a
 	assert.ok(!("imageSrcset" in none.props), "no srcset prop where the block has none");
 });
 
+test("srcset with the pinned schema: hero-simple takes imageSrcset (registry 65277dd), a team avatar takes none", async () => {
+	const images = await localizeImages(page, fakeFetch([]), fakeEncode());
+	const files = sveltePackFiles(page, images);
+	const hero = files.find((f) => f.path === "src/sections/hero.svelte")!.content;
+	assert.match(hero, /"image": img_hero_image_1152,/);
+	assert.match(hero, /"imageSrcset": `\$\{img_hero_image_960\} 960w, \$\{img_hero_image_1152\} 1152w`,/);
+	const team = files.find((f) => f.path.startsWith("src/sections/") && f.content.includes('"avatar"'))!.content;
+	assert.ok(!team.includes("Srcset"), "no srcset key next to an avatar");
+	const frame = readFileSync(path.join(SNAPSHOT, "src/components/media-frame.svelte"), "utf8");
+	assert.match(frame, /srcset=\{srcsetOf\(lightSet\)\}/, "the pinned MediaFrame passes the srcset to the picture");
+});
+
 test("sections import their local pictures and keep remote or relative addresses as they are", async () => {
 	const images = await localizeImages(page, fakeFetch([]));
 	const files = sveltePackFiles(page, images);

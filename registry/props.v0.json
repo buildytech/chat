@@ -1,6 +1,6 @@
 {
 	"version": "0",
-	"digest": "sha256:f1d6a911b010c8cc50a53011c220a398fe7db35e20b54d4d15dc14e211ce0722",
+	"digest": "sha256:6b23550c053ab0735abb93c87808380962555f589ac9dc2cf71a5e11e11e3a2f",
 	"registry": "https://registry.buildy.tw",
 	"items": {
 		"amenities-simple": {
@@ -299,6 +299,11 @@
 					"imageAlt": {
 						"description": "alt text of the picture",
 						"$ref": "#/$defs/text"
+					},
+					"imageSrcset": {
+						"description": "sizes of the picture as a srcset (`hero-960.webp 960w, hero-1280.webp 1280w`); none: `image` only",
+						"$ref": "#/$defs/text",
+						"default": ""
 					},
 					"author": {
 						"description": "the name of the author",
@@ -4422,6 +4427,11 @@
 						"description": "alt text of the picture",
 						"$ref": "#/$defs/text"
 					},
+					"imageSrcset": {
+						"description": "sizes of the picture as a srcset (`hero-960.webp 960w, hero-1280.webp 1280w`); none: `image` only",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
 					"items": {
 						"description": "the key points, in the order they are shown (1 to 6)",
 						"anyOf": [
@@ -4978,6 +4988,11 @@
 					"imageAlt": {
 						"description": "alt text of the picture",
 						"$ref": "#/$defs/text"
+					},
+					"imageSrcset": {
+						"description": "sizes of the picture as a srcset (`hero-960.webp 960w, hero-1280.webp 1280w`); none: `image` only",
+						"$ref": "#/$defs/text",
+						"default": ""
 					},
 					"title": {
 						"description": "the title of the caption (names the section)",
@@ -6318,6 +6333,10 @@
 						"description": "alt text of the picture; none: the title",
 						"$ref": "#/$defs/text"
 					},
+					"imageSrcset": {
+						"description": "sizes of the picture as a srcset (`hero-960.webp 960w, hero-1280.webp 1280w`); none: `image` only",
+						"$ref": "#/$defs/text"
+					},
 					"imageDark": {
 						"description": "address of the picture in the dark theme; none: image",
 						"$ref": "#/$defs/text"
@@ -7186,6 +7205,11 @@
 						"description": "alt text of the picture",
 						"$ref": "#/$defs/text"
 					},
+					"imageSrcset": {
+						"description": "sizes of the picture as a srcset (`hero-960.webp 960w, hero-1280.webp 1280w`); none: `image` only",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
 					"items": {
 						"description": "the offices, in the order they are shown (1 to 6)",
 						"anyOf": [
@@ -7790,6 +7814,9 @@
 								"$ref": "#/$defs/text"
 							},
 							"image": {
+								"$ref": "#/$defs/text"
+							},
+							"imageSrcset": {
 								"$ref": "#/$defs/text"
 							},
 							"title": {
@@ -9171,6 +9198,11 @@
 						"description": "alt text of the main picture",
 						"$ref": "#/$defs/text"
 					},
+					"imageSrcset": {
+						"description": "sizes of the picture as a srcset (`hero-960.webp 960w, hero-1280.webp 1280w`); none: `image` only",
+						"$ref": "#/$defs/text",
+						"default": ""
+					},
 					"actionLabel": {
 						"description": "the label of the action; the link is drawn when the label and the address are both set",
 						"$ref": "#/$defs/text",
@@ -9545,6 +9577,9 @@
 							"image": {
 								"$ref": "#/$defs/text"
 							},
+							"imageSrcset": {
+								"$ref": "#/$defs/text"
+							},
 							"title": {
 								"$ref": "#/$defs/text"
 							},
@@ -9756,6 +9791,11 @@
 					"imageAlt": {
 						"description": "alt text of the picture",
 						"$ref": "#/$defs/text"
+					},
+					"imageSrcset": {
+						"description": "sizes of the picture as a srcset (`hero-960.webp 960w, hero-1280.webp 1280w`); none: `image` only",
+						"$ref": "#/$defs/text",
+						"default": ""
 					},
 					"links": {
 						"description": "the links of the person, in the order they are shown (0 to 4)",
@@ -10068,6 +10108,11 @@
 					"imageAlt": {
 						"description": "alt text of the picture",
 						"$ref": "#/$defs/text"
+					},
+					"imageSrcset": {
+						"description": "sizes of the picture as a srcset (`hero-960.webp 960w, hero-1280.webp 1280w`); none: `image` only",
+						"$ref": "#/$defs/text",
+						"default": ""
 					},
 					"level": {
 						"description": "the level of the heading (1 on the first section of a page)",
@@ -11094,6 +11139,9 @@
 							"image": {
 								"$ref": "#/$defs/text"
 							},
+							"imageSrcset": {
+								"$ref": "#/$defs/text"
+							},
 							"title": {
 								"$ref": "#/$defs/text"
 							},
@@ -11874,6 +11922,10 @@
 					},
 					"imageAlt": {
 						"description": "alt text of the picture; none: the title",
+						"$ref": "#/$defs/text"
+					},
+					"imageSrcset": {
+						"description": "sizes of the picture as a srcset (`hero-960.webp 960w, hero-1280.webp 1280w`); none: `image` only",
 						"$ref": "#/$defs/text"
 					},
 					"imageDark": {

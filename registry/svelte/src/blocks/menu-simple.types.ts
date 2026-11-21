@@ -3,6 +3,7 @@
 export type MenuDish = {
   id: string;
   image?: string;
+  imageSrcset?: string;
   title: string;
   weight?: string;
   price: string;

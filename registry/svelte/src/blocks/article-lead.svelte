@@ -13,6 +13,7 @@
     description?: string;
     image?: string;
     imageAlt: string;
+    imageSrcset?: string;
     author: string;
     avatar?: string;
     date: string;
@@ -41,6 +42,7 @@
     description = "",
     image = "",
     imageAlt,
+    imageSrcset = "",
     author,
     avatar = "",
     date,
@@ -107,7 +109,7 @@
           </Stack>
         </Group>
       </Stack>
-      <MediaFrame alt={imageAlt} src={image} ratio={ratio} class={pictureClass} />
+      <MediaFrame alt={imageAlt} src={image} srcset={imageSrcset} ratio={ratio} class={pictureClass} />
     </Box>
   </Container>
 </Block>

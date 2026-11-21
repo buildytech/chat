@@ -11,6 +11,7 @@
     id: string;
     image?: string;
     imageAlt: string;
+    imageSrcset?: string;
     title: string;
     description?: string;
     credit?: string;
@@ -33,6 +34,7 @@
     id,
     image = "",
     imageAlt,
+    imageSrcset = "",
     title,
     description = "",
     credit = "",
@@ -69,7 +71,7 @@
 >
   <Container class="mx-auto w-full max-w-6xl px-4">
     <Box tag="figure" class={frame}>
-      <MediaFrame alt={imageAlt} src={image} ratio={ratio} class={pictureClass} />
+      <MediaFrame alt={imageAlt} src={image} srcset={imageSrcset} ratio={ratio} class={pictureClass} />
       <Stack gap="2" align={copyAlign} class={caption}>
         <Text size="base" weight="semibold" class={copyText} id={titleId}>
           {title}

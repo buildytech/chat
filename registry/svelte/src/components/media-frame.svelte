@@ -5,7 +5,9 @@
   shows the built-in neutral placeholders (base64 data URIs, one light and one dark), so a page can be laid out
   before it has pictures; the placeholder is decorative (`alt` is empty), stands in for a real `src` and is
   switched by the theme token. A real picture gets `alt` and loads lazily. `ratio` comes from the recipe; the
-  corners are the plain theme radius.
+  corners are the plain theme radius. `srcset` lists sizes of `src` (written by an export, e.g. WebP 960w /
+  1280w / 1920w) and `sizes` says how wide the picture is shown, so the browser picks a size; the dark picture
+  takes the srcset only when it is `src` (no `darkSrc`).
 -->
 <script lang="ts" module>
   import type { Snippet } from "svelte";
@@ -31,6 +33,8 @@
     src?: string;
     darkSrc?: string;
     ratio?: "16/9" | "4/3" | "1/1" | "3/4" | "21/9";
+    srcset?: string;
+    sizes?: string;
     class?: string;
   };
 </script>
@@ -38,15 +42,27 @@
 <script lang="ts">
   import Box from "../compose/Box.svelte";
   import Image from "../compose/Image.svelte";
-  import { at, cn, urlOf } from "../utils";
+  import { at, cn, srcsetOf, urlOf } from "../utils";
   import { PLACEHOLDER } from "./media-frame.assets";
 
-  let { alt, src, darkSrc, ratio = "16/9", class: className }: MediaFrameProps = $props();
+  let {
+    alt,
+    src,
+    darkSrc,
+    ratio = "16/9",
+    srcset,
+    sizes = "100vw",
+    class: className,
+  }: MediaFrameProps = $props();
   const lightSrc = $derived(src ? src : at(PLACEHOLDER, "light"));
   const nightSrc = $derived(darkSrc ? darkSrc : (src ? src : at(PLACEHOLDER, "dark")));
   const shownAlt = $derived(src ? alt : "");
   const loadHint = $derived(src ? "lazy" : undefined);
   const decodeHint = $derived(src ? "async" : undefined);
+  const lightSet = $derived((src && srcset) ? srcset : undefined);
+  const nightSet = $derived(darkSrc ? undefined : lightSet);
+  const lightSizes = $derived(lightSet ? sizes : undefined);
+  const nightSizes = $derived(nightSet ? sizes : undefined);
 </script>
 
 <Box
@@ -56,6 +72,8 @@
 >
   <Image
     src={urlOf(lightSrc, true)}
+    srcset={srcsetOf(lightSet)}
+    sizes={lightSizes}
     alt={shownAlt}
     loading={loadHint}
     decoding={decodeHint}
@@ -64,6 +82,8 @@
   />
   <Image
     src={urlOf(nightSrc, true)}
+    srcset={srcsetOf(nightSet)}
+    sizes={nightSizes}
     alt={shownAlt}
     loading={loadHint}
     decoding={decodeHint}
