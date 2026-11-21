@@ -81,3 +81,48 @@ test("POST /v1/media generate then result: request id, then the candidates", asy
 		assert.equal(new Headers(calls[0].init?.headers).get("authorization"), "Bearer test-key-not-real");
 	});
 });
+
+const image = (status: number, type: string, bytes: Uint8Array, length?: number) => () =>
+	new Response(bytes, { status, headers: { "content-type": type, ...(length !== undefined ? { "content-length": String(length) } : {}) } });
+
+test("asset proxy (ADR 0061): only https xAI image hosts, no key needed, bytes and type passed through, no redirects", async () => {
+	for (const url of ["http://imgen.x.ai/a.jpeg", "https://evil.test/a.jpeg", "https://imgen.x.ai:8443/a.jpeg", "https://u:p@imgen.x.ai/a.jpeg", "https://imgen.x.ai.evil.test/a.jpeg", 42]) {
+		const res = await withFetch([], () => handleRuntimeFetch(post({ action: "asset", url }), {}));
+		assert.equal(res.status, 422, String(url));
+		assert.equal((await res.json()).code, "asset_not_allowed");
+	}
+	const bytes = new Uint8Array([0xff, 0xd8, 0xff, 1, 2, 3]);
+	await withFetch([image(200, "image/jpeg", bytes)], async (calls) => {
+		const res = await handleRuntimeFetch(post({ action: "asset", url: "https://imgen.x.ai/xai-imgen/a.jpeg" }), {});
+		assert.equal(res.status, 200);
+		assert.equal(res.headers.get("content-type"), "image/jpeg");
+		assert.equal(res.headers.get("x-content-type-options"), "nosniff");
+		assert.deepEqual(new Uint8Array(await res.arrayBuffer()), bytes);
+		assert.equal(calls[0].url, "https://imgen.x.ai/xai-imgen/a.jpeg");
+		assert.equal(calls[0].init?.redirect, "error");
+	});
+});
+
+test("asset proxy refuses non-pictures, oversize bodies and reports upstream failures without the address", async () => {
+	const logs: string[] = [];
+	const log = console.log;
+	console.log = (line: unknown) => void logs.push(String(line));
+	try {
+		const url = "https://files-cdn.x.ai/secret-path/a.png";
+		const cases: Array<[() => Response, number, string]> = [
+			[image(200, "text/html", new Uint8Array([60])), 415, "asset_not_image"],
+			[image(200, "image/png", new Uint8Array(1), 9_000_000), 413, "asset_too_large"],
+			[image(200, "image/png", new Uint8Array(4_000_001)), 413, "asset_too_large"],
+			[image(410, "image/png", new Uint8Array(0)), 404, "asset_upstream_410"],
+			[() => { throw new TypeError("redirect"); }, 502, "asset_unreachable"]
+		];
+		for (const [upstream, status, code] of cases) {
+			const res = await withFetch([upstream], () => handleRuntimeFetch(post({ action: "asset", url }), {}));
+			assert.equal(res.status, status, code);
+			assert.equal((await res.json()).code, code);
+		}
+	} finally {
+		console.log = log;
+	}
+	assert.ok(logs.length >= 5 && logs.every((line) => !line.includes("secret-path")), "logs carry the host, never the address");
+});

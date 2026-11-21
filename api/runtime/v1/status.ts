@@ -23347,8 +23347,101 @@ exports["runtimeStatus"] = runtimeStatus;
 
 });
 
+__def("apps/xai-runtime/src/media-asset.ts", function (exports) {
+
+const ASSET_HOSTS = new Set(["imgen.x.ai", "files-cdn.x.ai"]);
+const MAX_ASSET_BYTES = 4_000_000;
+const ASSET_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
+const ASSET_TIMEOUT_MS = 20_000;
+
+type AssetFailure = { status: number; code: string };
+
+function fail(failure: AssetFailure, message: string): Response {
+	return new Response(JSON.stringify({ ok: false, code: failure.code, message }), { status: failure.status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+}
+
+/** The address when the proxy may read it, else null. */
+function assetUrl(raw: unknown): URL | null {
+	if (typeof raw !== "string" || raw.length > 2048) return null;
+	let url: URL;
+	try {
+		url = new URL(raw);
+	} catch {
+		return null;
+	}
+	if (url.protocol !== "https:" || url.username || url.password || url.port || !ASSET_HOSTS.has(url.hostname)) return null;
+	return url;
+}
+
+async function readCapped(res: Response): Promise<Uint8Array<ArrayBuffer> | null> {
+	if (!res.body) return null;
+	const reader = res.body.getReader();
+	const parts: Uint8Array[] = [];
+	let total = 0;
+	for (;;) {
+		const { done, value } = await reader.read();
+		if (done) break;
+		total += value.length;
+		if (total > MAX_ASSET_BYTES) {
+			await reader.cancel().catch(() => undefined);
+			return null;
+		}
+		parts.push(value);
+	}
+	const out = new Uint8Array(new ArrayBuffer(total));
+	let offset = 0;
+	for (const part of parts) {
+		out.set(part, offset);
+		offset += part.length;
+	}
+	return out;
+}
+
+function logAsset(event: Record<string, unknown>): void {
+	console.log(JSON.stringify({ runtime: "xai-grok", event: "xai_media", action: "asset", ...event }));
+}
+
+async function handleAsset(raw: unknown, fetchImpl: typeof fetch = fetch): Promise<Response> {
+	const url = assetUrl(raw);
+	if (!url) return fail({ status: 422, code: "asset_not_allowed" }, "Only https pictures of the xAI image hosts are proxied.");
+	const started = Date.now();
+	let res: Response;
+	try {
+		res = await fetchImpl(url, { redirect: "error", headers: { accept: "image/*" }, signal: AbortSignal.timeout(ASSET_TIMEOUT_MS) });
+	} catch {
+		logAsset({ ok: false, code: "asset_unreachable", host: url.hostname, ms: Date.now() - started });
+		return fail({ status: 502, code: "asset_unreachable" }, "The picture could not be read.");
+	}
+	const type = (res.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
+	const length = Number(res.headers.get("content-length") ?? 0);
+	const failure: AssetFailure | null = !res.ok
+		? { status: res.status === 404 || res.status === 410 ? 404 : 502, code: `asset_upstream_${res.status}` }
+		: !ASSET_TYPES.has(type)
+			? { status: 415, code: "asset_not_image" }
+			: length > MAX_ASSET_BYTES
+				? { status: 413, code: "asset_too_large" }
+				: null;
+	if (failure) {
+		await res.body?.cancel().catch(() => undefined);
+		logAsset({ ok: false, code: failure.code, host: url.hostname, ms: Date.now() - started });
+		return fail(failure, "The picture could not be read.");
+	}
+	const bytes = await readCapped(res);
+	if (!bytes) {
+		logAsset({ ok: false, code: "asset_too_large", host: url.hostname, ms: Date.now() - started });
+		return fail({ status: 413, code: "asset_too_large" }, "The picture is larger than the proxy keeps.");
+	}
+	logAsset({ ok: true, host: url.hostname, bytes: bytes.length, ms: Date.now() - started });
+	return new Response(bytes, { status: 200, headers: { "content-type": type, "content-length": String(bytes.length), "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+}
+
+exports["handleAsset"] = handleAsset;
+
+});
+
 __def("apps/xai-runtime/src/media.ts", function (exports) {
 const { readXaiKeyState, safeErrorMessage, secretValues, xaiBaseUrl } = __req("packages/chat-agent/src/index.ts");
+const { handleAsset } = __req("apps/xai-runtime/src/media-asset.ts");
 const { MAX_IMAGE_PROMPT, XAI_IMAGE_MODEL, isImageAspect, pollImages, submitImages } = __req("packages/provider-xai/src/index.ts");
 const MAX_BODY = 16_000;
 const POLL_MS = 20_000;
@@ -23376,9 +23469,10 @@ function logMedia(event: Record<string, unknown>): void {
 }
 
 async function handleMedia(request: Request, env: EnvMap): Promise<Response> {
-	if (!readXaiKeyState(env).present) return json(503, { ok: false, code: "xai_api_key_missing", message: "XAI_API_KEY is not provisioned here. No provider call was made." });
 	const body = await readBody(request);
 	if (!body) return json(400, { ok: false, code: "invalid_body", message: "Send one JSON object." });
+	if (body.action === "asset") return handleAsset(body.url);
+	if (!readXaiKeyState(env).present) return json(503, { ok: false, code: "xai_api_key_missing", message: "XAI_API_KEY is not provisioned here. No provider call was made." });
 	const transport = { apiKey: env.XAI_API_KEY!.trim(), baseUrl: xaiBaseUrl(env), signal: AbortSignal.timeout(POLL_MS) };
 	const started = Date.now();
 	try {
@@ -23395,7 +23489,7 @@ async function handleMedia(request: Request, env: EnvMap): Promise<Response> {
 			if (!out.ok || out.status === "done") logMedia({ action: "result", ok: out.ok, code: out.ok ? "done" : out.code, images: out.ok ? out.urls.length : 0, costUsdTicks: out.ok ? out.costUsdTicks : null });
 			return json(out.ok ? 200 : 502, { ...out, model: XAI_IMAGE_MODEL });
 		}
-		return json(422, { ok: false, code: "unknown_action", message: "action is generate or result." });
+		return json(422, { ok: false, code: "unknown_action", message: "action is generate, result or asset." });
 	} catch (err) {
 		const safe = safeErrorMessage(err, secretValues(env));
 		return json(502, { ok: false, code: safe.code || "media_failed", message: "The image request could not be completed. No automatic retry was sent." });
