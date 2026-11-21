@@ -3,16 +3,16 @@
 	"version": 3,
 	"registry": "https://registry.buildy.tw/svelte",
 	"cli": "ui8kit@3.5.0",
-	"lockDigest": "sha256:74db5b1826bd9c7c3097216893c97e3f5b960e0de561dbafad90d3fbfabf9973",
+	"lockDigest": "sha256:a6fecdbc99f25d9036fc38a0ceaf82664b5919d76a16a5bbd2c67ac8fae4f1c5",
 	"variants": {
 		"url": "https://registry.buildy.tw/variants/v0.json",
-		"sha256": "fa24c8b72432b9ddbba07b5c4f8f18b9d38e1e3c4f370d5f94dfaddbe8de0d41",
-		"digest": "sha256:6404facd90203894d83aeb118a20add2751e93533fe9414833d88586d338ab4c"
+		"sha256": "1f134afb31893ab74650e2f80083a3bdb592359d55f0d14ee2108bca24bde02b",
+		"digest": "sha256:9e70b8612956517e1c7644d94657be0a75f61b1a96d400a70e37ab4893b2422a"
 	},
 	"props": {
 		"url": "https://registry.buildy.tw/props/v0.json",
-		"sha256": "e923b3bc352c707b3613be83d4c776e489a1b2eb9be53d28f6de672b28ae0d79",
-		"digest": "sha256:66b0720a9228528de20b4a5607fb4cbb81b0d2a198563f6d26f6cf758b6ae5b6"
+		"sha256": "448efc44a97129375c724e40145a812bc1931cd2356d431b628b914fa6be27fa",
+		"digest": "sha256:f1d6a911b010c8cc50a53011c220a398fe7db35e20b54d4d15dc14e211ce0722"
 	},
 	"initItems": [
 		"presets",
@@ -38,6 +38,37 @@
 			"files": [
 				"src/compose/Alert.svelte"
 			]
+		},
+		"amenities-simple": {
+			"type": "registry:block",
+			"title": "Amenities Simple",
+			"description": "The heading, one paragraph and the amenities of a stay or a venue as short names: muted rows in three or two columns, or outlined pills in a wrapping row.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/amenities-simple.svelte",
+				"src/blocks/amenities-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/amenities-simple/1.json",
+				"group": "features",
+				"kind": "block",
+				"model": "amenities@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"article-lead": {
 			"type": "registry:block",
@@ -639,6 +670,37 @@
 				]
 			}
 		},
+		"delivery-simple": {
+			"type": "registry:block",
+			"title": "Delivery Simple",
+			"description": "The heading, one paragraph and the delivery zones (the area, the time, the minimum order, the price): card rows with the price at the end, or cards in three columns.",
+			"registryDependencies": [
+				"block",
+				"container",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/delivery-simple.svelte",
+				"src/blocks/delivery-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/delivery-simple/1.json",
+				"group": "delivery",
+				"kind": "block",
+				"model": "delivery@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
+		},
 		"dialog": {
 			"type": "registry:ui",
 			"title": "Dialog",
@@ -652,6 +714,39 @@
 			"files": [
 				"src/compose/Dialog.svelte"
 			]
+		},
+		"digital-simple": {
+			"type": "registry:block",
+			"title": "Digital Simple",
+			"description": "The heading, one paragraph and the digital goods (the format as a pill, the name as a link, a line, the price): on cards in three columns, or rows with the price at the end.",
+			"registryDependencies": [
+				"badge",
+				"block",
+				"container",
+				"link-plain",
+				"list",
+				"list-item",
+				"stack",
+				"text",
+				"title",
+				"utils"
+			],
+			"dependencies": [],
+			"files": [
+				"src/blocks/digital-simple.svelte",
+				"src/blocks/digital-simple.types.ts"
+			],
+			"meta": {
+				"category": "marketing",
+				"contract": "contracts/digital-simple/1.json",
+				"group": "product",
+				"kind": "block",
+				"model": "digital@1",
+				"tags": [
+					"svelte",
+					"block"
+				]
+			}
 		},
 		"disclosure": {
 			"type": "registry:ui",
@@ -3279,6 +3374,26 @@
 		}
 	},
 	"blocks": {
+		"amenities-simple": {
+			"spec": "block.amenitiessimple",
+			"organism": "blocks/amenities-simple.svelte",
+			"organismName": "AmenitiesSimple",
+			"defaultVariant": "grid3",
+			"variants": {
+				"grid3": {
+					"layout": "grid",
+					"cols": "3"
+				},
+				"grid2": {
+					"layout": "grid",
+					"cols": "2"
+				},
+				"pills": {
+					"layout": "pills",
+					"cols": "3"
+				}
+			}
+		},
 		"article-lead": {
 			"spec": "block.articlelead",
 			"organism": "blocks/article-lead.svelte",
@@ -3451,6 +3566,35 @@
 				"betweenOutline": {
 					"layout": "between",
 					"surface": "outline",
+					"align": "start"
+				}
+			}
+		},
+		"delivery-simple": {
+			"spec": "block.deliverysimple",
+			"organism": "blocks/delivery-simple.svelte",
+			"organismName": "DeliverySimple",
+			"defaultVariant": "rows",
+			"variants": {
+				"rows": {
+					"layout": "rows"
+				},
+				"cards": {
+					"layout": "cards"
+				}
+			}
+		},
+		"digital-simple": {
+			"spec": "block.digitalsimple",
+			"organism": "blocks/digital-simple.svelte",
+			"organismName": "DigitalSimple",
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"layout": "cards"
+				},
+				"rows": {
+					"layout": "rows",
 					"align": "start"
 				}
 			}
@@ -4263,6 +4407,18 @@
 		}
 	},
 	"assets": {
+		"block.amenitiessimple/grid3": {
+			"item": "amenities-simple",
+			"variant": "grid3"
+		},
+		"block.amenitiessimple/grid2": {
+			"item": "amenities-simple",
+			"variant": "grid2"
+		},
+		"block.amenitiessimple/pills": {
+			"item": "amenities-simple",
+			"variant": "pills"
+		},
 		"block.articlelead/mediaTop": {
 			"item": "article-lead",
 			"variant": "mediaTop"
@@ -4366,6 +4522,22 @@
 		"block.ctasimple/betweenOutline": {
 			"item": "cta-simple",
 			"variant": "betweenOutline"
+		},
+		"block.deliverysimple/rows": {
+			"item": "delivery-simple",
+			"variant": "rows"
+		},
+		"block.deliverysimple/cards": {
+			"item": "delivery-simple",
+			"variant": "cards"
+		},
+		"block.digitalsimple/cards3": {
+			"item": "digital-simple",
+			"variant": "cards3"
+		},
+		"block.digitalsimple/rows": {
+			"item": "digital-simple",
+			"variant": "rows"
 		},
 		"block.errorsimple/center": {
 			"item": "error-simple",
@@ -4865,6 +5037,10 @@
 		}
 	},
 	"specs": {
+		"block.amenitiessimple": {
+			"item": "amenities-simple",
+			"variant": "grid3"
+		},
 		"block.articlelead": {
 			"item": "article-lead",
 			"variant": "mediaTop"
@@ -4904,6 +5080,14 @@
 		"block.ctasimple": {
 			"item": "cta-simple",
 			"variant": "center"
+		},
+		"block.deliverysimple": {
+			"item": "delivery-simple",
+			"variant": "rows"
+		},
+		"block.digitalsimple": {
+			"item": "digital-simple",
+			"variant": "cards3"
 		},
 		"block.errorsimple": {
 			"item": "error-simple",

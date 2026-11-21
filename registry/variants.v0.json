@@ -1,8 +1,58 @@
 {
 	"version": "0",
-	"digest": "sha256:6404facd90203894d83aeb118a20add2751e93533fe9414833d88586d338ab4c",
+	"digest": "sha256:9e70b8612956517e1c7644d94657be0a75f61b1a96d400a70e37ab4893b2422a",
 	"registry": "https://registry.buildy.tw",
 	"items": {
+		"amenities-simple": {
+			"block": "amenitiessimple",
+			"spec": "block.amenitiessimple",
+			"organism": "AmenitiesSimple",
+			"axes": {
+				"layout": [
+					"grid",
+					"pills"
+				],
+				"cols": [
+					"3",
+					"2"
+				]
+			},
+			"defaults": {
+				"layout": "grid",
+				"cols": "3"
+			},
+			"defaultVariant": "grid3",
+			"variants": {
+				"grid3": {
+					"asset": "block.amenitiessimple/grid3",
+					"set": {},
+					"props": {
+						"layout": "grid",
+						"cols": "3"
+					}
+				},
+				"grid2": {
+					"asset": "block.amenitiessimple/grid2",
+					"set": {
+						"cols": "2"
+					},
+					"props": {
+						"layout": "grid",
+						"cols": "2"
+					}
+				},
+				"pills": {
+					"asset": "block.amenitiessimple/pills",
+					"set": {
+						"layout": "pills"
+					},
+					"props": {
+						"layout": "pills",
+						"cols": "3"
+					}
+				}
+			}
+		},
 		"article-lead": {
 			"block": "articlelead",
 			"spec": "block.articlelead",
@@ -416,6 +466,73 @@
 					"props": {
 						"layout": "between",
 						"surface": "outline",
+						"align": "start"
+					}
+				}
+			}
+		},
+		"delivery-simple": {
+			"block": "deliverysimple",
+			"spec": "block.deliverysimple",
+			"organism": "DeliverySimple",
+			"axes": {
+				"layout": [
+					"rows",
+					"cards"
+				]
+			},
+			"defaults": {
+				"layout": "rows"
+			},
+			"defaultVariant": "rows",
+			"variants": {
+				"rows": {
+					"asset": "block.deliverysimple/rows",
+					"set": {},
+					"props": {
+						"layout": "rows"
+					}
+				},
+				"cards": {
+					"asset": "block.deliverysimple/cards",
+					"set": {
+						"layout": "cards"
+					},
+					"props": {
+						"layout": "cards"
+					}
+				}
+			}
+		},
+		"digital-simple": {
+			"block": "digitalsimple",
+			"spec": "block.digitalsimple",
+			"organism": "DigitalSimple",
+			"axes": {
+				"layout": [
+					"cards",
+					"rows"
+				]
+			},
+			"defaults": {
+				"layout": "cards"
+			},
+			"defaultVariant": "cards3",
+			"variants": {
+				"cards3": {
+					"asset": "block.digitalsimple/cards3",
+					"set": {},
+					"props": {
+						"layout": "cards"
+					}
+				},
+				"rows": {
+					"asset": "block.digitalsimple/rows",
+					"set": {
+						"layout": "rows"
+					},
+					"props": {
+						"layout": "rows",
 						"align": "start"
 					}
 				}

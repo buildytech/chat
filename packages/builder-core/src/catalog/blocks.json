@@ -4,13 +4,13 @@
 	"registry": "https://registry.buildy.tw/svelte",
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "4f3d059851db449788210ced05101eeae85ed60f",
+		"commit": "0d0d3e8cb8fab385ec953c4741e6250ce22aabd7",
 		"generator": "codegen-x/ui8kit packages/prototypes",
 		"inputs": {
-			"sha256": "da15fa85bb1f8117787810a9402ab2ea865b5a613f1a8844435c303de1097358"
+			"sha256": "4bbcd0633c4bf096a850989a9bc12035a5ee97995f75e91ffa739bf876b59b00"
 		}
 	},
-	"digest": "sha256:7bb1ee4be3349e0b349066dd71696f22f31746c8d305e9392992adb78b42f043",
+	"digest": "sha256:1bf037bd4af368abdc9649c556b4588b1070493779c86968f47734b2c3561945",
 	"blocks": [
 		{
 			"item": "hero-simple",
@@ -9213,6 +9213,550 @@
 									"description": "one line about the step; empty: none",
 									"type": "string",
 									"maxLength": 200
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "amenities-simple",
+			"title": "Amenities Simple",
+			"description": "The heading, one paragraph and the amenities of a stay or a venue as short names: muted rows in three or two columns, or outlined pills in a wrapping row.",
+			"category": "features",
+			"prototype": "amenities-simple.svelte",
+			"contract": {
+				"item": "amenities-simple",
+				"version": 1,
+				"block": "block.amenitiessimple",
+				"organism": "AmenitiesSimple",
+				"line": "simple",
+				"model": "amenities@1",
+				"modelSchema": "https://registry.buildy.tw/models/amenities@1.schema.json",
+				"axes": {
+					"layout": [
+						"grid",
+						"pills"
+					],
+					"cols": [
+						"3",
+						"2"
+					]
+				},
+				"defaults": {
+					"layout": "grid",
+					"cols": "3"
+				},
+				"variants": [
+					{
+						"id": "grid3",
+						"label": "Three columns",
+						"axes": {
+							"layout": "grid",
+							"cols": "3"
+						}
+					},
+					{
+						"id": "grid2",
+						"label": "Two columns",
+						"axes": {
+							"layout": "grid",
+							"cols": "2"
+						}
+					},
+					{
+						"id": "pills",
+						"label": "Pills in a row",
+						"axes": {
+							"layout": "pills",
+							"cols": "3"
+						}
+					}
+				],
+				"defaultVariant": "grid3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.title",
+						"kind": "text",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/amenities@1.schema.json",
+				"title": "AmenitiesContent",
+				"description": "Amenities content: the heading, a description and an ordered list of amenities as short names. One object is valid in every amenities layout (rows in three or two columns, pills).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the amenities, in the order they are shown",
+						"type": "array",
+						"minItems": 2,
+						"maxItems": 16,
+						"items": {
+							"title": "Amenity",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the amenity in a few words",
+									"type": "string",
+									"maxLength": 60,
+									"minLength": 1,
+									"pattern": "\\S"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "delivery-simple",
+			"title": "Delivery Simple",
+			"description": "The heading, one paragraph and the delivery zones (the area, the time, the minimum order, the price): card rows with the price at the end, or cards in three columns.",
+			"category": "delivery",
+			"prototype": "delivery-simple.svelte",
+			"contract": {
+				"item": "delivery-simple",
+				"version": 1,
+				"block": "block.deliverysimple",
+				"organism": "DeliverySimple",
+				"line": "simple",
+				"model": "delivery@1",
+				"modelSchema": "https://registry.buildy.tw/models/delivery@1.schema.json",
+				"axes": {
+					"layout": [
+						"rows",
+						"cards"
+					]
+				},
+				"defaults": {
+					"layout": "rows"
+				},
+				"variants": [
+					{
+						"id": "rows",
+						"label": "Rows, the price at the end",
+						"axes": {
+							"layout": "rows"
+						}
+					},
+					{
+						"id": "cards",
+						"label": "Cards in three columns",
+						"axes": {
+							"layout": "cards"
+						}
+					}
+				],
+				"defaultVariant": "rows",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.time",
+						"kind": "text",
+						"fields": [
+							"/items/*/time"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.minimum",
+						"kind": "text",
+						"fields": [
+							"/items/*/minimum"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.price",
+						"kind": "text",
+						"fields": [
+							"/items/*/price"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/delivery@1.schema.json",
+				"title": "DeliveryContent",
+				"description": "Delivery zones content: the heading, a description and the zones, each with the area, the delivery time, the price and the minimum order as they are shown. One object is valid in every delivery layout (rows, cards).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the zones, nearest first",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 6,
+						"items": {
+							"title": "DeliveryZone",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title",
+								"price"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"title": {
+									"description": "the area of the zone",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"time": {
+									"description": "the delivery time as it is shown; empty: none",
+									"type": "string",
+									"maxLength": 40
+								},
+								"price": {
+									"description": "the delivery price as it is shown (free, 290 ₽)",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"minimum": {
+									"description": "the minimum order as it is shown; empty: none",
+									"type": "string",
+									"maxLength": 60
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"item": "digital-simple",
+			"title": "Digital Simple",
+			"description": "The heading, one paragraph and the digital goods (the format as a pill, the name as a link, a line, the price): on cards in three columns, or rows with the price at the end.",
+			"category": "product",
+			"prototype": "digital-simple.svelte",
+			"contract": {
+				"item": "digital-simple",
+				"version": 1,
+				"block": "block.digitalsimple",
+				"organism": "DigitalSimple",
+				"line": "simple",
+				"model": "digital@1",
+				"modelSchema": "https://registry.buildy.tw/models/digital@1.schema.json",
+				"axes": {
+					"layout": [
+						"cards",
+						"rows"
+					]
+				},
+				"defaults": {
+					"layout": "cards"
+				},
+				"variants": [
+					{
+						"id": "cards3",
+						"label": "Three cards",
+						"axes": {
+							"layout": "cards"
+						}
+					},
+					{
+						"id": "rows",
+						"label": "Rows, the price at the end",
+						"axes": {
+							"layout": "rows"
+						},
+						"settings": {
+							"align": "start"
+						}
+					}
+				],
+				"defaultVariant": "cards3",
+				"settings": {
+					"level": {
+						"type": "1 | 2 | 3",
+						"default": 2
+					},
+					"padding": {
+						"type": "\"compact\" | \"standard\" | \"spacious\"",
+						"default": "standard"
+					},
+					"align": {
+						"type": "\"start\" | \"center\" | \"end\"",
+						"default": "center"
+					},
+					"landmarkLabel": {
+						"type": "string"
+					}
+				},
+				"modes": [
+					"wireframe"
+				],
+				"defaultMode": "wireframe",
+				"places": [
+					{
+						"place": "title",
+						"kind": "heading",
+						"fields": [
+							"/title"
+						]
+					},
+					{
+						"place": "description",
+						"kind": "text",
+						"fields": [
+							"/description"
+						]
+					},
+					{
+						"place": "items.format",
+						"kind": "badge",
+						"fields": [
+							"/items/*/format"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.title",
+						"kind": "heading",
+						"fields": [
+							"/items/*/title",
+							"/items/*/href"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.description",
+						"kind": "text",
+						"fields": [
+							"/items/*/description"
+						],
+						"list": "items"
+					},
+					{
+						"place": "items.price",
+						"kind": "text",
+						"fields": [
+							"/items/*/price"
+						],
+						"list": "items"
+					}
+				],
+				"wireframe": {
+					"items": 3
+				}
+			},
+			"model": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://registry.buildy.tw/models/digital@1.schema.json",
+				"title": "DigitalContent",
+				"description": "Digital goods content: the heading, a description and an ordered list of digital goods, each with the format, the name, a line, the price as it is shown and an optional address. One object is valid in every layout (cards, rows).",
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"title",
+					"items"
+				],
+				"properties": {
+					"title": {
+						"description": "the heading of the section",
+						"type": "string",
+						"maxLength": 120,
+						"minLength": 1,
+						"pattern": "\\S"
+					},
+					"description": {
+						"description": "one paragraph under the heading; empty: none",
+						"type": "string",
+						"maxLength": 400
+					},
+					"items": {
+						"description": "the goods, in the order they are shown",
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 9,
+						"items": {
+							"title": "DigitalGood",
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"id",
+								"title",
+								"price"
+							],
+							"properties": {
+								"id": {
+									"description": "stable key of the entry (the Codex entry id)",
+									"type": "string",
+									"pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+								},
+								"format": {
+									"description": "the format as a short pill (PDF, Figma, video course); empty: none",
+									"type": "string",
+									"maxLength": 40
+								},
+								"title": {
+									"description": "the name of the good",
+									"type": "string",
+									"maxLength": 80,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"description": {
+									"description": "one line about the good; empty: none",
+									"type": "string",
+									"maxLength": 200
+								},
+								"price": {
+									"description": "the price as it is shown (990 ₽, free)",
+									"type": "string",
+									"maxLength": 40,
+									"minLength": 1,
+									"pattern": "\\S"
+								},
+								"href": {
+									"description": "the address of the good page; empty: no link",
+									"type": "string",
+									"maxLength": 2048,
+									"pattern": "^(?:(?:https?|mailto|tel):|(?![A-Za-z][A-Za-z0-9+.-]*:))"
 								}
 							}
 						}

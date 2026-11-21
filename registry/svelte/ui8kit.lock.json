@@ -12,6 +12,17 @@
         "src/compose/Alert.svelte": "37e342bfd9dbabc0abd650871b82addd8be3016997ae9f802ff1f65bf42c85aa"
       }
     },
+    "registry.buildy.tw|svelte|amenities-simple": {
+      "name": "amenities-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/amenities-simple.svelte": "2e70e2d1f965e4951c888df982754cb29525a8f6bf308dbdd936a0e21bd77430",
+        "src/blocks/amenities-simple.types.ts": "645c55e6e28826b917929cf90a2c006dfb97f2f630ef989a4b855c52e220a6ed"
+      }
+    },
     "registry.buildy.tw|svelte|article-lead": {
       "name": "article-lead",
       "type": "registry:block",
@@ -270,6 +281,17 @@
         "src/blocks/cta-simple.svelte": "47f189f1e6f4ec9039e5fb35834c32b79f212df9c92587dfe7b0e5746080fdac"
       }
     },
+    "registry.buildy.tw|svelte|delivery-simple": {
+      "name": "delivery-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/delivery-simple.svelte": "c5da4da4aa3cc39b1bd633fe05b840e22096ad8e9600cbc31462ffbabb92e4e2",
+        "src/blocks/delivery-simple.types.ts": "b94d01fc03d3a322dc39b2f22cf63cf6b5a9cd8ac9b4936bb9cb8be47e82d2f5"
+      }
+    },
     "registry.buildy.tw|svelte|dialog": {
       "name": "dialog",
       "type": "registry:ui",
@@ -278,6 +300,17 @@
       "runtime": "svelte",
       "files": {
         "src/compose/Dialog.svelte": "43a97462c5f0aa5b0fd3406c04e7afb6b79f9d6113e39e323ca36d59ae889ae6"
+      }
+    },
+    "registry.buildy.tw|svelte|digital-simple": {
+      "name": "digital-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/svelte",
+      "version": "0.1.0",
+      "runtime": "svelte",
+      "files": {
+        "src/blocks/digital-simple.svelte": "ebbe14407624b5065d585134abb5b67c3cfdc22cc0e7a4c227db2369682c677f",
+        "src/blocks/digital-simple.types.ts": "a6a16e3b9fd3bcbcd42066e7e0cfa0010ae40aedb24c1e5e92fad83a6eae5afb"
       }
     },
     "registry.buildy.tw|svelte|disclosure": {

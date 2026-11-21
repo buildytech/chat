@@ -4,12 +4,12 @@
 		"cli": "ui8kit@3.5.0",
 		"registry": "https://registry.buildy.tw",
 		"runtime": "svelte",
-		"blocks": ["hero-simple", "intro-simple", "gallery-hero", "split-simple", "features-simple", "stats-simple", "testimonials-simple", "logos-simple", "team-simple", "photos-simple", "stories-simple", "faq-simple", "steps-simple", "feature-showcase-simple", "header-simple", "footer-simple", "event-intro", "profile-intro", "rating-simple", "error-simple", "figure-simple", "pull-quote-simple", "article-simple", "article-lead", "topics-simple", "chapters-simple", "pricing-simple", "contacts-simple", "locations-simple", "offers-simple", "products-simple", "product-simple", "collections-simple", "specs-simple", "compare-simple", "course-outline", "choice-links", "purchase-simple", "store-policies", "product-reviews", "menu-simple", "cta-simple", "promo-simple", "hours-simple", "rooms-simple", "guarantees-simple", "services-simple", "cases-simple", "timeline-simple"],
+		"blocks": ["hero-simple", "intro-simple", "gallery-hero", "split-simple", "features-simple", "stats-simple", "testimonials-simple", "logos-simple", "team-simple", "photos-simple", "stories-simple", "faq-simple", "steps-simple", "feature-showcase-simple", "header-simple", "footer-simple", "event-intro", "profile-intro", "rating-simple", "error-simple", "figure-simple", "pull-quote-simple", "article-simple", "article-lead", "topics-simple", "chapters-simple", "pricing-simple", "contacts-simple", "locations-simple", "offers-simple", "products-simple", "product-simple", "collections-simple", "specs-simple", "compare-simple", "course-outline", "choice-links", "purchase-simple", "store-policies", "product-reviews", "menu-simple", "cta-simple", "promo-simple", "hours-simple", "rooms-simple", "guarantees-simple", "services-simple", "cases-simple", "timeline-simple", "amenities-simple", "delivery-simple", "digital-simple"],
 		"components": ["field"]
 	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
-		"commit": "4f3d059851db449788210ced05101eeae85ed60f",
+		"commit": "0d0d3e8cb8fab385ec953c4741e6250ce22aabd7",
 		"generated": "packages/blocks/src/generated",
 		"tokens": "packages/blocks/src/tokens.css"
 	},
