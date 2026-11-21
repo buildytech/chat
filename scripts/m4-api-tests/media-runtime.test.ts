@@ -9,12 +9,12 @@ type Call = { url: string; init?: RequestInit };
 async function withFetch<T>(responses: Array<() => Response>, run: (calls: Call[]) => Promise<T>): Promise<T> {
 	const original = globalThis.fetch;
 	const calls: Call[] = [];
-	globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+	globalThis.fetch = async (url: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
 		calls.push({ url: String(url), init });
 		const next = responses.shift();
 		if (!next) throw new Error("unexpected fetch");
 		return next();
-	}) as typeof fetch;
+	};
 	try {
 		return await run(calls);
 	} finally {

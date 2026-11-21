@@ -26,8 +26,12 @@ export type ImagePoll =
 	| Failure;
 
 export function isImageAspect(value: unknown): value is ImageAspect {
-	return typeof value === "string" && (IMAGE_ASPECTS as readonly string[]).includes(value);
+	return IMAGE_ASPECTS.some((aspect) => aspect === value);
 }
+
+type Json = Record<string, unknown>;
+const isJson = (value: unknown): value is Json => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+const field = (value: unknown, key: string): unknown => (isJson(value) ? value[key] : undefined);
 
 const REQUEST_ID = /^[A-Za-z0-9-]{8,80}$/;
 export const isImageRequestId = (value: unknown): value is string => typeof value === "string" && REQUEST_ID.test(value);
@@ -50,14 +54,14 @@ export async function submitImages(input: Transport & { prompt: string; aspect: 
 		signal: input.signal
 	});
 	if (!res.ok) return failure(res);
-	const payload = (await res.json().catch(() => null)) as { request_id?: unknown } | null;
-	if (!isImageRequestId(payload?.request_id)) return { ok: false, code: "malformed_response", message: "The image request returned no request id." };
-	return { ok: true, requestId: payload.request_id };
+	const requestId = field(await res.json().catch(() => null), "request_id");
+	if (!isImageRequestId(requestId)) return { ok: false, code: "malformed_response", message: "The image request returned no request id." };
+	return { ok: true, requestId };
 }
 
 function httpsUrls(data: unknown): string[] {
 	if (!Array.isArray(data)) return [];
-	return data.map((item) => (item && typeof item === "object" ? (item as { url?: unknown }).url : null)).filter((url): url is string => typeof url === "string" && url.startsWith("https://") && url.length <= 2048);
+	return data.map((item) => field(item, "url")).filter((url): url is string => typeof url === "string" && url.startsWith("https://") && url.length <= 2048);
 }
 
 /** Read one deferred request: pending, done (temporary https URLs and the billed cost), or failed. */
@@ -72,11 +76,13 @@ export async function pollImages(input: Transport & { requestId: string }): Prom
 		return { ok: true, status: "pending" };
 	}
 	if (!res.ok) return failure(res);
-	const payload = (await res.json().catch(() => null)) as { status?: unknown; data?: unknown; error?: { code?: unknown }; usage?: { cost_in_usd_ticks?: unknown } } | null;
-	if (payload?.status === "pending") return { ok: true, status: "pending" };
-	if (payload?.status === "failed") return { ok: false, code: typeof payload.error?.code === "string" ? `image_${payload.error.code}` : "image_failed", message: "The image model could not draw this brief." };
-	const urls = httpsUrls(payload?.data);
+	const payload: unknown = await res.json().catch(() => null);
+	const status = field(payload, "status");
+	if (status === "pending") return { ok: true, status: "pending" };
+	const code = field(field(payload, "error"), "code");
+	if (status === "failed") return { ok: false, code: typeof code === "string" ? `image_${code}` : "image_failed", message: "The image model could not draw this brief." };
+	const urls = httpsUrls(field(payload, "data"));
 	if (!urls.length) return { ok: false, code: "malformed_response", message: "The image request finished without pictures." };
-	const ticks = payload?.usage?.cost_in_usd_ticks;
+	const ticks = field(field(payload, "usage"), "cost_in_usd_ticks");
 	return { ok: true, status: "done", urls, costUsdTicks: typeof ticks === "number" && Number.isFinite(ticks) ? ticks : null };
 }

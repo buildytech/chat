@@ -10,11 +10,12 @@ import type { Project } from "../project/types.ts";
 /**
  * Places in the core UI where a module renders a component, with the props the core passes (a module reads the rest from
  * its own state). `preview.review`: the preview's status area (a candidate page waiting for Apply or Discard).
- * `block.actions`: a block's provenance row in the preview.
+ * `block.actions`: a block's provenance row in the preview. `inspector.block`: the Inspector of the selected block, above its fields.
  */
 export type SlotProps = {
 	"preview.review": Record<string, never>;
 	"block.actions": { blockId: string };
+	"inspector.block": { blockId: string };
 };
 export type SlotName = keyof SlotProps;
 

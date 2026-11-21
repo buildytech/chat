@@ -7,6 +7,8 @@
 	import ChatMessage from "./ChatMessage.svelte";
 	import HomeOnboarding from "./HomeOnboarding.svelte";
 	import AddModelDialog from "./AddModelDialog.svelte";
+	import MediaPanel from "./MediaPanel.svelte";
+	import { getComposerMode } from "../media/media.svelte.ts";
 
 	let {
 		session,
@@ -37,7 +39,8 @@
 	} = $props();
 
 	const messages = $derived(session?.messages ?? []);
-	const empty = $derived(messages.length === 0);
+	const media = $derived(getComposerMode() === "media");
+	const empty = $derived(messages.length === 0 && !media);
 
 	let draft = $state("");
 	let addModelOpen = $state(false);
@@ -61,6 +64,9 @@
 			{sessionUsage}
 		/>
 	{:else}
+		{#if media}
+			<MediaPanel />
+		{:else}
 		<Stack align="stretch" class="min-h-0 flex-1 gap-6 overflow-y-auto p-4">
 			<Stack align="stretch" class="mx-auto w-full max-w-2xl gap-6">
 				{#each messages as message (message.id)}
@@ -73,6 +79,7 @@
 				{/each}
 			</Stack>
 		</Stack>
+		{/if}
 		<ChatComposer
 			disabled={busy}
 			{busy}

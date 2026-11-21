@@ -16,6 +16,7 @@ import { beforeHydrate, beforeProjectChange, getChatMode, projectOpened, recover
 import { chatOf } from "./core/view";
 import BlockScopeAction from "./ui/BlockScopeAction.svelte";
 import ChatPanel from "./ui/ChatPanel.svelte";
+import MediaInspector from "./ui/MediaInspector.svelte";
 import ProposalReview from "./ui/ProposalReview.svelte";
 
 export const chatModule: BuilderModule = {
@@ -26,7 +27,7 @@ export const chatModule: BuilderModule = {
 	newProject: () => ({ title: t("thread.untitled"), ext: { chat: { messages: [], mode: run.pendingMode } } }),
 	tabs: [{ id: "chat", labelKey: "leftPanel.chat", icon: MessageSquare, panel: ChatPanel }],
 	leftSurface: { icon: MessageSquare, tabKey: "shell.tabChat", regionKey: "shell.chatColumn", hideKey: "workspace.hideChat", showKey: "workspace.showChat" },
-	slots: { "preview.review": ProposalReview, "block.actions": BlockScopeAction },
+	slots: { "preview.review": ProposalReview, "block.actions": BlockScopeAction, "inspector.block": MediaInspector },
 	hasActivity: (project) => Boolean(project && chatOf(project)?.messages?.length),
 	editorMode: getChatMode,
 	sessionSettings: {

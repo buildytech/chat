@@ -66,7 +66,8 @@
       "live-replay.test.ts",
       "session-url.test.ts",
       "svelte-code.test.ts",
-      "ui-skin.test.ts"
+      "ui-skin.test.ts",
+      "media-slots.test.ts"
     ]
   },
   "live": [

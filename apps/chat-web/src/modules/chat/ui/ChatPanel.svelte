@@ -12,6 +12,7 @@
 	import { onMount } from "svelte";
 	import { getSelectedModelId, listChatModels, refreshAccountModels, setSelectedModelId } from "../browser/models.svelte.ts";
 	import ChatThread from "./ChatThread.svelte";
+	import { getComposerMode, mediaSend } from "../media/media.svelte.ts";
 
 	let busy = $state(false);
 	let modelEpoch = $state(0);
@@ -31,7 +32,8 @@
 	async function onSend(text: string) {
 		busy = true;
 		try {
-			await sendMessage(text);
+			if (getComposerMode() === "media") await mediaSend(text);
+			else await sendMessage(text);
 		} catch {
 			/* error surfaced via runtime.status */
 		} finally {

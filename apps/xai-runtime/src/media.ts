@@ -14,12 +14,14 @@ function json(status: number, body: unknown): Response {
 	return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 }
 
+const isBody = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
 async function readBody(request: Request): Promise<Record<string, unknown> | null> {
 	const raw = await request.text();
 	if (raw.length > MAX_BODY) return null;
 	try {
 		const body: unknown = JSON.parse(raw || "{}");
-		return body && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : null;
+		return isBody(body) ? body : null;
 	} catch {
 		return null;
 	}

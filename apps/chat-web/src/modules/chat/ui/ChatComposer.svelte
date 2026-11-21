@@ -13,9 +13,10 @@
 	import ComposerModelList from "./ComposerModelList.svelte";
 	import ComposerScope from "./ComposerScope.svelte";
 	import { t } from "$lib/i18n/dictionary";
+	import { valueOf } from "$lib/inspector/fields";
 	import { cn } from "$registry/utils/cn";
-	import { getChatMode, setChatMode, type CreatorRuntimeStatus } from "$modules/chat/core";
-	import { AGENT_MODES } from "@buildytech/chat-agent";
+	import type { CreatorRuntimeStatus } from "$modules/chat/core";
+	import { COMPOSER_MODES, getComposerMode, setComposerMode } from "../media/media.svelte.ts";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/chat-agent";
 
 	let {
@@ -75,9 +76,9 @@
 	});
 
 	// Ask / Build is the author's explicit choice (kept per chat); the host never guesses it from words.
-	const mode = $derived(getChatMode());
+	const mode = $derived(getComposerMode());
 	const fieldPlaceholder = $derived(
-		mode === "ask" ? t("composer.placeholderAsk") : placeholder || t("composer.placeholder"),
+		mode === "ask" ? t("composer.placeholderAsk") : mode === "media" ? t("composer.placeholderMedia") : placeholder || t("composer.placeholder"),
 	);
 	const cannotSend = $derived(disabled || sendDisabled || !(draft.trim() || variant === "thread"));
 
@@ -152,7 +153,7 @@
 				class="min-h-16 w-full resize-none overflow-y-auto rounded border-0 bg-transparent px-2 py-2 text-xs leading-4 text-foreground shadow-none outline-none"
 				value={draft}
 				aria-describedby="composer-hint"
-				oninput={(event: Event) => (draft = (event.currentTarget as HTMLTextAreaElement).value)}
+				oninput={(event: Event) => (draft = valueOf(event))}
 				onfocus={onFocus}
 				onblur={onBlur}
 				oncompositionstart={() => {
@@ -244,7 +245,7 @@
 				role="group"
 				aria-label={t("composer.modeLabel")}
 			>
-				{#each AGENT_MODES as option (option)}
+				{#each COMPOSER_MODES as option (option)}
 					<Button
 						type="button"
 						class={cn(
@@ -255,7 +256,7 @@
 						title={t(`composer.mode.${option}.hint`)}
 						data-mode={option}
 						onclick={() => {
-							setChatMode(option);
+							setComposerMode(option);
 							closeModeMenu();
 						}}
 					>

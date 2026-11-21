@@ -23,11 +23,12 @@ import { ArrowDown, ArrowUp, Copy, Redo2, RotateCcw, Trash2, SlidersHorizontal, 
 	import { inspectorModel } from "@buildytech/builder-core";
 	import { loadPropsGate } from "$lib/gates";
 	import { t } from "$lib/i18n/dictionary";
-	import { partitionFields, type FieldHandlers } from "$lib/inspector/fields";
+	import { partitionFields, valueOf, type FieldHandlers } from "$lib/inspector/fields";
 	import { inspector } from "$lib/inspector/inspector.svelte";
 	import { topLevelBlockId } from "$lib/inspector/geometry";
 	import { blocksOf, getCurrentPage, getSelectedBlockId } from "$lib/page-store";
 	import InspectorFields from "./InspectorFields.svelte";
+	import ModuleSlot from "./ModuleSlot.svelte";
 
 	const blocks = $derived.by(() => {
 		const page = getCurrentPage();
@@ -66,7 +67,7 @@ import { ArrowDown, ArrowUp, Copy, Redo2, RotateCcw, Trash2, SlidersHorizontal, 
 
 	function setVariant(event: Event) {
 		if (!model) return;
-		inspector.run({ op: "set_variant", blockId: model.blockId, variant: (event.currentTarget as HTMLSelectElement).value });
+		inspector.run({ op: "set_variant", blockId: model.blockId, variant: valueOf(event) });
 	}
 
 	// The props gate (Ajv over the pinned schemas) is a lazy chunk; edits fail closed until it is loaded.
@@ -151,6 +152,7 @@ import { ArrowDown, ArrowUp, Copy, Redo2, RotateCcw, Trash2, SlidersHorizontal, 
 						</Select>
 					</Field>
 				{/if}
+				<ModuleSlot name="inspector.block" props={{ blockId: model.blockId }} />
 				<InspectorFields fields={parts.main} blockId={model.blockId} {issues} {handlers} />
 				{#if parts.more.length}
 					<Disclosure variant="ghost" data-slot="inspector-more">
