@@ -21625,7 +21625,8 @@ const SYSTEM_COMMON = [
 	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
 	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
 	"- item is a block of the catalog (npx ui8kit add <item>); itemIndex lists every block with its category and variants (list_blocks shows their labels). variant is one of the item's variants: it sets the layout (where the picture is, how many columns), never the content; the host writes the layout axes it sets (media, cols, surface), so write variant and leave those props out. Settings such as align, padding and level are props too.",
-	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field (team members: id, title, description). A picture is an optional address prop: image with imageAlt on the hero, avatar on a team member, where get_block shows it; without it the block shows a placeholder, which is fine, so leave pictures out by default. Never invent a URL. Set a picture only when the author gave an address or asked for photos; then use only a direct https image URL of a real public photo you are sure exists (stock sites like images.unsplash.com or images.pexels.com), with a short imageAlt of what it shows; a value that is not https or a relative path is dropped with a note. Never write in the page text that photos were added unless you set them.",
+	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field (team members: id, title, description). A picture is an optional address prop: image with imageAlt on the hero, avatar on a team member, where get_block shows it; without it the block shows a placeholder, which is fine, so leave pictures out by default. Never invent a URL. Set a picture only when the author gave an address or asked for photos; then use only a direct https image URL of a real public photo you are sure exists (stock sites like images.unsplash.com or images.pexels.com), a value that is not https or a relative path is dropped with a note. Never write in the page text that photos were added unless you set them.",
+	"- imageAlt: on every block whose props have imageAlt, write it even when image is empty (Media mode draws the picture from it). One natural, descriptive sentence in the page language, 8 to 20 words, saying what is in the frame: the subject, its key details and the setting (light, place, mood), the way a careful SEO alt text reads. Never start with 'image of' or 'photo of', never stuff keywords or repeat the heading, never describe text, logos or the layout.",
 	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision: pick, replace, add, remove and reorder blocks as the request needs; a block may appear several times.",
 	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
 	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
@@ -22229,7 +22230,7 @@ exports["safeErrorMessage"] = safeErrorMessage;
 
 __def("packages/chat-agent/src/policy.ts", function (exports) {
 
-const POLICY_VERSION = "page-agent/13";
+const POLICY_VERSION = "page-agent/14";
 /** Non-secret catalog of the five verified text models. Bump when the selector set changes. */
 const MODEL_CATALOG_VERSION = "grok-text-5/2026-11-08";
 const TRIAL_POLICY_VERSION = `${POLICY_VERSION}+${MODEL_CATALOG_VERSION}`;
@@ -22986,9 +22987,101 @@ exports["providerStep"] = providerStep;
 
 });
 
+__def("packages/provider-xai/src/images.ts", function (exports) {
+const { classifyProviderFailure } = __req("packages/provider-xai/src/errors.ts");
+const XAI_IMAGE_MODEL = "grok-imagine-image-2.0";
+/** Aspect ratios the generations endpoint accepts that the page blocks use. */
+const IMAGE_ASPECTS = ["1:1", "4:3", "3:4", "16:9", "21:9"] as const;
+const MAX_IMAGE_CANDIDATES = 3;
+const MAX_IMAGE_PROMPT = 4000;
+
+type Transport = { apiKey: string; baseUrl: string; signal?: AbortSignal };
+type Failure = { ok: false; code: string; message: string; status?: number };
+
+function isImageAspect(value: unknown): value is ImageAspect {
+	return IMAGE_ASPECTS.some((aspect) => aspect === value);
+}
+
+type Json = Record<string, unknown>;
+const isJson = (value: unknown): value is Json => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+const field = (value: unknown, key: string): unknown => (isJson(value) ? value[key] : undefined);
+
+const REQUEST_ID = /^[A-Za-z0-9-]{8,80}$/;
+const isImageRequestId = (value: unknown): value is string => typeof value === "string" && REQUEST_ID.test(value);
+
+async function failure(res: Response): Promise<Failure> {
+	const body = await res.text().catch(() => "");
+	const failed = classifyProviderFailure(res.status, body.slice(0, 240));
+	return { ok: false, code: failed.code, message: failed.message, status: res.status };
+}
+
+/** Start one deferred generation of `n` candidates. Nothing is retried. */
+async function submitImages(input: Transport & { prompt: string; aspect: ImageAspect; n: number }): Promise<ImageSubmit> {
+	const n = Math.min(Math.max(Math.trunc(input.n), 1), MAX_IMAGE_CANDIDATES);
+	const prompt = input.prompt.trim().slice(0, MAX_IMAGE_PROMPT);
+	if (!prompt) return { ok: false, code: "empty_prompt", message: "The image brief is empty. No request was sent." };
+	const res = await fetch(`${input.baseUrl}/images/generations`, {
+		method: "POST",
+		headers: { Authorization: `Bearer ${input.apiKey}`, "Content-Type": "application/json", Accept: "application/json" },
+		body: JSON.stringify({ model: XAI_IMAGE_MODEL, prompt, n, aspect_ratio: input.aspect, response_format: "url", deferred: true }),
+		signal: input.signal
+	});
+	if (!res.ok) return failure(res);
+	const requestId = field(await res.json().catch(() => null), "request_id");
+	if (!isImageRequestId(requestId)) return { ok: false, code: "malformed_response", message: "The image request returned no request id." };
+	return { ok: true, requestId };
+}
+
+function httpsUrls(data: unknown): string[] {
+	if (!Array.isArray(data)) return [];
+	return data.map((item) => field(item, "url")).filter((url): url is string => typeof url === "string" && url.startsWith("https://") && url.length <= 2048);
+}
+
+/** Read one deferred request: pending, done (temporary https URLs and the billed cost), or failed. */
+async function pollImages(input: Transport & { requestId: string }): Promise<ImagePoll> {
+	if (!isImageRequestId(input.requestId)) return { ok: false, code: "bad_request_id", message: "Unknown image request." };
+	const res = await fetch(`${input.baseUrl}/images/${encodeURIComponent(input.requestId)}`, {
+		headers: { Authorization: `Bearer ${input.apiKey}`, Accept: "application/json" },
+		signal: input.signal
+	});
+	if (res.status === 202 || res.status === 404) {
+		await res.body?.cancel().catch(() => undefined);
+		return { ok: true, status: "pending" };
+	}
+	if (!res.ok) return failure(res);
+	const payload: unknown = await res.json().catch(() => null);
+	const status = field(payload, "status");
+	if (status === "pending") return { ok: true, status: "pending" };
+	const code = field(field(payload, "error"), "code");
+	if (status === "failed") return { ok: false, code: typeof code === "string" ? `image_${code}` : "image_failed", message: "The image model could not draw this brief." };
+	const urls = httpsUrls(field(payload, "data"));
+	if (!urls.length) return { ok: false, code: "malformed_response", message: "The image request finished without pictures." };
+	const ticks = field(field(payload, "usage"), "cost_in_usd_ticks");
+	return { ok: true, status: "done", urls, costUsdTicks: typeof ticks === "number" && Number.isFinite(ticks) ? ticks : null };
+}
+
+exports["XAI_IMAGE_MODEL"] = XAI_IMAGE_MODEL;
+exports["IMAGE_ASPECTS"] = IMAGE_ASPECTS;
+exports["MAX_IMAGE_CANDIDATES"] = MAX_IMAGE_CANDIDATES;
+exports["MAX_IMAGE_PROMPT"] = MAX_IMAGE_PROMPT;
+exports["isImageAspect"] = isImageAspect;
+exports["isImageRequestId"] = isImageRequestId;
+exports["submitImages"] = submitImages;
+exports["pollImages"] = pollImages;
+
+});
+
 __def("packages/provider-xai/src/index.ts", function (exports) {
 exports["providerStep"] = __req("packages/provider-xai/src/provider.ts")["providerStep"];
 exports["xaiCapabilities"] = __req("packages/provider-xai/src/capabilities.ts")["xaiCapabilities"];
+exports["IMAGE_ASPECTS"] = __req("packages/provider-xai/src/images.ts")["IMAGE_ASPECTS"];
+exports["MAX_IMAGE_CANDIDATES"] = __req("packages/provider-xai/src/images.ts")["MAX_IMAGE_CANDIDATES"];
+exports["MAX_IMAGE_PROMPT"] = __req("packages/provider-xai/src/images.ts")["MAX_IMAGE_PROMPT"];
+exports["XAI_IMAGE_MODEL"] = __req("packages/provider-xai/src/images.ts")["XAI_IMAGE_MODEL"];
+exports["isImageAspect"] = __req("packages/provider-xai/src/images.ts")["isImageAspect"];
+exports["isImageRequestId"] = __req("packages/provider-xai/src/images.ts")["isImageRequestId"];
+exports["pollImages"] = __req("packages/provider-xai/src/images.ts")["pollImages"];
+exports["submitImages"] = __req("packages/provider-xai/src/images.ts")["submitImages"];
 
 
 
@@ -23254,11 +23347,71 @@ exports["runtimeStatus"] = runtimeStatus;
 
 });
 
+__def("apps/xai-runtime/src/media.ts", function (exports) {
+const { readXaiKeyState, safeErrorMessage, secretValues, xaiBaseUrl } = __req("packages/chat-agent/src/index.ts");
+const { MAX_IMAGE_PROMPT, XAI_IMAGE_MODEL, isImageAspect, pollImages, submitImages } = __req("packages/provider-xai/src/index.ts");
+const MAX_BODY = 16_000;
+const POLL_MS = 20_000;
+
+function json(status: number, body: unknown): Response {
+	return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+}
+
+const isBody = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+async function readBody(request: Request): Promise<Record<string, unknown> | null> {
+	const raw = await request.text();
+	if (raw.length > MAX_BODY) return null;
+	try {
+		const body: unknown = JSON.parse(raw || "{}");
+		return isBody(body) ? body : null;
+	} catch {
+		return null;
+	}
+}
+
+/** One sanitized log line: action, outcome, timing and cost; never the prompt, URLs or headers. */
+function logMedia(event: Record<string, unknown>): void {
+	console.log(JSON.stringify({ runtime: "xai-grok", event: "xai_media", ...event }));
+}
+
+async function handleMedia(request: Request, env: EnvMap): Promise<Response> {
+	if (!readXaiKeyState(env).present) return json(503, { ok: false, code: "xai_api_key_missing", message: "XAI_API_KEY is not provisioned here. No provider call was made." });
+	const body = await readBody(request);
+	if (!body) return json(400, { ok: false, code: "invalid_body", message: "Send one JSON object." });
+	const transport = { apiKey: env.XAI_API_KEY!.trim(), baseUrl: xaiBaseUrl(env), signal: AbortSignal.timeout(POLL_MS) };
+	const started = Date.now();
+	try {
+		if (body.action === "generate") {
+			const prompt = typeof body.prompt === "string" ? body.prompt : "";
+			if (!prompt.trim() || prompt.length > MAX_IMAGE_PROMPT || !isImageAspect(body.aspect)) return json(422, { ok: false, code: "invalid_request", message: "A prompt (up to 4000 characters) and a supported aspect are required." });
+			const n = typeof body.n === "number" ? body.n : 3;
+			const out = await submitImages({ ...transport, prompt, aspect: body.aspect, n });
+			logMedia({ action: "generate", ok: out.ok, code: out.ok ? "ok" : out.code, aspect: body.aspect, n, ms: Date.now() - started });
+			return json(out.ok ? 202 : 502, { ...out, model: XAI_IMAGE_MODEL });
+		}
+		if (body.action === "result") {
+			const out = await pollImages({ ...transport, requestId: typeof body.requestId === "string" ? body.requestId : "" });
+			if (!out.ok || out.status === "done") logMedia({ action: "result", ok: out.ok, code: out.ok ? "done" : out.code, images: out.ok ? out.urls.length : 0, costUsdTicks: out.ok ? out.costUsdTicks : null });
+			return json(out.ok ? 200 : 502, { ...out, model: XAI_IMAGE_MODEL });
+		}
+		return json(422, { ok: false, code: "unknown_action", message: "action is generate or result." });
+	} catch (err) {
+		const safe = safeErrorMessage(err, secretValues(env));
+		return json(502, { ok: false, code: safe.code || "media_failed", message: "The image request could not be completed. No automatic retry was sent." });
+	}
+}
+
+exports["handleMedia"] = handleMedia;
+
+});
+
 __def("apps/xai-runtime/src/http.ts", function (exports) {
 const { emptyPage, installRenderProbe, probeFromModule } = __req("packages/builder-core/src/index.ts");
 const { clampRunBudgetMs, contractFingerprint, isAgentReply, gateRequest, isSharedPublicSurface, mapChatRunRequest, readEnv, readXaiKeyState, safeErrorMessage, xaiBaseUrl, secretValues, stripRuntimePrefix } = __req("packages/chat-agent/src/index.ts");
 const { runXaiCatalogTurn } = __req("apps/xai-runtime/src/chat-tools.ts");
 const { runtimeStatus } = __req("apps/xai-runtime/src/status.ts");
+const { handleMedia } = __req("apps/xai-runtime/src/media.ts");
 exports["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"] = __req("packages/chat-agent/src/index.ts")["VERCEL_HOBBY_SAFE_MAX_DURATION_SEC"];
 const MAX_BODY = 256_000;
 
@@ -23491,6 +23644,7 @@ async function handleRuntimeFetch(request: Request, env: EnvMap = readEnv(), opt
 			return jsonResponse(status.key.present ? 200 : 503, { ...status, contract: contractFingerprint() });
 		}
 		if (method === "POST" && path === "/v1/run") return await handleRun(request, env, opts);
+		if (method === "POST" && (path === "/v1/media" || path.startsWith("/v1/media/"))) return await handleMedia(request, env);
 		return jsonResponse(404, { error: { code: "not_found", message: "Unknown runtime path." } });
 	} catch (err) {
 		const safe = safeErrorMessage(err, secretValues(env));
