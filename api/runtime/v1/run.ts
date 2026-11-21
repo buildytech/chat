@@ -23373,7 +23373,7 @@ function assetUrl(raw: unknown): URL | null {
 	return url;
 }
 
-async function readCapped(res: Response): Promise<Uint8Array<ArrayBuffer> | null> {
+async function readCapped(res: Response, max: number): Promise<Uint8Array<ArrayBuffer> | null> {
 	if (!res.body) return null;
 	const reader = res.body.getReader();
 	const parts: Uint8Array[] = [];
@@ -23382,7 +23382,7 @@ async function readCapped(res: Response): Promise<Uint8Array<ArrayBuffer> | null
 		const { done, value } = await reader.read();
 		if (done) break;
 		total += value.length;
-		if (total > MAX_ASSET_BYTES) {
+		if (total > max) {
 			await reader.cancel().catch(() => undefined);
 			return null;
 		}
@@ -23401,16 +23401,17 @@ function logAsset(event: Record<string, unknown>): void {
 	console.log(JSON.stringify({ runtime: "xai-grok", event: "xai_media", action: "asset", ...event }));
 }
 
-async function handleAsset(raw: unknown, fetchImpl: typeof fetch = fetch): Promise<Response> {
+type Fetched = { ok: true; bytes: Uint8Array<ArrayBuffer>; type: string; host: string } | { ok: false; failure: AssetFailure; host: string };
+
+/** Reads an allowed picture (https, xAI image host, no redirects, picture type) up to `max` bytes. */
+async function fetchAllowedPicture(raw: unknown, max: number, fetchImpl: typeof fetch = fetch): Promise<Fetched> {
 	const url = assetUrl(raw);
-	if (!url) return fail({ status: 422, code: "asset_not_allowed" }, "Only https pictures of the xAI image hosts are proxied.");
-	const started = Date.now();
+	if (!url) return { ok: false, failure: { status: 422, code: "asset_not_allowed" }, host: "" };
 	let res: Response;
 	try {
 		res = await fetchImpl(url, { redirect: "error", headers: { accept: "image/*" }, signal: AbortSignal.timeout(ASSET_TIMEOUT_MS) });
 	} catch {
-		logAsset({ ok: false, code: "asset_unreachable", host: url.hostname, ms: Date.now() - started });
-		return fail({ status: 502, code: "asset_unreachable" }, "The picture could not be read.");
+		return { ok: false, failure: { status: 502, code: "asset_unreachable" }, host: url.hostname };
 	}
 	const type = (res.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
 	const length = Number(res.headers.get("content-length") ?? 0);
@@ -23418,30 +23419,166 @@ async function handleAsset(raw: unknown, fetchImpl: typeof fetch = fetch): Promi
 		? { status: res.status === 404 || res.status === 410 ? 404 : 502, code: `asset_upstream_${res.status}` }
 		: !ASSET_TYPES.has(type)
 			? { status: 415, code: "asset_not_image" }
-			: length > MAX_ASSET_BYTES
+			: length > max
 				? { status: 413, code: "asset_too_large" }
 				: null;
 	if (failure) {
 		await res.body?.cancel().catch(() => undefined);
-		logAsset({ ok: false, code: failure.code, host: url.hostname, ms: Date.now() - started });
-		return fail(failure, "The picture could not be read.");
+		return { ok: false, failure, host: url.hostname };
 	}
-	const bytes = await readCapped(res);
-	if (!bytes) {
-		logAsset({ ok: false, code: "asset_too_large", host: url.hostname, ms: Date.now() - started });
-		return fail({ status: 413, code: "asset_too_large" }, "The picture is larger than the proxy keeps.");
-	}
-	logAsset({ ok: true, host: url.hostname, bytes: bytes.length, ms: Date.now() - started });
-	return new Response(bytes, { status: 200, headers: { "content-type": type, "content-length": String(bytes.length), "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+	const bytes = await readCapped(res, max);
+	return bytes ? { ok: true, bytes, type, host: url.hostname } : { ok: false, failure: { status: 413, code: "asset_too_large" }, host: url.hostname };
 }
 
+async function handleAsset(raw: unknown, fetchImpl: typeof fetch = fetch): Promise<Response> {
+	const started = Date.now();
+	const got = await fetchAllowedPicture(raw, MAX_ASSET_BYTES, fetchImpl);
+	if (!got.ok) {
+		if (got.failure.code !== "asset_not_allowed") logAsset({ ok: false, code: got.failure.code, host: got.host, ms: Date.now() - started });
+		return fail(got.failure, got.failure.code === "asset_not_allowed" ? "Only https pictures of the xAI image hosts are proxied." : "The picture could not be read.");
+	}
+	logAsset({ ok: true, host: got.host, bytes: got.bytes.length, ms: Date.now() - started });
+	return new Response(got.bytes, { status: 200, headers: { "content-type": got.type, "content-length": String(got.bytes.length), "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+}
+
+exports["fetchAllowedPicture"] = fetchAllowedPicture;
 exports["handleAsset"] = handleAsset;
+
+});
+
+__def("apps/xai-runtime/src/media-encode.ts", function (exports) {
+const { fetchAllowedPicture } = __req("apps/xai-runtime/src/media-asset.ts");
+const MAX_ENCODE_BYTES = 4_000_000;
+const MAX_URL_BYTES = 24_000_000;
+/** The base64 answer must stay under Vercel's 4.5 MB response cap. */
+const MAX_ANSWER_BYTES = 3_200_000;
+const ENCODE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
+
+type Tier = { width: number; quality: number; sharpen: number };
+/** 1920 q82; 1280 q78 with a mild sharpen (sigma); 960 q72. */
+const TIERS: Tier[] = [
+	{ width: 960, quality: 72, sharpen: 0 },
+	{ width: 1280, quality: 78, sharpen: 0.6 },
+	{ width: 1920, quality: 82, sharpen: 0 }
+];
+/**
+ * The grade before encoding. `contrast`: -0.06 is 6% less contrast around mid grey. `cool`: 0.03 lowers red and raises blue
+ * by 3% (a slightly cooler white balance). Subtle on purpose: page art direction may be warm (embers, candle light).
+ */
+const FILTERS = { contrast: -0.06, cool: 0.03 } as const;
+const FILTER_LIMITS = { contrast: [-0.2, 0.1], cool: [-0.1, 0.1] } as const;
+
+type Filters = { contrast: number; cool: number };
+type Variant = { width: number; height: number; bytes: number; quality: number; sharpen: number; type: "image/webp"; data: string };
+type Sharp = typeof import("sharp").default;
+
+function json(status: number, body: unknown): Response {
+	return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+}
+
+const clamp = (value: number, [min, max]: [number, number]) => Math.min(max, Math.max(min, value));
+
+/** The grade of one request: the defaults, or a `contrast` / `cool` query value inside its limits. */
+function filtersOf(url: URL): Filters {
+	const read = (name: keyof Filters) => {
+		const raw = url.searchParams.get(name);
+		const value = raw === null ? Number.NaN : Number(raw);
+		return Number.isFinite(value) ? clamp(value, FILTER_LIMITS[name]) : FILTERS[name];
+	};
+	return { contrast: read("contrast"), cool: read("cool") };
+}
+
+/** Output widths for an original `width` px wide: each tier capped at the original, one size per width (the smaller tier wins). */
+function plan(width: number): Tier[] {
+	const out = new Map<number, Tier>();
+	for (const tier of TIERS) {
+		const target = Math.min(tier.width, width);
+		if (!out.has(target)) out.set(target, { ...tier, width: target });
+	}
+	return [...out.values()];
+}
+
+async function encodeOne(sharp: Sharp, input: Uint8Array, tier: Tier, filters: Filters): Promise<Variant> {
+	const a = 1 + filters.contrast;
+	let pipeline = sharp(input, { failOn: "error" })
+		.rotate()
+		.resize({ width: tier.width, withoutEnlargement: true })
+		.recomb([
+			[1 - filters.cool, 0, 0],
+			[0, 1, 0],
+			[0, 0, 1 + filters.cool]
+		])
+		.linear(a, 128 * (1 - a));
+	if (tier.sharpen > 0) pipeline = pipeline.sharpen({ sigma: tier.sharpen });
+	const { data, info } = await pipeline.webp({ quality: tier.quality, effort: 4 }).toBuffer({ resolveWithObject: true });
+	return { width: info.width, height: info.height, bytes: data.length, quality: tier.quality, sharpen: tier.sharpen, type: "image/webp", data: data.toString("base64") };
+}
+
+function logEncode(event: Record<string, unknown>): void {
+	console.log(JSON.stringify({ runtime: "xai-grok", event: "xai_media", action: "encode", ...event }));
+}
+
+async function readImage(request: Request): Promise<Uint8Array | null> {
+	const length = Number(request.headers.get("content-length") ?? 0);
+	if (length > MAX_ENCODE_BYTES) return null;
+	const bytes = new Uint8Array(await request.arrayBuffer());
+	return bytes.length > 0 && bytes.length <= MAX_ENCODE_BYTES ? bytes : null;
+}
+
+type Input = { ok: true; bytes: Uint8Array; type: string } | { ok: false; response: Response };
+
+/** The original: read from `url` (xAI image hosts only) or taken from the body. */
+async function inputOf(request: Request, url: URL): Promise<Input> {
+	const source = url.searchParams.get("url");
+	if (source !== null) {
+		const got = await fetchAllowedPicture(source, MAX_URL_BYTES);
+		return got.ok ? { ok: true, bytes: got.bytes, type: got.type } : { ok: false, response: json(got.failure.status, { ok: false, code: got.failure.code, message: "The picture could not be read from that address." }) };
+	}
+	const type = (request.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
+	if (!ENCODE_TYPES.has(type)) return { ok: false, response: json(415, { ok: false, code: "encode_not_image", message: "The body must be the picture itself: jpeg, png, webp, avif or gif." }) };
+	const bytes = await readImage(request);
+	return bytes ? { ok: true, bytes, type } : { ok: false, response: json(413, { ok: false, code: "encode_too_large", message: "The picture is empty or larger than 4 MB." }) };
+}
+
+async function handleEncode(request: Request, loadSharp: () => Promise<Sharp> = async () => (await import("sharp")).default): Promise<Response> {
+	const url = new URL(request.url);
+	const got = await inputOf(request, url);
+	if (!got.ok) return got.response;
+	const { bytes: input, type } = got;
+	const filters = filtersOf(url);
+	const started = Date.now();
+	try {
+		const sharp = await loadSharp();
+		const meta = await sharp(input, { failOn: "error" }).rotate().metadata();
+		const width = meta.autoOrient?.width ?? meta.width;
+		const height = meta.autoOrient?.height ?? meta.height;
+		if (!width || !height) throw new Error("no size");
+		const variants: Variant[] = [];
+		let total = 0;
+		for (const tier of plan(width)) {
+			const variant = await encodeOne(sharp, input, tier, filters);
+			total += variant.data.length;
+			if (total > MAX_ANSWER_BYTES) break;
+			variants.push(variant);
+		}
+		if (!variants.length) throw new Error("no variant fits the answer");
+		logEncode({ ok: true, width, bytes: input.length, out: variants.map((v) => [v.width, v.bytes]), ms: Date.now() - started });
+		return json(200, { ok: true, original: { width, height, bytes: input.length, type }, filters, variants });
+	} catch (err) {
+		const code = err instanceof Error && /unsupported|corrupt|bad|invalid|no size/i.test(err.message) ? "encode_unreadable" : "encode_failed";
+		logEncode({ ok: false, code, bytes: input.length, ms: Date.now() - started });
+		return json(422, { ok: false, code, message: "The picture could not be converted; keep the original." });
+	}
+}
+
+exports["handleEncode"] = handleEncode;
 
 });
 
 __def("apps/xai-runtime/src/media.ts", function (exports) {
 const { readXaiKeyState, safeErrorMessage, secretValues, xaiBaseUrl } = __req("packages/chat-agent/src/index.ts");
 const { handleAsset } = __req("apps/xai-runtime/src/media-asset.ts");
+const { handleEncode } = __req("apps/xai-runtime/src/media-encode.ts");
 const { MAX_IMAGE_PROMPT, XAI_IMAGE_MODEL, isImageAspect, pollImages, submitImages } = __req("packages/provider-xai/src/index.ts");
 const MAX_BODY = 16_000;
 const POLL_MS = 20_000;
@@ -23469,6 +23606,7 @@ function logMedia(event: Record<string, unknown>): void {
 }
 
 async function handleMedia(request: Request, env: EnvMap): Promise<Response> {
+	if (new URL(request.url).searchParams.get("action") === "encode") return handleEncode(request);
 	const body = await readBody(request);
 	if (!body) return json(400, { ok: false, code: "invalid_body", message: "Send one JSON object." });
 	if (body.action === "asset") return handleAsset(body.url);

@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const entryRel = "apps/xai-runtime/src/vercel-fetch.ts";
-const EXTERNAL = new Set(["ai", "@ai-sdk/openai", "zod"]);
+const EXTERNAL = new Set(["ai", "@ai-sdk/openai", "zod", "sharp"]);
 /**
  * npm modules the bundle imports statically (hoisted to the top of the entry as ESM default imports; Vercel traces them
  * into the function). The props gate validates synchronously, so its validator cannot be a dynamic import.

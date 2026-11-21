@@ -28,7 +28,7 @@ function assetUrl(raw: unknown): URL | null {
 	return url;
 }
 
-async function readCapped(res: Response): Promise<Uint8Array<ArrayBuffer> | null> {
+async function readCapped(res: Response, max: number): Promise<Uint8Array<ArrayBuffer> | null> {
 	if (!res.body) return null;
 	const reader = res.body.getReader();
 	const parts: Uint8Array[] = [];
@@ -37,7 +37,7 @@ async function readCapped(res: Response): Promise<Uint8Array<ArrayBuffer> | null
 		const { done, value } = await reader.read();
 		if (done) break;
 		total += value.length;
-		if (total > MAX_ASSET_BYTES) {
+		if (total > max) {
 			await reader.cancel().catch(() => undefined);
 			return null;
 		}
@@ -56,16 +56,17 @@ function logAsset(event: Record<string, unknown>): void {
 	console.log(JSON.stringify({ runtime: "xai-grok", event: "xai_media", action: "asset", ...event }));
 }
 
-export async function handleAsset(raw: unknown, fetchImpl: typeof fetch = fetch): Promise<Response> {
+type Fetched = { ok: true; bytes: Uint8Array<ArrayBuffer>; type: string; host: string } | { ok: false; failure: AssetFailure; host: string };
+
+/** Reads an allowed picture (https, xAI image host, no redirects, picture type) up to `max` bytes. */
+export async function fetchAllowedPicture(raw: unknown, max: number, fetchImpl: typeof fetch = fetch): Promise<Fetched> {
 	const url = assetUrl(raw);
-	if (!url) return fail({ status: 422, code: "asset_not_allowed" }, "Only https pictures of the xAI image hosts are proxied.");
-	const started = Date.now();
+	if (!url) return { ok: false, failure: { status: 422, code: "asset_not_allowed" }, host: "" };
 	let res: Response;
 	try {
 		res = await fetchImpl(url, { redirect: "error", headers: { accept: "image/*" }, signal: AbortSignal.timeout(ASSET_TIMEOUT_MS) });
 	} catch {
-		logAsset({ ok: false, code: "asset_unreachable", host: url.hostname, ms: Date.now() - started });
-		return fail({ status: 502, code: "asset_unreachable" }, "The picture could not be read.");
+		return { ok: false, failure: { status: 502, code: "asset_unreachable" }, host: url.hostname };
 	}
 	const type = (res.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
 	const length = Number(res.headers.get("content-length") ?? 0);
@@ -73,19 +74,24 @@ export async function handleAsset(raw: unknown, fetchImpl: typeof fetch = fetch)
 		? { status: res.status === 404 || res.status === 410 ? 404 : 502, code: `asset_upstream_${res.status}` }
 		: !ASSET_TYPES.has(type)
 			? { status: 415, code: "asset_not_image" }
-			: length > MAX_ASSET_BYTES
+			: length > max
 				? { status: 413, code: "asset_too_large" }
 				: null;
 	if (failure) {
 		await res.body?.cancel().catch(() => undefined);
-		logAsset({ ok: false, code: failure.code, host: url.hostname, ms: Date.now() - started });
-		return fail(failure, "The picture could not be read.");
+		return { ok: false, failure, host: url.hostname };
 	}
-	const bytes = await readCapped(res);
-	if (!bytes) {
-		logAsset({ ok: false, code: "asset_too_large", host: url.hostname, ms: Date.now() - started });
-		return fail({ status: 413, code: "asset_too_large" }, "The picture is larger than the proxy keeps.");
+	const bytes = await readCapped(res, max);
+	return bytes ? { ok: true, bytes, type, host: url.hostname } : { ok: false, failure: { status: 413, code: "asset_too_large" }, host: url.hostname };
+}
+
+export async function handleAsset(raw: unknown, fetchImpl: typeof fetch = fetch): Promise<Response> {
+	const started = Date.now();
+	const got = await fetchAllowedPicture(raw, MAX_ASSET_BYTES, fetchImpl);
+	if (!got.ok) {
+		if (got.failure.code !== "asset_not_allowed") logAsset({ ok: false, code: got.failure.code, host: got.host, ms: Date.now() - started });
+		return fail(got.failure, got.failure.code === "asset_not_allowed" ? "Only https pictures of the xAI image hosts are proxied." : "The picture could not be read.");
 	}
-	logAsset({ ok: true, host: url.hostname, bytes: bytes.length, ms: Date.now() - started });
-	return new Response(bytes, { status: 200, headers: { "content-type": type, "content-length": String(bytes.length), "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+	logAsset({ ok: true, host: got.host, bytes: got.bytes.length, ms: Date.now() - started });
+	return new Response(got.bytes, { status: 200, headers: { "content-type": got.type, "content-length": String(got.bytes.length), "cache-control": "no-store", "x-content-type-options": "nosniff" } });
 }

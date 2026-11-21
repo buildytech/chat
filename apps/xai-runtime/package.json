@@ -18,7 +18,8 @@
     "@buildytech/builder-core": "0.0.0",
     "@buildytech/chat-agent": "0.0.0",
     "@buildytech/page-contract": "0.0.0",
-    "@buildytech/provider-xai": "0.0.0"
+    "@buildytech/provider-xai": "0.0.0",
+    "sharp": "0.35.5"
   },
   "engines": {
     "node": "22.x"

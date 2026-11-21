@@ -3,10 +3,11 @@
  * request and answers `{ requestId }`; `{ action: "result", requestId }` reads it (`pending`, or `done` with temporary https
  * URLs and the billed cost). The key stays here; the browser never sees it. No page is read or written: the browser picks a
  * candidate and writes `image` through its own page gate. `{ action: "asset", url }` is the ZIP export's picture proxy
- * (media-asset.ts, ADR 0061); it needs no key.
+ * (media-asset.ts, ADR 0061); `?action=encode` with a picture body answers its WebP sizes (media-encode.ts, ADR 0062). Neither needs the key.
  */
 import { readXaiKeyState, safeErrorMessage, secretValues, xaiBaseUrl, type EnvMap } from "@buildytech/chat-agent";
 import { handleAsset } from "./media-asset.ts";
+import { handleEncode } from "./media-encode.ts";
 import { MAX_IMAGE_PROMPT, XAI_IMAGE_MODEL, isImageAspect, pollImages, submitImages } from "@buildytech/provider-xai";
 
 const MAX_BODY = 16_000;
@@ -35,6 +36,7 @@ function logMedia(event: Record<string, unknown>): void {
 }
 
 export async function handleMedia(request: Request, env: EnvMap): Promise<Response> {
+	if (new URL(request.url).searchParams.get("action") === "encode") return handleEncode(request);
 	const body = await readBody(request);
 	if (!body) return json(400, { ok: false, code: "invalid_body", message: "Send one JSON object." });
 	if (body.action === "asset") return handleAsset(body.url);
