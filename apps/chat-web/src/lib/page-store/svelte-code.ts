@@ -3,9 +3,9 @@
  * `src`): the page is src/App.svelte composing one src/sections/<block-id>.svelte per page block, and every section is a
  * UI8Kit registry block (src/blocks/<item>.svelte) with its props (ADR 0034: the block's `props`, exactly). The registry files themselves come from the pinned snapshot (registry/svelte), never from here.
  */
-import { itemInfo, registryClosure, registryItemClosure, registrySkin, renderBlock, skinItem, type BlockRender } from "@buildytech/builder-core";
+import { itemInfo, propsSchemaFor, registryClosure, registryItemClosure, registrySkin, renderBlock, skinItem, type BlockRender } from "@buildytech/builder-core";
 import type { BlockV2, PageV2 } from "@buildytech/page-contract";
-import { IMAGES_DIR, propsWithImports, type LocalImages } from "./pack-images.ts";
+import { IMAGES_DIR, propsWithImports, type LocalImages, type SrcsetKeyOf } from "./pack-images.ts";
 
 /** CLI install root of the exported project (ui8kit.config.json `dir`, the CLI default). */
 export const INSTALL_ROOT = "src";
@@ -34,16 +34,39 @@ function jsonProps(value: unknown): string {
  * Events and slots of the block come from its published props schema (`events`, `slots` next to `schema`): they are
  * not data, so the section wires each event to a handler stub the project fills in and names the slots it may pass.
  */
+type Schema = Record<string, unknown>;
+const isSchema = (value: unknown): value is Schema => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+/** The object schemas a props pointer can land on (through $ref, anyOf/oneOf, properties and array items). */
+function schemasAt(root: Schema, schema: unknown, segments: readonly string[]): Schema[] {
+	if (!isSchema(schema)) return [];
+	const defs = isSchema(root.$defs) ? root.$defs : {};
+	const ref = typeof schema.$ref === "string" && schema.$ref.startsWith("#/$defs/") ? defs[schema.$ref.slice(8)] : undefined;
+	if (ref) return schemasAt(root, ref, segments);
+	const alternatives = [...(Array.isArray(schema.anyOf) ? schema.anyOf : []), ...(Array.isArray(schema.oneOf) ? schema.oneOf : [])];
+	if (alternatives.length) return alternatives.flatMap((alt) => schemasAt(root, alt, segments));
+	if (!segments.length) return [schema];
+	const [head, ...rest] = segments;
+	if (/^\d+$/.test(head!) && schema.items !== undefined) return schemasAt(root, schema.items, rest);
+	return isSchema(schema.properties) ? schemasAt(root, schema.properties[head!], rest) : [];
+}
+
+/** `image` -> `imageSrcset` where the block's published props schema has it next to `image` (ADR 0062). */
+function srcsetKeysOf(item: string): SrcsetKeyOf {
+	const root = propsSchemaFor(item);
+	return (pointer, key) => {
+		if (!root || key !== "image") return null;
+		const segments = pointer.split("/").slice(1).map((s) => s.replace(/~1/g, "/").replace(/~0/g, "~"));
+		return schemasAt(root, root, segments).some((schema) => isSchema(schema.properties) && "imageSrcset" in schema.properties) ? "imageSrcset" : null;
+	};
+}
+
 function sectionForRegistry(render: BlockRender, images: LocalImages | null): string {
 	const ident = organismIdent(render.organism);
-	const local = propsWithImports(render.props, images);
+	const local = propsWithImports(render.props, images, srcsetKeysOf(render.item));
 	let propsText = jsonProps(local.props);
-	const pictures = new Map<string, string>();
-	for (const [marker, file] of local.imports) {
-		propsText = propsText.split(JSON.stringify(marker)).join(file.name);
-		pictures.set(file.name, `\n\timport ${file.name} from "../${file.path.slice(INSTALL_ROOT.length + 1)}";`);
-	}
-	const pictureImports = [...pictures.values()].join("");
+	for (const [marker, code] of local.code) propsText = propsText.split(JSON.stringify(marker)).join(code);
+	const pictureImports = local.imports.map((file) => `\n\timport ${file.name} from "../${file.path.slice(INSTALL_ROOT.length + 1)}";`).join("");
 	const handlers = render.events.map((event) => `on${event}`);
 	const wiring = handlers.length
 		? `\n\n\t// Events of ${render.item} (registry props schema): connect them to the app.\n${handlers

@@ -83,3 +83,45 @@ async function fetchViaRuntime(url: string): Promise<{ bytes: Uint8Array; type: 
 }
 
 export const runtimeImageSource = { handles: proxiedHost, fetch: fetchViaRuntime };
+
+type EncodedSize = { width: number; height: number; bytes: Uint8Array; type: string; quality?: number; sharpen?: number };
+
+function base64Bytes(data: string): Uint8Array {
+	const binary = atob(data);
+	const out = new Uint8Array(binary.length);
+	for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
+	return out;
+}
+
+const num = (value: unknown): number => (typeof value === "number" && Number.isFinite(value) ? value : 0);
+
+type Encoded = { original: { width: number; height: number; bytes?: number; type?: string }; variants: EncodedSize[]; filters?: Record<string, number> };
+
+/** The ZIP export's encoder: the original (its bytes, or the address of an xAI picture) goes to the runtime, its WebP sizes come back (ADR 0062). */
+async function encodeViaRuntime(input: { bytes: Uint8Array; type: string } | { url: string }): Promise<Encoded | null> {
+	let body: ArrayBuffer | undefined;
+	let query = "";
+	if ("url" in input) query = `&url=${encodeURIComponent(input.url)}`;
+	else {
+		body = new ArrayBuffer(input.bytes.byteLength);
+		new Uint8Array(body).set(input.bytes);
+	}
+	const res = await fetch(`/runtime/v1/media?action=encode${query}`, {
+		method: "POST",
+		credentials: "same-origin",
+		cache: "no-store",
+		headers: { "content-type": "url" in input ? "application/octet-stream" : input.type.split(";")[0]!.trim(), accept: "application/json" },
+		body,
+		signal: AbortSignal.timeout(90_000)
+	});
+	const json: unknown = await res.json().catch(() => null);
+	if (!res.ok || !isRecord(json) || json.ok !== true || !Array.isArray(json.variants)) throw new Error(isRecord(json) && typeof json.code === "string" ? json.code : `encode http ${res.status}`);
+	const original = isRecord(json.original) ? json.original : {};
+	const variants = json.variants.filter(isRecord).flatMap((v): EncodedSize[] =>
+		typeof v.data === "string" && num(v.width) > 0 ? [{ width: num(v.width), height: num(v.height), bytes: base64Bytes(v.data), type: typeof v.type === "string" ? v.type : "image/webp", quality: num(v.quality) || undefined, sharpen: num(v.sharpen) || undefined }] : []
+	);
+	const filters = isRecord(json.filters) ? Object.fromEntries(Object.entries(json.filters).map(([k, v]) => [k, num(v)])) : undefined;
+	return { original: { width: num(original.width), height: num(original.height), bytes: num(original.bytes) || undefined, type: typeof original.type === "string" ? original.type : undefined }, variants, ...(filters ? { filters } : {}) };
+}
+
+export const runtimeImageEncoder = { bytes: (image: { bytes: Uint8Array; type: string }) => encodeViaRuntime(image), url: { handles: proxiedHost, encode: (url: string) => encodeViaRuntime({ url }) } };

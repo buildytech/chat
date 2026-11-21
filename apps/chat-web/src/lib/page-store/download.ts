@@ -6,7 +6,7 @@
  */
 import type { CreatorPage } from "./page.ts";
 import { buildStoreZip, packZipFiles, type PackOptions, type RegistryReader } from "./pack.ts";
-import { imageExtension, localizeImages, type ImageFetch, type LocalImages } from "./pack-images.ts";
+import { imageExtension, localizeImages, type ImageEncode, type ImageFetch, type LocalImages } from "./pack-images.ts";
 
 /** Largest picture the export keeps (bytes); a larger one stays remote. */
 const MAX_IMAGE_BYTES = 8_000_000;
@@ -57,10 +57,10 @@ const readSnapshot: RegistryReader = async (paths) => {
 	return out;
 };
 
-/** Builds and saves the ZIP; answers the pictures report (what stayed remote), or null outside a browser. */
-export async function downloadPageZip(page: CreatorPage, options: PackOptions = {}, imageSources: readonly ImageSource[] = []): Promise<LocalImages | null> {
+/** Builds and saves the ZIP (pictures encoded by `encode` when a module offers one, ADR 0062); answers the pictures report, or null outside a browser. */
+export async function downloadPageZip(page: CreatorPage, options: PackOptions = {}, imageSources: readonly ImageSource[] = [], encode?: ImageEncode): Promise<LocalImages | null> {
 	if (typeof document === "undefined") return null;
-	const images = await localizeImages(page, chain(imageSources));
+	const images = await localizeImages(page, chain(imageSources), encode);
 	const bytes = buildStoreZip(await packZipFiles(page, readSnapshot, { ...options, images }));
 	const buffer = new ArrayBuffer(bytes.byteLength);
 	new Uint8Array(buffer).set(bytes);

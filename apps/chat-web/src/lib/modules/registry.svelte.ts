@@ -23,6 +23,8 @@ const CORE_LEFT_SURFACE = { icon: null, tabKey: "shell.tabPanel", regionKey: "sh
 /** The names of the left panel in the shell: the module's when it brings its own, else the builder's. */
 export const leftSurface = (): { icon: Component | null; tabKey: string; regionKey: string; hideKey: string; showKey: string } => modules.find((m) => m.leftSurface)?.leftSurface ?? CORE_LEFT_SURFACE;
 export const fileKinds = (): ModuleFileKind[] => modules.flatMap((m) => [...(m.fileKinds ?? [])]);
+/** The first module's picture encoder for the ZIP export, or undefined (the originals are kept). */
+export const imageEncoder = () => modules.find((m) => m.imageEncoder)?.imageEncoder;
 export const imageSources = () => modules.flatMap((m) => (m.imageSource ? [m.imageSource] : []));
 export const sessionSettingsModules = () => modules.flatMap((m) => (m.sessionSettings ? [m.sessionSettings] : []));
 

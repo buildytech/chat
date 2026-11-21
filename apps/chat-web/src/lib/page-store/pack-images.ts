@@ -3,8 +3,9 @@
  * at any depth of a block's props: sections, list records, photos, logos) is downloaded once per distinct URL into
  * `src/assets/images/<name>.<ext>`, and the section that shows it imports the file, so Vite fingerprints it, rewrites it
  * under any `base` and fails the build when it is missing. A download that fails keeps the remote address and is listed
- * in the report (manifest.json `images.remote`); it never fails the export. A conversion step (compression, WebP) plugs in
- * as `transform` between the download and the file.
+ * in the report (manifest.json `images.remote`); it never fails the export. An `encode` step (the chat: WebP sizes from the
+ * runtime, ADR 0062) turns a download into sizes `<name>-<width>.webp`; the section then passes the middle size as `image`
+ * and, where the block takes it, every size as `imageSrcset`. A failed encode keeps the original file (reported).
  */
 import type { BlockV2, PageV2 } from "@buildytech/page-contract";
 
@@ -20,9 +21,29 @@ type PlannedImage = { url: string; name: string; refs: ImageRef[] };
 type FetchedImage = { bytes: Uint8Array; type: string };
 /** Reads one picture; null or a throw is a failed download. */
 export type ImageFetch = (url: string) => Promise<FetchedImage | null>;
-/** Optional conversion between the download and the file (compression, WebP); its `type` sets the extension. */
-type ImageTransform = (image: FetchedImage, planned: PlannedImage) => Promise<FetchedImage>;
-type LocalImage = { url: string; path: string; bytes: Uint8Array; type: string; refs: ImageRef[] };
+/** One encoded size of a picture (WebP), made from the original. */
+type EncodedVariant = { width: number; height: number; bytes: Uint8Array; type: string; quality?: number; sharpen?: number };
+type EncodedImage = { original: { width: number; height: number; bytes?: number; type?: string }; variants: EncodedVariant[]; filters?: Record<string, number> };
+/**
+ * Turns the original into sizes; null or a throw keeps the original (reported as `encodeError`). `url`: hosts the encoder
+ * reads itself (the runtime reads xAI pictures, which may be larger than an upload), tried before any download.
+ */
+export type ImageEncode = { bytes: (image: FetchedImage) => Promise<EncodedImage | null>; url?: { handles: (url: string) => boolean; encode: (url: string) => Promise<EncodedImage | null> } };
+type LocalVariant = { path: string; width: number; height: number; bytes: Uint8Array; quality?: number; sharpen?: number };
+type LocalImage = {
+	url: string;
+	/** The file `image` points at: the original, or the size closest to SRC_WIDTH. */
+	path: string;
+	bytes: Uint8Array;
+	type: string;
+	refs: ImageRef[];
+	original: { bytes: number; type: string; width?: number; height?: number };
+	/** The encoded sizes, narrowest first; empty when the original is kept. */
+	variants: LocalVariant[];
+	filters?: Record<string, number>;
+	/** Why the original was kept although an encoder was given. */
+	encodeError?: string;
+};
 type RemoteImage = { url: string; reason: string; refs: ImageRef[] };
 export type LocalImages = { local: LocalImage[]; remote: RemoteImage[] };
 
@@ -78,57 +99,144 @@ export function imageExtension(type: string): string | null {
 	return EXTENSIONS[type.split(";")[0]!.trim().toLowerCase()] ?? null;
 }
 
-async function localize(planned: PlannedImage, fetchImage: ImageFetch, transform?: ImageTransform): Promise<LocalImage | RemoteImage> {
+/** `image` (the fallback for browsers without srcset) points at the widest size up to this width. */
+const SRC_WIDTH = 1280;
+
+function withVariants(planned: PlannedImage, image: { bytes: number; type: string }, encoded: EncodedImage): LocalImage | null {
+	const sizes = encoded.variants.filter((v) => v.bytes.length > 0 && imageExtension(v.type)).sort((a, b) => a.width - b.width);
+	if (!sizes.length) return null;
+	const variants = sizes.map((v) => ({ path: `${IMAGES_DIR}/${planned.name}-${v.width}.${imageExtension(v.type)}`, width: v.width, height: v.height, bytes: v.bytes, quality: v.quality, sharpen: v.sharpen }));
+	const src = [...variants].reverse().find((v) => v.width <= SRC_WIDTH) ?? variants[0]!;
+	const original = { bytes: encoded.original.bytes ?? image.bytes, type: (encoded.original.type ?? image.type).split(";")[0]!.trim().toLowerCase(), width: encoded.original.width, height: encoded.original.height };
+	return { url: planned.url, path: src.path, bytes: src.bytes, type: "image/webp", refs: planned.refs, original, variants, ...(encoded.filters ? { filters: encoded.filters } : {}) };
+}
+
+const reasonOf = (err: unknown, fallback: string): string => (err instanceof Error && err.message ? err.message.slice(0, 120) : fallback);
+
+async function localize(planned: PlannedImage, fetchImage: ImageFetch, encode?: ImageEncode): Promise<LocalImage | RemoteImage> {
+	let encodeError: string | undefined;
+	const byUrl = encode?.url?.handles(planned.url) ? encode.url : undefined;
+	if (byUrl) {
+		try {
+			const encoded = await byUrl.encode(planned.url);
+			const local = encoded ? withVariants(planned, { bytes: 0, type: "" }, encoded) : null;
+			if (local) return local;
+			encodeError = "no size came back";
+		} catch (err) {
+			encodeError = reasonOf(err, "encode failed");
+		}
+	}
 	let image: FetchedImage | null;
 	try {
 		image = await fetchImage(planned.url);
 	} catch (err) {
-		return { url: planned.url, reason: err instanceof Error && err.message ? err.message.slice(0, 120) : "download failed", refs: planned.refs };
+		return { url: planned.url, reason: `${reasonOf(err, "download failed")}${encodeError ? `; encode: ${encodeError}` : ""}`, refs: planned.refs };
 	}
 	if (!image || image.bytes.length === 0) return { url: planned.url, reason: "download failed", refs: planned.refs };
-	if (transform) image = await transform(image, planned);
 	const ext = imageExtension(image.type);
 	if (!ext) return { url: planned.url, reason: `unsupported type ${image.type.slice(0, 40) || "unknown"}`, refs: planned.refs };
-	return { url: planned.url, path: `${IMAGES_DIR}/${planned.name}.${ext}`, bytes: image.bytes, type: image.type.split(";")[0]!.trim().toLowerCase(), refs: planned.refs };
+	if (encode && !byUrl) {
+		try {
+			const encoded = await encode.bytes(image);
+			const local = encoded ? withVariants(planned, { bytes: image.bytes.length, type: image.type }, encoded) : null;
+			if (local) return local;
+			encodeError = "no size came back";
+		} catch (err) {
+			encodeError = reasonOf(err, "encode failed");
+		}
+	}
+	const type = image.type.split(";")[0]!.trim().toLowerCase();
+	return { url: planned.url, path: `${IMAGES_DIR}/${planned.name}.${ext}`, bytes: image.bytes, type, refs: planned.refs, original: { bytes: image.bytes.length, type }, variants: [], ...(encodeError ? { encodeError } : {}) };
 }
 
-/** Downloads every distinct remote picture of the page (in parallel); failures stay remote and are reported. */
-export async function localizeImages(page: PageV2, fetchImage: ImageFetch, transform?: ImageTransform): Promise<LocalImages> {
-	const results = await Promise.all(planImages(page).map((planned) => localize(planned, fetchImage, transform)));
+/** Downloads (and encodes) every distinct remote picture of the page, at most 4 at a time; failures stay remote and are reported. */
+export async function localizeImages(page: PageV2, fetchImage: ImageFetch, encode?: ImageEncode): Promise<LocalImages> {
+	const planned = planImages(page);
+	const results: Array<LocalImage | RemoteImage> = new Array(planned.length);
+	let next = 0;
+	const worker = async () => {
+		while (next < planned.length) {
+			const index = next++;
+			results[index] = await localize(planned[index]!, fetchImage, encode);
+		}
+	};
+	await Promise.all(Array.from({ length: Math.min(4, planned.length) }, worker));
 	return { local: results.filter((r): r is LocalImage => "path" in r), remote: results.filter((r): r is RemoteImage => !("path" in r)) };
 }
+
+/** Every file a local picture writes into the project: its sizes, or the original. */
+export const imageFiles = (image: LocalImage): Array<{ path: string; bytes: Uint8Array }> => (image.variants.length ? image.variants : [image]);
 
 /** Import name of a local picture in a section (`img_<file name>`). */
 const importNameOf = (path: string): string => `img_${path.slice(path.lastIndexOf("/") + 1).replace(/\.[a-z0-9]+$/, "").replace(/[^a-zA-Z0-9]+/g, "_")}`;
 
+/** Where a srcset of a picture prop goes, when the block takes one: `image` -> `imageSrcset` (null: the block does not). */
+export type SrcsetKeyOf = (pointer: string, key: string) => string | null;
+type SectionImport = { name: string; path: string };
+
 /**
- * A block's props with each local picture swapped for a marker string, and the marker -> import name map: the section
- * emitter prints the props as JSON, replaces each quoted marker with the bare import name and imports the file.
+ * A block's props with each local picture swapped for a marker string, the marker -> code map and the files to import: the
+ * section emitter prints the props as JSON, replaces each quoted marker with its code (an import name, or a template of
+ * the size imports for a srcset) and imports the files.
  */
-export function propsWithImports(props: Record<string, unknown>, images: LocalImages | null): { props: Record<string, unknown>; imports: Map<string, { name: string; path: string }> } {
-	const imports = new Map<string, { name: string; path: string }>();
-	if (!images?.local.length) return { props, imports };
+export function propsWithImports(props: Record<string, unknown>, images: LocalImages | null, srcsetKeyOf: SrcsetKeyOf = () => null): { props: Record<string, unknown>; code: Map<string, string>; imports: SectionImport[] } {
+	const code = new Map<string, string>();
+	const imports = new Map<string, SectionImport>();
+	if (!images?.local.length) return { props, code, imports: [] };
 	const byUrl = new Map(images.local.map((image) => [image.url, image]));
-	const swap = (value: unknown, key: string): unknown => {
-		if (Array.isArray(value)) return value.map((entry) => swap(entry, ""));
-		if (isRecord(value)) return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, swap(v, k)]));
-		if (!IMAGE_KEYS.has(key) || !isRemoteImage(value)) return value;
-		const local = byUrl.get(value.trim());
-		if (!local) return value;
-		const marker = `__ui8kit_image__${importNameOf(local.path)}__`;
-		imports.set(marker, { name: importNameOf(local.path), path: local.path });
-		return marker;
+	const use = (path: string): string => {
+		const name = importNameOf(path);
+		imports.set(name, { name, path });
+		return name;
 	};
-	return { props: Object.fromEntries(Object.entries(props).map(([k, v]) => [k, swap(v, k)])), imports };
+	const swapRecord = (record: Record<string, unknown>, pointer: string): Record<string, unknown> => {
+		const out: Record<string, unknown> = {};
+		for (const [key, value] of Object.entries(record)) {
+			const at = `${pointer}/${escapePointer(key)}`;
+			const local = IMAGE_KEYS.has(key) && isRemoteImage(value) ? byUrl.get(value.trim()) : undefined;
+			if (!local) {
+				out[key] = swap(value, at);
+				continue;
+			}
+			const marker = `__ui8kit_image__${importNameOf(local.path)}__`;
+			code.set(marker, use(local.path));
+			out[key] = marker;
+			const srcsetKey = local.variants.length > 1 ? srcsetKeyOf(pointer, key) : null;
+			if (srcsetKey && !(srcsetKey in record)) {
+				const srcsetMarker = `__ui8kit_srcset__${importNameOf(local.path)}__`;
+				code.set(srcsetMarker, `\`${local.variants.map((v) => `\${${use(v.path)}} ${v.width}w`).join(", ")}\``);
+				out[srcsetKey] = srcsetMarker;
+			}
+		}
+		return out;
+	};
+	const swap = (value: unknown, pointer: string): unknown => {
+		if (Array.isArray(value)) return value.map((entry, index) => swap(entry, `${pointer}/${index}`));
+		return isRecord(value) ? swapRecord(value, pointer) : value;
+	};
+	return { props: swapRecord(props, ""), code, imports: [...imports.values()] };
 }
 
-/** The `images` entry of manifest.json: where each picture went, and which stayed remote and why. */
+/** The `images` entry of manifest.json: where each picture went (original and sizes in bytes), what stayed remote and why, the savings. */
 export function imagesManifest(images: LocalImages | null): Record<string, unknown> | null {
 	if (!images || (!images.local.length && !images.remote.length)) return null;
 	const where = (refs: ImageRef[]) => refs.map((ref) => `${ref.blockId}${ref.pointer}`);
+	const originalBytes = images.local.reduce((sum, image) => sum + image.original.bytes, 0);
+	const writtenBytes = images.local.reduce((sum, image) => sum + imageFiles(image).reduce((n, file) => n + file.bytes.length, 0), 0);
+	const filters = images.local.find((image) => image.filters)?.filters;
 	return {
 		dir: IMAGES_DIR,
-		local: images.local.map((image) => ({ path: image.path, type: image.type, bytes: image.bytes.length, source: image.url, usedBy: where(image.refs) })),
+		...(filters ? { filters } : {}),
+		totals: { pictures: images.local.length, originalBytes, writtenBytes, savedBytes: originalBytes - writtenBytes, savedPercent: originalBytes ? Math.round((1 - writtenBytes / originalBytes) * 1000) / 10 : 0 },
+		local: images.local.map((image) => ({
+			path: image.path,
+			source: image.url,
+			usedBy: where(image.refs),
+			original: image.original,
+			...(image.variants.length
+				? { variants: image.variants.map((v) => ({ path: v.path, width: v.width, height: v.height, bytes: v.bytes.length, ...(v.quality ? { quality: v.quality } : {}), ...(v.sharpen ? { sharpen: v.sharpen } : {}) })) }
+				: { kept: "original", ...(image.encodeError ? { encodeError: image.encodeError } : {}) })
+		})),
 		remote: images.remote.map((image) => ({ source: image.url, reason: image.reason, usedBy: where(image.refs) }))
 	};
 }

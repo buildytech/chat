@@ -14,7 +14,7 @@ import { getSelectedModelId, setSelectedModelId } from "./browser/models.svelte.
 import { hydrateSessionContext } from "./browser/onboarding.svelte.ts";
 import { beforeHydrate, beforeProjectChange, getChatMode, projectOpened, recoverInterruptedRuns, run, setChatMode } from "./core/chat.svelte.ts";
 import { chatOf } from "./core/view";
-import { runtimeImageSource } from "./media/client.ts";
+import { runtimeImageEncoder, runtimeImageSource } from "./media/client.ts";
 import BlockScopeAction from "./ui/BlockScopeAction.svelte";
 import ChatPanel from "./ui/ChatPanel.svelte";
 import MediaInspector from "./ui/MediaInspector.svelte";
@@ -30,6 +30,7 @@ export const chatModule: BuilderModule = {
 	leftSurface: { icon: MessageSquare, tabKey: "shell.tabChat", regionKey: "shell.chatColumn", hideKey: "workspace.hideChat", showKey: "workspace.showChat" },
 	slots: { "preview.review": ProposalReview, "block.actions": BlockScopeAction, "inspector.block": MediaInspector },
 	imageSource: runtimeImageSource,
+	imageEncoder: runtimeImageEncoder,
 	hasActivity: (project) => Boolean(project && chatOf(project)?.messages?.length),
 	editorMode: getChatMode,
 	sessionSettings: {

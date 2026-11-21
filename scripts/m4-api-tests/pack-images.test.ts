@@ -12,7 +12,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { type PageV2 } from "../../packages/page-contract/src/index.ts";
 import { emptyPage, writePage } from "../../packages/builder-core/src/index.ts";
-import { imageExtension, imageRefsOf, imagesManifest, localizeImages, planImages, type ImageFetch } from "../../apps/chat-web/src/lib/page-store/pack-images.ts";
+import { imageExtension, imageRefsOf, imagesManifest, localizeImages, planImages, propsWithImports, type ImageEncode, type ImageFetch } from "../../apps/chat-web/src/lib/page-store/pack-images.ts";
 import { sveltePackFiles } from "../../apps/chat-web/src/lib/page-store/svelte-code.ts";
 import { buildStoreZip, packZipFiles, type PackEntry } from "../../apps/chat-web/src/lib/page-store/pack.ts";
 
@@ -69,7 +69,7 @@ test("content type sets the extension; unknown types are not kept", () => {
 	assert.equal(imageExtension("image/svg+xml"), null);
 });
 
-test("localize: each URL fetched once, failures stay remote with a reason, a transform hook runs before the file", async () => {
+test("localize: each URL fetched once, failures stay remote with a reason", async () => {
 	const calls: string[] = [];
 	const broken: PageV2 = { ...page, blocks: page.blocks.map((b) => (b.id === "hero" ? { ...b, props: { ...b.props, imageDark: C } } : b)) };
 	const images = await localizeImages(broken, fakeFetch(calls));
@@ -78,8 +78,57 @@ test("localize: each URL fetched once, failures stay remote with a reason, a tra
 	assert.deepEqual(images.remote.map((i) => [i.url, i.reason]), [[C, "HTTP 404"]]);
 	const manifest = imagesManifest(images)!;
 	assert.deepEqual((manifest.remote as Array<{ usedBy: string[] }>)[0]!.usedBy, ["hero/imageDark"]);
-	const converted = await localizeImages(page, fakeFetch([]), async (image) => ({ ...image, type: "image/webp" }));
-	assert.deepEqual(converted.local.map((i) => i.path), ["src/assets/images/hero-image.webp", "src/assets/images/team-members-1-avatar.webp"]);
+});
+
+/** Stand-in for the runtime encoder: sizes 960 and 1152 (the original is 1152 wide), each a fifth of the original. */
+const sizes = (bytes: Uint8Array) => {
+	const size = (width: number) => ({ width, height: Math.round(width * 0.75), bytes: bytes.slice(0, 1200), type: "image/webp", quality: width === 960 ? 72 : 78 });
+	return { original: { width: 1152, height: 864 }, variants: [size(1152), size(960)], filters: { contrast: -0.06, cool: 0.03 } };
+};
+const fakeEncode = (fail: string[] = []): ImageEncode => ({
+	bytes: async (image) => {
+		if (fail.includes(String(image.bytes[4]))) throw new Error("encode_failed");
+		return sizes(image.bytes);
+	}
+});
+
+test("encode by address: hosts the encoder reads itself are not downloaded first; a failure there keeps the downloaded original", async () => {
+	const calls: string[] = [];
+	const encode: ImageEncode = {
+		bytes: async () => assert.fail("bytes path not used for a host the encoder reads"),
+		url: { handles: (url) => url.startsWith("https://imgen.x.ai/"), encode: async (url) => { if (url === B) throw new Error("asset_too_large"); return { ...sizes(jpeg(1)), original: { width: 2368, height: 1776, bytes: 6_906_491, type: "image/png" } }; } }
+	};
+	const images = await localizeImages(page, fakeFetch(calls), encode);
+	assert.deepEqual(calls, [B], "A was encoded by address, only B (failed there) was downloaded");
+	const a = images.local.find((i) => i.url === A)!;
+	assert.deepEqual(a.original, { bytes: 6_906_491, type: "image/png", width: 2368, height: 1776 });
+	assert.equal(images.local.find((i) => i.url === B)!.encodeError, "asset_too_large");
+});
+
+test("encode: sizes <name>-<width>.webp narrowest first, image points at the widest up to 1280; a failed encode keeps the original", async () => {
+	const images = await localizeImages(page, fakeFetch([]), fakeEncode([String(jpeg(2)[4])]));
+	const hero = images.local.find((i) => i.url === A)!;
+	assert.deepEqual(hero.variants.map((v) => v.path), ["src/assets/images/hero-image-960.webp", "src/assets/images/hero-image-1152.webp"]);
+	assert.equal(hero.path, "src/assets/images/hero-image-1152.webp");
+	const kept = images.local.find((i) => i.url === B)!;
+	assert.equal(kept.path, "src/assets/images/team-members-1-avatar.png");
+	assert.equal(kept.encodeError, "encode_failed");
+	const manifest = imagesManifest(images) as { totals: Record<string, number>; filters: Record<string, number>; local: Array<Record<string, unknown>> };
+	assert.deepEqual(manifest.filters, { contrast: -0.06, cool: 0.03 });
+	assert.deepEqual(manifest.totals, { pictures: 2, originalBytes: 12000, writtenBytes: 2400 + 6000, savedBytes: 3600, savedPercent: 30 });
+	assert.deepEqual((manifest.local[0]!.variants as Array<Record<string, number>>).map((v) => [v.width, v.bytes, v.quality]), [[960, 1200, 72], [1152, 1200, 78]]);
+	assert.equal(manifest.local[1]!.kept, "original");
+});
+
+test("srcset: where the block takes imageSrcset, the section passes every size as a template of the size imports", async () => {
+	const images = await localizeImages(page, fakeFetch([]), fakeEncode());
+	const hero = page.blocks.find((b) => b.id === "hero")!;
+	const out = propsWithImports(hero.props as Record<string, unknown>, images, (pointer, key) => (pointer === "" && key === "image" ? "imageSrcset" : null));
+	assert.equal(out.props.image, "__ui8kit_image__img_hero_image_1152__");
+	assert.equal(out.code.get(out.props.imageSrcset as string), "`${img_hero_image_960} 960w, ${img_hero_image_1152} 1152w`");
+	assert.deepEqual(out.imports.map((i) => i.path), ["src/assets/images/hero-image-1152.webp", "src/assets/images/hero-image-960.webp"]);
+	const none = propsWithImports(hero.props as Record<string, unknown>, images);
+	assert.ok(!("imageSrcset" in none.props), "no srcset prop where the block has none");
 });
 
 test("sections import their local pictures and keep remote or relative addresses as they are", async () => {

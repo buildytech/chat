@@ -3,7 +3,7 @@ import { registrySkin } from "@buildytech/builder-core";
 import chatPackage from "../../../package.json" with { type: "json" };
 import { configText, CUSTOM_SKIN_BASE_CSS, renderCustomSkin, type ThemeConfig } from "../theme/custom-skin.ts";
 import { CUSTOM_SKIN_CSS, THEME_FILE, scaffold } from "./pack-scaffold.ts";
-import { imagesManifest, type LocalImages } from "./pack-images.ts";
+import { imageFiles, imagesManifest, type LocalImages } from "./pack-images.ts";
 import { registryItemsOf, registryLockItemsOf, registryPathsOf, svelteFromPage, sveltePackFiles } from "./svelte-code.ts";
 
 export type PackFile = {
@@ -227,7 +227,7 @@ export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}):
 	}
 	const generator = generatorOf(valid, skin);
 	files.push({ path: "GENERATOR.json", content: `${JSON.stringify(generator, null, 2)}\n` });
-	const paths = [...files.map((file) => file.path), ...(images?.local ?? []).map((image) => image.path), CLI_CONFIG, CLI_LOCK, ...registryPathsOf(valid, skin), "manifest.json"];
+	const paths = [...files.map((file) => file.path), ...(images?.local ?? []).flatMap((image) => imageFiles(image).map((file) => file.path)), CLI_CONFIG, CLI_LOCK, ...registryPathsOf(valid, skin), "manifest.json"];
 	const pictures = imagesManifest(images);
 	const manifest = {
 		id: valid.id,
@@ -270,7 +270,7 @@ export async function packZipFiles(page: CreatorPage, read: RegistryReader, opti
 	const manifest = own.pop()!;
 	return [
 		...own,
-		...(options.images?.local ?? []).map((image) => ({ path: image.path, bytes: image.bytes })),
+		...(options.images?.local ?? []).flatMap((image) => imageFiles(image).map((file) => ({ path: file.path, bytes: file.bytes }))),
 		{ path: CLI_CONFIG, content: registry[CLI_CONFIG]! },
 		{ path: CLI_LOCK, content: lockFor(registry[CLI_LOCK]!, registryLockItemsOf(valid, skin)) },
 		...registryPaths.map((path) => ({ path, content: registry[path]! })),

@@ -43,7 +43,8 @@
       "gate.test.ts",
       "render-probe-callers.test.ts",
       "vercel-protect.test.ts",
-      "media-runtime.test.ts"
+      "media-runtime.test.ts",
+      "media-encode.test.ts"
     ],
     "chat-web": [
       "blocks-feed.test.ts",
