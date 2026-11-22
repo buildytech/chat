@@ -78,5 +78,10 @@
 				0.1
 			]
 		}
+	},
+	"export": {
+		"maxBytes": 64000000,
+		"name": "^[A-Za-z0-9][A-Za-z0-9._-]{0,119}\\.zip$",
+		"fallbackName": "page-pack.zip"
 	}
 }

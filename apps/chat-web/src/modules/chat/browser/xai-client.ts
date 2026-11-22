@@ -2,6 +2,7 @@ import type { AgentFailure, AgentMode, AgentReply, RunUsage } from "@buildytech/
 import type { PageV2 } from "@buildytech/page-contract";
 import { contractFingerprint } from "@buildytech/chat-agent";
 import { noteRuntimeFiles } from "../../../lib/runtime-files.ts";
+import { noteRuntimeSave } from "./runtime-save.ts";
 
 type XaiClientStatus = {
 	runtime: string;
@@ -76,9 +77,11 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 			code
 		};
 		noteRuntimeFiles(body.capabilities?.files === true);
+		noteRuntimeSave(body.capabilities?.saveFile === true);
 		return lastStatus;
 	} catch {
 		lastStatus = null;
+		noteRuntimeSave(false);
 		noteRuntimeFiles(false);
 		return {
 			runtime: "xai-grok",

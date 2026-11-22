@@ -25,6 +25,8 @@ export const leftSurface = (): { icon: Component | null; tabKey: string; regionK
 export const fileKinds = (): ModuleFileKind[] => modules.flatMap((m) => [...(m.fileKinds ?? [])]);
 /** The first module's picture encoder for the ZIP export, or undefined (the originals are kept). */
 export const imageEncoder = () => modules.find((m) => m.imageEncoder)?.imageEncoder;
+/** The first module's saver for the ZIP export, or undefined (the browser downloads it). */
+export const zipSaver = () => modules.find((m) => m.zipSaver)?.zipSaver;
 export const imageSources = () => modules.flatMap((m) => (m.imageSource ? [m.imageSource] : []));
 export const sessionSettingsModules = () => modules.flatMap((m) => (m.sessionSettings ? [m.sessionSettings] : []));
 

@@ -2,7 +2,8 @@
  * Browser-only: ZIP download of the exported project. The registry files are read lazily from the pinned snapshot
  * (registry/svelte, raw text, bundled as separate chunks), so the main bundle does not carry them. Remote pictures are
  * downloaded into the project (ADR 0061): straight from the browser when the host allows it (CORS), else through the
- * sources a module offers (the chat proxies its own image hosts through its runtime).
+ * sources a module offers (the chat proxies its own image hosts through its runtime). A module may save the archive
+ * itself (the desktop host's save dialog, ADR 0065); when it cannot, the browser downloads it.
  */
 import type { CreatorPage } from "./page.ts";
 import { buildStoreZip, packZipFiles, type PackOptions, type RegistryReader } from "./pack.ts";
@@ -57,18 +58,26 @@ const readSnapshot: RegistryReader = async (paths) => {
 	return out;
 };
 
-/** Builds and saves the ZIP (pictures encoded by `encode` when a module offers one, ADR 0062); answers the pictures report, or null outside a browser. */
-export async function downloadPageZip(page: CreatorPage, options: PackOptions = {}, imageSources: readonly ImageSource[] = [], encode?: ImageEncode): Promise<LocalImages | null> {
+/** A module's save of the archive: `saved`, `cancelled` by the person (nothing else happens), or a throw (the browser downloads it). */
+export type ZipSaver = { available: (size: number) => boolean; save: (bytes: Uint8Array, name: string) => Promise<"saved" | "cancelled"> };
+
+/** Builds and saves the ZIP (pictures encoded by `encode` when a module offers one, ADR 0062; saved by `saver` when it can); answers the pictures report, or null outside a browser. */
+export async function downloadPageZip(page: CreatorPage, options: PackOptions = {}, imageSources: readonly ImageSource[] = [], encode?: ImageEncode, saver?: ZipSaver): Promise<LocalImages | null> {
 	if (typeof document === "undefined") return null;
 	const images = await localizeImages(page, chain(imageSources), encode);
 	const bytes = buildStoreZip(await packZipFiles(page, readSnapshot, { ...options, images }));
+	const name = `${page.slug || "page"}-pack.zip`;
+	if (saver?.available(bytes.byteLength)) {
+		const outcome = await saver.save(bytes, name).catch(() => null);
+		if (outcome) return images;
+	}
 	const buffer = new ArrayBuffer(bytes.byteLength);
 	new Uint8Array(buffer).set(bytes);
 	const blob = new Blob([buffer], { type: "application/zip" });
 	const href = URL.createObjectURL(blob);
 	const anchor = document.createElement("a");
 	anchor.href = href;
-	anchor.download = `${page.slug || "page"}-pack.zip`;
+	anchor.download = name;
 	document.body.appendChild(anchor);
 	anchor.click();
 	anchor.remove();

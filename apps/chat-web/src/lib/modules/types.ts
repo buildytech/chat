@@ -73,6 +73,8 @@ export type BuilderModule = {
 	imageSource?: { handles: (url: string) => boolean; fetch: (url: string) => Promise<{ bytes: Uint8Array; type: string } | null> };
 	/** Encodes pictures into WebP sizes for the ZIP export (the chat's runtime, ADR 0062): a downloaded picture, or by address for hosts it reads itself; null keeps the original. */
 	imageEncoder?: import("../page-store/pack-images.ts").ImageEncode;
+	/** Saves the ZIP export through the host instead of a browser download (the desktop's save dialog, ADR 0065). */
+	zipSaver?: import("../page-store/download.ts").ZipSaver;
 	/** Run once when the module registers (browser only). */
 	install?: () => void;
 };

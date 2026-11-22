@@ -1,0 +1,432 @@
+{
+	"$comment": "POST /runtime/v1/export?name=<file> (ADR 0065, capabilities.saveFile; apps/chat-web/src/modules/chat/browser/runtime-save.ts): the desktop host keeps the ZIP export where the person chooses (a native save dialog; the headless build writes to its configured folder, never overwriting). Answers the saved file's name only, never a path. Runner fields: env.save `cancel` (the dialog is closed) or `none` (no place to save); `exports` lists files already in the folder; expect.saved is the file written ({name, bytes}) or null (nothing written).",
+	"cases": [
+		{
+			"name": "export: the archive is saved where the person chose (headless build: its folder) and answered by name only",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=quiet-rooms-pack.zip",
+				"bytes": {
+					"hex": "504b030414000000000000000000"
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"headers": {
+					"cache-control": "no-store"
+				},
+				"json": {
+					"ok": true,
+					"saved": true,
+					"name": "quiet-rooms-pack.zip",
+					"bytes": 14,
+					"path": "$absent"
+				},
+				"saved": {
+					"name": "quiet-rooms-pack.zip",
+					"bytes": {
+						"hex": "504b030414000000000000000000"
+					}
+				}
+			}
+		},
+		{
+			"name": "export: an empty archive (end record only) is a ZIP too",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=empty-pack.zip",
+				"bytes": {
+					"hex": "504b0506000000000000000000000000000000000000"
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"saved": true,
+					"name": "empty-pack.zip"
+				},
+				"saved": {
+					"name": "empty-pack.zip",
+					"bytes": {
+						"hex": "504b0506000000000000000000000000000000000000"
+					}
+				}
+			}
+		},
+		{
+			"name": "export: a file of that name is never overwritten (the next free name)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"exports": [
+				"quiet-rooms-pack.zip"
+			],
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=quiet-rooms-pack.zip",
+				"bytes": {
+					"hex": "504b030414000000000000000000"
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"saved": true,
+					"name": "quiet-rooms-pack-2.zip"
+				},
+				"saved": {
+					"name": "quiet-rooms-pack-2.zip",
+					"bytes": {
+						"hex": "504b030414000000000000000000"
+					}
+				}
+			}
+		},
+		{
+			"name": "export: without a name the archive is page-pack.zip",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"bytes": {
+					"hex": "504b030414000000000000000000"
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"saved": true,
+					"name": "page-pack.zip"
+				}
+			}
+		},
+		{
+			"name": "export: a name with a path, another extension or a leading dot is 422 export_bad_name, nothing written",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=..%2F..%2Fevil.zip",
+				"bytes": {
+					"hex": "504b030414000000000000000000"
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "export_bad_name"
+				},
+				"saved": null
+			}
+		},
+		{
+			"name": "export: a .exe name is 422 export_bad_name",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=pack.exe",
+				"bytes": {
+					"hex": "504b030414000000000000000000"
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "export_bad_name"
+				},
+				"saved": null
+			}
+		},
+		{
+			"name": "export: a body that is not a ZIP is 415 export_not_zip",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=a.zip",
+				"bytes": {
+					"hex": "3c68746d6c3e"
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 415,
+				"json": {
+					"ok": false,
+					"code": "export_not_zip"
+				},
+				"saved": null
+			}
+		},
+		{
+			"name": "export: an empty body is 413 export_too_large",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=a.zip",
+				"bytes": {
+					"hex": ""
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 413,
+				"json": {
+					"ok": false,
+					"code": "export_too_large"
+				},
+				"saved": null
+			}
+		},
+		{
+			"name": "export: a body over the limit is 413 export_too_large",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=a.zip",
+				"bytes": {
+					"size": 64000001,
+					"fill": 80
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 413,
+				"json": {
+					"ok": false,
+					"code": "export_too_large"
+				},
+				"saved": null
+			}
+		},
+		{
+			"name": "export: the person closed the save dialog: 200 cancelled, nothing written",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"save": "cancel"
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=a.zip",
+				"bytes": {
+					"hex": "504b030414000000000000000000"
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"saved": false,
+					"code": "cancelled"
+				},
+				"saved": null
+			}
+		},
+		{
+			"name": "export: a host without a place to save is 404 not_found and does not advertise saveFile",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"save": "none"
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=a.zip",
+				"bytes": {
+					"hex": "504b030414000000000000000000"
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "export: only POST (GET is 405 method_not_allowed)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/export"
+			},
+			"expect": {
+				"status": 405,
+				"json": {
+					"error": {
+						"code": "method_not_allowed"
+					}
+				}
+			}
+		},
+		{
+			"name": "desktop status advertises the native save (capabilities.saveFile)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"capabilities": {
+						"loop": "client",
+						"files": true,
+						"saveFile": true
+					}
+				}
+			}
+		},
+		{
+			"name": "desktop status without a place to save: saveFile false (the browser downloads the ZIP)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"save": "none"
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"capabilities": {
+						"saveFile": false
+					}
+				}
+			}
+		},
+		{
+			"name": "web hosts have no native save: /runtime/v1/export is 404 not_found",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/export",
+				"query": "name=a.zip",
+				"bytes": {
+					"hex": "504b030414000000000000000000"
+				},
+				"headers": {
+					"content-type": "application/zip"
+				}
+			},
+			"expect": {
+				"status": 404
+			}
+		}
+	]
+}

@@ -7,7 +7,7 @@ import { FolderArchive, PanelLeftOpen, PanelLeftClose } from "$lib/shell-icons";
 	import { t } from "$lib/i18n/dictionary";
 	import { getProjectSkin, getSelectedProject } from "$lib/project";
 	import { downloadPageZip, getCurrentPage } from "$lib/page-store";
-	import { imageEncoder, imageSources } from "$lib/modules/registry.svelte";
+	import { imageEncoder, imageSources, zipSaver } from "$lib/modules/registry.svelte";
 	import { packSkinOptions } from "$lib/theme/custom-skin.svelte";
 
 	let {
@@ -29,7 +29,7 @@ import { FolderArchive, PanelLeftOpen, PanelLeftClose } from "$lib/shell-icons";
 		if (!page || preparing) return;
 		preparing = true;
 		try {
-			const images = await downloadPageZip(page, packSkinOptions(getProjectSkin()), imageSources(), imageEncoder());
+			const images = await downloadPageZip(page, packSkinOptions(getProjectSkin()), imageSources(), imageEncoder(), zipSaver());
 			remotePictures = images?.remote.length ?? 0;
 		} finally {
 			preparing = false;
