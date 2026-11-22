@@ -15,6 +15,7 @@ import { exportProjects, importProjects, type ImportResult } from "../project/fi
 import { theme } from "../theme/theme.svelte";
 import { creatorLayout } from "../creator-layout.svelte";
 import { previewSettings } from "./preview-settings.svelte";
+import { runtimeHost } from "../runtime-host.ts";
 import type { SessionApp, SessionFile, SessionPins, SessionSettings } from "./session-file.ts";
 
 declare const __BUILDY_APP_COMMIT__: string;
@@ -33,7 +34,8 @@ function app(): SessionApp {
 	return {
 		name: "buildy-chat",
 		version: chatPackage.version,
-		host: "browser",
+		// The host the status read named (the desktop app), else the browser (ADR 0065).
+		host: runtimeHost().kind,
 		...(/^[0-9a-f]{7,40}$/.test(commit) ? { commit } : {})
 	};
 }

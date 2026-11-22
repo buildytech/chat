@@ -25,6 +25,8 @@ export type TurnContext = {
 	shownPage?: PageV2 | null;
 	/** Opaque, session-stable prompt-cache routing key from the host (x-grok-conv-id); absent: the run id. */
 	cacheKey?: string;
+	/** The author's date and IANA time zone, from their browser (ADR 0066): the system prompt states it. */
+	today?: { date: string; timeZone: string };
 };
 
 /** What a turn proposes: the whole next page document and what differs from the page the author sees. */

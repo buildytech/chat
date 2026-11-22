@@ -2,6 +2,7 @@ import type { AgentFailure, AgentMode, AgentReply, RunUsage } from "@buildytech/
 import type { PageV2 } from "@buildytech/page-contract";
 import { contractFingerprint } from "@buildytech/chat-agent";
 import { noteRuntimeFiles } from "../../../lib/runtime-files.ts";
+import { noteRuntimeHost } from "../../../lib/runtime-host.ts";
 import { noteRuntimeSave } from "./runtime-save.ts";
 
 type XaiClientStatus = {
@@ -20,6 +21,8 @@ type XaiClientStatus = {
 	error?: { code: string; message: string };
 	/** What the host runs (ADR 0065); web hosts send none (the runtime runs the loop). */
 	capabilities?: { loop: "server" | "client"; files: boolean; saveFile: boolean };
+	/** The desktop host's name, version and platform (contract/runtime-http/host.schema.json); web hosts send none. */
+	host?: { kind: "desktop"; version: string; os: string; arch: string };
 };
 
 /** The last status read: a host that runs no loop (`capabilities.loop: "client"`) gets its turns run here (local-turn). */
@@ -52,6 +55,8 @@ export type TurnRequest = {
 	conversation?: Array<{ role: "user" | "assistant"; text: string }>;
 	/** Prompt-cache routing key of the chat (hash of its session id): every turn of the chat goes to one xAI server. */
 	cacheKey?: string;
+	/** The author's date and time zone from this browser (ADR 0066). */
+	today?: { date: string; timeZone: string };
 };
 
 function runtimeBase(): string {
@@ -78,11 +83,13 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 		};
 		noteRuntimeFiles(body.capabilities?.files === true);
 		noteRuntimeSave(body.capabilities?.saveFile === true);
+		noteRuntimeHost(body.host);
 		return lastStatus;
 	} catch {
 		lastStatus = null;
 		noteRuntimeSave(false);
 		noteRuntimeFiles(false);
+		noteRuntimeHost(null);
 		return {
 			runtime: "xai-grok",
 			ready: false,
@@ -140,7 +147,8 @@ export function runBody(ctx: TurnRequest): Record<string, unknown> {
 		scopeBlockIds: ctx.scopeBlockIds?.length ? ctx.scopeBlockIds : undefined,
 		conversation: ctx.conversation ?? [],
 		mode: ctx.mode,
-		...(ctx.cacheKey ? { cacheKey: ctx.cacheKey } : {})
+		...(ctx.cacheKey ? { cacheKey: ctx.cacheKey } : {}),
+		...(ctx.today ? { today: ctx.today } : {})
 	};
 }
 

@@ -10,7 +10,7 @@ import { agentTools, agentToolChoice } from "./agent-tools.ts";
 import { agentReply, rejectedWrite, runWriteTool, type AgentFailure, type AgentReply, type PageProposal, type TurnContext } from "./turn.ts";
 import { createExecution, type ExecutionOptions } from "./execution.ts";
 import { executeCatalogTool, catalogEvidence } from "./catalog-tools.ts";
-import { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } from "./prompts.ts";
+import { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, systemText, userPrompt } from "./prompts.ts";
 import { type AgentProvider, type AgentMessage, type LiveTurnMeta } from "./provider.ts";
 
 function parseArgs(raw: string | undefined): Record<string, unknown> {
@@ -128,7 +128,7 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
 	const messages: AgentMessage[] = [
-		{ role: "system", text: scenario?.systemPrompt ?? (ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD) },
+		{ role: "system", text: systemText(scenario?.systemPrompt ?? (ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD), ctx) },
 		{ role: "user", text: scenario ? scenario.context(ctx, problems) : userPrompt(ctx, problems) }
 	];
 	const tools = scenario?.tools ?? agentTools(ctx.mode);

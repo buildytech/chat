@@ -17,6 +17,7 @@ import { CANDIDATE_CHAT_MODEL, DEFAULT_XAI_BASE_URL, contractFingerprint } from 
 import { IMAGE_ASPECTS, MAX_IMAGE_CANDIDATES, MAX_IMAGE_PROMPT, XAI_IMAGE_MODEL } from "../packages/provider-xai/src/images.ts";
 import { ASSET_HOSTS, ASSET_TYPES, MAX_ASSET_BYTES } from "../apps/xai-runtime/src/media-asset.ts";
 import { EXPORT_MAX_BYTES, EXPORT_NAME } from "../apps/chat-web/src/modules/chat/browser/runtime-save.ts";
+import { DESKTOP_HOST } from "../apps/chat-web/src/lib/runtime-host.ts";
 import { ENCODE_TYPES, FILTERS, FILTER_LIMITS, MAX_ENCODE_BYTES, MAX_URL_BYTES, TIERS, handleEncode } from "../apps/xai-runtime/src/media-encode.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -33,7 +34,8 @@ function constants() {
 		images: { model: XAI_IMAGE_MODEL, aspects: [...IMAGE_ASPECTS], maxCandidates: MAX_IMAGE_CANDIDATES, maxPrompt: MAX_IMAGE_PROMPT },
 		asset: { hosts: [...ASSET_HOSTS], types: [...ASSET_TYPES], maxBytes: MAX_ASSET_BYTES },
 		encode: { types: [...ENCODE_TYPES], maxBytes: MAX_ENCODE_BYTES, maxUrlBytes: MAX_URL_BYTES, tiers: TIERS.map((tier) => ({ ...tier })), filters: { ...FILTERS }, filterLimits: { contrast: [...FILTER_LIMITS.contrast], cool: [...FILTER_LIMITS.cool] } },
-		export: { maxBytes: EXPORT_MAX_BYTES, name: EXPORT_NAME.source, fallbackName: "page-pack.zip" }
+		export: { maxBytes: EXPORT_MAX_BYTES, name: EXPORT_NAME.source, fallbackName: "page-pack.zip" },
+		host: { kind: DESKTOP_HOST.kind, devVersion: DESKTOP_HOST.devVersion, version: DESKTOP_HOST.version.source }
 	};
 }
 

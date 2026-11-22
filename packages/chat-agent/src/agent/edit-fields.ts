@@ -1,4 +1,5 @@
 import { propsOutline } from "./blocks.ts";
+import { systemText } from "./prompts.ts";
 import { pageForModel, propsSchemaFor } from "@buildytech/builder-core";
 import { createExecution, type ExecutionOptions } from "./execution.ts";
 import { agentReply, runWriteTool, rejectedWrite, type TurnContext } from "./turn.ts";
@@ -31,7 +32,7 @@ export async function editFields(modelId: string, ctx: TurnContext, signal: Abor
 		let errors: unknown = [];
 		let previous = "";
 		let rejected: import("./turn.ts").AgentFailure["rejected"];
-		const system = `${scenario.systemPrompt}\n${JSON.stringify({ fields: propsOutline(block.item) })}`;
+		const system = `${systemText(scenario.systemPrompt, ctx)}\n${JSON.stringify({ fields: propsOutline(block.item) })}`;
 		for (let step = 0; step < scenario.budget.maxSteps; step += 1) {
 			const messages: AgentMessage[] = [{ role: "system", text: system }, { role: "user", text: JSON.stringify({ request: ctx.brief, locale: ctx.page.locale, blockId: block.id, item: block.item, variant: block.variant, path, object, errors }) }];
 			if (step === 0) execution.recorder.prefix(messages, scenario.tools);

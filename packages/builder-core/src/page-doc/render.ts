@@ -3,7 +3,8 @@
  * over the preset of its variant and filled with what the props schema requires. The preview, the code pane and the ZIP
  * export call this one function (`renderBlock`); there is no copy slot, row or children mapping any more. A picture field whose
  * value is not a picture address (`isImageUrl`: an icon name, free text, http:) renders empty, so the registry placeholder shows
- * instead of a broken request, in the preview, the export and after a reload alike (ADR 0064).
+ * instead of a broken request, in the preview, the export and after a reload alike (ADR 0064). Content macros ({year}) are
+ * expanded here too (ADR 0066), so every target shows the same text.
  */
 import { cloneJson, type BlockV2, type PropValueV2 } from "@buildytech/page-contract";
 import { fillProps, humanizeName } from "../catalog/props-fill.ts";
@@ -12,6 +13,7 @@ import { variantPreset } from "../catalog/organism.ts";
 import { variantColumns } from "../catalog/blocks.ts";
 import { isImageUrl } from "../catalog/image-url.ts";
 import { itemInfo } from "./items.ts";
+import { expandMacrosDeep, type MacroContext } from "./macros.ts";
 
 export type BlockRender = {
 	item: string;
@@ -59,12 +61,12 @@ function blankBadPictures(item: string, props: Record<string, unknown>): Record<
 }
 
 /** The registry block a v2 block renders as, or null when the registry has no such item (the host rejects those on write). */
-export function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">): BlockRender | null {
+export function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">, macros?: MacroContext): BlockRender | null {
 	const info = itemInfo(block.item);
 	if (!info) return null;
 	const variant = block.variant && info.variants.includes(block.variant) ? block.variant : info.defaultVariant;
 	const { events, slots } = propsEventsFor(block.item);
-	return { item: block.item, variant, organism: info.organism, props: blankBadPictures(block.item, effectiveProps(block.item, variant, block.props)), events, slots };
+	return { item: block.item, variant, organism: info.organism, props: expandMacrosDeep(blankBadPictures(block.item, effectiveProps(block.item, variant, block.props)), macros), events, slots };
 }
 
 /** Rows a new block's required list starts with, so the block shows something: one per column of the variant (cols4: 4,

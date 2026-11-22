@@ -168,7 +168,19 @@ type ChatRunRequest = {
 	conversation: Array<{ role: "user" | "assistant"; text: string }>;
 	/** Opaque prompt-cache routing key of the chat (letters, digits, `:_-`, at most 80); anything else is dropped. */
 	cacheKey?: string;
+	/** The author's date and time zone (ADR 0066); anything malformed is dropped. */
+	today?: { date: string; timeZone: string };
 };
+
+const TODAY_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_ZONE = /^[A-Za-z][A-Za-z0-9_+\-/]{0,63}$/;
+
+function parseToday(raw: unknown): { date: string; timeZone: string } | undefined {
+	if (!raw || typeof raw !== "object") return undefined;
+	const date: unknown = Reflect.get(raw, "date");
+	const timeZone: unknown = Reflect.get(raw, "timeZone");
+	return typeof date === "string" && TODAY_DATE.test(date) && typeof timeZone === "string" && TIME_ZONE.test(timeZone) ? { date, timeZone } : undefined;
+}
 
 function parsePageDoc(raw: unknown): PageV2 | undefined {
 	if (raw == null) return undefined;
@@ -195,6 +207,7 @@ export function mapChatRunRequest(
 		scopeBlockIds?: unknown;
 		conversation?: unknown;
 		cacheKey?: unknown;
+		today?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -222,7 +235,8 @@ export function mapChatRunRequest(
 			conversation: Array.isArray(body.conversation)
 				? body.conversation.slice(-8).flatMap((row) => (row && typeof row === "object" && (row.role === "user" || row.role === "assistant") && typeof row.text === "string" ? [{ role: row.role as "user" | "assistant", text: row.text.slice(0, 2000) }] : []))
 				: [],
-			...(typeof body.cacheKey === "string" && CACHE_KEY.test(body.cacheKey) ? { cacheKey: body.cacheKey } : {})
+			...(typeof body.cacheKey === "string" && CACHE_KEY.test(body.cacheKey) ? { cacheKey: body.cacheKey } : {}),
+			...(parseToday(body.today) ? { today: parseToday(body.today) } : {})
 		}
 	};
 }

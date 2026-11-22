@@ -1,5 +1,5 @@
 {
-	"$comment": "GET /runtime/v1/status: the readiness of the host (apps/xai-runtime/src/status.ts). Desktop answers the same fields plus `capabilities`.",
+	"$comment": "GET /runtime/v1/status: the readiness of the host (apps/xai-runtime/src/status.ts). Desktop answers the same fields plus `capabilities` and `host` (host.schema.json); the web hosts send neither.",
 	"cases": [
 		{
 			"name": "status without a key: 503, not ready, the default candidate, the contract, no provider call",
@@ -487,6 +487,54 @@
 						"files": "$boolean",
 						"saveFile": "$boolean"
 					}
+				}
+			}
+		},
+		{
+			"name": "status names the desktop host: kind, the stamped version (dev without one), os and arch",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"runtime": "xai-grok",
+					"code": "xai_api_key_missing",
+					"host": {
+						"kind": "desktop",
+						"version": "$match:^(?:dev|[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?)$",
+						"os": "$match:^(darwin|linux|windows)$",
+						"arch": "$match:^(amd64|arm64)$"
+					}
+				}
+			}
+		},
+		{
+			"name": "status of a web host sends no host: the app is in a browser",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"runtime": "xai-grok",
+					"code": "xai_api_key_missing",
+					"host": "$absent"
 				}
 			}
 		}

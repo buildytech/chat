@@ -18822,6 +18822,59 @@ exports["variantOrDefault"] = variantOrDefault;
 
 });
 
+__def("packages/builder-core/src/page-doc/macros.ts", function (exports) {
+
+type Macro = {
+	/** What the token stands for (the agent's prompt and the docs list it). */
+	description: string;
+	/** The value; `argument` is the part after `:`, absent when the token has none. Null: the token stays as written. */
+	value: (context: MacroContext, argument: string | undefined) => string | null;
+};
+
+/** The registry of macros. A new one is one entry here plus a test; the agent rule lists the names from `macroNames`. */
+const MACROS: ReadonlyMap<string, Macro> = new Map<string, Macro>([
+	[
+		"year",
+		{
+			description: "the current year (four digits), for the copyright line",
+			value: ({ now }, argument) => (argument === undefined ? String(now.getFullYear()) : null)
+		}
+	]
+]);
+
+/** Every `{name}` / `{name:argument}` token; the name decides whether it is a macro. */
+const TOKEN = /\{([a-z][a-z0-9-]*)(?::([a-z0-9_-]+))?\}/g;
+
+function macroNames(): string[] {
+	return [...MACROS.keys()];
+}
+
+/** `text` with every known macro replaced; unknown tokens and stray braces are kept. */
+function expandMacros(text: string, context: MacroContext = { now: new Date() }): string {
+	if (!text.includes("{")) return text;
+	return text.replace(TOKEN, (token, name: string, argument: string | undefined) => {
+		return MACROS.get(name)?.value(context, argument) ?? token;
+	});
+}
+
+/** A copy of `props` with the macros of every string inside them (object values and list items, at any depth) expanded. */
+function expandMacrosDeep(props: Record<string, unknown>, context: MacroContext = { now: new Date() }): Record<string, unknown> {
+	const walk = (inner: unknown): unknown => {
+		if (typeof inner === "string") return expandMacros(inner, context);
+		if (Array.isArray(inner)) return inner.map(walk);
+		if (inner && typeof inner === "object") return Object.fromEntries(Object.entries(inner).map(([key, entry]) => [key, walk(entry)]));
+		return inner;
+	};
+	return Object.fromEntries(Object.entries(props).map(([key, entry]) => [key, walk(entry)]));
+}
+
+exports["MACROS"] = MACROS;
+exports["macroNames"] = macroNames;
+exports["expandMacros"] = expandMacros;
+exports["expandMacrosDeep"] = expandMacrosDeep;
+
+});
+
 __def("packages/builder-core/src/page-doc/render.ts", function (exports) {
 const { cloneJson } = __req("packages/page-contract/src/index.ts");
 const { fillProps, humanizeName } = __req("packages/builder-core/src/catalog/props-fill.ts");
@@ -18830,6 +18883,7 @@ const { variantPreset } = __req("packages/builder-core/src/catalog/organism.ts")
 const { variantColumns } = __req("packages/builder-core/src/catalog/blocks.ts");
 const { isImageUrl } = __req("packages/builder-core/src/catalog/image-url.ts");
 const { itemInfo } = __req("packages/builder-core/src/page-doc/items.ts");
+const { expandMacrosDeep } = __req("packages/builder-core/src/page-doc/macros.ts");
 type Json = unknown;
 const isObject = (value: Json): value is Record<string, Json> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -18865,12 +18919,12 @@ function blankBadPictures(item: string, props: Record<string, unknown>): Record<
 }
 
 /** The registry block a v2 block renders as, or null when the registry has no such item (the host rejects those on write). */
-function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">): BlockRender | null {
+function renderBlock(block: Pick<BlockV2, "item" | "variant" | "props">, macros?: MacroContext): BlockRender | null {
 	const info = itemInfo(block.item);
 	if (!info) return null;
 	const variant = block.variant && info.variants.includes(block.variant) ? block.variant : info.defaultVariant;
 	const { events, slots } = propsEventsFor(block.item);
-	return { item: block.item, variant, organism: info.organism, props: blankBadPictures(block.item, effectiveProps(block.item, variant, block.props)), events, slots };
+	return { item: block.item, variant, organism: info.organism, props: expandMacrosDeep(blankBadPictures(block.item, effectiveProps(block.item, variant, block.props)), macros), events, slots };
 }
 
 /** Rows a new block's required list starts with, so the block shows something: one per column of the variant (cols4: 4,
@@ -20510,6 +20564,10 @@ exports["pageForModel"] = __req("packages/builder-core/src/page-doc/money-view.t
 exports["pageFromModel"] = __req("packages/builder-core/src/page-doc/money-view.ts")["pageFromModel"];
 exports["patchFromModel"] = __req("packages/builder-core/src/page-doc/money-view.ts")["patchFromModel"];
 exports["writeInputFromModel"] = __req("packages/builder-core/src/page-doc/money-view.ts")["writeInputFromModel"];
+exports["expandMacros"] = __req("packages/builder-core/src/page-doc/macros.ts")["expandMacros"];
+exports["expandMacrosDeep"] = __req("packages/builder-core/src/page-doc/macros.ts")["expandMacrosDeep"];
+exports["macroNames"] = __req("packages/builder-core/src/page-doc/macros.ts")["macroNames"];
+exports["MACROS"] = __req("packages/builder-core/src/page-doc/macros.ts")["MACROS"];
 
 
 
@@ -21271,6 +21329,96 @@ exports["classifyDiscoveredModels"] = classifyDiscoveredModels;
 
 });
 
+__def("packages/chat-agent/src/agent/prompts.ts", function (exports) {
+const { MACROS, pageForModel } = __req("packages/builder-core/src/index.ts");
+const { itemIndex, propsOutline } = __req("packages/chat-agent/src/agent/blocks.ts");
+const MACRO_RULE = `- Macros: the page replaces ${[...MACROS].map(([name, macro]) => `{${name}} with ${macro.description}`).join("; ")}, in the preview and the export alike. Write the copyright line with the macro, never a year number: "© {year} Name". Any other text in braces stays unchanged.`;
+
+const SYSTEM_COMMON = [
+	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
+	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
+	"- item is a block of the catalog (npx ui8kit add <item>); itemIndex lists every block with its category and variants (list_blocks shows their labels). variant is one of the item's variants: it sets the layout (where the picture is, how many columns), never the content; the host writes the layout axes it sets (media, cols, surface), so write variant and leave those props out. Settings such as align, padding and level are props too.",
+	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field (team members: id, title, description). A picture is an optional address prop: image with imageAlt on a section, image on list records (dishes, products, rooms), avatar on a team member, where get_block shows it. Leave image empty by default: the block shows its placeholder and Media mode then draws every picture from its description. Use an address only when the author gave one; a value that is not https or a relative path to a picture file is dropped with a note. Picture fields (image, imageDark, avatar) hold only an image URL or stay empty: never an icon name or a word there (phone, map-pin, clock); icons go in icon props. Never write in the page text that photos were added unless you set them.",
+	"- imageAlt: on every block whose props have imageAlt, write it even when image is empty (Media mode draws the picture from it; a list record is drawn from its title and description, so make those concrete). One natural, descriptive sentence in the page language, 8 to 20 words, saying what is in the frame: the subject, its key details and the setting (light, place, mood), the way a careful SEO alt text reads. Never start with 'image of' or 'photo of', never stuff keywords or repeat the heading, never describe text, logos or the layout.",
+	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision: pick, replace, add, remove and reorder blocks as the request needs; a block may appear several times.",
+	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
+	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
+	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",
+	"- scope.blockIds, when present, are the blocks the author selected: edit only those (props, variant, item). Do not change page fields, other blocks, or the order.",
+	"- Write content when asked. A fictional product is fine when the author says so; never present invented facts as real ones when the author gave real ones.",
+	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why.",
+	MACRO_RULE
+].join("\n");
+
+const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: every step is a tool call. Read with the catalog tools, then change the page with write_page: the whole document goes into the call, never into the text. The turn ends when write_page is accepted. If the request needs no change, write the current page back unchanged.`;
+
+const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page and the catalog. You have no write tool here: answer in text. When the author wants a change, describe it briefly and say that Build makes it.`;
+
+/**
+ * The system text of a turn: the prompt of the mode or scenario, the macro rule when the scenario prompt lacks it, and the
+ * author's date (their browser's time zone) so prose never guesses the year. Without `today` (an old client) the prompt is
+ * the constant one.
+ */
+function systemText(base: string, ctx: Pick<TurnContext, "today">): string {
+	const lines = [base];
+	if (!base.includes(MACRO_RULE)) lines.push(MACRO_RULE);
+	if (ctx.today) lines.push(`- Today is ${ctx.today.date} in the author's time zone (${ctx.today.timeZone}). Use it for any date or year the text needs (since when, how many years, the next event); the copyright year is still {year}.`);
+	return lines.join("\n");
+}
+
+/** The date of `now` (YYYY-MM-DD) in `timeZone`, the way the author's browser reads its calendar. */
+function todayIn(now: Date, timeZone: string): { date: string; timeZone: string } {
+	const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now);
+	const part = (type: string) => parts.find((entry) => entry.type === type)?.value ?? "";
+	return { date: `${part("year")}-${part("month")}-${part("day")}`, timeZone };
+}
+
+const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
+
+/** The page document the model reads: without host-managed fields. */
+function pageView(page: PageV2): Record<string, unknown> {
+	const view: Record<string, unknown> = { ...pageForModel(page) };
+	for (const key of HOST_FIELDS) delete view[key];
+	return view;
+}
+
+function userPrompt(ctx: TurnContext, problems: ReturnType<typeof renderProblems>): string {
+	const items = [...new Set(ctx.page.blocks.map((block) => block.item))];
+	const outlines = Object.fromEntries(items.map((item) => [item, propsOutline(item)]).filter(([, lines]) => lines));
+	return JSON.stringify({
+		request: ctx.brief,
+		...(ctx.conversation?.length ? { conversation: ctx.conversation } : {}),
+		page: pageView(ctx.page),
+		...(problems.length ? { renderProblems: problems, renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
+		...(ctx.scopeBlockIds?.length ? { scope: { blockIds: ctx.scopeBlockIds } } : {}),
+		propsOfBlocksOnPage: outlines,
+		itemIndex: itemIndex()
+	});
+}
+
+/**
+ * Sent once when a turn that is expected to change the page ends without an accepted write (ADR 0035). Program text, no phrase
+ * recognition. In Build the request that follows forces write_page (tool_choice), so the text says the document goes into the
+ * call and is never printed. Ask has no write tool and is never nudged.
+ */
+function nudgeText(ctx: TurnContext, problems: number): string {
+	return [
+		"Host notice: nothing on the page has changed in this turn (no write_page was accepted).",
+		problems > 0 ? "The page has blocks that do not render; they are listed in renderProblems (get_page shows them)." : ctx.scopeBlockIds?.length ? "Blocks are selected for this edit." : "",
+		"Call write_page with the page document now; the document goes into the call, do not print it in the text. Do not report a change that write_page did not accept."
+	].filter(Boolean).join(" ");
+}
+
+exports["MACRO_RULE"] = MACRO_RULE;
+exports["SYSTEM_BUILD"] = SYSTEM_BUILD;
+exports["SYSTEM_ASK"] = SYSTEM_ASK;
+exports["systemText"] = systemText;
+exports["todayIn"] = todayIn;
+exports["userPrompt"] = userPrompt;
+exports["nudgeText"] = nudgeText;
+
+});
+
 __def("packages/chat-agent/src/identity.ts", function (exports) {
 
 function fnv1a64(text: string): string {
@@ -21770,6 +21918,7 @@ exports["createExecution"] = createExecution;
 
 __def("packages/chat-agent/src/agent/edit-fields.ts", function (exports) {
 const { propsOutline } = __req("packages/chat-agent/src/agent/blocks.ts");
+const { systemText } = __req("packages/chat-agent/src/agent/prompts.ts");
 const { pageForModel, propsSchemaFor } = __req("packages/builder-core/src/index.ts");
 const { createExecution } = __req("packages/chat-agent/src/agent/execution.ts");
 const { agentReply, runWriteTool, rejectedWrite } = __req("packages/chat-agent/src/agent/turn.ts");
@@ -21800,7 +21949,7 @@ async function editFields(modelId: string, ctx: TurnContext, signal: AbortSignal
 		let errors: unknown = [];
 		let previous = "";
 		let rejected: import("./turn.ts").AgentFailure["rejected"];
-		const system = `${scenario.systemPrompt}\n${JSON.stringify({ fields: propsOutline(block.item) })}`;
+		const system = `${systemText(scenario.systemPrompt, ctx)}\n${JSON.stringify({ fields: propsOutline(block.item) })}`;
 		for (let step = 0; step < scenario.budget.maxSteps; step += 1) {
 			const messages: AgentMessage[] = [{ role: "system", text: system }, { role: "user", text: JSON.stringify({ request: ctx.brief, locale: ctx.page.locale, blockId: block.id, item: block.item, variant: block.variant, path, object, errors }) }];
 			if (step === 0) execution.recorder.prefix(messages, scenario.tools);
@@ -21983,71 +22132,6 @@ __def("packages/chat-agent/src/scenarios/profile.schema.json", function (exports
     }
   }
 };
-});
-
-__def("packages/chat-agent/src/agent/prompts.ts", function (exports) {
-const { pageForModel } = __req("packages/builder-core/src/index.ts");
-const { itemIndex, propsOutline } = __req("packages/chat-agent/src/agent/blocks.ts");
-const SYSTEM_COMMON = [
-	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
-	'{ "version": 2, "title", "slug", "locale", "seo": { "title", "description" }, "blocks": [{ "id", "item", "variant", "props" }] }.',
-	"- item is a block of the catalog (npx ui8kit add <item>); itemIndex lists every block with its category and variants (list_blocks shows their labels). variant is one of the item's variants: it sets the layout (where the picture is, how many columns), never the content; the host writes the layout axes it sets (media, cols, surface), so write variant and leave those props out. Settings such as align, padding and level are props too.",
-	"- props are exactly the component props of the item. get_block shows them (names, kinds, enums, rows; ? = optional) and the sample props a new block starts with. Write real text in every text prop, never placeholders such as Title, Text or Lorem. A list is an array of records with every required field (team members: id, title, description). A picture is an optional address prop: image with imageAlt on a section, image on list records (dishes, products, rooms), avatar on a team member, where get_block shows it. Leave image empty by default: the block shows its placeholder and Media mode then draws every picture from its description. Use an address only when the author gave one; a value that is not https or a relative path to a picture file is dropped with a note. Picture fields (image, imageDark, avatar) hold only an image URL or stay empty: never an icon name or a word there (phone, map-pin, clock); icons go in icon props. Never write in the page text that photos were added unless you set them.",
-	"- imageAlt: on every block whose props have imageAlt, write it even when image is empty (Media mode draws the picture from it; a list record is drawn from its title and description, so make those concrete). One natural, descriptive sentence in the page language, 8 to 20 words, saying what is in the frame: the subject, its key details and the setting (light, place, mood), the way a careful SEO alt text reads. Never start with 'image of' or 'photo of', never stuff keywords or repeat the heading, never describe text, logos or the layout.",
-	"- Hard rules only: every block's props pass the item's props schema and the item renders. Everything else is your design decision: pick, replace, add, remove and reorder blocks as the request needs; a block may appear several times.",
-	"- write_page is the only write. Send { page } (the whole document) or { patch } (RFC 6902 operations on the document, paths as JSON Pointers: /title, /locale, /seo/description, /blocks/2/props/title, /blocks/- to append). A block you add needs only { item, variant }: the host starts it from the registry sample props, then applies the props you give. A block without id gets one; keep the ids of blocks you keep.",
-	"- write_page answers with the diff, or with a list [{ path, code, expected, got }] and changes nothing: fix exactly those paths and write again. Never repeat a write that failed the same way. Besides the schema codes, render_failed and render_empty mean the block would throw or show nothing in the preview (the host rendered it): fix the prop at that path (the page you read may list such blocks in renderProblems).",
-	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",
-	"- scope.blockIds, when present, are the blocks the author selected: edit only those (props, variant, item). Do not change page fields, other blocks, or the order.",
-	"- Write content when asked. A fictional product is fine when the author says so; never present invented facts as real ones when the author gave real ones.",
-	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why."
-].join("\n");
-
-const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: every step is a tool call. Read with the catalog tools, then change the page with write_page: the whole document goes into the call, never into the text. The turn ends when write_page is accepted. If the request needs no change, write the current page back unchanged.`;
-
-const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page and the catalog. You have no write tool here: answer in text. When the author wants a change, describe it briefly and say that Build makes it.`;
-
-const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
-
-/** The page document the model reads: without host-managed fields. */
-function pageView(page: PageV2): Record<string, unknown> {
-	const view: Record<string, unknown> = { ...pageForModel(page) };
-	for (const key of HOST_FIELDS) delete view[key];
-	return view;
-}
-
-function userPrompt(ctx: TurnContext, problems: ReturnType<typeof renderProblems>): string {
-	const items = [...new Set(ctx.page.blocks.map((block) => block.item))];
-	const outlines = Object.fromEntries(items.map((item) => [item, propsOutline(item)]).filter(([, lines]) => lines));
-	return JSON.stringify({
-		request: ctx.brief,
-		...(ctx.conversation?.length ? { conversation: ctx.conversation } : {}),
-		page: pageView(ctx.page),
-		...(problems.length ? { renderProblems: problems, renderProblemsNote: "These blocks throw or show nothing in the preview now. Fix them with write_page (the prop at each path), or replace the block." } : {}),
-		...(ctx.scopeBlockIds?.length ? { scope: { blockIds: ctx.scopeBlockIds } } : {}),
-		propsOfBlocksOnPage: outlines,
-		itemIndex: itemIndex()
-	});
-}
-
-/**
- * Sent once when a turn that is expected to change the page ends without an accepted write (ADR 0035). Program text, no phrase
- * recognition. In Build the request that follows forces write_page (tool_choice), so the text says the document goes into the
- * call and is never printed. Ask has no write tool and is never nudged.
- */
-function nudgeText(ctx: TurnContext, problems: number): string {
-	return [
-		"Host notice: nothing on the page has changed in this turn (no write_page was accepted).",
-		problems > 0 ? "The page has blocks that do not render; they are listed in renderProblems (get_page shows them)." : ctx.scopeBlockIds?.length ? "Blocks are selected for this edit." : "",
-		"Call write_page with the page document now; the document goes into the call, do not print it in the text. Do not report a change that write_page did not accept."
-	].filter(Boolean).join(" ");
-}
-
-exports["SYSTEM_BUILD"] = SYSTEM_BUILD;
-exports["SYSTEM_ASK"] = SYSTEM_ASK;
-exports["userPrompt"] = userPrompt;
-exports["nudgeText"] = nudgeText;
-
 });
 
 __def("packages/chat-agent/src/scenarios/compile.ts", function (exports) {
@@ -22284,7 +22368,19 @@ type ChatRunRequest = {
 	conversation: Array<{ role: "user" | "assistant"; text: string }>;
 	/** Opaque prompt-cache routing key of the chat (letters, digits, `:_-`, at most 80); anything else is dropped. */
 	cacheKey?: string;
+	/** The author's date and time zone (ADR 0066); anything malformed is dropped. */
+	today?: { date: string; timeZone: string };
 };
+
+const TODAY_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_ZONE = /^[A-Za-z][A-Za-z0-9_+\-/]{0,63}$/;
+
+function parseToday(raw: unknown): { date: string; timeZone: string } | undefined {
+	if (!raw || typeof raw !== "object") return undefined;
+	const date: unknown = Reflect.get(raw, "date");
+	const timeZone: unknown = Reflect.get(raw, "timeZone");
+	return typeof date === "string" && TODAY_DATE.test(date) && typeof timeZone === "string" && TIME_ZONE.test(timeZone) ? { date, timeZone } : undefined;
+}
 
 function parsePageDoc(raw: unknown): PageV2 | undefined {
 	if (raw == null) return undefined;
@@ -22311,6 +22407,7 @@ function mapChatRunRequest(
 		scopeBlockIds?: unknown;
 		conversation?: unknown;
 		cacheKey?: unknown;
+		today?: unknown;
 	},
 	opts: { discoveredChatIds?: string[] | null; allowUnlistedTrial?: boolean } = {}
 ): { ok: true; request: ChatRunRequest } | ModelResolveError {
@@ -22338,7 +22435,8 @@ function mapChatRunRequest(
 			conversation: Array.isArray(body.conversation)
 				? body.conversation.slice(-8).flatMap((row) => (row && typeof row === "object" && (row.role === "user" || row.role === "assistant") && typeof row.text === "string" ? [{ role: row.role as "user" | "assistant", text: row.text.slice(0, 2000) }] : []))
 				: [],
-			...(typeof body.cacheKey === "string" && CACHE_KEY.test(body.cacheKey) ? { cacheKey: body.cacheKey } : {})
+			...(typeof body.cacheKey === "string" && CACHE_KEY.test(body.cacheKey) ? { cacheKey: body.cacheKey } : {}),
+			...(parseToday(body.today) ? { today: parseToday(body.today) } : {})
 		}
 	};
 }
@@ -22662,7 +22760,7 @@ const { agentTools, agentToolChoice } = __req("packages/chat-agent/src/agent/age
 const { agentReply, rejectedWrite, runWriteTool } = __req("packages/chat-agent/src/agent/turn.ts");
 const { createExecution } = __req("packages/chat-agent/src/agent/execution.ts");
 const { executeCatalogTool, catalogEvidence } = __req("packages/chat-agent/src/agent/catalog-tools.ts");
-const { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, userPrompt } = __req("packages/chat-agent/src/agent/prompts.ts");
+const { SYSTEM_ASK, SYSTEM_BUILD, nudgeText, systemText, userPrompt } = __req("packages/chat-agent/src/agent/prompts.ts");
 function parseArgs(raw: string | undefined): Record<string, unknown> {
 	try {
 		const parsed = JSON.parse(raw || "{}") as unknown;
@@ -22778,7 +22876,7 @@ async function runLoop(ctx: TurnContext, options: ExecutionOptions, execution: R
 	// The turn-start probe: every block of the current page is rendered once, and the result serves the prompt and the nudge (ADR 0038).
 	const problems = renderProblems(ctx.page);
 	const messages: AgentMessage[] = [
-		{ role: "system", text: scenario?.systemPrompt ?? (ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD) },
+		{ role: "system", text: systemText(scenario?.systemPrompt ?? (ctx.mode === "ask" ? SYSTEM_ASK : SYSTEM_BUILD), ctx) },
 		{ role: "user", text: scenario ? scenario.context(ctx, problems) : userPrompt(ctx, problems) }
 	];
 	const tools = scenario?.tools ?? agentTools(ctx.mode);
@@ -23076,9 +23174,12 @@ exports["chatCacheKey"] = __req("packages/chat-agent/src/identity.ts")["chatCach
 { const __m = __req("packages/chat-agent/src/redact.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/env-map.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 exports["contractFingerprint"] = __req("packages/chat-agent/src/fingerprint.ts")["contractFingerprint"];
+exports["MACRO_RULE"] = __req("packages/chat-agent/src/agent/prompts.ts")["MACRO_RULE"];
 exports["SYSTEM_ASK"] = __req("packages/chat-agent/src/agent/prompts.ts")["SYSTEM_ASK"];
 exports["SYSTEM_BUILD"] = __req("packages/chat-agent/src/agent/prompts.ts")["SYSTEM_BUILD"];
 exports["nudgeText"] = __req("packages/chat-agent/src/agent/prompts.ts")["nudgeText"];
+exports["systemText"] = __req("packages/chat-agent/src/agent/prompts.ts")["systemText"];
+exports["todayIn"] = __req("packages/chat-agent/src/agent/prompts.ts")["todayIn"];
 exports["userPrompt"] = __req("packages/chat-agent/src/agent/prompts.ts")["userPrompt"];
 exports["runAgentLoop"] = __req("packages/chat-agent/src/agent/loop.ts")["runAgentLoop"];
 exports["turnMeta"] = __req("packages/chat-agent/src/agent/provider.ts")["turnMeta"];
@@ -23420,7 +23521,8 @@ function turnInput(req: MappedRequest): TurnContext {
 		shownPage: req.shownPage ?? null,
 		expectedRevision: req.expectedRevision,
 		scopeBlockIds: req.scopeBlockIds,
-		cacheKey: req.cacheKey
+		cacheKey: req.cacheKey,
+		...(req.today ? { today: req.today } : {})
 	};
 }
 

@@ -81,7 +81,8 @@ export function turnInput(req: MappedRequest): TurnContext {
 		shownPage: req.shownPage ?? null,
 		expectedRevision: req.expectedRevision,
 		scopeBlockIds: req.scopeBlockIds,
-		cacheKey: req.cacheKey
+		cacheKey: req.cacheKey,
+		...(req.today ? { today: req.today } : {})
 	};
 }
 

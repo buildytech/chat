@@ -10,3 +10,4 @@ export { applyOp, checkAdd, setAtPointer, type AddCheck, type OpName, type OpRes
 export { inspectorModel, inspectorShown, inspectorValue, pointerKey, type InspectorField, type InspectorModel, type InspectorWidget } from "./inspect.ts";
 export { installRenderProbe, probeFromModule, probeOutcome, renderProbeInstalled, renderIssues, renderProblems, setRenderEmptyPolicy, showsContent, type ProbeIssue, type ProbeOutcome, type ProbeResult, type RenderModule, type RenderProbe } from "./probe.ts";
 export { convertProps, pageForModel, pageFromModel, patchFromModel, writeInputFromModel } from "./money-view.ts";
+export { expandMacros, expandMacrosDeep, macroNames, MACROS, type MacroContext } from "./macros.ts";

@@ -2,10 +2,13 @@
  * The words of the agent turn: the system prompts of Build and Ask, the user prompt (the request, the page document, the
  * props of the blocks on the page, the registry index) and the one nudge sent when a turn ends without an accepted write.
  */
-import { pageForModel, type renderProblems } from "@buildytech/builder-core";
+import { MACROS, pageForModel, type renderProblems } from "@buildytech/builder-core";
 import { itemIndex, propsOutline } from "./blocks.ts";
 import type { TurnContext } from "./turn.ts";
 import type { PageV2 } from "@buildytech/page-contract";
+
+/** Content macros the render replaces (ADR 0066): the agent writes the token, the page shows the value of the moment. */
+export const MACRO_RULE = `- Macros: the page replaces ${[...MACROS].map(([name, macro]) => `{${name}} with ${macro.description}`).join("; ")}, in the preview and the export alike. Write the copyright line with the macro, never a year number: "© {year} Name". Any other text in braces stays unchanged.`;
 
 const SYSTEM_COMMON = [
 	"You are the BuildY page agent. The page is ONE JSON document, the same one the export emits:",
@@ -19,12 +22,32 @@ const SYSTEM_COMMON = [
 	"- locale is the ISO code of the language the author writes in (ru for Russian, en for English): set it and write all page text in that language. seo.title and seo.description are real text for this page. title is the name of what the request is about (the business, product or topic), never a template or catalog name. A request that starts a page gets assembly and content in ONE write_page: every block with its real texts, items and images.",
 	"- scope.blockIds, when present, are the blocks the author selected: edit only those (props, variant, item). Do not change page fields, other blocks, or the order.",
 	"- Write content when asked. A fictional product is fine when the author says so; never present invented facts as real ones when the author gave real ones.",
-	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why."
+	"- Never apply or publish: the author applies a proposal. Answer in the author's language, briefly: what changed and why.",
+	MACRO_RULE
 ].join("\n");
 
 export const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: every step is a tool call. Read with the catalog tools, then change the page with write_page: the whole document goes into the call, never into the text. The turn ends when write_page is accepted. If the request needs no change, write the current page back unchanged.`;
 
 export const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page and the catalog. You have no write tool here: answer in text. When the author wants a change, describe it briefly and say that Build makes it.`;
+
+/**
+ * The system text of a turn: the prompt of the mode or scenario, the macro rule when the scenario prompt lacks it, and the
+ * author's date (their browser's time zone) so prose never guesses the year. Without `today` (an old client) the prompt is
+ * the constant one.
+ */
+export function systemText(base: string, ctx: Pick<TurnContext, "today">): string {
+	const lines = [base];
+	if (!base.includes(MACRO_RULE)) lines.push(MACRO_RULE);
+	if (ctx.today) lines.push(`- Today is ${ctx.today.date} in the author's time zone (${ctx.today.timeZone}). Use it for any date or year the text needs (since when, how many years, the next event); the copyright year is still {year}.`);
+	return lines.join("\n");
+}
+
+/** The date of `now` (YYYY-MM-DD) in `timeZone`, the way the author's browser reads its calendar. */
+export function todayIn(now: Date, timeZone: string): { date: string; timeZone: string } {
+	const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now);
+	const part = (type: string) => parts.find((entry) => entry.type === type)?.value ?? "";
+	return { date: `${part("year")}-${part("month")}-${part("day")}`, timeZone };
+}
 
 const HOST_FIELDS = ["id", "status", "createdAt", "updatedAt"] as const;
 

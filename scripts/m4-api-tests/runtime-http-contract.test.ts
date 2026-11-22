@@ -55,8 +55,12 @@ function bytesOf(spec: Bytes): Uint8Array<ArrayBuffer> {
 	return new Uint8Array(spec.size ?? 0).fill(spec.fill ?? 0);
 }
 
-/** Subset match: objects by the expected keys, arrays by length and element, `$absent`, `$boolean`, `$prefix:<text>`. */
+/** Subset match: objects by the expected keys, arrays by length and element, `$absent`, `$boolean`, `$prefix:<text>`, `$match:<regex>`. */
 function matches(actual: unknown, expected: Json, path: string, problems: string[]): void {
+	if (typeof expected === "string" && expected.startsWith("$match:")) {
+		if (typeof actual !== "string" || !new RegExp(expected.slice(7)).test(actual)) problems.push(`${path}: expected ${expected}, got ${JSON.stringify(actual)}`);
+		return;
+	}
 	if (typeof expected === "string" && expected === "$boolean") {
 		if (typeof actual !== "boolean") problems.push(`${path}: expected a boolean, got ${JSON.stringify(actual)}`);
 		return;
