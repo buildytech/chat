@@ -33,7 +33,7 @@ function app(): SessionApp {
 	const commit = typeof __BUILDY_APP_COMMIT__ === "string" ? __BUILDY_APP_COMMIT__ : "";
 	return {
 		name: "buildy-chat",
-		version: chatPackage.version,
+		version: runtimeHost().version ?? chatPackage.version,
 		// The host the status read named (the desktop app), else the browser (ADR 0065).
 		host: runtimeHost().kind,
 		...(/^[0-9a-f]{7,40}$/.test(commit) ? { commit } : {})
