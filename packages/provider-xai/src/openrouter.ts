@@ -6,6 +6,7 @@
  * Key-free values only: the generator copies them into `contract/runtime-http/constants.json` (`openrouter`), the desktop
  * host reads them from there, and the webview's provider binding reads them from here.
  */
+import { IMAGE_MODELS } from "@buildytech/agent-manifests";
 
 /** The OpenRouter API base (OpenAI-compatible Chat Completions at `/chat/completions`, images at `/images`). */
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
@@ -28,7 +29,7 @@ export { OPENROUTER_CHAT_MODELS, OPENROUTER_MODELS, appCandidate, appModelIds, o
 export const OPENROUTER_CANDIDATE_MODEL = "x-ai/grok-4.20";
 
 /** The image model (POST /images, base64 answers stored by the host). */
-export const OPENROUTER_IMAGE_MODEL = "x-ai/grok-imagine-image-2.0";
+export const OPENROUTER_IMAGE_MODEL = IMAGE_MODELS.openrouter;
 
 /** Model discovery: chat models, then image models (both public lists, the host still sends its key). */
 export const OPENROUTER_DISCOVERY = ["/models", "/images/models"] as const;

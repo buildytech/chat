@@ -13,7 +13,7 @@ import { runLocalTurn } from "../../apps/chat-web/src/modules/chat/browser/local
 import { runBody } from "../../apps/chat-web/src/modules/chat/browser/xai-client.ts";
 import { generateCandidates } from "../../apps/chat-web/src/modules/chat/media/client.ts";
 
-const IMAGE = "grok-imagine-image";
+const IMAGE = "grok-imagine-image-2.0";
 const desktop = (or: Partial<{ state: string; chat: string[] }> = {}, xai: Partial<{ state: string; present: boolean }> = {}): ProvidersStatus => ({
 	ready: true,
 	code: "xai_runtime_ready",
@@ -21,16 +21,16 @@ const desktop = (or: Partial<{ state: string; chat: string[] }> = {}, xai: Parti
 	models: { listed: true, chatIds: ["grok-4.20-0309-non-reasoning"], candidate: "grok-4.20-0309-non-reasoning" },
 	capabilities: { settings: ["providers"], keys: ["xai"], signIn: ["openrouter"] },
 	providers: [
-		{ id: "xai", state: xai.state ?? "ready", key: { present: xai.present ?? true, source: xai.present === false ? null : "env" }, roles: ["build", "ask", "media"], models: { chat: ["grok-4.20-0309-non-reasoning", "grok-4.7"], image: [IMAGE] } },
+		{ id: "xai", state: xai.state ?? "ready", key: { present: xai.present ?? true, source: xai.present === false ? null : "env" }, roles: ["build", "ask", "media"], models: { chat: ["grok-4.20-0309-non-reasoning", "grok-4.7"], image: ["grok-imagine-image", IMAGE] } },
 		{ id: "openrouter", state: or.state ?? "ready", key: { present: or.state !== "not_configured", source: or.state === "not_configured" ? null : "keychain" }, roles: ["build", "ask"], models: { chat: or.chat ?? ["x-ai/grok-4.20", "x-ai/grok-4.7"], image: [] }, pending: false }
 	]
 });
-const web: ProvidersStatus = { ready: true, code: "xai_runtime_ready", key: { present: true }, models: { listed: true, chatIds: ["grok-4.20-0309-non-reasoning", "grok-4.7"], imageIds: [IMAGE] } };
+const web: ProvidersStatus = { ready: true, code: "xai_runtime_ready", key: { present: true }, models: { listed: true, chatIds: ["grok-4.20-0309-non-reasoning", "grok-4.7"], imageIds: ["grok-imagine-image", IMAGE] } };
 
 test("the desktop lists both providers; OpenRouter's chat ids are read in the app's ids", () => {
 	const [xai, or] = providerViews(desktop());
 	assert.equal(xai.id, "xai");
-	assert.deepEqual(xai.image, [IMAGE]);
+	assert.deepEqual(xai.image, [IMAGE], "a picture model the key lists but the host does not draw with is not offered");
 	assert.equal(or.id, "openrouter");
 	assert.deepEqual(or.chat, ["grok-4.20-0309-non-reasoning", "grok-4.20-0309-reasoning", "grok-4.7"]);
 	assert.deepEqual(or.rawChat, ["x-ai/grok-4.20", "x-ai/grok-4.7"]);
@@ -42,6 +42,7 @@ test("a web host serves xAI only; OpenRouter is a desktop provider there", () =>
 	assert.deepEqual(views.map((p) => [p.id, p.state]), [["xai", "ready"], ["openrouter", "host_unavailable"]]);
 	assert.equal(providerViews({ ...web, key: { present: false }, ready: false })[0].state, "not_configured");
 	assert.equal(providerViews(null)[0].state, "not_configured");
+	assert.deepEqual(views[0].image, [IMAGE], "the web runtime draws with its one model too");
 });
 
 test("approved lists: one id per line, trimmed, no blanks or repeats; a bad line or too many ids is refused", () => {

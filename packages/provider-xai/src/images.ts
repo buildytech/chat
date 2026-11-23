@@ -6,10 +6,11 @@
  * 2026-11-21), so a 404 reads as pending; the caller bounds the wait. The returned URLs are temporary (imgen.x.ai); no
  * storage is requested here (owner decision t109u: storage comes later).
  */
+import { IMAGE_MODELS } from "@buildytech/agent-manifests";
 import { classifyProviderFailure } from "./errors.ts";
 
 /** The image model (docs: Image Generation, grok-imagine-image-2.0, flat per-image price). */
-export const XAI_IMAGE_MODEL = "grok-imagine-image-2.0";
+export const XAI_IMAGE_MODEL = IMAGE_MODELS.xai;
 /** Aspect ratios the generations endpoint accepts that the page blocks use. */
 export const IMAGE_ASPECTS = ["1:1", "4:3", "3:4", "16:9", "21:9"] as const;
 export type ImageAspect = (typeof IMAGE_ASPECTS)[number];

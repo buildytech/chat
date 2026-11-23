@@ -41,6 +41,9 @@ export const APPROVED_ID_PATTERN = "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$";
 export const XAI_KEY_MAX = 512;
 
 /** Media draws at most this many picture slots at a time (ADR 0068; t136u burned a key limit drawing all at once). */
+/** The one picture model each provider's host draws with (contract constants images.model, openrouter.imageModel). A key may list more; the host draws with none of the others. */
+export const IMAGE_MODELS = { xai: "grok-imagine-image-2.0", openrouter: "x-ai/grok-imagine-image-2.0" } as const satisfies Record<ProviderId, string>;
+
 export const MEDIA_SLOT_CONCURRENCY = 2;
 
 /** A provider failure that means the key ran out of credit or hit its spending limit. */

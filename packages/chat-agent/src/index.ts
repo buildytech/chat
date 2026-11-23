@@ -9,7 +9,7 @@ export { chatCacheKey } from "./identity.ts";
 export * from "./usage.ts";
 export { TICKS_PER_USD, usdToTicks } from "./cost.ts";
 export { OPENROUTER_MODELS, appCandidate, appModelIds } from "@buildytech/agent-manifests";
-export { APPROVED_ID_PATTERN, APPROVED_MAX_IDS, MEDIA_SLOT_CONCURRENCY, MODEL_KINDS, OPENROUTER_MEDIA_ENABLED, PROVIDER_IDS, PROVIDER_ROLES, PROVIDER_ROLE_SUPPORT, XAI_KEY_MAX, isProviderId, isProviderLimit, openRouterModel, type ModelKind, type ProviderId, type ProviderRole } from "@buildytech/agent-manifests";
+export { APPROVED_ID_PATTERN, APPROVED_MAX_IDS, IMAGE_MODELS, MEDIA_SLOT_CONCURRENCY, MODEL_KINDS, OPENROUTER_MEDIA_ENABLED, PROVIDER_IDS, PROVIDER_ROLES, PROVIDER_ROLE_SUPPORT, XAI_KEY_MAX, isProviderId, isProviderLimit, openRouterModel, type ModelKind, type ProviderId, type ProviderRole } from "@buildytech/agent-manifests";
 export * from "./xai-env.ts";
 export * from "./protect.ts";
 export * from "./redact.ts";

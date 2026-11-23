@@ -21239,6 +21239,9 @@ const APPROVED_ID_PATTERN = "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$";
 const XAI_KEY_MAX = 512;
 
 /** Media draws at most this many picture slots at a time (ADR 0068; t136u burned a key limit drawing all at once). */
+/** The one picture model each provider's host draws with (contract constants images.model, openrouter.imageModel). A key may list more; the host draws with none of the others. */
+const IMAGE_MODELS = { xai: "grok-imagine-image-2.0", openrouter: "x-ai/grok-imagine-image-2.0" } as const satisfies Record<ProviderId, string>;
+
 const MEDIA_SLOT_CONCURRENCY = 2;
 
 /** A provider failure that means the key ran out of credit or hit its spending limit. */
@@ -21257,6 +21260,7 @@ exports["PROVIDER_LIMIT_TTL_SECONDS"] = PROVIDER_LIMIT_TTL_SECONDS;
 exports["APPROVED_MAX_IDS"] = APPROVED_MAX_IDS;
 exports["APPROVED_ID_PATTERN"] = APPROVED_ID_PATTERN;
 exports["XAI_KEY_MAX"] = XAI_KEY_MAX;
+exports["IMAGE_MODELS"] = IMAGE_MODELS;
 exports["MEDIA_SLOT_CONCURRENCY"] = MEDIA_SLOT_CONCURRENCY;
 exports["isProviderLimit"] = isProviderLimit;
 
@@ -21306,6 +21310,7 @@ exports["XAI_MANIFEST"] = __req("packages/agent-manifests/src/xai.ts")["XAI_MANI
 exports["XAI_MODELS"] = __req("packages/agent-manifests/src/xai.ts")["XAI_MODELS"];
 exports["APPROVED_ID_PATTERN"] = __req("packages/agent-manifests/src/roles.ts")["APPROVED_ID_PATTERN"];
 exports["APPROVED_MAX_IDS"] = __req("packages/agent-manifests/src/roles.ts")["APPROVED_MAX_IDS"];
+exports["IMAGE_MODELS"] = __req("packages/agent-manifests/src/roles.ts")["IMAGE_MODELS"];
 exports["MEDIA_SLOT_CONCURRENCY"] = __req("packages/agent-manifests/src/roles.ts")["MEDIA_SLOT_CONCURRENCY"];
 exports["MODEL_KINDS"] = __req("packages/agent-manifests/src/roles.ts")["MODEL_KINDS"];
 exports["OPENROUTER_MEDIA_ENABLED"] = __req("packages/agent-manifests/src/roles.ts")["OPENROUTER_MEDIA_ENABLED"];
@@ -23296,6 +23301,7 @@ exports["appCandidate"] = __req("packages/agent-manifests/src/index.ts")["appCan
 exports["appModelIds"] = __req("packages/agent-manifests/src/index.ts")["appModelIds"];
 exports["APPROVED_ID_PATTERN"] = __req("packages/agent-manifests/src/index.ts")["APPROVED_ID_PATTERN"];
 exports["APPROVED_MAX_IDS"] = __req("packages/agent-manifests/src/index.ts")["APPROVED_MAX_IDS"];
+exports["IMAGE_MODELS"] = __req("packages/agent-manifests/src/index.ts")["IMAGE_MODELS"];
 exports["MEDIA_SLOT_CONCURRENCY"] = __req("packages/agent-manifests/src/index.ts")["MEDIA_SLOT_CONCURRENCY"];
 exports["MODEL_KINDS"] = __req("packages/agent-manifests/src/index.ts")["MODEL_KINDS"];
 exports["OPENROUTER_MEDIA_ENABLED"] = __req("packages/agent-manifests/src/index.ts")["OPENROUTER_MEDIA_ENABLED"];
@@ -23521,6 +23527,7 @@ exports["xaiCapabilities"] = xaiCapabilities;
 });
 
 __def("packages/provider-xai/src/openrouter.ts", function (exports) {
+const { IMAGE_MODELS } = __req("packages/agent-manifests/src/index.ts");
 exports["OPENROUTER_CHAT_MODELS"] = __req("packages/agent-manifests/src/index.ts")["OPENROUTER_CHAT_MODELS"];
 exports["OPENROUTER_MODELS"] = __req("packages/agent-manifests/src/index.ts")["OPENROUTER_MODELS"];
 exports["appCandidate"] = __req("packages/agent-manifests/src/index.ts")["appCandidate"];
@@ -23545,7 +23552,7 @@ const OPENROUTER_CALLBACK = { host: "localhost", pathPrefix: "/cb/", ttlSeconds:
 const OPENROUTER_CANDIDATE_MODEL = "x-ai/grok-4.20";
 
 /** The image model (POST /images, base64 answers stored by the host). */
-const OPENROUTER_IMAGE_MODEL = "x-ai/grok-imagine-image-2.0";
+const OPENROUTER_IMAGE_MODEL = IMAGE_MODELS.openrouter;
 
 /** Model discovery: chat models, then image models (both public lists, the host still sends its key). */
 const OPENROUTER_DISCOVERY = ["/models", "/images/models"] as const;
@@ -24250,8 +24257,9 @@ exports["handleEncode"] = handleEncode;
 });
 
 __def("packages/provider-xai/src/images.ts", function (exports) {
+const { IMAGE_MODELS } = __req("packages/agent-manifests/src/index.ts");
 const { classifyProviderFailure } = __req("packages/provider-xai/src/errors.ts");
-const XAI_IMAGE_MODEL = "grok-imagine-image-2.0";
+const XAI_IMAGE_MODEL = IMAGE_MODELS.xai;
 /** Aspect ratios the generations endpoint accepts that the page blocks use. */
 const IMAGE_ASPECTS = ["1:1", "4:3", "3:4", "16:9", "21:9"] as const;
 const MAX_IMAGE_CANDIDATES = 3;

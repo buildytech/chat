@@ -3,7 +3,7 @@
  * owner's approved-model lists, the role choices kept on this device, and the status a role's turn runs against.
  * The host enforces its own rules (keys, allowlists, approved lists on the desktop); this only narrows the choices.
  */
-import { APPROVED_ID_PATTERN, APPROVED_MAX_IDS, PROVIDER_IDS, appModelIds, isProviderId, openRouterModel, type ModelKind, type ProviderId, type ProviderRole } from "@buildytech/chat-agent";
+import { IMAGE_MODELS, APPROVED_ID_PATTERN, APPROVED_MAX_IDS, PROVIDER_IDS, appModelIds, isProviderId, openRouterModel, type ModelKind, type ProviderId, type ProviderRole } from "@buildytech/chat-agent";
 
 /** host_unavailable: this host cannot serve the provider at all (OpenRouter on the web). */
 type ProviderState = "ready" | "not_configured" | "limit" | "unavailable" | "host_unavailable";
@@ -28,6 +28,8 @@ const strings = (value: unknown): string[] => (Array.isArray(value) ? value.filt
 const STATES: readonly ProviderState[] = ["ready", "not_configured", "limit", "unavailable"];
 const isState = (value: unknown): value is ProviderState => STATES.some((s) => s === value);
 const ROLES: readonly ProviderRole[] = ["build", "ask", "media"];
+/** Only the picture model the host draws with (IMAGE_MODELS): a key may list more. */
+const drawn = (id: ProviderId, ids: string[]): string[] => ids.filter((model) => model === IMAGE_MODELS[id]);
 
 /** The providers of a status: the desktop lists them; a web host serves xAI only (read from the top-level fields). */
 export function providerViews(status: ProvidersStatus | null): ProviderView[] {
@@ -43,7 +45,7 @@ export function providerViews(status: ProvidersStatus | null): ProviderView[] {
 				roles: ROLES.filter((role) => strings(entry.roles).includes(role)),
 				chat: entry.id === "openrouter" ? appModelIds(rawChat) : rawChat,
 				rawChat,
-				image: strings(entry.models?.image),
+				image: drawn(entry.id, strings(entry.models?.image)),
 				pending: entry.pending === true
 			});
 		}
@@ -58,7 +60,7 @@ export function providerViews(status: ProvidersStatus | null): ProviderView[] {
 		roles: ROLES,
 		chat,
 		rawChat: chat,
-		image: strings(status?.models?.imageIds),
+		image: drawn("xai", strings(status?.models?.imageIds)),
 		pending: false
 	};
 	return [xai, { id: "openrouter", state: "host_unavailable", keySource: null, roles: [], chat: [], rawChat: [], image: [], pending: false }];
