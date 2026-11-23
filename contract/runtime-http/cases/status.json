@@ -664,7 +664,7 @@
 			}
 		},
 		{
-			"name": "desktop with an OpenRouter key and an xAI key: OpenRouter serves, xAI is not asked",
+			"name": "desktop with an OpenRouter key and an xAI key: the top-level fields stay OpenRouter's (ADR 0067), providers lists both, each discovered with its own key (ADR 0068)",
 			"surfaces": [
 				"desktop"
 			],
@@ -722,6 +722,49 @@
 							]
 						}
 					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
 				}
 			],
 			"expect": {
@@ -738,7 +781,50 @@
 					},
 					"models": {
 						"candidate": "x-ai/grok-4.20"
-					}
+					},
+					"providers": [
+						{
+							"id": "xai",
+							"state": "ready",
+							"key": {
+								"present": true,
+								"source": "keychain"
+							},
+							"roles": [
+								"build",
+								"ask",
+								"media"
+							],
+							"models": {
+								"chat": [
+									"$CANDIDATE"
+								],
+								"image": [
+									"$IMAGE_MODEL"
+								]
+							}
+						},
+						{
+							"id": "openrouter",
+							"state": "ready",
+							"key": {
+								"present": true,
+								"source": "keychain"
+							},
+							"roles": [
+								"build",
+								"ask"
+							],
+							"models": {
+								"chat": [
+									"x-ai/grok-4.20",
+									"x-ai/grok-4.7"
+								],
+								"image": []
+							},
+							"pending": false
+						}
+					]
 				}
 			}
 		},
@@ -989,6 +1075,612 @@
 					"ready": true,
 					"provider": "$absent",
 					"capabilities": "$absent"
+				}
+			}
+		},
+		{
+			"name": "providers: xAI key only, OpenRouter not_configured and never asked",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"ready": true,
+					"providers": [
+						{
+							"id": "xai",
+							"state": "ready",
+							"key": {
+								"present": true,
+								"source": "keychain"
+							},
+							"roles": [
+								"build",
+								"ask",
+								"media"
+							],
+							"models": {
+								"chat": [
+									"$CANDIDATE"
+								],
+								"image": [
+									"$IMAGE_MODEL"
+								]
+							}
+						},
+						{
+							"id": "openrouter",
+							"state": "not_configured",
+							"key": {
+								"present": false,
+								"source": null
+							},
+							"roles": [
+								"build",
+								"ask"
+							],
+							"models": {
+								"chat": [],
+								"image": []
+							},
+							"pending": false
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "providers: OpenRouter key only, xAI not_configured with no models and never asked",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$ORKEY"
+				],
+				"json": {
+					"providers": [
+						{
+							"id": "xai",
+							"state": "not_configured",
+							"key": {
+								"present": false,
+								"source": null
+							},
+							"roles": [
+								"build",
+								"ask",
+								"media"
+							],
+							"models": {
+								"chat": [],
+								"image": []
+							}
+						},
+						{
+							"id": "openrouter",
+							"state": "ready",
+							"key": {
+								"present": true,
+								"source": "keychain"
+							},
+							"roles": [
+								"build",
+								"ask"
+							],
+							"models": {
+								"chat": [
+									"x-ai/grok-4.20",
+									"x-ai/grok-4.7"
+								],
+								"image": []
+							},
+							"pending": false
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "providers: no key at all, both not_configured, no provider call",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"providers": [
+						{
+							"id": "xai",
+							"state": "not_configured",
+							"key": {
+								"present": false,
+								"source": null
+							},
+							"roles": [
+								"build",
+								"ask",
+								"media"
+							],
+							"models": {
+								"chat": [],
+								"image": []
+							}
+						},
+						{
+							"id": "openrouter",
+							"state": "not_configured",
+							"key": {
+								"present": false,
+								"source": null
+							},
+							"roles": [
+								"build",
+								"ask"
+							],
+							"models": {
+								"chat": [],
+								"image": []
+							},
+							"pending": false
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "providers: a limit answered in the last limitTtlSeconds reads state limit, the models still listed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true,
+				"limited": [
+					"openrouter"
+				]
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"providers": [
+						{
+							"id": "xai",
+							"state": "not_configured",
+							"key": {
+								"present": false,
+								"source": null
+							},
+							"roles": [
+								"build",
+								"ask",
+								"media"
+							],
+							"models": {
+								"chat": [],
+								"image": []
+							}
+						},
+						{
+							"id": "openrouter",
+							"state": "limit",
+							"key": {
+								"present": true,
+								"source": "keychain"
+							},
+							"roles": [
+								"build",
+								"ask"
+							],
+							"models": {
+								"chat": [
+									"x-ai/grok-4.20",
+									"x-ai/grok-4.7"
+								],
+								"image": []
+							},
+							"pending": false
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "providers: a key the provider refuses at discovery reads state unavailable, never echoed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": "bad key $KEY"
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": "bad key"
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": "bad key"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"providers": [
+						{
+							"id": "xai",
+							"state": "unavailable",
+							"key": {
+								"present": true
+							},
+							"models": {
+								"chat": [],
+								"image": []
+							}
+						},
+						{
+							"id": "openrouter",
+							"state": "not_configured",
+							"key": {
+								"present": false,
+								"source": null
+							},
+							"roles": [
+								"build",
+								"ask"
+							],
+							"models": {
+								"chat": [],
+								"image": []
+							},
+							"pending": false
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "providers: with OpenRouter pictures switched on (env.openrouterMedia), its roles include media and models.image lists the image model",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true,
+				"openrouterMedia": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"providers": [
+						{
+							"id": "xai",
+							"state": "not_configured",
+							"key": {
+								"present": false,
+								"source": null
+							},
+							"roles": [
+								"build",
+								"ask",
+								"media"
+							],
+							"models": {
+								"chat": [],
+								"image": []
+							}
+						},
+						{
+							"id": "openrouter",
+							"state": "ready",
+							"key": {
+								"present": true,
+								"source": "keychain"
+							},
+							"roles": [
+								"build",
+								"ask",
+								"media"
+							],
+							"models": {
+								"chat": [
+									"x-ai/grok-4.20",
+									"x-ai/grok-4.7"
+								],
+								"image": [
+									"x-ai/grok-imagine-image-2.0"
+								]
+							},
+							"pending": false
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "providers: the desktop lists the xAI key entry and the provider settings in capabilities",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"capabilities": {
+						"keys": [
+							"xai"
+						],
+						"settings": [
+							"providers"
+						]
+					}
+				}
+			}
+		},
+		{
+			"name": "providers: web hosts never send providers (one provider, xAI, read from the top-level fields)",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"providers": "$absent"
 				}
 			}
 		}

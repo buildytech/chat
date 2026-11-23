@@ -1092,6 +1092,217 @@
 					"$KEY"
 				]
 			}
+		},
+		{
+			"name": "forward approved: a chat model outside the approved xai chat list is 403 model_not_approved, no provider call",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true,
+				"approved": {
+					"xai": {
+						"chat": [
+							"grok-4.20-0309-reasoning"
+						]
+					}
+				}
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"stream": false
+				}
+			},
+			"expect": {
+				"status": 403,
+				"json": {
+					"error": {
+						"code": "model_not_approved"
+					}
+				}
+			}
+		},
+		{
+			"name": "forward approved: a 403 naming the credits passes through and marks xai limited",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"stream": false
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "/chat/completions",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 403,
+						"json": {
+							"error": "Your team has run out of credits."
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 403,
+				"notContains": [
+					"$KEY"
+				],
+				"limitedAfter": [
+					"xai"
+				]
+			}
+		},
+		{
+			"name": "forward approved: the image model on the chat path stays 422 even when approved as a chat model",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true,
+				"approved": {
+					"xai": {
+						"chat": [
+							"$IMAGE_MODEL"
+						]
+					}
+				}
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"json": {
+					"model": "$IMAGE_MODEL",
+					"messages": [
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"stream": false
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 422,
+				"json": {
+					"error": {
+						"code": "model_not_listed"
+					}
+				}
+			}
 		}
 	]
 }

@@ -1,3 +1,5 @@
+import { isProviderLimit } from "@buildytech/agent-manifests";
+
 export function retryAfterMs(value: string | null, now = Date.now()): number | undefined {
 	if (value === null) return undefined;
 	const seconds = /^[0-9]+(?:\.[0-9]+)?$/.test(value.trim()) ? Number(value) : NaN;
@@ -6,6 +8,8 @@ export function retryAfterMs(value: string | null, now = Date.now()): number | u
 }
 
 export function classifyProviderFailure(status: number, snippet: string) {
+	// A key out of credit or over its spending limit (ADR 0068): the app shows the provider as "Limit reached".
+	if (isProviderLimit(status, snippet)) return { code: "provider_limit", message: "The provider key reached its credit or spending limit.", retryable: false };
 	if (status === 401) return { code: "provider_unauthorized", message: "The provider rejected authentication.", retryable: false };
 	if (status === 403) return { code: "provider_forbidden", message: "The provider denied access.", retryable: false };
 	if (status === 429) return { code: "rate_limited", message: "The provider rate limit was reached.", retryable: true };

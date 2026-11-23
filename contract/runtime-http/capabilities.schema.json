@@ -35,6 +35,26 @@
 			},
 			"uniqueItems": true,
 			"description": "Sign-in methods the host offers (ADR 0067): openrouter is the OAuth PKCE sign-in at POST /runtime/v1/auth/openrouter/start. The app shows a sign-in control only for a method listed here."
+		},
+		"keys": {
+			"type": "array",
+			"items": {
+				"enum": [
+					"xai"
+				]
+			},
+			"uniqueItems": true,
+			"description": "Keys the owner can type in Settings (ADR 0068): xai is PUT/DELETE /runtime/v1/keys/xai, stored in the OS keychain and never answered."
+		},
+		"settings": {
+			"type": "array",
+			"items": {
+				"enum": [
+					"providers"
+				]
+			},
+			"uniqueItems": true,
+			"description": "Settings the host keeps and enforces (ADR 0068): providers is GET/PUT /runtime/v1/settings/providers, the approved-model lists."
 		}
 	}
 }

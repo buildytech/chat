@@ -33,7 +33,7 @@ const KEY = "contract-test-key-not-real";
 /** The OpenRouter key of the desktop cases (ADR 0067); no web host ever holds one, so no answer may contain it either. */
 const OPENROUTER_KEY = "contract-openrouter-key-not-real";
 const BASE = "https://xai.test/v1";
-const constants = JSON.parse(readFileSync(join(DIR, "constants.json"), "utf8")) as { contract: string; candidateChatModel: string; images: { model: string } };
+const constants = JSON.parse(readFileSync(join(DIR, "constants.json"), "utf8")) as { contract: string; candidateChatModel: string; images: { model: string }; openrouter: { mediaEnabled: boolean } };
 const files = readdirSync(join(DIR, "cases")).filter((name) => name.endsWith(".json")).sort();
 const cases: Array<Case & { file: string }> = files.flatMap((file) => (JSON.parse(readFileSync(join(DIR, "cases", file), "utf8")) as { cases: Case[] }).cases.map((c) => ({ ...c, file })));
 
@@ -191,6 +191,18 @@ test("contract files: the OpenRouter sign-in, forward and draws (ADR 0067) bind 
 	}
 	const names = new Set(cases.map((c) => c.file));
 	for (const file of ["openrouter-auth.json", "openrouter-forward.json", "media-openrouter.json"]) assert.ok(names.has(file), file);
+});
+
+test("contract files: provider per role (ADR 0068): settings and the xAI key bind the desktop only, media-provider binds the web too", () => {
+	const of = (file: string) => cases.filter((c) => c.file === file);
+	for (const file of ["provider-settings.json", "keys-xai.json"]) {
+		assert.ok(of(file).length >= 8, file);
+		for (const c of of(file)) assert.deepEqual(c.surfaces, ["desktop"], `${file}: ${c.name}`);
+	}
+	const media = of("media-provider.json");
+	assert.ok(media.length >= 15);
+	assert.ok(media.filter((c) => !c.surfaces).length >= 8, "media-provider: shared cases");
+	assert.equal(constants.openrouter.mediaEnabled, false, "OpenRouter pictures stay off (t137u)");
 });
 
 for (const c of cases) {

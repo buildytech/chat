@@ -1,0 +1,94 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://github.com/buildytech/chat/contract/runtime-http/providers.schema.json",
+	"title": "Runtime providers (ADR 0068)",
+	"description": "Optional `providers` of GET /runtime/v1/status: the desktop host lists every provider it can serve, each discovered with its own key. Web hosts never send it; the app reads one xAI entry from the top-level fields.",
+	"type": "array",
+	"items": {
+		"type": "object",
+		"additionalProperties": false,
+		"required": [
+			"id",
+			"state",
+			"key",
+			"roles",
+			"models"
+		],
+		"properties": {
+			"id": {
+				"enum": [
+					"xai",
+					"openrouter"
+				]
+			},
+			"state": {
+				"enum": [
+					"ready",
+					"not_configured",
+					"limit",
+					"unavailable"
+				],
+				"description": "not_configured: no key; limit: a provider_limit answer in the last constants.providers.limitTtlSeconds; unavailable: the key is there but discovery failed or listed no usable model."
+			},
+			"key": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"present",
+					"source"
+				],
+				"properties": {
+					"present": {
+						"type": "boolean"
+					},
+					"source": {
+						"enum": [
+							"keychain",
+							"env",
+							null
+						]
+					}
+				}
+			},
+			"roles": {
+				"type": "array",
+				"items": {
+					"enum": [
+						"build",
+						"ask",
+						"media"
+					]
+				},
+				"uniqueItems": true,
+				"description": "The roles the host serves with this provider (constants.providers.roleSupport)."
+			},
+			"models": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"chat",
+					"image"
+				],
+				"properties": {
+					"chat": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"image": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"description": "Empty while the provider has no media role."
+					}
+				}
+			},
+			"pending": {
+				"type": "boolean",
+				"description": "OpenRouter only: a sign-in waits for its callback."
+			}
+		}
+	}
+}

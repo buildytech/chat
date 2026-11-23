@@ -1,0 +1,438 @@
+{
+	"$comment": "GET/PUT /runtime/v1/settings/providers on the desktop host (ADR 0068): the owner's approved-model lists, one per provider and kind (chat: Build and Ask; image: Media), kept in the host's config so the host enforces them. A list is null (not narrowed: every model the host serves) or the approved ids; it narrows what the host serves and never widens it (a host still refuses a model outside its allowlist or of the wrong kind). `env.approved` seeds the saved lists; `expect.approvedAfter` is what the host keeps after the request.",
+	"cases": [
+		{
+			"name": "settings: GET without saved lists answers every list null (nothing narrowed)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/settings/providers"
+			},
+			"expect": {
+				"status": 200,
+				"headers": {
+					"cache-control": "no-store"
+				},
+				"json": {
+					"ok": true,
+					"approved": {
+						"xai": {
+							"chat": null,
+							"image": null
+						},
+						"openrouter": {
+							"chat": null,
+							"image": null
+						}
+					}
+				}
+			}
+		},
+		{
+			"name": "settings: GET answers the saved lists",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"approved": {
+					"openrouter": {
+						"chat": [
+							"x-ai/grok-4.20"
+						]
+					}
+				}
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/settings/providers"
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"approved": {
+						"xai": {
+							"chat": null,
+							"image": null
+						},
+						"openrouter": {
+							"chat": [
+								"x-ai/grok-4.20"
+							],
+							"image": null
+						}
+					}
+				}
+			}
+		},
+		{
+			"name": "settings: PUT saves the lists trimmed, without blanks or repeats, in the given order",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/settings/providers",
+				"json": {
+					"approved": {
+						"openrouter": {
+							"chat": [
+								" x-ai/grok-4.7 ",
+								"x-ai/grok-4.20",
+								"",
+								"x-ai/grok-4.7"
+							]
+						},
+						"xai": {
+							"image": [
+								"$IMAGE_MODEL"
+							]
+						}
+					}
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"approved": {
+						"xai": {
+							"chat": null,
+							"image": [
+								"$IMAGE_MODEL"
+							]
+						},
+						"openrouter": {
+							"chat": [
+								"x-ai/grok-4.7",
+								"x-ai/grok-4.20"
+							],
+							"image": null
+						}
+					}
+				},
+				"approvedAfter": {
+					"xai": {
+						"chat": null,
+						"image": [
+							"$IMAGE_MODEL"
+						]
+					},
+					"openrouter": {
+						"chat": [
+							"x-ai/grok-4.7",
+							"x-ai/grok-4.20"
+						],
+						"image": null
+					}
+				}
+			}
+		},
+		{
+			"name": "settings: PUT null clears a list back to not narrowed, an absent provider stays as saved",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"approved": {
+					"openrouter": {
+						"chat": [
+							"x-ai/grok-4.20"
+						]
+					},
+					"xai": {
+						"chat": [
+							"$CANDIDATE"
+						]
+					}
+				}
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/settings/providers",
+				"json": {
+					"approved": {
+						"openrouter": {
+							"chat": null
+						}
+					}
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"approved": {
+						"xai": {
+							"chat": [
+								"$CANDIDATE"
+							],
+							"image": null
+						},
+						"openrouter": {
+							"chat": null,
+							"image": null
+						}
+					}
+				}
+			}
+		},
+		{
+			"name": "settings: PUT an empty list keeps it empty (nothing approved)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/settings/providers",
+				"json": {
+					"approved": {
+						"xai": {
+							"image": []
+						}
+					}
+				}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"approved": {
+						"xai": {
+							"chat": null,
+							"image": []
+						}
+					}
+				}
+			}
+		},
+		{
+			"name": "settings: PUT an unknown provider is 422 invalid_request, nothing saved",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/settings/providers",
+				"json": {
+					"approved": {
+						"openai": {
+							"chat": [
+								"gpt-5"
+							]
+						}
+					}
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_request"
+				},
+				"approvedAfter": {
+					"xai": {
+						"chat": null,
+						"image": null
+					},
+					"openrouter": {
+						"chat": null,
+						"image": null
+					}
+				}
+			}
+		},
+		{
+			"name": "settings: PUT an unknown kind is 422 invalid_request",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/settings/providers",
+				"json": {
+					"approved": {
+						"xai": {
+							"video": [
+								"grok-imagine-video"
+							]
+						}
+					}
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_request"
+				}
+			}
+		},
+		{
+			"name": "settings: PUT an id outside the pattern is 422 invalid_request",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/settings/providers",
+				"json": {
+					"approved": {
+						"xai": {
+							"chat": [
+								"grok 4 with spaces"
+							]
+						}
+					}
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_request"
+				}
+			}
+		},
+		{
+			"name": "settings: PUT more than approved.maxIds ids is 422 invalid_request",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/settings/providers",
+				"json": {
+					"approved": {
+						"xai": {
+							"chat": [
+								"grok-model-0",
+								"grok-model-1",
+								"grok-model-2",
+								"grok-model-3",
+								"grok-model-4",
+								"grok-model-5",
+								"grok-model-6",
+								"grok-model-7",
+								"grok-model-8",
+								"grok-model-9",
+								"grok-model-10",
+								"grok-model-11",
+								"grok-model-12",
+								"grok-model-13",
+								"grok-model-14",
+								"grok-model-15",
+								"grok-model-16",
+								"grok-model-17",
+								"grok-model-18",
+								"grok-model-19",
+								"grok-model-20",
+								"grok-model-21",
+								"grok-model-22",
+								"grok-model-23",
+								"grok-model-24",
+								"grok-model-25",
+								"grok-model-26",
+								"grok-model-27",
+								"grok-model-28",
+								"grok-model-29",
+								"grok-model-30",
+								"grok-model-31",
+								"grok-model-32"
+							]
+						}
+					}
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_request"
+				}
+			}
+		},
+		{
+			"name": "settings: a body that is not JSON is 400 invalid_json",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/settings/providers",
+				"text": "{not json"
+			},
+			"expect": {
+				"status": 400,
+				"json": {
+					"ok": false,
+					"code": "invalid_json"
+				}
+			}
+		},
+		{
+			"name": "settings: answers GET and PUT only, DELETE is 405",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "DELETE",
+				"path": "/runtime/v1/settings/providers"
+			},
+			"expect": {
+				"status": 405,
+				"json": {
+					"ok": false,
+					"code": "method_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "settings: another settings path is 404",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/settings/theme"
+			},
+			"expect": {
+				"status": 404
+			}
+		}
+	]
+}

@@ -18,6 +18,7 @@ import { IMAGE_ASPECTS, MAX_IMAGE_CANDIDATES, MAX_IMAGE_PROMPT, XAI_IMAGE_MODEL 
 import { ASSET_HOSTS, ASSET_TYPES, MAX_ASSET_BYTES } from "../apps/xai-runtime/src/media-asset.ts";
 import { EXPORT_MAX_BYTES, EXPORT_NAME } from "../apps/chat-web/src/modules/chat/browser/runtime-save.ts";
 import { OPENROUTER_AUTH_URL, OPENROUTER_BASE_URL, OPENROUTER_CALLBACK, OPENROUTER_CANDIDATE_MODEL, OPENROUTER_CHAT_MODELS, OPENROUTER_DISCOVERY, OPENROUTER_IMAGE_MODEL, OPENROUTER_KEYS_PATH, OPENROUTER_SESSION_HEADER, USD_TICKS } from "../packages/provider-xai/src/openrouter.ts";
+import { APPROVED_ID_PATTERN, APPROVED_MAX_IDS, MODEL_KINDS, OPENROUTER_MEDIA_ENABLED, PROVIDER_IDS, PROVIDER_LIMIT_TTL_SECONDS, PROVIDER_ROLES, PROVIDER_ROLE_SUPPORT, XAI_KEY_MAX } from "../packages/agent-manifests/src/roles.ts";
 import { DESKTOP_HOST } from "../apps/chat-web/src/lib/runtime-host.ts";
 import { ENCODE_TYPES, FILTERS, FILTER_LIMITS, MAX_ENCODE_BYTES, MAX_URL_BYTES, TIERS, handleEncode } from "../apps/xai-runtime/src/media-encode.ts";
 
@@ -47,7 +48,17 @@ function constants() {
 			imageModel: OPENROUTER_IMAGE_MODEL,
 			discovery: [...OPENROUTER_DISCOVERY],
 			sessionHeader: OPENROUTER_SESSION_HEADER,
-			usdTicks: USD_TICKS
+			usdTicks: USD_TICKS,
+			mediaEnabled: OPENROUTER_MEDIA_ENABLED
+		},
+		providers: {
+			ids: [...PROVIDER_IDS],
+			roles: [...PROVIDER_ROLES],
+			kinds: [...MODEL_KINDS],
+			roleSupport: Object.fromEntries(PROVIDER_IDS.map((id) => [id, [...PROVIDER_ROLE_SUPPORT[id]]])),
+			limitTtlSeconds: PROVIDER_LIMIT_TTL_SECONDS,
+			approved: { maxIds: APPROVED_MAX_IDS, idPattern: APPROVED_ID_PATTERN },
+			xaiKeyMax: XAI_KEY_MAX
 		}
 	};
 }

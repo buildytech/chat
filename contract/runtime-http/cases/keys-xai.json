@@ -1,0 +1,211 @@
+{
+	"$comment": "PUT/DELETE /runtime/v1/keys/xai on the desktop host (ADR 0068): the xAI key typed in Settings goes to the OS keychain (trimmed; one token of at most constants.providers.xaiKeyMax characters) and is never answered, logged or read back. `expect.xaiKeyAfter` is the key the keychain holds after the request (\"\" none).",
+	"cases": [
+		{
+			"name": "xai key: PUT stores the key in the keychain and answers only that it is there",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/keys/xai",
+				"json": {
+					"key": "  xai-settings-key-not-real  "
+				}
+			},
+			"expect": {
+				"status": 200,
+				"headers": {
+					"cache-control": "no-store"
+				},
+				"notContains": [
+					"xai-settings-key-not-real"
+				],
+				"json": {
+					"ok": true,
+					"present": true,
+					"source": "keychain",
+					"key": "$absent"
+				},
+				"xaiKeyAfter": "xai-settings-key-not-real"
+			}
+		},
+		{
+			"name": "xai key: PUT replaces a stored key, never answers either",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/keys/xai",
+				"json": {
+					"key": "xai-settings-key-not-real"
+				}
+			},
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$KEY",
+					"xai-settings-key-not-real"
+				],
+				"json": {
+					"ok": true,
+					"present": true
+				},
+				"xaiKeyAfter": "xai-settings-key-not-real"
+			}
+		},
+		{
+			"name": "xai key: an empty key is 422 invalid_key, nothing stored",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/keys/xai",
+				"json": {
+					"key": "   "
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_key"
+				},
+				"xaiKeyAfter": ""
+			}
+		},
+		{
+			"name": "xai key: a key with inner spaces or over xaiKeyMax is 422 invalid_key",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/keys/xai",
+				"json": {
+					"key": "xai two words"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_key"
+				},
+				"xaiKeyAfter": ""
+			}
+		},
+		{
+			"name": "xai key: a key over xaiKeyMax characters is 422 invalid_key",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/keys/xai",
+				"json": {
+					"key": {
+						"$repeat": [
+							"k",
+							513
+						]
+					}
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_key"
+				},
+				"xaiKeyAfter": ""
+			}
+		},
+		{
+			"name": "xai key: DELETE removes the key from the keychain",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "DELETE",
+				"path": "/runtime/v1/keys/xai"
+			},
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"ok": true,
+					"present": false
+				},
+				"xaiKeyAfter": ""
+			}
+		},
+		{
+			"name": "xai key: GET is 405, the key is never read back",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/keys/xai"
+			},
+			"expect": {
+				"status": 405,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"ok": false,
+					"code": "method_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "xai key: a body that is not JSON is 400 invalid_json",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "PUT",
+				"path": "/runtime/v1/keys/xai",
+				"text": "xai-raw"
+			},
+			"expect": {
+				"status": 400,
+				"json": {
+					"ok": false,
+					"code": "invalid_json"
+				},
+				"xaiKeyAfter": ""
+			}
+		}
+	]
+}

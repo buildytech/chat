@@ -5,7 +5,7 @@
  * candidate and writes `image` through its own page gate. `{ action: "asset", url }` is the ZIP export's picture proxy
  * (media-asset.ts, ADR 0061); `?action=encode` with a picture body answers its WebP sizes (media-encode.ts, ADR 0062). Neither needs the key.
  */
-import { readXaiKeyState, safeErrorMessage, secretValues, xaiBaseUrl, type EnvMap } from "@buildytech/chat-agent";
+import { isProviderId, readXaiKeyState, safeErrorMessage, secretValues, xaiBaseUrl, type EnvMap } from "@buildytech/chat-agent";
 import { handleAsset } from "./media-asset.ts";
 import { handleEncode } from "./media-encode.ts";
 import { MAX_IMAGE_PROMPT, XAI_IMAGE_MODEL, isImageAspect, pollImages, submitImages } from "@buildytech/provider-xai";
@@ -40,6 +40,16 @@ export async function handleMedia(request: Request, env: EnvMap): Promise<Respon
 	const body = await readBody(request);
 	if (!body) return json(400, { ok: false, code: "invalid_body", message: "Send one JSON object." });
 	if (body.action === "asset") return handleAsset(body.url);
+	// Provider per role (ADR 0068): a web host draws with xAI only. `provider` absent or "xai" draws here; OpenRouter
+	// pictures are refused before any provider call (the desktop refuses them too while they are switched off), and
+	// `model`, when sent, must be the xAI image model: never a chat model, never another provider's.
+	if (body.action === "generate" && body.provider !== undefined && body.provider !== "xai") {
+		if (isProviderId(body.provider))
+			return json(409, { ok: false, code: "provider_role_disabled", message: "This host does not draw pictures with that provider. No provider call was made." });
+		return json(422, { ok: false, code: "invalid_request", message: "provider is xai or openrouter." });
+	}
+	if (body.action === "generate" && body.model !== undefined && body.model !== XAI_IMAGE_MODEL)
+		return json(422, { ok: false, code: "model_not_allowed", message: "That model does not draw pictures on this host. No provider call was made." });
 	if (!readXaiKeyState(env).present) return json(503, { ok: false, code: "xai_api_key_missing", message: "XAI_API_KEY is not provisioned here. No provider call was made." });
 	const transport = { apiKey: env.XAI_API_KEY!.trim(), baseUrl: xaiBaseUrl(env), signal: AbortSignal.timeout(POLL_MS) };
 	const started = Date.now();

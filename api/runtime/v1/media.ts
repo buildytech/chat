@@ -21210,6 +21210,58 @@ exports["XAI_MANIFEST"] = XAI_MANIFEST;
 
 });
 
+__def("packages/agent-manifests/src/roles.ts", function (exports) {
+
+const PROVIDER_IDS = ["xai", "openrouter"] as const;
+const PROVIDER_ROLES = ["build", "ask", "media"] as const;
+const MODEL_KINDS = ["chat", "image"] as const;
+const OPENROUTER_MEDIA_ENABLED = false;
+
+/** The roles each provider can serve on a host that holds its key. */
+const ALL_ROLES: ProviderRole[] = Object.freeze(["build", "ask", "media"]);
+const TEXT_ROLES: ProviderRole[] = Object.freeze(["build", "ask"]);
+const PROVIDER_ROLE_SUPPORT: Readonly<Record<ProviderId, ProviderRole[]>> = Object.freeze({
+	xai: ALL_ROLES,
+	openrouter: OPENROUTER_MEDIA_ENABLED ? ALL_ROLES : TEXT_ROLES
+});
+
+/** Whether a value names a provider. */
+const isProviderId = (value: unknown): value is ProviderId => PROVIDER_IDS.some((id) => id === value);
+
+/** How long a host reports `state: "limit"` after a provider answered 402 (or 403 naming a key/credit limit). */
+const PROVIDER_LIMIT_TTL_SECONDS = 600;
+
+/** An approved-model list: at most this many ids, each matching the pattern (RE2-compatible). */
+const APPROVED_MAX_IDS = 32;
+const APPROVED_ID_PATTERN = "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$";
+
+/** The longest xAI key the desktop accepts from Settings (it never answers it back). */
+const XAI_KEY_MAX = 512;
+
+/** Media draws at most this many picture slots at a time (ADR 0068; t136u burned a key limit drawing all at once). */
+const MEDIA_SLOT_CONCURRENCY = 2;
+
+/** A provider failure that means the key ran out of credit or hit its spending limit. */
+function isProviderLimit(status: number, snippet: string): boolean {
+	if (status === 402) return true;
+	return status === 403 && /key limit|credit|insufficient|spend(?:ing)? limit|quota|billing/i.test(snippet);
+}
+
+exports["PROVIDER_IDS"] = PROVIDER_IDS;
+exports["PROVIDER_ROLES"] = PROVIDER_ROLES;
+exports["MODEL_KINDS"] = MODEL_KINDS;
+exports["OPENROUTER_MEDIA_ENABLED"] = OPENROUTER_MEDIA_ENABLED;
+exports["PROVIDER_ROLE_SUPPORT"] = PROVIDER_ROLE_SUPPORT;
+exports["isProviderId"] = isProviderId;
+exports["PROVIDER_LIMIT_TTL_SECONDS"] = PROVIDER_LIMIT_TTL_SECONDS;
+exports["APPROVED_MAX_IDS"] = APPROVED_MAX_IDS;
+exports["APPROVED_ID_PATTERN"] = APPROVED_ID_PATTERN;
+exports["XAI_KEY_MAX"] = XAI_KEY_MAX;
+exports["MEDIA_SLOT_CONCURRENCY"] = MEDIA_SLOT_CONCURRENCY;
+exports["isProviderLimit"] = isProviderLimit;
+
+});
+
 __def("packages/agent-manifests/src/openrouter.ts", function (exports) {
 
 const OPENROUTER_CHAT_MODELS = ["x-ai/grok-4.20", "x-ai/grok-4.7"] as const;
@@ -21252,6 +21304,18 @@ __def("packages/agent-manifests/src/index.ts", function (exports) {
 const { XAI_MANIFEST, XAI_MANIFEST_V1 } = __req("packages/agent-manifests/src/xai.ts");
 exports["XAI_MANIFEST"] = __req("packages/agent-manifests/src/xai.ts")["XAI_MANIFEST"];
 exports["XAI_MODELS"] = __req("packages/agent-manifests/src/xai.ts")["XAI_MODELS"];
+exports["APPROVED_ID_PATTERN"] = __req("packages/agent-manifests/src/roles.ts")["APPROVED_ID_PATTERN"];
+exports["APPROVED_MAX_IDS"] = __req("packages/agent-manifests/src/roles.ts")["APPROVED_MAX_IDS"];
+exports["MEDIA_SLOT_CONCURRENCY"] = __req("packages/agent-manifests/src/roles.ts")["MEDIA_SLOT_CONCURRENCY"];
+exports["MODEL_KINDS"] = __req("packages/agent-manifests/src/roles.ts")["MODEL_KINDS"];
+exports["OPENROUTER_MEDIA_ENABLED"] = __req("packages/agent-manifests/src/roles.ts")["OPENROUTER_MEDIA_ENABLED"];
+exports["PROVIDER_IDS"] = __req("packages/agent-manifests/src/roles.ts")["PROVIDER_IDS"];
+exports["PROVIDER_LIMIT_TTL_SECONDS"] = __req("packages/agent-manifests/src/roles.ts")["PROVIDER_LIMIT_TTL_SECONDS"];
+exports["PROVIDER_ROLES"] = __req("packages/agent-manifests/src/roles.ts")["PROVIDER_ROLES"];
+exports["PROVIDER_ROLE_SUPPORT"] = __req("packages/agent-manifests/src/roles.ts")["PROVIDER_ROLE_SUPPORT"];
+exports["XAI_KEY_MAX"] = __req("packages/agent-manifests/src/roles.ts")["XAI_KEY_MAX"];
+exports["isProviderId"] = __req("packages/agent-manifests/src/roles.ts")["isProviderId"];
+exports["isProviderLimit"] = __req("packages/agent-manifests/src/roles.ts")["isProviderLimit"];
 exports["OPENROUTER_CHAT_MODELS"] = __req("packages/agent-manifests/src/openrouter.ts")["OPENROUTER_CHAT_MODELS"];
 exports["OPENROUTER_MODELS"] = __req("packages/agent-manifests/src/openrouter.ts")["OPENROUTER_MODELS"];
 exports["appCandidate"] = __req("packages/agent-manifests/src/openrouter.ts")["appCandidate"];
@@ -23230,6 +23294,18 @@ exports["usdToTicks"] = __req("packages/chat-agent/src/cost.ts")["usdToTicks"];
 exports["OPENROUTER_MODELS"] = __req("packages/agent-manifests/src/index.ts")["OPENROUTER_MODELS"];
 exports["appCandidate"] = __req("packages/agent-manifests/src/index.ts")["appCandidate"];
 exports["appModelIds"] = __req("packages/agent-manifests/src/index.ts")["appModelIds"];
+exports["APPROVED_ID_PATTERN"] = __req("packages/agent-manifests/src/index.ts")["APPROVED_ID_PATTERN"];
+exports["APPROVED_MAX_IDS"] = __req("packages/agent-manifests/src/index.ts")["APPROVED_MAX_IDS"];
+exports["MEDIA_SLOT_CONCURRENCY"] = __req("packages/agent-manifests/src/index.ts")["MEDIA_SLOT_CONCURRENCY"];
+exports["MODEL_KINDS"] = __req("packages/agent-manifests/src/index.ts")["MODEL_KINDS"];
+exports["OPENROUTER_MEDIA_ENABLED"] = __req("packages/agent-manifests/src/index.ts")["OPENROUTER_MEDIA_ENABLED"];
+exports["PROVIDER_IDS"] = __req("packages/agent-manifests/src/index.ts")["PROVIDER_IDS"];
+exports["PROVIDER_ROLES"] = __req("packages/agent-manifests/src/index.ts")["PROVIDER_ROLES"];
+exports["PROVIDER_ROLE_SUPPORT"] = __req("packages/agent-manifests/src/index.ts")["PROVIDER_ROLE_SUPPORT"];
+exports["XAI_KEY_MAX"] = __req("packages/agent-manifests/src/index.ts")["XAI_KEY_MAX"];
+exports["isProviderId"] = __req("packages/agent-manifests/src/index.ts")["isProviderId"];
+exports["isProviderLimit"] = __req("packages/agent-manifests/src/index.ts")["isProviderLimit"];
+exports["openRouterModel"] = __req("packages/agent-manifests/src/index.ts")["openRouterModel"];
 { const __m = __req("packages/chat-agent/src/xai-env.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/protect.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/redact.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
@@ -23404,7 +23480,7 @@ exports["xaiRefused"] = xaiRefused;
 });
 
 __def("packages/provider-xai/src/errors.ts", function (exports) {
-
+const { isProviderLimit } = __req("packages/agent-manifests/src/index.ts");
 function retryAfterMs(value: string | null, now = Date.now()): number | undefined {
 	if (value === null) return undefined;
 	const seconds = /^[0-9]+(?:\.[0-9]+)?$/.test(value.trim()) ? Number(value) : NaN;
@@ -23413,6 +23489,8 @@ function retryAfterMs(value: string | null, now = Date.now()): number | undefine
 }
 
 function classifyProviderFailure(status: number, snippet: string) {
+	// A key out of credit or over its spending limit (ADR 0068): the app shows the provider as "Limit reached".
+	if (isProviderLimit(status, snippet)) return { code: "provider_limit", message: "The provider key reached its credit or spending limit.", retryable: false };
 	if (status === 401) return { code: "provider_unauthorized", message: "The provider rejected authentication.", retryable: false };
 	if (status === 403) return { code: "provider_forbidden", message: "The provider denied access.", retryable: false };
 	if (status === 429) return { code: "rate_limited", message: "The provider rate limit was reached.", retryable: true };
@@ -24276,7 +24354,7 @@ exports["turnInput"] = __req("packages/provider-xai/src/turn.ts")["turnInput"];
 });
 
 __def("apps/xai-runtime/src/media.ts", function (exports) {
-const { readXaiKeyState, safeErrorMessage, secretValues, xaiBaseUrl } = __req("packages/chat-agent/src/index.ts");
+const { isProviderId, readXaiKeyState, safeErrorMessage, secretValues, xaiBaseUrl } = __req("packages/chat-agent/src/index.ts");
 const { handleAsset } = __req("apps/xai-runtime/src/media-asset.ts");
 const { handleEncode } = __req("apps/xai-runtime/src/media-encode.ts");
 const { MAX_IMAGE_PROMPT, XAI_IMAGE_MODEL, isImageAspect, pollImages, submitImages } = __req("packages/provider-xai/src/index.ts");
@@ -24310,6 +24388,16 @@ async function handleMedia(request: Request, env: EnvMap): Promise<Response> {
 	const body = await readBody(request);
 	if (!body) return json(400, { ok: false, code: "invalid_body", message: "Send one JSON object." });
 	if (body.action === "asset") return handleAsset(body.url);
+	// Provider per role (ADR 0068): a web host draws with xAI only. `provider` absent or "xai" draws here; OpenRouter
+	// pictures are refused before any provider call (the desktop refuses them too while they are switched off), and
+	// `model`, when sent, must be the xAI image model: never a chat model, never another provider's.
+	if (body.action === "generate" && body.provider !== undefined && body.provider !== "xai") {
+		if (isProviderId(body.provider))
+			return json(409, { ok: false, code: "provider_role_disabled", message: "This host does not draw pictures with that provider. No provider call was made." });
+		return json(422, { ok: false, code: "invalid_request", message: "provider is xai or openrouter." });
+	}
+	if (body.action === "generate" && body.model !== undefined && body.model !== XAI_IMAGE_MODEL)
+		return json(422, { ok: false, code: "model_not_allowed", message: "That model does not draw pictures on this host. No provider call was made." });
 	if (!readXaiKeyState(env).present) return json(503, { ok: false, code: "xai_api_key_missing", message: "XAI_API_KEY is not provisioned here. No provider call was made." });
 	const transport = { apiKey: env.XAI_API_KEY!.trim(), baseUrl: xaiBaseUrl(env), signal: AbortSignal.timeout(POLL_MS) };
 	const started = Date.now();

@@ -1,5 +1,5 @@
 {
-	"$comment": "POST /runtime/v1/media { action: generate } on the desktop signed in with OpenRouter (ADR 0067): one synchronous POST `$OPENROUTER/images` (base64 answers), every picture stored in the local store at once and answered `status: \"done\"` as `/runtime/v1/files/…` addresses with the cost in xAI ticks (OpenRouter reports USD; constants.openrouter.usdTicks). The app reads a done generate without polling. `$B64:<picture>` in a reply is the base64 of a file of pictures/. The xAI deferred flow (media-generate.json) is unchanged.",
+	"$comment": "POST /runtime/v1/media { action: generate } on the desktop signed in with OpenRouter (ADR 0067): one synchronous POST `$OPENROUTER/images` (base64 answers), every picture stored in the local store at once and answered `status: \"done\"` as `/runtime/v1/files/…` addresses with the cost in xAI ticks (OpenRouter reports USD; constants.openrouter.usdTicks). The app reads a done generate without polling. `$B64:<picture>` in a reply is the base64 of a file of pictures/. The xAI deferred flow (media-generate.json) is unchanged. ADR 0068: the request names `provider: \"openrouter\"`, and OpenRouter pictures are switched off by constants (openrouter.mediaEnabled false: 409 provider_role_disabled, cases/media-provider.json); these cases run with `env.openrouterMedia` (the switch on) so the draw stays covered for the day it is turned on.",
 	"cases": [
 		{
 			"name": "openrouter generate draws the candidates at once (base64), stores them and answers them done as local files with the cost",
@@ -8,7 +8,8 @@
 			],
 			"env": {
 				"key": false,
-				"openrouter": true
+				"openrouter": true,
+				"openrouterMedia": true
 			},
 			"request": {
 				"method": "POST",
@@ -17,7 +18,8 @@
 					"action": "generate",
 					"prompt": " Rye bread on a bakery counter ",
 					"aspect": "16:9",
-					"n": 7
+					"n": 7,
+					"provider": "openrouter"
 				}
 			},
 			"upstream": [
@@ -80,7 +82,8 @@
 			],
 			"env": {
 				"key": false,
-				"openrouter": true
+				"openrouter": true,
+				"openrouterMedia": true
 			},
 			"request": {
 				"method": "POST",
@@ -89,7 +92,8 @@
 					"action": "generate",
 					"prompt": " Rye bread on a bakery counter ",
 					"aspect": "16:9",
-					"n": 7
+					"n": 7,
+					"provider": "openrouter"
 				}
 			},
 			"upstream": [
@@ -144,7 +148,8 @@
 			],
 			"env": {
 				"key": false,
-				"openrouter": true
+				"openrouter": true,
+				"openrouterMedia": true
 			},
 			"request": {
 				"method": "POST",
@@ -153,7 +158,8 @@
 					"action": "generate",
 					"prompt": " Rye bread on a bakery counter ",
 					"aspect": "16:9",
-					"n": 7
+					"n": 7,
+					"provider": "openrouter"
 				}
 			},
 			"upstream": [
@@ -197,7 +203,8 @@
 			],
 			"env": {
 				"key": false,
-				"openrouter": true
+				"openrouter": true,
+				"openrouterMedia": true
 			},
 			"request": {
 				"method": "POST",
@@ -206,7 +213,8 @@
 					"action": "generate",
 					"prompt": " Rye bread on a bakery counter ",
 					"aspect": "16:9",
-					"n": 7
+					"n": 7,
+					"provider": "openrouter"
 				}
 			},
 			"upstream": [
@@ -249,7 +257,8 @@
 			],
 			"env": {
 				"key": false,
-				"openrouter": true
+				"openrouter": true,
+				"openrouterMedia": true
 			},
 			"request": {
 				"method": "POST",
@@ -258,7 +267,8 @@
 					"action": "generate",
 					"prompt": " Rye bread on a bakery counter ",
 					"aspect": "16:9",
-					"n": 7
+					"n": 7,
+					"provider": "openrouter"
 				}
 			},
 			"upstream": [
@@ -303,7 +313,8 @@
 			],
 			"env": {
 				"key": false,
-				"openrouter": true
+				"openrouter": true,
+				"openrouterMedia": true
 			},
 			"request": {
 				"method": "POST",
@@ -311,7 +322,8 @@
 				"json": {
 					"action": "generate",
 					"prompt": "  ",
-					"aspect": "1:1"
+					"aspect": "1:1",
+					"provider": "openrouter"
 				}
 			},
 			"expect": {
@@ -329,7 +341,8 @@
 			],
 			"env": {
 				"key": false,
-				"openrouter": true
+				"openrouter": true,
+				"openrouterMedia": true
 			},
 			"request": {
 				"method": "POST",
@@ -337,7 +350,8 @@
 				"json": {
 					"action": "generate",
 					"prompt": "Rye bread on a bakery counter",
-					"aspect": "16:9"
+					"aspect": "16:9",
+					"provider": "openrouter"
 				}
 			},
 			"upstream": [
@@ -384,13 +398,14 @@
 			}
 		},
 		{
-			"name": "openrouter generate: with an xAI key too, OpenRouter draws",
+			"name": "openrouter generate: with an xAI key too, provider openrouter draws with OpenRouter",
 			"surfaces": [
 				"desktop"
 			],
 			"env": {
 				"key": true,
-				"openrouter": true
+				"openrouter": true,
+				"openrouterMedia": true
 			},
 			"request": {
 				"method": "POST",
@@ -399,7 +414,8 @@
 					"action": "generate",
 					"prompt": " Rye bread on a bakery counter ",
 					"aspect": "16:9",
-					"n": 7
+					"n": 7,
+					"provider": "openrouter"
 				}
 			},
 			"upstream": [

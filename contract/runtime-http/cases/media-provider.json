@@ -1,0 +1,652 @@
+{
+	"$comment": "POST /runtime/v1/media { action: generate, provider?, model? } with a provider per role (ADR 0068). `provider` absent or \"xai\" draws with xAI (on the desktop too, whatever other key it holds: no default to OpenRouter, no fallback); \"openrouter\" is refused with 409 provider_role_disabled while OpenRouter pictures are off (constants.openrouter.mediaEnabled); `model`, when sent, must be that provider's image model (a chat model never draws). Desktop only: the owner's approved image list (GET/PUT /runtime/v1/settings/providers, `env.approved`) narrows it (403 model_not_approved, never widens). A 402, or a 403 naming a key or credit limit, is 502 provider_limit and the host reports that provider `state: \"limit\"` (`expect.limitedAfter`).",
+	"cases": [
+		{
+			"name": "generate names provider xai: xAI draws as before (202, request id)",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations",
+						"auth": "bearer",
+						"json": {
+							"model": "$IMAGE_MODEL",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "4:3",
+							"response_format": "url",
+							"deferred": true
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"request_id": "rq-roles-1"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 202,
+				"notContains": [
+					"$KEY"
+				],
+				"json": {
+					"ok": true,
+					"requestId": "rq-roles-1",
+					"model": "$IMAGE_MODEL"
+				}
+			}
+		},
+		{
+			"name": "generate names provider openrouter while OpenRouter pictures are off: 409 provider_role_disabled, no provider call",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "openrouter"
+				}
+			},
+			"expect": {
+				"status": 409,
+				"json": {
+					"ok": false,
+					"code": "provider_role_disabled"
+				}
+			}
+		},
+		{
+			"name": "generate names an unknown provider: 422 invalid_request, no provider call",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "openai"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_request"
+				}
+			}
+		},
+		{
+			"name": "generate names the xAI image model: drawn with it",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai",
+					"model": "$IMAGE_MODEL"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations",
+						"auth": "bearer",
+						"json": {
+							"model": "$IMAGE_MODEL",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "4:3",
+							"response_format": "url",
+							"deferred": true
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"request_id": "rq-roles-1"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 202,
+				"json": {
+					"ok": true,
+					"model": "$IMAGE_MODEL"
+				}
+			}
+		},
+		{
+			"name": "generate names a chat model: 422 model_not_allowed, a chat model never draws",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai",
+					"model": "$CANDIDATE"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "model_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "generate names another provider's image model on xai: 422 model_not_allowed",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai",
+					"model": "x-ai/grok-imagine-image-2.0"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "model_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "generate: a 402 from the provider is 502 provider_limit, nothing retried",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 402,
+						"json": {
+							"error": "Payment required"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "provider_limit"
+				}
+			}
+		},
+		{
+			"name": "generate: a 403 naming the credits is 502 provider_limit",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 403,
+						"json": {
+							"error": "Your team has run out of credits."
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "provider_limit"
+				}
+			}
+		},
+		{
+			"name": "generate: another 403 stays 502 provider_forbidden",
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 403,
+						"json": {
+							"error": "Forbidden"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "provider_forbidden"
+				}
+			}
+		},
+		{
+			"name": "desktop generate without provider and both keys: xAI draws (never OpenRouter by default)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations",
+						"auth": "bearer",
+						"json": {
+							"model": "$IMAGE_MODEL",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "4:3",
+							"response_format": "url",
+							"deferred": true
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"request_id": "rq-roles-1"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 202,
+				"notContains": [
+					"$ORKEY"
+				],
+				"json": {
+					"ok": true,
+					"requestId": "rq-roles-1"
+				}
+			}
+		},
+		{
+			"name": "desktop generate provider xai without an xAI key: 503 xai_api_key_missing, never OpenRouter instead",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai"
+				}
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"ok": false,
+					"code": "xai_api_key_missing"
+				}
+			}
+		},
+		{
+			"name": "desktop generate provider openrouter signed in, pictures off: 409 provider_role_disabled, no provider call, never the key",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "openrouter"
+				}
+			},
+			"expect": {
+				"status": 409,
+				"notContains": [
+					"$ORKEY"
+				],
+				"json": {
+					"ok": false,
+					"code": "provider_role_disabled"
+				}
+			}
+		},
+		{
+			"name": "desktop generate: the approved image list of xai is empty: 403 model_not_approved, no provider call",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true,
+				"approved": {
+					"xai": {
+						"image": []
+					}
+				}
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai"
+				}
+			},
+			"expect": {
+				"status": 403,
+				"json": {
+					"ok": false,
+					"code": "model_not_approved"
+				}
+			}
+		},
+		{
+			"name": "desktop generate: the approved image list of xai names the image model: drawn",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true,
+				"approved": {
+					"xai": {
+						"image": [
+							"$IMAGE_MODEL"
+						]
+					}
+				}
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations",
+						"auth": "bearer",
+						"json": {
+							"model": "$IMAGE_MODEL",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "4:3",
+							"response_format": "url",
+							"deferred": true
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"request_id": "rq-roles-1"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 202,
+				"json": {
+					"ok": true
+				}
+			}
+		},
+		{
+			"name": "desktop generate: approving a chat model for pictures never widens, still 422 model_not_allowed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true,
+				"approved": {
+					"xai": {
+						"image": [
+							"$CANDIDATE"
+						]
+					}
+				}
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai",
+					"model": "$CANDIDATE"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "model_not_allowed"
+				}
+			}
+		},
+		{
+			"name": "desktop generate: an xAI limit answer marks xai limited",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "xai"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "/images/generations",
+						"auth": "bearer"
+					},
+					"reply": {
+						"status": 402,
+						"json": {
+							"error": "Payment required"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "provider_limit"
+				},
+				"limitedAfter": [
+					"xai"
+				]
+			}
+		},
+		{
+			"name": "desktop generate: an OpenRouter 'Key limit exceeded' 403 is 502 provider_limit and marks openrouter limited",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true,
+				"openrouterMedia": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "4:3",
+					"n": 3,
+					"provider": "openrouter"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/images",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 403,
+						"json": {
+							"error": {
+								"message": "Key limit exceeded (total limit). Manage it using https://openrouter.ai/settings/keys",
+								"code": 403
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"notContains": [
+					"$ORKEY"
+				],
+				"json": {
+					"ok": false,
+					"code": "provider_limit"
+				},
+				"limitedAfter": [
+					"openrouter"
+				]
+			}
+		}
+	]
+}

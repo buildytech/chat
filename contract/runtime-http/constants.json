@@ -109,6 +109,39 @@
 			"/images/models"
 		],
 		"sessionHeader": "x-session-id",
-		"usdTicks": 10000000000
+		"usdTicks": 10000000000,
+		"mediaEnabled": false
+	},
+	"providers": {
+		"ids": [
+			"xai",
+			"openrouter"
+		],
+		"roles": [
+			"build",
+			"ask",
+			"media"
+		],
+		"kinds": [
+			"chat",
+			"image"
+		],
+		"roleSupport": {
+			"xai": [
+				"build",
+				"ask",
+				"media"
+			],
+			"openrouter": [
+				"build",
+				"ask"
+			]
+		},
+		"limitTtlSeconds": 600,
+		"approved": {
+			"maxIds": 32,
+			"idPattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+		},
+		"xaiKeyMax": 512
 	}
 }

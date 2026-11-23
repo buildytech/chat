@@ -1,0 +1,97 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://github.com/buildytech/chat/contract/runtime-http/provider-settings.schema.json",
+	"title": "Approved models (ADR 0068)",
+	"description": "GET/PUT /runtime/v1/settings/providers on the desktop host (the web app keeps the same document per device). A list narrows what the host serves for that provider and kind; null is not narrowed. PUT takes `{ approved }` with any subset of providers and kinds; absent ones stay as saved.",
+	"type": "object",
+	"required": [
+		"approved"
+	],
+	"properties": {
+		"ok": {
+			"type": "boolean"
+		},
+		"approved": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"xai": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"chat": {
+							"oneOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "array",
+									"maxItems": 32,
+									"items": {
+										"type": "string",
+										"pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+									},
+									"uniqueItems": true
+								}
+							]
+						},
+						"image": {
+							"oneOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "array",
+									"maxItems": 32,
+									"items": {
+										"type": "string",
+										"pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+									},
+									"uniqueItems": true
+								}
+							]
+						}
+					}
+				},
+				"openrouter": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"chat": {
+							"oneOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "array",
+									"maxItems": 32,
+									"items": {
+										"type": "string",
+										"pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+									},
+									"uniqueItems": true
+								}
+							]
+						},
+						"image": {
+							"oneOf": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "array",
+									"maxItems": 32,
+									"items": {
+										"type": "string",
+										"pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+									},
+									"uniqueItems": true
+								}
+							]
+						}
+					}
+				}
+			}
+		}
+	}
+}
