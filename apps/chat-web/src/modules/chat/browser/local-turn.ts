@@ -31,7 +31,7 @@ export async function runLocalTurn(body: Record<string, unknown>, status: LocalT
 	if (body.contract !== contractFingerprint()) return json(409, { ok: false, code: "client_outdated", message: "This tab runs an older version of the app. Reload the page to continue.", modelId, requestedModelId: modelId, liveModel: false });
 	const mapped = mapChatRunRequest(body, { discoveredChatIds: status.models?.listed ? status.models.chatIds : undefined, allowUnlistedTrial: !status.ready });
 	if (!mapped.ok) return json(422, { ok: false, code: mapped.code, message: mapped.message, requestedId: mapped.requestedId, liveModel: false });
-	if (status.key && !status.key.present) return json(503, { error: { code: "xai_api_key_missing", message: "No xAI key is stored on this computer. No provider call was made." }, liveModel: false, modelId: mapped.request.modelId });
+	if (status.key && !status.key.present) return json(503, { error: wire === "openrouter" ? { code: "openrouter_key_missing", message: "Not signed in with OpenRouter on this computer. No provider call was made." } : { code: "xai_api_key_missing", message: "No xAI key is stored on this computer. No provider call was made." }, liveModel: false, modelId: mapped.request.modelId });
 	if (!status.ready) return json(503, { error: { code: status.code, message: "xAI runtime is not ready. This is not a live Grok reply. No provider call was made." }, modelId: mapped.request.modelId, liveModel: false });
 	const ms = clampRunBudgetMs(body.abortMs, {});
 	const timeout = AbortSignal.timeout(ms);

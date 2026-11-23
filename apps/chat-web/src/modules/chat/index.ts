@@ -20,6 +20,7 @@ import BlockScopeAction from "./ui/BlockScopeAction.svelte";
 import ChatPanel from "./ui/ChatPanel.svelte";
 import MediaInspector from "./ui/MediaInspector.svelte";
 import ProposalReview from "./ui/ProposalReview.svelte";
+import ProviderSettings from "./ui/ProviderSettings.svelte";
 
 export const chatModule: BuilderModule = {
 	id: "chat",
@@ -29,7 +30,7 @@ export const chatModule: BuilderModule = {
 	newProject: () => ({ title: t("thread.untitled"), ext: { chat: { messages: [], mode: run.pendingMode } } }),
 	tabs: [{ id: "chat", labelKey: "leftPanel.chat", icon: MessageSquare, panel: ChatPanel }],
 	leftSurface: { icon: MessageSquare, tabKey: "shell.tabChat", regionKey: "shell.chatColumn", hideKey: "workspace.hideChat", showKey: "workspace.showChat" },
-	slots: { "preview.review": ProposalReview, "block.actions": BlockScopeAction, "inspector.block": MediaInspector },
+	slots: { "preview.review": ProposalReview, "block.actions": BlockScopeAction, "inspector.block": MediaInspector, "settings.screen": ProviderSettings },
 	imageSource: runtimeImageSource,
 	imageEncoder: runtimeImageEncoder,
 	zipSaver: runtimeZipSaver,

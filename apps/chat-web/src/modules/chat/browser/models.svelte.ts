@@ -1,6 +1,5 @@
 import { DEFAULT_CHAT_MODEL_ID, GROK_CHAT_MODELS, getChatModel, modelChoice, modelRunsToolLoop, type GrokChatModel, type GrokChatModelId } from "@buildytech/chat-agent";
 import { readKey, writeKey } from "../../../lib/browser/storage-v1.ts";
-import { fetchXaiStatus } from "./xai-client.ts";
 
 /** The chat's own key in the buildy:v1 space (a session file carries it as settings.selectedModelId). */
 const STORE_KEY = "buildy:v1:selectedModelId";
@@ -29,14 +28,9 @@ export function chatModelChoice(model: GrokChatModel) {
 	return modelChoice(model, accountChatIds);
 }
 
-/** A runtime status narrows the selector to the models its key lists (a status that did not list them changes nothing). */
+/** The Build role's status (providers.svelte.ts) narrows the selector to the models its provider serves and the owner approved (a status that did not list them changes nothing). */
 export function noteAccountModels(status: { models?: { listed?: boolean; chatIds?: string[] } }): void {
 	if (status.models?.listed && Array.isArray(status.models.chatIds)) accountChatIds = [...status.models.chatIds];
-}
-
-/** Read the runtime status once (the model list of its key, no model call) so the selector shows what this key can run. */
-export async function refreshAccountModels(signal?: AbortSignal): Promise<void> {
-	noteAccountModels(await fetchXaiStatus(signal));
 }
 
 export function getSelectedModelId(): GrokChatModelId {

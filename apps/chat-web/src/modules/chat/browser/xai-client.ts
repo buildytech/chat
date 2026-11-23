@@ -11,7 +11,7 @@ type XaiClientStatus = {
 	ready: boolean;
 	liveModel: boolean;
 	code: string;
-	key?: { present: boolean };
+	key?: { present: boolean; source?: string | null };
 	models?: {
 		candidate: string | null;
 		chatIds?: string[];
@@ -21,7 +21,9 @@ type XaiClientStatus = {
 	};
 	error?: { code: string; message: string };
 	/** What the host runs (ADR 0065); web hosts send none (the runtime runs the loop). */
-	capabilities?: { loop: "server" | "client"; files: boolean; saveFile: boolean; signIn?: string[] };
+	capabilities?: { loop: "server" | "client"; files: boolean; saveFile: boolean; signIn?: string[]; keys?: string[]; settings?: string[] };
+	/** Every provider of the desktop host and its state (contract/runtime-http/providers.schema.json, ADR 0068); web hosts send none. */
+	providers?: Array<{ id: string; state: string; key: { present: boolean; source?: string | null }; roles: string[]; models: { chat: string[]; image: string[] }; pending?: boolean }>;
 	/** The desktop's provider (contract/runtime-http/provider.schema.json, ADR 0067); web hosts send none (xAI). */
 	provider?: { id: "xai" | "openrouter"; signedIn: boolean; pending: boolean };
 	/** The desktop host's name, version and platform (contract/runtime-http/host.schema.json); web hosts send none. */
@@ -119,6 +121,9 @@ const OWN_RUNTIME_CODES = new Set([
 	"model_too_slow",
 	"client_outdated",
 	"xai_api_key_missing",
+	"openrouter_key_missing",
+	"model_not_approved",
+	"provider_limit",
 	"xai_runtime_not_ready",
 	"invalid_json",
 	"too_large",
@@ -134,7 +139,7 @@ async function readRuntimeBody(res: Response): Promise<RuntimeBody> {
 	const text = await res.text().catch(() => "");
 	if (!text) return null;
 	try {
-		const parsed = JSON.parse(text) as unknown;
+		const parsed: unknown = JSON.parse(text);
 		return parsed && typeof parsed === "object" ? (parsed as RuntimeBody) : null;
 	} catch {
 		return null;
@@ -167,8 +172,9 @@ export function runBody(ctx: TurnRequest): Record<string, unknown> {
 	};
 }
 
-async function sendRun(ctx: TurnRequest, signal?: AbortSignal): Promise<Response> {
-	const status = lastStatus;
+/** `roleStatus`: the status of the role's provider (ADR 0068); a local turn sends to that provider. */
+async function sendRun(ctx: TurnRequest, signal?: AbortSignal, roleStatus?: XaiClientStatus): Promise<Response> {
+	const status = roleStatus ?? lastStatus;
 	if (status?.capabilities?.loop === "client") {
 		const { runLocalTurn } = await import("./local-turn.ts");
 		// the wire body (undefined fields dropped, a copy): what the runtime would read
@@ -184,9 +190,9 @@ async function sendRun(ctx: TurnRequest, signal?: AbortSignal): Promise<Response
 	});
 }
 
-export async function runXaiTurn(ctx: TurnRequest, signal?: AbortSignal): Promise<XaiRunResponse> {
+export async function runXaiTurn(ctx: TurnRequest, signal?: AbortSignal, roleStatus?: XaiClientStatus): Promise<XaiRunResponse> {
 	try {
-		const res = await sendRun(ctx, signal);
+		const res = await sendRun(ctx, signal, roleStatus);
 		const body = await readRuntimeBody(res);
 		if (body && "ok" in body && typeof body.ok === "boolean") return body as XaiRunResponse;
 		const runtimeError = body && "error" in body ? body.error : undefined;
@@ -201,7 +207,7 @@ export async function runXaiTurn(ctx: TurnRequest, signal?: AbortSignal): Promis
 			requestedModelId: ctx.modelId
 		};
 	} catch (err) {
-		if ((err as Error).name === "AbortError") {
+		if (err instanceof Error && err.name === "AbortError") {
 			return {
 				ok: false,
 				code: "aborted",

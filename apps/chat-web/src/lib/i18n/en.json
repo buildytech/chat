@@ -239,6 +239,12 @@
 		"workspace.showPanel": "Show left panel",
 		"feed.category": "Category",
 		"feed.categoryAll": "All categories",
-		"feed.why.unknown_item": "Not a block of the catalog."
+		"feed.why.unknown_item": "Not a block of the catalog.",
+		"settings.screenLink": "Providers and models…",
+		"settingsScreen.documentTitle": "Settings · BuildY",
+		"settingsScreen.title": "Settings",
+		"settingsScreen.back": "Back to the builder",
+		"settingsScreen.dark": "Dark",
+		"settingsScreen.empty": "Nothing to set here in this build."
 	}
 }

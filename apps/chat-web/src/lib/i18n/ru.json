@@ -239,6 +239,12 @@
 		"workspace.showPanel": "Показать левую панель",
 		"feed.category": "Категория",
 		"feed.categoryAll": "Все категории",
-		"feed.why.unknown_item": "Такого блока нет в каталоге."
+		"feed.why.unknown_item": "Такого блока нет в каталоге.",
+		"settings.screenLink": "Провайдеры и модели…",
+		"settingsScreen.documentTitle": "Настройки · BuildY",
+		"settingsScreen.title": "Настройки",
+		"settingsScreen.back": "Назад к конструктору",
+		"settingsScreen.dark": "Тёмная",
+		"settingsScreen.empty": "В этой сборке здесь нечего настраивать."
 	}
 }

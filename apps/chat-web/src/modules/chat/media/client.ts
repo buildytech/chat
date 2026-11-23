@@ -45,9 +45,9 @@ function doneResult(body: Record<string, unknown>, started: number): MediaResult
 }
 
 /** Generate `n` candidates for one prompt; resolves when they are drawn, failed, or the wait ran out. */
-export async function generateCandidates(prompt: string, aspect: MediaAspect, n: number, signal?: AbortSignal): Promise<MediaResult> {
+export async function generateCandidates(prompt: string, aspect: MediaAspect, n: number, signal?: AbortSignal, draw?: { provider: string; model: string }): Promise<MediaResult> {
 	const started = Date.now();
-	const submitted = await call({ action: "generate", prompt, aspect, n }, signal);
+	const submitted = await call({ action: "generate", prompt, aspect, n, ...(draw ? { provider: draw.provider, model: draw.model } : {}) }, signal);
 	if (submitted.ok !== true || typeof submitted.requestId !== "string") return failure(submitted);
 	// The desktop signed in with OpenRouter draws at once and answers done (ADR 0067): nothing to poll.
 	if (submitted.status === "done" && Array.isArray(submitted.urls)) return doneResult(submitted, started);

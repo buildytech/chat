@@ -4,7 +4,7 @@
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { onSignInChange, signInState, signOut, startSignIn, type SignInState } from "../browser/runtime-sign-in.ts";
-	import { refreshAccountModels } from "../browser/models.svelte.ts";
+	import { refreshProviders } from "../browser/providers.svelte.ts";
 
 	// Sign in with OpenRouter (ADR 0067): shown only when the host offers it (the desktop app's status); the web never does.
 	let sign = $state<SignInState>(signInState());
@@ -19,7 +19,7 @@
 		if (busy) return;
 		busy = true;
 		try {
-			await startSignIn(() => refreshAccountModels());
+			await startSignIn(() => refreshProviders());
 		} finally {
 			busy = false;
 		}
@@ -29,7 +29,7 @@
 		if (busy) return;
 		busy = true;
 		try {
-			await signOut(() => refreshAccountModels());
+			await signOut(() => refreshProviders());
 		} finally {
 			busy = false;
 		}
@@ -37,7 +37,7 @@
 </script>
 
 {#if sign.offered}
-	<Group class="flex-wrap items-center gap-2 px-2" data-slot="composer-sign-in">
+	<Group class="flex-wrap items-center gap-2 px-2" data-slot="settings-sign-in">
 		{#if sign.signedIn}
 			<Text tag="p" class="text-xs text-muted-foreground" role="status">{t("signIn.signedIn")}</Text>
 			<Button type="button" class="inline-flex h-6 w-fit items-center rounded px-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground" disabled={busy} onclick={end}

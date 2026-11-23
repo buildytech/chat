@@ -18,13 +18,18 @@
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
 	import SettingsSessionFile from "./SettingsSessionFile.svelte";
 	import SettingsThemeImport from "./SettingsThemeImport.svelte";
+	import Link from "$registry/compose/Link.svelte";
+	import { slotComponents } from "$lib/modules/registry.svelte";
+
+	// The Settings screen has sections only when a module brings them (the providers of the chat module).
+	const hasScreen = $derived(slotComponents("settings.screen").length > 0);
 
 	let { storageNote, onclose, onclearall }: { storageNote: string; onclose: () => void; onclearall: () => void } = $props();
 
 	// Keyboard focus inside the scrolling Settings region: show the whole control, not only its caret (a tall textarea
 	// was left half clipped by the browser's own focus scroll at 1024x640).
 	function revealFocused(event: FocusEvent) {
-		(event.target as HTMLElement | null)?.scrollIntoView?.({ block: "nearest" });
+		if (event.target instanceof HTMLElement) event.target.scrollIntoView?.({ block: "nearest" });
 	}
 </script>
 
@@ -103,8 +108,9 @@
 			<Checkbox
 				id="creator-settings-preview-clean"
 				checked={previewSettings.hideServiceLabels}
-				onchange={(event: Event) =>
-					previewSettings.setHideServiceLabels((event.currentTarget as HTMLInputElement).checked)}
+				onchange={(event: Event) => {
+					if (event.currentTarget instanceof HTMLInputElement) previewSettings.setHideServiceLabels(event.currentTarget.checked);
+				}}
 			/>
 			<Label for="creator-settings-preview-clean" class="text-xs text-foreground"
 				>{t("settings.hidePreviewLabels")}</Label
@@ -112,6 +118,9 @@
 		</Group>
 		<SettingsThemeImport />
 		<SettingsSessionFile />
+		{#if hasScreen}
+			<Link href="/settings" class="px-2 py-1 text-xs underline" data-action="open-settings-screen">{t("settings.screenLink")}</Link>
+		{/if}
 		<Button
 			class="flex w-full items-center justify-start rounded px-2 py-1 text-xs text-destructive hover:bg-accent/70"
 			aria-haspopup="dialog"

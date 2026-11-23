@@ -12,7 +12,6 @@
 	import ComposerDetails from "./ComposerDetails.svelte";
 	import ComposerModelList from "./ComposerModelList.svelte";
 	import ComposerScope from "./ComposerScope.svelte";
-	import RuntimeSignIn from "./RuntimeSignIn.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { valueOf } from "$lib/inspector/fields";
 	import { cn } from "$registry/utils/cn";
@@ -279,7 +278,6 @@
 			/>
 		{/if}
 		<ComposerDetails {selected} {sessionUsage} {persistLabel} {runtimeLabel} />
-		<RuntimeSignIn />
 		{#if runtimeStatus?.error}<Text tag="p" class="px-2 text-xs text-destructive" role="status"
 				>{runtimeStatus.error}</Text
 			>{/if}

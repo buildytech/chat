@@ -112,7 +112,9 @@ import { Check, Download, FileUp, Trash2, Upload } from "$lib/shell-icons";
 		placeholder={t("themeImport.placeholder")}
 		spellcheck="false"
 		data-slot="theme-import-text"
-		oninput={(event: Event) => (text = (event.currentTarget as HTMLTextAreaElement).value)}
+		oninput={(event: Event) => {
+			if (event.currentTarget instanceof HTMLTextAreaElement) text = event.currentTarget.value;
+		}}
 	/>
 	<Group class="gap-2">
 		<Button class={ACTION} data-action="theme-import-file" onclick={() => document.getElementById("settings-theme-file")?.click()}>

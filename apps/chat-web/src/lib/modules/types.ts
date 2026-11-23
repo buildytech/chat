@@ -16,6 +16,8 @@ export type SlotProps = {
 	"preview.review": Record<string, never>;
 	"block.actions": { blockId: string };
 	"inspector.block": { blockId: string };
+	/** The Settings screen (/settings, ADR 0068): a module's sections, one under the other. */
+	"settings.screen": Record<string, never>;
 };
 export type SlotName = keyof SlotProps;
 

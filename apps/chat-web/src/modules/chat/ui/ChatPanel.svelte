@@ -10,7 +10,8 @@
 		sendMessage
 	} from "../core";
 	import { onMount } from "svelte";
-	import { getSelectedModelId, listChatModels, refreshAccountModels, setSelectedModelId } from "../browser/models.svelte.ts";
+	import { getSelectedModelId, listChatModels, setSelectedModelId } from "../browser/models.svelte.ts";
+	import { refreshProviders } from "../browser/providers.svelte.ts";
 	import ChatThread from "./ChatThread.svelte";
 	import { getComposerMode, mediaSend } from "../media/media.svelte.ts";
 
@@ -26,7 +27,7 @@
 
 	// The selector shows what the runtime's xAI key lists (one status read, no model call); a failed read changes nothing.
 	onMount(() => {
-		void refreshAccountModels().catch(() => undefined);
+		void refreshProviders().catch(() => undefined);
 	});
 
 	async function onSend(text: string) {

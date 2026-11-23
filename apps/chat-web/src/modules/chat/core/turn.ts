@@ -7,7 +7,9 @@ import { MODEL_CATALOG_VERSION, POLICY_VERSION, TRIAL_POLICY_VERSION, formatChat
 import type { PageV2 } from "@buildytech/page-contract";
 import { t } from "../../../lib/i18n/dictionary";
 import { fetchXaiStatus, runXaiTurn, type TurnRequest, type XaiRunResponse } from "../browser/xai-client";
-import { getSelectedModelId, noteAccountModels } from "../browser/models.svelte.ts";
+import { getSelectedModelId } from "../browser/models.svelte.ts";
+import { effectiveProvider, getRoleChoices, noteProviders, noteSpend, statusForRole } from "../browser/providers.svelte.ts";
+import { costTicks } from "../browser/provider-roles.ts";
 import { getScreenId } from "../browser/onboarding.svelte.ts";
 import type { StoredPageProvenance } from "../../../lib/browser/persist";
 import { getCandidatePage, getEditBase, getLastAppliedPage, getPageRevision, setCandidatePage } from "../../../lib/page-store";
@@ -123,9 +125,13 @@ type TurnOutcome = {
 
 export async function runTurn(brief: string, mode: AgentMode, signal: AbortSignal, selection?: { modelId: string; userMessageId?: string }): Promise<TurnOutcome> {
 	const plan = planTurn(brief, mode, selection?.userMessageId);
-	const requestedModelId = selection?.modelId ?? getSelectedModelId();
-	const status = await fetchXaiStatus(signal);
-	noteAccountModels(status);
+	// The role's provider and model (ADR 0068): Ask follows Build unless Settings gave it its own.
+	const ask = getRoleChoices().ask;
+	const requestedModelId = selection?.modelId ?? (mode === "ask" && !ask.same ? ask.model : getSelectedModelId());
+	const raw = await fetchXaiStatus(signal);
+	noteProviders(raw);
+	const status = statusForRole(raw, mode);
+	const provider = effectiveProvider(mode);
 	const mapped = mapChatRunRequest(
 		{ modelId: requestedModelId },
 		{ discoveredChatIds: status.models?.listed ? status.models.chatIds ?? [] : undefined, allowUnlistedTrial: !status.ready }
@@ -143,8 +149,11 @@ export async function runTurn(brief: string, mode: AgentMode, signal: AbortSigna
 			usage: notSentUsage()
 		};
 	}
-	const live = await runXaiTurn({ ...plan.request, modelId: mapped.request.modelId }, signal);
-	const usage = live.usage ?? unknownUsage(live.ok === false && (live.code === "aborted" || signal.aborted) ? "cancelled" : "error", 0);
+	const live = await runXaiTurn({ ...plan.request, modelId: mapped.request.modelId }, signal, status);
+	const reported = live.usage ?? unknownUsage(live.ok === false && (live.code === "aborted" || signal.aborted) ? "cancelled" : "error", 0);
+	// The session keeps which provider answered (the role is the message's mode, the model the run's modelId).
+	const usage = provider === "off" ? reported : { ...reported, providerId: provider };
+	noteSpend(mode, provider, costTicks(usage.cost));
 	return {
 		result: live,
 		plan,
@@ -162,6 +171,8 @@ export async function runTurn(brief: string, mode: AgentMode, signal: AbortSigna
 export function runtimeNoteFor(status: { ready?: boolean; code?: string }): string {
 	if (status.ready) return t("runtime.xaiReady");
 	if (status.code === "xai_api_key_missing") return t("runtime.xaiMissing");
+	if (status.code === "openrouter_key_missing") return t("runtime.openRouterMissing");
+	if (status.code === "model_not_approved") return t("runtime.modelNotApproved");
 	if (status.code === "xai_runtime_unreachable" || status.code === "xai_status_error") {
 		return t("runtime.unreachable");
 	}
@@ -182,6 +193,9 @@ export function localizedRunError(code: string | undefined, message: string, mod
 	if (code === "model_not_enabled_on_account") return t("runtime.modelNotOnKey").replace("{label}", label).replace("{id}", modelId);
 	if (code === "tools_unsupported") return t("runtime.toolsUnsupported");
 	if (code === "xai_runtime_unreachable") return t("runtime.unreachable");
+	if (code === "provider_limit") return t("runtime.providerLimit");
+	if (code === "model_not_approved") return t("runtime.modelNotApproved");
+	if (code === "openrouter_key_missing") return t("runtime.openRouterMissing");
 	if (code === "aborted") return t("runtime.cancelled");
 	// A turn that ends without an accepted write: the status and a short reason, never the model-facing error text.
 	if (code === "write_invalid") return t("run.writeInvalid").replace("{code}", code).replace("{reason}", firstReason(issues, t)).replace(/\s{2,}/g, " ");

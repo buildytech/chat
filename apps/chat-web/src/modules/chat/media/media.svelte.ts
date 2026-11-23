@@ -9,7 +9,10 @@ import { inspector } from "../../../lib/inspector/inspector.svelte.ts";
 import { getSelectedProject, putProject } from "../../../lib/project/store.svelte.ts";
 import type { AgentMode } from "@buildytech/chat-agent";
 import { getChatMode, setChatMode } from "../core/chat.svelte.ts";
+import { MEDIA_SLOT_CONCURRENCY } from "@buildytech/chat-agent";
 import { generateCandidates } from "./client.ts";
+import { getProviderStatus, mediaDraw, noteSpend, refreshProviders } from "../browser/providers.svelte.ts";
+import { t } from "../../../lib/i18n/dictionary";
 import { defaultStyle, imageSlots, mediaPrompt, type ImageSlot } from "./slots.ts";
 
 type ComposerMode = AgentMode | "media";
@@ -17,7 +20,8 @@ export const COMPOSER_MODES: readonly ComposerMode[] = ["ask", "build", "media"]
 const CANDIDATES_PER_SLOT = 3;
 
 /** What one slot keeps: the candidates, the description and frame they were drawn from, the picked one, the cost. */
-type SlotRecord = { candidates: string[]; alt: string; aspect: string; extra?: string; picked?: string; costUsdTicks?: number; ms?: number; at: string };
+/** `provider` / `model`: what drew the candidates (ADR 0068). */
+type SlotRecord = { candidates: string[]; alt: string; aspect: string; extra?: string; picked?: string; costUsdTicks?: number; ms?: number; at: string; provider?: string; model?: string };
 type MediaExt = { active?: boolean; style?: string; slots?: Record<string, SlotRecord> };
 
 let pendingMedia = $state(false);
@@ -79,12 +83,20 @@ export async function generateSlot(key: string): Promise<boolean> {
 	errors = { ...errors, [key]: "" };
 	const extra = slotRecord(key)?.extra ?? "";
 	try {
-		const out = await generateCandidates(mediaPrompt(slot, mediaStyle(), extra), slot.aspect, CANDIDATES_PER_SLOT);
+		if (!getProviderStatus()) await refreshProviders();
+		// The Media role's provider and model (ADR 0068): off draws nothing; nothing switches by itself.
+		const { provider, model } = mediaDraw();
+		if (provider === "off" || !model) {
+			errors = { ...errors, [key]: t(provider === "off" ? "media.providerOff" : "media.noApprovedModel") };
+			return false;
+		}
+		const out = await generateCandidates(mediaPrompt(slot, mediaStyle(), extra), slot.aspect, CANDIDATES_PER_SLOT, undefined, { provider, model });
 		if (!out.ok) {
 			errors = { ...errors, [key]: `${out.code}: ${out.message}` };
 			return false;
 		}
-		writeExt((prev) => ({ ...prev, slots: { ...prev.slots, [key]: { candidates: out.urls, alt: slot.alt, aspect: slot.aspect, ...(extra ? { extra } : {}), ...(out.costUsdTicks !== null ? { costUsdTicks: out.costUsdTicks } : {}), ms: out.ms, at: new Date().toISOString() } } }));
+		noteSpend("media", provider, out.costUsdTicks);
+		writeExt((prev) => ({ ...prev, slots: { ...prev.slots, [key]: { candidates: out.urls, alt: slot.alt, aspect: slot.aspect, ...(extra ? { extra } : {}), ...(out.costUsdTicks !== null ? { costUsdTicks: out.costUsdTicks } : {}), ms: out.ms, at: new Date().toISOString(), provider, model } } }));
 		return true;
 	} catch (err) {
 		errors = { ...errors, [key]: err instanceof Error ? err.message : String(err) };
@@ -94,9 +106,13 @@ export async function generateSlot(key: string): Promise<boolean> {
 	}
 }
 
-/** Every slot of the page at once (each slot is its own deferred request on the server). */
+/** Every slot of the page, MEDIA_SLOT_CONCURRENCY at a time (a key's spend limit is not overshot by a burst, ADR 0068). */
 export async function generatePage(): Promise<void> {
-	await Promise.all(pageSlots().map((slot) => generateSlot(slot.key)));
+	const queue = pageSlots().map((slot) => slot.key);
+	const worker = async () => {
+		for (let key = queue.shift(); key !== undefined; key = queue.shift()) await generateSlot(key);
+	};
+	await Promise.all(Array.from({ length: Math.min(MEDIA_SLOT_CONCURRENCY, queue.length) }, worker));
 }
 
 /** Put a candidate on the page: the slot's `image` prop, through the page gate (one undo step). */
