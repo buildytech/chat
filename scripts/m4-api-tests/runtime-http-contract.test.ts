@@ -30,12 +30,14 @@ type Case = {
 };
 
 const KEY = "contract-test-key-not-real";
+/** The OpenRouter key of the desktop cases (ADR 0067); no web host ever holds one, so no answer may contain it either. */
+const OPENROUTER_KEY = "contract-openrouter-key-not-real";
 const BASE = "https://xai.test/v1";
 const constants = JSON.parse(readFileSync(join(DIR, "constants.json"), "utf8")) as { contract: string; candidateChatModel: string; images: { model: string } };
 const files = readdirSync(join(DIR, "cases")).filter((name) => name.endsWith(".json")).sort();
 const cases: Array<Case & { file: string }> = files.flatMap((file) => (JSON.parse(readFileSync(join(DIR, "cases", file), "utf8")) as { cases: Case[] }).cases.map((c) => ({ ...c, file })));
 
-const MACROS: Record<string, string> = { $KEY: KEY, $CONTRACT: constants.contract, $CANDIDATE: constants.candidateChatModel, $IMAGE_MODEL: constants.images.model };
+const MACROS: Record<string, string> = { $KEY: KEY, $ORKEY: OPENROUTER_KEY, $CONTRACT: constants.contract, $CANDIDATE: constants.candidateChatModel, $IMAGE_MODEL: constants.images.model };
 
 /** Expands the value macros of a case: `$KEY`, `$CONTRACT`, `$CANDIDATE`, `$IMAGE_MODEL` and `{ "$repeat": [text, count] }`. */
 function expand(value: Json): Json {
@@ -161,7 +163,7 @@ async function runCase(c: Case, surface: Surface): Promise<string[]> {
 		}
 		if (c.expect.bytes && Buffer.compare(Buffer.from(raw), Buffer.from(bytesOf(c.expect.bytes))) !== 0) problems.push("body bytes differ");
 		if (c.expect.status === 204 && raw.length) problems.push("204 with a body");
-		for (const word of [KEY, ...(c.expect.notContains ?? []).map((w) => MACROS[w] ?? w)]) if (text.includes(word)) problems.push(`the answer contains ${word === KEY ? "the key" : word}`);
+		for (const word of [KEY, OPENROUTER_KEY, ...(c.expect.notContains ?? []).map((w) => MACROS[w] ?? w)]) if (text.includes(word)) problems.push(`the answer contains ${word === KEY ? "the key" : word}`);
 		for (const u of pending) if (!u.used) problems.push(`upstream ${u.match.method} ${u.match.url} was not called`);
 	} finally {
 		globalThis.fetch = original;
@@ -178,6 +180,17 @@ test("contract files: at least 25 cases, unique names, known surfaces, generated
 	for (const c of cases) for (const s of c.surfaces ?? SURFACES) assert.ok(SURFACES.includes(s), `${c.name}: surface ${s}`);
 	const gen = spawnSync(process.execPath, ["--experimental-strip-types", "--import", "./packages/builder-core/src/catalog/props-gate.ts", "scripts/runtime-contract.mjs", "--check"], { cwd: ROOT, encoding: "utf8" });
 	assert.equal(gen.status, 0, gen.stderr);
+});
+
+test("contract files: the OpenRouter sign-in, forward and draws (ADR 0067) bind the desktop surface only", () => {
+	const desktopOnly = (c: Case) => (c.surfaces ?? SURFACES).every((s) => s === "desktop");
+	for (const c of cases) {
+		const raw = JSON.stringify(c);
+		const openrouter = raw.includes("$OPENROUTER/") || raw.includes('"listener"') || raw.includes('"pendingSignIn"') || raw.includes('"openrouter":true') || raw.includes('"signedIn"');
+		if (openrouter && !raw.includes('"provider":"$absent"')) assert.ok(desktopOnly(c), `${c.file}: ${c.name}`);
+	}
+	const names = new Set(cases.map((c) => c.file));
+	for (const file of ["openrouter-auth.json", "openrouter-forward.json", "media-openrouter.json"]) assert.ok(names.has(file), file);
 });
 
 for (const c of cases) {

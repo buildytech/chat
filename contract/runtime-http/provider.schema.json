@@ -1,0 +1,30 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://github.com/buildytech/chat/contract/runtime-http/provider.schema.json",
+	"title": "Runtime provider (ADR 0067)",
+	"description": "Optional `provider` of GET /runtime/v1/status: which provider the desktop host serves the chat and the pictures with. Signed in with OpenRouter it is openrouter (its key wins over an xAI key), else xai. The web hosts never send it and stay on xAI.",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"id",
+		"signedIn",
+		"pending"
+	],
+	"properties": {
+		"id": {
+			"enum": [
+				"xai",
+				"openrouter"
+			],
+			"description": "openrouter: the app sends chat requests to POST /runtime/v1/openrouter/chat/completions with constants.openrouter models; xai: POST /runtime/v1/xai/chat/completions as before."
+		},
+		"signedIn": {
+			"type": "boolean",
+			"description": "An OpenRouter key from the sign-in is in the keychain (or OPENROUTER_API_KEY on a headless build)."
+		},
+		"pending": {
+			"type": "boolean",
+			"description": "A sign-in was started and its loopback callback still waits (at most constants.openrouter.callback.ttlSeconds)."
+		}
+	}
+}

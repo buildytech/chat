@@ -1,0 +1,600 @@
+{
+	"$comment": "The desktop host's OpenRouter sign-in (ADR 0067, OAuth PKCE, https://openrouter.ai/docs/guides/overview/auth/oauth). POST /runtime/v1/auth/openrouter/start makes a verifier, an S256 challenge and a state, opens a one-shot loopback listener on a random port and opens the system browser on the auth page (`expect.opened`: the URL handed to the browser). The callback `GET http://localhost:<port>/cb/<state>?code=…` reaches that listener (`request.listener: \"callback\"`), never the webview's origin; the host exchanges the code at `$OPENROUTER/auth/keys` and keeps the user's key in the OS keychain under its own item. `env.pendingSignIn` seeds a started sign-in (`state`, `verifier`, `expired`); `env.openrouter` a stored OpenRouter key; `expect.signedIn` is the keychain after the request, `expect.pendingAfter` whether a sign-in is still open. The key, the verifier and the code are never answered. The web runtimes have none of it.",
+	"cases": [
+		{
+			"name": "auth start opens the OpenRouter sign-in: a loopback callback with a fresh state, an S256 challenge, never the verifier",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/auth/openrouter/start",
+				"json": {}
+			},
+			"expect": {
+				"status": 200,
+				"headers": {
+					"cache-control": "no-store"
+				},
+				"opened": "$match:^https://openrouter\\.ai/auth\\?callback_url=http%3A%2F%2Flocalhost%3A[0-9]{2,5}%2Fcb%2F[A-Za-z0-9_-]{43}&code_challenge=[A-Za-z0-9_-]{43}&code_challenge_method=S256$",
+				"json": {
+					"ok": true,
+					"pending": true,
+					"url": "$match:^https://openrouter\\.ai/auth\\?callback_url=http%3A%2F%2Flocalhost%3A[0-9]{2,5}%2Fcb%2F[A-Za-z0-9_-]{43}&code_challenge=[A-Za-z0-9_-]{43}&code_challenge_method=S256$",
+					"verifier": "$absent",
+					"state": "$absent"
+				}
+			}
+		},
+		{
+			"name": "auth start answers only POST: GET is 405 method_not_allowed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/auth/openrouter/start"
+			},
+			"expect": {
+				"status": 405,
+				"json": {
+					"error": {
+						"code": "method_not_allowed"
+					}
+				}
+			}
+		},
+		{
+			"name": "auth callback with the pending state exchanges the code with the verifier, keeps the key in the keychain, never answers it",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-contract-0000000000000000000000000000000",
+				"query": "code=c-contract-1"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/auth/keys",
+						"auth": "none",
+						"json": {
+							"code": "c-contract-1",
+							"code_verifier": "$VERIFIER",
+							"code_challenge_method": "S256"
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"key": "$ORKEY",
+							"user_id": "user-contract"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"notContains": [
+					"$ORKEY",
+					"$VERIFIER",
+					"c-contract-1"
+				],
+				"signedIn": true
+			}
+		},
+		{
+			"name": "auth callback with another state is 400, no exchange, not signed in",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-forged-000000000000000000000000000000000",
+				"query": "code=c-contract-1"
+			},
+			"expect": {
+				"status": 400,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth callback without a pending sign-in (already used or never started) is 400, no exchange",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-contract-0000000000000000000000000000000",
+				"query": "code=c-contract-1"
+			},
+			"expect": {
+				"status": 400,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth callback after the sign-in expired is 400, no exchange",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER",
+					"expired": true
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-contract-0000000000000000000000000000000",
+				"query": "code=c-contract-1"
+			},
+			"expect": {
+				"status": 400,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth callback: OpenRouter refuses an expired or used code, 400, not signed in",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-contract-0000000000000000000000000000000",
+				"query": "code=c-contract-1"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/auth/keys",
+						"auth": "none",
+						"json": {
+							"code": "c-contract-1",
+							"code_verifier": "$VERIFIER",
+							"code_challenge_method": "S256"
+						}
+					},
+					"reply": {
+						"status": 400,
+						"json": {
+							"error": {
+								"message": "Invalid code",
+								"code": 400
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 400,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"notContains": [
+					"$VERIFIER"
+				],
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth callback: a 403 from the exchange is a refused code too",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-contract-0000000000000000000000000000000",
+				"query": "code=c-contract-1"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/auth/keys",
+						"auth": "none",
+						"json": {
+							"code": "c-contract-1",
+							"code_verifier": "$VERIFIER",
+							"code_challenge_method": "S256"
+						}
+					},
+					"reply": {
+						"status": 403,
+						"json": {
+							"error": {
+								"message": "Forbidden",
+								"code": 403
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 400,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth callback: the state is used once, a refused code does not leave the sign-in open",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-contract-0000000000000000000000000000000",
+				"query": "code=c-contract-1"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/auth/keys",
+						"auth": "none",
+						"json": {
+							"code": "c-contract-1",
+							"code_verifier": "$VERIFIER",
+							"code_challenge_method": "S256"
+						}
+					},
+					"reply": {
+						"status": 400,
+						"json": {
+							"error": {
+								"message": "Invalid code",
+								"code": 400
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 400,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"signedIn": false,
+				"pendingAfter": false
+			}
+		},
+		{
+			"name": "auth callback: an exchange answer without a key is 502, not signed in",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-contract-0000000000000000000000000000000",
+				"query": "code=c-contract-1"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/auth/keys",
+						"auth": "none",
+						"json": {
+							"code": "c-contract-1",
+							"code_verifier": "$VERIFIER",
+							"code_challenge_method": "S256"
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"user_id": "user-contract"
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth callback: the exchange is unreachable, 502, not signed in",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-contract-0000000000000000000000000000000",
+				"query": "code=c-contract-1"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/auth/keys",
+						"auth": "none",
+						"json": {
+							"code": "c-contract-1",
+							"code_verifier": "$VERIFIER",
+							"code_challenge_method": "S256"
+						}
+					},
+					"reply": {
+						"throw": "network"
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth callback: the user declined (error, no code) is 400, no exchange",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-contract-0000000000000000000000000000000",
+				"query": "error=access_denied"
+			},
+			"expect": {
+				"status": 400,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"signedIn": false,
+				"pendingAfter": false
+			}
+		},
+		{
+			"name": "auth callback without a code is 400, no exchange",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/cb/st-contract-0000000000000000000000000000000"
+			},
+			"expect": {
+				"status": 400,
+				"headers": {
+					"content-type": "text/html; charset=utf-8",
+					"cache-control": "no-store"
+				},
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth callback listener answers only GET /cb/<state>: another path is 404",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 404,
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth callback listener: POST is 405, no exchange",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"pendingSignIn": {
+					"state": "st-contract-0000000000000000000000000000000",
+					"verifier": "$VERIFIER"
+				}
+			},
+			"request": {
+				"listener": "callback",
+				"method": "POST",
+				"path": "/cb/st-contract-0000000000000000000000000000000",
+				"query": "code=c-contract-1"
+			},
+			"expect": {
+				"status": 405,
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth sign-out deletes the OpenRouter key from the keychain",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/auth/openrouter/signout",
+				"json": {}
+			},
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$ORKEY"
+				],
+				"json": {
+					"ok": true,
+					"signedIn": false
+				},
+				"signedIn": false
+			}
+		},
+		{
+			"name": "auth sign-out when not signed in is still 200",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/auth/openrouter/signout",
+				"json": {}
+			},
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"signedIn": false
+				},
+				"signedIn": false
+			}
+		},
+		{
+			"name": "the web runtimes have no OpenRouter sign-in: /v1/auth/openrouter/start is 404 not_found",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/auth/openrouter/start",
+				"json": {}
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		}
+	]
+}

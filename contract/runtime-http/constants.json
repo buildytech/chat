@@ -88,5 +88,27 @@
 		"kind": "desktop",
 		"devVersion": "dev",
 		"version": "^(?:dev|[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?)$"
+	},
+	"openrouter": {
+		"baseUrl": "https://openrouter.ai/api/v1",
+		"authUrl": "https://openrouter.ai/auth",
+		"keysPath": "/auth/keys",
+		"callback": {
+			"host": "localhost",
+			"pathPrefix": "/cb/",
+			"ttlSeconds": 600
+		},
+		"chatModels": [
+			"x-ai/grok-4.20",
+			"x-ai/grok-4.7"
+		],
+		"candidateChatModel": "x-ai/grok-4.20",
+		"imageModel": "x-ai/grok-imagine-image-2.0",
+		"discovery": [
+			"/models",
+			"/images/models"
+		],
+		"sessionHeader": "x-session-id",
+		"usdTicks": 10000000000
 	}
 }

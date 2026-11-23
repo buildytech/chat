@@ -1,5 +1,5 @@
 {
-	"$comment": "GET /runtime/v1/status: the readiness of the host (apps/xai-runtime/src/status.ts). Desktop answers the same fields plus `capabilities` and `host` (host.schema.json); the web hosts send neither.",
+	"$comment": "GET /runtime/v1/status: the readiness of the host (apps/xai-runtime/src/status.ts). Desktop answers the same fields plus `capabilities`, `host` (host.schema.json) and `provider` (provider.schema.json: OpenRouter or xAI, signed in, sign-in pending; ADR 0067); the web hosts send none of them. Signed in with OpenRouter, the desktop lists models from `$OPENROUTER/models` and `$OPENROUTER/images/models`, keeps only constants.openrouter's models, and the readiness codes stay the ones of xAI.",
 	"cases": [
 		{
 			"name": "status without a key: 503, not ready, the default candidate, the contract, no provider call",
@@ -535,6 +535,460 @@
 					"runtime": "xai-grok",
 					"code": "xai_api_key_missing",
 					"host": "$absent"
+				}
+			}
+		},
+		{
+			"name": "desktop offers the OpenRouter sign-in: capabilities.signIn, provider xai while signed out",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"code": "xai_api_key_missing",
+					"capabilities": {
+						"signIn": [
+							"openrouter"
+						]
+					},
+					"provider": {
+						"id": "xai",
+						"signedIn": false,
+						"pending": false
+					}
+				}
+			}
+		},
+		{
+			"name": "desktop signed in with OpenRouter: provider openrouter, the allowed x-ai chat and image models it lists, x-ai/grok-4.20 the candidate",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								},
+								{
+									"id": "x-ai/grok-3-mini"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$ORKEY"
+				],
+				"json": {
+					"runtime": "xai-grok",
+					"ready": true,
+					"liveModel": true,
+					"code": "xai_runtime_ready",
+					"key": {
+						"present": true,
+						"source": "keychain"
+					},
+					"provider": {
+						"id": "openrouter",
+						"signedIn": true,
+						"pending": false
+					},
+					"models": {
+						"listed": true,
+						"chatIds": [
+							"x-ai/grok-4.20",
+							"x-ai/grok-4.7"
+						],
+						"imageIds": [
+							"x-ai/grok-imagine-image-2.0"
+						],
+						"candidate": "x-ai/grok-4.20",
+						"toolCallingProven": false
+					},
+					"contract": "$CONTRACT"
+				}
+			}
+		},
+		{
+			"name": "desktop with an OpenRouter key and an xAI key: OpenRouter serves, xAI is not asked",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true,
+				"openrouter": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								},
+								{
+									"id": "x-ai/grok-3-mini"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$ORKEY",
+					"$KEY"
+				],
+				"json": {
+					"ready": true,
+					"provider": {
+						"id": "openrouter",
+						"signedIn": true
+					},
+					"models": {
+						"candidate": "x-ai/grok-4.20"
+					}
+				}
+			}
+		},
+		{
+			"name": "desktop signed in with OpenRouter: without x-ai/grok-4.20 listed, the next allowed model is the candidate",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "x-ai/grok-4.7"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 500,
+						"text": "boom"
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ready": true,
+					"provider": {
+						"id": "openrouter"
+					},
+					"models": {
+						"listed": true,
+						"chatIds": [
+							"x-ai/grok-4.7"
+						],
+						"imageIds": [],
+						"candidate": "x-ai/grok-4.7"
+					}
+				}
+			}
+		},
+		{
+			"name": "desktop signed in with OpenRouter: no allowed chat model listed, not ready",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ready": false,
+					"code": "xai_no_chat_models",
+					"models": {
+						"listed": true,
+						"chatIds": [],
+						"candidate": null
+					}
+				}
+			}
+		},
+		{
+			"name": "desktop signed in with OpenRouter: the key is refused, not ready, never echoed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": {
+								"message": "User not found. $ORKEY"
+							}
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": {
+								"message": "User not found."
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$ORKEY"
+				],
+				"json": {
+					"ready": false,
+					"code": "xai_models_list_failed",
+					"provider": {
+						"id": "openrouter",
+						"signedIn": true
+					},
+					"models": {
+						"listed": false,
+						"candidate": null
+					}
+				}
+			}
+		},
+		{
+			"name": "web hosts never send provider (the web app stays on xAI)",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/status"
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "grok-4.20-0309-non-reasoning"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "no"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "no"
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ready": true,
+					"provider": "$absent",
+					"capabilities": "$absent"
 				}
 			}
 		}

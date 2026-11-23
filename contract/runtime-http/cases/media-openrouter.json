@@ -1,0 +1,454 @@
+{
+	"$comment": "POST /runtime/v1/media { action: generate } on the desktop signed in with OpenRouter (ADR 0067): one synchronous POST `$OPENROUTER/images` (base64 answers), every picture stored in the local store at once and answered `status: \"done\"` as `/runtime/v1/files/…` addresses with the cost in xAI ticks (OpenRouter reports USD; constants.openrouter.usdTicks). The app reads a done generate without polling. `$B64:<picture>` in a reply is the base64 of a file of pictures/. The xAI deferred flow (media-generate.json) is unchanged.",
+	"cases": [
+		{
+			"name": "openrouter generate draws the candidates at once (base64), stores them and answers them done as local files with the cost",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "16:9",
+					"n": 7
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/images",
+						"auth": "openrouter",
+						"json": {
+							"model": "x-ai/grok-imagine-image-2.0",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "16:9",
+							"response_format": "b64_json"
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"created": 1,
+							"data": [
+								{
+									"b64_json": "$B64:small-640x480.jpg",
+									"media_type": "image/jpeg"
+								},
+								{
+									"b64_json": "$B64:warm-64.png",
+									"media_type": "image/png"
+								}
+							],
+							"usage": {
+								"cost": 0.04
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$ORKEY"
+				],
+				"json": {
+					"ok": true,
+					"status": "done",
+					"model": "x-ai/grok-imagine-image-2.0",
+					"requestId": "$match:^or-[a-f0-9]{16}$",
+					"urls": [
+						"$FILE:small-640x480.jpg",
+						"$FILE:warm-64.png"
+					],
+					"costUsdTicks": 400000000
+				}
+			}
+		},
+		{
+			"name": "openrouter generate: a candidate that is not a picture is dropped, the others kept",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "16:9",
+					"n": 7
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/images",
+						"auth": "openrouter",
+						"json": {
+							"model": "x-ai/grok-imagine-image-2.0",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "16:9",
+							"response_format": "b64_json"
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"b64_json": "bm90IGFuIGltYWdl",
+									"media_type": "image/png"
+								},
+								{
+									"b64_json": "$B64:small-640x480.jpg"
+								}
+							],
+							"usage": {
+								"cost": 0.02
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"status": "done",
+					"urls": [
+						"$FILE:small-640x480.jpg"
+					],
+					"costUsdTicks": 200000000
+				}
+			}
+		},
+		{
+			"name": "openrouter generate: an answer without a usable picture is 502 malformed_response",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "16:9",
+					"n": 7
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/images",
+						"auth": "openrouter",
+						"json": {
+							"model": "x-ai/grok-imagine-image-2.0",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "16:9",
+							"response_format": "b64_json"
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"url": "https://storage.googleapis.com/openrouter-generated-media-us/v1/x"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "malformed_response"
+				}
+			}
+		},
+		{
+			"name": "openrouter generate: a rate limit is 502 rate_limited, nothing retried",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "16:9",
+					"n": 7
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/images",
+						"auth": "openrouter",
+						"json": {
+							"model": "x-ai/grok-imagine-image-2.0",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "16:9",
+							"response_format": "b64_json"
+						}
+					},
+					"reply": {
+						"status": 429,
+						"json": {
+							"error": {
+								"message": "Rate limit exceeded",
+								"code": 429
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"ok": false,
+					"code": "rate_limited"
+				}
+			}
+		},
+		{
+			"name": "openrouter generate: a refusal never answers the key",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "16:9",
+					"n": 7
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/images",
+						"auth": "openrouter",
+						"json": {
+							"model": "x-ai/grok-imagine-image-2.0",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "16:9",
+							"response_format": "b64_json"
+						}
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": {
+								"message": "bad key $ORKEY",
+								"code": 401
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"notContains": [
+					"$ORKEY"
+				],
+				"json": {
+					"ok": false
+				}
+			}
+		},
+		{
+			"name": "openrouter generate: an empty prompt is 422 invalid_request, no provider call",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": "  ",
+					"aspect": "1:1"
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_request"
+				}
+			}
+		},
+		{
+			"name": "openrouter generate: without n asks for 3 candidates",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": "Rye bread on a bakery counter",
+					"aspect": "16:9"
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/images",
+						"auth": "openrouter",
+						"json": {
+							"model": "x-ai/grok-imagine-image-2.0",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "16:9",
+							"response_format": "b64_json"
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"created": 1,
+							"data": [
+								{
+									"b64_json": "$B64:small-640x480.jpg",
+									"media_type": "image/jpeg"
+								},
+								{
+									"b64_json": "$B64:warm-64.png",
+									"media_type": "image/png"
+								}
+							],
+							"usage": {
+								"cost": 0.04
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"status": "done"
+				}
+			}
+		},
+		{
+			"name": "openrouter generate: with an xAI key too, OpenRouter draws",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/media",
+				"json": {
+					"action": "generate",
+					"prompt": " Rye bread on a bakery counter ",
+					"aspect": "16:9",
+					"n": 7
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/images",
+						"auth": "openrouter",
+						"json": {
+							"model": "x-ai/grok-imagine-image-2.0",
+							"prompt": "Rye bread on a bakery counter",
+							"n": 3,
+							"aspect_ratio": "16:9",
+							"response_format": "b64_json"
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"created": 1,
+							"data": [
+								{
+									"b64_json": "$B64:small-640x480.jpg",
+									"media_type": "image/jpeg"
+								},
+								{
+									"b64_json": "$B64:warm-64.png",
+									"media_type": "image/png"
+								}
+							],
+							"usage": {
+								"cost": 0.04
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$KEY",
+					"$ORKEY"
+				],
+				"json": {
+					"ok": true,
+					"status": "done",
+					"model": "x-ai/grok-imagine-image-2.0"
+				}
+			}
+		}
+	]
+}

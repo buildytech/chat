@@ -1,0 +1,1312 @@
+{
+	"$comment": "POST /runtime/v1/openrouter/chat/completions: the desktop host's forward of one OpenRouter Chat Completions request for the webview's agent loop, when the user signed in with OpenRouter (ADR 0067). Same rules as the xAI forward (placeholder key `host-held` replaced by the user's key, one path and method, 256000 bytes, no redirect, the key redacted), plus: only constants.openrouter.chatModels that OpenRouter lists (never the image model), and the webview's `x-grok-conv-id` goes out as OpenRouter's `x-session-id` (sticky routing for the prompt cache). `match.headers` checks request headers (`$absent`: not sent); `$OPENROUTER/` URLs are relative to the OpenRouter base; `auth: \"openrouter\"` is the user's key (`$ORKEY`).",
+	"cases": [
+		{
+			"name": "openrouter forward without a sign-in is 503 openrouter_key_missing, no provider call",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-4.20",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"error": {
+						"code": "openrouter_key_missing"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward sends the request with the user's key, the conversation id as x-session-id, and passes the answer and its cost through",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-4.20",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								},
+								{
+									"id": "x-ai/grok-3-mini"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/chat/completions",
+						"auth": "openrouter",
+						"headers": {
+							"x-session-id": "chat-k",
+							"x-grok-conv-id": "$absent"
+						},
+						"json": {
+							"model": "x-ai/grok-4.20",
+							"messages": [
+								{
+									"role": "system",
+									"content": "BuildY page agent"
+								},
+								{
+									"role": "user",
+									"content": "Hi"
+								}
+							],
+							"tools": [],
+							"tool_choice": "auto",
+							"stream": false,
+							"reasoning": {
+								"enabled": false
+							}
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"id": "gen-1",
+							"model": "x-ai/grok-4.20",
+							"provider": "xAI",
+							"choices": [
+								{
+									"index": 0,
+									"message": {
+										"role": "assistant",
+										"content": "Hello."
+									},
+									"finish_reason": "stop"
+								}
+							],
+							"usage": {
+								"prompt_tokens": 12,
+								"completion_tokens": 3,
+								"total_tokens": 15,
+								"cost": 2.25e-05
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"notContains": [
+					"$ORKEY"
+				],
+				"headers": {
+					"content-type": "application/json",
+					"cache-control": "no-store"
+				},
+				"json": {
+					"id": "gen-1",
+					"model": "x-ai/grok-4.20",
+					"provider": "xAI",
+					"choices": [
+						{
+							"index": 0,
+							"message": {
+								"role": "assistant",
+								"content": "Hello."
+							},
+							"finish_reason": "stop"
+						}
+					],
+					"usage": {
+						"prompt_tokens": 12,
+						"completion_tokens": 3,
+						"total_tokens": 15,
+						"cost": 2.25e-05
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward passes a provider refusal through with its status and retry-after",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-4.20",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								},
+								{
+									"id": "x-ai/grok-3-mini"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/chat/completions",
+						"auth": "openrouter",
+						"headers": {
+							"x-session-id": "chat-k",
+							"x-grok-conv-id": "$absent"
+						},
+						"json": {
+							"model": "x-ai/grok-4.20",
+							"messages": [
+								{
+									"role": "system",
+									"content": "BuildY page agent"
+								},
+								{
+									"role": "user",
+									"content": "Hi"
+								}
+							],
+							"tools": [],
+							"tool_choice": "auto",
+							"stream": false,
+							"reasoning": {
+								"enabled": false
+							}
+						}
+					},
+					"reply": {
+						"status": 429,
+						"headers": {
+							"retry-after": "7"
+						},
+						"json": {
+							"error": {
+								"message": "Rate limit exceeded",
+								"code": 429
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 429,
+				"headers": {
+					"retry-after": "7"
+				},
+				"json": {
+					"error": {
+						"code": 429
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward never answers with the key, even when the provider echoes it",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-4.20",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								},
+								{
+									"id": "x-ai/grok-3-mini"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/chat/completions",
+						"auth": "openrouter",
+						"headers": {
+							"x-session-id": "chat-k",
+							"x-grok-conv-id": "$absent"
+						},
+						"json": {
+							"model": "x-ai/grok-4.20",
+							"messages": [
+								{
+									"role": "system",
+									"content": "BuildY page agent"
+								},
+								{
+									"role": "user",
+									"content": "Hi"
+								}
+							],
+							"tools": [],
+							"tool_choice": "auto",
+							"stream": false,
+							"reasoning": {
+								"enabled": false
+							}
+						}
+					},
+					"reply": {
+						"status": 401,
+						"json": {
+							"error": {
+								"message": "bad key $ORKEY",
+								"code": 401
+							}
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 401,
+				"notContains": [
+					"$ORKEY"
+				]
+			}
+		},
+		{
+			"name": "openrouter forward refuses a model outside the x-ai allowlist, even a listed one: 422 model_not_listed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "openai/gpt-5",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								},
+								{
+									"id": "x-ai/grok-3-mini"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 422,
+				"json": {
+					"error": {
+						"code": "model_not_listed"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward refuses an allowed model OpenRouter does not list: 422 model_not_listed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-4.7",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "x-ai/grok-4.20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 422,
+				"json": {
+					"error": {
+						"code": "model_not_listed"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward refuses the image model on the chat path: 422 model_not_listed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-imagine-image-2.0",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								},
+								{
+									"id": "x-ai/grok-3-mini"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 422,
+				"json": {
+					"error": {
+						"code": "model_not_listed"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward without a model list is 503 with the discovery code, no chat request",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-4.20",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"throw": "network"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"throw": "network"
+					}
+				}
+			],
+			"expect": {
+				"status": 503,
+				"json": {
+					"error": {
+						"code": "xai_models_list_unavailable"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward does not follow a redirect: 502 openrouter_forward_failed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-4.20",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								},
+								{
+									"id": "x-ai/grok-3-mini"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/chat/completions",
+						"auth": "openrouter",
+						"headers": {
+							"x-session-id": "chat-k",
+							"x-grok-conv-id": "$absent"
+						},
+						"json": {
+							"model": "x-ai/grok-4.20",
+							"messages": [
+								{
+									"role": "system",
+									"content": "BuildY page agent"
+								},
+								{
+									"role": "user",
+									"content": "Hi"
+								}
+							],
+							"tools": [],
+							"tool_choice": "auto",
+							"stream": false,
+							"reasoning": {
+								"enabled": false
+							}
+						}
+					},
+					"reply": {
+						"status": 307,
+						"headers": {
+							"location": "https://elsewhere.test/v1/chat/completions"
+						},
+						"text": ""
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"error": {
+						"code": "openrouter_forward_failed"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward on a network failure is 502 openrouter_forward_failed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-4.20",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "openai/gpt-5"
+								},
+								{
+									"id": "x-ai/grok-4.7"
+								},
+								{
+									"id": "x-ai/grok-4.20"
+								},
+								{
+									"id": "x-ai/grok-3-mini"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "$OPENROUTER/images/models",
+						"auth": "openrouter"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "google/gemini-3-pro-image"
+								},
+								{
+									"id": "x-ai/grok-imagine-image-2.0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "$OPENROUTER/chat/completions",
+						"auth": "openrouter",
+						"headers": {
+							"x-session-id": "chat-k",
+							"x-grok-conv-id": "$absent"
+						},
+						"json": {
+							"model": "x-ai/grok-4.20",
+							"messages": [
+								{
+									"role": "system",
+									"content": "BuildY page agent"
+								},
+								{
+									"role": "user",
+									"content": "Hi"
+								}
+							],
+							"tools": [],
+							"tool_choice": "auto",
+							"stream": false,
+							"reasoning": {
+								"enabled": false
+							}
+						}
+					},
+					"reply": {
+						"throw": "network"
+					}
+				}
+			],
+			"expect": {
+				"status": 502,
+				"json": {
+					"error": {
+						"code": "openrouter_forward_failed"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward body over 256000 bytes is 413 too_large, no provider call",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-4.20",
+					"messages": [
+						{
+							"role": "user",
+							"content": {
+								"$repeat": [
+									"x",
+									256001
+								]
+							}
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"expect": {
+				"status": 413,
+				"json": {
+					"error": {
+						"code": "too_large"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward body that is not JSON is 400 invalid_json",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"content-type": "application/json"
+				},
+				"text": "{not json"
+			},
+			"expect": {
+				"status": 400,
+				"json": {
+					"error": {
+						"code": "invalid_json"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward answers only POST: GET is 405 method_not_allowed",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/openrouter/chat/completions"
+			},
+			"expect": {
+				"status": 405,
+				"json": {
+					"error": {
+						"code": "method_not_allowed"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward has one path: /v1/openrouter/models is 404, no provider call",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "GET",
+				"path": "/runtime/v1/openrouter/models"
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "openrouter forward has one path: /v1/openrouter/images is 404 (images go through /v1/media)",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/images",
+				"json": {
+					"model": "x-ai/grok-imagine-image-2.0",
+					"prompt": "x"
+				}
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		},
+		{
+			"name": "the xAI forward stays the xAI key's: signed in with OpenRouter only, /v1/xai/chat/completions is 503 xai_api_key_missing",
+			"surfaces": [
+				"desktop"
+			],
+			"env": {
+				"key": false,
+				"openrouter": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/xai/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"error": {
+						"code": "xai_api_key_missing"
+					}
+				}
+			}
+		},
+		{
+			"name": "the web runtimes have no OpenRouter forward: /v1/openrouter/chat/completions is 404 not_found",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/openrouter/chat/completions",
+				"headers": {
+					"authorization": "Bearer host-held",
+					"x-grok-conv-id": "chat-k"
+				},
+				"json": {
+					"model": "x-ai/grok-4.20",
+					"messages": [
+						{
+							"role": "system",
+							"content": "BuildY page agent"
+						},
+						{
+							"role": "user",
+							"content": "Hi"
+						}
+					],
+					"tools": [],
+					"tool_choice": "auto",
+					"stream": false,
+					"reasoning": {
+						"enabled": false
+					}
+				}
+			},
+			"expect": {
+				"status": 404,
+				"json": {
+					"error": {
+						"code": "not_found"
+					}
+				}
+			}
+		}
+	]
+}
