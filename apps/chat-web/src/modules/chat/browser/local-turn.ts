@@ -8,7 +8,7 @@
  * (a block that shows nothing fails, as on the runtime) while the preview keeps its own policy between model calls.
  */
 import { clampRunBudgetMs, contractFingerprint, mapChatRunRequest } from "@buildytech/chat-agent";
-import { HOST_HELD_KEY, runCatalogTurn, turnAnswer, turnInput } from "@buildytech/provider-xai/wire";
+import { HOST_HELD_KEY, OPENROUTER_FORWARD_BASE, runCatalogTurn, turnAnswer, turnInput } from "@buildytech/provider-xai/wire";
 
 /** The host's forward of xAI Chat Completions (POST <base>/chat/completions only). */
 export const LOCAL_XAI_BASE = "/runtime/v1/xai";
@@ -18,11 +18,15 @@ type LocalTurnStatus = {
 	code: string;
 	key?: { present: boolean };
 	models?: { listed?: boolean; chatIds?: string[] };
+	/** Signed in with OpenRouter, the turn goes to the host's OpenRouter forward (ADR 0067). */
+	provider?: { id: "xai" | "openrouter" };
 };
 
 const json = (status: number, body: unknown): Response => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json; charset=utf-8" } });
 
-export async function runLocalTurn(body: Record<string, unknown>, status: LocalTurnStatus, signal?: AbortSignal, baseUrl: string = LOCAL_XAI_BASE): Promise<Response> {
+export async function runLocalTurn(body: Record<string, unknown>, status: LocalTurnStatus, signal?: AbortSignal, baseUrl?: string): Promise<Response> {
+	const wire = status.provider?.id === "openrouter" ? "openrouter" : "xai";
+	const base = baseUrl ?? (wire === "openrouter" ? OPENROUTER_FORWARD_BASE : LOCAL_XAI_BASE);
 	const modelId = typeof body.modelId === "string" ? body.modelId : "";
 	if (body.contract !== contractFingerprint()) return json(409, { ok: false, code: "client_outdated", message: "This tab runs an older version of the app. Reload the page to continue.", modelId, requestedModelId: modelId, liveModel: false });
 	const mapped = mapChatRunRequest(body, { discoveredChatIds: status.models?.listed ? status.models.chatIds : undefined, allowUnlistedTrial: !status.ready });
@@ -32,7 +36,7 @@ export async function runLocalTurn(body: Record<string, unknown>, status: LocalT
 	const ms = clampRunBudgetMs(body.abortMs, {});
 	const timeout = AbortSignal.timeout(ms);
 	const run = signal ? AbortSignal.any([signal, timeout]) : timeout;
-	const turn = await runCatalogTurn(HOST_HELD_KEY, mapped.request.modelId, turnInput(mapped.request), run, baseUrl, Date.now() + ms, { strictRenderWrites: true });
+	const turn = await runCatalogTurn(HOST_HELD_KEY, mapped.request.modelId, turnInput(mapped.request), run, base, Date.now() + ms, { strictRenderWrites: true, wire });
 	const answer = turnAnswer(mapped.request, turn, ms, Boolean(signal?.aborted));
 	return json(answer.status, answer.body);
 }

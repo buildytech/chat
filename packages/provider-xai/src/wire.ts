@@ -4,4 +4,5 @@
  * adds its key). The image transport stays server-only in the package root.
  */
 export { providerStep } from "./provider.ts";
+export { OPENROUTER_FORWARD_BASE } from "./openrouter.ts";
 export { HOST_HELD_KEY, runCatalogTurn, turnAnswer, turnInput, type CatalogTurnOptions } from "./turn.ts";

@@ -19,3 +19,12 @@ The desktop app (`buildytech/buildychat-desktop`, ADR 0065) needs the owner's xA
 ## Consequences
 
 The desktop gains a second provider without a second agent: the same loop, prompts and gates run in the webview, only the base path, model ids and the reasoning flag differ. Owners pay OpenRouter's price (Grok list price plus OpenRouter's fee) from their own credits. Whether OpenRouter's auth page accepts `127.0.0.1` callbacks could not be verified without an account (every callback form redirects a signed-out browser to sign-up), so the callback uses the documented `localhost`; the listener binds both loopback families. Live checks that need a key (reasoning flag, `parallel_tool_calls`, `max_completion_tokens`, base64 pictures) run from `/workspace/tools/t136u/orcheck.mjs` once the owner provides one.
+
+## Phase 3 as built (the app)
+
+- **One agent, two wires.** The app keeps its own model ids everywhere (selector, scenarios, manifests, replays). `packages/agent-manifests/src/openrouter.ts` is the openrouter provider definition: `grok-4.20-0309-non-reasoning` is sent as `x-ai/grok-4.20` with `reasoning: { enabled: false }`, `grok-4.20-0309-reasoning` as `x-ai/grok-4.20` with reasoning on, `grok-4.7` as `x-ai/grok-4.7` (its manifest policy, `model_too_slow`, still applies). `providerStep` takes `wire: "openrouter"` and changes only `model` and `reasoning`; an answer of another model (a dated suffix aside) is still a silent switch.
+- **Status in app ids.** `fetchXaiStatus` reads a status with `provider.id: "openrouter"` in app ids (`openRouterStatus`), so the selector, the run gate and `mapChatRunRequest` work as for xAI. `runLocalTurn` sends the turn to `/runtime/v1/openrouter` with the openrouter wire when the status says so.
+- **Cost.** `readProviderUsage` reads OpenRouter's `usage.cost` (USD) as billed ticks (`usdToTicks`, 1e10 per USD) when xAI's `cost_in_usd_ticks` is absent.
+- **Media.** `generateCandidates` takes a generate answered `status: "done"` without polling.
+- **Sign-in control.** `RuntimeSignIn.svelte` under the composer shows "Sign in with OpenRouter", the pending line, or "Signed in with OpenRouter" with "Sign out", only when the status lists `capabilities.signIn: ["openrouter"]` (the web never does). Texts in the chat module dictionary (en, ru).
+- **Tests.** `scripts/m4-api-tests/openrouter-desktop.test.ts`: the wire request, switch refusal, the unchanged xAI wire, the cost, the status mapping, a webview turn over the OpenRouter forward answering like the xAI turn, the done draw, the sign-in states.

@@ -39,19 +39,23 @@ function failure(body: Record<string, unknown>): MediaResult {
 	return { ok: false, code: typeof body.code === "string" ? body.code : "media_failed", message: typeof body.message === "string" ? body.message : "The image request failed." };
 }
 
+function doneResult(body: Record<string, unknown>, started: number): MediaResult {
+	const urls = Array.isArray(body.urls) ? body.urls.filter((url): url is string => typeof url === "string") : [];
+	return { ok: true, urls, costUsdTicks: typeof body.costUsdTicks === "number" ? body.costUsdTicks : null, ms: Date.now() - started };
+}
+
 /** Generate `n` candidates for one prompt; resolves when they are drawn, failed, or the wait ran out. */
 export async function generateCandidates(prompt: string, aspect: MediaAspect, n: number, signal?: AbortSignal): Promise<MediaResult> {
 	const started = Date.now();
 	const submitted = await call({ action: "generate", prompt, aspect, n }, signal);
 	if (submitted.ok !== true || typeof submitted.requestId !== "string") return failure(submitted);
+	// The desktop signed in with OpenRouter draws at once and answers done (ADR 0067): nothing to poll.
+	if (submitted.status === "done" && Array.isArray(submitted.urls)) return doneResult(submitted, started);
 	while (Date.now() - started < GIVE_UP_MS) {
 		await sleep(POLL_EVERY_MS, signal);
 		const polled = await call({ action: "result", requestId: submitted.requestId }, signal);
 		if (polled.ok !== true) return failure(polled);
-		if (polled.status === "done" && Array.isArray(polled.urls)) {
-			const urls = polled.urls.filter((url): url is string => typeof url === "string");
-			return { ok: true, urls, costUsdTicks: typeof polled.costUsdTicks === "number" ? polled.costUsdTicks : null, ms: Date.now() - started };
-		}
+		if (polled.status === "done" && Array.isArray(polled.urls)) return doneResult(polled, started);
 	}
 	return { ok: false, code: "media_timeout", message: "The pictures were not ready in time. Try again." };
 }

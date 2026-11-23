@@ -21210,10 +21210,53 @@ exports["XAI_MANIFEST"] = XAI_MANIFEST;
 
 });
 
+__def("packages/agent-manifests/src/openrouter.ts", function (exports) {
+
+const OPENROUTER_CHAT_MODELS = ["x-ai/grok-4.20", "x-ai/grok-4.7"] as const;
+
+/**
+ * The openrouter provider definition (ADR 0067), public data: the app keeps its own (xAI) model ids everywhere (selector, scenarios, manifests,
+ * replays), and the transport sends the OpenRouter model with its reasoning switch. grok-4.20 does not reason unless
+ * asked; grok-4.7 always reasons (its manifest policy, `model_too_slow`, applies through OpenRouter as through xAI).
+ */
+const OPENROUTER_MODELS = [
+	{ appId: "grok-4.20-0309-non-reasoning", id: "x-ai/grok-4.20", reasoning: { enabled: false } },
+	{ appId: "grok-4.20-0309-reasoning", id: "x-ai/grok-4.20", reasoning: { enabled: true } },
+	{ appId: "grok-4.7", id: "x-ai/grok-4.7" }
+] as const satisfies ReadonlyArray<{ appId: string; id: (typeof OPENROUTER_CHAT_MODELS)[number]; reasoning?: { enabled: boolean } }>;
+
+function openRouterModel(appId: string): OpenRouterModel | null {
+	return OPENROUTER_MODELS.find((model) => model.appId === appId) ?? null;
+}
+
+/** The app model ids the OpenRouter ids of a status serve (in the definition's order). */
+function appModelIds(openRouterIds: string[]): string[] {
+	return OPENROUTER_MODELS.filter((model) => openRouterIds.includes(model.id)).map((model) => model.appId);
+}
+
+/** The app model id of the status candidate (`x-ai/grok-4.20` is the non-reasoning default). */
+function appCandidate(openRouterId: string | null | undefined): string | null {
+	return OPENROUTER_MODELS.find((model) => model.id === openRouterId)?.appId ?? null;
+}
+
+
+exports["OPENROUTER_CHAT_MODELS"] = OPENROUTER_CHAT_MODELS;
+exports["OPENROUTER_MODELS"] = OPENROUTER_MODELS;
+exports["openRouterModel"] = openRouterModel;
+exports["appModelIds"] = appModelIds;
+exports["appCandidate"] = appCandidate;
+
+});
+
 __def("packages/agent-manifests/src/index.ts", function (exports) {
 const { XAI_MANIFEST, XAI_MANIFEST_V1 } = __req("packages/agent-manifests/src/xai.ts");
 exports["XAI_MANIFEST"] = __req("packages/agent-manifests/src/xai.ts")["XAI_MANIFEST"];
 exports["XAI_MODELS"] = __req("packages/agent-manifests/src/xai.ts")["XAI_MODELS"];
+exports["OPENROUTER_CHAT_MODELS"] = __req("packages/agent-manifests/src/openrouter.ts")["OPENROUTER_CHAT_MODELS"];
+exports["OPENROUTER_MODELS"] = __req("packages/agent-manifests/src/openrouter.ts")["OPENROUTER_MODELS"];
+exports["appCandidate"] = __req("packages/agent-manifests/src/openrouter.ts")["appCandidate"];
+exports["appModelIds"] = __req("packages/agent-manifests/src/openrouter.ts")["appModelIds"];
+exports["openRouterModel"] = __req("packages/agent-manifests/src/openrouter.ts")["openRouterModel"];
 const PROVIDER_MANIFESTS = immutableData([XAI_MANIFEST, XAI_MANIFEST_V1] as const);
 function providerManifest(id: string, version?: number) { return PROVIDER_MANIFESTS.filter((manifest) => manifest.id === id && (version === undefined || manifest.version === version)).sort((a, b) => b.version - a.version)[0] ?? null; }
 function manifestModelStatus(providerId: string, modelId: string, version?: number) {
@@ -21575,6 +21618,16 @@ type CostEstimate = { available: true; kind: "estimated"; currency: "USD"; amoun
 const COST_UNAVAILABLE: CostUnavailable = { available: false, reason: "not_reported", note: "Billed cost is unavailable in this usage record. Missing cost is unknown, never zero." };
 type CostPart = { ticks?: string; reportedRequests: number; requests: number; complete: boolean };
 
+/** xAI's billing unit: 1e-10 USD per tick. OpenRouter reports USD (`usage.cost`, ADR 0067); this converts it. */
+const TICKS_PER_USD = 10_000_000_000;
+
+/** A USD amount as billed ticks (rounded), or undefined when it is not a finite amount of at least zero. */
+function usdToTicks(value: unknown): string | undefined {
+	if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return undefined;
+	const ticks = Math.round(value * TICKS_PER_USD);
+	return Number.isSafeInteger(ticks) ? String(ticks) : undefined;
+}
+
 function readBilledTicks(value: unknown): string | undefined {
 	if (typeof value === "number") return Number.isSafeInteger(value) && value >= 0 ? String(value) : undefined;
 	return typeof value === "string" && /^(0|[1-9][0-9]*)$/.test(value) ? value : undefined;
@@ -21614,6 +21667,8 @@ function billedCostForDisplay(cost: unknown) {
 }
 
 exports["COST_UNAVAILABLE"] = COST_UNAVAILABLE;
+exports["TICKS_PER_USD"] = TICKS_PER_USD;
+exports["usdToTicks"] = usdToTicks;
 exports["readBilledTicks"] = readBilledTicks;
 exports["aggregateBilledCost"] = aggregateBilledCost;
 exports["storedCostPart"] = storedCostPart;
@@ -21622,7 +21677,7 @@ exports["billedCostForDisplay"] = billedCostForDisplay;
 });
 
 __def("packages/chat-agent/src/usage.ts", function (exports) {
-const { COST_UNAVAILABLE, readBilledTicks, aggregateBilledCost, storedCostPart } = __req("packages/chat-agent/src/cost.ts");
+const { COST_UNAVAILABLE, readBilledTicks, usdToTicks, aggregateBilledCost, storedCostPart } = __req("packages/chat-agent/src/cost.ts");
 exports["COST_UNAVAILABLE"] = __req("packages/chat-agent/src/cost.ts")["COST_UNAVAILABLE"];
 exports["billedCostForDisplay"] = __req("packages/chat-agent/src/cost.ts")["billedCostForDisplay"];
 type TokenCount = number | "unknown";
@@ -21662,7 +21717,8 @@ function readProviderUsage(raw: unknown): StepUsage | null {
 	const prompt = asCount(u.prompt_tokens ?? u.inputTokens ?? u.promptTokens);
 	const completion = asCount(u.completion_tokens ?? u.outputTokens ?? u.completionTokens);
 	const total = asCount(u.total_tokens ?? u.totalTokens);
-	const ticks = readBilledTicks(u.cost_in_usd_ticks);
+	// xAI bills in ticks; OpenRouter answers `cost` in USD (ADR 0067).
+	const ticks = readBilledTicks(u.cost_in_usd_ticks) ?? usdToTicks(u.cost);
 	if (prompt === null && completion === null && total === null && ticks === undefined) return null;
 	const details =
 		u.completion_tokens_details && typeof u.completion_tokens_details === "object"
@@ -23169,6 +23225,11 @@ __def("packages/chat-agent/src/index.ts", function (exports) {
 { const __m = __req("packages/chat-agent/src/proposal-base.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 exports["chatCacheKey"] = __req("packages/chat-agent/src/identity.ts")["chatCacheKey"];
 { const __m = __req("packages/chat-agent/src/usage.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
+exports["TICKS_PER_USD"] = __req("packages/chat-agent/src/cost.ts")["TICKS_PER_USD"];
+exports["usdToTicks"] = __req("packages/chat-agent/src/cost.ts")["usdToTicks"];
+exports["OPENROUTER_MODELS"] = __req("packages/agent-manifests/src/index.ts")["OPENROUTER_MODELS"];
+exports["appCandidate"] = __req("packages/agent-manifests/src/index.ts")["appCandidate"];
+exports["appModelIds"] = __req("packages/agent-manifests/src/index.ts")["appModelIds"];
 { const __m = __req("packages/chat-agent/src/xai-env.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/protect.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
 { const __m = __req("packages/chat-agent/src/redact.ts"); for (const __k of Object.keys(__m)) if (__k !== "default" && !(__k in exports)) exports[__k] = __m[__k]; }
@@ -23381,17 +23442,72 @@ exports["xaiCapabilities"] = xaiCapabilities;
 
 });
 
+__def("packages/provider-xai/src/openrouter.ts", function (exports) {
+exports["OPENROUTER_CHAT_MODELS"] = __req("packages/agent-manifests/src/index.ts")["OPENROUTER_CHAT_MODELS"];
+exports["OPENROUTER_MODELS"] = __req("packages/agent-manifests/src/index.ts")["OPENROUTER_MODELS"];
+exports["appCandidate"] = __req("packages/agent-manifests/src/index.ts")["appCandidate"];
+exports["appModelIds"] = __req("packages/agent-manifests/src/index.ts")["appModelIds"];
+exports["openRouterModel"] = __req("packages/agent-manifests/src/index.ts")["openRouterModel"];
+exports["USD_TICKS"] = __req("packages/chat-agent/src/index.ts")["USD_TICKS"];
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+
+/** The page the browser opens to sign in (query: callback_url, code_challenge, code_challenge_method=S256). */
+const OPENROUTER_AUTH_URL = "https://openrouter.ai/auth";
+
+/** Where the code is exchanged for the user's key (POST {code, code_verifier, code_challenge_method}). */
+const OPENROUTER_KEYS_PATH = "/auth/keys";
+
+/**
+ * The loopback callback: `http://localhost:<random port>/cb/<state>`. OpenRouter documents `localhost` callbacks on any
+ * port; the state rides in the path because OpenRouter documents no `state` parameter (it appends `?code=` only).
+ */
+const OPENROUTER_CALLBACK = { host: "localhost", pathPrefix: "/cb/", ttlSeconds: 600 } as const;
+
+/** The chat models the desktop offers through OpenRouter, the default first, and the app ids they serve (agent-manifests). */
+const OPENROUTER_CANDIDATE_MODEL = "x-ai/grok-4.20";
+
+/** The image model (POST /images, base64 answers stored by the host). */
+const OPENROUTER_IMAGE_MODEL = "x-ai/grok-imagine-image-2.0";
+
+/** Model discovery: chat models, then image models (both public lists, the host still sends its key). */
+const OPENROUTER_DISCOVERY = ["/models", "/images/models"] as const;
+
+/** The header OpenRouter reads for sticky routing (prompt cache); the webview's `x-grok-conv-id` becomes it. */
+const OPENROUTER_SESSION_HEADER = "x-session-id";
+
+/** One USD in the cost unit of the media answer (`costUsdTicks`, xAI's 1e-10 USD ticks); OpenRouter reports USD. */
+const OPENROUTER_FORWARD_BASE = "/runtime/v1/openrouter";
+
+/** Whether the model OpenRouter answered with is the one sent (OpenRouter may add a dated suffix). */
+function sameOpenRouterModel(sent: string, answered: string): boolean {
+	return answered === sent || answered.startsWith(`${sent}-`);
+}
+
+exports["OPENROUTER_BASE_URL"] = OPENROUTER_BASE_URL;
+exports["OPENROUTER_AUTH_URL"] = OPENROUTER_AUTH_URL;
+exports["OPENROUTER_KEYS_PATH"] = OPENROUTER_KEYS_PATH;
+exports["OPENROUTER_CALLBACK"] = OPENROUTER_CALLBACK;
+exports["OPENROUTER_CANDIDATE_MODEL"] = OPENROUTER_CANDIDATE_MODEL;
+exports["OPENROUTER_IMAGE_MODEL"] = OPENROUTER_IMAGE_MODEL;
+exports["OPENROUTER_DISCOVERY"] = OPENROUTER_DISCOVERY;
+exports["OPENROUTER_SESSION_HEADER"] = OPENROUTER_SESSION_HEADER;
+exports["OPENROUTER_FORWARD_BASE"] = OPENROUTER_FORWARD_BASE;
+exports["sameOpenRouterModel"] = sameOpenRouterModel;
+
+});
+
 __def("packages/provider-xai/src/provider.ts", function (exports) {
 const { assertNoFallback, readProviderUsage } = __req("packages/chat-agent/src/index.ts");
 const { xaiMessage, readXaiMessage, xaiRefused } = __req("packages/provider-xai/src/codec.ts");
 const { classifyProviderFailure, retryAfterMs } = __req("packages/provider-xai/src/errors.ts");
 const { xaiCapabilities } = __req("packages/provider-xai/src/capabilities.ts");
+const { openRouterModel, sameOpenRouterModel } = __req("packages/provider-xai/src/openrouter.ts");
 function silentFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 	return fetch(input, init);
 }
 
 
-async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: string }): Promise<ProviderStep> {
+async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: string; wire?: ProviderWire }): Promise<ProviderStep> {
 	if (input.provider && input.provider.id !== "xai") return { ok: false, error: { code: "provider_mismatch", message: "The request is bound to another provider. No request was sent." } };
 	const capabilities = xaiCapabilities(input.modelId, input.provider?.version);
 	if (!capabilities) return { ok: false, error: { code: "unknown_provider_version", message: "The requested provider policy version is unavailable. No request was sent." } };
@@ -23400,6 +23516,9 @@ async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: 
 	if (!Number.isSafeInteger(input.maxTokens) || input.maxTokens <= 0 || (choice === "required" && input.tools.length === 0) || (typeof choice === "object" && !input.tools.some((tool) => tool.name === choice.name))) {
 		return { ok: false, error: { code: "unsupported_request", message: "Invalid token limit or unavailable tool choice. No provider request was sent." } };
 	}
+	// OpenRouter: the same request under OpenRouter's model id, with grok-4.20's reasoning switch.
+	const routed = input.wire === "openrouter" ? openRouterModel(input.modelId) : null;
+	if (input.wire === "openrouter" && !routed) return { ok: false, error: { code: "model_not_enabled_on_account", message: "OpenRouter does not serve this model here. No request was sent." } };
 	const requestInfo = { promptCacheKeySent: Boolean(input.cacheKey), parallelToolCalls: input.provider?.version === 1 ? "provider_default" as const : false, completionTokenParameter: capabilities.completionTokenParameter, maxTokens: input.maxTokens };
 	const requestStarted = Date.now();
 	const res = await silentFetch(`${input.baseUrl}/chat/completions`, {
@@ -23411,7 +23530,8 @@ async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: 
 			Accept: "application/json"
 		},
 		body: JSON.stringify({
-			model: input.modelId,
+			model: routed?.id ?? input.modelId,
+			...(routed && "reasoning" in routed ? { reasoning: routed.reasoning } : {}),
 			messages: input.messages.map(xaiMessage),
 			tools: input.tools.map((tool) => ({ type: "function", function: tool })),
 			// Choice comes from the versioned agent mode policy; the host may explicitly force a repair write.
@@ -23435,7 +23555,8 @@ async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: 
 	};
 	const response = { finishReason: payload.choices?.[0]?.finish_reason, refusal: null, status: res.status };
 	const usage = readProviderUsage(payload.usage) ?? undefined;
-	const used = typeof payload.model === "string" ? payload.model : input.modelId;
+	const answered = typeof payload.model === "string" ? payload.model : (routed?.id ?? input.modelId);
+	const used = routed ? (sameOpenRouterModel(routed.id, answered) ? input.modelId : answered) : answered;
 	const switched = assertNoFallback(input.modelId, used);
 	if (switched) return { ok: false, error: { code: switched.code, message: switched.message }, usage, requestInfo, response };
 	if (xaiRefused(payload.choices?.[0]?.message)) return { ok: false, error: { code: "provider_refusal", message: "The provider declined this request." }, usage, requestInfo, response: { ...response, refusal: "provider_refused" } };
@@ -23478,12 +23599,12 @@ async function runCatalogTurn(apiKey: string, modelId: string, ctx: TurnContext,
 		? async (input) => {
 				setRenderEmptyPolicy(previous);
 				try {
-					return await providerStep({ ...input, apiKey, baseUrl });
+					return await providerStep({ ...input, apiKey, baseUrl, wire: options.wire });
 				} finally {
 					setRenderEmptyPolicy("reject");
 				}
 			}
-		: (input) => providerStep({ ...input, apiKey, baseUrl });
+		: (input) => providerStep({ ...input, apiKey, baseUrl, wire: options.wire });
 	try {
 		const compiled = resolveScenario(ctx.mode, modelId, ctx.scenario);
 		if (!compiled.ok || compiled.scenario.profile.provider !== "xai") return { result: { ok: false, code: "invalid_scenario", message: "The scenario could not be resolved.", issues: (compiled.ok ? [{ path: "/provider", code: "adapter_mismatch" }] : compiled.issues).map((issue) => ({ ...issue, expected: "registered compatible scenario" })) }, meta: turnMeta("chat-completions", modelId, false, 0, [], notSentUsage(), newRunId()) };
@@ -23570,6 +23691,7 @@ exports["turnAnswer"] = turnAnswer;
 
 __def("packages/provider-xai/src/wire.ts", function (exports) {
 exports["providerStep"] = __req("packages/provider-xai/src/provider.ts")["providerStep"];
+exports["OPENROUTER_FORWARD_BASE"] = __req("packages/provider-xai/src/openrouter.ts")["OPENROUTER_FORWARD_BASE"];
 exports["HOST_HELD_KEY"] = __req("packages/provider-xai/src/turn.ts")["HOST_HELD_KEY"];
 exports["runCatalogTurn"] = __req("packages/provider-xai/src/turn.ts")["runCatalogTurn"];
 exports["turnAnswer"] = __req("packages/provider-xai/src/turn.ts")["turnAnswer"];

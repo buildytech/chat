@@ -7,6 +7,8 @@ export * from "./models.ts";
 export * from "./proposal-base.ts";
 export { chatCacheKey } from "./identity.ts";
 export * from "./usage.ts";
+export { TICKS_PER_USD, usdToTicks } from "./cost.ts";
+export { OPENROUTER_MODELS, appCandidate, appModelIds } from "@buildytech/agent-manifests";
 export * from "./xai-env.ts";
 export * from "./protect.ts";
 export * from "./redact.ts";

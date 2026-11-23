@@ -6,7 +6,7 @@
  */
 import { DEFAULT_XAI_BASE_URL, isAgentReply, resolveScenario, runAgentLoop, turnMeta, safeErrorMessage, notSentUsage, unknownUsage, type AgentReply, type AgentFailure, type LiveTurnMeta, type TurnContext, type mapChatRunRequest } from "@buildytech/chat-agent";
 import { emptyPage, setRenderEmptyPolicy } from "@buildytech/builder-core";
-import { providerStep } from "./provider.ts";
+import { providerStep, type ProviderWire } from "./provider.ts";
 
 /** The key value a webview sends: its host replaces the Authorization header with the key it holds. */
 export const HOST_HELD_KEY = "host-held";
@@ -21,6 +21,8 @@ export type CatalogTurnOptions = {
 	 * keeps its own policy between provider calls (the browser's Inspector allows a sample block that is still empty).
 	 */
 	strictRenderWrites?: boolean;
+	/** The wire of the provider requests (default xAI); the desktop signed in with OpenRouter passes "openrouter" (ADR 0067). */
+	wire?: ProviderWire;
 };
 
 function newRunId(): string {
@@ -38,12 +40,12 @@ export async function runCatalogTurn(apiKey: string, modelId: string, ctx: TurnC
 		? async (input) => {
 				setRenderEmptyPolicy(previous);
 				try {
-					return await providerStep({ ...input, apiKey, baseUrl });
+					return await providerStep({ ...input, apiKey, baseUrl, wire: options.wire });
 				} finally {
 					setRenderEmptyPolicy("reject");
 				}
 			}
-		: (input) => providerStep({ ...input, apiKey, baseUrl });
+		: (input) => providerStep({ ...input, apiKey, baseUrl, wire: options.wire });
 	try {
 		const compiled = resolveScenario(ctx.mode, modelId, ctx.scenario);
 		if (!compiled.ok || compiled.scenario.profile.provider !== "xai") return { result: { ok: false, code: "invalid_scenario", message: "The scenario could not be resolved.", issues: (compiled.ok ? [{ path: "/provider", code: "adapter_mismatch" }] : compiled.issues).map((issue) => ({ ...issue, expected: "registered compatible scenario" })) }, meta: turnMeta("chat-completions", modelId, false, 0, [], notSentUsage(), newRunId()) };

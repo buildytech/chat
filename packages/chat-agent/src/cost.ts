@@ -9,6 +9,16 @@ export type UsageCost = BilledCost | CostUnavailable | CostEstimate;
 export const COST_UNAVAILABLE: CostUnavailable = { available: false, reason: "not_reported", note: "Billed cost is unavailable in this usage record. Missing cost is unknown, never zero." };
 type CostPart = { ticks?: string; reportedRequests: number; requests: number; complete: boolean };
 
+/** xAI's billing unit: 1e-10 USD per tick. OpenRouter reports USD (`usage.cost`, ADR 0067); this converts it. */
+export const TICKS_PER_USD = 10_000_000_000;
+
+/** A USD amount as billed ticks (rounded), or undefined when it is not a finite amount of at least zero. */
+export function usdToTicks(value: unknown): string | undefined {
+	if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return undefined;
+	const ticks = Math.round(value * TICKS_PER_USD);
+	return Number.isSafeInteger(ticks) ? String(ticks) : undefined;
+}
+
 export function readBilledTicks(value: unknown): string | undefined {
 	if (typeof value === "number") return Number.isSafeInteger(value) && value >= 0 ? String(value) : undefined;
 	return typeof value === "string" && /^(0|[1-9][0-9]*)$/.test(value) ? value : undefined;

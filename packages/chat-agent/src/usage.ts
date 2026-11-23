@@ -1,4 +1,4 @@
-import { COST_UNAVAILABLE, readBilledTicks, aggregateBilledCost, storedCostPart, type UsageCost } from "./cost.ts";
+import { COST_UNAVAILABLE, readBilledTicks, usdToTicks, aggregateBilledCost, storedCostPart, type UsageCost } from "./cost.ts";
 export { COST_UNAVAILABLE, billedCostForDisplay } from "./cost.ts";
 
 /** Provider usage. Unknown is the string "unknown", never 0, for cancelled/error paths. */
@@ -85,7 +85,8 @@ export function readProviderUsage(raw: unknown): StepUsage | null {
 	const prompt = asCount(u.prompt_tokens ?? u.inputTokens ?? u.promptTokens);
 	const completion = asCount(u.completion_tokens ?? u.outputTokens ?? u.completionTokens);
 	const total = asCount(u.total_tokens ?? u.totalTokens);
-	const ticks = readBilledTicks(u.cost_in_usd_ticks);
+	// xAI bills in ticks; OpenRouter answers `cost` in USD (ADR 0067).
+	const ticks = readBilledTicks(u.cost_in_usd_ticks) ?? usdToTicks(u.cost);
 	if (prompt === null && completion === null && total === null && ticks === undefined) return null;
 	const details =
 		u.completion_tokens_details && typeof u.completion_tokens_details === "object"

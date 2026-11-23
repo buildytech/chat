@@ -1,9 +1,10 @@
 import type { AgentFailure, AgentMode, AgentReply, RunUsage } from "@buildytech/chat-agent";
 import type { PageV2 } from "@buildytech/page-contract";
-import { contractFingerprint } from "@buildytech/chat-agent";
+import { appCandidate, appModelIds, contractFingerprint } from "@buildytech/chat-agent";
 import { noteRuntimeFiles } from "../../../lib/runtime-files.ts";
 import { noteRuntimeHost } from "../../../lib/runtime-host.ts";
 import { noteRuntimeSave } from "./runtime-save.ts";
+import { noteRuntimeSignIn } from "./runtime-sign-in.ts";
 
 type XaiClientStatus = {
 	runtime: string;
@@ -20,7 +21,9 @@ type XaiClientStatus = {
 	};
 	error?: { code: string; message: string };
 	/** What the host runs (ADR 0065); web hosts send none (the runtime runs the loop). */
-	capabilities?: { loop: "server" | "client"; files: boolean; saveFile: boolean };
+	capabilities?: { loop: "server" | "client"; files: boolean; saveFile: boolean; signIn?: string[] };
+	/** The desktop's provider (contract/runtime-http/provider.schema.json, ADR 0067); web hosts send none (xAI). */
+	provider?: { id: "xai" | "openrouter"; signedIn: boolean; pending: boolean };
 	/** The desktop host's name, version and platform (contract/runtime-http/host.schema.json); web hosts send none. */
 	host?: { kind: "desktop"; version: string; os: string; arch: string };
 };
@@ -59,6 +62,16 @@ export type TurnRequest = {
 	today?: { date: string; timeZone: string };
 };
 
+/**
+ * A desktop signed in with OpenRouter lists OpenRouter's model ids; the app keeps its own ids (selector, scenarios,
+ * manifests), so the status is read in them: `x-ai/grok-4.20` serves both Grok 4.20 ids, `x-ai/grok-4.7` Grok 4.7.
+ */
+export function openRouterStatus(body: XaiClientStatus): XaiClientStatus {
+	if (body?.provider?.id !== "openrouter" || !body.models) return body;
+	const chatIds = appModelIds(body.models.chatIds ?? []);
+	return { ...body, models: { ...body.models, chatIds, candidate: appCandidate(body.models.candidate) } };
+}
+
 function runtimeBase(): string {
 	return "/runtime";
 }
@@ -71,7 +84,7 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 			cache: "no-store",
 			headers: { Accept: "application/json" }
 		});
-		const body = (await res.json()) as XaiClientStatus;
+		const body = openRouterStatus((await res.json()) as XaiClientStatus);
 		const code =
 			body.code ||
 			(res.ok ? "ok" : res.status === 404 ? "xai_runtime_unreachable" : "xai_status_error");
@@ -84,12 +97,14 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 		noteRuntimeFiles(body.capabilities?.files === true);
 		noteRuntimeSave(body.capabilities?.saveFile === true);
 		noteRuntimeHost(body.host);
+		noteRuntimeSignIn(body.capabilities?.signIn, body.provider);
 		return lastStatus;
 	} catch {
 		lastStatus = null;
 		noteRuntimeSave(false);
 		noteRuntimeFiles(false);
 		noteRuntimeHost(null);
+		noteRuntimeSignIn(undefined, undefined);
 		return {
 			runtime: "xai-grok",
 			ready: false,

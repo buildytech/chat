@@ -73,6 +73,7 @@
       "pack-images.test.ts",
       "runtime-save.test.ts",
       "runtime-host.test.ts",
+      "openrouter-desktop.test.ts",
       "content-macros.test.ts"
     ],
     "runtime-contract": [

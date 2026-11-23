@@ -4,13 +4,17 @@ import { assertNoFallback, readProviderUsage, type ProviderRequest, type Provide
 import { xaiMessage, readXaiMessage, xaiRefused } from "./codec.ts";
 import { classifyProviderFailure, retryAfterMs } from "./errors.ts";
 import { xaiCapabilities } from "./capabilities.ts";
+import { openRouterModel, sameOpenRouterModel } from "./openrouter.ts";
+
+/** The wire a request goes out on: xAI, or OpenRouter (the desktop signed in with it, ADR 0067). */
+export type ProviderWire = "xai" | "openrouter";
 
 function silentFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 	return fetch(input, init);
 }
 
 
-export async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: string }): Promise<ProviderStep> {
+export async function providerStep(input: ProviderRequest & { apiKey: string; baseUrl: string; wire?: ProviderWire }): Promise<ProviderStep> {
 	if (input.provider && input.provider.id !== "xai") return { ok: false, error: { code: "provider_mismatch", message: "The request is bound to another provider. No request was sent." } };
 	const capabilities = xaiCapabilities(input.modelId, input.provider?.version);
 	if (!capabilities) return { ok: false, error: { code: "unknown_provider_version", message: "The requested provider policy version is unavailable. No request was sent." } };
@@ -19,6 +23,9 @@ export async function providerStep(input: ProviderRequest & { apiKey: string; ba
 	if (!Number.isSafeInteger(input.maxTokens) || input.maxTokens <= 0 || (choice === "required" && input.tools.length === 0) || (typeof choice === "object" && !input.tools.some((tool) => tool.name === choice.name))) {
 		return { ok: false, error: { code: "unsupported_request", message: "Invalid token limit or unavailable tool choice. No provider request was sent." } };
 	}
+	// OpenRouter: the same request under OpenRouter's model id, with grok-4.20's reasoning switch.
+	const routed = input.wire === "openrouter" ? openRouterModel(input.modelId) : null;
+	if (input.wire === "openrouter" && !routed) return { ok: false, error: { code: "model_not_enabled_on_account", message: "OpenRouter does not serve this model here. No request was sent." } };
 	const requestInfo = { promptCacheKeySent: Boolean(input.cacheKey), parallelToolCalls: input.provider?.version === 1 ? "provider_default" as const : false, completionTokenParameter: capabilities.completionTokenParameter, maxTokens: input.maxTokens };
 	const requestStarted = Date.now();
 	const res = await silentFetch(`${input.baseUrl}/chat/completions`, {
@@ -30,7 +37,8 @@ export async function providerStep(input: ProviderRequest & { apiKey: string; ba
 			Accept: "application/json"
 		},
 		body: JSON.stringify({
-			model: input.modelId,
+			model: routed?.id ?? input.modelId,
+			...(routed && "reasoning" in routed ? { reasoning: routed.reasoning } : {}),
 			messages: input.messages.map(xaiMessage),
 			tools: input.tools.map((tool) => ({ type: "function", function: tool })),
 			// Choice comes from the versioned agent mode policy; the host may explicitly force a repair write.
@@ -54,7 +62,8 @@ export async function providerStep(input: ProviderRequest & { apiKey: string; ba
 	};
 	const response = { finishReason: payload.choices?.[0]?.finish_reason, refusal: null, status: res.status };
 	const usage = readProviderUsage(payload.usage) ?? undefined;
-	const used = typeof payload.model === "string" ? payload.model : input.modelId;
+	const answered = typeof payload.model === "string" ? payload.model : (routed?.id ?? input.modelId);
+	const used = routed ? (sameOpenRouterModel(routed.id, answered) ? input.modelId : answered) : answered;
 	const switched = assertNoFallback(input.modelId, used);
 	if (switched) return { ok: false, error: { code: switched.code, message: switched.message }, usage, requestInfo, response };
 	if (xaiRefused(payload.choices?.[0]?.message)) return { ok: false, error: { code: "provider_refusal", message: "The provider declined this request." }, usage, requestInfo, response: { ...response, refusal: "provider_refused" } };

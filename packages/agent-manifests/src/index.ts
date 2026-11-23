@@ -1,6 +1,7 @@
 /** Public data only: no transport, credentials, prompts or runtime imports. */
 import { XAI_MANIFEST, XAI_MANIFEST_V1 } from "./xai.ts";
 export { XAI_MANIFEST, XAI_MODELS } from "./xai.ts";
+export { OPENROUTER_CHAT_MODELS, OPENROUTER_MODELS, appCandidate, appModelIds, openRouterModel, type OpenRouterModel } from "./openrouter.ts";
 export const PROVIDER_MANIFESTS = immutableData([XAI_MANIFEST, XAI_MANIFEST_V1] as const);
 export function providerManifest(id: string, version?: number) { return PROVIDER_MANIFESTS.filter((manifest) => manifest.id === id && (version === undefined || manifest.version === version)).sort((a, b) => b.version - a.version)[0] ?? null; }
 export function manifestModelStatus(providerId: string, modelId: string, version?: number) {

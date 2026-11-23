@@ -22,10 +22,10 @@ export const OPENROUTER_KEYS_PATH = "/auth/keys";
  */
 export const OPENROUTER_CALLBACK = { host: "localhost", pathPrefix: "/cb/", ttlSeconds: 600 } as const;
 
-/** The chat models the desktop offers through OpenRouter, the default first (grok-4.20 does not reason unless asked). */
-export const OPENROUTER_CHAT_MODELS = ["x-ai/grok-4.20", "x-ai/grok-4.7"] as const;
+/** The chat models the desktop offers through OpenRouter, the default first, and the app ids they serve (agent-manifests). */
+export { OPENROUTER_CHAT_MODELS, OPENROUTER_MODELS, appCandidate, appModelIds, openRouterModel, type OpenRouterModel } from "@buildytech/agent-manifests";
 
-export const OPENROUTER_CANDIDATE_MODEL: (typeof OPENROUTER_CHAT_MODELS)[number] = "x-ai/grok-4.20";
+export const OPENROUTER_CANDIDATE_MODEL = "x-ai/grok-4.20";
 
 /** The image model (POST /images, base64 answers stored by the host). */
 export const OPENROUTER_IMAGE_MODEL = "x-ai/grok-imagine-image-2.0";
@@ -37,4 +37,12 @@ export const OPENROUTER_DISCOVERY = ["/models", "/images/models"] as const;
 export const OPENROUTER_SESSION_HEADER = "x-session-id";
 
 /** One USD in the cost unit of the media answer (`costUsdTicks`, xAI's 1e-10 USD ticks); OpenRouter reports USD. */
-export const USD_TICKS = 10_000_000_000;
+export { TICKS_PER_USD as USD_TICKS } from "@buildytech/chat-agent";
+
+/** The desktop host's same-origin forward of OpenRouter Chat Completions (POST <base>/chat/completions only). */
+export const OPENROUTER_FORWARD_BASE = "/runtime/v1/openrouter";
+
+/** Whether the model OpenRouter answered with is the one sent (OpenRouter may add a dated suffix). */
+export function sameOpenRouterModel(sent: string, answered: string): boolean {
+	return answered === sent || answered.startsWith(`${sent}-`);
+}
