@@ -37,7 +37,9 @@ export function chatTokens() {
 		...walk(join(root, "packages/page-contract/src"), isSource),
 		...walk(join(root, "packages/page-contract/schema"), (p) => p.endsWith(".json")),
 		// The UI kit and compositions the shell is made of (class strings and attribute values they share with the chat UI).
-		...walk(join(root, "registry/svelte/src"), isSource)
+		...walk(join(root, "registry/svelte/src"), isSource),
+		// The pinned Go templ starter the core ZIP export ships as files (ADR 0069): its text is export data, not chat UI.
+		...walk(join(root, "registry/templ/starter"), (p) => !p.endsWith(".woff2"))
 	].map((p) => readFileSync(p, "utf8")).join("\n");
 	const coreValues = new Set([...Object.values(core.en), ...Object.values(core.ru)]);
 	const tokens = new Set();
