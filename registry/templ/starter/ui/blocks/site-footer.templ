@@ -1,0 +1,49 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+)
+
+// SiteFooter shows the brand, the about text and the nav again. It has no
+// contact link on purpose: the shop's one contact button lives in the
+// store card only.
+templ SiteFooter(p FooterProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Tag: "footer", Class: "mt-16 border-t border-border bg-muted"}}) {
+		@c.Container(c.ContainerProps{BoxProps: box.BoxProps{Class: "mx-auto w-full max-w-6xl px-4 py-12"}}) {
+			@c.Grid(c.GridProps{Cols: "1-2", BoxProps: box.BoxProps{Class: "gap-8"}}) {
+				@c.Stack(c.StackProps{Gap: "2"}) {
+					@c.Text(c.TextProps{Size: "lg", Weight: "bold"}) {
+						{ p.Brand }
+					}
+					if p.About != "" {
+						@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "max-w-md text-muted-foreground"}}) {
+							{ p.About }
+						}
+					}
+				}
+				@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "nav", Attrs: templ.Attributes{"aria-label": p.NavLabel}}}) {
+					@c.List(c.ListProps{BoxProps: box.BoxProps{Class: "flex flex-wrap gap-4 md:justify-end"}}) {
+						for _, n := range p.Nav {
+							@c.ListItem(c.ListItemProps{}) {
+								@c.Link(c.LinkProps{Variant: "muted", Size: "sm", LinkProps: link.LinkProps{Href: n.Href}}) {
+									{ n.Label }
+								}
+							}
+						}
+						@c.ListItem(c.ListItemProps{}) {
+							@c.Link(c.LinkProps{Variant: "muted", Size: "sm", LinkProps: link.LinkProps{Href: p.Cabinet.Href}}) {
+								{ p.Cabinet.Label }
+							}
+						}
+					}
+				}
+			}
+			@c.Text(c.TextProps{Size: "xs", TextProps: text.TextProps{Class: "mt-8 text-muted-foreground"}}) {
+				{ p.Copyright }
+			}
+		}
+	}
+}

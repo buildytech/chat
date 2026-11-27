@@ -1,0 +1,24 @@
+/* Build entry of the site stylesheet: `make css` compiles it with the
+   Tailwind standalone CLI (no Node) into internal/web/static/app.css, which
+   is committed so `go run` needs nothing else. Colors come from theme.css
+   tokens only (shadcn neutral); never use palette classes or hex values in
+   markup. Brand a site by editing the tokens in theme.css. */
+@import "tailwindcss" source(none);
+@import "./theme.css";
+@import "./fonts.css";
+@import "./kit.css";
+
+/* class sources: the kit recipes and primitives, our blocks and screens */
+@source "../kit/compose/compose.json";
+@source "../kit/compose/*.templ";
+@source "../kit/ui";
+@source "../kit/icons/*.templ";
+@source "../kit/blocks";
+@source "../blocks/*.templ";
+@source "../blocks/*.go";
+@source "../../internal/web/screens/*.templ";
+@source "../../internal/web/screens/*.go";
+
+@theme {
+  --font-sans: "Istok Web", "Istok Web Fallback", ui-sans-serif, system-ui, sans-serif;
+}

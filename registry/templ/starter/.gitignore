@@ -1,0 +1,10 @@
+# build output and tools
+/bin/
+# PocketBase data: database, uploads, demo credentials
+pb_data/
+*.db
+# local secrets
+*.env
+!deploy/site.env.example
+.env*
+!.env.example

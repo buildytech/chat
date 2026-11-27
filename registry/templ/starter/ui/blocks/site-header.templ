@@ -1,0 +1,77 @@
+package blocks
+
+import (
+	"strconv"
+
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/icons"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/disclosure"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+)
+
+func current(on bool) string {
+	if on {
+		return "page"
+	}
+	return ""
+}
+
+// SiteHeader is the top bar: brand, primary nav, cart link (shop) and the
+// mobile menu (native details, no script).
+templ SiteHeader(p HeaderProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Tag: "header", Class: "border-b border-border bg-background"}}) {
+		@c.Container(c.ContainerProps{BoxProps: box.BoxProps{Class: "mx-auto w-full max-w-6xl px-4"}}) {
+			@c.Group(c.GroupProps{Justify: "between", Gap: "4", BoxProps: box.BoxProps{Class: "h-16"}}) {
+				@c.Link(c.LinkProps{Variant: "nav", Size: "md", LinkProps: link.LinkProps{Href: p.HomeHref, Class: "font-bold tracking-tight"}}) {
+					{ p.Brand }
+				}
+				@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "nav", Class: "hidden md:block", Attrs: templ.Attributes{"aria-label": p.NavLabel}}}) {
+					@c.List(c.ListProps{BoxProps: box.BoxProps{Class: "flex items-center gap-6"}}) {
+						for _, n := range p.Nav {
+							@c.ListItem(c.ListItemProps{}) {
+								@c.Link(c.LinkProps{Variant: "muted", Size: "sm", LinkProps: link.LinkProps{Href: n.Href, AriaCurrent: current(n.Current), Class: "aria-[current=page]:text-foreground"}}) {
+									{ n.Label }
+								}
+							}
+						}
+					}
+				}
+				@c.Group(c.GroupProps{Gap: "2"}) {
+					if p.ShowCart {
+						@c.LinkButton(c.LinkButtonProps{Variant: "outline", Size: "sm", LinkProps: link.LinkProps{Href: p.CartHref, AriaLabel: p.CartLabel, Attrs: templ.Attributes{"data-cart-link": "true"}}}) {
+							@icons.LucideIcon(icons.LucideIconProps{Name: "shopping-cart"})
+							@c.Inline(c.InlineProps{TextProps: text.TextProps{Class: "ml-2", Attrs: templ.Attributes{"data-cart-count": "true"}}}) {
+								{ strconv.Itoa(p.CartCount) }
+							}
+						}
+					}
+					@c.Box(c.BoxProps{BoxProps: box.BoxProps{Class: "md:hidden"}}) {
+						@disclosure.Disclosure(disclosure.DisclosureProps{Class: "group relative"}) {
+							@disclosure.Summary(disclosure.SummaryProps{Class: "flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded inset-ring inset-ring-border [&::-webkit-details-marker]:hidden", Attrs: templ.Attributes{"aria-label": p.MenuLabel}}) {
+								@icons.LucideIcon(icons.LucideIconProps{Name: "menu"})
+							}
+							@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "nav", Class: "absolute right-0 z-20 mt-2 w-56 rounded bg-popover p-2 shadow-lg inset-ring inset-ring-border", Attrs: templ.Attributes{"aria-label": p.MenuLabel}}}) {
+								@c.List(c.ListProps{BoxProps: box.BoxProps{Class: "flex flex-col"}}) {
+									for _, n := range p.Nav {
+										@c.ListItem(c.ListItemProps{}) {
+											@c.Link(c.LinkProps{Variant: "block", Size: "sm", LinkProps: link.LinkProps{Href: n.Href, AriaCurrent: current(n.Current), Class: "rounded px-2 py-2 hover:bg-accent"}}) {
+												{ n.Label }
+											}
+										}
+									}
+									@c.ListItem(c.ListItemProps{}) {
+										@c.Link(c.LinkProps{Variant: "block", Size: "sm", LinkProps: link.LinkProps{Href: p.Cabinet.Href, Class: "rounded px-2 py-2 text-muted-foreground hover:bg-accent"}}) {
+											{ p.Cabinet.Label }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://registry.buildy.tw/schema/config.json",
+  "contractVersion": "2.0.0",
+  "framework": "templ",
+  "runtime": "templ",
+  "typescript": false,
+  "globalCss": "./app.css",
+  "dir": ".",
+  "aliases": {
+    "@": "./.",
+    "@/lib": "././blocks/presets",
+    "@/utils": "././utils",
+    "@/components": "././components",
+    "@/ui": "././ui",
+    "@/blocks": "././blocks",
+    "@/layouts": "././layouts",
+    "@/variants": "././variants",
+    "@/widgets": "././widgets"
+  },
+  "registry": "@ui8kit",
+  "registryUrl": "https://registry.buildy.tw",
+  "importStyle": "alias"
+}

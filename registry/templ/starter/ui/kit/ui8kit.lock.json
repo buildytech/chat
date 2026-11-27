@@ -1,0 +1,1171 @@
+{
+  "lockVersion": 2,
+  "cli": "3.5.0",
+  "items": {
+    "registry.buildy.tw|templ|amenities-simple": {
+      "name": "amenities-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/amenities-simple.templ": "18d248357bb6c1a5619ea17e59c6fb4d00167bfb6e300466caee4d40c93c1444"
+      }
+    },
+    "registry.buildy.tw|templ|article-lead": {
+      "name": "article-lead",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/article-lead.templ": "7abdbfe8a8edef2f5435cd8b84a53be4f2d344d6cc91c61b081f8be96b6b4ce2"
+      }
+    },
+    "registry.buildy.tw|templ|article-simple": {
+      "name": "article-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/article-simple.templ": "0ff670732ce6bd8fb1259d5234833c638335b246977d0860084e8e4ddee2f861"
+      }
+    },
+    "registry.buildy.tw|templ|badge": {
+      "name": "badge",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/badge.templ": "dc6651d5ff16b59fe840f17721a2cda0bb19af82b4f5392ae68d7726a6130169"
+      }
+    },
+    "registry.buildy.tw|templ|block": {
+      "name": "block",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/block.templ": "a783942441dfbe8121a0d91f8ecdd37090f5f2c2ee4627ed11ee9178b3f9d116"
+      }
+    },
+    "registry.buildy.tw|templ|box": {
+      "name": "box",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/box.templ": "147f602cb92f54887c31072d26032e0a4f9ca9adc727b668d773d900fde46978"
+      }
+    },
+    "registry.buildy.tw|templ|button": {
+      "name": "button",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/button.templ": "76b87c8edcad1bab1e956588d75d0ee91a5e6e922d0ad0f4e12959767bf5f29a"
+      }
+    },
+    "registry.buildy.tw|templ|card": {
+      "name": "card",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/card.templ": "9bd88903302b0cf35f34fcea19e839c8f2f0725d04f53bdcba00de32df1ffee1"
+      }
+    },
+    "registry.buildy.tw|templ|card-content": {
+      "name": "card-content",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/card-content.templ": "3ebd84becad5406659209f7f1dff5469680cff0a18f6df6a96f324ed0cc0f6c1"
+      }
+    },
+    "registry.buildy.tw|templ|cases-simple": {
+      "name": "cases-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/cases-simple.templ": "4b5f3471bee5a2f8c33f3d86c50ab0f15e86d87cceb5ce01fad68ea4f597e4ce"
+      }
+    },
+    "registry.buildy.tw|templ|chapters-simple": {
+      "name": "chapters-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/chapters-simple.templ": "b2baa8102521087e9803e3face7219be873c015c890cfccc7228b53869b4821d"
+      }
+    },
+    "registry.buildy.tw|templ|checkbox": {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/checkbox.templ": "dfaca256f23386d783c910b71ffcb573424a1fcacb2fab9344ca1dcec5e55920"
+      }
+    },
+    "registry.buildy.tw|templ|choice-links": {
+      "name": "choice-links",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/choice-links.templ": "161f6d101c877af96c1fbcbf4aae6e5070d494449d9962c860d62ef0ac239a4e"
+      }
+    },
+    "registry.buildy.tw|templ|collections-simple": {
+      "name": "collections-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/collections-simple.templ": "dfcb7ece80cc3d7ffad1b9becf2c10749ba7faa4d967c325fae324ea15321eb3"
+      }
+    },
+    "registry.buildy.tw|templ|compare-simple": {
+      "name": "compare-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/compare-simple.templ": "a23fe727c4124b368e3f1d875a0768681f620dd6625d878330c4ee7046795716"
+      }
+    },
+    "registry.buildy.tw|templ|contacts-simple": {
+      "name": "contacts-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/contacts-simple.templ": "b8428c51af2df64023920c37cb9911946fc934d33ba062c68b8089a6ecf9fd58"
+      }
+    },
+    "registry.buildy.tw|templ|container": {
+      "name": "container",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/container.templ": "64f82b1249d319216055a59c4b880c5be8f5dbc2c0f3a2fcde21bfe0d7362dee"
+      }
+    },
+    "registry.buildy.tw|templ|course-outline": {
+      "name": "course-outline",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/course-outline.templ": "50976872bb4bb291f9f8e4d55604b0742b1ea1bec606146cc554782a892f1cd4"
+      }
+    },
+    "registry.buildy.tw|templ|cta-simple": {
+      "name": "cta-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/cta-simple.templ": "945c08992bcae13e413aef499c16f2b2584a07250803ecb3a5b748b0267f34d4"
+      }
+    },
+    "registry.buildy.tw|templ|delivery-simple": {
+      "name": "delivery-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/delivery-simple.templ": "4adc64db81046d4110cf902c1eb1a3ae60da8e560ef3d134411bc279e7aab3cc"
+      }
+    },
+    "registry.buildy.tw|templ|dialog": {
+      "name": "dialog",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/dialog.templ": "33bf004a86f12280e6a0394041c5cc2790fe697f335a4943ca65ed240ab78392"
+      }
+    },
+    "registry.buildy.tw|templ|digital-simple": {
+      "name": "digital-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/digital-simple.templ": "4e396662e16c54dc14528857e20bc796f7da3ec18cd1765b851dbaed4b20b8b0"
+      }
+    },
+    "registry.buildy.tw|templ|disclosure": {
+      "name": "disclosure",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/disclosure.templ": "fbaefc93494b057af118490c03d546871c5c8ab24bdd95769034bbbd56964ba1"
+      }
+    },
+    "registry.buildy.tw|templ|empty-state": {
+      "name": "empty-state",
+      "type": "registry:component",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/empty-state.templ": "2cbe388dc71f6a7f480f7f620a1dfc3d163eb1df1e9c0ccc8915d67324e6bbd4"
+      }
+    },
+    "registry.buildy.tw|templ|error-simple": {
+      "name": "error-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/error-simple.templ": "4d40cb52a7c5d6ea8012faf6ed27b7872d275f359a94b662648156470e2fa76b"
+      }
+    },
+    "registry.buildy.tw|templ|event-intro": {
+      "name": "event-intro",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/event-intro.templ": "c710f46bf45128c74d560f6481ce843be048b286ceece37a316170f09b1554aa"
+      }
+    },
+    "registry.buildy.tw|templ|faq-simple": {
+      "name": "faq-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/faq-simple.templ": "96ce76dd8d114b088b7188a3b2e95fb6bbc73c4ce57ee4011aac14614c5c4e85"
+      }
+    },
+    "registry.buildy.tw|templ|feature-showcase-simple": {
+      "name": "feature-showcase-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/feature-showcase-simple.templ": "af83f83dc624fa59346c32a6eb8fca59a1e5d4981cea876af00c18d398f9e155"
+      }
+    },
+    "registry.buildy.tw|templ|features-simple": {
+      "name": "features-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/features-simple.templ": "d15c6af1af872e97bff5e4190ee0bf8eeca996c90ef9f1c99b6cede3a464b701"
+      }
+    },
+    "registry.buildy.tw|templ|field": {
+      "name": "field",
+      "type": "registry:component",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/field.templ": "5ea088dc00101b782694d836e6718d09d0d5b9c657de415b82188c814ff55650"
+      }
+    },
+    "registry.buildy.tw|templ|figure-simple": {
+      "name": "figure-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/figure-simple.templ": "091839c95d047ae40a56084bf6d9cda314d2e47b3c82d8fb8bab6f11fa2342c3"
+      }
+    },
+    "registry.buildy.tw|templ|footer-simple": {
+      "name": "footer-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/footer-simple.templ": "a39026d50e3c6819724ebcb870bd568c611e74749ad3775124c784ae57b5e311"
+      }
+    },
+    "registry.buildy.tw|templ|form": {
+      "name": "form",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/form.templ": "ff172ee07e52534804329a4f0e100d9c8b286e2b1f8682431b477dca10e6b61c"
+      }
+    },
+    "registry.buildy.tw|templ|gallery-hero": {
+      "name": "gallery-hero",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/gallery-hero.templ": "2b0f5864e3a3898c14dd0d5623b46f6185b9486d10c739945012dfa0b8c617fc"
+      }
+    },
+    "registry.buildy.tw|templ|grid": {
+      "name": "grid",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/grid.templ": "a76995ebd09d8b2b6e5fe4bc10d9bce8ad90fc6da3d7f9dac0a2db27261e01b5"
+      }
+    },
+    "registry.buildy.tw|templ|group": {
+      "name": "group",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/group.templ": "8345bba5e80eb54c3aa9f154d0edb9e4ea5d28e74876a2b9f0a471c31c994346"
+      }
+    },
+    "registry.buildy.tw|templ|guarantees-simple": {
+      "name": "guarantees-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/guarantees-simple.templ": "647ce6a15e03df5c6415461e8c20420ee7becf5f2a2f17bec52ef85d5687fcb0"
+      }
+    },
+    "registry.buildy.tw|templ|header-simple": {
+      "name": "header-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/header-simple.templ": "7e1d9921d7a4064d04b03c5d1f1866314a79db8b75d2a64c0e653e820063edde"
+      }
+    },
+    "registry.buildy.tw|templ|hero-simple": {
+      "name": "hero-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/hero-simple.templ": "20407ad022e006ecddac66a51ecc397e06e7071ae2f1b786aea6dafc07176209"
+      }
+    },
+    "registry.buildy.tw|templ|hours-simple": {
+      "name": "hours-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/hours-simple.templ": "8494bbc4fa2047235c0300f169843e8ce13fb85dbadaa673b0ea542bb32b0ff9"
+      }
+    },
+    "registry.buildy.tw|templ|icon-badge": {
+      "name": "icon-badge",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/icon-badge.templ": "1c39519718f925fe1331de6ac163da1f316481d98fc257591ba649341185102b"
+      }
+    },
+    "registry.buildy.tw|templ|image": {
+      "name": "image",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/image.templ": "77e5ce6cb31fb9c171d07cf73b2d80aecf8c41851738d514e85ecdcdea507195"
+      }
+    },
+    "registry.buildy.tw|templ|inline": {
+      "name": "inline",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/inline.templ": "596e41027395785959c6129c8da243c2d7ef98533dae74dbab1865626c21f400"
+      }
+    },
+    "registry.buildy.tw|templ|input": {
+      "name": "input",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/input.templ": "2d010088f1e0d8b21ca33247d75c77955790e47ab3bf782f9751e83c30aebf5e"
+      }
+    },
+    "registry.buildy.tw|templ|intro-simple": {
+      "name": "intro-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/intro-simple.templ": "57edb6c2e9259e210df7c50a70a45a23811d84dcb8c621a67e77d4de9d17b34b"
+      }
+    },
+    "registry.buildy.tw|templ|kit-box": {
+      "name": "kit-box",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/box/box.templ": "b071e63925919145f633e7676eb3c9e67fac50c6490c5fd1585ab2676f5fa2cd"
+      }
+    },
+    "registry.buildy.tw|templ|kit-button": {
+      "name": "kit-button",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/button/button.templ": "0614d7725f0ab181dd96b33b22ec351b6d3d395335b19dc5de08ffd99c1ca074"
+      }
+    },
+    "registry.buildy.tw|templ|kit-checkbox": {
+      "name": "kit-checkbox",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/checkbox/checkbox.templ": "d1ab62366a0a446a6699e095b626beb9bb84ded65bcd0974f2cda7afbaf99cd6"
+      }
+    },
+    "registry.buildy.tw|templ|kit-dialog": {
+      "name": "kit-dialog",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/dialog/dialog.templ": "b172a2c01c942580a0bb20522b18bcdda0a3b6f0271d5e777d3db3a64e5e9484"
+      }
+    },
+    "registry.buildy.tw|templ|kit-disclosure": {
+      "name": "kit-disclosure",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/disclosure/disclosure.templ": "5d4162f4ac45d93bbd0fb24740f838a801725fa49477242f9b35412c0ce5a533"
+      }
+    },
+    "registry.buildy.tw|templ|kit-form": {
+      "name": "kit-form",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/form/form.templ": "465d084233129b057e207d9eb9893cab08712a17663f0a5f4217e828145d2df6"
+      }
+    },
+    "registry.buildy.tw|templ|kit-icon": {
+      "name": "kit-icon",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/icon/icon.templ": "c6d2fa3ad58752b8b788b5e7a2464f4f3eee42aa3226276a0401e8c1db235989",
+        "ui/icon/icon.variants.json": "3411086ff914c3d68ed81fa575f1ae22b6b5202198d505de4c1abf1509d8904a",
+        "ui/icon/icon_gen.go": "a93a1cb378160a49203f02b1dc534833d59611d19e12a6dde3158becea2395fb"
+      }
+    },
+    "registry.buildy.tw|templ|kit-image": {
+      "name": "kit-image",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/image/image.templ": "6ca100b738f5c188962667357c6dfcf9886900e2db436ec0df15a51dea95a759"
+      }
+    },
+    "registry.buildy.tw|templ|kit-input": {
+      "name": "kit-input",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/input/input.templ": "1a8a71e9ccdc86be00fbb44926ca6b927a87845590e16a223051ec8d24498476"
+      }
+    },
+    "registry.buildy.tw|templ|kit-label": {
+      "name": "kit-label",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/label/label.templ": "594d0bdb5e37649f5069bb0d2cada4af33ec2710758e452b087c48a3850fe415"
+      }
+    },
+    "registry.buildy.tw|templ|kit-link": {
+      "name": "kit-link",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/link/link.templ": "295978938321a4ac54f6abbd15c9661abfc0ed9bfee53379fb63bcb25a8dff53"
+      }
+    },
+    "registry.buildy.tw|templ|kit-radio": {
+      "name": "kit-radio",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/radio/radio.templ": "f52748e95625c8305ce0e4bbbb3a29d88da5e470ce247b9469517343aecb0f11"
+      }
+    },
+    "registry.buildy.tw|templ|kit-select": {
+      "name": "kit-select",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/select/select.templ": "4034518f66b32f5ccdb8cf2f553413bb87e0d84a42c266e91491344b08ec8740"
+      }
+    },
+    "registry.buildy.tw|templ|kit-separator": {
+      "name": "kit-separator",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/separator/separator.templ": "2c19e40a984eb941592501c53f6c1546238fca9558a8b524a18a3ad44cf3a7fd"
+      }
+    },
+    "registry.buildy.tw|templ|kit-text": {
+      "name": "kit-text",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/text/text.templ": "1f58c23d1384f15dfb6ef11001b46efad79b6a074229b4da17526564090584e6"
+      }
+    },
+    "registry.buildy.tw|templ|kit-textarea": {
+      "name": "kit-textarea",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "ui/textarea/textarea.templ": "e621667d999da0823198612389289ad1520605e69ddf127e7f1dece796969432"
+      }
+    },
+    "registry.buildy.tw|templ|label": {
+      "name": "label",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/label.templ": "7ea6567ced87d30e5bec9ebc76fe660564e5e38ab3bcf822598d90ba049340d1"
+      }
+    },
+    "registry.buildy.tw|templ|link": {
+      "name": "link",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/link.templ": "c41077fc2c9507c83cfd1b24db3f0d1b7838829180eaf6458ef781eabb6269ba"
+      }
+    },
+    "registry.buildy.tw|templ|link-button": {
+      "name": "link-button",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/link-button.templ": "829be5f455d371fb6d6ee3f44a96a0cce47a762bcf4dcd2e2a985011a47abeb5"
+      }
+    },
+    "registry.buildy.tw|templ|link-plain": {
+      "name": "link-plain",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/link-plain.templ": "45de10ab654b33eea8246e594367f0e355e1c4347e52d151f458748f6ccca56e"
+      }
+    },
+    "registry.buildy.tw|templ|list": {
+      "name": "list",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/list.templ": "38cc538b21a6b50223bd40d5ed2e65bef1ee1f3996678b0ff64d6af6f7ae9d15"
+      }
+    },
+    "registry.buildy.tw|templ|list-item": {
+      "name": "list-item",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/list-item.templ": "a20c1fb9852b016c4edcedd56f62700a8e9459105d003d4afb8a5b1cd630bc93"
+      }
+    },
+    "registry.buildy.tw|templ|locations-simple": {
+      "name": "locations-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/locations-simple.templ": "1a16bd1e5cfdd791108aac2b3fe4bfe16e01d0ed5a25d07b741a735d9ab75419"
+      }
+    },
+    "registry.buildy.tw|templ|logos-simple": {
+      "name": "logos-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/logos-simple.templ": "48bd6052c063c1bab9d8e63a6a1443df14f770af75d7ed2b94b02e92a2fb18b9"
+      }
+    },
+    "registry.buildy.tw|templ|lucide-icon": {
+      "name": "lucide-icon",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/lucide-icon.templ": "e783054e6baa9da64878504fae3995db7256f862aba6692158634a78ab4b5489",
+        "icons/lucide-icon.templ": "5d04f3db84673a1d6c41a13f9363272964e2af4fd2d4978df3a86dc6194d96ab",
+        "icons/lucide_icons.go": "ca78a1f913a819219e13ebd1ccb29cd14265ca6f58deef4cb4f8cd75dab83e4c"
+      }
+    },
+    "registry.buildy.tw|templ|media-frame": {
+      "name": "media-frame",
+      "type": "registry:component",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/media-frame.templ": "50a9585861ec9dcc4d5f3850b00a6e12290af30e365f123fc18e2f26ff9d7500"
+      }
+    },
+    "registry.buildy.tw|templ|menu-simple": {
+      "name": "menu-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/menu-simple.templ": "18d7c94f7b03e73edf45d94ce9f22a7909e87d4aa28f6b7553495c43e67f1c1c"
+      }
+    },
+    "registry.buildy.tw|templ|offers-simple": {
+      "name": "offers-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/offers-simple.templ": "dd34a3604efee84291cba1f5313c9c0a6918501ab736ef82f89bdc4534a7f6d6"
+      }
+    },
+    "registry.buildy.tw|templ|page-crumbs": {
+      "name": "page-crumbs",
+      "type": "registry:component",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/page-crumbs.templ": "c3f49d1030576c754e20e4975f76714c8103f34f3a9935af0fb955e39e348a81"
+      }
+    },
+    "registry.buildy.tw|templ|photos-simple": {
+      "name": "photos-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/photos-simple.templ": "52b4451d84f4addcac3ada2df6873aafaf3ce73feee6be0e42ab7e24672150f7"
+      }
+    },
+    "registry.buildy.tw|templ|presets": {
+      "name": "presets",
+      "type": "registry:lib",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/embed.go": "18a395d694972e7d7e9db7fa88c2be54ba848fbb7d137551c4b230d6c5cf88d1",
+        "blocks/presets/defaults.json": "eb1fbc364e4219e4adde7908a859e1e2153665d01a9acb7de5b116b703a4df9f",
+        "blocks/recipes/avatar.variants.json": "9590951af31740cda35d23d3b7af1cff0920a8e177766c49fcfa85602b0e8d2e",
+        "blocks/recipes/badge-square.variants.json": "d9eaa4b55c6710affcd1101199321c9920940bab02dea5c6d78b4a2b43da5bab",
+        "blocks/recipes/file-tree-item.variants.json": "1f554cf622646e0cba5188535de6beaa0a24cbf06469b8ed67cb6c54ac21684d",
+        "blocks/recipes/icon-tab.variants.json": "084415b96337485086cc0d175c68361638a3b5361129bab471641d7f9b662005",
+        "blocks/recipes/logo-sidebar.variants.json": "76d46d56dcf5012a1a814faf9c978896c6ebec477de58edd18a4c462c10c4831",
+        "blocks/recipes/media-frame.variants.json": "66e806756d1c685e9dddf21f559884ede9d0824dc9e9258bc35434adba22a7f7",
+        "blocks/recipes/nav-item-content.variants.json": "7918ca7821cd00827d2191f8863b3689cb97759620e62651070f220b0afd0d7f",
+        "blocks/recipes/nav-item.variants.json": "4cd0ca1c66fd3d7095c1fc77f0ddde08509dc4ca01b05763f3033e647e53e956",
+        "blocks/recipes/section-column.variants.json": "fa6e3feda495df5ec7ad0ad34fac9b9adec8e19fe6a0f8b356f68fbcbe3bb50b",
+        "blocks/recipes/section-frame.variants.json": "a1d839c9637be8deb1aa264c6231e1b2322fdef2003efecb09459d5a5dbcf569",
+        "blocks/recipes/section-head.variants.json": "c5ab7e927ea7a95d6067591e0e8c2abf2d5103e766b7cf3371cec68f868ad2d8",
+        "blocks/recipes/sidebar-panel.variants.json": "cd7b7497c9b0559c667a97682ff90e22d5cfebe69a888ce99ece133907e01a48",
+        "blocks/recipes/switcher-item.variants.json": "6d07b0f5aad4e0bef04b2787d9572bf3e6fcf916193642df9a05194f8b5831da",
+        "blocks/recipes/switcher.variants.json": "379e3b44e3e4dcb9dc7078122f48d340f79209e626ccc2703d17fd863f48922d"
+      }
+    },
+    "registry.buildy.tw|templ|pricing-simple": {
+      "name": "pricing-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/pricing-simple.templ": "f4f9661fc2474b66c6337b8dc41925bb5ae2fd66da2133b511140be6b80c8965"
+      }
+    },
+    "registry.buildy.tw|templ|product-card": {
+      "name": "product-card",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/product-card.templ": "f13c92af15f7f866ade19d8f72754d7a40d5cea1478f0900af9546f5b9e1c324"
+      }
+    },
+    "registry.buildy.tw|templ|product-grid": {
+      "name": "product-grid",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/product-grid.templ": "83ca07ea704521409d04657fa6645028f48e9f48a7c3d7c665fdd8ff987428bc"
+      }
+    },
+    "registry.buildy.tw|templ|product-reviews": {
+      "name": "product-reviews",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/product-reviews.templ": "c5d02229f90c9d8fccdf3cad8b010ce612cef4de7152ad351d2c9dcfac8d8074"
+      }
+    },
+    "registry.buildy.tw|templ|product-simple": {
+      "name": "product-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/product-simple.templ": "31dc6bc4a5ea2c8927acc3e3bab391f33e4f58d850b07299483770eba41924a9"
+      }
+    },
+    "registry.buildy.tw|templ|products-simple": {
+      "name": "products-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/products-simple.templ": "dd7faebc9fd725629b4e4065cc636fea64e5e8b4cc39f07ba430f1a8f2abb0c3"
+      }
+    },
+    "registry.buildy.tw|templ|profile-intro": {
+      "name": "profile-intro",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/profile-intro.templ": "823a755077210de7cabb0869e141276bb2f78a49728e49b227f5b10704d9bb50"
+      }
+    },
+    "registry.buildy.tw|templ|promo-simple": {
+      "name": "promo-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/promo-simple.templ": "77ca757ac3c660495bbe7b3f13e66b715b5db7591689f5e8da3d6872f726fcb6"
+      }
+    },
+    "registry.buildy.tw|templ|pull-quote-simple": {
+      "name": "pull-quote-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/pull-quote-simple.templ": "d77a7800c3bf3fd89b0129a394186f585c51a3e75720d6cfda776c2b81046420"
+      }
+    },
+    "registry.buildy.tw|templ|purchase-simple": {
+      "name": "purchase-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/purchase-simple.templ": "7b778c49bfd71d6c6dbe6241dea05b7f129071c1e86431334e483d670ba2940e"
+      }
+    },
+    "registry.buildy.tw|templ|radio": {
+      "name": "radio",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/radio.templ": "7b7917705780e955da3d5f7f9700d0de68079100270a104b02109cfee6d0d03b"
+      }
+    },
+    "registry.buildy.tw|templ|rating": {
+      "name": "rating",
+      "type": "registry:component",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/rating.templ": "6aac4fee10dbc4efccdcfaf89b91814c6ddeb0599a7a656f5843f587d313c6e5"
+      }
+    },
+    "registry.buildy.tw|templ|rating-simple": {
+      "name": "rating-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/rating-simple.templ": "f265500689a0bfd35f57fb15025e7322416622fc267aa095b8a205bf925cacf6"
+      }
+    },
+    "registry.buildy.tw|templ|recipes": {
+      "name": "recipes",
+      "type": "registry:lib",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/compose.go": "6a40f3847def99c35ee9e205cd9725860779442306fdb8d0e7c89015e626d9af",
+        "compose/compose.json": "0b2da150013e08566bcac895c9e44686d3c2c80ca65e7b4dc5234c53b74dda2d",
+        "compose/lucide.go": "0637b98e713a2c2b3caca567130949a7064d763c84afa416bc3cdd6950fac684"
+      }
+    },
+    "registry.buildy.tw|templ|rooms-simple": {
+      "name": "rooms-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/rooms-simple.templ": "f2a572b91bf59d051136fb9feb26eca3a0ddf56dd30fe4a29824f1cbdcef863a"
+      }
+    },
+    "registry.buildy.tw|templ|section-box": {
+      "name": "section-box",
+      "type": "registry:component",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/section-box.templ": "176c3b74ec4316f41fe8709b8198dca5430317b656f7c9f4b3d123e1bc1dcffc"
+      }
+    },
+    "registry.buildy.tw|templ|section-column": {
+      "name": "section-column",
+      "type": "registry:component",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/section-column.templ": "e18bef4808914dd8f5ff015515d0f8a2523c0eebe81eebe306e7e5f1b879cd8f"
+      }
+    },
+    "registry.buildy.tw|templ|section-frame": {
+      "name": "section-frame",
+      "type": "registry:component",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/section-frame.templ": "84c904a737cce1d73e2c5a3c8c9ec49cb68d1143b822e5f78a98ba73462576bd"
+      }
+    },
+    "registry.buildy.tw|templ|section-header": {
+      "name": "section-header",
+      "type": "registry:component",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/section-header.templ": "be736de45ca7e3e25f73ece71412d196d18ebb5a587793fa3cf3ffdd8ba15f7d"
+      }
+    },
+    "registry.buildy.tw|templ|select": {
+      "name": "select",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/select.templ": "933d57b505de6b092de9143b0fd7434b4f1aaaaf050606e8f9ba8bf514bc6a82"
+      }
+    },
+    "registry.buildy.tw|templ|separator": {
+      "name": "separator",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/separator.templ": "e36f927060387d7d3126a3357086eecbf68fd4986ae7e4658446743d155f87de"
+      }
+    },
+    "registry.buildy.tw|templ|services-simple": {
+      "name": "services-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/services-simple.templ": "831023cd520fa289def460be73447e6f9cc0fa66bf4ec07f615665008c6e7d9a"
+      }
+    },
+    "registry.buildy.tw|templ|specs-simple": {
+      "name": "specs-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/specs-simple.templ": "4430e94ddbcc3b1d318dd89a5cfa03099ebe52b9302fa3eb4dea6e474664e6b2"
+      }
+    },
+    "registry.buildy.tw|templ|split-simple": {
+      "name": "split-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/split-simple.templ": "bcdc76a465344f6d5a579bd60494292a1270e0ae41c6c2446282c7501a04b8af"
+      }
+    },
+    "registry.buildy.tw|templ|stack": {
+      "name": "stack",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/stack.templ": "6f774bced3460d1e27fd2073aea4ab8259c0dae3fd0ae04ea75de8d57496d1e5"
+      }
+    },
+    "registry.buildy.tw|templ|stats-simple": {
+      "name": "stats-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/stats-simple.templ": "55cdbc43eabdcef7e9a769bcc43c21dd05183974315cbc7a7eef1333f44f249c"
+      }
+    },
+    "registry.buildy.tw|templ|steps-simple": {
+      "name": "steps-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/steps-simple.templ": "eb0f3ad36652a57a1ff04c76fcc63f448726652de09eeecb3ae3d4f7db1685b7"
+      }
+    },
+    "registry.buildy.tw|templ|store-policies": {
+      "name": "store-policies",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/store-policies.templ": "5a304f4de52efcbc039821d4ffd9ffdbaec88e48efde1db847406b21630ad2c0"
+      }
+    },
+    "registry.buildy.tw|templ|stories-simple": {
+      "name": "stories-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/stories-simple.templ": "4ce2b347348fb102d74421241a702d3802cba55547a29196f9ea12b724edc144"
+      }
+    },
+    "registry.buildy.tw|templ|team-simple": {
+      "name": "team-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/team-simple.templ": "51248c2d4b69b28c3e76d9f7c67747a89aba2d5f5481aee44ed991d1b5b50054"
+      }
+    },
+    "registry.buildy.tw|templ|testimonials-simple": {
+      "name": "testimonials-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/testimonials-simple.templ": "48fb830a3e73626fddb6e2f97e3624cb1c43c6d0ab153d8a4c139269deae51f4"
+      }
+    },
+    "registry.buildy.tw|templ|text": {
+      "name": "text",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/text.templ": "8749000d35dc17b6e8316b05d6e79fe6a2ee811d4ceebdda4ef9a0734d0a48f3"
+      }
+    },
+    "registry.buildy.tw|templ|textarea": {
+      "name": "textarea",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/textarea.templ": "684c9b9aa862f9e2811d8365ccd9646fa7b9c7de45287e23f6b2cdedc9bfe324"
+      }
+    },
+    "registry.buildy.tw|templ|timeline-simple": {
+      "name": "timeline-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/timeline-simple.templ": "bf93a645a9440a4de5004a29a756a8ecb5180118cda81c3237e7801fa4b5d0ab"
+      }
+    },
+    "registry.buildy.tw|templ|title": {
+      "name": "title",
+      "type": "registry:ui",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "compose/title.templ": "a77d13bc32cd972e48cdab8e3d4bc7e8c27b09c9a23b7ed55ca33d6a9a087171"
+      }
+    },
+    "registry.buildy.tw|templ|topics-simple": {
+      "name": "topics-simple",
+      "type": "registry:block",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "blocks/topics-simple.templ": "f0bd1d38d1972be5c042c1e1d7d273e545102e8eba040b8cc2e9c3ff7a343ac1"
+      }
+    },
+    "registry.buildy.tw|templ|utils": {
+      "name": "utils",
+      "type": "registry:utils",
+      "source": "https://registry.buildy.tw/templ",
+      "version": "0.1.0",
+      "runtime": "templ",
+      "files": {
+        "go.mod": "9cbfe019ea7d1c2479ea1b8ddebeadfb29fa01dae2f4b4b62bdb97c15fb9d543",
+        "go.sum": "522705c9e00606d3ae6e4ef5eafde21f079bcac8521ca86d5c14bba89eaedfe9",
+        "orgutils/cn_merge.go": "b442cf7fa2f792fec5bee0432336d124ff2a5eb5dc5db1fd08f234b006a46585",
+        "orgutils/dyn.go": "0de13d42cfdccc2c55cf068d4729e3fedff76c45abe8363d225605e72d6d6799",
+        "orgutils/expr.go": "6e5b7ddb22fd5a051ac2064f5d14740f6e7110f3b57151df3c83852ac3a66a4a",
+        "orgutils/heading.go": "f07d9704431ac6dfbc86a9c54d08abcd5556ead910b94bc3771c926000352677",
+        "orgutils/safe.go": "6dd0606ca97ed74ca748892ca7c68d093be724ef6deb60a520f0812644beb037",
+        "orgutils/tags.go": "193338a004b4c980e291cc9cb8272224ade438413f975ab1c6daed1c4dea4501",
+        "orgutils/utils.go": "981e00b150e784ac9747702a40be1a217e1aadfe7627f38bbc0fba559509742d",
+        "orgutils/variants_json.go": "3c7d4470074379084c398a8943b93c385efb6da8d8aed7d9e07af734c140f301",
+        "utils/cn_merge.go": "2761e3565f991314e133f670776bfd342eecf1da2c4b52f72f880e05d3e957b7",
+        "utils/expr.go": "7ba271048a998099aa7be5257b421efc6683e1502e6c08fb20d9914b9dca7fc0",
+        "utils/tags.go": "6008315e81150bb75b3b907ac412f048b38d2e4e548d240733a06b83369bf66a",
+        "utils/utils.go": "e0e5202725b3b2fb22fecae9c44ba25162fdbec26f0781ba1f403408addcd069",
+        "utils/variants_json.go": "0d0d1343368b25ff1a901b99c81e06908ade9babcf61fe17b6c685abfab251cd"
+      }
+    }
+  }
+}

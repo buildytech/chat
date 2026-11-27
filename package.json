@@ -27,6 +27,8 @@
     "snapshot": "node scripts/registry-snapshot.mjs",
     "snapshot:check": "node scripts/registry-snapshot.mjs --check",
     "snapshot:derive": "node scripts/registry-snapshot.mjs --derive",
+    "snapshot:templ": "node scripts/templ-snapshot.mjs",
+    "snapshot:templ:check": "node scripts/templ-snapshot.mjs --check",
     "schema:check": "node scripts/check-page-spec-schema.mjs",
     "icons:aliases": "node scripts/lucide-aliases.mjs",
     "icons:aliases:check": "node scripts/lucide-aliases.mjs --check",

@@ -1,0 +1,43 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+)
+
+// Hero is the home page opener.
+templ Hero(p HeroProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Tag: "section", Class: "border-b border-border bg-muted"}}) {
+		@c.Container(c.ContainerProps{BoxProps: box.BoxProps{Class: "mx-auto w-full max-w-6xl px-4 py-16 md:py-24"}}) {
+			@c.Stack(c.StackProps{Gap: "6", BoxProps: box.BoxProps{Class: "max-w-2xl"}}) {
+				if p.Eyebrow != "" {
+					@c.Badge(c.BadgeProps{Variant: "outline"}) {
+						{ p.Eyebrow }
+					}
+				}
+				@c.Title(c.TitleProps{As: "1", Size: "4xl", Weight: "bold", TextProps: text.TextProps{Class: "tracking-tight md:text-5xl"}}) {
+					{ p.Title }
+				}
+				if p.Lead != "" {
+					@c.Text(c.TextProps{Size: "lg", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+						{ p.Lead }
+					}
+				}
+				@c.Group(c.GroupProps{Gap: "4", BoxProps: box.BoxProps{Class: "flex-wrap"}}) {
+					if p.PrimaryHref != "" {
+						@c.LinkButton(c.LinkButtonProps{Size: "lg", LinkProps: link.LinkProps{Href: p.PrimaryHref}}) {
+							{ p.PrimaryLabel }
+						}
+					}
+					if p.SecondaryHref != "" {
+						@c.LinkButton(c.LinkButtonProps{Variant: "outline", Size: "lg", LinkProps: link.LinkProps{Href: p.SecondaryHref}}) {
+							{ p.SecondaryLabel }
+						}
+					}
+				}
+			}
+		}
+	}
+}

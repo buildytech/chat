@@ -1,0 +1,135 @@
+package screens
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/icons"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/button"
+	"github.com/ui8kit/codegen/generated/templ/ui/image"
+	"github.com/ui8kit/codegen/generated/templ/ui/input"
+	"github.com/ui8kit/codegen/generated/templ/ui/label"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+	"github.com/ui8kit/codegen/generated/templ/ui/textarea"
+
+	"github.com/fastygo/starter/internal/view"
+	"github.com/fastygo/starter/ui/blocks"
+)
+
+// Cart is the cart page data: the published, in-stock products (prices from
+// the database) and the order message words.
+type Cart struct {
+	Catalog view.Catalog
+	Subject string
+	Order   blocks.OrderPanelProps
+}
+
+// CartScreen is the cart and order request page in one. The cart lives in
+// the browser only (app.js, sessionStorage): the server renders the shell
+// and the catalog, never receives the cart or the buyer fields, and sets no
+// cookie. The page has exactly ONE contact button (the store card).
+templ CartScreen(p Page, cart Cart) {
+	@Layout(p) {
+		@Wrap("flex flex-col gap-8 py-12") {
+			@c.Stack(c.StackProps{Align: "stretch", Gap: "2"}) {
+				@c.Title(c.TitleProps{As: "1", Size: "4xl", Weight: "bold"}) {
+					{ p.T("order.title") }
+				}
+				@c.Text(c.TextProps{TextProps: text.TextProps{Class: "max-w-2xl text-muted-foreground"}}) {
+					{ p.T("order.lead") }
+				}
+			}
+			@templ.JSONScript("cart-catalog", cart.Catalog)
+			@c.Grid(c.GridProps{Cols: "1", BoxProps: box.BoxProps{Class: "gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]"}}) {
+				@c.Stack(c.StackProps{Align: "stretch", Gap: "6"}) {
+					@c.Text(c.TextProps{TextProps: text.TextProps{Class: "rounded bg-muted p-6 text-muted-foreground", Attrs: templ.Attributes{"data-js-hide": "true"}}}) {
+						{ p.T("cart.needs_js") }
+					}
+					@c.Box(c.BoxProps{BoxProps: box.BoxProps{Attrs: templ.Attributes{"hidden": "true", "data-cart-empty": "true"}}}) {
+						@blocks.EmptyState(blocks.EmptyStateProps{Icon: "shopping-cart", Title: p.T("cart.empty"), Text: p.T("cart.empty_text"), ActionLabel: p.T("cart.browse"), ActionHref: "/products"})
+					}
+					@c.Stack(c.StackProps{Align: "stretch", Gap: "6", BoxProps: box.BoxProps{Attrs: templ.Attributes{"hidden": "true", "data-cart-filled": "true"}}}) {
+						@cartLines(p)
+						@c.Card(c.CardProps{BoxProps: box.BoxProps{Class: "gap-4"}}) {
+							@c.Title(c.TitleProps{As: "2", Size: "lg", Weight: "semibold"}) {
+								{ p.T("order.step_details") }
+							}
+							@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "buyer-name"}}) {
+								{ p.T("order.name") }
+							}
+							@c.Input(c.InputProps{InputProps: input.InputProps{ID: "buyer-name", Attrs: templ.Attributes{"maxlength": "120", "autocomplete": "off", "data-order-field": "name"}}})
+							@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "buyer-contact"}}) {
+								{ p.T("order.reach") }
+							}
+							@c.Input(c.InputProps{InputProps: input.InputProps{ID: "buyer-contact", Attrs: templ.Attributes{"maxlength": "200", "autocomplete": "off", "data-order-field": "contact"}}})
+							@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "buyer-note"}}) {
+								{ p.T("order.note") }
+							}
+							@c.Textarea(c.TextareaProps{TextareaProps: textarea.TextareaProps{ID: "buyer-note", Rows: "3", Class: "h-auto py-2", Attrs: templ.Attributes{"maxlength": "1000", "data-order-field": "note"}}})
+							@c.Text(c.TextProps{Size: "xs", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+								{ p.T("order.not_stored") }
+							}
+						}
+						@blocks.OrderPanel(cart.Order)
+					}
+				}
+				@c.Stack(c.StackProps{Align: "stretch", Gap: "6", BoxProps: box.BoxProps{Class: "lg:sticky lg:top-8 lg:self-start"}}) {
+					@c.Card(c.CardProps{Variant: "muted", BoxProps: box.BoxProps{Class: "gap-4", Attrs: templ.Attributes{"hidden": "true", "data-cart-filled": "true"}}}) {
+						@c.Title(c.TitleProps{As: "2", Size: "lg", Weight: "semibold"}) {
+							{ p.T("order.summary") }
+						}
+						@c.Group(c.GroupProps{Justify: "between"}) {
+							@c.Text(c.TextProps{}) {
+								{ p.T("cart.total") }
+							}
+							@c.Text(c.TextProps{Size: "xl", Weight: "bold", TextProps: text.TextProps{Attrs: templ.Attributes{"data-cart-total": "true"}}}) {
+								{ "" }
+							}
+						}
+						@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+							{ p.T("cart.no_payment") }
+						}
+					}
+					@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+						{ p.T("order.step_send") }
+					}
+					@blocks.ContactCard(cartCard(p, cart))
+				}
+			}
+		}
+	}
+}
+
+// cartLines is the line list; app.js clones the hidden prototype row.
+templ cartLines(p Page) {
+	@c.List(c.ListProps{BoxProps: box.BoxProps{Class: "flex flex-col divide-y divide-border rounded bg-card inset-ring inset-ring-border", Attrs: templ.Attributes{"aria-label": p.T("cart.title"), "data-cart-lines": "true"}}}) {
+		@c.ListItem(c.ListItemProps{BoxProps: box.BoxProps{Class: "flex flex-wrap items-center gap-4 p-4", Attrs: templ.Attributes{"hidden": "true", "data-cart-proto": "true"}}}) {
+			@c.Image(c.ImageProps{Fit: "cover", ImageProps: image.ImageProps{Src: "", Alt: "", Width: "96", Height: "64", Class: "h-16 w-24 rounded bg-muted", Attrs: templ.Attributes{"data-line-image": "true"}}})
+			@c.Stack(c.StackProps{Align: "stretch", Gap: "0", BoxProps: box.BoxProps{Class: "min-w-0 flex-1"}}) {
+				@c.Link(c.LinkProps{Variant: "nav", Size: "sm", LinkProps: link.LinkProps{Href: "/products", Attrs: templ.Attributes{"data-line-title": "true"}}}) {
+					{ "" }
+				}
+				@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "text-muted-foreground", Attrs: templ.Attributes{"data-line-price": "true"}}}) {
+					{ "" }
+				}
+			}
+			@c.Label(c.LabelProps{LabelProps: label.LabelProps{Class: "sr-only", Attrs: templ.Attributes{"data-line-qty-label": "true"}}}) {
+				{ p.T("cart.qty") }
+			}
+			@c.Input(c.InputProps{Size: "sm", InputProps: input.InputProps{Type: "number", Min: "0", Max: "99", Class: "w-20", Attrs: templ.Attributes{"data-line-qty": "true"}}})
+			@c.Text(c.TextProps{Weight: "semibold", TextProps: text.TextProps{Class: "w-24 text-right", Attrs: templ.Attributes{"data-line-total": "true"}}}) {
+				{ "" }
+			}
+			@c.Button(c.ButtonProps{Variant: "ghost", Size: "sm", ButtonProps: button.ButtonProps{Type: "button", AriaLabel: p.T("cart.remove"), Attrs: templ.Attributes{"data-line-remove": "true"}}}) {
+				@icons.LucideIcon(icons.LucideIconProps{Name: "trash"})
+			}
+		}
+	}
+}
+
+func cartCard(p Page, cart Cart) blocks.ContactCardProps {
+	cp := p.contactCard()
+	cp.ButtonID = "contact-button"
+	cp.Subject = cart.Subject
+	return cp
+}

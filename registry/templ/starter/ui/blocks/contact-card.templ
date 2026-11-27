@@ -1,0 +1,60 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/icons"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+)
+
+func contactAttrs(p ContactCardProps) templ.Attributes {
+	a := templ.Attributes{"data-contact": "true"}
+	if p.ButtonID != "" {
+		a["id"] = p.ButtonID
+	}
+	if p.Prefill != "" {
+		a["data-prefill"] = p.Prefill
+	}
+	if p.Subject != "" {
+		a["data-subject"] = p.Subject
+	}
+	return a
+}
+
+// ContactCard is the store card: brand, about and the ONE contact button
+// (link, text, variant, size and new-window flag set in the cabinet). Never
+// add a second button here or next to it; the owner wants the seller to
+// pick one real channel. A new window always gets rel="noopener noreferrer".
+templ ContactCard(p ContactCardProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Tag: "aside", Class: "flex flex-col gap-4 rounded bg-card p-6 inset-ring inset-ring-border", Attrs: templ.Attributes{"aria-label": p.Title}}}) {
+		@c.Group(c.GroupProps{Gap: "2"}) {
+			@icons.LucideIcon(icons.LucideIconProps{Name: "store", Size: 20})
+			@c.Title(c.TitleProps{As: "2", Size: "lg", Weight: "semibold"}) {
+				{ p.Title }
+			}
+		}
+		@c.Stack(c.StackProps{Gap: "2"}) {
+			@c.Text(c.TextProps{Weight: "semibold"}) {
+				{ p.Brand }
+			}
+			if p.About != "" {
+				@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+					{ p.About }
+				}
+			}
+		}
+		if p.Href != "" {
+			@c.LinkButton(c.LinkButtonProps{Variant: p.Variant, Size: p.Size, LinkProps: link.LinkProps{Href: p.Href, External: p.NewWindow, Class: "w-full", Attrs: contactAttrs(p)}}) {
+				@icons.LucideIcon(icons.LucideIconProps{Name: "send"})
+				@c.Inline(c.InlineProps{TextProps: text.TextProps{Class: "ml-2"}}) {
+					{ p.ButtonLabel }
+				}
+			}
+		} else {
+			@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "rounded bg-muted p-4 text-muted-foreground"}}) {
+				{ p.EmptyText }
+			}
+		}
+	}
+}

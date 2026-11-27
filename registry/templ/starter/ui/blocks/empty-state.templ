@@ -1,0 +1,29 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/icons"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+)
+
+// EmptyState is a centered message with one action.
+templ EmptyState(p EmptyStateProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Tag: "section", Class: "flex flex-col items-center gap-4 rounded bg-muted px-6 py-16 text-center"}}) {
+		@icons.LucideIcon(icons.LucideIconProps{Name: p.Icon, Size: 40, Class: "text-muted-foreground"})
+		@c.Title(c.TitleProps{As: "2", Size: "xl", Weight: "semibold"}) {
+			{ p.Title }
+		}
+		if p.Text != "" {
+			@c.Text(c.TextProps{TextProps: text.TextProps{Class: "max-w-md text-muted-foreground"}}) {
+				{ p.Text }
+			}
+		}
+		if p.ActionHref != "" {
+			@c.LinkButton(c.LinkButtonProps{LinkProps: link.LinkProps{Href: p.ActionHref}}) {
+				{ p.ActionLabel }
+			}
+		}
+	}
+}

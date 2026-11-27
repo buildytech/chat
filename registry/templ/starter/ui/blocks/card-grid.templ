@@ -1,0 +1,44 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+)
+
+func cols(v string) string {
+	if v == "" {
+		return "3"
+	}
+	return v
+}
+
+// CardGrid lists cards; each card is the ItemCard block (own file).
+templ CardGrid(p CardGridProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Tag: "section", Attrs: templ.Attributes{"aria-label": p.Label}}}) {
+		if len(p.Cards) == 0 {
+			@c.Text(c.TextProps{TextProps: text.TextProps{Class: "rounded bg-muted p-8 text-center text-muted-foreground"}}) {
+				{ p.EmptyText }
+			}
+		} else {
+			@c.Grid(c.GridProps{Cols: "1", BoxProps: box.BoxProps{Tag: "ul", Class: gridCols(cols(p.Cols))}}) {
+				for _, card := range p.Cards {
+					@c.ListItem(c.ListItemProps{BoxProps: box.BoxProps{Class: "flex"}}) {
+						@ItemCard(card, p.NoImage)
+					}
+				}
+			}
+		}
+	}
+}
+
+func gridCols(n string) string {
+	switch n {
+	case "2":
+		return "gap-6 sm:grid-cols-2"
+	case "4":
+		return "gap-6 sm:grid-cols-2 lg:grid-cols-4"
+	default:
+		return "gap-6 sm:grid-cols-2 lg:grid-cols-3"
+	}
+}

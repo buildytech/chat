@@ -7,6 +7,13 @@
 		"blocks": ["hero-simple", "intro-simple", "gallery-hero", "split-simple", "features-simple", "stats-simple", "testimonials-simple", "logos-simple", "team-simple", "photos-simple", "stories-simple", "faq-simple", "steps-simple", "feature-showcase-simple", "header-simple", "footer-simple", "event-intro", "profile-intro", "rating-simple", "error-simple", "figure-simple", "pull-quote-simple", "article-simple", "article-lead", "topics-simple", "chapters-simple", "pricing-simple", "contacts-simple", "locations-simple", "offers-simple", "products-simple", "product-simple", "collections-simple", "specs-simple", "compare-simple", "course-outline", "choice-links", "purchase-simple", "store-policies", "product-reviews", "menu-simple", "cta-simple", "promo-simple", "hours-simple", "rooms-simple", "guarantees-simple", "services-simple", "cases-simple", "timeline-simple", "amenities-simple", "delivery-simple", "digital-simple"],
 		"components": ["field"]
 	},
+	"templ": {
+		"$comment": "Go templ export (scripts/templ-snapshot.mjs): fastygo/starter at the pinned commit, the chat's overlay (catalog/templ/overlay, scripts/lib/templ-overlay.mjs), every catalog block added with the pinned CLI into ui/kit from the templ registry, generated with the starter's templ and its stylesheet built with the pinned Tailwind CLI.",
+		"starter": { "repo": "fastygo/starter", "commit": "cf9d7dbf944c2fc395625e19d7cd3a104d0e667c" },
+		"registry": "https://registry.buildy.tw/templ",
+		"tailwind": { "version": "v4.3.3", "linuxX64Sha256": "dc61b3ac6b8c9ca874c0cc4c57b2409791a64c5540404ca5f5367360babc313a" },
+		"exclude": [".github/", "bin/", "pb_data/", "vendor/", "tmp/", "internal/page/page.json", "internal/page/sections_gen.go"]
+	},
 	"prototypes": {
 		"repo": "ui8kit/prototypes",
 		"commit": "8748fcb3b6df5767e10e8cb8ad937ad7ddf80cab",

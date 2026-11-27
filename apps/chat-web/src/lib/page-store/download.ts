@@ -8,6 +8,8 @@
 import type { CreatorPage } from "./page.ts";
 import { buildStoreZip, packZipFiles, type PackOptions, type RegistryReader } from "./pack.ts";
 import { imageExtension, localizeImages, type ImageEncode, type ImageFetch, type LocalImages } from "./pack-images.ts";
+import type { TemplPreset, TemplSnapshot } from "./templ-code.ts";
+import type { StarterReader } from "./templ-pack.ts";
 
 /** Largest picture the export keeps (bytes); a larger one stays remote. */
 const MAX_IMAGE_BYTES = 8_000_000;
@@ -58,15 +60,52 @@ const readSnapshot: RegistryReader = async (paths) => {
 	return out;
 };
 
+const TEMPL_ROOT = "registry/templ/starter/";
+
+/** Data URL (Vite `?inline`) -> bytes. */
+function dataUrlBytes(url: string): Uint8Array {
+	const binary = atob(url.slice(url.indexOf(",") + 1));
+	return Uint8Array.from(binary, (ch) => ch.charCodeAt(0));
+}
+
+/** The pinned Go templ starter (registry/templ/starter): text files raw, fonts as bytes; separate chunks, loaded on export. */
+const readStarter: StarterReader = async (paths) => {
+	const texts = import.meta.glob<string>(["../../../../../registry/templ/starter/**/*", "../../../../../registry/templ/starter/**/.*", "../../../../../registry/templ/starter/.cursor/**/*", "!**/*.woff2"], { query: "?raw", import: "default" });
+	const fonts = import.meta.glob<string>("../../../../../registry/templ/starter/**/*.woff2", { query: "?inline", import: "default" });
+	const at = (key: string) => key.slice(key.indexOf(TEMPL_ROOT) + TEMPL_ROOT.length);
+	const byPath = new Map<string, () => Promise<string | Uint8Array>>([
+		...Object.entries(texts).map(([key, load]) => [at(key), load] as const),
+		...Object.entries(fonts).map(([key, load]) => [at(key), async () => dataUrlBytes(await load())] as const)
+	]);
+	const out: Record<string, string | Uint8Array> = {};
+	await Promise.all(
+		paths.map(async (path) => {
+			const load = byPath.get(path);
+			if (load) out[path] = await load();
+		})
+	);
+	return out;
+};
+
+/** What the ZIP holds: the Svelte project, or the Go templ starter with one of its presets. */
+export type ExportChoice = { framework: "svelte" } | { framework: "templ"; preset: TemplPreset };
+
+async function packFor(page: CreatorPage, options: PackOptions, choice: ExportChoice) {
+	if (choice.framework === "svelte") return packZipFiles(page, readSnapshot, options);
+	const [{ packTemplZipFiles }, snapshot] = await Promise.all([import("./templ-pack.ts"), import("../../../../../registry/templ/snapshot.json")]);
+	const pins: TemplSnapshot = snapshot.default;
+	return packTemplZipFiles(page, pins, readStarter, readSnapshot, { ...options, preset: choice.preset });
+}
+
 /** A module's save of the archive: `saved`, `cancelled` by the person (nothing else happens), or a throw (the browser downloads it). */
 export type ZipSaver = { available: (size: number) => boolean; save: (bytes: Uint8Array, name: string) => Promise<"saved" | "cancelled"> };
 
 /** Builds and saves the ZIP (pictures encoded by `encode` when a module offers one, ADR 0062; saved by `saver` when it can); answers the pictures report, or null outside a browser. */
-export async function downloadPageZip(page: CreatorPage, options: PackOptions = {}, imageSources: readonly ImageSource[] = [], encode?: ImageEncode, saver?: ZipSaver): Promise<LocalImages | null> {
+export async function downloadPageZip(page: CreatorPage, options: PackOptions = {}, imageSources: readonly ImageSource[] = [], encode?: ImageEncode, saver?: ZipSaver, choice: ExportChoice = { framework: "svelte" }): Promise<LocalImages | null> {
 	if (typeof document === "undefined") return null;
 	const images = await localizeImages(page, chain(imageSources), encode);
-	const bytes = buildStoreZip(await packZipFiles(page, readSnapshot, { ...options, images }));
-	const name = `${page.slug || "page"}-pack.zip`;
+	const bytes = buildStoreZip(await packFor(page, { ...options, images }, choice));
+	const name = `${page.slug || "page"}-${choice.framework === "templ" ? `templ-${choice.preset}` : "pack"}.zip`;
 	if (saver?.available(bytes.byteLength)) {
 		const outcome = await saver.save(bytes, name).catch(() => null);
 		if (outcome) return images;

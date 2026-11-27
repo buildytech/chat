@@ -1,0 +1,69 @@
+package blocks
+
+import (
+	"strconv"
+
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/checkbox"
+	"github.com/ui8kit/codegen/generated/templ/ui/image"
+	"github.com/ui8kit/codegen/generated/templ/ui/input"
+	"github.com/ui8kit/codegen/generated/templ/ui/label"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+	"github.com/ui8kit/codegen/generated/templ/ui/textarea"
+)
+
+func fieldID(name string) string { return "f-" + name }
+
+func maxAttr(n int) templ.Attributes {
+	if n <= 0 {
+		return templ.Attributes{}
+	}
+	return templ.Attributes{"maxlength": strconv.Itoa(n)}
+}
+
+func strPtr(s string) *string { return &s }
+
+func one() *string { v := "1"; return &v }
+
+// FormField renders one generated cabinet input by kind.
+templ FormField(p FormFieldProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Class: "flex flex-col gap-2"}}) {
+		switch p.Field.Kind {
+			case "bool":
+				@c.Group(c.GroupProps{Gap: "2"}) {
+					@c.Checkbox(c.CheckboxProps{CheckboxProps: checkbox.CheckboxProps{ID: fieldID(p.Field.Name), Name: p.Field.Name, Value: one(), Checked: p.Field.Checked}})
+					@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: fieldID(p.Field.Name)}}) {
+						{ p.Field.Label }
+					}
+				}
+			default:
+				@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: fieldID(p.Field.Name)}}) {
+					{ p.Field.Label }
+				}
+				switch p.Field.Kind {
+					case "textarea":
+						@c.Textarea(c.TextareaProps{TextareaProps: textarea.TextareaProps{ID: fieldID(p.Field.Name), Name: p.Field.Name, Value: p.Field.Value, Rows: "3", Required: p.Field.Required, Class: "h-auto py-2", Attrs: maxAttr(p.Field.Max)}})
+					case "markdown":
+						@c.Textarea(c.TextareaProps{TextareaProps: textarea.TextareaProps{ID: fieldID(p.Field.Name), Name: p.Field.Name, Value: p.Field.Value, Rows: "16", Required: p.Field.Required, Class: "h-auto py-2 font-mono text-sm", Attrs: maxAttr(p.Field.Max)}})
+					case "image":
+						if p.Field.ImageSrc != "" {
+							@c.Image(c.ImageProps{Aspect: "video", Fit: "cover", ImageProps: image.ImageProps{Src: p.Field.ImageSrc, Alt: p.ImageAlt, Class: "w-full max-w-sm rounded bg-muted"}})
+						}
+						@c.Input(c.InputProps{InputProps: input.InputProps{Type: "file", ID: fieldID(p.Field.Name), Name: p.Field.Name, Class: "py-2", Attrs: templ.Attributes{"accept": "image/webp,image/jpeg,image/png,image/gif"}}})
+						@c.Text(c.TextProps{Size: "xs", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+							{ p.KeepImageMsg }
+						}
+					case "number", "money":
+						@c.Input(c.InputProps{InputProps: input.InputProps{Type: "text", ID: fieldID(p.Field.Name), Name: p.Field.Name, Value: strPtr(p.Field.Value), Required: p.Field.Required, Attrs: templ.Attributes{"inputmode": "decimal"}}})
+					default:
+						@c.Input(c.InputProps{InputProps: input.InputProps{Type: "text", ID: fieldID(p.Field.Name), Name: p.Field.Name, Value: strPtr(p.Field.Value), Required: p.Field.Required, Attrs: maxAttr(p.Field.Max)}})
+				}
+				if p.Field.Help != "" {
+					@c.Text(c.TextProps{Size: "xs", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+						{ p.Field.Help }
+					}
+				}
+		}
+	}
+}

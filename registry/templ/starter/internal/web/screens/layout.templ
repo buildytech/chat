@@ -1,0 +1,63 @@
+package screens
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+
+	"github.com/fastygo/starter/internal/web/static"
+	"github.com/fastygo/starter/ui/blocks"
+)
+
+// Layout is the document shell. html, head and body have no UI8Kit
+// primitive (recorded exception, as in ui8kit/site and fastygo/market);
+// everything inside body is primitives. Scripts carry the CSP nonce.
+templ Layout(p Page) {
+	<!DOCTYPE html>
+	<html lang={ p.lang() }>
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>{ p.pageTitle() }</title>
+			if p.description() != "" {
+				<meta name="description" content={ p.description() }/>
+			}
+			if p.NoIndex {
+				<meta name="robots" content="noindex, nofollow"/>
+			}
+			<meta property="og:site_name" content={ p.Site.Brand }/>
+			<meta property="og:title" content={ p.pageTitle() }/>
+			<meta property="og:type" content="website"/>
+			if p.Canonical != "" {
+				<link rel="canonical" href={ p.Canonical }/>
+				<meta property="og:url" content={ p.Canonical }/>
+			}
+			if p.OGImage != "" {
+				<meta property="og:image" content={ p.OGImage }/>
+			}
+			<link rel="icon" href={ static.Path("favicon.svg") } type="image/svg+xml"/>
+			<link rel="preload" href="/static/fonts/istok-web-400-latin.woff2" as="font" type="font/woff2" crossorigin="anonymous"/>
+			<link rel="stylesheet" href={ static.Path("app.css") }/>
+			<script nonce={ p.Nonce } src={ static.Path("app.js") } defer></script>
+		</head>
+		<body class="min-h-screen bg-background font-sans text-foreground antialiased">
+			@c.Box(c.BoxProps{BoxProps: box.BoxProps{Class: "flex min-h-screen flex-col"}}) {
+				@c.Link(c.LinkProps{LinkProps: link.LinkProps{Href: "#main", Class: "sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-card focus:px-4 focus:py-2"}}) {
+					{ p.T("nav.skip") }
+				}
+				@blocks.SiteHeader(p.header())
+				@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "main", Class: "flex-1 outline-none", Attrs: templ.Attributes{"id": "main", "tabindex": "-1"}}}) {
+					{ children... }
+				}
+				@blocks.SiteFooter(p.footer())
+			}
+		</body>
+	</html>
+}
+
+// Wrap is the page container.
+templ Wrap(class string) {
+	@c.Container(c.ContainerProps{BoxProps: box.BoxProps{Class: "mx-auto w-full max-w-6xl px-4 " + class}}) {
+		{ children... }
+	}
+}

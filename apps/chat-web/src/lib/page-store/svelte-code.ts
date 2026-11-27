@@ -52,7 +52,7 @@ function schemasAt(root: Schema, schema: unknown, segments: readonly string[]): 
 }
 
 /** `image` -> `imageSrcset` where the block's published props schema has it next to `image` (ADR 0062). */
-function srcsetKeysOf(item: string): SrcsetKeyOf {
+export function srcsetKeysOf(item: string): SrcsetKeyOf {
 	const root = propsSchemaFor(item);
 	return (pointer, key) => {
 		if (!root || key !== "image") return null;

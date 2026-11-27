@@ -1,0 +1,43 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+)
+
+// RecordTable lists records of a cabinet section; rows are RecordRow.
+templ RecordTable(p RecordTableProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Class: "overflow-x-auto rounded bg-card inset-ring inset-ring-border"}}) {
+		if len(p.Rows) == 0 {
+			@c.Text(c.TextProps{TextProps: text.TextProps{Class: "p-8 text-center text-muted-foreground"}}) {
+				{ p.EmptyText }
+			}
+		} else {
+			@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "table", Class: "w-full text-sm"}}) {
+				@c.Text(c.TextProps{TextProps: text.TextProps{Tag: "caption", Class: "sr-only"}}) {
+					{ p.Caption }
+				}
+				@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "thead", Class: "border-b border-border text-left text-muted-foreground"}}) {
+					@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "tr"}}) {
+						@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "th", Class: "px-4 py-2 font-semibold", Attrs: templ.Attributes{"scope": "col"}}}) {
+							{ p.TitleHead }
+						}
+						@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "th", Class: "px-4 py-2 font-semibold", Attrs: templ.Attributes{"scope": "col"}}}) {
+							{ p.StatusHead }
+						}
+						@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "th", Class: "hidden px-4 py-2 font-semibold sm:table-cell", Attrs: templ.Attributes{"scope": "col"}}}) {
+							{ p.DateHead }
+						}
+						@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "th", Class: "px-4 py-2", Attrs: templ.Attributes{"scope": "col"}}})
+					}
+				}
+				@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "tbody"}}) {
+					for _, r := range p.Rows {
+						@RecordRow(r, p)
+					}
+				}
+			}
+		}
+	}
+}

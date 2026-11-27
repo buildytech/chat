@@ -12,7 +12,9 @@ export type PackFile = {
 };
 /** A binary file of the exported project (a downloaded picture). */
 type PackAsset = { path: string; bytes: Uint8Array };
-export type PackEntry = PackFile | PackAsset;
+/** A file the project runs (a shell script): unix mode 0755 in the ZIP. Absent: no mode, as every Svelte file. */
+type PackExecutable = PackFile & { executable: true };
+export type PackEntry = PackFile | PackAsset | PackExecutable;
 
 function crcTable(): Uint32Array {
 	const table = new Uint32Array(256);
@@ -86,9 +88,10 @@ export function buildStoreZip(files: readonly PackEntry[]): Uint8Array {
 			name,
 			data
 		]);
+		const unix = "executable" in file && file.executable === true;
 		const central = concat([
 			u32(0x02014b50),
-			u16(20),
+			u16(unix ? 0x0314 : 20),
 			u16(20),
 			u16(utf8Flag),
 			u16(0),
@@ -102,7 +105,7 @@ export function buildStoreZip(files: readonly PackEntry[]): Uint8Array {
 			u16(0),
 			u16(0),
 			u16(0),
-			u32(0),
+			u32(unix ? 0o100755 * 0x10000 : 0),
 			u32(offset),
 			name
 		]);
@@ -127,7 +130,7 @@ export function buildStoreZip(files: readonly PackEntry[]): Uint8Array {
 }
 
 /** Sync SHA-256 (UTF-8) for GENERATOR.json — pure JS, browser + Node. */
-function sha256Text(s: string): string {
+export function sha256Text(s: string): string {
 	const bytes = new TextEncoder().encode(s);
 	return sha256Hex(bytes);
 }
@@ -194,8 +197,13 @@ export type PackOptions = { skin?: string | null; theme?: ThemeConfig | null; im
 /** `vite/client` types for the picture imports of the sections (only when the export carries pictures). */
 const VITE_ENV = { path: "src/vite-env.d.ts", content: '/// <reference types="vite/client" />\n' };
 
+/** The pack format of manifest.json and GENERATOR.json (both exports; `framework` names which one). */
+export const PACK_FORMAT = { format: "buildy.pack.v1", schemaVersion: 1 } as const;
+
 function generatorOf(page: CreatorPage, skin: string | null) {
 	return {
+		...PACK_FORMAT,
+		framework: "svelte",
 		name: "@buildytech/chat-web/svelte-pack",
 		emitter: "svelteFromPage",
 		packApi: "packFilesFromPage",
@@ -230,6 +238,8 @@ export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}):
 	const paths = [...files.map((file) => file.path), ...(images?.local ?? []).flatMap((image) => imageFiles(image).map((file) => file.path)), CLI_CONFIG, CLI_LOCK, ...registryPathsOf(valid, skin), "manifest.json"];
 	const pictures = imagesManifest(images);
 	const manifest = {
+		...PACK_FORMAT,
+		framework: "svelte",
 		id: valid.id,
 		slug: valid.slug,
 		title: valid.title,

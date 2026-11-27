@@ -218,24 +218,53 @@ export function propsWithImports(props: Record<string, unknown>, images: LocalIm
 	return { props: swapRecord(props, ""), code, imports: [...imports.values()] };
 }
 
+/**
+ * A block's props for a server-rendered export (Go templ): each local picture becomes `urlOf(path)` (with the sizes as a
+ * srcset where the block takes one) and a picture that stayed remote becomes "" (the block draws its placeholder: the
+ * site's CSP serves pictures from itself only; manifest.json `images.remote` lists them).
+ */
+export function propsWithUrls(props: Record<string, unknown>, images: LocalImages | null, urlOf: (path: string) => string, srcsetKeyOf: SrcsetKeyOf = () => null): Record<string, unknown> {
+	const byUrl = new Map((images?.local ?? []).map((image) => [image.url, image]));
+	const swapRecord = (record: Record<string, unknown>, pointer: string): Record<string, unknown> => {
+		const out: Record<string, unknown> = {};
+		for (const [key, value] of Object.entries(record)) {
+			const at = `${pointer}/${escapePointer(key)}`;
+			if (!IMAGE_KEYS.has(key) || !isRemoteImage(value)) {
+				out[key] = swap(value, at);
+				continue;
+			}
+			const local = byUrl.get(value.trim());
+			out[key] = local ? urlOf(local.path) : "";
+			const srcsetKey = local && local.variants.length > 1 ? srcsetKeyOf(pointer, key) : null;
+			if (local && srcsetKey && !(srcsetKey in record)) out[srcsetKey] = local.variants.map((v) => `${urlOf(v.path)} ${v.width}w`).join(", ");
+		}
+		return out;
+	};
+	const swap = (value: unknown, pointer: string): unknown => {
+		if (Array.isArray(value)) return value.map((entry, index) => swap(entry, `${pointer}/${index}`));
+		return isRecord(value) ? swapRecord(value, pointer) : value;
+	};
+	return swapRecord(props, "");
+}
+
 /** The `images` entry of manifest.json: where each picture went (original and sizes in bytes), what stayed remote and why, the savings. */
-export function imagesManifest(images: LocalImages | null): Record<string, unknown> | null {
+export function imagesManifest(images: LocalImages | null, pathOf: (path: string) => string = (path) => path, dir = IMAGES_DIR): Record<string, unknown> | null {
 	if (!images || (!images.local.length && !images.remote.length)) return null;
 	const where = (refs: ImageRef[]) => refs.map((ref) => `${ref.blockId}${ref.pointer}`);
 	const originalBytes = images.local.reduce((sum, image) => sum + image.original.bytes, 0);
 	const writtenBytes = images.local.reduce((sum, image) => sum + imageFiles(image).reduce((n, file) => n + file.bytes.length, 0), 0);
 	const filters = images.local.find((image) => image.filters)?.filters;
 	return {
-		dir: IMAGES_DIR,
+		dir,
 		...(filters ? { filters } : {}),
 		totals: { pictures: images.local.length, originalBytes, writtenBytes, savedBytes: originalBytes - writtenBytes, savedPercent: originalBytes ? Math.round((1 - writtenBytes / originalBytes) * 1000) / 10 : 0 },
 		local: images.local.map((image) => ({
-			path: image.path,
+			path: pathOf(image.path),
 			source: image.url,
 			usedBy: where(image.refs),
 			original: image.original,
 			...(image.variants.length
-				? { variants: image.variants.map((v) => ({ path: v.path, width: v.width, height: v.height, bytes: v.bytes.length, ...(v.quality ? { quality: v.quality } : {}), ...(v.sharpen ? { sharpen: v.sharpen } : {}) })) }
+				? { variants: image.variants.map((v) => ({ path: pathOf(v.path), width: v.width, height: v.height, bytes: v.bytes.length, ...(v.quality ? { quality: v.quality } : {}), ...(v.sharpen ? { sharpen: v.sharpen } : {}) })) }
 				: { kept: "original", ...(image.encodeError ? { encodeError: image.encodeError } : {}) })
 		})),
 		remote: images.remote.map((image) => ({ source: image.url, reason: image.reason, usedBy: where(image.refs) }))

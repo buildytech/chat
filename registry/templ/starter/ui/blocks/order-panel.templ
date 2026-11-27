@@ -1,0 +1,38 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/icons"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/button"
+	"github.com/ui8kit/codegen/generated/templ/ui/label"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+	"github.com/ui8kit/codegen/generated/templ/ui/textarea"
+)
+
+// OrderPanel shows the order request message and the Copy button. app.js
+// builds the text in the browser from the cart and the buyer fields; the
+// data-msg-* attributes carry the dictionary words of the message.
+templ OrderPanel(p OrderPanelProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Tag: "section", Class: "flex flex-col gap-4 rounded bg-card p-6 inset-ring inset-ring-border", Attrs: templ.Attributes{"aria-labelledby": "order-message-title"}}}) {
+		@c.Title(c.TitleProps{As: "2", Size: "lg", Weight: "semibold", TextProps: text.TextProps{Attrs: templ.Attributes{"id": "order-message-title"}}}) {
+			{ p.Title }
+		}
+		@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+			{ p.Help }
+		}
+		@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "order-message", Class: "sr-only"}}) {
+			{ p.FieldLabel }
+		}
+		@c.Textarea(c.TextareaProps{TextareaProps: textarea.TextareaProps{ID: "order-message", Name: "message", Rows: "12", ReadOnly: true, Class: "h-auto py-2 font-mono text-sm", Attrs: templ.Attributes{
+			"data-msg-greeting": p.Greeting, "data-msg-items": p.Items, "data-msg-total": p.Total,
+			"data-msg-name": p.Name, "data-msg-contact": p.Contact, "data-msg-note": p.Note,
+		}}})
+		@c.Button(c.ButtonProps{Variant: "secondary", ButtonProps: button.ButtonProps{Type: "button", Attrs: templ.Attributes{"id": "copy-order", "data-copied": p.CopiedLabel}}}) {
+			@icons.LucideIcon(icons.LucideIconProps{Name: "copy"})
+			@c.Inline(c.InlineProps{TextProps: text.TextProps{Class: "ml-2", Attrs: templ.Attributes{"data-copy-label": "true"}}}) {
+				{ p.CopyLabel }
+			}
+		}
+	}
+}

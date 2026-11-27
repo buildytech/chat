@@ -1,0 +1,42 @@
+# /etc/systemd/system/site.service
+[Unit]
+Description=Site (PocketBase + templ)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=site
+Group=site
+# privacy default; the env file may override it only by a deliberate opt-in (PRIVACY.md)
+Environment=SITE_ACCESS_LOG=off
+EnvironmentFile=/etc/site/site.env
+# no per-request lines from this unit reach journald beyond info level
+LogLevelMax=info
+WorkingDirectory=/var/lib/site
+ExecStart=/usr/local/bin/site serve --http 127.0.0.1:8090
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=4096
+
+# hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+AmbientCapabilities=
+ReadWritePaths=/var/lib/site
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

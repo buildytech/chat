@@ -14,6 +14,10 @@ description = "reviewed 2026-11-20: content hashes (sha256 of pinned files, e.g.
 paths = ['''registry/snapshot\.json''']
 
 [[allowlists]]
+description = "reviewed 2026-11-27: content hashes (sha256 of the pinned fastygo/starter files, e.g. the key \"internal/auth/auth.go\") of the templ snapshot, not credentials"
+paths = ['''registry/templ/snapshot\.json''']
+
+[[allowlists]]
 description = "reviewed 2026-11-14: a fake canary key that the logs-without-secrets test plants to prove it never reaches a log"
 paths = ['''scripts/m4-api-tests/logs-secrets\.test\.ts''']
 

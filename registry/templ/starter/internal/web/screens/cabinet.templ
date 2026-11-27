@@ -1,0 +1,273 @@
+package screens
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/icons"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/button"
+	"github.com/ui8kit/codegen/generated/templ/ui/checkbox"
+	"github.com/ui8kit/codegen/generated/templ/ui/form"
+	"github.com/ui8kit/codegen/generated/templ/ui/input"
+	"github.com/ui8kit/codegen/generated/templ/ui/label"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	selectfield "github.com/ui8kit/codegen/generated/templ/ui/select"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+	"github.com/ui8kit/codegen/generated/templ/ui/textarea"
+
+	"github.com/fastygo/starter/internal/view"
+	"github.com/fastygo/starter/ui/blocks"
+)
+
+// LoginScreen is the cabinet sign-in (email + password, rate limited).
+templ LoginScreen(p Page, l Login) {
+	@Layout(p) {
+		@Wrap("flex justify-center py-16") {
+			@c.Card(c.CardProps{BoxProps: box.BoxProps{Class: "w-full max-w-sm gap-6"}}) {
+				@c.Stack(c.StackProps{Align: "stretch", Gap: "2"}) {
+					@c.Title(c.TitleProps{As: "1", Size: "2xl", Weight: "bold"}) {
+						{ p.T("login.title") }
+					}
+					@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+						{ p.T("login.lead") }
+					}
+				}
+				@form.Form(form.FormProps{Method: "post", Action: "/cabinet/login", Class: "flex flex-col gap-4"}) {
+					if l.Error != "" {
+						@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "rounded bg-destructive/10 p-4 text-destructive", Attrs: templ.Attributes{"role": "alert"}}}) {
+							{ l.Error }
+						}
+					}
+					@input.Input(input.InputProps{Type: "hidden", Name: "next", Value: strPtr(l.Next)})
+					@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "email"}}) {
+						{ p.T("login.email") }
+					}
+					@c.Input(c.InputProps{InputProps: input.InputProps{Type: "email", ID: "email", Name: "email", Value: strPtr(l.Email), Required: true, Attrs: templ.Attributes{"autocomplete": "username"}}})
+					@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "password"}}) {
+						{ p.T("login.password") }
+					}
+					@c.Input(c.InputProps{InputProps: input.InputProps{Type: "password", ID: "password", Name: "password", Required: true, Attrs: templ.Attributes{"autocomplete": "current-password"}}})
+					@c.Button(c.ButtonProps{Size: "lg", ButtonProps: button.ButtonProps{Type: "submit"}}) {
+						{ p.T("login.submit") }
+					}
+				}
+				@c.Text(c.TextProps{Size: "xs", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+					{ p.T("login.no_signup") }
+				}
+			}
+		}
+	}
+}
+
+// CabinetShell is the cabinet frame: sidebar + content + sign-out.
+templ CabinetShell(p Page) {
+	@Layout(p) {
+		@Wrap("py-8") {
+			@c.Grid(c.GridProps{Cols: "1", BoxProps: box.BoxProps{Class: "gap-8 md:grid-cols-[14rem_minmax(0,1fr)]"}}) {
+				@c.Stack(c.StackProps{Align: "stretch", Gap: "4"}) {
+					@blocks.CabinetNav(blocks.CabinetNavProps{Label: p.T("cabinet.nav"), Items: p.CabinetNav})
+					if p.User != nil {
+						@c.Stack(c.StackProps{Align: "stretch", Gap: "2", BoxProps: box.BoxProps{Class: "px-2 text-sm"}}) {
+							@c.Text(c.TextProps{Size: "xs", TextProps: text.TextProps{Class: "truncate text-muted-foreground"}}) {
+								{ p.User.Email + " (" + p.T("role."+p.User.Role) + ")" }
+							}
+							@form.Form(form.FormProps{Method: "post", Action: "/cabinet/logout"}) {
+								@c.Button(c.ButtonProps{Variant: "outline", Size: "sm", ButtonProps: button.ButtonProps{Type: "submit"}}) {
+									@icons.LucideIcon(icons.LucideIconProps{Name: "log-out"})
+									@c.Inline(c.InlineProps{TextProps: text.TextProps{Class: "ml-2"}}) {
+										{ p.T("cabinet.logout") }
+									}
+								}
+							}
+						}
+					}
+				}
+				@c.Stack(c.StackProps{Align: "stretch", Gap: "6", BoxProps: box.BoxProps{Tag: "section", Class: "min-w-0"}}) {
+					if p.Flash != "" {
+						@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "rounded bg-muted p-4", Attrs: templ.Attributes{"role": "status"}}}) {
+							{ p.Flash }
+						}
+					}
+					if p.Error != "" {
+						@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "rounded bg-destructive/10 p-4 text-destructive", Attrs: templ.Attributes{"role": "alert"}}}) {
+							{ p.Error }
+						}
+					}
+					{ children... }
+				}
+			}
+		}
+	}
+}
+
+// DashboardScreen shows counters per section.
+templ DashboardScreen(p Page, stats []view.Stat) {
+	@CabinetShell(p) {
+		@c.Title(c.TitleProps{As: "1", Size: "3xl", Weight: "bold"}) {
+			{ p.T("cabinet.dashboard") }
+		}
+		@c.Grid(c.GridProps{Cols: "1", BoxProps: box.BoxProps{Tag: "ul", Class: "gap-4 sm:grid-cols-2 lg:grid-cols-3"}}) {
+			for _, s := range stats {
+				@c.ListItem(c.ListItemProps{}) {
+					@c.Link(c.LinkProps{Variant: "block", LinkProps: link.LinkProps{Href: s.Href, Class: "flex-col items-start gap-2 rounded bg-card p-6 inset-ring inset-ring-border hover:bg-accent"}}) {
+						@icons.LucideIcon(icons.LucideIconProps{Name: s.Icon, Size: 20, Class: "text-muted-foreground"})
+						@c.Inline(c.InlineProps{TextProps: text.TextProps{Class: "text-3xl font-bold"}}) {
+							{ s.Value }
+						}
+						@c.Inline(c.InlineProps{TextProps: text.TextProps{Class: "text-sm text-muted-foreground"}}) {
+							{ s.Label }
+						}
+					}
+				}
+			}
+		}
+		@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+			{ p.T("cabinet.dashboard_help") }
+		}
+	}
+}
+
+// CabinetListScreen lists the records of a section.
+templ CabinetListScreen(p Page, l CabinetList) {
+	@CabinetShell(p) {
+		@c.Group(c.GroupProps{Justify: "between", Gap: "4", BoxProps: box.BoxProps{Class: "flex-wrap"}}) {
+			@c.Title(c.TitleProps{As: "1", Size: "3xl", Weight: "bold"}) {
+				{ l.Title }
+			}
+			@c.LinkButton(c.LinkButtonProps{LinkProps: link.LinkProps{Href: l.NewHref}}) {
+				@icons.LucideIcon(icons.LucideIconProps{Name: "plus"})
+				@c.Inline(c.InlineProps{TextProps: text.TextProps{Class: "ml-2"}}) {
+					{ p.T("cabinet.new") }
+				}
+			}
+		}
+		@blocks.RecordTable(blocks.RecordTableProps{Caption: l.Title, Rows: l.Rows, TitleHead: p.T("field.title"), StatusHead: p.T("field.status"), DateHead: p.T("cabinet.updated"), EditLabel: p.T("cabinet.edit"), ViewLabel: p.T("cabinet.view"), EmptyText: p.T("cabinet.empty"), Status: func(s string) string { return p.T("status." + s) }})
+	}
+}
+
+// CabinetFormScreen is the generated create/edit form of a section.
+templ CabinetFormScreen(p Page, f view.Form) {
+	@CabinetShell(p) {
+		@c.Group(c.GroupProps{Justify: "between", Gap: "4", BoxProps: box.BoxProps{Class: "flex-wrap"}}) {
+			@c.Title(c.TitleProps{As: "1", Size: "3xl", Weight: "bold"}) {
+				{ f.Title }
+			}
+			if f.PublicURL != "" {
+				@c.Link(c.LinkProps{Size: "sm", LinkProps: link.LinkProps{Href: f.PublicURL}}) {
+					{ p.T("cabinet.view") }
+					@icons.LucideIcon(icons.LucideIconProps{Name: "external-link"})
+				}
+			}
+		}
+		@form.Form(form.FormProps{Method: "post", Action: f.Action, Enctype: "multipart/form-data", Class: "flex flex-col gap-6 rounded bg-card p-6 inset-ring inset-ring-border"}) {
+			for _, fld := range f.Fields {
+				@blocks.FormField(blocks.FormFieldProps{Field: fld, ImageAlt: p.T("field.cover"), KeepImageMsg: p.T("cabinet.cover_help")})
+			}
+			@c.Stack(c.StackProps{Align: "stretch", Gap: "2"}) {
+				@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "f-status"}}) {
+					{ p.T("field.status") }
+				}
+				@c.Select(c.SelectProps{SelectProps: selectfield.SelectProps{ID: "f-status", Name: "status", Value: f.Status, Class: "max-w-xs", Options: []selectfield.SelectOptionItem{{Value: "draft", Label: p.T("status.draft")}, {Value: "published", Label: p.T("status.published")}}}})
+			}
+			@c.Group(c.GroupProps{Gap: "4", BoxProps: box.BoxProps{Class: "flex-wrap"}}) {
+				@c.Button(c.ButtonProps{Size: "lg", ButtonProps: button.ButtonProps{Type: "submit"}}) {
+					{ p.T("cabinet.save") }
+				}
+				@c.Link(c.LinkProps{Variant: "muted", Size: "sm", LinkProps: link.LinkProps{Href: "/cabinet/" + f.Section}}) {
+					{ p.T("cabinet.back") }
+				}
+			}
+		}
+		if f.DeleteURL != "" {
+			@form.Form(form.FormProps{Method: "post", Action: f.DeleteURL, Class: "flex justify-end"}) {
+				@c.Button(c.ButtonProps{Variant: "destructive", Size: "sm", ButtonProps: button.ButtonProps{Type: "submit", Attrs: templ.Attributes{"data-confirm": p.T("cabinet.delete_confirm")}}}) {
+					@icons.LucideIcon(icons.LucideIconProps{Name: "trash"})
+					@c.Inline(c.InlineProps{TextProps: text.TextProps{Class: "ml-2"}}) {
+						{ p.T("cabinet.delete") }
+					}
+				}
+			}
+		}
+	}
+}
+
+// SettingsScreen edits brand, about and the ONE contact link (admin only).
+templ SettingsScreen(p Page, s SettingsForm) {
+	@CabinetShell(p) {
+		@c.Title(c.TitleProps{As: "1", Size: "3xl", Weight: "bold"}) {
+			{ p.T("settings.title") }
+		}
+		@form.Form(form.FormProps{Method: "post", Action: "/cabinet/settings", Class: "flex flex-col gap-6 rounded bg-card p-6 inset-ring inset-ring-border"}) {
+			@settingsInput("brand_name", p.T("settings.brand"), s.Brand, true, "80")
+			@settingsInput("tagline", p.T("settings.tagline"), s.Tagline, false, "200")
+			@c.Stack(c.StackProps{Align: "stretch", Gap: "2"}) {
+				@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "s-about"}}) {
+					{ p.T("settings.about") }
+				}
+				@c.Textarea(c.TextareaProps{TextareaProps: textarea.TextareaProps{ID: "s-about", Name: "about", Value: s.About, Rows: "4", Class: "h-auto py-2", Attrs: templ.Attributes{"maxlength": "2000"}}})
+			}
+			@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "fieldset", Class: "flex flex-col gap-4 rounded bg-muted p-4"}}) {
+				@c.Text(c.TextProps{Weight: "semibold", TextProps: text.TextProps{Tag: "legend", Class: "px-2"}}) {
+					{ p.T("settings.contact") }
+				}
+				@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+					{ p.T("settings.contact_help") }
+				}
+				@settingsInput("contact_url", p.T("settings.contact_url"), s.ContactURL, false, "500")
+				@settingsInput("contact_label", p.T("settings.contact_label"), s.ContactLabel, false, "40")
+				@c.Grid(c.GridProps{Cols: "1", BoxProps: box.BoxProps{Class: "gap-4 sm:grid-cols-2"}}) {
+					@settingsSelect("contact_variant", p.T("settings.contact_variant"), s.ContactVariant, buttonVariantOptions(p))
+					@settingsSelect("contact_size", p.T("settings.contact_size"), s.ContactSize, buttonSizeOptions(p))
+				}
+				@c.Group(c.GroupProps{Gap: "2"}) {
+					@c.Checkbox(c.CheckboxProps{CheckboxProps: checkbox.CheckboxProps{ID: "s-contact_new_window", Name: "contact_new_window", Value: strPtr("1"), Checked: s.ContactNewWindow}})
+					@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "s-contact_new_window"}}) {
+						{ p.T("settings.contact_new_window") }
+					}
+				}
+				@c.Text(c.TextProps{Size: "xs", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+					{ p.T("settings.contact_new_window_help") }
+				}
+				@c.Stack(c.StackProps{Align: "stretch", Gap: "2", BoxProps: box.BoxProps{Class: "max-w-sm rounded bg-card p-4 inset-ring inset-ring-border"}}) {
+					@c.Text(c.TextProps{Size: "xs", Weight: "semibold", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+						{ p.T("settings.contact_preview") }
+					}
+					@templ.JSONScript("button-classes", buttonClasses())
+					@c.LinkButton(c.LinkButtonProps{Variant: s.ContactVariant, Size: s.ContactSize, LinkProps: link.LinkProps{Href: previewHref(s.ContactURL), External: s.ContactNewWindow, Class: "w-full", Attrs: templ.Attributes{"id": "contact-preview", "data-default-label": p.T("store.contact")}}}) {
+						@icons.LucideIcon(icons.LucideIconProps{Name: "send"})
+						@c.Inline(c.InlineProps{TextProps: text.TextProps{Class: "ml-2", Attrs: templ.Attributes{"data-preview-label": "true"}}}) {
+							{ previewLabel(p, s.ContactLabel) }
+						}
+					}
+				}
+			}
+			@c.Grid(c.GridProps{Cols: "1", BoxProps: box.BoxProps{Class: "gap-4 sm:grid-cols-2"}}) {
+				@settingsInput("currency", p.T("settings.currency"), s.Currency, false, "3")
+				@settingsInput("lang", p.T("settings.lang"), s.Lang, false, "8")
+			}
+			@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+				{ p.T("settings.preset") + ": " + p.T("preset."+s.Preset) + ". " + p.T("settings.preset_help") }
+			}
+			@c.Button(c.ButtonProps{Size: "lg", ButtonProps: button.ButtonProps{Type: "submit", Class: "self-start"}}) {
+				{ p.T("cabinet.save") }
+			}
+		}
+	}
+}
+
+templ settingsInput(name, lbl, value string, required bool, max string) {
+	@c.Stack(c.StackProps{Align: "stretch", Gap: "2"}) {
+		@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "s-" + name}}) {
+			{ lbl }
+		}
+		@c.Input(c.InputProps{InputProps: input.InputProps{ID: "s-" + name, Name: name, Value: strPtr(value), Required: required, Attrs: templ.Attributes{"maxlength": max}}})
+	}
+}
+
+templ settingsSelect(name, lbl, value string, opts []selectfield.SelectOptionItem) {
+	@c.Stack(c.StackProps{Align: "stretch", Gap: "2"}) {
+		@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "s-" + name}}) {
+			{ lbl }
+		}
+		@c.Select(c.SelectProps{SelectProps: selectfield.SelectProps{ID: "s-" + name, Name: name, Value: value, Options: opts}})
+	}
+}

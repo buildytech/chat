@@ -1,0 +1,63 @@
+# Caddy terminates TLS and proxies to the site on loopback (or to the incus
+# container address). Privacy defaults (PRIVACY.md): no access log, no
+# handler-error entries (they can carry client addresses) in the runtime log.
+{
+	log default {
+		output stderr
+		exclude http.log.error
+	}
+}
+
+example.com {
+	encode zstd gzip
+
+	# The PocketBase admin UI and API are never public: Caddy answers 404,
+	# and the site itself also returns 404 for /_/ and /api/* whenever a
+	# request carries forwarding headers.
+	@pb path /_/* /_ /api/*
+	handle @pb {
+		respond 404
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8090
+	}
+
+	header {
+		# the site sets HSTS itself in production; keep this as a fallback
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	request_body {
+		max_size 10MB
+	}
+
+	# No access log by default. To opt in, uncomment the block below, keep
+	# the marker line directly above `log`, and update the privacy policy and
+	# agreements first (PRIVACY.md). It masks IPs to /16 (IPv4) and /32 (IPv6)
+	# and drops headers that identify a person; logs roll after 3 days.
+	#
+	# privacy-opt-in: anonymised access log, approved <date> by <owner>
+	# log {
+	# 	output file /var/log/caddy/site-access.log {
+	# 		roll_keep_for 72h
+	# 	}
+	# 	format filter {
+	# 		wrap json
+	# 		fields {
+	# 			request>remote_ip ip_mask 16 32
+	# 			request>client_ip ip_mask 16 32
+	# 			request>headers>X-Forwarded-For delete
+	# 			request>headers>Cookie delete
+	# 			request>headers>Authorization delete
+	# 			request>headers>User-Agent delete
+	# 			request>headers>Referer delete
+	# 		}
+	# 	}
+	# }
+}
+
+www.example.com {
+	redir https://example.com{uri} permanent
+}

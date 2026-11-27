@@ -1,0 +1,175 @@
+package screens
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/icons"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/button"
+	"github.com/ui8kit/codegen/generated/templ/ui/image"
+	"github.com/ui8kit/codegen/generated/templ/ui/input"
+	"github.com/ui8kit/codegen/generated/templ/ui/label"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+
+	"github.com/fastygo/starter/internal/page"
+	"github.com/fastygo/starter/ui/blocks"
+)
+
+// HomeScreen is the landing page of every preset.
+templ HomeScreen(p Page, h Home) {
+	@Layout(p) {
+		// The page designed in BuildY Chat (internal/page/page.json) replaces the starter's hero.
+		@page.Blocks()
+		@Wrap("flex flex-col gap-16 py-16") {
+			for _, s := range h.Sections {
+				@c.Stack(c.StackProps{Align: "stretch", Gap: "8"}) {
+					@blocks.SectionHeader(blocks.SectionHeaderProps{Title: s.Title, Lead: s.Lead, LinkLabel: s.LinkLabel, LinkHref: s.LinkHref})
+					@blocks.CardGrid(blocks.CardGridProps{Label: s.Label, Cards: s.Cards, Cols: s.Cols, EmptyText: p.T("list.empty"), NoImage: p.T("list.no_image")})
+				}
+			}
+			if h.ShowStore {
+				@c.Box(c.BoxProps{BoxProps: box.BoxProps{Class: "max-w-xl"}}) {
+					@blocks.ContactCard(p.contactCard())
+				}
+			}
+		}
+	}
+}
+
+// ListScreen is a section list (articles, cases, services, products).
+templ ListScreen(p Page, l List) {
+	@Layout(p) {
+		@Wrap("flex flex-col gap-8 py-12") {
+			@blocks.SectionHeader(blocks.SectionHeaderProps{Title: l.Title, Lead: l.Lead, As: "1"})
+			@blocks.CardGrid(blocks.CardGridProps{Label: l.Label, Cards: l.Cards, Cols: l.Cols, EmptyText: p.T("list.empty"), NoImage: p.T("list.no_image")})
+		}
+	}
+}
+
+// DetailScreen is an item page; products get the cart form and the store card.
+templ DetailScreen(p Page, d Detail) {
+	@Layout(p) {
+		@Wrap("py-12") {
+			@c.Link(c.LinkProps{Variant: "muted", Size: "sm", LinkProps: link.LinkProps{Href: d.BackHref}}) {
+				@icons.LucideIcon(icons.LucideIconProps{Name: "arrow-left"})
+				{ d.BackLabel }
+			}
+			@c.Grid(c.GridProps{Cols: "1", BoxProps: box.BoxProps{Class: detailGrid(d.Item.Product) + " mt-8 gap-12"}}) {
+				@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "article", Class: "flex min-w-0 flex-col gap-8"}}) {
+					@c.Stack(c.StackProps{Align: "stretch", Gap: "4"}) {
+						if d.Item.Date != "" {
+							@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Tag: "p", Class: "text-muted-foreground"}}) {
+								{ d.Item.Date }
+							}
+						}
+						@c.Title(c.TitleProps{As: "1", Size: "4xl", Weight: "bold", TextProps: text.TextProps{Class: "tracking-tight"}}) {
+							{ d.Item.Title }
+						}
+						if d.Item.Excerpt != "" {
+							@c.Text(c.TextProps{Size: "lg", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+								{ d.Item.Excerpt }
+							}
+						}
+						if len(d.Item.Meta) > 0 {
+							@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "dl", Class: "flex flex-wrap gap-x-8 gap-y-2 text-sm"}}) {
+								for _, m := range d.Item.Meta {
+									@c.Box(c.BoxProps{BoxProps: box.BoxProps{Class: "flex gap-2"}}) {
+										@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "dt", Class: "text-muted-foreground"}}) {
+											{ m.Label }
+										}
+										@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "dd", Class: "font-semibold"}}) {
+											{ m.Value }
+										}
+									}
+								}
+							}
+						}
+					}
+					if d.Item.Image.Src != "" {
+						@c.Image(c.ImageProps{Aspect: "video", Fit: "cover", ImageProps: image.ImageProps{Src: d.Item.Image.Src, Alt: d.Item.Image.Alt, Width: "1600", Height: "900", Decoding: "async", Class: "w-full rounded bg-muted"}})
+					}
+					if d.Item.BodyHTML != "" {
+						@c.Box(c.BoxProps{BoxProps: box.BoxProps{Class: c.Rc("prose", map[string]string{"size": "lg", "width": "none"}), Attrs: templ.Attributes{"data-prose": "true"}}}) {
+							@templ.Raw(d.Item.BodyHTML)
+						}
+					}
+				}
+				if d.Item.Product {
+					@c.Stack(c.StackProps{Align: "stretch", Gap: "6", BoxProps: box.BoxProps{Tag: "aside", Class: "lg:sticky lg:top-8 lg:self-start"}}) {
+						@c.Card(c.CardProps{Variant: "default", BoxProps: box.BoxProps{Class: "gap-4"}}) {
+							@c.Text(c.TextProps{Size: "3xl", Weight: "bold"}) {
+								{ d.Item.Price }
+							}
+							if d.Item.InStock {
+								@c.Badge(c.BadgeProps{Variant: "secondary", TextProps: text.TextProps{Class: "self-start"}}) {
+									{ p.T("product.in_stock") }
+								}
+								@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "text-muted-foreground", Attrs: templ.Attributes{"data-js-hide": "true"}}}) {
+									{ p.T("cart.needs_js") }
+								}
+								@c.Stack(c.StackProps{Align: "stretch", Gap: "4", BoxProps: box.BoxProps{Attrs: templ.Attributes{"hidden": "true", "data-js-show": "true"}}}) {
+									@c.Label(c.LabelProps{LabelProps: label.LabelProps{For: "qty"}}) {
+										{ p.T("cart.qty") }
+									}
+									@c.Input(c.InputProps{InputProps: input.InputProps{Type: "number", ID: "qty", Value: strPtr("1"), Min: "1", Max: "99", Class: "w-24"}})
+									@c.Button(c.ButtonProps{Size: "lg", ButtonProps: button.ButtonProps{Type: "button", Class: "w-full", Attrs: templ.Attributes{"data-add-to-cart": d.Item.Slug, "data-qty-input": "qty"}}}) {
+										@icons.LucideIcon(icons.LucideIconProps{Name: "shopping-cart"})
+										@c.Inline(c.InlineProps{TextProps: text.TextProps{Class: "ml-2"}}) {
+											{ p.T("cart.add") }
+										}
+									}
+									@c.Link(c.LinkProps{Size: "sm", LinkProps: link.LinkProps{Href: "/cart", Attrs: templ.Attributes{"hidden": "true", "data-in-cart": d.Item.Slug, "data-in-cart-label": p.T("cart.in_cart")}}}) {
+										{ p.T("cart.in_cart") }
+									}
+								}
+							} else {
+								@c.Badge(c.BadgeProps{Variant: "outline", TextProps: text.TextProps{Class: "self-start"}}) {
+									{ p.T("product.out_of_stock") }
+								}
+							}
+						}
+						@blocks.ContactCard(p.contactCard())
+					}
+				}
+			}
+		}
+	}
+}
+
+func detailGrid(product bool) string {
+	if product {
+		return "lg:grid-cols-[minmax(0,1fr)_20rem]"
+	}
+	return "max-w-3xl"
+}
+
+func strPtr(s string) *string { return &s }
+
+// ContactScreen is the corporate contact page: the about text and the ONE
+// contact button. There is no form: the site collects nothing from visitors.
+templ ContactScreen(p Page) {
+	@Layout(p) {
+		@Wrap("py-12") {
+			@c.Grid(c.GridProps{Cols: "1", BoxProps: box.BoxProps{Class: "gap-12 lg:grid-cols-2"}}) {
+				@c.Stack(c.StackProps{Align: "stretch", Gap: "4"}) {
+					@c.Title(c.TitleProps{As: "1", Size: "4xl", Weight: "bold"}) {
+						{ p.T("contact.title") }
+					}
+					@c.Text(c.TextProps{Size: "lg", TextProps: text.TextProps{Class: "text-muted-foreground"}}) {
+						{ p.T("contact.lead") }
+					}
+				}
+				@blocks.ContactCard(p.contactCard())
+			}
+		}
+	}
+}
+
+// NotFoundScreen is the 404 page.
+templ NotFoundScreen(p Page) {
+	@Layout(p) {
+		@Wrap("py-16") {
+			@blocks.EmptyState(blocks.EmptyStateProps{Icon: "file-question-mark", Title: p.T("error.not_found"), Text: p.T("error.not_found_text"), ActionLabel: p.T("nav.home"), ActionHref: "/"})
+		}
+	}
+}

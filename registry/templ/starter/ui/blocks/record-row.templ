@@ -1,0 +1,54 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+
+	"github.com/fastygo/starter/internal/view"
+)
+
+func statusVariant(s string) string {
+	if s == "published" {
+		return "default"
+	}
+	return "secondary"
+}
+
+func statusText(p RecordTableProps, s string) string {
+	if p.Status == nil {
+		return s
+	}
+	return p.Status(s)
+}
+
+// RecordRow is one row of RecordTable.
+templ RecordRow(r view.Row, p RecordTableProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Tag: "tr", Class: "border-b border-border last:border-0"}}) {
+		@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "td", Class: "px-4 py-4 font-medium"}}) {
+			@c.Link(c.LinkProps{Variant: "nav", Size: "sm", LinkProps: link.LinkProps{Href: r.EditHref}}) {
+				{ r.Title }
+			}
+		}
+		@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "td", Class: "px-4 py-4"}}) {
+			@c.Badge(c.BadgeProps{Size: "sm", Variant: statusVariant(r.Status)}) {
+				{ statusText(p, r.Status) }
+			}
+		}
+		@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "td", Class: "hidden px-4 py-4 text-muted-foreground sm:table-cell"}}) {
+			{ r.Updated }
+		}
+		@c.Box(c.BoxProps{BoxProps: box.BoxProps{Tag: "td", Class: "px-4 py-4 text-right"}}) {
+			@c.Group(c.GroupProps{Gap: "4", Justify: "end"}) {
+				if r.PublicURL != "" {
+					@c.Link(c.LinkProps{Variant: "muted", Size: "sm", LinkProps: link.LinkProps{Href: r.PublicURL}}) {
+						{ p.ViewLabel }
+					}
+				}
+				@c.Link(c.LinkProps{Size: "sm", LinkProps: link.LinkProps{Href: r.EditHref}}) {
+					{ p.EditLabel }
+				}
+			}
+		}
+	}
+}

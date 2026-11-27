@@ -1,0 +1,16 @@
+---
+description: Starter repository contracts (PocketBase + templ site)
+alwaysApply: true
+---
+
+Read `AGENTS.md` and `PRIVACY.md` at the repository root before changing anything. Hard rules:
+
+- Privacy by design, no banner needed: public pages set no cookies, have no forms that post, store no visitor data, load nothing from other hosts (CSP `default-src 'self'`), ship no analytics. Never add a consent/cookie banner.
+- Logs off by default: `SITE_ACCESS_LOG=off`, no Caddy `log` directive without the `# privacy-opt-in:` marker. Enabling any log requires updating the privacy policy and agreements first.
+- The shop cart lives in the browser tab (`sessionStorage`); it only builds an order message the buyer copies.
+- Exactly one contact button (settings: URL https/mailto/tel, text, variant, size, new window -> `target="_blank" rel="noopener noreferrer"`).
+- `/_/` and `/api/*` are never public (404 through proxies); production admin only via SSH tunnel.
+- Schema changes only through new files in `internal/migrations/`.
+- Templates get `internal/view` models, text comes from `ui/dict/en.json`, UI is built from UI8Kit primitives.
+- Commit generated `*_templ.go` and `internal/web/static/app.css`; `make verify` (incl. `scripts/privacy-check.sh`) must pass.
+- No secrets in git; demo seed is local only.

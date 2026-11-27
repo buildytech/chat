@@ -1,0 +1,38 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/icons"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+)
+
+func headingLevel(as string) string {
+	if as == "" {
+		return "2"
+	}
+	return as
+}
+
+// SectionHeader is a title row with an optional "see all" link.
+templ SectionHeader(p SectionHeaderProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Class: "flex flex-wrap items-end justify-between gap-4"}}) {
+		@c.Stack(c.StackProps{Gap: "2"}) {
+			@c.Title(c.TitleProps{As: headingLevel(p.As), Size: "3xl", Weight: "bold", TextProps: text.TextProps{Class: "tracking-tight"}}) {
+				{ p.Title }
+			}
+			if p.Lead != "" {
+				@c.Text(c.TextProps{TextProps: text.TextProps{Class: "max-w-2xl text-muted-foreground"}}) {
+					{ p.Lead }
+				}
+			}
+		}
+		if p.LinkHref != "" {
+			@c.Link(c.LinkProps{Size: "sm", LinkProps: link.LinkProps{Href: p.LinkHref}}) {
+				{ p.LinkLabel }
+				@icons.LucideIcon(icons.LucideIconProps{Name: "arrow-right"})
+			}
+		}
+	}
+}

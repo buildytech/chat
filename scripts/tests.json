@@ -71,6 +71,7 @@
       "ui-skin.test.ts",
       "media-slots.test.ts",
       "pack-images.test.ts",
+      "templ-pack.test.ts",
       "runtime-save.test.ts",
       "runtime-host.test.ts",
       "openrouter-desktop.test.ts",
@@ -83,6 +84,7 @@
   },
   "live": [
     "export-cli.test.ts",
+    "templ-pack-go.test.ts",
     "logs-secrets.test.ts"
   ]
 }

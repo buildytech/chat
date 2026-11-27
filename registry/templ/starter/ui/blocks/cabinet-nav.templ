@@ -1,0 +1,27 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/icons"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+)
+
+// CabinetNav is the cabinet sidebar.
+templ CabinetNav(p CabinetNavProps) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Tag: "nav", Class: "rounded bg-card p-2 inset-ring inset-ring-border", Attrs: templ.Attributes{"aria-label": p.Label}}}) {
+		@c.List(c.ListProps{BoxProps: box.BoxProps{Class: "flex flex-row flex-wrap gap-2 md:flex-col"}}) {
+			for _, n := range p.Items {
+				@c.ListItem(c.ListItemProps{}) {
+					@c.Link(c.LinkProps{Variant: "block", Size: "sm", LinkProps: link.LinkProps{Href: n.Href, AriaCurrent: current(n.Current), Class: "gap-2 rounded px-4 py-2 hover:bg-accent aria-[current=page]:bg-accent"}}) {
+						@icons.LucideIcon(icons.LucideIconProps{Name: n.Icon})
+						@c.Inline(c.InlineProps{TextProps: text.TextProps{}}) {
+							{ n.Label }
+						}
+					}
+				}
+			}
+		}
+	}
+}

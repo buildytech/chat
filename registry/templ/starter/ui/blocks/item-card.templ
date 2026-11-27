@@ -1,0 +1,49 @@
+package blocks
+
+import (
+	c "github.com/ui8kit/codegen/generated/templ/compose"
+	"github.com/ui8kit/codegen/generated/templ/icons"
+	"github.com/ui8kit/codegen/generated/templ/ui/box"
+	"github.com/ui8kit/codegen/generated/templ/ui/image"
+	"github.com/ui8kit/codegen/generated/templ/ui/link"
+	"github.com/ui8kit/codegen/generated/templ/ui/text"
+
+	"github.com/fastygo/starter/internal/view"
+)
+
+// ItemCard is one card of a list: cover, meta, title, excerpt, price.
+templ ItemCard(card view.Card, noImage string) {
+	@c.Block(c.BlockProps{BoxProps: box.BoxProps{Tag: "article", Class: "group flex w-full flex-col overflow-hidden rounded bg-card inset-ring inset-ring-border"}}) {
+		@c.Link(c.LinkProps{Variant: "block", LinkProps: link.LinkProps{Href: card.Href, Class: "flex-col items-stretch", Attrs: templ.Attributes{"tabindex": "-1", "aria-hidden": "true"}}}) {
+			if card.Image.Src != "" {
+				@c.Image(c.ImageProps{Aspect: "video", Fit: "cover", ImageProps: image.ImageProps{Src: card.Image.Src, Alt: "", Loading: "lazy", Decoding: "async", Width: "800", Height: "450", Class: "w-full bg-muted"}})
+			} else {
+				@c.Box(c.BoxProps{BoxProps: box.BoxProps{Class: "flex aspect-video w-full items-center justify-center bg-muted text-muted-foreground"}}) {
+					@icons.LucideIcon(icons.LucideIconProps{Name: "image", Size: 32, Label: noImage})
+				}
+			}
+		}
+		@c.Stack(c.StackProps{Gap: "2", BoxProps: box.BoxProps{Class: "flex-1 p-6"}}) {
+			if card.Meta != "" {
+				@c.Text(c.TextProps{Size: "xs", TextProps: text.TextProps{Class: "uppercase tracking-wide text-muted-foreground"}}) {
+					{ card.Meta }
+				}
+			}
+			@c.Title(c.TitleProps{As: "3", Size: "lg", Weight: "semibold"}) {
+				@c.Link(c.LinkProps{Variant: "nav", Size: "inherit", LinkProps: link.LinkProps{Href: card.Href}}) {
+					{ card.Title }
+				}
+			}
+			if card.Excerpt != "" {
+				@c.Text(c.TextProps{Size: "sm", TextProps: text.TextProps{Class: "line-clamp-3 text-muted-foreground"}}) {
+					{ card.Excerpt }
+				}
+			}
+			if card.Price != "" {
+				@c.Text(c.TextProps{Size: "lg", Weight: "bold", TextProps: text.TextProps{Class: "mt-auto pt-2"}}) {
+					{ card.Price }
+				}
+			}
+		}
+	}
+}
