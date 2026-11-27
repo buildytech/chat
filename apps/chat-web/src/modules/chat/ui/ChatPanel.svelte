@@ -13,7 +13,9 @@
 	import { getSelectedModelId, listChatModels, setSelectedModelId } from "../browser/models.svelte.ts";
 	import { refreshProviders } from "../browser/providers.svelte.ts";
 	import ChatThread from "./ChatThread.svelte";
-	import { getComposerMode, mediaSend } from "../media/media.svelte.ts";
+	import { getComposerMode } from "../core/composer-mode.svelte.ts";
+	import { mediaSend } from "../media/media.svelte.ts";
+	import { abortDesignTurn, designSend } from "../design/design.svelte.ts";
 
 	let busy = $state(false);
 	let modelEpoch = $state(0);
@@ -33,7 +35,9 @@
 	async function onSend(text: string) {
 		busy = true;
 		try {
-			if (getComposerMode() === "media") await mediaSend(text);
+			const mode = getComposerMode();
+			if (mode === "media") await mediaSend(text);
+			else if (mode === "design") await designSend(text);
 			else await sendMessage(text);
 		} catch {
 			/* error surfaced via runtime.status */
@@ -44,6 +48,7 @@
 
 	function onCancel() {
 		abortInflightRun();
+		abortDesignTurn();
 		busy = false;
 	}
 

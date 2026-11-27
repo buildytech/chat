@@ -3,6 +3,7 @@ import { clampRunBudgetMs, contractFingerprint, gateRequest, isSharedPublicSurfa
 import { runXaiCatalogTurn, turnAnswer, turnInput } from "./chat-tools.ts";
 import { runtimeStatus } from "./status.ts";
 import { handleMedia } from "./media.ts";
+import { handleDesign } from "./design.ts";
 
 export { VERCEL_HOBBY_SAFE_MAX_DURATION_SEC } from "@buildytech/chat-agent";
 
@@ -196,6 +197,7 @@ export async function handleRuntimeFetch(request: Request, env: EnvMap = readEnv
 		}
 		if (method === "POST" && path === "/v1/run") return await handleRun(request, env, opts);
 		if (method === "POST" && (path === "/v1/media" || path.startsWith("/v1/media/"))) return await handleMedia(request, env);
+		if (method === "POST" && path === "/v1/design") return await handleDesign(request, env);
 		return jsonResponse(404, { error: { code: "not_found", message: "Unknown runtime path." } });
 	} catch (err) {
 		const safe = safeErrorMessage(err, secretValues(env));

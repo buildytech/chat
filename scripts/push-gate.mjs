@@ -31,7 +31,7 @@ try {
 	run("git", ["merge-base", "--is-ancestor", "origin/main", head]);
 	npm("bundle:runtime");
 	clean(); // A stale generated bundle requires a new reviewed commit.
-	for (const entry of ["api/runtime/v1/run.ts", "api/runtime/v1/status.ts", "api/runtime/v1/media.ts"]) run(process.execPath, ["--experimental-strip-types", "--check", entry]);
+	for (const entry of ["api/runtime/v1/run.ts", "api/runtime/v1/status.ts", "api/runtime/v1/media.ts", "api/runtime/v1/design.ts"]) run(process.execPath, ["--experimental-strip-types", "--check", entry]);
 	npm("schema:check");
 	// ESLint resolves the web tsconfig before the workspace's later svelte-check step.
 	run(process.execPath, [resolve(root, "node_modules/@sveltejs/kit/svelte-kit.js"), "sync"], false, false, resolve(root, "apps/chat-web"));

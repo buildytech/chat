@@ -8,7 +8,8 @@
 	import HomeOnboarding from "./HomeOnboarding.svelte";
 	import AddModelDialog from "./AddModelDialog.svelte";
 	import MediaPanel from "./MediaPanel.svelte";
-	import { getComposerMode } from "../media/media.svelte.ts";
+	import DesignPanel from "./DesignPanel.svelte";
+	import { getComposerMode } from "../core/composer-mode.svelte.ts";
 
 	let {
 		session,
@@ -40,7 +41,8 @@
 
 	const messages = $derived(session?.messages ?? []);
 	const media = $derived(getComposerMode() === "media");
-	const empty = $derived(messages.length === 0 && !media);
+	const design = $derived(getComposerMode() === "design");
+	const empty = $derived(messages.length === 0 && !media && !design);
 
 	let draft = $state("");
 	let addModelOpen = $state(false);
@@ -66,6 +68,8 @@
 	{:else}
 		{#if media}
 			<MediaPanel />
+		{:else if design}
+			<DesignPanel />
 		{:else}
 		<Stack align="stretch" class="min-h-0 flex-1 gap-6 overflow-y-auto p-4">
 			<Stack align="stretch" class="mx-auto w-full max-w-2xl gap-6">

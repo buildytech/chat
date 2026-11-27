@@ -7,16 +7,13 @@
 import { getCurrentPage } from "../../../lib/page-store";
 import { inspector } from "../../../lib/inspector/inspector.svelte.ts";
 import { getSelectedProject, putProject } from "../../../lib/project/store.svelte.ts";
-import type { AgentMode } from "@buildytech/chat-agent";
-import { getChatMode, setChatMode } from "../core/chat.svelte.ts";
 import { MEDIA_SLOT_CONCURRENCY } from "@buildytech/chat-agent";
 import { generateCandidates } from "./client.ts";
 import { getProviderStatus, mediaDraw, noteSpend, refreshProviders } from "../browser/providers.svelte.ts";
 import { t } from "../../../lib/i18n/dictionary";
 import { defaultStyle, imageSlots, mediaPrompt, type ImageSlot } from "./slots.ts";
 
-type ComposerMode = AgentMode | "media";
-export const COMPOSER_MODES: readonly ComposerMode[] = ["ask", "build", "media"];
+export { COMPOSER_MODES, getComposerMode, setComposerMode, type ComposerMode } from "../core/composer-mode.svelte.ts";
 const CANDIDATES_PER_SLOT = 3;
 
 /** What one slot keeps: the candidates, the description and frame they were drawn from, the picked one, the cost. */
@@ -24,7 +21,6 @@ const CANDIDATES_PER_SLOT = 3;
 type SlotRecord = { candidates: string[]; alt: string; aspect: string; extra?: string; picked?: string; costUsdTicks?: number; ms?: number; at: string; provider?: string; model?: string };
 type MediaExt = { active?: boolean; style?: string; slots?: Record<string, SlotRecord> };
 
-let pendingMedia = $state(false);
 /** In-flight work per slot key (memory only: a reload ends it). */
 let running = $state<Record<string, { error?: string } | undefined>>({});
 let errors = $state<Record<string, string>>({});
@@ -40,19 +36,6 @@ function writeExt(change: (prev: MediaExt) => MediaExt): void {
 	const project = getSelectedProject();
 	if (!project) return;
 	putProject({ ...project, ext: { ...project.ext, media: change(mediaExt()) } });
-}
-
-export function getComposerMode(): ComposerMode {
-	const project = getSelectedProject();
-	if (project ? mediaExt().active === true : pendingMedia) return "media";
-	return getChatMode();
-}
-
-export function setComposerMode(mode: ComposerMode): void {
-	const media = mode === "media";
-	pendingMedia = media;
-	if (getSelectedProject() && Boolean(mediaExt().active) !== media) writeExt((prev) => ({ ...prev, active: media }));
-	if (!media) setChatMode(mode);
 }
 
 export const mediaStyle = (): string => mediaExt().style ?? defaultStyle(getSelectedProject()?.skin ?? null);

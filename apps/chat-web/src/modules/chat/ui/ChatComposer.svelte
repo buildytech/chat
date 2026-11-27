@@ -16,7 +16,7 @@
 	import { valueOf } from "$lib/inspector/fields";
 	import { cn } from "$registry/utils/cn";
 	import type { CreatorRuntimeStatus } from "$modules/chat/core";
-	import { COMPOSER_MODES, getComposerMode, setComposerMode } from "../media/media.svelte.ts";
+	import { COMPOSER_MODES, getComposerMode, setComposerMode } from "../core/composer-mode.svelte.ts";
 	import type { GrokChatModel, SessionUsage } from "@buildytech/chat-agent";
 
 	let {
@@ -78,7 +78,7 @@
 	// Ask / Build is the author's explicit choice (kept per chat); the host never guesses it from words.
 	const mode = $derived(getComposerMode());
 	const fieldPlaceholder = $derived(
-		mode === "ask" ? t("composer.placeholderAsk") : mode === "media" ? t("composer.placeholderMedia") : placeholder || t("composer.placeholder"),
+		mode === "ask" ? t("composer.placeholderAsk") : mode === "media" ? t("composer.placeholderMedia") : mode === "design" ? t("composer.placeholderDesign") : placeholder || t("composer.placeholder"),
 	);
 	const cannotSend = $derived(disabled || sendDisabled || !(draft.trim() || variant === "thread"));
 

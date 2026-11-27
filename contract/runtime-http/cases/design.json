@@ -1,0 +1,224 @@
+{
+	"$comment": "POST /runtime/v1/design { modelId, messages }: one Design-agent chat completion with no tools (ADR 0070). The key stays on the host. The browser validates the proposal and writes a Brand Skin. Web hosts only (node, vercel): the desktop host is not required to implement this path in this change.",
+	"cases": [
+		{
+			"name": "design without a key is 503 xai_api_key_missing, no provider call",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": false
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/design",
+				"json": {
+					"modelId": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "Design agent"
+						},
+						{
+							"role": "user",
+							"content": "A bakery brand"
+						}
+					]
+				}
+			},
+			"expect": {
+				"status": 503,
+				"json": {
+					"ok": false,
+					"code": "xai_api_key_missing"
+				},
+				"notContains": [
+					"$KEY"
+				]
+			}
+		},
+		{
+			"name": "design with empty messages is 422 invalid_request, no provider call",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/design",
+				"json": {
+					"modelId": "$CANDIDATE",
+					"messages": []
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "invalid_request"
+				},
+				"notContains": [
+					"$KEY"
+				]
+			}
+		},
+		{
+			"name": "design with a missing model is 422 missing_model_id, no provider call",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/design",
+				"json": {
+					"messages": [
+						{
+							"role": "user",
+							"content": "A bakery brand"
+						}
+					]
+				}
+			},
+			"expect": {
+				"status": 422,
+				"json": {
+					"ok": false,
+					"code": "missing_model_id"
+				},
+				"notContains": [
+					"$KEY"
+				]
+			}
+		},
+		{
+			"name": "design sends a tool-free chat completion with the host key and answers the assistant text",
+			"surfaces": [
+				"node",
+				"vercel"
+			],
+			"env": {
+				"key": true
+			},
+			"request": {
+				"method": "POST",
+				"path": "/runtime/v1/design",
+				"json": {
+					"modelId": "$CANDIDATE",
+					"messages": [
+						{
+							"role": "system",
+							"content": "Design agent"
+						},
+						{
+							"role": "user",
+							"content": "A bakery brand"
+						}
+					]
+				}
+			},
+			"upstream": [
+				{
+					"match": {
+						"method": "GET",
+						"url": "/models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$CANDIDATE"
+								},
+								{
+									"id": "grok-build-0.1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/language-models"
+					},
+					"reply": {
+						"status": 404,
+						"text": "not found"
+					}
+				},
+				{
+					"match": {
+						"method": "GET",
+						"url": "/image-generation-models"
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"data": [
+								{
+									"id": "$IMAGE_MODEL"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": {
+						"method": "POST",
+						"url": "/chat/completions",
+						"auth": "bearer",
+						"json": {
+							"model": "$CANDIDATE",
+							"messages": [
+								{
+									"role": "system",
+									"content": "Design agent"
+								},
+								{
+									"role": "user",
+									"content": "A bakery brand"
+								}
+							],
+							"stream": false
+						}
+					},
+					"reply": {
+						"status": 200,
+						"json": {
+							"id": "chatcmpl-design-1",
+							"model": "$CANDIDATE",
+							"choices": [
+								{
+									"index": 0,
+									"message": {
+										"role": "assistant",
+										"content": "{\"brief\":{\"name\":\"Rye\"},\"theme\":{}}"
+									},
+									"finish_reason": "stop"
+								}
+							]
+						}
+					}
+				}
+			],
+			"expect": {
+				"status": 200,
+				"json": {
+					"ok": true,
+					"text": "{\"brief\":{\"name\":\"Rye\"},\"theme\":{}}"
+				},
+				"notContains": [
+					"$KEY"
+				]
+			}
+		}
+	]
+}
