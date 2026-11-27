@@ -108,6 +108,8 @@ test("vercel.json is Other + static SPA output + hobby-safe Node function, no ma
 	assert.ok(cfg.rewrites.some((row) => row.source === "/runtime/v1/run" && row.destination === "/api/runtime/v1/run"));
 	assert.ok(cfg.rewrites.some((row) => row.source === "/runtime/v1/media" && row.destination === "/api/runtime/v1/media"));
 	assert.ok((cfg.functions["api/runtime/v1/media.ts"]?.maxDuration ?? 0) <= VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
+	assert.ok(cfg.rewrites.some((row) => row.source === "/runtime/v1/design" && row.destination === "/api/runtime/v1/design"));
+	assert.ok((cfg.functions["api/runtime/v1/design.ts"]?.maxDuration ?? 0) <= VERCEL_HOBBY_SAFE_MAX_DURATION_SEC);
 	assert.equal(cfg.proxy?.matcher, undefined);
 	assert.ok(
 		!JSON.stringify(cfg).includes("_next/static"),

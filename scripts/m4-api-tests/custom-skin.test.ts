@@ -141,7 +141,8 @@ test("chat UI untouched: the skin goes on the preview document only; settings sc
 	assert.doesNotMatch(skins, /\bdocument\./, "skins.ts only writes the document it is given (the preview frame)");
 	const pane = web("app/PreviewPane.svelte");
 	assert.match(pane, /if \(doc\) void applySkin\(doc, id, config\)/);
-	assert.match(pane, /data-slot="preview-skin-custom"/);
+	assert.match(pane, /data-slot="preview-skin-brand"/);
+	assert.match(pane, /data-slot="preview-skin-kit"/);
 	assert.match(pane, /const forced = forcedPreviewMode\(doc\)/);
 	assert.doesNotMatch(web("lib/theme/custom-skin.svelte.ts"), /documentElement/);
 	const sidebar = web("app/ProjectSidebar.svelte") + web("app/SidebarSettings.svelte");

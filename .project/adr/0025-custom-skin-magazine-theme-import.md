@@ -1,6 +1,6 @@
 # ADR 0025: Custom Skin, one imported Stock theme (magazine-theme v2)
 
-Status: accepted (2026-11-11). Owner request t141u (plus t142u: preview only; t143u: compact, scrolling Settings).
+Status: accepted (2026-11-11); superseded in part by [0070](0070-design-mode-brand-skins.md) (per-project Brand Skins, Design mode). Owner request t141u (plus t142u: preview only; t143u: compact, scrolling Settings).
 
 ## Context
 
@@ -69,3 +69,10 @@ size by inheritance. Measured live after 77f2e2a: every Settings button was 16px
 
 - A published JSON Schema for magazine-theme v2 belongs in ui8kit/contract (generated from Stock's `THEME_SCHEMA`), and
   a session or prefs field could carry the slot inside the session file; not done here (the slot is browser-local).
+
+
+## Update (ADR 0070)
+
+The imported magazine-theme v2 config is no longer a single browser-wide slot (`buildy:v1:customSkin`). It becomes a
+Brand Skin of the current project (`ext.design.skins.custom`). Settings import still accepts the same file. The preview
+selector is Project Skin: registry skins plus this project's Brand Skins.
