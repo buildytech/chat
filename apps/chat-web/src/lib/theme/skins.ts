@@ -59,13 +59,14 @@ function setMode(doc: Document, mode: CustomSkinRender["mode"]): void {
 	root.dataset.theme = mode;
 }
 
-/** Put a Custom Skin on a document: base skin CSS, then Stock's root attributes and inline variables, mode and fonts. */
-async function applyCustom(doc: Document, config: ThemeConfig): Promise<void> {
+/** Put a Brand Skin on a document: base skin CSS, then Stock's root attributes and inline variables, mode and fonts. */
+async function applyCustom(doc: Document, config: ThemeConfig, token: string): Promise<void> {
 	const render = renderCustomSkin(config);
 	const css = `${await skinCss(render.skin)}\n${CUSTOM_SKIN_BASE_CSS}`;
-	if (applied.get(doc) !== CUSTOM_SKIN_ID) return;
+	if (applied.get(doc) !== token) return;
 	clearCustom(doc);
-	let style = doc.getElementById(STYLE_ID) as HTMLStyleElement | null;
+	const el = doc.getElementById(STYLE_ID);
+	let style = el instanceof HTMLStyleElement ? el : null;
 	if (css) {
 		if (!style) {
 			style = doc.createElement("style");
@@ -94,9 +95,11 @@ async function applyCustom(doc: Document, config: ThemeConfig): Promise<void> {
  * `custom` (CUSTOM_SKIN_ID) renders the imported config (`custom`, null: none imported, the default theme).
  */
 export async function applySkin(doc: Document, id: string | null, custom: ThemeConfig | null = null): Promise<void> {
-	if (id === CUSTOM_SKIN_ID && custom) {
-		applied.set(doc, CUSTOM_SKIN_ID);
-		await applyCustom(doc, custom);
+	// A Brand Skin (per-project magazine-theme config) carries its own theme; the id may be `custom` or `brand-*`.
+	if (custom) {
+		const token = id ?? CUSTOM_SKIN_ID;
+		applied.set(doc, token);
+		await applyCustom(doc, custom, token);
 		return;
 	}
 	const hadCustom = customApplied.has(doc);
@@ -106,7 +109,8 @@ export async function applySkin(doc: Document, id: string | null, custom: ThemeC
 	applied.set(doc, skin);
 	const css = await skinCss(skin);
 	if (applied.get(doc) !== skin) return;
-	let style = doc.getElementById(STYLE_ID) as HTMLStyleElement | null;
+	const el = doc.getElementById(STYLE_ID);
+	let style = el instanceof HTMLStyleElement ? el : null;
 	if (!css) {
 		style?.remove();
 		delete doc.documentElement.dataset.skin;

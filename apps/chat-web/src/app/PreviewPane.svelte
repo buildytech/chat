@@ -10,6 +10,7 @@ import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 	import Icon from "$registry/kit/ui/icon/Icon.svelte";
 	import Select from "$registry/compose/Select.svelte";
 	import SelectOption from "$registry/compose/SelectOption.svelte";
+	import OptGroup from "$registry/compose/OptGroup.svelte";
 	import Text from "$registry/kit/ui/text/Text.svelte";
 	import { t } from "$lib/i18n/dictionary";
 	import { cn } from "$registry/utils/cn";
@@ -17,8 +18,7 @@ import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 	import PreviewAddress from "./PreviewAddress.svelte";
 	import { getProjectSkin, getSelectedProject, setProjectSkin } from "$lib/project";
 	import { applySkin, forcedPreviewMode, skins } from "$lib/theme/skins";
-	import { customSkin } from "$lib/theme/custom-skin.svelte";
-	import { CUSTOM_SKIN_ID } from "$lib/theme/custom-skin";
+	import { projectBrandSkins, projectBrandTheme } from "$lib/theme/brand-skins.svelte.ts";
 	import {
 		blocksOf,
 		getCurrentPage,
@@ -118,12 +118,12 @@ import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 		frameDoc = doc;
 	}
 
-	// Skin of this chat's page (session `skin`, registry item theme-<skin>): on the preview document only, as in the ZIP.
+	// Project Skin of this page (session `skin`): registry theme-<skin> or a per-project Brand Skin, preview only.
 	const skinOptions = skins();
 	const skin = $derived(getProjectSkin());
-	// The imported theme (Settings > Theme import) is one more option, "Custom Skin"; it renders on the frame only.
-	const custom = $derived(customSkin.config);
-	const skinValue = $derived(skin === CUSTOM_SKIN_ID && !custom ? "" : (skin ?? ""));
+	const brandSkins = $derived(projectBrandSkins());
+	const custom = $derived(projectBrandTheme(skin));
+	const skinValue = $derived(skin && (skinOptions.some((option) => option.id === skin) || brandSkins.some((item) => item.id === skin)) ? skin : "");
 	$effect(() => {
 		const doc = frameDoc;
 		const id = skin;
@@ -224,13 +224,18 @@ import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 					onchange={onSkin}
 				>
 					<SelectOption value="">{t("preview.skinDefault")}</SelectOption>
-					{#if custom}
-						<SelectOption value={CUSTOM_SKIN_ID} data-slot="preview-skin-custom">{t("preview.skinCustom")}</SelectOption
-						>
+					{#if brandSkins.length}
+						<OptGroup label={t("preview.skinBrandGroup")} data-slot="preview-skin-brand">
+							{#each brandSkins as item (item.id)}
+								<SelectOption value={item.id} data-slot="preview-skin-brand-item">{item.name}</SelectOption>
+							{/each}
+						</OptGroup>
 					{/if}
-					{#each skinOptions as option (option.id)}
-						<SelectOption value={option.id}>{option.title}</SelectOption>
-					{/each}
+					<OptGroup label={t("preview.skinKitGroup")} data-slot="preview-skin-kit">
+						{#each skinOptions as option (option.id)}
+							<SelectOption value={option.id}>{option.title}</SelectOption>
+						{/each}
+					</OptGroup>
 				</Select>
 			{/if}
 			<Button

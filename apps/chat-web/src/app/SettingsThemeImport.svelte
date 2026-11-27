@@ -1,9 +1,9 @@
 <!--
-  Settings > Theme import (ADR 0025): one theme as the Stock theme editor (app.codegen-x.com, Theme > Export / import)
+  Settings > Theme import (ADR 0025, 0070): one theme as the Stock theme editor (app.codegen-x.com, Theme > Export / import)
   exports it, format magazine-theme version 2, from a file or pasted. It is checked in program code (Stock's schema and
-  reader, custom-skin.ts); a passing config fills the one Custom Skin slot (a new import replaces it) and shows in the
-  preview's skin selector as "Custom Skin". Export gives the same config back; Remove empties the slot. The theme
-  applies to the preview site and its export only, never to the chat UI.
+  reader, custom-skin.ts); a passing config becomes this project's imported Brand Skin (id `custom`; a new import
+  replaces that id) and shows under Brand Skins in the Project Skin list. Export gives the same config back; Remove
+  drops it from this project. The theme applies to the preview site and its export only, never to the chat UI.
 -->
 <script lang="ts">
 import { Check, Download, FileUp, Trash2, Upload } from "$lib/shell-icons";

@@ -69,6 +69,7 @@ export async function packTemplZipFiles(page: CreatorPage, snapshot: TemplSnapsh
 	entries.push({ path: PAGE_JSON, content: own[PAGE_JSON]! }, { path: SECTIONS_GEN, content: own[SECTIONS_GEN]! });
 	for (const image of images?.local ?? []) for (const file of imageFiles(image)) entries.push({ path: templImagePath(file.path), bytes: file.bytes });
 	if (options.theme) entries.push({ path: THEME_FILE, content: `${configText(options.theme)}\n` });
+	if (options.contract) entries.push({ path: "brand.contract.json", content: `${JSON.stringify(options.contract, null, 2)}\n` });
 	const common = { ...PACK_FORMAT, framework: "templ", preset: options.preset, starter: snapshot.starter };
 	const generator = {
 		...common,

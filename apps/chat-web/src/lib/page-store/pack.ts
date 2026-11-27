@@ -192,7 +192,7 @@ export type RegistryReader = (paths: string[]) => Promise<Record<string, string>
  * Export options: the chat's skin (session `skin`, ADR 0016); null or unknown is the default theme. `theme`: the Custom
  * Skin (ADR 0025), a magazine-theme v2 config; its base skin is the registry skin, the rest goes on <html> and in theme.json.
  */
-export type PackOptions = { skin?: string | null; theme?: ThemeConfig | null; images?: LocalImages | null };
+export type PackOptions = { skin?: string | null; theme?: ThemeConfig | null; images?: LocalImages | null; contract?: Record<string, unknown> | null };
 
 /** `vite/client` types for the picture imports of the sections (only when the export carries pictures). */
 const VITE_ENV = { path: "src/vite-env.d.ts", content: '/// <reference types="vite/client" />\n' };
@@ -233,6 +233,7 @@ export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}):
 		files.push({ path: THEME_FILE, content: `${configText(options.theme)}\n` });
 		files.push({ path: CUSTOM_SKIN_CSS, content: CUSTOM_SKIN_BASE_CSS });
 	}
+	if (options.contract) files.push({ path: "brand.contract.json", content: `${JSON.stringify(options.contract, null, 2)}\n` });
 	const generator = generatorOf(valid, skin);
 	files.push({ path: "GENERATOR.json", content: `${JSON.stringify(generator, null, 2)}\n` });
 	const paths = [...files.map((file) => file.path), ...(images?.local ?? []).flatMap((image) => imageFiles(image).map((file) => file.path)), CLI_CONFIG, CLI_LOCK, ...registryPathsOf(valid, skin), "manifest.json"];

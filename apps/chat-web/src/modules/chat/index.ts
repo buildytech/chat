@@ -13,6 +13,7 @@ import ruMessages from "./i18n/ru.json";
 import { getSelectedModelId, setSelectedModelId } from "./browser/models.svelte.ts";
 import { hydrateSessionContext } from "./browser/onboarding.svelte.ts";
 import { beforeHydrate, beforeProjectChange, getChatMode, projectOpened, recoverInterruptedRuns, run, setChatMode } from "./core/chat.svelte.ts";
+import { migrateLegacyBrandSkins } from "$lib/theme/brand-skins.svelte.ts";
 import { chatOf } from "./core/view";
 import { runtimeImageEncoder, runtimeImageSource } from "./media/client.ts";
 import { runtimeZipSaver } from "./browser/runtime-save.ts";
@@ -46,7 +47,10 @@ export const chatModule: BuilderModule = {
 		beforeProjectChange,
 		projectOpened,
 		beforeHydrate,
-		afterHydrate: () => recoverInterruptedRuns(),
+		afterHydrate: () => {
+			migrateLegacyBrandSkins();
+			recoverInterruptedRuns();
+		},
 		pageStarted: (screenId) => {
 			setChatMode("build");
 			hydrateSessionContext({ scenarioId: null, screenId });
