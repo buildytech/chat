@@ -75,7 +75,7 @@ type DesignTurnResult =
  */
 
 function errorCode(error: unknown): string {
-	if (Boolean(error) && typeof error === "object" && "code" in error && typeof error.code === "string" && error.code) return error.code;
+	if (error && typeof error === "object" && "code" in error && typeof error.code === "string" && error.code) return error.code;
 	return "design_failed";
 }
 
