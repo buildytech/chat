@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { openPreviewWindow, setPreviewHostOpener } from "../../apps/chat-web/src/lib/browser/preview-window.ts";
 import { hostOpensPreview, noteRuntimePreview } from "../../apps/chat-web/src/modules/chat/browser/runtime-preview.ts";
+import { importThemeConfig } from "../../apps/chat-web/src/lib/theme/custom-skin.ts";
 import { previewWindowUrl } from "../../apps/chat-web/src/lib/browser/preview-settings.ts";
 
 const SESSION = "session-b066e122-c354-492d-9464-d3c3cc4b95e1";
@@ -90,4 +91,29 @@ test("wiring: the Preview pane's open-in-new-window goes through openPreviewWind
 	assert.match(client, /noteRuntimePreview\(body\.host\)/);
 	const core = readFileSync(new URL("../../apps/chat-web/src/lib/browser/preview-window.ts", import.meta.url), "utf8");
 	assert.doesNotMatch(core, /runtime\/v1/, "the core names no runtime path: chat-off builds carry none (no-trace)");
+});
+
+test("the preview window reads the Brand Skin of its session from storage, without a hydrated project store", async () => {
+	const { useStorageForTests, saveSessionsJson } = await import("../../apps/chat-web/src/lib/browser/persist.ts");
+	const { readStoredProject } = await import("../../apps/chat-web/src/lib/project/stored.ts");
+	const { themeOfProjectSkin } = await import("../../apps/chat-web/src/lib/theme/brand-skins.ts");
+	const map = new Map<string, string>();
+	useStorageForTests({
+		getItem: (key: string) => map.get(key) ?? null,
+		setItem: (key: string, value: string) => void map.set(key, value),
+		removeItem: (key: string) => void map.delete(key)
+	});
+	const imported = importThemeConfig(readFileSync(new URL("./fixtures/stock-theme-export.json", import.meta.url), "utf8"));
+	assert.ok(imported.ok);
+	const theme = { ...imported.config, palette: { harmony: "complementary" as const, h: 24, s: 88, l: 52 } };
+	const record = { id: "brand-titan", name: "TITAN", revision: 2, source: "design", createdAt: "2026-11-28T11:00:00.000Z", updatedAt: "2026-11-28T11:05:00.000Z", brief: { name: "TITAN", thesis: { summary: "s", positioning: "p", antiPersonality: [] }, grammar: {} }, theme };
+	assert.ok(saveSessionsJson([{ id: SESSION, title: "New page", updatedAt: "2026-11-28T11:05:00.000Z", skin: "brand-titan", ext: { design: { skins: { "brand-titan": record } } } }]));
+	const before = JSON.stringify([...map.entries()]);
+	const project = readStoredProject(SESSION);
+	assert.equal(project?.skin, "brand-titan");
+	assert.equal(themeOfProjectSkin(project, project?.skin)?.palette?.h, 24, "the stored skin's theme is found by the session id");
+	assert.equal(readStoredProject("session-unknown"), null);
+	assert.equal(readStoredProject(null), null);
+	assert.equal(JSON.stringify([...map.entries()]), before, "read-only: nothing written");
+	assert.match(readFileSync(new URL("../../apps/chat-web/src/lib/theme/custom-skin.svelte.ts", import.meta.url), "utf8"), /getProject\(sessionId\) \?\? readStoredProject\(sessionId\)/);
 });

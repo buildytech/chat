@@ -19,3 +19,5 @@ The address is right (the web app serves it, SvelteKit's `[...path]` route with 
 ## Consequences
 
 The window is created on the UI thread from a goroutine, not on the request's. The windows of the preview are ordinary app windows (the app menu applies). Closing the main window quits the app as before.
+
+The live run found a second fault in the same window: it never hydrates the project store, so the Brand Skin of its session was never found and the preview showed the default look, not the project's skin. `storedCustomSkin(session)` now falls back to a read-only read of the stored project (`lib/project/stored.ts`); nothing is bound or written.

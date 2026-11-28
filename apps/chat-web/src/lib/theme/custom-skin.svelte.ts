@@ -12,6 +12,7 @@ import {
 	removeImportedBrandTheme
 } from "./brand-skins.svelte.ts";
 import { getProject, getSelectedProject } from "../project/store.svelte.ts";
+import { readStoredProject } from "../project/stored.ts";
 import { themeOfProjectSkin } from "./brand-skins.ts";
 
 export { packSkinOptions };
@@ -37,7 +38,8 @@ export const customSkin = {
 export function storedCustomSkin(sessionId?: string | null): ThemeConfig | null {
 	migrateLegacyBrandSkins();
 	if (sessionId) {
-		const project = getProject(sessionId);
+		// The preview window never hydrates the project store: its session's record comes from storage (ADR 0073).
+		const project = getProject(sessionId) ?? readStoredProject(sessionId);
 		return themeOfProjectSkin(project, project?.skin ?? null);
 	}
 	const project = getSelectedProject();
