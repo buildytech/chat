@@ -238,7 +238,15 @@
 		"design.rejected": "Предложение не прошло валидацию.",
 		"design.cancelled": "Запрос Design отменён.",
 		"design.failed": "Запрос Design не удалось выполнить.",
-		"design.needProject": "Сначала откройте или создайте проект."
+		"design.needProject": "Сначала откройте или создайте проект.",
+		"design.updated": "Бренд-скин «{name}» обновлён до ревизии {revision} и выбран.",
+		"design.noChange": "Бренд-скин «{name}» остался прежним: ответ ничего не изменил.",
+		"design.editing": "Правится «{name}», ревизия {revision}. Следующее сообщение изменит этот скин.",
+		"design.editingNone": "Следующее сообщение создаст новый бренд-скин.",
+		"design.createNew": "Создать новый",
+		"design.editInstead": "Править «{name}»",
+		"design.revision": "ревизия {revision}",
+		"design.edit": "Править"
 	},
 	"overrides": {
 		"sidebar.newChat": "Новый чат",

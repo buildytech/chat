@@ -8,7 +8,7 @@
  */
 import { renderBlock, type RegistrySkin } from "@buildytech/builder-core";
 import type { PageV2 } from "@buildytech/page-contract";
-import { CUSTOM_SKIN_BASE_CSS, type CustomSkinRender } from "../theme/custom-skin.ts";
+import { CUSTOM_SKIN_BASE_CSS, modeCss, type CustomSkinRender } from "../theme/custom-skin.ts";
 import { propsWithUrls, type LocalImages } from "./pack-images.ts";
 import { srcsetKeysOf } from "./svelte-code.ts";
 
@@ -123,7 +123,7 @@ export function templSkinCss(skin: RegistrySkin | null, skinCss: string | null, 
 	if (skin && skinCss) parts.push(`/* Skin ${skin.title} (registry item ${skin.item}), scoped to :root. */\n${rootSkinCss(skinCss).trimEnd()}\n`);
 	if (custom) {
 		const decls = custom.style.map(([prop, value]) => `  ${prop.trim()}: ${value.trim()};`).join("\n");
-		parts.push(`/* Custom Skin (theme.json, magazine-theme v2, ${custom.mode} mode): its root variables. */\n:root {\n${decls}\n}\n${CUSTOM_SKIN_BASE_CSS}`);
+		parts.push(`/* Custom Skin (theme.json, magazine-theme v2): its root variables, then the palette of both modes (dark under .dark or data-theme="dark"). */\n:root {\n${decls}\n}\n${modeCss(custom)}${CUSTOM_SKIN_BASE_CSS}`);
 	}
 	return parts.length ? `\n/* ---- BuildY Chat skin (export): as :root rules, the site's CSP forbids inline styles. ---- */\n${parts.join("\n")}` : "";
 }

@@ -3,6 +3,7 @@ import type { PageV2 } from "@buildytech/page-contract";
 import { appCandidate, appModelIds, contractFingerprint } from "@buildytech/chat-agent";
 import { noteRuntimeFiles } from "../../../lib/runtime-files.ts";
 import { noteRuntimeHost } from "../../../lib/runtime-host.ts";
+import { noteRuntimePreview } from "./runtime-preview.ts";
 import { noteRuntimeSave } from "./runtime-save.ts";
 import { noteRuntimeSignIn } from "./runtime-sign-in.ts";
 
@@ -99,6 +100,7 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 		noteRuntimeFiles(body.capabilities?.files === true);
 		noteRuntimeSave(body.capabilities?.saveFile === true);
 		noteRuntimeHost(body.host);
+		noteRuntimePreview(body.host);
 		noteRuntimeSignIn(body.capabilities?.signIn, body.provider);
 		return lastStatus;
 	} catch {
@@ -106,6 +108,7 @@ export async function fetchXaiStatus(signal?: AbortSignal): Promise<XaiClientSta
 		noteRuntimeSave(false);
 		noteRuntimeFiles(false);
 		noteRuntimeHost(null);
+		noteRuntimePreview(null);
 		noteRuntimeSignIn(undefined, undefined);
 		return {
 			runtime: "xai-grok",

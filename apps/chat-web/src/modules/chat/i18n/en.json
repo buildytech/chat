@@ -238,7 +238,15 @@
 		"design.rejected": "The proposal did not pass validation.",
 		"design.cancelled": "The design turn was cancelled.",
 		"design.failed": "The design request could not be completed.",
-		"design.needProject": "Open or start a project first."
+		"design.needProject": "Open or start a project first.",
+		"design.updated": "Brand Skin “{name}” updated to revision {revision} and selected.",
+		"design.noChange": "Brand Skin “{name}” stays as it is: the answer changed nothing.",
+		"design.editing": "Editing “{name}”, revision {revision}. Your next message changes this skin.",
+		"design.editingNone": "The next message creates a new Brand Skin.",
+		"design.createNew": "Create new",
+		"design.editInstead": "Edit “{name}” instead",
+		"design.revision": "revision {revision}",
+		"design.edit": "Edit"
 	},
 	"overrides": {
 		"sidebar.newChat": "New chat",

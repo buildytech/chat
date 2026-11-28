@@ -22,7 +22,7 @@ test("open in new window targets the standalone /preview route of the chat", () 
 	assert.equal(previewWindowUrl("s 1/x"), "/preview?session=s%201%2Fx");
 	assert.equal(previewWindowUrl(null), "/preview");
 	const pane = web("app/PreviewPane.svelte");
-	assert.match(pane, /window\.open\(\s*previewWindowUrl\(/);
+	assert.match(pane, /openPreviewWindow\(\s*previewWindowUrl\(/, "window.open in a browser, the host's window on the desktop (ADR 0073)");
 	assert.doesNotMatch(pane, /window\.open\(location\.href/);
 });
 

@@ -120,7 +120,7 @@ function slugOf(name: string): string {
 /**
  * A brand-os schema 1.0.0 contract (VibeChat seed). Chat still applies the theme through magazine-theme / CSS variables.
  */
-export function toBrandContract(brief: BrandBrief, tokens: { color: Record<string, string>; fonts: { display: string; body: string }; radius: string }): Record<string, unknown> {
+export function toBrandContract(brief: BrandBrief, tokens: { color: { light: Record<string, string>; dark: Record<string, string> }; fonts: { display: string; body: string }; radius: string }): Record<string, unknown> {
 	return {
 		schemaVersion: "1.0.0",
 		meta: { name: brief.name, slug: slugOf(brief.name) },
@@ -133,7 +133,7 @@ export function toBrandContract(brief: BrandBrief, tokens: { color: Record<strin
 		},
 		...(brief.grammar ? { designGrammar: brief.grammar } : {}),
 		tokens: {
-			color: { light: tokens.color, dark: {} },
+			color: { light: tokens.color.light, dark: tokens.color.dark },
 			typography: { families: { display: tokens.fonts.display, body: tokens.fonts.body } },
 			radius: { sm: tokens.radius, md: tokens.radius, lg: tokens.radius },
 			shadow: { sm: "none", md: "none" }

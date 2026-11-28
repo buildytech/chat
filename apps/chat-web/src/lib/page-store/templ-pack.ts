@@ -95,7 +95,7 @@ export async function packTemplZipFiles(page: CreatorPage, snapshot: TemplSnapsh
 		locale: valid.locale,
 		seo: valid.seo,
 		skin: skin?.id ?? null,
-		...(options.theme && custom ? { customSkin: { file: THEME_FILE, format: options.theme.format, version: options.theme.version, mode: custom.mode, fonts: custom.fonts, note: "fonts are not linked: the site loads fonts from itself only; self-host them in ui/styles/fonts.css" } } : {}),
+		...(options.theme && custom ? { customSkin: { file: THEME_FILE, format: options.theme.format, version: options.theme.version, defaultMode: custom.mode, modes: ["light", "dark"], fonts: custom.fonts, note: "fonts are not linked: the site loads fonts from itself only; self-host them in ui/styles/fonts.css" } } : {}),
 		...(pageDoc.skipped.length ? { skipped: pageDoc.skipped } : {}),
 		files: [...entries.map((entry) => entry.path), "manifest.json"],
 		...(pictures ? { images: pictures } : {}),

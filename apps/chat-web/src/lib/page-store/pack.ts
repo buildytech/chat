@@ -1,7 +1,7 @@
 import { parsePage, type CreatorPage } from "./page.ts";
 import { registrySkin } from "@buildytech/builder-core";
 import chatPackage from "../../../package.json" with { type: "json" };
-import { configText, CUSTOM_SKIN_BASE_CSS, renderCustomSkin, type ThemeConfig } from "../theme/custom-skin.ts";
+import { configText, CUSTOM_SKIN_BASE_CSS, modeCss, renderCustomSkin, type ThemeConfig } from "../theme/custom-skin.ts";
 import { CUSTOM_SKIN_CSS, THEME_FILE, scaffold } from "./pack-scaffold.ts";
 import { imageFiles, imagesManifest, type LocalImages } from "./pack-images.ts";
 import { registryItemsOf, registryLockItemsOf, registryPathsOf, svelteFromPage, sveltePackFiles } from "./svelte-code.ts";
@@ -231,7 +231,7 @@ export function packFilesFromPage(page: CreatorPage, options: PackOptions = {}):
 	files.push({ path: "page.json", content: `${JSON.stringify(valid, null, 2)}\n` });
 	if (options.theme) {
 		files.push({ path: THEME_FILE, content: `${configText(options.theme)}\n` });
-		files.push({ path: CUSTOM_SKIN_CSS, content: CUSTOM_SKIN_BASE_CSS });
+		files.push({ path: CUSTOM_SKIN_CSS, content: `${CUSTOM_SKIN_BASE_CSS}\n/* The palette of both modes, from theme.json: light on :root, dark under .dark or data-theme="dark". */\n${modeCss(renderCustomSkin(options.theme))}` });
 	}
 	if (options.contract) files.push({ path: "brand.contract.json", content: `${JSON.stringify(options.contract, null, 2)}\n` });
 	const generator = generatorOf(valid, skin);

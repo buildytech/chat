@@ -20,6 +20,9 @@ export type BrandSkinRecord = {
 	brief: BrandBrief;
 	theme: ThemeConfig;
 	contract?: Record<string, unknown>;
+	/** 1 when created; +1 each time Design edits the skin (same id). Absent on older records: read as 1. */
+	revision?: number;
+	updatedAt?: string;
 };
 
 export type DesignMessage = {
@@ -28,6 +31,7 @@ export type DesignMessage = {
 	text: string;
 	createdAt: string;
 	skinId?: string;
+	revision?: number;
 	issues?: Array<{ code: string; path: string; message: string }>;
 };
 
@@ -54,6 +58,7 @@ function parseDesignMessage(value: unknown): DesignMessage | null {
 		text: value.text,
 		createdAt: value.createdAt,
 		...(typeof value.skinId === "string" ? { skinId: value.skinId } : {}),
+		...(typeof value.revision === "number" && Number.isInteger(value.revision) && value.revision > 0 ? { revision: value.revision } : {}),
 		...(issues?.length ? { issues } : {})
 	};
 }
@@ -106,8 +111,36 @@ function parseBrandSkinRecord(value: unknown): BrandSkinRecord | null {
 		source: value.source,
 		brief: value.brief,
 		theme: value.theme,
-		...(isRecord(value.contract) ? { contract: value.contract } : {})
+		...(isRecord(value.contract) ? { contract: value.contract } : {}),
+		...(typeof value.revision === "number" && Number.isInteger(value.revision) && value.revision > 0 ? { revision: value.revision } : {}),
+		...(typeof value.updatedAt === "string" ? { updatedAt: value.updatedAt } : {})
 	};
+}
+
+/** The revision of a record (older records have none: 1). */
+export const revisionOf = (record: BrandSkinRecord): number => record.revision ?? 1;
+
+/**
+ * Edit a Brand Skin in place (ADR 0072): same id, name and createdAt follow the new brief, revision + 1. The caller
+ * passes the validated proposal; nothing here validates.
+ */
+export function editedBrandSkin(base: BrandSkinRecord, next: { brief: BrandBrief; theme: ThemeConfig; contract: Record<string, unknown> }, now = new Date().toISOString()): BrandSkinRecord {
+	return {
+		id: base.id,
+		name: next.brief.name,
+		createdAt: base.createdAt,
+		source: base.source === "import" ? "design" : base.source,
+		brief: next.brief,
+		theme: next.theme,
+		contract: next.contract,
+		revision: revisionOf(base) + 1,
+		updatedAt: now
+	};
+}
+
+/** Whether a proposal changes anything of the skin (brief and theme): an identical answer is no edit. */
+export function sameBrandSkinContent(base: BrandSkinRecord, next: { brief: BrandBrief; theme: ThemeConfig }): boolean {
+	return JSON.stringify([base.brief, base.theme]) === JSON.stringify([next.brief, next.theme]);
 }
 
 export function brandSkinsOf(project: { ext?: Record<string, unknown> } | null | undefined): BrandSkinRecord[] {

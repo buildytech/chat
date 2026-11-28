@@ -5,13 +5,15 @@
  */
 import { registrySkin, registrySkinBaseCss, registrySkins, type RegistrySkin } from "@buildytech/builder-core";
 import { loadSessionsJson } from "$lib/browser/persist";
-import { CUSTOM_SKIN_BASE_CSS, CUSTOM_SKIN_ID, renderCustomSkin, type CustomSkinRender, type ThemeConfig } from "./custom-skin";
+import { CUSTOM_SKIN_BASE_CSS, CUSTOM_SKIN_ID, modeCss, renderCustomSkin, type ThemeConfig } from "./custom-skin";
 
 const SKIN_FILES = import.meta.glob<string>("../../../../../registry/svelte/src/styles/skins/*.css", {
 	query: "?inline",
 	import: "default"
 });
 const STYLE_ID = "buildy-skin";
+/** The Brand Skin's palette, one rule per mode (light and dark): both always present, the app's mode picks one. */
+const MODES_ID = "buildy-skin-modes";
 
 export type { RegistrySkin };
 export const skins = (): RegistrySkin[] => registrySkins();
@@ -32,7 +34,7 @@ async function skinCss(id: string | null): Promise<string> {
 
 const applied = new WeakMap<Document, string | null>();
 /** What the last Custom Skin put on a document (removed before the next skin): attributes, inline properties, font links. */
-const customApplied = new WeakMap<Document, { attrs: string[]; props: string[]; mode: CustomSkinRender["mode"] }>();
+const customApplied = new WeakMap<Document, { attrs: string[]; props: string[] }>();
 const FONT_LINK = "data-buildy-skin-font";
 
 function clearCustom(doc: Document): void {
@@ -42,24 +44,11 @@ function clearCustom(doc: Document): void {
 	for (const name of before.attrs) root.removeAttribute(name);
 	for (const prop of before.props) root.style.removeProperty(prop);
 	for (const link of doc.head.querySelectorAll(`link[${FONT_LINK}]`)) link.remove();
+	doc.getElementById(MODES_ID)?.remove();
 	customApplied.delete(doc);
 }
 
-/**
- * The light / dark mode a Custom Skin fixes on a preview document (null: none, the preview follows the chat's mode).
- * The config carries its mode (Stock exports it), and its palette is computed for that mode.
- */
-export function forcedPreviewMode(doc: Document): CustomSkinRender["mode"] | null {
-	return customApplied.get(doc)?.mode ?? null;
-}
-
-function setMode(doc: Document, mode: CustomSkinRender["mode"]): void {
-	const root = doc.documentElement;
-	root.classList.toggle("dark", mode === "dark");
-	root.dataset.theme = mode;
-}
-
-/** Put a Brand Skin on a document: base skin CSS, then Stock's root attributes and inline variables, mode and fonts. */
+/** Put a Brand Skin on a document: base skin CSS, Stock's root attributes and inline variables, the palette of both modes, fonts. */
 async function applyCustom(doc: Document, config: ThemeConfig, token: string): Promise<void> {
 	const render = renderCustomSkin(config);
 	const css = `${await skinCss(render.skin)}\n${CUSTOM_SKIN_BASE_CSS}`;
@@ -75,6 +64,10 @@ async function applyCustom(doc: Document, config: ThemeConfig, token: string): P
 		}
 		style.textContent = css;
 	} else style?.remove();
+	const modes = doc.createElement("style");
+	modes.id = MODES_ID;
+	modes.textContent = modeCss(render);
+	doc.head.appendChild(modes);
 	const root = doc.documentElement;
 	if (!render.skin) delete root.dataset.skin;
 	for (const [name, value] of Object.entries(render.attrs)) root.setAttribute(name, value);
@@ -86,8 +79,7 @@ async function applyCustom(doc: Document, config: ThemeConfig, token: string): P
 		link.setAttribute(FONT_LINK, "");
 		doc.head.appendChild(link);
 	}
-	customApplied.set(doc, { attrs: Object.keys(render.attrs).filter((name) => name !== "data-skin"), props: render.style.map(([prop]) => prop), mode: render.mode });
-	setMode(doc, render.mode);
+	customApplied.set(doc, { attrs: Object.keys(render.attrs).filter((name) => name !== "data-skin"), props: render.style.map(([prop]) => prop) });
 }
 
 /**
@@ -102,9 +94,7 @@ export async function applySkin(doc: Document, id: string | null, custom: ThemeC
 		await applyCustom(doc, custom, token);
 		return;
 	}
-	const hadCustom = customApplied.has(doc);
 	clearCustom(doc);
-	if (hadCustom) doc.documentElement.style.removeProperty("color-scheme");
 	const skin = registrySkin(id)?.id ?? null;
 	applied.set(doc, skin);
 	const css = await skinCss(skin);

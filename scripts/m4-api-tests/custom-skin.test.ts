@@ -66,27 +66,33 @@ test("render: Stock's root attributes, variables (as Stock applied them live), m
 	assert.equal(render.mode, "light");
 	assert.deepEqual(render.attrs, { "data-skin": "claude", "data-density-button": "comfortable" });
 	const style = Object.fromEntries(render.style);
+	const light = Object.fromEntries(render.modes.light);
 	// Values read from document.documentElement on app.codegen-x.com/#/frame/block.herosplit/miniCards with this theme.
 	assert.equal(style["--radius"], "12px");
 	assert.equal(style["--radius-button"], "8px");
 	assert.equal(style["--radius-card"], "16px");
 	assert.equal(style["--shadow-card"], "var(--shadow-md)");
-	assert.equal(style["--primary"], "hsl(160 70% 38%)");
-	assert.equal(style["--primary-foreground"], "hsl(160 40% 10%)");
-	assert.equal(style["--background"], "hsl(160 8% 97%)");
-	assert.equal(style["--muted-foreground"], "hsl(160 10% 37%)");
+	assert.equal(light["--primary"], "hsl(160 70% 38%)");
+	assert.equal(light["--primary-foreground"], "hsl(160 40% 10%)");
+	assert.equal(light["--background"], "hsl(160 8% 97%)");
+	assert.equal(light["--muted-foreground"], "hsl(160 10% 37%)");
+	assert.equal(style["--primary"], undefined, "the palette is per mode (ADR 0072), not inline on the root");
 	assert.equal(style["--text-base"], "1.05rem");
 	assert.equal(style["font-weight"], "500");
 	assert.equal(style["--tracking-normal"], "0.025em");
 	assert.equal(style["--taste-heading"], "Merriweather,sans-serif");
 	assert.equal(style["--font-sans"], "Manrope,sans-serif", "Stock self-hosts Manrope as taste-manrope; the chat loads the same face from Google");
-	assert.equal(style["color-scheme"], "light");
+	assert.equal(light["color-scheme"], "light");
+	assert.equal(Object.fromEntries(render.modes.dark)["color-scheme"], "dark");
 	assert.deepEqual(render.fonts, [
 		"https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap",
 		"https://fonts.googleapis.com/css2?family=Merriweather:wght@400;500;600;700&display=swap"
 	]);
-	const dark = renderCustomSkin({ ...r.config, mode: "dark" });
-	assert.notEqual(Object.fromEntries(dark.style)["--primary"], style["--primary"], "the palette is computed for the config's mode");
+	const dark = Object.fromEntries(render.modes.dark);
+	assert.notEqual(dark["--primary"], light["--primary"], "dark mode has its own computed palette");
+	assert.ok(dark["--background"] && dark["--foreground"], "both modes carry the colour tokens");
+	// The config's mode is only the default: the same config in the other default renders the same two sets.
+	assert.deepEqual(renderCustomSkin({ ...r.config, mode: "dark" }).modes, render.modes);
 	assert.match(CUSTOM_SKIN_BASE_CSS, /:is\(h1, h2, h3\) \{ font-family: var\(--taste-heading, var\(--font-sans\)\)/);
 });
 
@@ -108,15 +114,18 @@ test("zip: base skin from the registry, Stock's root on <html>, base rules, them
 	const files = packFilesFromPage(fixturePage, { skin: "claude", theme: r.config });
 	const file = (path: string) => files.find((entry) => entry.path === path)?.content ?? "";
 	const html = file("index.html");
-	assert.match(html, /<html lang="en" data-skin="claude" data-density-button="comfortable" data-theme="light" style="--radius:12px;/);
-	assert.match(html, /--primary:hsl\(160 70% 38%\)/);
-	assert.match(html, /color-scheme:light"/);
+	assert.match(html, /<html lang="en" data-skin="claude" data-density-button="comfortable" style="--radius:12px;/);
+	assert.doesNotMatch(html, /--primary:/, "the palette lives in custom-skin.css, for both modes");
 	assert.match(html, /<link rel="stylesheet" href="https:\/\/fonts\.googleapis\.com\/css2\?family=Manrope/);
-	assert.doesNotMatch(html, /prefers-color-scheme/, "the config fixes its mode");
+	assert.match(html, /prefers-color-scheme/, "the exported page follows the system's mode: both are carried");
+	assert.doesNotMatch(html, /data-theme="(light|dark)" style|class="dark" data-theme/, "no fixed mode on <html>");
 	const main = file("src/main.ts");
 	assert.match(main, /import "\.\/styles\/skins\/claude\.css";/);
 	assert.match(main, /import "\.\/custom-skin\.css";/);
-	assert.equal(file(CUSTOM_SKIN_CSS), CUSTOM_SKIN_BASE_CSS);
+	const customCss = file(CUSTOM_SKIN_CSS);
+	assert.ok(customCss.startsWith(CUSTOM_SKIN_BASE_CSS));
+	assert.match(customCss, /:root:root \{\n  --primary: hsl\(160 70% 38%\);/, "light palette");
+	assert.match(customCss, /:root:root:is\(\.dark, \[data-theme="dark"\]\) \{\n  --primary: hsl\(/, "dark palette");
 	assert.equal(file(THEME_FILE), `${STOCK}\n`);
 	const again = importThemeConfig(file(THEME_FILE));
 	assert.ok(again.ok && again.text === STOCK, "chat export -> import -> export is lossless");
@@ -143,7 +152,7 @@ test("chat UI untouched: the skin goes on the preview document only; settings sc
 	assert.match(pane, /if \(doc\) void applySkin\(doc, id, config\)/);
 	assert.match(pane, /data-slot="preview-skin-brand"/);
 	assert.match(pane, /data-slot="preview-skin-kit"/);
-	assert.match(pane, /const forced = forcedPreviewMode\(doc\)/);
+	assert.doesNotMatch(pane, /forcedPreviewMode/, "a Brand Skin no longer fixes the preview's mode: the app's light / dark choice picks one of its two");
 	assert.doesNotMatch(web("lib/theme/custom-skin.svelte.ts"), /documentElement/);
 	const sidebar = web("app/ProjectSidebar.svelte") + web("app/SidebarSettings.svelte");
 	assert.match(sidebar, /id="creator-settings"\s+class="min-h-0 shrink gap-2 overflow-y-auto overscroll-contain rounded border border-border p-2 text-xs"/, "controls inherit xs: app.css sets font: inherit on them");

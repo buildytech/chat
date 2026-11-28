@@ -6,7 +6,8 @@
 import { RADII, SKIN_IDS, THEME_FONT_IDS } from "./magazine/ids.ts";
 import { HARMONIES } from "./magazine/palette.ts";
 import { validateDesignProposal, type DesignProposal } from "./design-validate.ts";
-import type { DesignIssue } from "./brand-brief.ts";
+import type { BrandBrief, DesignIssue } from "./brand-brief.ts";
+import type { ThemeConfig } from "./custom-skin.ts";
 
 export type DesignChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -14,7 +15,10 @@ type DesignComplete = (messages: readonly DesignChatMessage[], signal?: AbortSig
 
 export const DESIGN_MAX_ATTEMPTS = 3;
 
-export function designSystemPrompt(): string {
+/** The Brand Skin a turn edits (ADR 0072): its current brief and theme go to the model; the result keeps the id and bumps the revision. */
+export type DesignBase = { id: string; name: string; revision: number; brief: BrandBrief; theme: ThemeConfig };
+
+export function designSystemPrompt(base?: DesignBase): string {
 	const fonts = THEME_FONT_IDS.join(", ");
 	const skins = SKIN_IDS.join(", ");
 	const radii = RADII.join(", ");
@@ -27,9 +31,16 @@ export function designSystemPrompt(): string {
 		`Base skins (theme.skin): ${skins}, or null for the kit default.`,
 		`Fonts (theme.font and theme.headingFont): ${fonts}, or null.`,
 		`Radius (theme.radius), in px: ${radii}, or null.`,
-		"Palette contrast must meet WCAG 2.2 AA: body text at least 4.5:1 on the background, primary foreground at least 3:1 on primary. Prefer a distinctive, specific brand, not a generic startup look.",
+		"Every Brand Skin carries BOTH a light and a dark mode. The host renders both from the same theme.palette (the hue and harmony stay, dark mode lifts the base colour and deepens the surfaces), so pick a palette, base skin and radius that read well in light AND in dark. theme.mode is only the skin's default mode: never design for one mode only, and never answer that a mode is missing or unsupported.",
+		"Contrast must meet WCAG 2.2 AA in light mode AND in dark mode: body text at least 4.5:1 on the background, primary foreground at least 3:1 on primary. The host checks both modes and rejects a skin that fails either. Prefer a distinctive, specific brand, not a generic startup look.",
 		"The brief must declare a name, a thesis summary, positioning, what the brand must not become (antiPersonality), a shape language, and image-treatment things to avoid.",
-		"If the host returns issues, fix exactly those paths and send the full JSON again."
+		"If the host returns issues, fix exactly those paths and send the full JSON again.",
+		...(base
+			? [
+					`EDIT MODE: you are changing the existing Brand Skin "${base.name}" (id ${base.id}, revision ${base.revision}), not creating a new one. Apply only what the request asks and copy every other field of the current skin unchanged (keep brief.name unless the request renames it). Answer with the full updated JSON in the same shape. The skin keeps its id; the host bumps the revision.`,
+					`Current skin (JSON): ${JSON.stringify({ brief: base.brief, theme: base.theme })}`
+				]
+			: [])
 	].join("\n");
 }
 
@@ -79,11 +90,11 @@ function errorCode(error: unknown): string {
 	return "design_failed";
 }
 
-export async function runDesignTurn(request: string, complete: DesignComplete, signal?: AbortSignal): Promise<DesignTurnResult> {
+export async function runDesignTurn(request: string, complete: DesignComplete, signal?: AbortSignal, base?: DesignBase): Promise<DesignTurnResult> {
 	const brief = request.trim();
 	if (!brief) return { ok: false, issues: [{ code: "empty_request", path: "/", message: "Describe the brand, its audience and the feeling of the style." }], attempts: 0 };
 	const messages: DesignChatMessage[] = [
-		{ role: "system", content: designSystemPrompt() },
+		{ role: "system", content: designSystemPrompt(base) },
 		{ role: "user", content: brief }
 	];
 	let lastIssues: DesignIssue[] = [];

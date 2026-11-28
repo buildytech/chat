@@ -9,6 +9,7 @@
  */
 import { CONFIG_FORMAT, CONFIG_VERSION, fromConfig, rootAttrs, rootStyle, THEME_SCHEMA, toConfig, type Mode, type ThemeConfig } from "./magazine/global-theme.ts";
 import { SKIN_FONTS, themeFamily, themeFontSpec } from "./magazine/ids.ts";
+import { paletteTokens } from "./magazine/palette.ts";
 
 export { CONFIG_FORMAT, CONFIG_VERSION, type ThemeConfig };
 
@@ -114,15 +115,21 @@ export function importThemeConfig(input: unknown): ThemeImport {
 	return { ok: true, config, text: configText(config) };
 }
 
-/** What the preview document and the exported index.html carry for a config (Stock's applyState, as data). */
+/** The two modes every Brand Skin carries (ADR 0072). */
+export const SKIN_MODES = ["light", "dark"] as const;
+
+/** What the preview document and the exported site carry for a config (Stock's applyState, as data). */
 export type CustomSkinRender = {
 	/** the base skin (registry item theme-<skin>), null: the kit's default theme */
 	skin: string | null;
+	/** the config's own default mode (Stock exports it); both modes are rendered, the app's light / dark choice picks one */
 	mode: Mode;
 	/** data-skin and the density attributes (rootAttrs) */
 	attrs: Record<string, string>;
-	/** the inline declarations of the root, in Stock's order (rootStyle for the config's mode), then color-scheme */
+	/** the inline declarations of the root that do not depend on the mode: radius, fonts, per-element tokens, type scale */
 	style: Array<[string, string]>;
+	/** the palette's colour tokens and `color-scheme` for each mode (the same palette, computed light and dark) */
+	modes: Record<Mode, Array<[string, string]>>;
 	/** Google Fonts css2 stylesheet URLs: the skin's fonts, then the theme fonts */
 	fonts: string[];
 };
@@ -141,24 +148,50 @@ export const CUSTOM_SKIN_BASE_CSS = `/* Custom Skin base rules, as Stock's app.c
 
 const googleFontUrl = (spec: string): string => `https://fonts.googleapis.com/css2?family=${spec}&display=swap`;
 
+const pair = (prop: string, value: string): [string, string] => [prop, value];
+
+function declarations(text: string): Array<[string, string]> {
+	return text
+		.split(";")
+		.filter(Boolean)
+		.map((decl) => {
+			const at = decl.indexOf(":");
+			return pair(decl.slice(0, at), decl.slice(at + 1));
+		});
+}
+
 export function renderCustomSkin(config: ThemeConfig): CustomSkinRender {
 	const read = fromConfig(config);
 	if (!read.ok) throw new Error(`not a magazine-theme config: ${read.error}`);
 	const theme = read.theme;
 	const mode: Mode = read.mode ?? "light";
-	const style: Array<[string, string]> = rootStyle(theme, themeFamily, mode)
-		.split(";")
-		.filter(Boolean)
-		.map((decl) => {
-			const at = decl.indexOf(":");
-			return [decl.slice(0, at), decl.slice(at + 1)] as [string, string];
-		});
-	style.push(["color-scheme", mode]);
+	const { palette, ...plain } = theme;
+	const style = declarations(rootStyle({ ...plain }, themeFamily, "light"));
+	const forMode = (which: Mode): Array<[string, string]> => [
+		...(palette ? Object.entries(paletteTokens(palette, which, theme.skin)).map(([prop, value]) => pair(`--${prop}`, value)) : []),
+		pair("color-scheme", which)
+	];
 	const specs = [...(theme.skin ? (SKIN_FONTS[theme.skin] ?? []) : []), ...[theme.font, theme.headingFont].flatMap((id) => (id ? [themeFontSpec(id)].filter((s): s is string => !!s) : []))];
-	return { skin: theme.skin, mode, attrs: rootAttrs(theme), style, fonts: [...new Set(specs)].map(googleFontUrl) };
+	return { skin: theme.skin, mode, attrs: rootAttrs(theme), style, modes: { light: forMode("light"), dark: forMode("dark") }, fonts: [...new Set(specs)].map(googleFontUrl) };
 }
 
-/** The inline `style` attribute text of a render (index.html of the ZIP). */
+/** Where a mode's rules go: selectors that outrank the skin's own `[data-skin]` rules (so the palette wins in both modes). */
+type ModeSelectors = { light: string; dark: string };
+/** The whole document (preview frame, exported site): light on the root, dark under `.dark` or `data-theme="dark"`. */
+export const ROOT_MODE_SELECTORS: ModeSelectors = { light: ":root:root", dark: ':root:root:is(.dark, [data-theme="dark"])' };
+/** A scope element inside the app (the Blocks feed): dark when the scope or an ancestor is dark. */
+export const SCOPE_MODE_SELECTORS: ModeSelectors = {
+	light: "[data-page-skin][data-page-skin]",
+	dark: ':is(.dark, [data-theme="dark"]) [data-page-skin][data-page-skin], [data-page-skin][data-page-skin]:is(.dark, [data-theme="dark"])'
+};
+
+/** The palette of a render as one rule per mode: both token sets are always written (light, then dark). */
+export function modeCss(render: CustomSkinRender, selectors: ModeSelectors = ROOT_MODE_SELECTORS): string {
+	const rule = (selector: string, decls: Array<[string, string]>): string => `${selector} {\n${decls.map(([prop, value]) => `  ${prop.trim()}: ${value.trim()};`).join("\n")}\n}`;
+	return `${rule(selectors.light, render.modes.light)}\n${rule(selectors.dark, render.modes.dark)}\n`;
+}
+
+/** The inline `style` attribute text of the mode-independent declarations of a render. */
 export const renderStyleText = (render: CustomSkinRender): string => render.style.map(([prop, value]) => `${prop}:${value}`).join(";");
 
 /** The stored slot `{ v: 1, config }`; null when absent or not a valid config (the caller quarantines a bad value). */

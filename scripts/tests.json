@@ -53,6 +53,8 @@
       "design-turn.test.ts",
       "brand-skins.test.ts",
       "design-validate.test.ts",
+      "design-modes.test.ts",
+      "preview-host-open.test.ts",
       "inspector.test.ts",
       "inspector-widgets.test.ts",
       "layout-prefs.test.ts",

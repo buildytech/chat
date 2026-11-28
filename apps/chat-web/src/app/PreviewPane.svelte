@@ -17,7 +17,7 @@ import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 	import ModuleSlot from "./ModuleSlot.svelte";
 	import PreviewAddress from "./PreviewAddress.svelte";
 	import { getProjectSkin, getSelectedProject, setProjectSkin } from "$lib/project";
-	import { applySkin, forcedPreviewMode, skins } from "$lib/theme/skins";
+	import { applySkin, skins } from "$lib/theme/skins";
 	import { projectBrandSkins, projectBrandTheme } from "$lib/theme/brand-skins.svelte.ts";
 	import {
 		blocksOf,
@@ -36,6 +36,7 @@ import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 	import PreviewFrame from "./PreviewFrame.svelte";
 	import { previewSettings } from "$lib/browser/preview-settings.svelte";
 	import { previewWindowUrl } from "$lib/browser/preview-settings";
+	import { openPreviewWindow } from "$lib/browser/preview-window";
 	import { getBoundProjectId } from "$lib/page-store";
 	import { forwardShortcut } from "$lib/layout/shortcuts";
 
@@ -81,13 +82,6 @@ import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 		if (source.dataset.theme) target.dataset.theme = source.dataset.theme;
 		else delete target.dataset.theme;
 		target.style.colorScheme = source.style.colorScheme;
-		// A Custom Skin (ADR 0025) fixes its own mode on the preview; the chat's mode never reaches it then.
-		const forced = forcedPreviewMode(doc);
-		if (forced) {
-			target.classList.toggle("dark", forced === "dark");
-			target.dataset.theme = forced;
-			target.style.colorScheme = forced;
-		}
 	}
 
 	async function onFrameLoad() {
@@ -171,12 +165,9 @@ import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 
 	// The whole preview site as-is in a new window: the /preview route renders this chat's page (pending proposal, else
 	// the applied page) with the registry blocks and kit theme, no chat UI and no service labels.
+	// On the desktop host the host opens it (a webview cannot window.open: ADR 0073).
 	function openNew() {
-		window.open(
-			previewWindowUrl(getSelectedProject()?.id ?? getBoundProjectId(), base, page?.slug),
-			"_blank",
-			"noopener",
-		);
+		void openPreviewWindow(previewWindowUrl(getSelectedProject()?.id ?? getBoundProjectId(), base, page?.slug));
 	}
 </script>
 

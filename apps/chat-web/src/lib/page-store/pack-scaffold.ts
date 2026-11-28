@@ -47,33 +47,28 @@ npm i && npm run dev
   \`ui8kit.config.json\` / \`ui8kit.lock.json\` are exactly what \`npx ui8kit init\` + \`npx ui8kit add\` write for
   the items in \`GENERATOR.json\` (\`registryItems\`). Check them with \`npx ui8kit check\`; do not edit them.
 - Dark theme: \`class="dark"\` or \`data-theme="dark"\` on \`<html>\`.
-${skin ? `- Skin: ${skin.title} (\`npx ui8kit add ${skin.item}\`): \`${skin.file}\` is imported in \`${INSTALL_ROOT}/main.ts\` and \`<html data-skin="${skin.id}">\` turns it on. Remove both lines for the default theme.\n` : ""}${custom ? `- Custom Skin: \`${THEME_FILE}\` is the theme as the Stock theme editor exports it (format magazine-theme, version 2; import it again in BuildY Settings or in Stock). \`index.html\` carries what it sets on \`<html>\`: ${skin ? "the base skin above, " : ""}the density attributes, the inline variables (radius, fonts, per-element tokens, palette, type scale), its ${custom.mode} mode and the Google Fonts links.\n` : ""}${picturesNote(images)}`;
+${skin ? `- Skin: ${skin.title} (\`npx ui8kit add ${skin.item}\`): \`${skin.file}\` is imported in \`${INSTALL_ROOT}/main.ts\` and \`<html data-skin="${skin.id}">\` turns it on. Remove both lines for the default theme.\n` : ""}${custom ? `- Custom Skin: \`${THEME_FILE}\` is the theme as the Stock theme editor exports it (format magazine-theme, version 2; import it again in BuildY Settings or in Stock). \`index.html\` carries what it sets on \`<html>\`: ${skin ? "the base skin above, " : ""}the density attributes, the inline variables (radius, fonts, per-element tokens, type scale) and the Google Fonts links. \`${CUSTOM_SKIN_CSS}\` carries the palette for both modes: light by default, dark under \`class="dark"\` or \`data-theme="dark"\` on \`<html>\` (the page follows the system's setting).\n` : ""}${picturesNote(images)}`;
 }
 
 export function scaffold(slug: string, title: string, skin: RegistrySkin | null, custom: CustomSkinRender | null = null, images: LocalImages | null = null): PackFile[] {
 	// A skin is on with its CSS after the styles entry and data-skin on <html> (what `npx ui8kit add theme-<skin>` prints).
-	// A Custom Skin adds what Stock puts on its root: density attributes, the inline variables, its fixed mode, fonts.
+	// A Custom Skin adds what Stock puts on its root: density attributes, the inline variables, fonts; both modes live in custom-skin.css.
 	const htmlAttrs = custom
-		? [
-				...Object.entries(custom.attrs).map(([name, value]) => ` ${name}="${attr(value)}"`),
-				custom.mode === "dark" ? ` class="dark" data-theme="dark"` : ` data-theme="light"`,
-				` style="${attr(renderStyleText(custom))}"`
-			].join("")
+		? [...Object.entries(custom.attrs).map(([name, value]) => ` ${name}="${attr(value)}"`), ` style="${attr(renderStyleText(custom))}"`].join("")
 		: skin
 			? ` data-skin="${skin.id}"`
 			: "";
-	const modeScript = custom
-		? `		<!-- Custom Skin (theme.json, magazine-theme v2): fonts it names; its ${custom.mode} mode is fixed on <html>. -->
-${custom.fonts.map((href) => `		<link rel="stylesheet" href="${attr(href)}" />`).join("\n")}
-`
-		: `		<script>
-			// Dark theme follows the system; set class="dark" (or data-theme="dark") on <html> to force it.
-			if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("dark");
+	// Dark theme follows the system; a Custom Skin carries both modes (custom-skin.css) and can pin light with data-theme="light".
+	const script = `		<script>
+			// Dark theme follows the system; set class="dark" (or data-theme="dark") on <html> to force it${custom ? ', data-theme="light" to pin light' : ""}.
+			if (matchMedia("(prefers-color-scheme: dark)").matches${custom ? ' && document.documentElement.dataset.theme !== "light"' : ""}) document.documentElement.classList.add("dark");
 		</script>
 `;
+	const fontLinks = custom ? `		<!-- Custom Skin (theme.json, magazine-theme v2): fonts it names. Its light and dark palettes are both in ${CUSTOM_SKIN_CSS}. -->\n${custom.fonts.map((href) => `		<link rel="stylesheet" href="${attr(href)}" />`).join("\n")}\n` : "";
+	const modeScript = fontLinks + script;
 	const skinImport =
 		(skin ? `// Skin ${skin.title} (registry item ${skin.item}): brand tokens only, on with data-skin on <html>.\nimport "./${skin.file.slice(`${INSTALL_ROOT}/`.length)}";\n` : "") +
-		(custom ? `// Custom Skin (theme.json): Stock's base rules; its tokens are inline on <html> in index.html.\nimport "./${CUSTOM_SKIN_CSS.slice(`${INSTALL_ROOT}/`.length)}";\n` : "");
+		(custom ? `// Custom Skin (theme.json): Stock's base rules and the palette of both modes (light, and dark under .dark); the other tokens are inline on <html> in index.html.\nimport "./${CUSTOM_SKIN_CSS.slice(`${INSTALL_ROOT}/`.length)}";\n` : "");
 	const safeTitle = title.replace(/[<>&"]/g, "");
 	const pkg = {
 		name: `${slug.replace(/[^a-z0-9-]/gi, "-").toLowerCase() || "page"}`,

@@ -26,7 +26,7 @@
 			const canonical = base + "/" + encodeURIComponent(page.slug);
 			if (location.pathname !== canonical) window.history.replaceState(null, "", canonical + location.search);
 		}
-		// A Brand Skin (ADR 0070) fixes its own light / dark mode, after the chat's mode.
+		// A Brand Skin (ADR 0070, 0072) carries both modes; the chat's light / dark choice picks one.
 		void applySkin(document, readSessionSkin(session), storedCustomSkin(session));
 	}
 
