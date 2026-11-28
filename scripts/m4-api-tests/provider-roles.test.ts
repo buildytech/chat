@@ -21,8 +21,8 @@ const desktop = (or: Partial<{ state: string; chat: string[] }> = {}, xai: Parti
 	models: { listed: true, chatIds: ["grok-4.20-0309-non-reasoning"], candidate: "grok-4.20-0309-non-reasoning" },
 	capabilities: { settings: ["providers"], keys: ["xai"], signIn: ["openrouter"] },
 	providers: [
-		{ id: "xai", state: xai.state ?? "ready", key: { present: xai.present ?? true, source: xai.present === false ? null : "env" }, roles: ["build", "ask", "media"], models: { chat: ["grok-4.20-0309-non-reasoning", "grok-4.7"], image: ["grok-imagine-image", IMAGE] } },
-		{ id: "openrouter", state: or.state ?? "ready", key: { present: or.state !== "not_configured", source: or.state === "not_configured" ? null : "keychain" }, roles: ["build", "ask"], models: { chat: or.chat ?? ["x-ai/grok-4.20", "x-ai/grok-4.7"], image: [] }, pending: false }
+		{ id: "xai", state: xai.state ?? "ready", key: { present: xai.present ?? true, source: xai.present === false ? null : "env" }, roles: ["build", "ask", "media", "design"], models: { chat: ["grok-4.20-0309-non-reasoning", "grok-4.7"], image: ["grok-imagine-image", IMAGE] } },
+		{ id: "openrouter", state: or.state ?? "ready", key: { present: or.state !== "not_configured", source: or.state === "not_configured" ? null : "keychain" }, roles: ["build", "ask", "design"], models: { chat: or.chat ?? ["x-ai/grok-4.20", "x-ai/grok-4.7"], image: [] }, pending: false }
 	]
 });
 const web: ProvidersStatus = { ready: true, code: "xai_runtime_ready", key: { present: true }, models: { listed: true, chatIds: ["grok-4.20-0309-non-reasoning", "grok-4.7"], imageIds: ["grok-imagine-image", IMAGE] } };
@@ -34,7 +34,7 @@ test("the desktop lists both providers; OpenRouter's chat ids are read in the ap
 	assert.equal(or.id, "openrouter");
 	assert.deepEqual(or.chat, ["grok-4.20-0309-non-reasoning", "grok-4.20-0309-reasoning", "grok-4.7"]);
 	assert.deepEqual(or.rawChat, ["x-ai/grok-4.20", "x-ai/grok-4.7"]);
-	assert.deepEqual([...or.roles], ["build", "ask"], "OpenRouter draws no pictures (constants.openrouter.mediaEnabled false)");
+	assert.deepEqual([...or.roles], ["build", "ask", "design"], "OpenRouter draws no pictures (constants.openrouter.mediaEnabled false)");
 });
 
 test("a web host serves xAI only; OpenRouter is a desktop provider there", () => {
@@ -63,10 +63,11 @@ test("an approved list narrows what a role may pick and never adds a model the h
 	assert.deepEqual(imageChoices(or, readApproved(null)), [], "no Media role, no picture choices");
 });
 
-test("defaults: Build on OpenRouter when it is there, else xAI; Ask follows Build; Media on xAI with a key, else off", () => {
+test("defaults: Build on OpenRouter when it is there, else xAI; Ask and Design follow Build; Media on xAI with a key, else off", () => {
 	const none = readChoices(null);
 	assert.equal(roleProvider("build", none, providerViews(desktop())), "openrouter");
 	assert.equal(roleProvider("ask", none, providerViews(desktop())), "openrouter");
+	assert.equal(roleProvider("design", none, providerViews(desktop())), "openrouter");
 	assert.equal(roleProvider("build", none, providerViews(desktop({ state: "not_configured" }))), "xai");
 	assert.equal(roleProvider("build", none, providerViews(web)), "xai");
 	assert.equal(roleProvider("media", none, providerViews(desktop())), "xai");
@@ -74,10 +75,11 @@ test("defaults: Build on OpenRouter when it is there, else xAI; Ask follows Buil
 });
 
 test("a chosen provider stays even when it cannot serve now (no automatic switch)", () => {
-	const choices = readChoices({ build: { provider: "openrouter" }, ask: { same: false, provider: "xai", model: "grok-4.7" }, media: { provider: "off" } });
+	const choices = readChoices({ build: { provider: "openrouter" }, ask: { same: false, provider: "xai", model: "grok-4.7" }, design: { same: false, provider: "xai", model: "grok-4.20-0309-non-reasoning" }, media: { provider: "off" } });
 	const views = providerViews(desktop({ state: "limit" }));
 	assert.equal(roleProvider("build", choices, views), "openrouter");
 	assert.equal(roleProvider("ask", choices, views), "xai");
+	assert.equal(roleProvider("design", choices, views), "xai");
 	assert.equal(roleProvider("media", choices, views), "off");
 	assert.deepEqual(readChoices({ build: { provider: "gemini" }, ask: { same: false, provider: "xai" }, media: { provider: 1 } }), readChoices(null), "anything else is the defaults");
 });
@@ -150,7 +152,9 @@ test("spend per role: billed costs only, kept per provider, read back strictly, 
 	let ledger = addSpend(emptySpend(), "build", "openrouter", 25_000_000);
 	ledger = addSpend(ledger, "build", "openrouter", 5_000_000);
 	ledger = addSpend(ledger, "media", "xai", null);
-	assert.deepEqual(ledger, { build: { openrouter: 30_000_000 }, ask: {}, media: {} });
+	assert.deepEqual(ledger, { build: { openrouter: 30_000_000 }, ask: {}, media: {}, design: {} });
+	ledger = addSpend(ledger, "design", "openrouter", 10_000_000);
+	assert.equal(ledger.design.openrouter, 10_000_000);
 	assert.deepEqual(readSpend(JSON.parse(JSON.stringify(ledger))), ledger);
 	assert.deepEqual(readSpend({ build: { xai: -1, openrouter: "3" } }), emptySpend());
 	assert.equal(costTicks({ available: true, kind: "billed", currency: "USD", ticks: "12345", usd: "0.0000012345" }), 12345);

@@ -79,6 +79,7 @@
       "runtime-host.test.ts",
       "openrouter-desktop.test.ts",
       "provider-roles.test.ts",
+      "ask-actions.test.ts",
       "content-macros.test.ts"
     ],
     "runtime-contract": [

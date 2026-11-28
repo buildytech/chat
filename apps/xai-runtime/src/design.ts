@@ -3,7 +3,7 @@
  * with no tools and answers `{ ok, text }`. The key stays here; the browser never sees it. The host validator
  * and Brand Skin write live in the client (runDesignTurn).
  */
-import { readXaiKeyState, resolveChatModelRequest, safeErrorMessage, secretValues, xaiBaseUrl, type EnvMap } from "@buildytech/chat-agent";
+import { isProviderId, readXaiKeyState, resolveChatModelRequest, safeErrorMessage, secretValues, usdToTicks, xaiBaseUrl, type EnvMap } from "@buildytech/chat-agent";
 import { xaiCapabilities } from "@buildytech/provider-xai";
 import { runtimeStatus } from "./status.ts";
 
@@ -48,6 +48,15 @@ function assistantText(payload: unknown): string | null {
 	return null;
 }
 
+function designTicks(payload: unknown): number | null {
+	if (!isBody(payload) || !isBody(payload.usage)) return null;
+	const raw = payload.usage.cost_in_usd_ticks;
+	if (typeof raw === "number" && Number.isSafeInteger(raw) && raw >= 0) return raw;
+	if (typeof raw === "string" && /^(0|[1-9][0-9]*)$/.test(raw)) return Number(raw);
+	const fromUsd = usdToTicks(payload.usage.cost);
+	return fromUsd !== undefined ? Number(fromUsd) : null;
+}
+
 function logDesign(event: Record<string, unknown>): void {
 	console.log(JSON.stringify({ runtime: "xai-grok", event: "xai_design", ...event }));
 }
@@ -66,6 +75,10 @@ export async function handleDesign(request: Request, env: EnvMap): Promise<Respo
 	if (!messages) return json(422, { ok: false, code: "invalid_request", message: "messages is a non-empty list of role and content." });
 	const requestedId = typeof body.modelId === "string" ? body.modelId : "";
 	if (!requestedId.trim()) return json(422, { ok: false, code: "missing_model_id", message: "Select a Grok chat model before sending." });
+	if (body.provider !== undefined && body.provider !== "xai") {
+		if (isProviderId(body.provider)) return json(409, { ok: false, code: "provider_role_disabled", message: "This host does not run Design with that provider. No provider call was made." });
+		return json(422, { ok: false, code: "invalid_request", message: "provider is xai or openrouter." });
+	}
 	if (!readXaiKeyState(env).present) return json(503, { ok: false, code: "xai_api_key_missing", message: "XAI_API_KEY is not provisioned here. No provider call was made." });
 	const status = await runtimeStatus(env);
 	const resolved = resolveChatModelRequest({
@@ -105,8 +118,9 @@ export async function handleDesign(request: Request, env: EnvMap): Promise<Respo
 			logDesign({ ok: false, code: "malformed_response", modelId: resolved.modelId, ms: Date.now() - started });
 			return json(502, { ok: false, code: "malformed_response", message: "The provider answer had no assistant text." });
 		}
+		const ticks = designTicks(payload);
 		logDesign({ ok: true, code: "ok", modelId: resolved.modelId, ms: Date.now() - started });
-		return json(200, { ok: true, text });
+		return json(200, { ok: true, text, ...(ticks !== null ? { costUsdTicks: ticks } : {}) });
 	} catch (err) {
 		const safe = safeErrorMessage(err, secretValues(env));
 		logDesign({ ok: false, code: safe.code || "design_failed", modelId: resolved.modelId, ms: Date.now() - started });

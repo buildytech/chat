@@ -1,4 +1,4 @@
-<!-- Providers (ADR 0068), the chat module's section of the Settings screen: one row per role (Build, Ask, Media) with its
+<!-- Providers (ADR 0068), the chat module's section of the Settings screen: one row per role (Build, Ask, Media, Design) with its
      provider, model, state and spend; the approved-model lists per provider and kind; on the desktop the xAI key (kept in
      the system keychain, never shown again) and the OpenRouter sign-in. Nothing switches a provider by itself. -->
 <script lang="ts">
@@ -19,7 +19,7 @@
 	import { t } from "$lib/i18n/dictionary";
 	import { getChatModel, PROVIDER_ROLES, type ModelKind, type ProviderId, type ProviderRole } from "@buildytech/chat-agent";
 	import { getSelectedModelId, setSelectedModelId } from "../browser/models.svelte.ts";
-	import { approvedOnHost, effectiveProvider, getApproved, getProviderViews, getRoleChoices, getSpend, hostTakesKeys, mediaDraw, refreshProviders, resetSpend, saveApproved, setAskModel, setAskSame, setBuildProvider, setMediaModel, setMediaProvider, storeXaiKey } from "../browser/providers.svelte.ts";
+	import { approvedOnHost, effectiveProvider, getApproved, getProviderViews, getRoleChoices, getSpend, hostTakesKeys, mediaDraw, refreshProviders, resetSpend, saveApproved, setAskModel, setAskSame, setBuildProvider, setDesignModel, setDesignSame, setMediaModel, setMediaProvider, storeXaiKey } from "../browser/providers.svelte.ts";
 	import { chatChoices, formatTicks, imageChoices, parseApprovedText, type ProviderView } from "../browser/provider-roles.ts";
 	import RuntimeSignIn from "./RuntimeSignIn.svelte";
 
@@ -45,17 +45,21 @@
 			const draw = mediaDraw();
 			return { role, provider, providerValue: provider, providers, models: current ? imageChoices(current, doc) : [], model: draw.model, modelDisabled: provider === "off", state, spent };
 		}
-		const same = role === "ask" && choices.ask.same;
-		const model = role === "ask" && !choices.ask.same ? choices.ask.model : getSelectedModelId();
+		const follow = role === "ask" ? choices.ask : role === "design" ? choices.design : null;
+		const same = Boolean(follow?.same);
+		const model = follow && !follow.same ? follow.model : getSelectedModelId();
 		return { role, provider, providerValue: same ? "same" : provider, providers, models: current ? chatChoices(current, doc) : [], model, modelDisabled: same, state, spent };
 	}
-	const rows = $derived(PROVIDER_ROLES.map(row));
+	// Design is listed only when the status serves that role (desktop after ADR 0071, and the web host's synthesised xAI entry). An older desktop without it keeps three rows.
+	const rows = $derived(PROVIDER_ROLES.filter((role) => role !== "design" || views.some((p) => p.roles.includes("design"))).map(row));
 
 	function chooseProvider(role: ProviderRole, value: string) {
 		if (role === "build" && (value === "xai" || value === "openrouter")) setBuildProvider(value);
-		if (role === "ask") {
-			if (value === "same") setAskSame();
-			else if (value === "xai" || value === "openrouter") setAskModel(value, chatChoices(view(value) ?? views[0], doc)[0] ?? getSelectedModelId());
+		if (role === "ask" || role === "design") {
+			const setSame = role === "ask" ? setAskSame : setDesignSame;
+			const setModel = role === "ask" ? setAskModel : setDesignModel;
+			if (value === "same") setSame();
+			else if (value === "xai" || value === "openrouter") setModel(value, chatChoices(view(value) ?? views[0], doc)[0] ?? getSelectedModelId());
 		}
 		if (role === "media" && (value === "xai" || value === "openrouter" || value === "off")) setMediaProvider(value);
 	}
@@ -63,6 +67,7 @@
 	function chooseModel(r: Row, id: string) {
 		if (r.role === "build") setSelectedModelId(id);
 		if (r.role === "ask" && r.provider !== "off") setAskModel(r.provider, id);
+		if (r.role === "design" && r.provider !== "off") setDesignModel(r.provider, id);
 		if (r.role === "media") setMediaModel(id);
 	}
 
@@ -119,7 +124,7 @@
 				<Grid class="items-center gap-2 md:grid-cols-[8rem_1fr_1fr_8rem_6rem]" role="group" aria-labelledby={`role-${r.role}-name`} data-role={r.role}>
 					<Text tag="span" id={`role-${r.role}-name`} class="text-sm font-medium">{t(`providers.role.${r.role}`)}</Text>
 					<Select size="sm" id={`role-${r.role}-provider`} aria-label={t("providers.providerFor").replace("{role}", t(`providers.role.${r.role}`))} value={r.providerValue} onchange={(e: Event) => chooseProvider(r.role, valueOf(e))}>
-						{#if r.role === "ask"}<SelectOption value="same">{t("providers.sameAsBuild")}</SelectOption>{/if}
+						{#if r.role === "ask" || r.role === "design"}<SelectOption value="same">{t("providers.sameAsBuild")}</SelectOption>{/if}
 						{#each r.providers as p (p.id)}<SelectOption value={p.id}>{t(`providers.name.${p.id}`)}</SelectOption>{/each}
 						{#if r.role === "media"}<SelectOption value="off">{t("providers.off")}</SelectOption>{/if}
 						{#if r.provider !== "off" && !r.providers.some((p) => p.id === r.provider) && r.providerValue !== "same"}<SelectOption value={r.provider}>{t(`providers.name.${r.provider}`)}</SelectOption>{/if}

@@ -793,7 +793,8 @@
 							"roles": [
 								"build",
 								"ask",
-								"media"
+								"media",
+								"design"
 							],
 							"models": {
 								"chat": [
@@ -813,7 +814,8 @@
 							},
 							"roles": [
 								"build",
-								"ask"
+								"ask",
+								"design"
 							],
 							"models": {
 								"chat": [
@@ -1153,7 +1155,8 @@
 							"roles": [
 								"build",
 								"ask",
-								"media"
+								"media",
+								"design"
 							],
 							"models": {
 								"chat": [
@@ -1173,7 +1176,8 @@
 							},
 							"roles": [
 								"build",
-								"ask"
+								"ask",
+								"design"
 							],
 							"models": {
 								"chat": [],
@@ -1257,7 +1261,8 @@
 							"roles": [
 								"build",
 								"ask",
-								"media"
+								"media",
+								"design"
 							],
 							"models": {
 								"chat": [],
@@ -1273,7 +1278,8 @@
 							},
 							"roles": [
 								"build",
-								"ask"
+								"ask",
+								"design"
 							],
 							"models": {
 								"chat": [
@@ -1314,7 +1320,8 @@
 							"roles": [
 								"build",
 								"ask",
-								"media"
+								"media",
+								"design"
 							],
 							"models": {
 								"chat": [],
@@ -1330,7 +1337,8 @@
 							},
 							"roles": [
 								"build",
-								"ask"
+								"ask",
+								"design"
 							],
 							"models": {
 								"chat": [],
@@ -1414,7 +1422,8 @@
 							"roles": [
 								"build",
 								"ask",
-								"media"
+								"media",
+								"design"
 							],
 							"models": {
 								"chat": [],
@@ -1430,7 +1439,8 @@
 							},
 							"roles": [
 								"build",
-								"ask"
+								"ask",
+								"design"
 							],
 							"models": {
 								"chat": [
@@ -1522,7 +1532,8 @@
 							},
 							"roles": [
 								"build",
-								"ask"
+								"ask",
+								"design"
 							],
 							"models": {
 								"chat": [],
@@ -1604,7 +1615,8 @@
 							"roles": [
 								"build",
 								"ask",
-								"media"
+								"media",
+								"design"
 							],
 							"models": {
 								"chat": [],
@@ -1621,7 +1633,8 @@
 							"roles": [
 								"build",
 								"ask",
-								"media"
+								"media",
+								"design"
 							],
 							"models": {
 								"chat": [

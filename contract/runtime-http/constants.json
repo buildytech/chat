@@ -120,7 +120,8 @@
 		"roles": [
 			"build",
 			"ask",
-			"media"
+			"media",
+			"design"
 		],
 		"kinds": [
 			"chat",
@@ -130,11 +131,13 @@
 			"xai": [
 				"build",
 				"ask",
-				"media"
+				"media",
+				"design"
 			],
 			"openrouter": [
 				"build",
-				"ask"
+				"ask",
+				"design"
 			]
 		},
 		"limitTtlSeconds": 600,

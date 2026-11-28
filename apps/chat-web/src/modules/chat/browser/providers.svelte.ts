@@ -87,6 +87,8 @@ function saveChoices(next: RoleChoices): void {
 export const setBuildProvider = (provider: ProviderId): void => saveChoices({ ...choices, build: { provider } });
 export const setAskSame = (): void => saveChoices({ ...choices, ask: { same: true } });
 export const setAskModel = (provider: ProviderId, model: string): void => saveChoices({ ...choices, ask: { same: false, provider, model } });
+export const setDesignSame = (): void => saveChoices({ ...choices, design: { same: true } });
+export const setDesignModel = (provider: ProviderId, model: string): void => saveChoices({ ...choices, design: { same: false, provider, model } });
 export const setMediaProvider = (provider: MediaProvider): void => saveChoices({ ...choices, media: { provider } });
 export const setMediaModel = (model: string): void => saveChoices({ ...choices, media: { ...choices.media, model } });
 /** The Media role's provider and picture model now (null model: nothing it may draw with). */

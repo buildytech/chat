@@ -78,3 +78,14 @@ test("an empty request does not call the completer", async () => {
 	assert.equal(result.ok, false);
 	if (!result.ok) assert.equal(result.attempts, 0);
 });
+
+test("a thrown host error keeps its code and message (not a generic design_failed)", async () => {
+	const result = await runDesignTurn("A bakery brand.", async () => {
+		throw Object.assign(new Error("This key does not list that chat model. No chat request was sent."), { code: "model_not_listed" });
+	});
+	assert.equal(result.ok, false);
+	if (result.ok) return;
+	assert.equal(result.attempts, 1);
+	assert.equal(result.code, "model_not_listed");
+	assert.match(result.message ?? "", /does not list that chat model/);
+});

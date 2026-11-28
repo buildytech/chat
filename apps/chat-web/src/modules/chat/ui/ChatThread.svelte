@@ -20,6 +20,7 @@
 		onSelectModel,
 		onApply,
 		onDiscard,
+		onApplyInDesign,
 		chatModels = [],
 		selectedModelId = "",
 		sessionUsage = null,
@@ -33,6 +34,7 @@
 		onSelectModel?: (id: string) => void;
 		onApply?: () => void;
 		onDiscard?: () => void;
+		onApplyInDesign?: (text: string) => void;
 		chatModels?: readonly GrokChatModel[];
 		selectedModelId?: string;
 		sessionUsage?: SessionUsage | null;
@@ -79,6 +81,7 @@
 						{onEdit}
 						{onApply}
 						{onDiscard}
+						{onApplyInDesign}
 					/>
 				{/each}
 			</Stack>

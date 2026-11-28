@@ -87,7 +87,11 @@ export async function runDesignTurn(request: string, complete: DesignComplete, s
 			text = await complete(messages, signal);
 		} catch (error) {
 			const aborted = signal?.aborted || (error instanceof Error && error.name === "AbortError");
-			return { ok: false, issues: lastIssues, attempts: attempt, code: aborted ? "aborted" : "design_failed", message: aborted ? "The design turn was cancelled." : "The design request could not be completed." };
+			if (aborted) return { ok: false, issues: lastIssues, attempts: attempt, code: "aborted", message: "The design turn was cancelled." };
+			const rec = error && typeof error === "object" ? (error as { code?: unknown; message?: unknown }) : null;
+			const code = typeof rec?.code === "string" && rec.code ? rec.code : "design_failed";
+			const message = error instanceof Error && error.message.trim() ? error.message : "The design request could not be completed.";
+			return { ok: false, issues: lastIssues, attempts: attempt, code, message };
 		}
 		const parsed = parseDesignJson(text);
 		if (parsed === undefined) {

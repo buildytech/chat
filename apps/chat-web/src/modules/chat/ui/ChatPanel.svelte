@@ -13,7 +13,7 @@
 	import { getSelectedModelId, listChatModels, setSelectedModelId } from "../browser/models.svelte.ts";
 	import { refreshProviders } from "../browser/providers.svelte.ts";
 	import ChatThread from "./ChatThread.svelte";
-	import { getComposerMode } from "../core/composer-mode.svelte.ts";
+	import { getComposerMode, setComposerMode } from "../core/composer-mode.svelte.ts";
 	import { mediaSend } from "../media/media.svelte.ts";
 	import { abortDesignTurn, designSend } from "../design/design.svelte.ts";
 
@@ -56,6 +56,16 @@
 		setSelectedModelId(id);
 		modelEpoch += 1;
 	}
+
+	async function onApplyInDesign(text: string) {
+		setComposerMode("design");
+		busy = true;
+		try {
+			await designSend(text);
+		} finally {
+			busy = false;
+		}
+	}
 </script>
 
 <ChatThread
@@ -66,6 +76,7 @@
 	{onSelectModel}
 	onApply={() => applyProposal()}
 	onDiscard={() => discardProposal()}
+	{onApplyInDesign}
 	chatModels={listChatModels()}
 	{selectedModelId}
 	sessionUsage={selected?.usage ?? null}

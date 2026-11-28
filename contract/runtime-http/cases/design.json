@@ -1,5 +1,5 @@
 {
-	"$comment": "POST /runtime/v1/design { modelId, messages }: one Design-agent chat completion with no tools (ADR 0070). The key stays on the host. The browser validates the proposal and writes a Brand Skin. Web hosts only (node, vercel): the desktop host is not required to implement this path in this change.",
+	"$comment": "POST /runtime/v1/design { modelId, messages, provider? }: one Design-agent chat completion with no tools (ADR 0070, 0071). The key stays on the host. The browser validates the proposal and writes a Brand Skin. `provider` is xai or openrouter (omitted: xAI on the web hosts; on the desktop, OpenRouter when signed in, else xAI). The app sends its own model ids; the host maps OpenRouter ids and grok-4.20's reasoning switch. Web hosts refuse OpenRouter (409 provider_role_disabled). A billed `costUsdTicks` is optional in a successful answer.",
 	"cases": [
 		{
 			"name": "design without a key is 503 xai_api_key_missing, no provider call",

@@ -3,6 +3,7 @@
  * config into this project's Brand Skins (`ext.design`). It never changes AgentMode (ask|build).
  */
 import { getSelectedModelId } from "../browser/models.svelte.ts";
+import { effectiveProvider, getRoleChoices, noteSpend } from "../browser/providers.svelte.ts";
 import { getSelectedProject, putProject } from "../../../lib/project/store.svelte.ts";
 import { t } from "../../../lib/i18n/dictionary";
 import { saveBrandSkin } from "../../../lib/theme/brand-skins.svelte.ts";
@@ -50,8 +51,19 @@ export async function designSend(text: string): Promise<void> {
 	const at = new Date().toISOString();
 	pushMessage({ id: uid("msg"), role: "user", text: trimmed, createdAt: at });
 	try {
-		const modelId = getSelectedModelId();
-		const result = await runDesignTurn(trimmed, (messages, signal) => completeDesign(messages, modelId, signal), abort.signal);
+		const design = getRoleChoices().design;
+		const modelId = !design.same ? design.model : getSelectedModelId();
+		const provider = effectiveProvider("design");
+		if (provider === "off") {
+			lastError = t("design.failed");
+			pushMessage({ id: uid("msg"), role: "assistant", text: lastError, createdAt: new Date().toISOString() });
+			return;
+		}
+		const result = await runDesignTurn(trimmed, async (messages, signal) => {
+			const out = await completeDesign(messages, modelId, provider, signal);
+			noteSpend("design", provider, out.ticks);
+			return out.text;
+		}, abort.signal);
 		if (result.ok) {
 			const used = new Set(brandSkinsOf(getSelectedProject() ?? project).map((item) => item.id));
 			const record = saveBrandSkin(
@@ -76,11 +88,12 @@ export async function designSend(text: string): Promise<void> {
 			return;
 		}
 		const issues = result.issues;
-		lastError = result.message ?? t("design.rejected");
+		const detail = result.code && result.message ? `${result.message} (${result.code})` : (result.message ?? t("design.rejected"));
+		lastError = issues.length ? (result.message ?? t("design.rejected")) : detail;
 		pushMessage({
 			id: uid("msg"),
 			role: "assistant",
-			text: issues.length ? issues.map((issue) => `${issue.path}: ${issue.message}`).join("\n") : (result.message ?? t("design.rejected")),
+			text: issues.length ? issues.map((issue) => `${issue.path}: ${issue.message}`).join("\n") : detail,
 			createdAt: new Date().toISOString(),
 			issues
 		});

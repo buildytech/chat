@@ -21213,13 +21213,13 @@ exports["XAI_MANIFEST"] = XAI_MANIFEST;
 __def("packages/agent-manifests/src/roles.ts", function (exports) {
 
 const PROVIDER_IDS = ["xai", "openrouter"] as const;
-const PROVIDER_ROLES = ["build", "ask", "media"] as const;
+const PROVIDER_ROLES = ["build", "ask", "media", "design"] as const;
 const MODEL_KINDS = ["chat", "image"] as const;
 const OPENROUTER_MEDIA_ENABLED = false;
 
 /** The roles each provider can serve on a host that holds its key. */
-const ALL_ROLES: ProviderRole[] = Object.freeze(["build", "ask", "media"]);
-const TEXT_ROLES: ProviderRole[] = Object.freeze(["build", "ask"]);
+const ALL_ROLES: ProviderRole[] = Object.freeze(["build", "ask", "media", "design"]);
+const TEXT_ROLES: ProviderRole[] = Object.freeze(["build", "ask", "design"]);
 const PROVIDER_ROLE_SUPPORT: Readonly<Record<ProviderId, ProviderRole[]>> = Object.freeze({
 	xai: ALL_ROLES,
 	openrouter: OPENROUTER_MEDIA_ENABLED ? ALL_ROLES : TEXT_ROLES
@@ -21464,7 +21464,7 @@ const SYSTEM_COMMON = [
 
 const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: every step is a tool call. Read with the catalog tools, then change the page with write_page: the whole document goes into the call, never into the text. The turn ends when write_page is accepted. If the request needs no change, write the current page back unchanged.`;
 
-const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page and the catalog. You have no write tool here: answer in text. When the author wants a change, describe it briefly and say that Build makes it.`;
+const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page, the catalog and taste (palette, type, brand). You have no write tool and you cannot apply a theme, a Brand Skin or a page change. Never say that changes were applied, saved, or made on the page or the skin: they were not. When the author wants a page change, describe it briefly and say that Build makes it (the author applies the proposal). When they want a brand style, palette, fonts or a theme, describe it and say that Design makes it (the author can send your description to Design). If they ask you to apply something, do not pretend you did: point them to Build or Design.`;
 
 /**
  * The system text of a turn: the prompt of the mode or scenario, the macro rule when the scenario prompt lacks it, and the
@@ -24435,7 +24435,7 @@ exports["handleMedia"] = handleMedia;
 });
 
 __def("apps/xai-runtime/src/design.ts", function (exports) {
-const { readXaiKeyState, resolveChatModelRequest, safeErrorMessage, secretValues, xaiBaseUrl } = __req("packages/chat-agent/src/index.ts");
+const { isProviderId, readXaiKeyState, resolveChatModelRequest, safeErrorMessage, secretValues, usdToTicks, xaiBaseUrl } = __req("packages/chat-agent/src/index.ts");
 const { xaiCapabilities } = __req("packages/provider-xai/src/index.ts");
 const { runtimeStatus } = __req("apps/xai-runtime/src/status.ts");
 const MAX_BODY = 128_000;
@@ -24479,6 +24479,15 @@ function assistantText(payload: unknown): string | null {
 	return null;
 }
 
+function designTicks(payload: unknown): number | null {
+	if (!isBody(payload) || !isBody(payload.usage)) return null;
+	const raw = payload.usage.cost_in_usd_ticks;
+	if (typeof raw === "number" && Number.isSafeInteger(raw) && raw >= 0) return raw;
+	if (typeof raw === "string" && /^(0|[1-9][0-9]*)$/.test(raw)) return Number(raw);
+	const fromUsd = usdToTicks(payload.usage.cost);
+	return fromUsd !== undefined ? Number(fromUsd) : null;
+}
+
 function logDesign(event: Record<string, unknown>): void {
 	console.log(JSON.stringify({ runtime: "xai-grok", event: "xai_design", ...event }));
 }
@@ -24497,6 +24506,10 @@ async function handleDesign(request: Request, env: EnvMap): Promise<Response> {
 	if (!messages) return json(422, { ok: false, code: "invalid_request", message: "messages is a non-empty list of role and content." });
 	const requestedId = typeof body.modelId === "string" ? body.modelId : "";
 	if (!requestedId.trim()) return json(422, { ok: false, code: "missing_model_id", message: "Select a Grok chat model before sending." });
+	if (body.provider !== undefined && body.provider !== "xai") {
+		if (isProviderId(body.provider)) return json(409, { ok: false, code: "provider_role_disabled", message: "This host does not run Design with that provider. No provider call was made." });
+		return json(422, { ok: false, code: "invalid_request", message: "provider is xai or openrouter." });
+	}
 	if (!readXaiKeyState(env).present) return json(503, { ok: false, code: "xai_api_key_missing", message: "XAI_API_KEY is not provisioned here. No provider call was made." });
 	const status = await runtimeStatus(env);
 	const resolved = resolveChatModelRequest({
@@ -24536,8 +24549,9 @@ async function handleDesign(request: Request, env: EnvMap): Promise<Response> {
 			logDesign({ ok: false, code: "malformed_response", modelId: resolved.modelId, ms: Date.now() - started });
 			return json(502, { ok: false, code: "malformed_response", message: "The provider answer had no assistant text." });
 		}
+		const ticks = designTicks(payload);
 		logDesign({ ok: true, code: "ok", modelId: resolved.modelId, ms: Date.now() - started });
-		return json(200, { ok: true, text });
+		return json(200, { ok: true, text, ...(ticks !== null ? { costUsdTicks: ticks } : {}) });
 	} catch (err) {
 		const safe = safeErrorMessage(err, secretValues(env));
 		logDesign({ ok: false, code: safe.code || "design_failed", modelId: resolved.modelId, ms: Date.now() - started });

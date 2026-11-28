@@ -1,5 +1,5 @@
 /**
- * Provider per role (ADR 0068): the app picks a provider and a model for each role (Build, Ask, Media) in Settings; the
+ * Provider per role (ADR 0068): the app picks a provider and a model for each role (Build, Ask, Media, Design) in Settings; the
  * host serves only what it has a key and an allowlist for, and the owner's approved-model lists narrow that further (never
  * widen it). Public data only: the generator copies these values into `contract/runtime-http/constants.json` (`providers`).
  */
@@ -8,8 +8,8 @@
 export const PROVIDER_IDS = ["xai", "openrouter"] as const;
 export type ProviderId = (typeof PROVIDER_IDS)[number];
 
-/** The roles: Build and Ask turns (chat models) and Media draws (image models). */
-export const PROVIDER_ROLES = ["build", "ask", "media"] as const;
+/** The roles: Build, Ask and Design turns (chat models) and Media draws (image models). Design defaults to "Same as Build" (ADR 0071). */
+export const PROVIDER_ROLES = ["build", "ask", "media", "design"] as const;
 export type ProviderRole = (typeof PROVIDER_ROLES)[number];
 
 /** The model kinds of an approved-model list: chat models serve Build and Ask, image models serve Media. */
@@ -20,8 +20,8 @@ export type ModelKind = (typeof MODEL_KINDS)[number];
 export const OPENROUTER_MEDIA_ENABLED = false;
 
 /** The roles each provider can serve on a host that holds its key. */
-const ALL_ROLES: readonly ProviderRole[] = Object.freeze(["build", "ask", "media"]);
-const TEXT_ROLES: readonly ProviderRole[] = Object.freeze(["build", "ask"]);
+const ALL_ROLES: readonly ProviderRole[] = Object.freeze(["build", "ask", "media", "design"]);
+const TEXT_ROLES: readonly ProviderRole[] = Object.freeze(["build", "ask", "design"]);
 export const PROVIDER_ROLE_SUPPORT: Readonly<Record<ProviderId, readonly ProviderRole[]>> = Object.freeze({
 	xai: ALL_ROLES,
 	openrouter: OPENROUTER_MEDIA_ENABLED ? ALL_ROLES : TEXT_ROLES

@@ -3,7 +3,7 @@
  * owner's approved-model lists, the role choices kept on this device, and the status a role's turn runs against.
  * The host enforces its own rules (keys, allowlists, approved lists on the desktop); this only narrows the choices.
  */
-import { IMAGE_MODELS, APPROVED_ID_PATTERN, APPROVED_MAX_IDS, PROVIDER_IDS, appModelIds, isProviderId, openRouterModel, type ModelKind, type ProviderId, type ProviderRole } from "@buildytech/chat-agent";
+import { IMAGE_MODELS, APPROVED_ID_PATTERN, APPROVED_MAX_IDS, PROVIDER_IDS, PROVIDER_ROLES, appModelIds, isProviderId, openRouterModel, type ModelKind, type ProviderId, type ProviderRole } from "@buildytech/chat-agent";
 
 /** host_unavailable: this host cannot serve the provider at all (OpenRouter on the web). */
 type ProviderState = "ready" | "not_configured" | "limit" | "unavailable" | "host_unavailable";
@@ -27,7 +27,7 @@ const field = (v: unknown, name: string): unknown => (isRecord(v) ? v[name] : un
 const strings = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : []);
 const STATES: readonly ProviderState[] = ["ready", "not_configured", "limit", "unavailable"];
 const isState = (value: unknown): value is ProviderState => STATES.some((s) => s === value);
-const ROLES: readonly ProviderRole[] = ["build", "ask", "media"];
+const ROLES: readonly ProviderRole[] = PROVIDER_ROLES;
 /** Only the picture model the host draws with (IMAGE_MODELS): a key may list more. */
 const drawn = (id: ProviderId, ids: string[]): string[] => ids.filter((model) => model === IMAGE_MODELS[id]);
 
@@ -114,18 +114,23 @@ export const imageChoices = (view: ProviderView, doc: ApprovedDoc): string[] => 
 // ---- role choices (this device) ----
 
 export type MediaProvider = ProviderId | "off";
-export type RoleChoices = { build: { provider: ProviderId | null }; ask: { same: true } | { same: false; provider: ProviderId; model: string }; media: { provider: MediaProvider | null; model?: string } };
+export type FollowBuild = { same: true } | { same: false; provider: ProviderId; model: string };
+export type RoleChoices = { build: { provider: ProviderId | null }; ask: FollowBuild; design: FollowBuild; media: { provider: MediaProvider | null; model?: string } };
 
-const defaultChoices = (): RoleChoices => ({ build: { provider: null }, ask: { same: true }, media: { provider: null } });
+const defaultChoices = (): RoleChoices => ({ build: { provider: null }, ask: { same: true }, design: { same: true }, media: { provider: null } });
 
 export function readChoices(value: unknown): RoleChoices {
 	const out = defaultChoices();
 	const build = field(field(value, "build"), "provider");
 	if (isProviderId(build)) out.build = { provider: build };
-	const ask = field(value, "ask");
-	const askProvider = field(ask, "provider");
-	const askModel = field(ask, "model");
-	if (field(ask, "same") === false && isProviderId(askProvider) && typeof askModel === "string") out.ask = { same: false, provider: askProvider, model: askModel };
+	const follow = (name: "ask" | "design"): FollowBuild => {
+		const row = field(value, name);
+		const provider = field(row, "provider");
+		const model = field(row, "model");
+		return field(row, "same") === false && isProviderId(provider) && typeof model === "string" ? { same: false, provider, model } : { same: true };
+	};
+	out.ask = follow("ask");
+	out.design = follow("design");
 	const media = field(field(value, "media"), "provider");
 	const mediaModel = field(field(value, "media"), "model");
 	if (media === "off" || isProviderId(media)) out.media = { provider: media, ...(typeof mediaModel === "string" ? { model: mediaModel } : {}) };
@@ -137,7 +142,7 @@ const usable = (view: ProviderView | undefined, role: ProviderRole): boolean => 
 /**
  * The provider a role uses: the stored choice (kept even when it cannot serve now: the row says why, nothing switches by
  * itself), else the default: Build on OpenRouter when it is there (ADR 0067), else xAI; Media on xAI when it has a key,
- * else off. Ask follows Build unless it has its own.
+ * else off. Ask and Design follow Build unless they have their own.
  */
 export function roleProvider(role: ProviderRole, choices: RoleChoices, views: ProviderView[]): ProviderId | "off" {
 	const view = (id: ProviderId) => views.find((p) => p.id === id);
@@ -145,7 +150,8 @@ export function roleProvider(role: ProviderRole, choices: RoleChoices, views: Pr
 		if (choices.media.provider) return choices.media.provider;
 		return usable(view("xai"), "media") ? "xai" : "off";
 	}
-	if (role === "ask" && !choices.ask.same) return choices.ask.provider;
+	const own = role === "ask" ? choices.ask : role === "design" ? choices.design : null;
+	if (own && !own.same) return own.provider;
 	if (choices.build.provider) return choices.build.provider;
 	return usable(view("openrouter"), "build") ? "openrouter" : "xai";
 }
@@ -159,7 +165,7 @@ export function mediaModel(choices: RoleChoices, view: ProviderView | undefined,
 // ---- spent per role (this device, since the last reset) ----
 
 type SpendLedger = Record<ProviderRole, Partial<Record<ProviderId, number>>>;
-export const emptySpend = (): SpendLedger => ({ build: {}, ask: {}, media: {} });
+export const emptySpend = (): SpendLedger => ({ build: {}, ask: {}, media: {}, design: {} });
 
 export function readSpend(value: unknown): SpendLedger {
 	const out = emptySpend();

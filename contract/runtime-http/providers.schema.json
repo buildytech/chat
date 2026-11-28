@@ -56,7 +56,8 @@
 					"enum": [
 						"build",
 						"ask",
-						"media"
+						"media",
+						"design"
 					]
 				},
 				"uniqueItems": true,

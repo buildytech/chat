@@ -17,22 +17,26 @@ import { Copy, Check, Pencil, Share2, ThumbsDown, ThumbsUp } from "$lib/shell-ic
 	import { formatTokens } from "@buildytech/chat-agent";
 	import MarkdownText from "./MarkdownText.svelte";
 	import ProposalDiff from "./ProposalDiff.svelte";
+	import { askAnswerActions } from "../core/ask-actions.ts";
 
 	let {
 		message,
 		onEdit,
 		onApply,
 		onDiscard,
+		onApplyInDesign,
 	}: {
 		message: ChatMessageModel;
 		onEdit?: (text: string) => void;
 		onApply?: () => void;
 		onDiscard?: () => void;
+		onApplyInDesign?: (text: string) => void;
 	} = $props();
 
 	const run = $derived(message.run);
 	const proposal = $derived(message.proposal);
 	const body = $derived(message.text);
+	const askActions = $derived(message.mode === "ask" && message.answer ? askAnswerActions(message.text) : null);
 
 	const mine = $derived(message.role === "user");
 
@@ -122,9 +126,18 @@ import { Copy, Check, Pencil, Share2, ThumbsDown, ThumbsUp } from "$lib/shell-ic
 						{message.mode === "ask" ? t("ask.answerAsk") : proposal ? t("ask.answerBuildProposal") : t("ask.answerBuild")}
 					</Text>
 					<MarkdownText source={message.text} />
-					<!-- An answer without a proposal is a turn with no accepted write_page: the host says so, whatever the text claims (ADR 0035). -->
+					<!-- An answer without a proposal is a turn with no accepted write_page: the host says so, whatever the text claims (ADR 0035, 0071). -->
 					{#if !proposal}
-						<Text tag="p" class="text-xs font-medium text-muted-foreground" data-slot="no-change">{t("message.noChange")}</Text>
+						{#if askActions?.claimsApplied}
+							<Text tag="p" class="text-xs font-medium text-destructive" data-slot="ask-nothing-applied" role="status">{t("ask.nothingApplied")}</Text>
+						{:else}
+							<Text tag="p" class="text-xs font-medium text-muted-foreground" data-slot="no-change">{t("message.noChange")}</Text>
+						{/if}
+					{/if}
+					{#if askActions?.offersDesign}
+						<Group>
+							<Button class="inline-flex h-7 items-center rounded border border-border px-2 text-xs text-foreground hover:bg-accent" data-action="ask-apply-in-design" onclick={() => onApplyInDesign?.(message.text)}>{t("ask.applyInDesign")}</Button>
+						</Group>
 					{/if}
 				</Stack>
 			{:else}

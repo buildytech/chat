@@ -28,7 +28,7 @@ const SYSTEM_COMMON = [
 
 export const SYSTEM_BUILD = `${SYSTEM_COMMON}\n- Build: every step is a tool call. Read with the catalog tools, then change the page with write_page: the whole document goes into the call, never into the text. The turn ends when write_page is accepted. If the request needs no change, write the current page back unchanged.`;
 
-export const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page and the catalog. You have no write tool here: answer in text. When the author wants a change, describe it briefly and say that Build makes it.`;
+export const SYSTEM_ASK = `${SYSTEM_COMMON}\n- Ask: a read-only conversation about the page, the catalog and taste (palette, type, brand). You have no write tool and you cannot apply a theme, a Brand Skin or a page change. Never say that changes were applied, saved, or made on the page or the skin: they were not. When the author wants a page change, describe it briefly and say that Build makes it (the author applies the proposal). When they want a brand style, palette, fonts or a theme, describe it and say that Design makes it (the author can send your description to Design). If they ask you to apply something, do not pretend you did: point them to Build or Design.`;
 
 /**
  * The system text of a turn: the prompt of the mode or scenario, the macro rule when the scenario prompt lacks it, and the
