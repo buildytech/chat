@@ -7,8 +7,10 @@ import { loadSessionsJson } from "../browser/persist.ts";
 import { projectOfDoc, type SessionDoc } from "./doc.ts";
 import type { Project } from "./types.ts";
 
+const isDoc = (value: unknown): value is SessionDoc => typeof value === "object" && value !== null && "id" in value && typeof value.id === "string";
+
 export function readStoredProject(id: string | null | undefined): Project | null {
 	if (!id) return null;
-	const doc = loadSessionsJson().find((item) => typeof item === "object" && item !== null && (item as { id?: unknown }).id === id);
-	return doc ? projectOfDoc(doc as SessionDoc) : null;
+	const doc = loadSessionsJson().find((item) => isDoc(item) && item.id === id);
+	return isDoc(doc) ? projectOfDoc(doc) : null;
 }
