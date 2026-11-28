@@ -114,7 +114,7 @@ export const imageChoices = (view: ProviderView, doc: ApprovedDoc): string[] => 
 // ---- role choices (this device) ----
 
 export type MediaProvider = ProviderId | "off";
-export type FollowBuild = { same: true } | { same: false; provider: ProviderId; model: string };
+type FollowBuild = { same: true } | { same: false; provider: ProviderId; model: string };
 export type RoleChoices = { build: { provider: ProviderId | null }; ask: FollowBuild; design: FollowBuild; media: { provider: MediaProvider | null; model?: string } };
 
 const defaultChoices = (): RoleChoices => ({ build: { provider: null }, ask: { same: true }, design: { same: true }, media: { provider: null } });

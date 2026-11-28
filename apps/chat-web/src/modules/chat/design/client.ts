@@ -7,7 +7,7 @@ import type { DesignChatMessage } from "../../../lib/theme/design-turn.ts";
 
 const isRecord = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === "object" && !Array.isArray(value);
 
-export type DesignCompletion = { text: string; ticks: number | null };
+type DesignCompletion = { text: string; ticks: number | null };
 
 function ticksOf(value: unknown): number | null {
 	if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) return value;

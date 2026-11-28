@@ -3,7 +3,7 @@
  * and tell the UI when the model claimed it applied something (so the host can contradict it) and when the
  * text is a style brief the author can send to Design.
  */
-export type AskAnswerActions = { claimsApplied: boolean; offersDesign: boolean };
+type AskAnswerActions = { claimsApplied: boolean; offersDesign: boolean };
 
 /** A word or phrase at a Unicode letter boundary (Cyrillic included; `\b` is ASCII-only). */
 const word = (pattern: string): RegExp => new RegExp(`(?<!\\p{L})${pattern}(?!\\p{L})`, "iu");
