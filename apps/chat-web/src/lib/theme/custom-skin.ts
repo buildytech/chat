@@ -115,6 +115,8 @@ export function importThemeConfig(input: unknown): ThemeImport {
 	return { ok: true, config, text: configText(config) };
 }
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
+
 /**
  * Import what the Stock / Magazine theme editor (codegen-x/ui8kit packages/theme-model) can hand over: its Export (format
  * `magazine-theme` v2, read as it is), and the older shapes its own `fromConfig` reads: the stored `{ v: 1, theme }`, a bare
@@ -131,8 +133,8 @@ export function importStockExport(input: unknown): ThemeImport {
 			return { ok: false, issues: [{ code: "not_json", path: "" }] };
 		}
 	}
-	if (!value || typeof value !== "object" || Array.isArray(value)) return { ok: false, issues: [{ code: "not_object", path: "" }] };
-	const record = value as Record<string, unknown>;
+	if (!isPlainObject(value)) return { ok: false, issues: [{ code: "not_object", path: "" }] };
+	const record = value;
 	const stored = record.v === 1 && !!record.theme && typeof record.theme === "object";
 	if (record.format !== undefined && record.format !== 1 && !stored) return importThemeConfig(value);
 	const read = fromConfig(record);
