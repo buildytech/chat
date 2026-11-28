@@ -27,7 +27,7 @@ export function skinSource(id: string | null, config: ThemeConfig | null): SkinS
 	return { key: `${id ?? ""}|${registry ?? ""}|${config ? JSON.stringify(config) : ""}`, id, registry, config };
 }
 
-export type SkinSheets = {
+type SkinSheets = {
 	/** The palette of both modes, one rule each (light, then dark); "" for a registry skin or the default. */
 	modes: string;
 	/** Attributes of the element that wears the skin (<html>, or the scope element). */
@@ -40,7 +40,7 @@ export type SkinSheets = {
 	fonts: string[];
 };
 
-export const SCOPE_ATTR = "data-page-skin";
+const SCOPE_ATTR = "data-page-skin";
 
 /** What a skin needs on a document (`document`: <html>, selectors on the root) or on a scope element inside the app. */
 export function skinSheets(source: SkinSource, target: SkinTarget): SkinSheets {

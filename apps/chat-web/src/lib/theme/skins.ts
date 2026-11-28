@@ -79,7 +79,7 @@ const KIT_THEME = import.meta.glob<string>("../../../../../registry/svelte/src/s
 const PROTOTYPE_TOKENS = import.meta.glob<string>("../../../../../prototypes/tokens.css", { query: "?raw", import: "default", eager: true });
 
 /** Attribute of an element that wears the page's skin inside the app document (never the app chrome). */
-export const PAGE_SKIN_SCOPE = "data-page-skin";
+const PAGE_SKIN_SCOPE = "data-page-skin";
 const SCOPE = `[${PAGE_SKIN_SCOPE}]`;
 
 /** The body of the first top-level rule of `css` whose selector is exactly `selector` ("" when none). */
@@ -107,7 +107,7 @@ function scoped(css: string): string {
  * variables (light and dark, from the registry theme.css) so nothing of the app's own skin leaks in, theme-base and
  * the skin (they match any element with data-skin), and the prototype shape tokens scoped to it.
  */
-export async function pageSkinScopeCss(id: string | null): Promise<string> {
+async function pageSkinScopeCss(id: string | null): Promise<string> {
 	const theme = Object.values(KIT_THEME)[0] ?? "";
 	const tokens = Object.values(PROTOTYPE_TOKENS)[0] ?? "";
 	const light = ruleBody(theme, ":root");
