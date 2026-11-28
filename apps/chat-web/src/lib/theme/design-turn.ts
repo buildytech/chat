@@ -73,6 +73,12 @@ type DesignTurnResult =
  * Run the Design loop: propose, validate, retry with issues, at most DESIGN_MAX_ATTEMPTS times.
  * `complete` talks to the host runtime; tests pass a fake.
  */
+
+function errorCode(error: unknown): string {
+	if (Boolean(error) && typeof error === "object" && "code" in error && typeof error.code === "string" && error.code) return error.code;
+	return "design_failed";
+}
+
 export async function runDesignTurn(request: string, complete: DesignComplete, signal?: AbortSignal): Promise<DesignTurnResult> {
 	const brief = request.trim();
 	if (!brief) return { ok: false, issues: [{ code: "empty_request", path: "/", message: "Describe the brand, its audience and the feeling of the style." }], attempts: 0 };
@@ -88,8 +94,7 @@ export async function runDesignTurn(request: string, complete: DesignComplete, s
 		} catch (error) {
 			const aborted = signal?.aborted || (error instanceof Error && error.name === "AbortError");
 			if (aborted) return { ok: false, issues: lastIssues, attempts: attempt, code: "aborted", message: "The design turn was cancelled." };
-			const rec = error && typeof error === "object" ? (error as { code?: unknown; message?: unknown }) : null;
-			const code = typeof rec?.code === "string" && rec.code ? rec.code : "design_failed";
+			const code = errorCode(error);
 			const message = error instanceof Error && error.message.trim() ? error.message : "The design request could not be completed.";
 			return { ok: false, issues: lastIssues, attempts: attempt, code, message };
 		}
