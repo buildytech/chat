@@ -26,5 +26,5 @@ test("the mode and model menus open above the actions row, inside it, never abov
 	assert.ok(actions > 0 && menus > actions, "the menu anchor is inside the actions row");
 	assert.ok(modeList > menus && modelList > menus, "both menus sit in that anchor");
 	assert.match(source.slice(source.lastIndexOf("<Group", actions), actions), /\brelative\b/, "the actions row is the positioning parent");
-	assert.match(read("ui/ComposerModelList.svelte"), /max-h-\[min\(16rem,50dvh\)\]/, "the list is also capped by the window");
+	assert.match(read("chat.css"), /#composer-mode-list, #composer-model-list \{ max-height: min\(16rem, 50dvh\); overflow-y: auto; \}/, "both menus are capped by the window");
 });

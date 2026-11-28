@@ -173,7 +173,7 @@
 					<Stack
 						align="stretch"
 						id="composer-mode-list"
-						class="absolute bottom-full left-0 z-20 mb-2 w-56 max-h-[min(16rem,50dvh)] overflow-y-auto gap-1 rounded bg-popover p-1"
+						class="absolute bottom-full left-0 z-20 mb-2 w-56 overflow-y-auto gap-1 rounded bg-popover p-1"
 						role="group"
 						aria-label={t("composer.modeLabel")}
 					>

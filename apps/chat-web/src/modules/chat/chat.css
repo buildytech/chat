@@ -19,3 +19,6 @@
    actions row (mode, model, send) is never pushed out of view by a long paste.
    The id beats a text-* utility, so the size lives here: 12px, one step under text-sm. */
 #composer { font-size: 0.75rem; line-height: 1rem; field-sizing: content; max-height: max(4rem, min(14rem, 40dvh)); }
+
+/* The mode and model menus never outgrow the window: at most 16rem, or half of it. */
+#composer-mode-list, #composer-model-list { max-height: min(16rem, 50dvh); overflow-y: auto; }

@@ -16,7 +16,7 @@
 <Stack
 	align="stretch"
 	id="composer-model-list"
-	class="absolute inset-x-0 bottom-full z-20 mb-2 max-h-[min(16rem,50dvh)] gap-1 overflow-y-auto rounded bg-popover p-2"
+	class="absolute inset-x-0 bottom-full z-20 mb-2 gap-1 overflow-y-auto rounded bg-popover p-2"
 	role="group"
 	aria-label={t("composer.modelList")}
 >
