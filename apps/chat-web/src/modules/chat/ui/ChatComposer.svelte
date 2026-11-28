@@ -166,7 +166,50 @@
 				}}
 				{disabled}
 			/>
-			<Group class="items-end justify-between gap-2" data-slot="composer-actions">
+			<Group class="relative items-end justify-between gap-2" data-slot="composer-actions">
+				<!-- The menus open above this row (not above the whole form), so a tall prompt never carries them off screen. -->
+				<Block class="absolute inset-x-0 bottom-full" data-slot="composer-menus">
+				{#if modeOpen}
+					<Stack
+						align="stretch"
+						id="composer-mode-list"
+						class="absolute bottom-full left-0 z-20 mb-2 w-56 max-h-[min(16rem,50dvh)] overflow-y-auto gap-1 rounded bg-popover p-1"
+						role="group"
+						aria-label={t("composer.modeLabel")}
+					>
+						{#each COMPOSER_MODES as option (option)}
+							<Button
+								type="button"
+								class={cn(
+									"w-full items-center justify-between gap-2 rounded px-2 py-1 text-left text-xs",
+									mode === option ? "bg-accent text-foreground" : "text-foreground hover:bg-accent",
+								)}
+								pressed={mode === option}
+								title={t(`composer.mode.${option}.hint`)}
+								data-mode={option}
+								onclick={() => {
+									setComposerMode(option);
+									closeModeMenu();
+								}}
+							>
+								<Text tag="span">{t(`composer.mode.${option}`)}</Text>
+								{#if mode === option}<Icon size="sm"><Check /></Icon>{/if}
+							</Button>
+						{/each}
+					</Stack>
+				{/if}
+				{#if modelOpen}
+					<ComposerModelList
+						{chatModels}
+						{selectedModelId}
+						onChoose={chooseModel}
+						onAddModel={() => {
+							modelOpen = false;
+							onAddModel?.();
+						}}
+					/>
+				{/if}
+				</Block>
 				<Group class="min-w-0 flex-1 flex-wrap items-center gap-2">
 					<Button
 						id="composer-mode-trigger"
@@ -237,46 +280,6 @@
 			</Group>
 		</Stack>
 		<Text tag="p" id="composer-hint" class="px-2 text-xs text-muted-foreground">{t("composer.enterHint")}</Text>
-		{#if modeOpen}
-			<Stack
-				align="stretch"
-				id="composer-mode-list"
-				class="absolute bottom-full left-0 z-20 mb-2 w-56 gap-1 rounded bg-popover p-1"
-				role="group"
-				aria-label={t("composer.modeLabel")}
-			>
-				{#each COMPOSER_MODES as option (option)}
-					<Button
-						type="button"
-						class={cn(
-							"w-full items-center justify-between gap-2 rounded px-2 py-1 text-left text-xs",
-							mode === option ? "bg-accent text-foreground" : "text-foreground hover:bg-accent",
-						)}
-						pressed={mode === option}
-						title={t(`composer.mode.${option}.hint`)}
-						data-mode={option}
-						onclick={() => {
-							setComposerMode(option);
-							closeModeMenu();
-						}}
-					>
-						<Text tag="span">{t(`composer.mode.${option}`)}</Text>
-						{#if mode === option}<Icon size="sm"><Check /></Icon>{/if}
-					</Button>
-				{/each}
-			</Stack>
-		{/if}
-		{#if modelOpen}
-			<ComposerModelList
-				{chatModels}
-				{selectedModelId}
-				onChoose={chooseModel}
-				onAddModel={() => {
-					modelOpen = false;
-					onAddModel?.();
-				}}
-			/>
-		{/if}
 		<ComposerDetails {selected} {sessionUsage} {persistLabel} {runtimeLabel} />
 		{#if runtimeStatus?.error}<Text tag="p" class="px-2 text-xs text-destructive" role="status"
 				>{runtimeStatus.error}</Text
