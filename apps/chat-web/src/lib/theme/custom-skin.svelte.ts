@@ -4,6 +4,7 @@
  */
 import { configText, type ThemeConfig, type ThemeImport } from "./custom-skin";
 import {
+	exportableBrandTheme,
 	importedBrandSkin,
 	importBrandTheme,
 	migrateLegacyBrandSkins,
@@ -28,8 +29,12 @@ export const customSkin = {
 	remove(): void {
 		removeImportedBrandTheme();
 	},
+	/** What the Stock theme editor's Import takes back: the chosen Brand Skin (Design's or imported), else the imported one. */
+	get activeConfig(): ThemeConfig | null {
+		return exportableBrandTheme();
+	},
 	exportText(): string | null {
-		const theme = importedBrandSkin()?.theme;
+		const theme = exportableBrandTheme();
 		return theme ? configText(theme) : null;
 	}
 };

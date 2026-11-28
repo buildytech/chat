@@ -4,9 +4,10 @@
  */
 import { getSelectedProject, getSelectedProjectId, getProjects, putProject } from "../project/store.svelte.ts";
 import { browserStorage, readKey, STORAGE_KEYS, writeKey } from "$lib/browser/storage-v1";
-import { importThemeConfig, parseCustomSkinSlot, type ThemeConfig, type ThemeImport } from "./custom-skin";
+import { importStockExport, parseCustomSkinSlot, type ThemeConfig, type ThemeImport } from "./custom-skin";
 import {
 	IMPORTED_BRAND_SKIN_ID,
+	importedSkinRecord,
 	importedThemeBrief,
 	migrateLegacyCustomSkin,
 	packSkinOptionsFor,
@@ -75,23 +76,28 @@ export function importedBrandSkin(): BrandSkinRecord | null {
 	} : null);
 }
 
-/** Settings import: write a Brand Skin onto the current project (id `custom`); no shared slot. */
+/**
+ * Settings import: a magazine-theme export of the Stock theme editor (any shape its reader accepts, custom-skin
+ * `importStockExport`) becomes a Brand Skin of the current project through the same `saveBrandSkin` Design uses, and is
+ * selected like a new Design skin; no shared slot when there is no project yet.
+ */
 export function importBrandTheme(input: unknown): ThemeImport {
-	const result = importThemeConfig(input);
+	const result = importStockExport(input);
 	if (!result.ok) return result;
 	const project = getSelectedProject();
-	const record: BrandSkinRecord = {
-		id: IMPORTED_BRAND_SKIN_ID,
-		name: importedThemeBrief().name,
-		createdAt: new Date().toISOString(),
-		source: "import",
-		brief: importedThemeBrief(),
-		theme: result.config
-	};
-	if (project) putProject(upsertBrandSkin(project, record, false));
-	else writeKey(STORAGE_KEYS.customSkin, JSON.stringify({ v: 1, config: result.config }));
-	bump();
+	if (project) saveBrandSkin(importedSkinRecord(brandSkinOf(project, IMPORTED_BRAND_SKIN_ID), result.config), true);
+	else {
+		writeKey(STORAGE_KEYS.customSkin, JSON.stringify({ v: 1, config: result.config }));
+		bump();
+	}
 	return result;
+}
+
+/** The theme of the project's chosen Brand Skin, whatever made it (Design or import); the imported one when none is chosen. */
+export function exportableBrandTheme(): ThemeConfig | null {
+	void generation;
+	const project = getSelectedProject();
+	return themeOfProjectSkin(project, project?.skin ?? null) ?? importedBrandSkin()?.theme ?? null;
 }
 
 export function removeImportedBrandTheme(): void {

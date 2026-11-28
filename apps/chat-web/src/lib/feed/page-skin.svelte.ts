@@ -1,66 +1,23 @@
 /**
- * The page's skin on the Blocks feed prototypes (ADR 0059): the cards show the blocks in the theme of the page being
- * built, isolated from the app's own skin. One <style> in the app document carries the scope CSS (theme/skins.ts
- * `pageSkinScopeCss`); a scope element gets the attributes below. A Brand Skin adds its inline variables.
+ * The page's skin on the Blocks feed prototypes (ADR 0059, 0074): the cards show the blocks in the theme of the page being
+ * built, isolated from the app's own skin. The skin is the project's SkinSource (theme/skin-source), the same one the
+ * preview frame wears; this file only places it on scope elements. Two <style> elements in the app document carry the
+ * scope CSS (registry rules, palette of both modes); the one SkinApplier writes both atomically, last write wins, and
+ * rewrites them whenever the source's key changes (a switch to, or an edit of, a Brand Skin on the same registry skin too).
  */
-import { getProjectSkin } from "../project/index.ts";
-import { projectBrandTheme } from "../theme/brand-skins.svelte.ts";
-import { modeCss, renderCustomSkin, SCOPE_MODE_SELECTORS } from "../theme/custom-skin.ts";
-import { PAGE_SKIN_SCOPE, pageSkinScopeCss } from "../theme/skins.ts";
+import { applyScopeSkin } from "../theme/skins.ts";
+import { activeSkinSource } from "../theme/skin-source.svelte.ts";
+import { skinSheets, type SkinSource } from "../theme/skin-source.ts";
 
-const STYLE_ID = "buildy-page-skin-scope";
-const MODES_ID = "buildy-page-skin-modes";
+type PageSkinScope = { attrs: Record<string, string>; style: string; source: SkinSource };
 
-type PageSkinScope = { attrs: Record<string, string>; style: string; skin: string | null };
-
-/** Attributes and inline style of a scope element for the selected project's skin. */
-export function pageSkinScope(): PageSkinScope {
-	const skin = getProjectSkin();
-	const config = projectBrandTheme(skin);
-	if (config) {
-		const render = renderCustomSkin(config);
-		const style = render.style.map(([prop, value]) => `${prop}:${value}`).join(";");
-		return { attrs: { ...render.attrs, [PAGE_SKIN_SCOPE]: "" }, style, skin: render.skin };
-	}
-	return { attrs: { [PAGE_SKIN_SCOPE]: "", ...(skin ? { "data-skin": skin } : {}) }, style: "", skin: skin };
+/** Attributes and inline style of a scope element for the skin in force (reactive: reads the project's skin and its content). */
+export function pageSkinScope(source: SkinSource = activeSkinSource()): PageSkinScope {
+	const sheets = skinSheets(source, "scope");
+	return { attrs: sheets.attrs, style: sheets.style, source };
 }
 
-let written: string | null | undefined;
-let writtenModes = "";
-
-/** The Brand Skin's palette for both modes on the scope elements (light, and dark under a dark ancestor or scope). */
-function syncModeStyle(config: ReturnType<typeof projectBrandTheme>): void {
-	if (typeof document === "undefined") return;
-	const css = config ? modeCss(renderCustomSkin(config), SCOPE_MODE_SELECTORS) : "";
-	if (css === writtenModes) return;
-	writtenModes = css;
-	const el = document.getElementById(MODES_ID);
-	if (!css) {
-		el?.remove();
-		return;
-	}
-	const style = el instanceof HTMLStyleElement ? el : document.createElement("style");
-	style.id = MODES_ID;
-	style.textContent = css;
-	if (!style.isConnected) document.head.appendChild(style);
-}
-
-/** Keep the scope CSS of `skin` in the app document (idempotent; the last call wins). */
-export function syncPageSkinStyle(skin: string | null): void {
-	const config = projectBrandTheme(skin);
-	syncModeStyle(config);
-	const scope = config ? renderCustomSkin(config).skin : skin;
-	if (typeof document === "undefined" || written === scope) return;
-	written = scope;
-	void pageSkinScopeCss(scope).then((css) => {
-		if (written !== scope) return;
-		const el = document.getElementById(STYLE_ID);
-		let style = el instanceof HTMLStyleElement ? el : null;
-		if (!style) {
-			style = document.createElement("style");
-			style.id = STYLE_ID;
-			document.head.appendChild(style);
-		}
-		style.textContent = css;
-	});
+/** Keep the scope CSS of the skin in the app document: the one applier (theme/skin-apply), last write wins. */
+export function syncPageSkinStyle(source: SkinSource): void {
+	if (typeof document !== "undefined") void applyScopeSkin(source);
 }

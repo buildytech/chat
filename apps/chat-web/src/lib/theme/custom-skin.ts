@@ -115,6 +115,32 @@ export function importThemeConfig(input: unknown): ThemeImport {
 	return { ok: true, config, text: configText(config) };
 }
 
+/**
+ * Import what the Stock / Magazine theme editor (codegen-x/ui8kit packages/theme-model) can hand over: its Export (format
+ * `magazine-theme` v2, read as it is), and the older shapes its own `fromConfig` reads: the stored `{ v: 1, theme }`, a bare
+ * theme object without a format, and a style preset (format 1: skin, font, radius, tokens). The older shapes are read by that
+ * reader and written as v2 (an import replaces the theme: fields not in the input are unset), then pass the same strict check
+ * as a v2 file. A value the reader would drop is an issue (`not_kept`), never silently lost.
+ */
+export function importStockExport(input: unknown): ThemeImport {
+	let value = input;
+	if (typeof value === "string") {
+		try {
+			value = JSON.parse(value);
+		} catch {
+			return { ok: false, issues: [{ code: "not_json", path: "" }] };
+		}
+	}
+	if (!value || typeof value !== "object" || Array.isArray(value)) return { ok: false, issues: [{ code: "not_object", path: "" }] };
+	const record = value as Record<string, unknown>;
+	const stored = record.v === 1 && !!record.theme && typeof record.theme === "object";
+	if (record.format !== undefined && record.format !== 1 && !stored) return importThemeConfig(value);
+	const read = fromConfig(record);
+	if (!read.ok) return { ok: false, issues: [{ code: "not_object", path: "" }] };
+	if (read.dropped.length) return { ok: false, issues: read.dropped.map((key) => ({ code: "not_kept" as const, path: key.includes("-") ? `/tokens/${key}` : `/${key}` })) };
+	return importThemeConfig(toConfig({ mode: read.mode ?? "light", theme: read.theme }));
+}
+
 /** The two modes every Brand Skin carries (ADR 0072). */
 export const SKIN_MODES = ["light", "dark"] as const;
 

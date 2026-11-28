@@ -1,0 +1,98 @@
+{
+  "source": {
+    "repo": "codegen-x/ui8kit",
+    "commit": "1d00f63",
+    "producer": "packages/theme-model/src/global-theme.ts toConfig (the Theme sheet's Export), run with bun"
+  },
+  "exports": {
+    "default": {
+      "format": "magazine-theme",
+      "version": 2,
+      "mode": "dark",
+      "skin": null,
+      "font": null,
+      "headingFont": null,
+      "radius": null,
+      "tokens": {},
+      "palette": null
+    },
+    "skinOnly": {
+      "format": "magazine-theme",
+      "version": 2,
+      "mode": "light",
+      "skin": "claude",
+      "font": "manrope",
+      "headingFont": "merriweather",
+      "radius": 12,
+      "tokens": {
+        "radius-button": 8,
+        "radius-card": 16,
+        "density-button": "comfortable",
+        "shadow-card": "md"
+      },
+      "palette": null
+    },
+    "palette": {
+      "format": "magazine-theme",
+      "version": 2,
+      "mode": "dark",
+      "skin": "cosmic-night",
+      "font": "inter",
+      "headingFont": "manrope",
+      "radius": 8,
+      "tokens": {
+        "shadow-card": "sm"
+      },
+      "palette": {
+        "harmony": "split",
+        "h": 24,
+        "s": 92,
+        "l": 58,
+        "contrast": "AAA"
+      },
+      "fontScale": 105,
+      "fontWeight": 500,
+      "headingWeight": 600,
+      "tracking": 0.025
+    }
+  },
+  "stored": {
+    "v": 1,
+    "theme": {
+      "skin": "cosmic-night",
+      "font": "inter",
+      "headingFont": "manrope",
+      "radius": 8,
+      "tokens": {
+        "shadow-card": "sm"
+      },
+      "palette": {
+        "harmony": "split",
+        "h": 24,
+        "s": 92,
+        "l": 58,
+        "contrast": "AAA"
+      },
+      "fontScale": 105,
+      "fontWeight": 500,
+      "headingWeight": 600,
+      "tracking": 0.025
+    }
+  },
+  "preset": {
+    "format": 1,
+    "screen": "t071-poster-dots",
+    "skin": "bubblegum",
+    "font": "open-sans",
+    "fonts": {
+      "display": "montserrat",
+      "body": "open-sans"
+    },
+    "radius": 0,
+    "pattern": "diagonal",
+    "style": "t071-poster-dots|bubblegum|montserrat+open-sans|0",
+    "tokens": {
+      "shadow-card": "sm"
+    }
+  }
+}

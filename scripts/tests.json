@@ -56,6 +56,8 @@
       "design-modes.test.ts",
       "preview-host-open.test.ts",
       "composer-long.test.ts",
+      "skin-source.test.ts",
+      "skin-registry.test.ts",
       "inspector.test.ts",
       "inspector-widgets.test.ts",
       "layout-prefs.test.ts",

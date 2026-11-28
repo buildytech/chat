@@ -18,7 +18,8 @@ import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 	import PreviewAddress from "./PreviewAddress.svelte";
 	import { getProjectSkin, getSelectedProject, setProjectSkin } from "$lib/project";
 	import { applySkin, skins } from "$lib/theme/skins";
-	import { projectBrandSkins, projectBrandTheme } from "$lib/theme/brand-skins.svelte.ts";
+	import { projectBrandSkins } from "$lib/theme/brand-skins.svelte.ts";
+	import { activeSkinSource } from "$lib/theme/skin-source.svelte.ts";
 	import {
 		blocksOf,
 		getCurrentPage,
@@ -116,12 +117,11 @@ import { ExternalLink, Monitor, Smartphone, Tablet } from "$lib/shell-icons";
 	const skinOptions = skins();
 	const skin = $derived(getProjectSkin());
 	const brandSkins = $derived(projectBrandSkins());
-	const custom = $derived(projectBrandTheme(skin));
+	const source = $derived(activeSkinSource());
 	const skinValue = $derived(skin && (skinOptions.some((option) => option.id === skin) || brandSkins.some((item) => item.id === skin)) ? skin : "");
 	$effect(() => {
 		const doc = frameDoc;
-		const id = skin;
-		const config = custom;
+		const { id, config } = source;
 		if (doc) void applySkin(doc, id, config).then(() => syncTheme(doc));
 	});
 

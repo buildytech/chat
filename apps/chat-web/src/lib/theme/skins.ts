@@ -5,16 +5,14 @@
  */
 import { registrySkin, registrySkinBaseCss, registrySkins, type RegistrySkin } from "@buildytech/builder-core";
 import { loadSessionsJson } from "$lib/browser/persist";
-import { CUSTOM_SKIN_BASE_CSS, CUSTOM_SKIN_ID, modeCss, renderCustomSkin, type ThemeConfig } from "./custom-skin";
+import { CUSTOM_SKIN_BASE_CSS, type ThemeConfig } from "./custom-skin";
+import { createSkinApplier, type SkinApplier } from "./skin-apply";
+import { skinSource, type SkinSource } from "./skin-source";
 
 const SKIN_FILES = import.meta.glob<string>("../../../../../registry/svelte/src/styles/skins/*.css", {
 	query: "?inline",
 	import: "default"
 });
-const STYLE_ID = "buildy-skin";
-/** The Brand Skin's palette, one rule per mode (light and dark): both always present, the app's mode picks one. */
-const MODES_ID = "buildy-skin-modes";
-
 export type { RegistrySkin };
 export const skins = (): RegistrySkin[] => registrySkins();
 
@@ -32,87 +30,40 @@ async function skinCss(id: string | null): Promise<string> {
 	return parts.join("\n");
 }
 
-const applied = new WeakMap<Document, string | null>();
-/** What the last Custom Skin put on a document (removed before the next skin): attributes, inline properties, font links. */
-const customApplied = new WeakMap<Document, { attrs: string[]; props: string[] }>();
-const FONT_LINK = "data-buildy-skin-font";
-
-function clearCustom(doc: Document): void {
-	const before = customApplied.get(doc);
-	if (!before) return;
-	const root = doc.documentElement;
-	for (const name of before.attrs) root.removeAttribute(name);
-	for (const prop of before.props) root.style.removeProperty(prop);
-	for (const link of doc.head.querySelectorAll(`link[${FONT_LINK}]`)) link.remove();
-	doc.getElementById(MODES_ID)?.remove();
-	customApplied.delete(doc);
+/** The CSS under a Brand Skin's palette or a registry skin on a whole document: theme-base, the skin, and Stock's base rules for a Brand Skin. */
+async function documentBaseCss(source: SkinSource): Promise<string> {
+	const css = await skinCss(source.registry);
+	return source.config ? `${css}\n${CUSTOM_SKIN_BASE_CSS}` : css;
 }
 
-/** Put a Brand Skin on a document: base skin CSS, Stock's root attributes and inline variables, the palette of both modes, fonts. */
-async function applyCustom(doc: Document, config: ThemeConfig, token: string): Promise<void> {
-	const render = renderCustomSkin(config);
-	const css = `${await skinCss(render.skin)}\n${CUSTOM_SKIN_BASE_CSS}`;
-	if (applied.get(doc) !== token) return;
-	clearCustom(doc);
-	const el = doc.getElementById(STYLE_ID);
-	let style = el instanceof HTMLStyleElement ? el : null;
-	if (css) {
-		if (!style) {
-			style = doc.createElement("style");
-			style.id = STYLE_ID;
-			doc.head.appendChild(style);
-		}
-		style.textContent = css;
-	} else style?.remove();
-	const modes = doc.createElement("style");
-	modes.id = MODES_ID;
-	modes.textContent = modeCss(render);
-	doc.head.appendChild(modes);
-	const root = doc.documentElement;
-	if (!render.skin) delete root.dataset.skin;
-	for (const [name, value] of Object.entries(render.attrs)) root.setAttribute(name, value);
-	for (const [prop, value] of render.style) root.style.setProperty(prop, value);
-	for (const href of render.fonts) {
-		const link = doc.createElement("link");
-		link.rel = "stylesheet";
-		link.href = href;
-		link.setAttribute(FONT_LINK, "");
-		doc.head.appendChild(link);
+const appliers = new WeakMap<Document, SkinApplier>();
+
+/** The applier of a document: the only writer of its skin (ADR 0074). */
+function applierOf(doc: Document): SkinApplier {
+	let applier = appliers.get(doc);
+	if (!applier) {
+		applier = createSkinApplier(doc, { target: "document", baseCss: documentBaseCss });
+		appliers.set(doc, applier);
 	}
-	customApplied.set(doc, { attrs: Object.keys(render.attrs).filter((name) => name !== "data-skin"), props: render.style.map(([prop]) => prop) });
+	return applier;
 }
 
 /**
- * Put the skin on a document: its CSS in one <style id="buildy-skin"> and data-skin on <html> (none for the default).
- * `custom` (CUSTOM_SKIN_ID) renders the imported config (`custom`, null: none imported, the default theme).
+ * Put the skin on a document: the registry skin's CSS in one <style id="buildy-skin">, a Brand Skin's palette of both modes
+ * in <style id="buildy-skin-modes">, and the root attributes (data-skin, ...). `custom` is the Brand Skin's theme (null: a
+ * registry skin or the default theme). Rapid calls are last-write-wins (theme/skin-apply); resolves when this call is done
+ * or superseded.
  */
 export async function applySkin(doc: Document, id: string | null, custom: ThemeConfig | null = null): Promise<void> {
-	// A Brand Skin (per-project magazine-theme config) carries its own theme; the id may be `custom` or `brand-*`.
-	if (custom) {
-		const token = id ?? CUSTOM_SKIN_ID;
-		applied.set(doc, token);
-		await applyCustom(doc, custom, token);
-		return;
-	}
-	clearCustom(doc);
-	const skin = registrySkin(id)?.id ?? null;
-	applied.set(doc, skin);
-	const css = await skinCss(skin);
-	if (applied.get(doc) !== skin) return;
-	const el = doc.getElementById(STYLE_ID);
-	let style = el instanceof HTMLStyleElement ? el : null;
-	if (!css) {
-		style?.remove();
-		delete doc.documentElement.dataset.skin;
-		return;
-	}
-	if (!style) {
-		style = doc.createElement("style");
-		style.id = STYLE_ID;
-		doc.head.appendChild(style);
-	}
-	style.textContent = css;
-	doc.documentElement.dataset.skin = skin!;
+	await applierOf(doc).apply(skinSource(id, custom));
+}
+
+let scopeApplier: SkinApplier | null = null;
+
+/** Put the skin on the scope elements of the app document (the Blocks feed cards): the same applier, the scope target. */
+export function applyScopeSkin(source: SkinSource): Promise<boolean> {
+	scopeApplier ??= createSkinApplier(document, { target: "scope", baseCss: (item) => pageSkinScopeCss(item.registry) });
+	return scopeApplier.apply(source);
 }
 
 /** Skin of a stored chat (standalone preview window reads it from the chat store, read-only). */

@@ -26,6 +26,7 @@ import { Check, Download, FileUp, Trash2, Upload } from "$lib/shell-icons";
 	let note = $state("");
 	let issues = $state.raw<ThemeIssue[]>([]);
 	const config = $derived(customSkin.config);
+	const activeConfig = $derived(customSkin.activeConfig);
 	const inUse = $derived(getProjectSkin() === CUSTOM_SKIN_ID);
 
 	function issueText(issue: ThemeIssue): string {
@@ -63,7 +64,7 @@ import { Check, Download, FileUp, Trash2, Upload } from "$lib/shell-icons";
 		const href = URL.createObjectURL(blob);
 		const anchor = document.createElement("a");
 		anchor.href = href;
-		anchor.download = "custom-skin.magazine-theme.json";
+		anchor.download = "skin.magazine-theme.json";
 		document.body.appendChild(anchor);
 		anchor.click();
 		anchor.remove();
@@ -82,6 +83,14 @@ import { Check, Download, FileUp, Trash2, Upload } from "$lib/shell-icons";
 <Stack align="stretch" class="gap-2" data-slot="settings-theme-import">
 	<Text tag="p" class="text-xs font-medium text-foreground">{t("themeImport.title")}</Text>
 	<Text tag="p" class="text-xs text-muted-foreground">{t("themeImport.note")}</Text>
+	{#if !config && activeConfig}
+		<Group class="gap-2" data-slot="active-skin-export">
+			<Button class={ACTION} data-action="custom-skin-export" onclick={onExport}>
+				<Icon size="sm"><Download /></Icon>
+				{t("themeImport.export")}
+			</Button>
+		</Group>
+	{/if}
 	{#if config}
 		<Group class="items-center gap-2 rounded border border-border px-2 py-1" data-slot="custom-skin-slot">
 			<Icon size="sm" class="text-muted-foreground"><Check /></Icon>

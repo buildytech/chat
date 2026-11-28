@@ -21,7 +21,7 @@
 	const Prototype = $derived(Object.entries(PROTOTYPES).find(([path]) => path.endsWith(`/${file}`))?.[1] ?? null);
 	const settings = $derived(prototypeProps(item, variant));
 	const scope = $derived(pageSkinScope());
-	$effect(() => syncPageSkinStyle(scope.skin));
+	$effect(() => syncPageSkinStyle(scope.source));
 
 	let width = $state(0);
 	let height = $state(0);

@@ -138,6 +138,24 @@ export function editedBrandSkin(base: BrandSkinRecord, next: { brief: BrandBrief
 	};
 }
 
+/**
+ * The record a Settings import writes: the same Brand Skin record Design writes (ADR 0074), under the fixed id `custom`. A
+ * second import of the same config is no change; a different one is the next revision of that skin (same id, createdAt, name,
+ * brief), exactly as a Design edit. The stored contract is dropped: it described the old theme.
+ */
+export function importedSkinRecord(existing: BrandSkinRecord | null, theme: ThemeConfig, now = new Date().toISOString()): BrandSkinRecord {
+	if (existing && JSON.stringify(existing.theme) === JSON.stringify(theme)) return existing;
+	return {
+		id: IMPORTED_BRAND_SKIN_ID,
+		name: existing?.name ?? importedThemeBrief().name,
+		createdAt: existing?.createdAt ?? now,
+		source: "import",
+		brief: existing?.brief ?? importedThemeBrief(),
+		theme,
+		...(existing ? { revision: revisionOf(existing) + 1, updatedAt: now } : {})
+	};
+}
+
 /** Whether a proposal changes anything of the skin (brief and theme): an identical answer is no edit. */
 export function sameBrandSkinContent(base: BrandSkinRecord, next: { brief: BrandBrief; theme: ThemeConfig }): boolean {
 	return JSON.stringify([base.brief, base.theme]) === JSON.stringify([next.brief, next.theme]);
